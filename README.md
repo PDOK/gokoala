@@ -1,10 +1,12 @@
+<p align="center">
+<img src="docs/gopher-koala.png" alt="GoKoala" title="GoKoala" width="300" />
+</p>
+
 # GoKoala
 
-![GoKoala logo](docs/gopher-koala.png)
+_Cloud Native OGC APIs server, written in Go._
 
 ## Description
-
-_Cloud Native OGC APIs server, written in Go._
 
 This server implements modern OGC APIs such as OGC Common Core, OGC Tiles, OGC
 Styles. In the future other APIs like OGC Features or OGC Maps may be added. The
