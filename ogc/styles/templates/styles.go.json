@@ -1,0 +1,46 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{
+  {{ if .Config.OgcAPI.Styles }}
+  {{ $baseUrl := .Config.BaseURL }}
+  "default": "{{ .Config.OgcAPI.Styles.Default }}",
+  "styles": [
+    {{ range $st_index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
+    {{ if $st_index }},{{ end }}
+    {
+      "id": "{{ $style.ID }}",
+      "title": "{{ $style.Title }}",
+      "links": [
+        {
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}/metadata",
+          "rel": "describedby",
+          "title": "Style Metadata for {{ $style.ID }}"
+        }
+        {{ if $style.Stylesheets }},{{ end }}
+        {{ range $sh_index, $stylesheet := $style.Stylesheets }}
+        {{ if $sh_index }},{{ end }}
+        {
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}?f={{ $stylesheet.Link.Format }}",
+          "rel": "stylesheet",
+          "type": "{{ $stylesheet.Link.Type }}"
+        }
+        {{ end }}
+        {{ if $style.Links }},{{ end }}
+        {{ range $l_index, $link := $style.Links }}
+        {{if $l_index }},{{ end }}
+        {
+          "href": "{{ $baseUrl }}/resources/{{ $link.AssetFilename }}",
+          "rel": "{{ $link.Rel }}",
+          {{ if $link.Type }}
+          "type": "{{ $link.Type }}"{{ if $link.Title }},{{ end }}
+          {{ end }}
+          {{ if $link.Title }}
+          "title": "{{ $link.Title }}"
+          {{ end }}
+        }
+        {{ end }}
+      ]
+    }
+    {{ end }}
+  ]
+  {{ end }}
+}

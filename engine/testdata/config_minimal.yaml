@@ -1,0 +1,4 @@
+---
+title: Minimal OGC API
+abstract: This is a minimal OGC API, offering only OGC API Common
+baseUrl: http://localhost:8080

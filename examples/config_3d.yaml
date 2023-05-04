@@ -1,0 +1,18 @@
+---
+title: New York in 3D
+abstract: |
+  This is a description about the dataset in Markdown.
+baseUrl: http://localhost:8080
+ogcApi:
+  3dgeovolumes:
+    tileServer: https://maps.ecere.com/3DAPI/collections/
+    # just a dummy picture, but you can put an actual thumbnail here
+    thumbnail: 3d.png
+    collections:
+      - id: NewYork
+        # optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
+        tileServerPath: "NewYork/3DTiles"
+        # optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb"
+        uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+        # optional URI template for subtrees, only required when "implicit tiling" extension is used
+        # uriTemplateImplicitTilingSubtree: ""

@@ -1,0 +1,82 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{ define "content" }}
+{{ if .Params }}
+{{ $baseUrl := .Config.BaseURL }}
+<hgroup class="main">
+    <h2 class="title">{{ .Params.ID }}</h2>
+    <a href="styles/{{ .Params.ID }}/metadata?f=json">[JSON]</a>
+</hgroup>
+<div class="description">
+    {{ markdown .Params.Description }}
+    <div class="table-container">
+        <table class="parameters">
+            <tbody>
+                <tr>
+                    <td>
+                        <b>ID</b>
+                    </td>
+                    <td>
+                        {{ .Params.ID }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Titel</b>
+                    </td>
+                    <td>
+                        {{ .Params.Title }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Sleutelwoorden</b>
+                    </td>
+                    <td>
+                        {{ if .Params.Keywords }}
+                        {{ range $keyword := .Params.Keywords }}
+                        {{ $keyword }}<br/>
+                        {{ end }}
+                        {{ else }}
+                        None
+                        {{ end }}
+                        <br/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Aanvullende links</b>
+                    </td>
+                    <td>
+                        {{ if .Params.Links }}
+                        {{ range $link := .Params.Links}}
+                        {{ if $link.Title }}{{ $link.Title }}{{ else }}{{ $link.AssetFilename }}{{ end }}
+                        <ul>
+                            <li>Href: <a href="{{ $baseUrl }}/resources/{{ $link.AssetFilename }}">{{ $baseUrl }}/resources/{{ $link.AssetFilename }}</a></li>
+                            <li>Rel: {{ $link.Rel }}</li>
+                            {{ if $link.Type }}<li>Type: {{ $link.Type }}</li>{{ end }}
+                        </ul>
+                        {{ end }}
+                        {{ end }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Stylesheets</b>
+                    </td>
+                    <td>
+                        {{ range $stylesheet := .Params.Stylesheets }}
+                        {{ $stylesheet.Title }}
+                        <ul>
+                            <li><a href="{{ $stylesheet.Specification}}">Specification</a></li>
+                            <li>Version: {{ $stylesheet.Version }}</li>
+                            <li>Native: {{ if $stylesheet.Native }}Yes{{ else }}No{{ end }}</li>
+                        </ul>
+                        {{ end }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}
+{{end}}

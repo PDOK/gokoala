@@ -1,0 +1,79 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{
+  {{ $baseUrl := .Config.BaseURL }}
+  "links" : [
+    {
+      "rel" : "self",
+      "type" : "application/json",
+      "title" : "This document",
+      "href" : "{{ $baseUrl }}/collections?f=json"
+    },
+    {
+      "rel" : "alternate",
+      "type" : "text/html",
+      "title" : "This document",
+      "href" : "{{ $baseUrl }}/collections?f=html"
+    }
+  ],
+  "collections" : [
+    {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
+    {{ range $index, $type := .Config.OgcAPI.GeoVolumes.Collections }}
+    {{ if $index }},{{ end }}
+    {
+      "id" : "{{ $type.ID }}",
+      "title" : "{{ $type.ID }}",
+      "description" : "{{ $type.ID }} collection",
+      "collectionType" : "3d-container",
+      "extent" : {
+        "spatial": {
+           {{/* Copied bbox values from https://service.pdok.nl/lv/bag/wms/v2_0?request=getCapabilities&service=WMS */}}
+          "bbox": [ [ -25000,250000,280000,860000 ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/28992"
+        }
+      },
+      "links" : [
+        {
+          "rel" : "self",
+          "type" : "application/json",
+          "title" : "Information about the 3D {{ $type.ID }} collection as JSON",
+          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+        },
+        {
+          "rel" : "alternate",
+          "type" : "text/html",
+          "title" : "Information about the 3D {{ $type.ID }} collection as HTML",
+          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+        },
+        {
+          "rel" : "items",
+          "type" : "application/json+3dtiles",
+          "title" : "Tileset definition of collection {{ $type.ID }} according to the OGC 3D Tiles specification",
+          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}/3dtiles?f=json"
+        }
+      ],
+      "content" : [
+        {
+          "rel" : "original",
+          "type" : "application/json+3dtiles",
+          "title" : "Tileset definition of collection {{ $type.ID }} according to the OGC 3D Tiles specification",
+          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}/3dtiles?f=json",
+          "collectionType": "3d-container"
+        }
+      ]
+    }
+    {{end}}
+    {{end}}
+    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
+    ,
+    { "title": "Placeholder (TODO)" }
+    {{ end }}
+    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
+    ,
+    { "title": "Placeholder (TODO)" }
+    {{ end }}
+    {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
+    ,
+    { "title": "Placeholder (TODO)" }
+    {{ end }}
+  ]
+}

@@ -1,0 +1,10 @@
+---
+title: Minimal OGC API
+abstract: This is a minimal OGC API, offering only OGC API 3DGeoVolumes
+baseUrl: http://localhost:8080
+ogcApi:
+  3dgeovolumes:
+    tileServer: http://localhost:9090
+    collections:
+      - id: container_1
+      - id: container_2

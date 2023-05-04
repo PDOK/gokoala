@@ -1,0 +1,27 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{define "content"}}
+<hgroup class="main">
+    <h2 class="title">Tile Matrix Sets</h2>
+    <a href="tileMatrixSets?f=json">[JSON]</a>
+</hgroup>
+<div class="description">
+    Deze API ondersteund de volgende tile matrix sets
+    <ul>
+        {{ if .Config.OgcAPI.Tiles }}
+        {{range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+        {{ if (eq $type.Srs "EPSG:28992") }}
+        <li><a href="tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> - Amersfoort / RD New scheme for the
+            Netherlands</li>
+        {{end}}
+        {{ if (eq $type.Srs "EPSG:4258") }}
+        <li><a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> - Geodetic
+            Reference System 1980 ETRS89 for Europe</li>
+        {{end}}
+        {{ if (eq $type.Srs "EPSG:3857") }}
+        <li><a href="tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> - Google Maps Compatible for the World</li>
+        {{end}}
+        {{end}}
+        {{end}}
+    </ul>
+</div>
+{{end}}

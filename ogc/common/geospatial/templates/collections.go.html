@@ -1,0 +1,16 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{define "content"}}
+{{$baseUrl := .Config.BaseURL}}
+<hgroup class="main">
+    <h2 class="title">Collections</h2>
+    <a href="collections?f=json">[JSON]</a>
+</hgroup>
+<div class="description">
+    De volgende collecties zijn beschikbaar binnen deze dataset:
+    <ul>
+        {{ range $index, $id := .Config.GeoSpatialCollections.Flatten }}
+            <li><a href="{{ $baseUrl }}/collections/{{ $id }}">{{ $id }}</a> - <a href="{{ $baseUrl }}/collections/{{ $id }}?f=json">[JSON]</a></li>
+        {{end}}
+    </ul>
+</div>
+{{end}}

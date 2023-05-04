@@ -1,0 +1,24 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "{{ .Config.Title }}",
+    "description": "{{ unmarkdown .Config.Abstract }}",
+    "version": "1.0",
+    "contact": {
+      "name": "Beheer PDOK",
+      "email": "BeheerPDOK@kadaster.nl",
+      "url": "https://www.pdok.nl"
+    },
+    "license": {
+      "name": "CC0 1.0",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/deed.nl"
+    }
+  },
+  "servers": [
+    {
+      "description": "API endpoint",
+      "url": "{{ .Config.BaseURL }}"
+    }
+  ]
+}

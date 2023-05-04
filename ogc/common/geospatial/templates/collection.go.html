@@ -1,0 +1,35 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{define "content"}}
+{{ if .Params }}
+<hgroup class="main">
+    <h2 class="title">Collection: {{ .Params }}</h2>
+    <a href="collections/{{ .Params }}?f=json">[JSON]</a>
+</hgroup>
+<div class="description">
+    {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
+    <h3>3D GeoVolumes</h3>
+    <ul>
+        <li><a href="{{ .Config.BaseURL }}/collections/{{ .Params }}/3dtiles">{{ .Params }} als 3D Tiles</a></li>
+    </ul>
+    {{ end }}
+    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
+    <h3>Tiles</h3>
+    <ul>
+        <li>Placeholder (TODO)</li>
+    </ul>
+    {{ end }}
+    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
+    <h3>Features</h3>
+    <ul>
+        <li>Placeholder (TODO)</li>
+    </ul>
+    {{ end }}
+    {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
+    <h3>Maps</h3>
+    <ul>
+        <li>Placeholder (TODO)</li>
+    </ul>
+    {{ end }}
+</div>
+{{end}}
+{{end}}

@@ -1,0 +1,298 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Building Blocks specified in OGC API - Common - Part 1: Core",
+    "description": "Common components used in the\n[OGC standard \"OGC API - Common - Part 1: Core\"](http://docs.opengeospatial.org/is/19-072/19-072.html).\n\nOGC API - Common - Part 1: Core 1.0 is an OGC Standard.\n\nFor OGC API - Common - Part 2: Geospatial Data, refer to [Example 2](index2.html).\n\nCopyright (c) 2021 Open Geospatial Consortium.\nTo obtain additional rights of use, visit http://www.opengeospatial.org/legal/ .",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Open Geospatial Consortium (OGC)",
+      "email": "standards-team@ogc.org",
+      "url": "https://www.ogc.org/contacts"
+    },
+    "license": {
+      "name": "OGC License",
+      "url": "http://www.opengeospatial.org/legal/"
+    },
+    "x-logo": {
+      "url": "https://www.ogc.org/pub/www/files/OGC_Logo_2D_Blue_x_0_0.png"
+    }
+  },
+  "servers": [
+    {
+      "description": "Example server",
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "description": "The landing page provides links to the API definition and the conformance statements for this API.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f"
+          }
+        ],
+        "operationId": "getLandingPage",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/LandingPage"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "summary": "Landing page",
+        "tags": [
+          "Common"
+        ]
+      }
+    },
+    "/api": {
+      "get": {
+        "description": "This document",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/200"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "default": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "summary": "This document",
+        "tags": [
+          "Common"
+        ]
+      }
+    },
+    "/conformance": {
+      "get": {
+        "description": "A list of all conformance classes specified in a standard that the server conforms to.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f"
+          }
+        ],
+        "operationId": "getConformanceDeclaration",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ConformanceDeclaration"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "summary": "API conformance definition",
+        "tags": [
+          "Common"
+        ]
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "f": {
+        "description": "The optional f parameter indicates the output format that the server shall provide as part of the response document.  The default format is JSON.",
+        "explode": false,
+        "in": "query",
+        "name": "f",
+        "required": false,
+        "schema": {
+          "default": "json",
+          "enum": [
+            "json",
+            "html"
+          ],
+          "type": "string"
+        },
+        "style": "form"
+      }
+    },
+    "schemas": {
+      "confClasses": {
+        "type": "object",
+        "required": [
+          "conformsTo"
+        ],
+        "properties": {
+          "conformsTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "exception": {
+        "description": "JSON schema for exceptions based on RFC 7807",
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          }
+        }
+      },
+      "landingPage": {
+        "type": "object",
+        "required": [
+          "links"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Buildings in Bonn"
+          },
+          "description": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      },
+      "link": {
+        "type": "object",
+        "required": [
+          "href",
+          "rel"
+        ],
+        "properties": {
+          "href": {
+            "type": "string",
+            "example": "http://data.example.com/buildings/123"
+          },
+          "rel": {
+            "type": "string",
+            "example": "alternate"
+          },
+          "type": {
+            "type": "string",
+            "example": "application/json"
+          },
+          "hreflang": {
+            "type": "string",
+            "example": "en"
+          },
+          "title": {
+            "type": "string",
+            "example": "Trierer Strasse 70, 53115 Bonn"
+          },
+          "length": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "General Success response."
+      },
+      "400": {
+        "description": "General HTTP error response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/exception"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "A server error occurred.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/exception"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "LandingPage": {
+        "description": "The landing page provides links to the API definition\n(link relations `service-desc` and `service-doc`),\nand the Conformance declaration (path `/conformance`,\nlink relation `conformance`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/landingPage"
+            }
+          },
+          "application/vnd.oai.openapi+json;version=3.0": {
+            "schema": {
+              "$ref": "#/components/schemas/landingPage"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ConformanceDeclaration": {
+        "description": "The URIs of all conformance classes supported by the server.\n\nTo support \"generic\" clients that want to access multiple\nOGC API Features implementations - and not \"just\" a specific\nAPI / server, the server declares the conformance\nclasses it implements and conforms to.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/confClasses"
+            },
+            "example": {
+              "conformsTo": [
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/landingPage",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html",
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json"
+              ]
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

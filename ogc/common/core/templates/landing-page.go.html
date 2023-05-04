@@ -1,0 +1,37 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{define "content"}}
+<hgroup class="main">
+    <h2 class="title">{{ .Config.Title }}</h2>
+    <a href="?f=json">[JSON]</a>
+</hgroup>
+<div class="description">
+    {{ markdown .Config.Abstract }}
+    <h3>Common</h3>
+    <ul>
+        <li><a href="api">API specificatie</a> - <a href="api?f=json">[JSON]</a></li>
+        <li><a href="conformance">Conformance declaratie</a> - <a href="conformance?f=json">[JSON]</a></li>
+    </ul>
+    {{ if .Config.OgcAPI.Styles }}
+    <h3>Styles</h3>
+    <ul>
+        <li><a href="styles">Beschikbare styles</a> - <a href="styles?f=json">[JSON]</a></li>
+    </ul>
+    {{ end }}
+    {{ if .Config.OgcAPI.Tiles }}
+    <h3>Tiles</h3>
+    <ul>
+        <li><a href="tiles">Tiles</a> - <a href="tiles?f=json">[JSON]</a></li>
+        <li><a href="tileMatrixSets">Tile Matrix Sets</a> - <a href="tileMatrixSets?f=json">[JSON]</a></li>
+    </ul>
+    {{ end }}
+    {{ if .Config.HasCollections }}
+    <h3>Collections</h3>
+    <ul>
+        <li><a href="collections">Collections</a> - <a href="collections?f=json">[JSON]</a></li>
+    </ul>
+    {{ end }}
+    {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Thumbnail .Config.ResourcesDir }}
+    <img src="resources/{{ .Config.OgcAPI.GeoVolumes.Thumbnail }}" alt="thumbnail van 3D GeoVolumes" />
+    {{ end }}
+</div>
+{{end}}

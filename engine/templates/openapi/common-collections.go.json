@@ -1,0 +1,859 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Building Blocks specified in OGC API - Common - Part 1 and 2",
+    "description": "Draft example of an API definition document that uses building blocks from Parts 1 and 2 of OGC API - Common. This document is not an OGC Standard. This document is distributed for review and comment. This document is subject to change without notice and may not be referred to as an OGC Standard. Recipients of this document are invited to submit, with their comments, notification of any relevant patent rights of which they are aware and to provide supporting documentation.",
+    "version": "0.0.1",
+    "contact": {
+      "name": "Open Geospatial Consortium (OGC)",
+      "email": "standards-team@ogc.org",
+      "url": "https://www.ogc.org/contacts"
+    },
+    "license": {
+      "name": "OGC License",
+      "url": "http://www.opengeospatial.org/legal/"
+    },
+    "x-logo": {
+      "url": "https://www.ogc.org/pub/www/files/OGC_Logo_2D_Blue_x_0_0.png"
+    }
+  },
+  "tags": [
+    {
+      "name": "Collections"
+    }
+  ],
+  "paths": {
+    "/collections": {
+      "get": {
+        "tags": [
+          "Collections"
+        ],
+        "summary": "the collections in the dataset",
+        "description": "A list of all collections (geospatial data resources) in this dataset.",
+        "operationId": "getCollections",
+        "parameters": [
+          {
+            "name": "f",
+            "in": "query",
+            "description": "The format of the response. If no value is provided, the standard http\nrules apply, i.e., the accept header is used to determine the format.\n\nPre-defined values are \"json\" and \"html\". The response to other\nvalues is determined by the server.",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "html"
+              ]
+            },
+            "example": "json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The collections (geospatial data resources) shared by this API.\n\nThis response can be references directly for every service that wants only essential information at the collections level. /collections/collectionId might return more information.\n\nThe dataset is organized as one or more collections. This resource provides information about and how to access the collections.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/collections"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "A server error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exception"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {{- range $index, $type := .Config.GeoSpatialCollections -}}
+    {{- if $index -}},{{- end -}}
+    "/collections/{{ $type.ID }}": {
+      "get": {
+        "tags": [
+          "Collections"
+        ],
+        "summary": "describes a {{ $type.ID }} collection",
+        "description": "{{ $type.ID }} collection (geospatial data resource) in this dataset.",
+        "operationId": "describeCollection {{ $type.ID }}",
+        "parameters": [
+          {
+            "name": "f",
+            "in": "query",
+            "description": "The format of the response. If no value is provided, the standard http\nrules apply, i.e., the accept header is used to determine the format.\n\nPre-defined values are \"json\" and \"html\". The response to other\nvalues is determined by the server.",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "html"
+              ]
+            },
+            "example": "json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata about the collection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/collection"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested URI was not found"
+          },
+          "500": {
+            "description": "A server error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exception"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    {{- end -}}
+  },
+  "components": {
+    "parameters": {
+      "bbox": {
+        "name": "bbox",
+        "in": "query",
+        "description": "Only elements that have a geometry that intersects the bounding box are selected.\nThe bounding box is provided as four or six numbers, depending on whether the\ncoordinate reference system includes a vertical axis (elevation or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Lower left corner, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Upper right corner, coordinate axis 3 (optional)\n\nThe coordinate reference system of the values is WGS 84 longitude/latitude\n(http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless a different coordinate\nreference system is specified by another parameter in the API (e.g 'bbox-crs').\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf an element has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
+        "required": false,
+        "schema": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 6,
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "style": "form",
+        "explode": false
+      },
+      "collectionId": {
+        "name": "collectionId",
+        "in": "path",
+        "description": "local identifier of a collection",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "datetime": {
+        "name": "datetime",
+        "in": "query",
+        "description": "Either a date-time or an interval, open or closed. Date and time expressions\nadhere to RFC 3339. Open intervals are expressed using double-dots.\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A closed interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Open intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly elemenets that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a element has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "style": "form",
+        "explode": false
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 10000. Default = 10.",
+        "required": false,
+        "schema": {
+          "type": "number",
+          "format": "integer",
+          "minimum": 0,
+          "maximum": 10000,
+          "default": 10
+        },
+        "style": "form",
+        "explode": false
+      },
+      "offset": {
+        "name": "offset",
+        "in": "query",
+        "description": "The optional offset parameter indicates the index within the result set from which the server shall begin presenting results in the response document. The first element has an index of 0.\nIf offset is greater or equal to the number of items in the collection, the server should return an empty list.\n\nMinimum = 0. Default = 0.",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "number",
+          "format": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "example": 0
+      },
+      "resultType": {
+        "name": "resultType",
+        "in": "query",
+        "description": "This service will respond to a query in one of two ways (excluding an\nexception response). It may either generate a complete response document\ncontaining resources that satisfy the operation or it may simply\ngenerate an empty response container that indicates the count of the\ntotal number of resources that the operation would return. Which of\nthese two responses is generated is determined by the value of the\noptional resultType parameter.\n\nThe allowed values for this parameter are \"results\" and \"hits\".\n\nIf the value of the resultType parameter is set to \"results\", the server\nwill generate a complete response document containing resources that\nsatisfy the operation.\n\nIf the value of the resultType attribute is set to \"hits\", the server\nwill generate an empty response document containing no resource\ninstances.\n\nThe default value is \"results\".",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "string",
+          "default": "results",
+          "enum": [
+            "hits",
+            "results"
+          ]
+        },
+        "example": "results"
+      },
+      "f-json-html": {
+        "name": "f",
+        "in": "query",
+        "description": "The format of the response. If no value is provided, the standard http\nrules apply, i.e., the accept header is used to determine the format.\n\nPre-defined values are \"json\" and \"html\". The response to other\nvalues is determined by the server.",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "application/json",
+            "text/html"
+          ]
+        },
+        "example": "application/json"
+      },
+      "f-json": {
+        "name": "f",
+        "in": "query",
+        "description": "The format of the response. If no value is provided, the standard http\nrules apply, i.e., the accept header is used to determine the format.\n\nThe only pre-defined value is \"json\". The response to other values is\ndetermined by the server.",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "application/json"
+          ]
+        },
+        "example": "application/json"
+      }
+    },
+    "schemas": {
+      "collection": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "description": "identifier of the collection used, for example, in URIs",
+            "type": "string",
+            "example": "buildings"
+          },
+          "title": {
+            "description": "human readable title of the collection",
+            "type": "string",
+            "example": "Buildings in the city of Bonn"
+          },
+          "description": {
+            "description": "a description of the collection",
+            "type": "string",
+            "example": "This collection contains buildings"
+          },
+          "keywords": {
+            "description": "keywords about the elements in the collection",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/keyword"
+            }
+          },
+          "attribution": {
+            "description": "The provider of the source data for the collection.",
+            "type": "string",
+            "example": "United Nations"
+          },
+          "extent": {
+            "$ref": "#/components/schemas/extent"
+          },
+          "crs": {
+            "description": "The list of coordinate reference systems supported by the service. The first item is the default coordinate reference system.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            ],
+            "example": [
+              "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+              "http://www.opengis.net/def/crs/EPSG/0/4326"
+            ]
+          }
+        }
+      },
+      "collection-link": {
+        "type": "object",
+        "required": [
+          "links"
+        ],
+        "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            },
+            "example": [
+              {
+                "href": "http://example.com/collections/buildings?f=json",
+                "rel": "item",
+                "type": "application/json",
+                "title": "CollectionId path description in the OpenAPI"
+              },
+              {
+                "href": "http://example.com/concepts/buildings.html",
+                "rel": "describedby",
+                "type": "text/html'"
+              },
+              {
+                "href": "https://creativecommons.org/publicdomain/zero/1.0/",
+                "rel": "license",
+                "type": "text/html",
+                "title": "CC0-1.0"
+              },
+              {
+                "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
+                "rel": "license",
+                "type": "application/rdf+xml",
+                "title": "CC0-1.0"
+              }
+            ]
+          }
+        }
+      },
+      "collections": {
+        "type": "object",
+        "required": [
+          "links",
+          "collections"
+        ],
+        "properties": {
+          "links": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/link"
+            },
+            "example": [
+              {
+                "href": "http://data.example.org/collections?f=json",
+                "rel": "self",
+                "type": "application/json",
+                "title": "this document"
+              },
+              {
+                "href": "http://data.example.org/collections?f=html",
+                "rel": "alternate",
+                "type": "text/html",
+                "title": "this document as HTML"
+              },
+              {
+                "href": "http://schemas.example.org/1.0/dataset.xsd",
+                "rel": "describedby",
+                "type": "application/xml",
+                "title": "GML application schema for Acme Corporation dataset data"
+              },
+              {
+                "href": "http://download.example.org/dataset.gpkg",
+                "rel": "enclosure",
+                "type": "application/geopackage+sqlite3",
+                "title": "Bulk download (GeoPackage)",
+                "length": 472546
+              }
+            ]
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/collection"
+                },
+                {
+                  "$ref": "#/components/schemas/collection-link"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "confClasses": {
+        "type": "object",
+        "required": [
+          "conformsTo"
+        ],
+        "properties": {
+          "conformsTo": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "example": [
+              "http://www.opengis.net/spec/ogcapi-common-1/1.0/req/core"
+            ]
+          }
+        }
+      },
+      "exception": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "code": "500",
+          "description": "An internal server error occured. Incident ID: 1234567. Please contact admin@example.org."
+        }
+      },
+      "extent": {
+        "description": "The extent of the collection. In the Core only spatial and temporal extents are specified. Extensions may add additional members to represent other  extents, for example, thermal or pressure ranges.\nIt is recommended that the statial extent is expected in CRS84 except if this is not possible.",
+        "type": "object",
+        "properties": {
+          "spatial": {
+            "$ref": "#/components/schemas/spatialExtent"
+          },
+          "temporal": {
+            "$ref": "#/components/schemas/temporalExtent"
+          }
+        }
+      },
+      "spatialExtent": {
+        "description": "The spatial extent of the element in the collection.",
+        "type": "object",
+        "required": [
+          "bbox"
+        ],
+        "properties": {
+          "bbox": {
+            "$ref": "#/components/schemas/bbox"
+          },
+          "crs": {
+            "$ref": "#/components/schemas/crs"
+          }
+        }
+      },
+      "bbox": {
+        "description": "One or more bounding boxes that describe the spatial extent of the dataset.\nIn the Core only a single bounding box is supported. Extensions may support\nadditional areas. If multiple areas are provided, the union of the bounding\nboxes describes the spatial extent.",
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "description": "West, south, east, north edges of the bounding box. The coordinates\nare in the coordinate reference system specified in `crs`. By default\nthis is WGS 84 longitude/latitude (CRS84).",
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 6,
+          "items": {
+            "type": "number"
+          }
+        },
+        "example": [
+          [
+            7.01,
+            50.63,
+            7.22,
+            50.78
+          ]
+        ]
+      },
+      "crs": {
+        "description": "Coordinate reference system of the coordinates in the spatial extent\n(property `bbox`). The default reference system is WGS 84 longitude/latitude.\nIn the Core this is the only supported coordinate reference system.\nExtensions may support additional coordinate reference systems and add\nadditional enum values.",
+        "type": "string",
+        "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+      },
+      "temporalExtent": {
+        "description": "The temporal extent of the element in the collection.",
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "interval": {
+            "$ref": "#/components/schemas/temporalInterval"
+          },
+          "trs": {
+            "$ref": "#/components/schemas/trs"
+          }
+        }
+      },
+      "temporalInterval": {
+        "description": "One or more time intervals that describe the temporal extent of the dataset.\nThe value `null` is supported and indicates an open time intervall.\nIn the Core only a single time interval is supported. Extensions may support\nmultiple intervals. If multiple intervals are provided, the union of the\nintervals describes the temporal extent.",
+        "type": "array",
+        "nullable": true,
+        "minItems": 1,
+        "items": {
+          "description": "Begin and end times of the time interval. The timestamps\nare in the coordinate reference system specified in `trs`. By default\nthis is the Gregorian calendar.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "example": [
+            "2010-02-15T12:34:56Z",
+            null
+          ]
+        }
+      },
+      "trs": {
+        "description": "Coordinate reference system of the coordinates in the temporal extent\n(property `interval`). The default reference system is the Gregorian calendar.\nIn the Core this is the only supported temporal reference system.\nExtensions may support additional temporal reference systems and add\nadditional enum values.",
+        "type": "string",
+        "enum": [
+          "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+        ],
+        "default": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+      },
+      "landingPage": {
+        "type": "object",
+        "required": [
+          "links"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Buildings in Bonn"
+          },
+          "description": {
+            "type": "string",
+            "example": "Access to data about buildings in the city of Bonn via a Web API that conforms to the OGC API Features specification."
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        },
+        "example": [
+          {
+            "href": "http://data.example.org/?f=json",
+            "rel": "self",
+            "type": "application/json",
+            "title": "this document"
+          },
+          {
+            "href": "http://data.example.org/?f=html",
+            "rel": "alternate",
+            "type": "text/html",
+            "title": "this document in HTML"
+          },
+          {
+            "href": "http://data.example.org/api?f=json",
+            "rel": "service",
+            "type": "application/vnd.oai.openapi+json;version=3.0",
+            "title": "the API definition in OpenAPI 3.0 JSON"
+          },
+          {
+            "href": "http://data.example.org/api?f=html",
+            "rel": "service",
+            "type": "text/html",
+            "title": "the API definition in HTML"
+          },
+          {
+            "href": "http://data.example.org/conformance?f=json",
+            "rel": "conformance",
+            "type": "application/json",
+            "title": "the list of conformance classes implemented by this API"
+          },
+          {
+            "href": "http://data.example.org/collections?f=json",
+            "rel": "data",
+            "type": "application/json",
+            "title": "The collections in the dataset in JSON"
+          },
+          {
+            "href": "http://data.example.org/collections?f=html",
+            "rel": "data",
+            "type": "text/html",
+            "title": "The collections in the dataset in HTML"
+          }
+        ]
+      },
+      "id-link": {
+        "type": "object",
+        "description": "Reusable object that contains an id to a resource and links where the object is described or a representation retrieved. Typically it is useful for paths like `\\resources` and `\\resources\\{resourceId}`.   `\\resources` will respond an array of id-link listing the `resourceId` and the links to get it. \\collections and \\collections\\{collectionId} is an exception to this pattern.\nThe fact that `links` is an array can be used to advertise the same object representation in different formats.",
+        "required": [
+          "id",
+          "links"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        },
+        "example": {
+          "id": "night",
+          "title": "Topographic night style",
+          "links": [
+            {
+              "href": "https://example.com/api/1.0/styles/night?f=mapbox",
+              "rel": "stylesheet",
+              "type": "application/vnd.mapbox.style+json"
+            },
+            {
+              "href": "https://example.com/api/1.0/styles/night?f=sld10",
+              "rel": "stylesheet",
+              "type": "application/vnd.ogc.sld+xml;version=1.0"
+            }
+          ]
+        }
+      },
+      "link": {
+        "type": "object",
+        "required": [
+          "href"
+        ],
+        "properties": {
+          "href": {
+            "type": "string",
+            "example": "http://data.example.com/buildings/123"
+          },
+          "rel": {
+            "type": "string",
+            "example": "alternate"
+          },
+          "type": {
+            "type": "string",
+            "example": "application/geo+json"
+          },
+          "hreflang": {
+            "type": "string",
+            "example": "en"
+          },
+          "title": {
+            "type": "string",
+            "example": "Trierer Strasse 70, 53115 Bonn"
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "templated": {
+            "description": "Use `true` if the `href` property contains a URI template with variables that needs to be substituted by values to get a URI",
+            "type": "boolean",
+            "default": false,
+            "example": false
+          },
+          "types": {
+            "description": "Without this parameter you should repeat a link for each media type the resource is offered. \nAdding this parameter allows listing alternative media types that you can use for this resource. The value in the `type` parameter becomes the recommended media type.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": "image/png, image/jpeg, image/tiff"
+          }
+        }
+      },
+      "keyword": {
+        "required": [
+          "keyword"
+        ],
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "example": "land cover"
+          },
+          "code": {
+            "type": "string",
+            "example": "4612"
+          },
+          "codeSpace": {
+            "type": "string",
+            "example": "https://www.eionet.europa.eu/gemet/en/concept/"
+          }
+        }
+      },
+      "numberMatched": {
+        "description": "The number of elements that match the selection parameters like `bbox`.",
+        "type": "integer",
+        "minimum": 0,
+        "example": 127
+      },
+      "numberReturned": {
+        "description": "The number of elements in the collection.\n\nA server may omit this information in a response, if the information\nabout the number of elements is not known or difficult to compute.\n\nIf the value is provided, the value shall be identical to the number\nof items in the returned array.",
+        "type": "integer",
+        "minimum": 0,
+        "example": 10
+      },
+      "timeStamp": {
+        "description": "This property indicates the time and date when the response was generated.",
+        "type": "string",
+        "format": "date-time",
+        "example": "2017-08-17T08:05:32Z"
+      }
+    },
+    "responses": {
+      "LandingPage": {
+        "description": "The landing page provides links to the API definition\n(link relations `service-desc` and `service-doc`),\nthe Conformance declaration (path `/conformance`,\nlink relation `conformance`), and the\nCollections (path `/collections`, link relation\n`data`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/landingPage"
+            },
+            "example": {
+              "title": "Buildings in Bonn",
+              "description": "Access to data about buildings in the city of Bonn via a Web API that conforms to the OGC API specification.",
+              "links": [
+                {
+                  "href": "http://data.example.org/?f=json",
+                  "rel": "self",
+                  "type": "application/json",
+                  "title": "this document"
+                },
+                {
+                  "href": "http://data.example.org/?f=html",
+                  "rel": "alternate",
+                  "type": "text/html",
+                  "title": "this document in HTML"
+                },
+                {
+                  "href": "http://data.example.org/api?f=json",
+                  "rel": "service",
+                  "type": "application/vnd.oai.openapi+json;version=3.0",
+                  "title": "the API definition in OpenAPI 3.0 JSON"
+                },
+                {
+                  "href": "http://data.example.org/api?f=html",
+                  "rel": "service",
+                  "type": "text/html",
+                  "title": "the API definition in HTML"
+                },
+                {
+                  "href": "http://data.example.org/conformance?f=json",
+                  "rel": "conformance",
+                  "type": "application/json",
+                  "title": "the list of conformance classes implemented by this API"
+                },
+                {
+                  "href": "http://data.example.org/collections?f=json",
+                  "rel": "data",
+                  "type": "application/json",
+                  "title": "The collections in the dataset in JSON"
+                },
+                {
+                  "href": "http://data.example.org/collections?f=html",
+                  "rel": "data",
+                  "type": "text/html",
+                  "title": "The collections in the dataset in HTML"
+                }
+              ]
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ConformanceDeclaration": {
+        "description": "The URIs of all conformance classes supported by the server.\n\nThis is just an example that To support \"generic\" clients that want to access multiple OGC API implementations - and not \"just\" a specific API / server, the server declares the conformance classes it implements and conforms to.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/confClasses"
+            },
+            "example": {
+              "conformsTo": [
+                "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core"
+              ]
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Collections": {
+        "description": "The collections (geospatial data resources) shared by this API.\n\nThis response can be references directly for every service that wants only essential information at the collections level. /collections/collectionId might return more information.\n\nThe dataset is organized as one or more collections. This resource provides information about and how to access the collections.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/collections"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Collection": {
+        "description": "Information about the collection with id `collectionId`.\nThis is an examples for commons only. A service should combine the schemas from common with others specific to its services. \n\nThe response might also contain a linkto the elements in the collection\n(e.g. path `/collections/{collectionId}/items`,link relation `items`)\nas well as key information about the collection. This information includes:\n\n* A local identifier for the collection that is unique for the dataset;\n* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. The first CRS is the default coordinate reference system (the default is always WGS 84 with axis order longitude/latitude);\n* An optional title and description for the collection;\n* An optional extent that can be used to provide an indication of the spatial and temporal extent of the collection - typically derived from the data;\n* An optional indicator about the type of the items in the collection (the default value, if the indicator is not provided, is 'feature').",
+        "content": {
+          "application/json": {
+            "schema": {
+               "$ref": "#/components/schemas/collection"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

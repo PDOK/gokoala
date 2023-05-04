@@ -1,0 +1,57 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "Conformance Declaration",
+      "href": "{{ .Config.BaseURL }}/conformance?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "Conformance Declaration as HTML",
+      "href": "{{ .Config.BaseURL }}/conformance?f=html"
+    }
+  ],
+  "conformsTo": [
+    "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core"
+    ,"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json"
+    ,"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html"
+    ,"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30"
+
+    {{ if .Config.OgcAPI.Styles }}
+    ,"http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core"
+    ,"http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles"
+    {{ end }}
+
+    {{ if .Config.HasCollections }}
+    ,"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections"
+    {{ end }}
+
+    {{ if .Config.OgcAPI.GeoVolumes }}
+    ,"http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core"
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Tiles }}
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core"
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset"
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list"
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets"
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets", */}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection", */}}
+      {{range $index, $type := .Config.OgcAPI.Tiles.Types}}
+        {{ if (eq $type "raster") }}
+          {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg", */}}
+          ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png"
+        {{ end }}
+        {{ if (eq $type "vector") }}
+          ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt"
+        {{ end }}
+      {{end}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson" */}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff" */}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf" */}}
+    {{end}}
+  ]
+}

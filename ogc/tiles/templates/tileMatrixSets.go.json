@@ -1,0 +1,65 @@
+{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{
+  {{ if .Config.OgcAPI.Tiles }}
+  {{$baseUrl := .Config.BaseURL}}
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "List of tileMatrixSets implemented by this API in JSON",
+      "href": "{{ $baseUrl }}/tileMatrixSets?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "List of tileMatrixSets implemented by this API in HTML",
+      "href": "{{ .Config.BaseURL }}/tileMatrixSets?f=html"
+    }
+  ],
+  "tileMatrixSets": [
+    {{range $index, $type := .Config.OgcAPI.Tiles.SupportedSrs}}
+      {{ if (eq $type.Srs "EPSG:28992") }}
+        {
+          "title": "Amersfoort / RD New scheme for the Netherlands",
+          "links": [
+            {
+              "rel": "self",
+              "title": "Tile matrix set 'NetherlandsRDNewQuad'",
+              "href": "{{ $baseUrl }}/tileMatrixSets/NetherlandsRDNewQuad"
+            }
+          ],
+          "id": "NetherlandsRDNewQuad"
+        }
+      {{end}}
+      {{ if (eq $type.Srs "EPSG:4258") }}
+        {{if $index}},{{end}}
+        {
+          "title": "Geodetic Reference System 1980 ETRS89 for Europe",
+          "links": [
+            {
+              "rel": "self",
+              "title": "Draft tile matrix set 'EuropeanETRS89_GRS80Quad' - name and definition may change",
+              "href": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft"
+            }
+          ],
+          "id": "EuropeanETRS89_GRS80Quad_Draft"
+        }
+      {{end}}
+      {{ if (eq $type.Srs "EPSG:3857") }}
+        {{if $index}},{{end}}
+        {
+          "title": "Google Maps Compatible for the World",
+          "links": [
+            {
+              "rel": "self",
+              "title": "Tile matrix set 'WebMercatorQuad'",
+              "href": "{{ $baseUrl }}/tileMatrixSets/WebMercatorQuad"
+            }
+          ],
+          "id": "WebMercatorQuad"
+        }
+      {{end}}
+    {{end}}
+  ]
+  {{end}}
+}

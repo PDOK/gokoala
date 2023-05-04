@@ -1,0 +1,22 @@
+---
+title: Example Basisregistratie Grootschalige Topografie (BGT)
+abstract: >-
+  This is a description about the dataset in Markdown. See [PDOK BGT dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-grootschalige-topografie-bgt-) for details.
+baseUrl: http://localhost:8080
+ogcApi:
+  # which OGC apis to enable. Possible values: tiles, styles, features, maps
+  tiles:
+    title: BGT
+    abstract: BGT multi-layer vector tiles
+    # base URL to webserver or object storage (e.g. azure blob or S3)
+    # which hosts the tiles.
+    tileServer:
+      https://api.pdok.nl/lv/bgt/ogc/v0_1/tiles/
+    # vector tiles and/or raster tiles
+    types:
+      - vector
+    supportedSrs:
+      - srs: EPSG:28992
+        zoomLevelRange:
+          start: 12
+          end: 12
