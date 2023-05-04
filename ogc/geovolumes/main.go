@@ -1,11 +1,12 @@
 package geovolumes
 
 import (
-	"gokoala/engine"
-	"gokoala/ogc/common/geospatial"
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/ogc/common/geospatial"
 
 	"github.com/go-chi/chi/v5"
 )

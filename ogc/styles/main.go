@@ -1,9 +1,10 @@
 package styles
 
 import (
-	"gokoala/engine"
 	"log"
 	"net/http"
+
+	"github.com/PDOK/gokoala/engine"
 
 	"github.com/go-chi/chi/v5"
 )

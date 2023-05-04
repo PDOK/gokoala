@@ -1,18 +1,19 @@
 package main
 
 import (
-	gokoalaEngine "gokoala/engine"
-	"gokoala/ogc/common/core"
-	"gokoala/ogc/common/geospatial"
-	"gokoala/ogc/geovolumes"
-	"gokoala/ogc/styles"
-	"gokoala/ogc/tiles"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	gokoalaEngine "github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/ogc/common/core"
+	"github.com/PDOK/gokoala/ogc/common/geospatial"
+	"github.com/PDOK/gokoala/ogc/geovolumes"
+	"github.com/PDOK/gokoala/ogc/styles"
+	"github.com/PDOK/gokoala/ogc/tiles"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

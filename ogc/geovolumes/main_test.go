@@ -2,7 +2,6 @@ package geovolumes
 
 import (
 	"context"
-	"gokoala/engine"
 	"log"
 	"net"
 	"net/http"
@@ -11,6 +10,8 @@ import (
 	"path"
 	"runtime"
 	"testing"
+
+	"github.com/PDOK/gokoala/engine"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"

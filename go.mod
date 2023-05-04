@@ -1,4 +1,4 @@
-module gokoala
+module github.com/PDOK/gokoala
 
 go 1.20
 

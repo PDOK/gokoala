@@ -1,8 +1,9 @@
 package core
 
 import (
-	"gokoala/engine"
 	"net/http"
+
+	"github.com/PDOK/gokoala/engine"
 
 	"github.com/go-chi/chi/v5"
 )
