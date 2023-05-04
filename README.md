@@ -74,8 +74,8 @@ Now open <http://localhost:8080>
 
 ### Configuration file
 
-The configuration file consists of a general section and a configuration section
-per OGC APi building block (tiles, styles, etc). See [example configuration
+The configuration file consists of a general section and a section
+per OGC API building block (tiles, styles, etc). See [example configuration
 files](examples/) for details. You can reference environment variables in the
 configuration file. For example to use the `MY_SERVER` env var:
 
