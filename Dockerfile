@@ -13,7 +13,7 @@ RUN go mod download all
 
 # build the binary with debug information removed.
 # also run tests, the short flag skips integration tests since we can't run Testcontainers in multistage Docker :-(
-RUN go test -short && go build  -ldflags '-w -s' -a -installsuffix cgo -o /gokoala gokoala
+RUN go test -short && go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala
 
 # delete all go files (and testdata dirs) so only assets/templates/etc remain, since in a later
 # stage we need to copy these remaining files including their subdirectories to the final docker image.
