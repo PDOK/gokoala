@@ -4,7 +4,9 @@
 
 # GoKoala
 
-_Cloud Native OGC APIs server, written in Go._
+_Cloud Native OGC APIs server, written in Go._ 
+
+![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/PDOK/gokoala)](https://goreportcard.com/report/github.com/PDOK/gokoala)
 
 ## Description
 
