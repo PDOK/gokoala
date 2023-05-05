@@ -4,14 +4,16 @@
     {
       "rel": "self",
       "type": "application/json",
-      "title": "Conformance Declaration",
-      "href": "{{ .Config.BaseURL }}/conformance?f=json"
+      "title": "Conformiteit voor {{ .Config.Title }}",
+      "href": "{{ .Config.BaseURL }}/conformance?f=json",
+      "hreflang": "nl"
     },
     {
       "rel": "alternate",
       "type": "text/html",
-      "title": "Conformance Declaration as HTML",
-      "href": "{{ .Config.BaseURL }}/conformance?f=html"
+      "title": "Conformiteit voor {{ .Config.Title }}",
+      "href": "{{ .Config.BaseURL }}/conformance?f=html",
+      "hreflang": "nl"
     }
   ],
   "conformsTo": [
