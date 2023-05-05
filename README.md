@@ -6,7 +6,8 @@
 
 _Cloud Native OGC APIs server, written in Go._ 
 
-![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg) 
+[![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml)
+[![Lint](https://github.com/PDOK/gokoala/actions/workflows/lint.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/PDOK/gokoala)](https://goreportcard.com/report/github.com/PDOK/gokoala)
 [![GitHub
 license](https://img.shields.io/github/license/PDOK/gokoala)](https://github.com/PDOK/gokoala/blob/master/LICENSE)
