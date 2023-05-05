@@ -6,16 +6,21 @@
 
 _Cloud Native OGC APIs server, written in Go._ 
 
-![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/PDOK/gokoala)](https://goreportcard.com/report/github.com/PDOK/gokoala)
+![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/PDOK/gokoala)](https://goreportcard.com/report/github.com/PDOK/gokoala)
+[![GitHub
+license](https://img.shields.io/github/license/PDOK/gokoala)](https://github.com/PDOK/gokoala/blob/master/LICENSE)
+[![Docker
+Pulls](https://img.shields.io/docker/pulls/pdok/gokoala.svg)](https://hub.docker.com/r/pdok/gokoala)
 
 ## Description
 
 This server implements modern OGC APIs such as OGC Common Core, OGC Tiles, OGC
 Styles. In the future other APIs like OGC Features or OGC Maps may be added. The
-goal of this server is not to implement every aspect of these APIs, for complex
-logic this application will delegate to other implementations. For example
-vector tiles hosting is delegated to object storage, raster map hosting may be
-delegated to a WMS server, etc.
+goal of this server is to keep a narrow focus and not implement every aspect of 
+these APIs, for complex logic this application will delegate to other implementations. 
+For example vector tiles hosting is delegated to a vector tile engine or object storage, 
+raster map hosting may be delegated to a WMS server, etc.
 
 This application is deliberately not multi-tenant, it exposes an OGC API for
 _one_ dataset.
@@ -128,11 +133,11 @@ Design principles:
   `engine`.
   > :warning: The other way around is not allowed!
 - The OGC API Specifications are multi-part standards, this means technically
-  that part can be enabled or disabled, the code should reflect this.
+  that parts can be enabled or disabled, the code should reflect this.
 - Geospatial related configuration is done through the config file.
 - Fail fast, fail hard: do as much pre-processing/validation on startup instead
   of during request handling.
-- Assets/templates/etc are explicitly includes in the Docker image, see copy
+- Assets/templates/etc are explicitly included in the Docker image, see copy
   commands in [Dockerfile](Dockerfile).
 
 ### Linting
