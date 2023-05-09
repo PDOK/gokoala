@@ -9,6 +9,7 @@ import (
 	"strings"
 	texttemplate "text/template"
 
+	sprig "github.com/go-task/slim-sprig"
 	gomarkdown "github.com/gomarkdown/markdown"
 	gomarkdownhtml "github.com/gomarkdown/markdown/html"
 	gomarkdownparser "github.com/gomarkdown/markdown/parser"
@@ -26,8 +27,9 @@ var (
 		// custom template functions
 		"markdown":   markdown,
 		"unmarkdown": unmarkdown,
-		// or use https://github.com/go-task/slim-sprig here
 	}
+	sprigFuncs    = sprig.FuncMap()
+	combinedFuncs = combinedFuncMap(customFuncs, sprigFuncs)
 )
 
 // TemplateKey unique key to register and lookup Go templates
@@ -92,7 +94,7 @@ func (t *Templates) GetRenderedTemplate(key TemplateKey) ([]byte, error) {
 
 func (t *Templates) renderHTMLTemplate(key TemplateKey, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-	compiled := htmltemplate.Must(htmltemplate.New(layoutFile).Funcs(customFuncs).ParseFiles(templatesDir+layoutFile, file))
+	compiled := htmltemplate.Must(htmltemplate.New(layoutFile).Funcs(combinedFuncs).ParseFiles(templatesDir+layoutFile, file))
 	var rendered bytes.Buffer
 
 	if err := compiled.Execute(&rendered, &TemplateData{
@@ -107,7 +109,7 @@ func (t *Templates) renderHTMLTemplate(key TemplateKey, params interface{}) {
 
 func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(customFuncs).ParseFiles(file))
+	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).ParseFiles(file))
 	var rendered bytes.Buffer
 
 	if err := compiled.Execute(&rendered, &TemplateData{
@@ -123,6 +125,18 @@ func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 		result = PrettyPrintJSON(result, key.Name)
 	}
 	t.RenderedTemplates[key] = result
+}
+
+// combine applicable FuncMaps
+func combinedFuncMap(customFuncs map[string]interface{}, sprigFuncs map[string]interface{}) map[string]interface{} {
+	cfm := make(map[string]interface{}, len(customFuncs)+len(sprigFuncs))
+	for k, v := range sprigFuncs {
+		cfm[k] = v
+	}
+	for k, v := range customFuncs {
+		cfm[k] = v
+	}
+	return cfm
 }
 
 // markdown turn Markdown into HTML
