@@ -4,25 +4,28 @@
     <h2 class="title">{{ .Config.Title }}</h2>
     <!-- <a href="?f=json">[JSON]</a> --><!-- TODO: move to topbar -->
 </hgroup>
-<div class="description">
+<div class="description-lp">
+    {{ if and .Config.Thumbnail .Config.ResourcesDir }}
     <div class="description-text">
+    {{ else }}
+    <div class="description-text-fullwidth">
+    {{ end }}
         {{ markdown .Config.Abstract }}
         <!-- TODO: table of dataset details -->
-        <div class="table-container">
+        <div class="description-table-container">
             <table class="details-table">
                 <tbody>
+                    {{ if .Config.Keywords }}
                     <tr>
                         <td>
                             <b>Trefwoorden</b>
                         </td>
                         <td>
-                            {{ if .Config.Keywords }}
                             {{ .Config.Keywords | join ", " }}
-                            {{ else }}
-                            Geen
-                            {{ end }}
                         </td>
                     </tr>
+                    {{ end }}
+                    {{ if .Config.LastUpdated }}
                     <tr>
                         <td>
                             <b>API voor het laatst bijgewerkt op</b>
@@ -31,6 +34,7 @@
                             {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
                         </td>
                     </tr>
+                    {{ end }}
                     <tr>
                         <td>
                             <b>Licentie</b>
@@ -38,7 +42,9 @@
                         <td>
                             {{ markdown .Config.License }}
                         </td>
-                    </tr><tr>
+                    </tr>
+                    {{ if .Config.Support}}
+                    <tr>
                         <td>
                             <b>Support</b>
                         </td>
@@ -46,6 +52,7 @@
                             {{ markdown .Config.Support }}
                         </td>
                     </tr>
+                    {{ end }}
                     {{ if .Config.DatasetDetails }}
                     {{ range $detailField := .Config.DatasetDetails }}
                     <tr>
@@ -62,14 +69,13 @@
             </table>
         </div>
     </div>
+    {{ if and .Config.Thumbnail .Config.ResourcesDir }}
     <div class="description-thumbnail">
-        {{ if and .Config.Thumbnail .Config.ResourcesDir }}
         <img src="resources/{{ .Config.Thumbnail }}" alt="thumbnail van {{ .Config.Title }}"/>
-        {{ end }}
     </div>
+    {{ end }}
 </div>
-<br/>
-<div class="api-boxes">
+<div class="description-lp">
     <h3>Common</h3>
     <ul>
         <li><a href="api">API specificatie</a> - <a href="api?f=json">[JSON]</a></li>

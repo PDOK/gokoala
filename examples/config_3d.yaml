@@ -2,6 +2,8 @@
 title: New York in 3D
 abstract: |
   This is a description about the dataset in Markdown.
+license: >-
+  This is the applicable license. Supports Markdown. For instance: [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/deed.nl)
 baseUrl: http://localhost:8080
 ogcApi:
   3dgeovolumes:

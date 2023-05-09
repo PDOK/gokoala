@@ -29,7 +29,7 @@ var (
 		"unmarkdown": unmarkdown,
 	}
 	sprigFuncs    = sprig.FuncMap()
-	combinedFuncs = combinedFuncMap()
+	combinedFuncs = combinedFuncMap(customFuncs, sprigFuncs)
 )
 
 // TemplateKey unique key to register and lookup Go templates
@@ -128,8 +128,8 @@ func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 }
 
 // combine applicable FuncMaps
-func combinedFuncMap() map[string]interface{} {
-	cfm := make(map[string]interface{}, len(sprigFuncs)+len(customFuncs))
+func combinedFuncMap(customFuncs map[string]interface{}, sprigFuncs map[string]interface{}) map[string]interface{} {
+	cfm := make(map[string]interface{}, len(customFuncs)+len(sprigFuncs))
 	for k, v := range sprigFuncs {
 		cfm[k] = v
 	}
