@@ -27,11 +27,17 @@ func ReadConfigFile(configFile string) *Config {
 }
 
 type Config struct {
-	Title        string  `yaml:"title"`
-	Abstract     string  `yaml:"abstract"`
-	BaseURL      YAMLURL `yaml:"baseUrl"`
-	OgcAPI       OgcAPI  `yaml:"ogcApi"`
-	ResourcesDir string
+	Title          string          `yaml:"title"`
+	Abstract       string          `yaml:"abstract"`
+	Thumbnail      string          `yaml:"thumbnail"`
+	Keywords       []string        `yaml:"keywords"`
+	LastUpdated    string          `yaml:"lastUpdated"`
+	License        string          `yaml:"license"`
+	Support        string          `yaml:"support"`
+	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
+	BaseURL        YAMLURL         `yaml:"baseUrl"`
+	OgcAPI         OgcAPI          `yaml:"ogcApi"`
+	ResourcesDir   string
 }
 
 func (c *Config) HasCollections() bool {
@@ -53,6 +59,11 @@ func (c *Config) GeoSpatialCollections() GeoSpatialCollection {
 		result = append(result, c.OgcAPI.Maps.Collections...)
 	}
 	return result
+}
+
+type DatasetDetail struct {
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
 }
 
 type OgcAPI struct {

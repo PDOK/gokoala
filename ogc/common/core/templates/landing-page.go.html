@@ -2,10 +2,74 @@
 {{define "content"}}
 <hgroup class="main">
     <h2 class="title">{{ .Config.Title }}</h2>
-    <a href="?f=json">[JSON]</a>
+    <!-- <a href="?f=json">[JSON]</a> --><!-- TODO: move to topbar -->
 </hgroup>
 <div class="description">
-    {{ markdown .Config.Abstract }}
+    <div class="description-text">
+        {{ markdown .Config.Abstract }}
+        <!-- TODO: table of dataset details -->
+        <div class="table-container">
+            <table class="details-table">
+                <tbody>
+                    <tr>
+                        <td>
+                            <b>Trefwoorden</b>
+                        </td>
+                        <td>
+                            {{ if .Config.Keywords }}
+                            {{ .Config.Keywords | join ", " }}
+                            {{ else }}
+                            Geen
+                            {{ end }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>API voor het laatst bijgewerkt op</b>
+                        </td>
+                        <td>
+                            {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Licentie</b>
+                        </td>
+                        <td>
+                            {{ markdown .Config.License }}
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <b>Support</b>
+                        </td>
+                        <td>
+                            {{ markdown .Config.Support }}
+                        </td>
+                    </tr>
+                    {{ if .Config.DatasetDetails }}
+                    {{ range $detailField := .Config.DatasetDetails }}
+                    <tr>
+                        <td>
+                            <b>{{ $detailField.Name }}</b>
+                        </td>
+                        <td>
+                            {{ markdown $detailField.Value }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="description-thumbnail">
+        {{ if and .Config.Thumbnail .Config.ResourcesDir }}
+        <img src="resources/{{ .Config.Thumbnail }}" alt="thumbnail van {{ .Config.Title }}"/>
+        {{ end }}
+    </div>
+</div>
+<br/>
+<div class="api-boxes">
     <h3>Common</h3>
     <ul>
         <li><a href="api">API specificatie</a> - <a href="api?f=json">[JSON]</a></li>
