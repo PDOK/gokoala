@@ -27,16 +27,16 @@ func ReadConfigFile(configFile string) *Config {
 }
 
 type Config struct {
-	Title          string           `yaml:"title"`
-	Abstract       string           `yaml:"abstract"`
-	Thumbnail      *string          `yaml:"thumbnail"`
-	Keywords       *[]string        `yaml:"keywords"`
-	LastUpdated    *string          `yaml:"lastUpdated"`
-	License        string           `yaml:"license"`
-	Support        *string          `yaml:"support"`
-	DatasetDetails *[]DatasetDetail `yaml:"datasetDetails"`
-	BaseURL        YAMLURL          `yaml:"baseUrl"`
-	OgcAPI         OgcAPI           `yaml:"ogcApi"`
+	Title          string          `yaml:"title"`
+	Abstract       string          `yaml:"abstract"`
+	Thumbnail      *string         `yaml:"thumbnail"`
+	Keywords       []string        `yaml:"keywords"`
+	LastUpdated    *string         `yaml:"lastUpdated"`
+	License        string          `yaml:"license"`
+	Support        *string         `yaml:"support"`
+	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
+	BaseURL        YAMLURL         `yaml:"baseUrl"`
+	OgcAPI         OgcAPI          `yaml:"ogcApi"`
 	ResourcesDir   string
 }
 
