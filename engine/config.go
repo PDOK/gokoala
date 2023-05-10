@@ -70,35 +70,43 @@ type OgcAPI struct {
 	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes"`
 	Tiles      *OgcAPITiles        `yaml:"tiles"`
 	Styles     *OgcAPIStyles       `yaml:"styles"`
-	Features   *OgcAPIFeatures     // TODO: add yaml tag once implemented
-	Maps       *OgcAPIMaps         // TODO: add yaml tag once implemented
+	Features   *OgcAPIFeatures     `yaml:"features"`
+	Maps       *OgcAPIMaps         `yaml:"maps"`
 }
 
 type GeoSpatialCollection []GeoSpatialCollectionEntry
 
-// Flatten lists all unique GeoSpatialCollectionEntry IDs
-func (g GeoSpatialCollection) Flatten() []string {
-	var ids []string
-	for _, entry := range g {
-		ids = append(ids, entry.ID)
+// Flatten lists all unique GeoSpatialCollectionEntry's (no duplicate IDs)
+func (g GeoSpatialCollection) Flatten() []GeoSpatialCollectionEntry {
+	collectionById := make(map[string]GeoSpatialCollectionEntry)
+	for _, v := range g {
+		collectionById[v.ID] = v
 	}
-	return removeDuplicates(ids)
+
+	flattened := make([]GeoSpatialCollectionEntry, 0, len(collectionById))
+	for _, v := range collectionById {
+		flattened = append(flattened, v)
+	}
+	return flattened
 }
 
 type GeoSpatialCollectionEntry struct {
-	ID string `yaml:"id"`
-
-	Description *string  `yaml:"description"`
-	Thumbnail   *string  `yaml:"thumbnail"`
-	Keywords    []string `yaml:"keywords"`
-	LastUpdated *string  `yaml:"lastUpdated"`
-	Extent      *Extent  `yaml:"extent"`
+	ID       string                        `yaml:"id"`
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata"`
 
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline"`
 	Tiles      *CollectionEntryTiles        `yaml:",inline"`
 	Styles     *CollectionEntryStyles       `yaml:",inline"`
 	Features   *CollectionEntryFeatures     `yaml:",inline"`
 	Maps       *CollectionEntryMaps         `yaml:",inline"`
+}
+
+type GeoSpatialCollectionMetadata struct {
+	Description *string  `yaml:"description"`
+	Thumbnail   *string  `yaml:"thumbnail"`
+	Keywords    []string `yaml:"keywords"`
+	LastUpdated *string  `yaml:"lastUpdated"`
+	Extent      *Extent  `yaml:"extent"`
 }
 
 type CollectionEntry3dGeoVolumes struct {
@@ -143,7 +151,7 @@ type OgcAPITiles struct {
 	TileServer   YAMLURL              `yaml:"tileServer"`
 	Types        []string             `yaml:"types"`
 	SupportedSrs []SupportedSrs       `yaml:"supportedSrs"`
-	Collections  GeoSpatialCollection // TODO: add yaml tag once implemented
+	Collections  GeoSpatialCollection `yaml:"collections"`
 }
 
 type OgcAPIStyles struct {
@@ -182,7 +190,7 @@ type SRS struct {
 
 type Extent struct {
 	Srs  SRS      `yaml:"srs"`
-	Bbox []string `yaml:"extent"`
+	Bbox []string `yaml:"bbox"`
 }
 
 // StyleMetadata based on OGC API Styles Requirement 7B
@@ -244,7 +252,7 @@ func (o *YAMLURL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return err
 }
 
-// UnmarshalYAML parses a string to EPSG SRS/CRS
+// UnmarshalYAML parses a string to EPSG srs/crs
 func (o *SRS) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var s string
 	err := unmarshal(&s)

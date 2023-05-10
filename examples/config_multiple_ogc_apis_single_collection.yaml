@@ -1,0 +1,36 @@
+---
+collectionMetadata: &collectionMetadata
+  description: >-
+    This is a description about the NewYork collection in Markdown.
+    We offer both 3D Tiles and Features for this collection.
+  keywords:
+    - Keyword1
+    - Keyword2
+  thumbnail: 3d.png
+  lastUpdated: "2023-05-10T12:00:00Z"
+  extent:
+    srs: EPSG:3857
+    bbox: ["-74.391538", "40.435655", "-73.430235", "41.030882"]
+
+title: New York
+abstract: |
+  This is a description about the dataset in Markdown.
+license: >-
+  This is the applicable license. Supports Markdown.
+  For instance: [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/deed.nl)
+baseUrl: http://localhost:8080
+ogcApi:
+  3dgeovolumes:
+    tileServer: https://maps.ecere.com/3DAPI/collections/
+    thumbnail: 3d.png
+    collections:
+      - id: NewYork
+        # reference to common metadata
+        metadata: *collectionMetadata
+        tileServerPath: "NewYork/3DTiles"
+        uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+  features:
+    collections:
+      - id: NewYork
+        # reference to common metadata
+        metadata: *collectionMetadata

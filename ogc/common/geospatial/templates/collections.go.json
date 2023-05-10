@@ -22,15 +22,20 @@
     {
       "id" : "{{ $type.ID }}",
       "title" : "{{ $type.ID }}",
-      "description" : "{{ $type.ID }} collection",
-      "collectionType" : "3d-container",
+      {{ if and $type.Metadata $type.Metadata.Description }}
+      "description" : "{{ unmarkdown $type.Metadata.Description }}",
+      {{ end }}
+      "collectionType" : "3d-container"
+      {{ if and $type.Metadata $type.Metadata.Extent }}
+      ,
       "extent" : {
         "spatial": {
-           {{/* Copied bbox values from https://service.pdok.nl/lv/bag/wms/v2_0?request=getCapabilities&service=WMS */}}
-          "bbox": [ [ -25000,250000,280000,860000 ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/28992"
+          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
         }
-      },
+      }
+      {{ end }}
+      ,
       "links" : [
         {
           "rel" : "self",
@@ -60,20 +65,110 @@
           "collectionType": "3d-container"
         }
       ]
-    }
+    }{{ if $index }},{{ end }}
     {{end}}
     {{end}}
+
+    {{/* start placeholder for tiles collections */}}
     {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
     ,
-    { "title": "Placeholder (TODO)" }
+    {{ range $index, $type := .Config.OgcAPI.Tiles.Collections }}
+    {
+      "id" : "{{ $type.ID }}",
+      "title" : "{{ $type.ID }}"
+      {{ if and $type.Metadata $type.Metadata.Description }}
+      ,
+      "description" : "{{ unmarkdown $type.Metadata.Description }}"
+      {{ end }}
+      {{ if and $type.Metadata $type.Metadata.Extent }}
+      ,
+      "extent" : {
+        "spatial": {
+          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+        }
+      }
+      {{ end }}
+      ,
+      "links" : [
+        {
+          "rel" : "self",
+          "type" : "application/json",
+          "title" : "This document",
+          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+        }
+      ]
+    }{{ if $index }},{{ end }}
     {{ end }}
+    {{ end }}
+    {{/* end placeholder for tiles collections */}}
+
+    {{/* start placeholder for features collections */}}
     {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
     ,
-    { "title": "Placeholder (TODO)" }
+    {{ range $index, $type := .Config.OgcAPI.Features.Collections }}
+    {
+      "id" : "{{ $type.ID }}",
+      "title" : "{{ $type.ID }}"
+      {{ if and $type.Metadata $type.Metadata.Description }}
+      ,
+      "description" : "{{ unmarkdown $type.Metadata.Description }}"
+      {{ end }}
+      {{ if and $type.Metadata $type.Metadata.Extent }}
+      ,
+      "extent" : {
+        "spatial": {
+          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+        }
+      }
+      {{ end }}
+      ,
+      "links" : [
+        {
+          "rel" : "self",
+          "type" : "application/json",
+          "title" : "This document",
+          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+        }
+      ]
+    }{{ if $index }},{{ end }}
     {{ end }}
+    {{ end }}
+    {{/* end placeholder for features collections */}}
+
+    {{/* start placeholder for maps collections */}}
     {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
     ,
-    { "title": "Placeholder (TODO)" }
+    {{ range $index, $type := .Config.OgcAPI.Maps.Collections }}
+    {
+      "id" : "{{ $type.ID }}",
+      "title" : "{{ $type.ID }}"
+      {{ if and $type.Metadata $type.Metadata.Description }}
+      ,
+      "description" : "{{ unmarkdown $type.Metadata.Description }}"
+      {{ end }}
+      {{ if and $type.Metadata $type.Metadata.Extent }}
+      ,
+      "extent" : {
+        "spatial": {
+          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+        }
+      }
+      {{ end }}
+      ,
+      "links" : [
+        {
+          "rel" : "self",
+          "type" : "application/json",
+          "title" : "This document",
+          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+        }
+      ]
+    }{{ if $index }},{{ end }}
     {{ end }}
+    {{ end }}
+    {{/* end placeholder for maps collections */}}
   ]
 }
