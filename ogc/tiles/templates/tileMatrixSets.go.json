@@ -1,4 +1,4 @@
-{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {
   {{ if .Config.OgcAPI.Tiles }}
   {{$baseUrl := .Config.BaseURL}}
@@ -18,7 +18,7 @@
   ],
   "tileMatrixSets": [
     {{range $index, $type := .Config.OgcAPI.Tiles.SupportedSrs}}
-      {{ if (eq $type.Srs "EPSG:28992") }}
+      {{ if (eq $type.Srs.EPSG "EPSG:28992") }}
         {
           "title": "Amersfoort / RD New scheme for the Netherlands",
           "links": [
@@ -31,7 +31,7 @@
           "id": "NetherlandsRDNewQuad"
         }
       {{end}}
-      {{ if (eq $type.Srs "EPSG:4258") }}
+      {{ if (eq $type.Srs.EPSG "EPSG:4258") }}
         {{if $index}},{{end}}
         {
           "title": "Geodetic Reference System 1980 ETRS89 for Europe",
@@ -45,7 +45,7 @@
           "id": "EuropeanETRS89_GRS80Quad_Draft"
         }
       {{end}}
-      {{ if (eq $type.Srs "EPSG:3857") }}
+      {{ if (eq $type.Srs.EPSG "EPSG:3857") }}
         {{if $index}},{{end}}
         {
           "title": "Google Maps Compatible for the World",

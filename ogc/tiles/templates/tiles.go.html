@@ -1,4 +1,4 @@
-{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 {{ if .Config.OgcAPI.Tiles }}
 <hgroup class="main">
@@ -19,14 +19,14 @@
             <tbody>
                 {{$baseUrl := .Config.BaseURL}}
                 {{range $type := .Config.OgcAPI.Tiles.SupportedSrs}}
-                {{ if (eq $type.Srs "EPSG:28992") }}
+                {{ if (eq $type.Srs.EPSG "EPSG:28992") }}
                 <tr>
                     <td><a href="tiles/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a></td>
                     <td><a href="https://www.opengis.net/def/crs/EPSG/0/28992">EPSG:28992</a></td>
                     <td>vector</td>
                 </tr>
                 {{end}}
-                {{ if (eq $type.Srs "EPSG:4258") }}
+                {{ if (eq $type.Srs.EPSG "EPSG:4258") }}
                 <tr>
                     <td><a href="tiles/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a>
                         (naam/definitie kan in toekomst mogelijk wijzigen)</td>
@@ -34,7 +34,7 @@
                     <td>vector</td>
                 </tr>
                 {{end}}
-                {{ if (eq $type.Srs "EPSG:3857") }}
+                {{ if (eq $type.Srs.EPSG "EPSG:3857") }}
                 <tr>
                     <td><a href="tiles/WebMercatorQuad">WebMercatorQuad</a></td>
                     <td><a href="https://www.opengis.net/def/crs/EPSG/0/3857">EPSG:3857</a></td>

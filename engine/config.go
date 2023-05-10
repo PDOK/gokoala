@@ -86,7 +86,14 @@ func (g GeoSpatialCollection) Flatten() []string {
 }
 
 type GeoSpatialCollectionEntry struct {
-	ID         string                       `yaml:"id"`
+	ID string `yaml:"id"`
+
+	Description *string  `yaml:"description"`
+	Thumbnail   *string  `yaml:"thumbnail"`
+	Keywords    []string `yaml:"keywords"`
+	LastUpdated *string  `yaml:"lastUpdated"`
+	Extent      *Extent  `yaml:"extent"`
+
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline"`
 	Tiles      *CollectionEntryTiles        `yaml:",inline"`
 	Styles     *CollectionEntryStyles       `yaml:",inline"`
@@ -103,6 +110,9 @@ type CollectionEntry3dGeoVolumes struct {
 
 	// Optional URI template for subtrees, only required when "implicit tiling" extension is used
 	URITemplateImplicitTilingSubtree *string `yaml:"uriTemplateImplicitTilingSubtree"`
+
+	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
+	ViewerUrl *YAMLURL `yaml:"viewerUrl"`
 }
 
 type CollectionEntryTiles struct {
@@ -153,7 +163,7 @@ type OgcAPIMaps struct {
 }
 
 type SupportedSrs struct {
-	Srs            string         `yaml:"srs"`
+	Srs            SRS            `yaml:"srs"`
 	ZoomLevelRange ZoomLevelRange `yaml:"zoomLevelRange"`
 }
 
@@ -164,6 +174,15 @@ type ZoomLevelRange struct {
 
 type YAMLURL struct {
 	*url.URL
+}
+
+type SRS struct {
+	EPSG string
+}
+
+type Extent struct {
+	Srs  SRS      `yaml:"srs"`
+	Bbox []string `yaml:"extent"`
 }
 
 // StyleMetadata based on OGC API Styles Requirement 7B
@@ -214,13 +233,27 @@ type PropertiesSchema struct{} // TODO implement later
 
 // UnmarshalYAML parses a string to URL and also removes trailing slash if present,
 // so we can easily append a longer path without having to worry about double slashes
-func (j *YAMLURL) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (o *YAMLURL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var s string
 	err := unmarshal(&s)
 	if err != nil {
 		return err
 	}
 	parsedURL, err := url.ParseRequestURI(strings.TrimSuffix(s, "/"))
-	j.URL = parsedURL
+	o.URL = parsedURL
+	return err
+}
+
+// UnmarshalYAML parses a string to EPSG SRS/CRS
+func (o *SRS) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var s string
+	err := unmarshal(&s)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(s, "EPSG:") {
+		log.Fatalf("failed to parse SRS, should contain EPSG code and start with 'EPSG:'")
+	}
+	o.EPSG = s
 	return err
 }

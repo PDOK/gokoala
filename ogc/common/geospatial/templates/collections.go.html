@@ -1,16 +1,33 @@
-{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-{{$baseUrl := .Config.BaseURL}}
-<hgroup class="main">
-    <h2 class="title">Collections</h2>
+{{$baseUrl := .Config.BaseURL }}
+<hgroup>
+    <h2 class="title">{{ .Config.Title }} - Collecties</h2>
     <a href="collections?f=json">[JSON]</a>
 </hgroup>
-<div class="description">
-    De volgende collecties zijn beschikbaar binnen deze dataset:
-    <ul>
-        {{ range $index, $id := .Config.GeoSpatialCollections.Flatten }}
-            <li><a href="{{ $baseUrl }}/collections/{{ $id }}">{{ $id }}</a> - <a href="{{ $baseUrl }}/collections/{{ $id }}?f=json">[JSON]</a></li>
-        {{end}}
-    </ul>
-</div>
+
+<section class="row row-cols-4 g-4">
+    {{ range $index, $id := .Config.GeoSpatialCollections.Flatten }}
+        <div class="col-4">
+            <div class="card h-100">
+                <h5 class="card-header">
+                    <a href="{{ $baseUrl }}/collections/{{ $id }}">{{ $id }}</a>
+                </h5>
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">Bekijk collectie als <a href="{{ $baseUrl }}/collections/{{ $id }}?f=json">JSON</a></h6>
+                    <p class="card-text">
+                        {{ .Config.OgcAPI }}
+                    </p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item text-muted"><strong>Trefwoorden</strong>: daff, fsfs, fsfsf</li>
+                    {{/* <li class="list-group-item text-muted"><b>Schema</b>: TODO link to collection schema</li> */}}
+                    <li class="list-group-item text-muted"><strong>Bijgewerkt op</strong>: daff, fsfs, fsfsf</li>
+                    <li class="list-group-item text-muted"><strong>Geografische begrenzing</strong> (<a href="http://www.opengis.net/def/crs/EPSG/0/28992">EPSG:28992</a>): -25000,250000,280000,860000</li>
+                </ul>
+                <img src="resources/3d.png" class="card-img-bottom" alt="Tumbnail of collection {{ $id }}">
+            </div>
+        </div>
+    {{end}}
+</section>
 {{end}}
