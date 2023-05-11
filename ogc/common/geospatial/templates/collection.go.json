@@ -15,6 +15,8 @@
       "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs.EPSG }}"
     }
   },
+  {{/* "crs" : [], */}}
+  {{/* "storageCrs" : "", */}}
   {{ end }}
   "links" : [
     {
@@ -41,7 +43,7 @@
     {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
     ,
     {
-      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector",
+      "rel" : "items",
       "type" : "application/json",
       "title" : "The JSON representation of the {{ .Params }} tiles served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params }}/tiles?f=json"
@@ -57,7 +59,7 @@
     ,
     {
       "rel" : "items",
-      "type" : "application/json",
+      "type" : "application/geo+json",
       "title" : "The JSON representation of the {{ .Params }} features served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params }}/items?f=json"
     },
@@ -72,8 +74,8 @@
     ,
     {
       "rel" : "items",
-      "type" : "application/<sometype>",
-      "title" : "TODO",
+      "type" : "application/json",
+      "title" : "The JSON representation of the {{ .Params }} raster map tileset served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params }}/map/tiles?f=json"
     },
     {{ end }}
