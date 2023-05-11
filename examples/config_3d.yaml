@@ -1,15 +1,17 @@
 ---
 title: New York in 3D
+# shortened title, used in breadcrumb path
+shortTitle: New York in 3D
 abstract: |
   This is a description about the dataset in Markdown.
+# just a dummy picture, but you can put an actual thumbnail here
+thumbnail: 3d.png
 license: >-
   This is the applicable license. Supports Markdown. For instance: [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/deed.nl)
 baseUrl: http://localhost:8080
 ogcApi:
   3dgeovolumes:
     tileServer: https://maps.ecere.com/3DAPI/collections/
-    # just a dummy picture, but you can put an actual thumbnail here
-    thumbnail: 3d.png
     collections:
       - id: NewYork
         # optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.

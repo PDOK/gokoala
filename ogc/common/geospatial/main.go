@@ -19,14 +19,29 @@ type Collections struct {
 
 func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 	if e.Config.HasCollections() {
+		collectionsBreadcrumbs := []engine.Breadcrumb{
+			engine.Breadcrumb{
+				Name: "Collections",
+				Path: "collections",
+			},
+		}
 		e.RenderTemplates(CollectionsPath,
+			collectionsBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
 
 		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
+			collectionBreadcrumbs := append(collectionsBreadcrumbs, []engine.Breadcrumb{
+				engine.Breadcrumb{
+					Name: coll.ID,
+					Path: "collections/" + coll.ID,
+				},
+			}...)
 			e.RenderTemplatesWithParams(coll.ID,
+				nil,
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.json", coll.ID))
 			e.RenderTemplatesWithParams(coll.ID,
+				collectionBreadcrumbs,
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.html", coll.ID))
 		}
 	}

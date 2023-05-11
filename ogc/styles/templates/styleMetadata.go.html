@@ -4,7 +4,6 @@
 {{ $baseUrl := .Config.BaseURL }}
 <hgroup class="main">
     <h2 class="title">{{ .Params.ID }}</h2>
-    <a href="styles/{{ .Params.ID }}/metadata?f=json">[JSON]</a>
 </hgroup>
 <div class="description">
     {{ markdown .Params.Description }}

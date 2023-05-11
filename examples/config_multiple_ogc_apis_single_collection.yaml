@@ -13,6 +13,8 @@ collectionMetadata: &collectionMetadata
     bbox: ["-74.391538", "40.435655", "-73.430235", "41.030882"]
 
 title: New York
+# shortened title, used in breadcrumb path
+shortTitle: New York
 abstract: |
   This is a description about the dataset in Markdown.
 license: >-

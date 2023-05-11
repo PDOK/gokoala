@@ -2,106 +2,101 @@
 {{define "content"}}
 <hgroup class="main">
     <h2 class="title">{{ .Config.Title }}</h2>
-    <!-- <a href="?f=json">[JSON]</a> --><!-- TODO: move to topbar -->
 </hgroup>
-<div class="description-lp">
+<div class="row">
     {{ if and .Config.Thumbnail .Config.ResourcesDir }}
-    <div class="description-text">
+    <div class="col-md-8">
     {{ else }}
-    <div class="description-text-fullwidth">
+    <div class="col-md-12">
     {{ end }}
         {{ markdown .Config.Abstract }}
-        <!-- TODO: table of dataset details -->
-        <div class="description-table-container">
-            <table class="details-table">
-                <tbody>
-                    {{ if .Config.Keywords }}
-                    <tr>
-                        <td>
-                            <b>Trefwoorden</b>
-                        </td>
-                        <td>
-                            {{ .Config.Keywords | join ", " }}
-                        </td>
-                    </tr>
-                    {{ end }}
-                    {{ if .Config.LastUpdated }}
-                    <tr>
-                        <td>
-                            <b>API voor het laatst bijgewerkt op</b>
-                        </td>
-                        <td>
-                            {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
-                        </td>
-                    </tr>
-                    {{ end }}
-                    <tr>
-                        <td>
-                            <b>Licentie</b>
-                        </td>
-                        <td>
-                            {{ markdown .Config.License }}
-                        </td>
-                    </tr>
-                    {{ if .Config.Support}}
-                    <tr>
-                        <td>
-                            <b>Support</b>
-                        </td>
-                        <td>
-                            {{ markdown .Config.Support }}
-                        </td>
-                    </tr>
-                    {{ end }}
-                    {{ if .Config.DatasetDetails }}
-                    {{ range $detailField := .Config.DatasetDetails }}
-                    <tr>
-                        <td>
-                            <b>{{ $detailField.Name }}</b>
-                        </td>
-                        <td>
-                            {{ markdown $detailField.Value }}
-                        </td>
-                    </tr>
-                    {{ end }}
-                    {{ end }}
-                </tbody>
-            </table>
-        </div>
+        <table class="table table-borderless">
+            <tbody>
+                {{ if .Config.Keywords }}
+                <tr>
+                    <td>
+                        <b>Trefwoorden</b>
+                    </td>
+                    <td>
+                        {{ .Config.Keywords | join ", " }}
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if .Config.LastUpdated }}
+                <tr>
+                    <td>
+                        <b>Bijgewerkt op</b>
+                    </td>
+                    <td>
+                        {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+                    </td>
+                </tr>
+                {{ end }}
+                <tr>
+                    <td>
+                        <b>Licentie</b>
+                    </td>
+                    <td>
+                        {{ markdown .Config.License }}
+                    </td>
+                </tr>
+                {{ if .Config.Support}}
+                <tr>
+                    <td>
+                        <b>Support</b>
+                    </td>
+                    <td>
+                        {{ markdown .Config.Support }}
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if .Config.DatasetDetails }}
+                {{ range $detailField := .Config.DatasetDetails }}
+                <tr>
+                    <td>
+                        <b>{{ $detailField.Name }}</b>
+                    </td>
+                    <td>
+                        {{ markdown $detailField.Value }}
+                    </td>
+                </tr>
+                {{ end }}
+                {{ end }}
+            </tbody>
+        </table>
     </div>
     {{ if and .Config.Thumbnail .Config.ResourcesDir }}
-    <div class="description-thumbnail">
-        <img src="resources/{{ .Config.Thumbnail }}" alt="thumbnail van {{ .Config.Title }}"/>
+    <div class="col-md-4">
+        <img src="resources/{{ .Config.Thumbnail }}" class="img-fluid" alt="thumbnail van {{ .Config.Title }}"/>
     </div>
     {{ end }}
 </div>
-<div class="description-lp">
-    <h3>Common</h3>
-    <ul>
-        <li><a href="api">API specificatie</a> - <a href="api?f=json">[JSON]</a></li>
-        <li><a href="conformance">Conformance declaratie</a> - <a href="conformance?f=json">[JSON]</a></li>
-    </ul>
-    {{ if .Config.OgcAPI.Styles }}
-    <h3>Styles</h3>
-    <ul>
-        <li><a href="styles">Beschikbare styles</a> - <a href="styles?f=json">[JSON]</a></li>
-    </ul>
-    {{ end }}
-    {{ if .Config.OgcAPI.Tiles }}
-    <h3>Tiles</h3>
-    <ul>
-        <li><a href="tiles">Tiles</a> - <a href="tiles?f=json">[JSON]</a></li>
-        <li><a href="tileMatrixSets">Tile Matrix Sets</a> - <a href="tileMatrixSets?f=json">[JSON]</a></li>
-    </ul>
-    {{ end }}
-    {{ if .Config.HasCollections }}
-    <h3>Collections</h3>
-    <ul>
-        <li><a href="collections">Collections</a> - <a href="collections?f=json">[JSON]</a></li>
-    </ul>
-    {{ end }}
-    {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Thumbnail .Config.ResourcesDir }}
-    <img src="resources/{{ .Config.OgcAPI.GeoVolumes.Thumbnail }}" alt="thumbnail van 3D GeoVolumes" />
-    {{ end }}
+<div class="row">
+    <div class="col-md-12">
+        <h3>Common</h3>
+        <ul>
+            <li><a href="api">API specificatie</a> - <a href="api?f=json">[JSON]</a></li>
+            <li><a href="conformance">Conformance declaratie</a> - <a href="conformance?f=json">[JSON]</a></li>
+        </ul>
+        {{ if .Config.OgcAPI.Styles }}
+        <h3>Styles</h3>
+        <ul>
+            <li><a href="styles">Beschikbare styles</a> - <a href="styles?f=json">[JSON]</a></li>
+        </ul>
+        {{ end }}
+        {{ if .Config.OgcAPI.Tiles }}
+        <h3>Tiles</h3>
+        <ul>
+            <li><a href="tiles">Tiles</a> - <a href="tiles?f=json">[JSON]</a></li>
+            <li><a href="tileMatrixSets">Tile Matrix Sets</a> - <a href="tileMatrixSets?f=json">[JSON]</a></li>
+        </ul>
+        {{ end }}
+        {{ if .Config.HasCollections }}
+        <h3>Collections</h3>
+        <ul>
+            <li><a href="collections">Collections</a> - <a href="collections?f=json">[JSON]</a></li>
+        </ul>
+        {{ end }}
+    </div>
 </div>
 {{end}}

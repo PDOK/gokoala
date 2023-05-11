@@ -28,6 +28,7 @@ func ReadConfigFile(configFile string) *Config {
 
 type Config struct {
 	Title          string          `yaml:"title"`
+	ShortTitle     string          `yaml:"shortTitle"`
 	Abstract       string          `yaml:"abstract"`
 	Thumbnail      *string         `yaml:"thumbnail"`
 	Keywords       []string        `yaml:"keywords"`
@@ -141,7 +142,6 @@ type CollectionEntryMaps struct {
 
 type OgcAPI3dGeoVolumes struct {
 	TileServer  YAMLURL              `yaml:"tileServer"`
-	Thumbnail   string               `yaml:"thumbnail"`
 	Collections GeoSpatialCollection `yaml:"collections"`
 }
 
