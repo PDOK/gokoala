@@ -29,6 +29,8 @@ ogcApi:
         metadata: *collectionMetadata
         tileServerPath: "NewYork/3DTiles"
         uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+        3dViewerUrl: "https://app.pdok.nl/viewer"
+      - id: Amsterdam
   features:
     collections:
       - id: NewYork

@@ -52,7 +52,8 @@ type TemplateKey struct {
 type TemplateData struct {
 	Config *Config
 
-	// Params optional parameters not part of GoKoala's configfile
+	// Params optional parameters not part of GoKoala's configfile. You can use
+	// this to provide extra data to a template at rendering time.
 	Params interface{}
 }
 

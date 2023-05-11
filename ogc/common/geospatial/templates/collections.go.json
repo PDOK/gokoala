@@ -17,21 +17,21 @@
   ],
   "collections" : [
     {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-    {{ range $index, $type := .Config.OgcAPI.GeoVolumes.Collections }}
+    {{ range $index, $coll := .Config.OgcAPI.GeoVolumes.Collections }}
     {{ if $index }},{{ end }}
     {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}",
-      {{ if and $type.Metadata $type.Metadata.Description }}
-      "description" : "{{ unmarkdown $type.Metadata.Description }}",
+      "id" : "{{ $coll.ID }}",
+      "title" : "{{ $coll.ID }}",
+      {{ if and $coll.Metadata $coll.Metadata.Description }}
+      "description" : "{{ unmarkdown $coll.Metadata.Description }}",
       {{ end }}
       "collectionType" : "3d-container"
-      {{ if and $type.Metadata $type.Metadata.Extent }}
+      {{ if and $coll.Metadata $coll.Metadata.Extent }}
       ,
       "extent" : {
         "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+          "bbox": [ [ {{ $coll.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs.EPSG }}"
         }
       }
       {{ end }}
@@ -40,28 +40,28 @@
         {
           "rel" : "self",
           "type" : "application/json",
-          "title" : "Information about the 3D {{ $type.ID }} collection as JSON",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+          "title" : "Information about the 3D {{ $coll.ID }} collection as JSON",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         },
         {
           "rel" : "alternate",
           "type" : "text/html",
-          "title" : "Information about the 3D {{ $type.ID }} collection as HTML",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+          "title" : "Information about the 3D {{ $coll.ID }} collection as HTML",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         },
         {
           "rel" : "items",
           "type" : "application/json+3dtiles",
-          "title" : "Tileset definition of collection {{ $type.ID }} according to the OGC 3D Tiles specification",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}/3dtiles?f=json"
+          "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
         }
       ],
       "content" : [
         {
           "rel" : "original",
           "type" : "application/json+3dtiles",
-          "title" : "Tileset definition of collection {{ $type.ID }} according to the OGC 3D Tiles specification",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}/3dtiles?f=json",
+          "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json",
           "collectionType": "3d-container"
         }
       ]
@@ -72,20 +72,20 @@
     {{/* start placeholder for tiles collections */}}
     {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
     ,
-    {{ range $index, $type := .Config.OgcAPI.Tiles.Collections }}
+    {{ range $index, $coll := .Config.OgcAPI.Tiles.Collections }}
     {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}"
-      {{ if and $type.Metadata $type.Metadata.Description }}
+      "id" : "{{ $coll.ID }}",
+      "title" : "{{ $coll.ID }}"
+      {{ if and $coll.Metadata $coll.Metadata.Description }}
       ,
-      "description" : "{{ unmarkdown $type.Metadata.Description }}"
+      "description" : "{{ unmarkdown $coll.Metadata.Description }}"
       {{ end }}
-      {{ if and $type.Metadata $type.Metadata.Extent }}
+      {{ if and $coll.Metadata $coll.Metadata.Extent }}
       ,
       "extent" : {
         "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+          "bbox": [ [ {{ $coll.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs.EPSG }}"
         }
       }
       {{ end }}
@@ -95,7 +95,7 @@
           "rel" : "self",
           "type" : "application/json",
           "title" : "This document",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         }
       ]
     }{{ if $index }},{{ end }}
@@ -105,21 +105,20 @@
 
     {{/* start placeholder for features collections */}}
     {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-    ,
-    {{ range $index, $type := .Config.OgcAPI.Features.Collections }}
+    {{ range $index, $coll := .Config.OgcAPI.Features.Collections }}
     {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}"
-      {{ if and $type.Metadata $type.Metadata.Description }}
+      "id" : "{{ $coll.ID }}",
+      "title" : "{{ $coll.ID }}"
+      {{ if and $coll.Metadata $coll.Metadata.Description }}
       ,
-      "description" : "{{ unmarkdown $type.Metadata.Description }}"
+      "description" : "{{ unmarkdown $coll.Metadata.Description }}"
       {{ end }}
-      {{ if and $type.Metadata $type.Metadata.Extent }}
+      {{ if and $coll.Metadata $coll.Metadata.Extent }}
       ,
       "extent" : {
         "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+          "bbox": [ [ {{ $coll.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs.EPSG }}"
         }
       }
       {{ end }}
@@ -129,7 +128,7 @@
           "rel" : "self",
           "type" : "application/json",
           "title" : "This document",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         }
       ]
     }{{ if $index }},{{ end }}
@@ -140,20 +139,20 @@
     {{/* start placeholder for maps collections */}}
     {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
     ,
-    {{ range $index, $type := .Config.OgcAPI.Maps.Collections }}
+    {{ range $index, $coll := .Config.OgcAPI.Maps.Collections }}
     {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}"
-      {{ if and $type.Metadata $type.Metadata.Description }}
+      "id" : "{{ $coll.ID }}",
+      "title" : "{{ $coll.ID }}"
+      {{ if and $coll.Metadata $coll.Metadata.Description }}
       ,
-      "description" : "{{ unmarkdown $type.Metadata.Description }}"
+      "description" : "{{ unmarkdown $coll.Metadata.Description }}"
       {{ end }}
-      {{ if and $type.Metadata $type.Metadata.Extent }}
+      {{ if and $coll.Metadata $coll.Metadata.Extent }}
       ,
       "extent" : {
         "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+          "bbox": [ [ {{ $coll.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs.EPSG }}"
         }
       }
       {{ end }}
@@ -163,7 +162,7 @@
           "rel" : "self",
           "type" : "application/json",
           "title" : "This document",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         }
       ]
     }{{ if $index }},{{ end }}

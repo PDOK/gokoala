@@ -14,12 +14,10 @@
                     <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}">{{ $coll.ID }}</a>
                 </h5>
                 <div class="card-body">
-                    <h6 class="card-subtitle mb-2 text-body-secondary">Bekijk collectie als <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json">JSON</a></h6>
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
-                    <p class="card-text">
                         {{ markdown $coll.Metadata.Description }}
-                    </p>
                     {{ end }}
+                    <small class="text-body-secondary">Bekijk collectie als <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json">JSON</a></small>
                 </div>
                 <ul class="list-group list-group-flush">
                     {{ if and $coll.Metadata $coll.Metadata.Keywords }}

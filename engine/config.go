@@ -78,16 +78,26 @@ type GeoSpatialCollection []GeoSpatialCollectionEntry
 
 // Flatten lists all unique GeoSpatialCollectionEntry's (no duplicate IDs)
 func (g GeoSpatialCollection) Flatten() []GeoSpatialCollectionEntry {
-	collectionById := make(map[string]GeoSpatialCollectionEntry)
-	for _, v := range g {
-		collectionById[v.ID] = v
-	}
-
-	flattened := make([]GeoSpatialCollectionEntry, 0, len(collectionById))
-	for _, v := range collectionById {
+	collectionsById := g.toMap()
+	flattened := make([]GeoSpatialCollectionEntry, 0, len(collectionsById))
+	for _, v := range collectionsById {
 		flattened = append(flattened, v)
 	}
 	return flattened
+}
+
+// ContainsID check if given collection exists
+func (g GeoSpatialCollection) ContainsID(id string) bool {
+	_, ok := g.toMap()[id]
+	return ok
+}
+
+func (g GeoSpatialCollection) toMap() map[string]GeoSpatialCollectionEntry {
+	collectionsById := make(map[string]GeoSpatialCollectionEntry)
+	for _, v := range g {
+		collectionsById[v.ID] = v
+	}
+	return collectionsById
 }
 
 type GeoSpatialCollectionEntry struct {
@@ -113,14 +123,14 @@ type CollectionEntry3dGeoVolumes struct {
 	// Optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
 	TileServerPath *string `yaml:"tileServerPath"`
 
-	// Optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb"
+	// Optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb".
 	URITemplate3dTiles *string `yaml:"uriTemplate3dTiles"`
 
-	// Optional URI template for subtrees, only required when "implicit tiling" extension is used
+	// Optional URI template for subtrees, only required when "implicit tiling" extension is used.
 	URITemplateImplicitTilingSubtree *string `yaml:"uriTemplateImplicitTilingSubtree"`
 
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
-	ViewerUrl *YAMLURL `yaml:"viewerUrl"`
+	URL3DViewer *YAMLURL `yaml:"3dViewerUrl"`
 }
 
 type CollectionEntryTiles struct {
