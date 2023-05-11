@@ -26,7 +26,7 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 	engine := NewEngine("engine/testdata/config_minimal.yaml", "", "")
 
 	templateKey := NewTemplateKey("ogc/common/core/templates/landing-page.go.json")
-	engine.RenderTemplates("/", templateKey)
+	engine.RenderTemplates("/", nil, templateKey)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

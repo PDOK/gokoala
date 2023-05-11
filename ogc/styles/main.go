@@ -39,7 +39,8 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
 		// Render metadata templates
 		e.RenderTemplatesWithParams(style, nil, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
-		styleMetadataBreadcrumbs := append(stylesBreadcrumbs, []engine.Breadcrumb{
+		styleMetadataBreadcrumbs := stylesBreadcrumbs
+		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
 			engine.Breadcrumb{
 				Name: style.ID,
 				Path: "styles/" + style.ID,

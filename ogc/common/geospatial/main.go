@@ -31,7 +31,8 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
 
 		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
-			collectionBreadcrumbs := append(collectionsBreadcrumbs, []engine.Breadcrumb{
+			collectionBreadcrumbs := collectionsBreadcrumbs
+			collectionBreadcrumbs = append(collectionBreadcrumbs, []engine.Breadcrumb{
 				engine.Breadcrumb{
 					Name: coll.ID,
 					Path: "collections/" + coll.ID,

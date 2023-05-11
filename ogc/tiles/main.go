@@ -68,13 +68,15 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 }
 
 func renderTemplatesForSrs(e *engine.Engine, srs string, tilesBreadcrumbs []engine.Breadcrumb, tileMatrixSetsBreadcrumbs []engine.Breadcrumb) {
-	tilesSrsBreadcrumbs := append(tilesBreadcrumbs, []engine.Breadcrumb{
+	tilesSrsBreadcrumbs := tilesBreadcrumbs
+	tilesSrsBreadcrumbs = append(tilesSrsBreadcrumbs, []engine.Breadcrumb{
 		engine.Breadcrumb{
 			Name: srs,
 			Path: "tiles/" + srs,
 		},
 	}...)
-	tileMatrixSetsSrsBreadcrumbs := append(tileMatrixSetsBreadcrumbs, []engine.Breadcrumb{
+	tileMatrixSetsSrsBreadcrumbs := tileMatrixSetsBreadcrumbs
+	tileMatrixSetsSrsBreadcrumbs = append(tileMatrixSetsSrsBreadcrumbs, []engine.Breadcrumb{
 		engine.Breadcrumb{
 			Name: srs,
 			Path: "tileMatrixSets/" + srs,
