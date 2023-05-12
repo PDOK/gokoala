@@ -24,16 +24,33 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 		log.Fatalf("resources-dir is required when using OGC styles")
 	}
 
-	// Copy BaseUrl to 'lower' level TODO: Not really happy with this, but works for now...
-	e.Config.OgcAPI.Styles.BaseURL = e.Config.BaseURL
+	stylesBreadcrumbs := []engine.Breadcrumb{
+		engine.Breadcrumb{
+			Name: "Styles",
+			Path: "styles",
+		},
+	}
 
 	e.RenderTemplates(stylesPath,
+		stylesBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"styles.go.json"),
 		engine.NewTemplateKey(templatesDir+"styles.go.html"))
+
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
 		// Render metadata templates
-		e.RenderTemplatesWithParams(style, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
-		e.RenderTemplatesWithParams(style, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", style.ID))
+		e.RenderTemplatesWithParams(style, nil, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
+		styleMetadataBreadcrumbs := stylesBreadcrumbs
+		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
+			engine.Breadcrumb{
+				Name: style.ID,
+				Path: "styles/" + style.ID,
+			},
+			engine.Breadcrumb{
+				Name: "Metadata",
+				Path: "styles/" + style.ID + "/metadata",
+			},
+		}...)
+		e.RenderTemplatesWithParams(style, styleMetadataBreadcrumbs, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", style.ID))
 
 		// Add existing style definitions to rendered templates
 		for _, stylesheet := range style.Stylesheets {
@@ -44,7 +61,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 				Format:       *stylesheet.Link.Format,
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
 			}
-			e.RenderTemplatesWithParams(nil, styleKey)
+			e.RenderTemplatesWithParams(nil, nil, styleKey)
 		}
 	}
 

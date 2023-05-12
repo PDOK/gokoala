@@ -15,6 +15,28 @@ hgroup {
     background-color: var(--bs-blue);
 }
 
+.navbar .breadcrumb .breadcrumb-item,
+.navbar .breadcrumb .breadcrumb-item a {
+    color: #c6c6c6;
+    text-decoration: none;
+}
+
+.navbar .breadcrumb .breadcrumb-item:last-of-type,
+.navbar .breadcrumb .breadcrumb-item:last-of-type a {
+    color: #fff;
+    text-decoration: underline;
+}
+
 footer {
     background-color: var(--bs-blue);
+}
+
+.table-borderless td,
+.table-borderless th {
+    border: 0;
+}
+
+.table td p,
+.table-condensed td p {
+    margin: 0;
 }

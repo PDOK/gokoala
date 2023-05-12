@@ -20,10 +20,19 @@ type CommonCore struct {
 }
 
 func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
+	conformanceBreadcrumbs := []engine.Breadcrumb{
+		engine.Breadcrumb{
+			Name: "Conformance",
+			Path: "conformance",
+		},
+	}
+
 	e.RenderTemplates(rootPath,
+		nil,
 		engine.NewTemplateKey(templatesDir+"landing-page.go.json"),
 		engine.NewTemplateKey(templatesDir+"landing-page.go.html"))
 	e.RenderTemplates(conformancePath,
+		conformanceBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"conformance.go.json"),
 		engine.NewTemplateKey(templatesDir+"conformance.go.html"))
 

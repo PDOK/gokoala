@@ -4,35 +4,6 @@
  * Swagger UI Theme Overrides
  */
 
-.swagger-ui .description-lp {
-  width: 100%;
-  float: left;
-}
-
-.swagger-ui .description-lp .description-text {
-  width: 70%;
-  padding-right: 20px;
-  float: left
-}
-
-.swagger-ui .description-lp .description-text-fullwidth {
-  width: 100%;
-  float: left
-}
-
-.swagger-ui .description-lp .description-thumbnail {
-  width: 30%;
-  float: right
-}
-
-.swagger-ui .description-table-container {
-  padding: 20px 0px 20px 0px
-}
-
-.swagger-ui .description-table-container .details-table p {
-  margin: 0
-}
-
 .swagger-ui .opblock.opblock-post {
   border-color: #DADFE1;
   background: rgba(241, 241, 241, .1);

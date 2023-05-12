@@ -30,6 +30,23 @@
                     <img src="img/logo-pdok.svg" alt="Logo PDOK: Ga naar de landing page">
                 </a>
             </div>
+            <div class="container">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">Datasets</li>
+                    <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ShortTitle }}</a></li>
+                    {{ range $breadcrumb := .Breadcrumbs }}
+                    <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}">{{ $breadcrumb.Name }}</a></li>
+                    {{ end }}
+                </ol>
+                <ol class="breadcrumb" style="float: right;">
+                    {{ if .Breadcrumbs }}
+                    {{ $lastcrumb := last .Breadcrumbs }}
+                    <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
+                    {{ else }}
+                    <li class="breadcrumb-item"><a href="?f=json" target="_blank">JSON</a></li>
+                    {{ end }}
+                </ol>
+            </div>
         </nav>
     </header>
 

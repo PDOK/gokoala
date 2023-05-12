@@ -55,6 +55,14 @@ type TemplateData struct {
 	// Params optional parameters not part of GoKoala's configfile. You can use
 	// this to provide extra data to a template at rendering time.
 	Params interface{}
+
+	// Crumb path to the page, in key-value pairs of name, path
+	Breadcrumbs []Breadcrumb
+}
+
+type Breadcrumb struct {
+	Name string
+	Path string
 }
 
 // NewTemplateKey build TemplateKeys
@@ -93,14 +101,15 @@ func (t *Templates) GetRenderedTemplate(key TemplateKey) ([]byte, error) {
 	return nil, fmt.Errorf("no rendered template with name %s", key.Name)
 }
 
-func (t *Templates) renderHTMLTemplate(key TemplateKey, params interface{}) {
+func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
 	compiled := htmltemplate.Must(htmltemplate.New(layoutFile).Funcs(combinedFuncs).ParseFiles(templatesDir+layoutFile, file))
 	var rendered bytes.Buffer
 
 	if err := compiled.Execute(&rendered, &TemplateData{
-		Config: t.config,
-		Params: params,
+		Config:      t.config,
+		Params:      params,
+		Breadcrumbs: breadcrumbs,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}

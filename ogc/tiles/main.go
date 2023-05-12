@@ -23,16 +23,31 @@ type Tiles struct {
 }
 
 func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
+	tilesBreadcrumbs := []engine.Breadcrumb{
+		engine.Breadcrumb{
+			Name: "Tiles",
+			Path: "tiles",
+		},
+	}
+	tileMatrixSetsBreadcrumbs := []engine.Breadcrumb{
+		engine.Breadcrumb{
+			Name: "Tile Matrix Sets",
+			Path: "tileMatrixSets",
+		},
+	}
+
 	e.RenderTemplates(tilesPath,
+		tilesBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tiles.go.json"),
 		engine.NewTemplateKey(templatesDir+"tiles.go.html"))
 	e.RenderTemplates(tileMatrixSetsPath,
+		tileMatrixSetsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
 
-	renderTemplatesForSrs(e, "EuropeanETRS89_GRS80Quad_Draft")
-	renderTemplatesForSrs(e, "NetherlandsRDNewQuad")
-	renderTemplatesForSrs(e, "WebMercatorQuad")
+	renderTemplatesForSrs(e, "EuropeanETRS89_GRS80Quad_Draft", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+	renderTemplatesForSrs(e, "NetherlandsRDNewQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+	renderTemplatesForSrs(e, "WebMercatorQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 
 	_, err := url.ParseRequestURI(e.Config.OgcAPI.Tiles.TileServer.String())
 	if err != nil {
@@ -52,16 +67,34 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 	return tiles
 }
 
-func renderTemplatesForSrs(e *engine.Engine, srs string) {
+func renderTemplatesForSrs(e *engine.Engine, srs string, tilesBreadcrumbs []engine.Breadcrumb, tileMatrixSetsBreadcrumbs []engine.Breadcrumb) {
+	tilesSrsBreadcrumbs := tilesBreadcrumbs
+	tilesSrsBreadcrumbs = append(tilesSrsBreadcrumbs, []engine.Breadcrumb{
+		engine.Breadcrumb{
+			Name: srs,
+			Path: "tiles/" + srs,
+		},
+	}...)
+	tileMatrixSetsSrsBreadcrumbs := tileMatrixSetsBreadcrumbs
+	tileMatrixSetsSrsBreadcrumbs = append(tileMatrixSetsSrsBreadcrumbs, []engine.Breadcrumb{
+		engine.Breadcrumb{
+			Name: srs,
+			Path: "tileMatrixSets/" + srs,
+		},
+	}...)
+
 	e.RenderTemplates(tileMatrixSetsPath+"/"+srs,
+		tileMatrixSetsSrsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets/"+srs+".go.json"),
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets/"+srs+".go.html"))
 
 	e.RenderTemplates(tilesPath+"/"+srs,
+		tilesSrsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.json"),
 		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.html"))
 
 	e.RenderTemplates(tilesPath+"/"+srs,
+		tilesSrsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.tilejson"))
 }
 

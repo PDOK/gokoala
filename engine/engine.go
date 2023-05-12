@@ -117,10 +117,10 @@ func (e *Engine) startServer(name string, address string, shutdownDelay int, rou
 
 // RenderTemplates renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
 // This method also performs OpenAPI validation of the rendered template, therefore we also need the URL path.
-func (e *Engine) RenderTemplates(urlPath string, keys ...TemplateKey) {
+func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		if key.Format == FormatHTML {
-			e.Templates.renderHTMLTemplate(key, nil)
+			e.Templates.renderHTMLTemplate(key, breadcrumbs, nil)
 		} else {
 			e.Templates.renderNonHTMLTemplate(key, nil)
 		}
@@ -132,10 +132,10 @@ func (e *Engine) RenderTemplates(urlPath string, keys ...TemplateKey) {
 
 // RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
 // This method does bot perform OpenAPI validation of the rendered template (will be done during runtime).
-func (e *Engine) RenderTemplatesWithParams(params interface{}, keys ...TemplateKey) {
+func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		if key.Format == FormatHTML {
-			e.Templates.renderHTMLTemplate(key, params)
+			e.Templates.renderHTMLTemplate(key, breadcrumbs, params)
 		} else {
 			e.Templates.renderNonHTMLTemplate(key, params)
 		}
