@@ -3,47 +3,49 @@
 <hgroup class="main">
     <h2 class="title">Conformiteit voor {{ .Config.Title }}</h2>
 </hgroup>
-<div class="description">
-    Hier staan de verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet.
-    <ul>
-        <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core</a></li>
-        <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json</a></li>
-        <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html</a></li>
-        <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30</a></li>
+<div class="row">
+    <div class="col-md-12">
+        Hier staan de verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet.
+        <ul>
+            <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core</a></li>
+            <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json</a></li>
+            <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html</a></li>
+            <li><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30</a></li>
 
-        {{ if .Config.OgcAPI.Styles }}
-        <li><a href="http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core</a></li>
-        <li><a href="http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles</a></li>
-        {{ end }}
+            {{ if .Config.OgcAPI.Styles }}
+            <li><a href="http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core</a></li>
+            <li><a href="http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles</a></li>
+            {{ end }}
 
-        {{ if .Config.HasCollections }}
-            <li><a href="http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections">http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections</a></li>
-        {{ end }}
+            {{ if .Config.HasCollections }}
+                <li><a href="http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections">http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections</a></li>
+            {{ end }}
 
-        {{ if .Config.OgcAPI.GeoVolumes }}
-            <li><a href="http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core</a></li>
-        {{ end }}
+            {{ if .Config.OgcAPI.GeoVolumes }}
+                <li><a href="http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core</a></li>
+            {{ end }}
 
-        {{ if .Config.OgcAPI.Tiles }}
-        <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core</a></li>
-        <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset</a></li>
-        <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list</a></li>
-        <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets</a></li>
-        {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</li> */}}
-        {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection</li> */}}
-        {{range $type := .Config.OgcAPI.Tiles.Types}}
-        {{ if (eq $type "raster") }}
-        {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg</li> */}}
-        <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png</a></li>
-        {{ end }}
-        {{ if (eq $type "vector") }}
-            <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt</a></li>
-        {{ end }}
-        {{end}}
-        {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson</li> */}}
-        {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff</li> */}}
-        {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf</li> */}}
-        {{ end }}
-    </ul>
+            {{ if .Config.OgcAPI.Tiles }}
+            <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core</a></li>
+            <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset</a></li>
+            <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list</a></li>
+            <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets</a></li>
+            {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</li> */}}
+            {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection</li> */}}
+            {{range $type := .Config.OgcAPI.Tiles.Types}}
+            {{ if (eq $type "raster") }}
+            {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg</li> */}}
+            <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png</a></li>
+            {{ end }}
+            {{ if (eq $type "vector") }}
+                <li><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt</a></li>
+            {{ end }}
+            {{end}}
+            {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson</li> */}}
+            {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff</li> */}}
+            {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf</li> */}}
+            {{ end }}
+        </ul>
+    </div>
 </div>
 {{end}}
