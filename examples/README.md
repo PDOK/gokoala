@@ -20,3 +20,15 @@ This example uses 3D tiles of New York.
 - Open http://localhost:8080 to explore the landing page
 - Call http://localhost:8080/collections/NewYork/3dtiles/6/0/1.b3dm to download a specific 3D tile
 
+## Example multiple OGC APIs for a single collection
+
+This example demonstrates that you can have a collection (NewYork in this case) that offers
+multiple OGC APIs (both OGC API 3D GeoVolumes and OGC API Features in this example).
+
+To keep the config DRY we use YAML anchors+aliases to reference common metadata for a collection.
+
+- Start GoKoala as specified in the root [README](../README.md#run)
+  and provide `config_multiple_ogc_apis_single_collection.yaml` as the config file.
+- Open http://localhost:8080 to explore the landing page
+- Call http://localhost:8080/collections/NewYork/ to view the collection
+
