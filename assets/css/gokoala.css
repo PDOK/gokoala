@@ -13,7 +13,6 @@ hgroup {
 .navbar {
     background-color: var(--bs-blue);
 }
-
 .navbar .breadcrumb .breadcrumb-item,
 .navbar .breadcrumb .breadcrumb-item a {
     color: var(--bs-white);
@@ -21,20 +20,6 @@ hgroup {
 .navbar .breadcrumb .breadcrumb-item a:hover {
     color: var(--lightblue);
 }
-
-/*.navbar .breadcrumb .breadcrumb-item:last-of-type,*/
-/*.navbar .breadcrumb .breadcrumb-item:last-of-type a {*/
-/*    text-decoration: none;*/
-/*}*/
-
-/*.navbar .page-toggle a {*/
-/*    color: var(--bs-white);*/
-/*    text-decoration: underline;*/
-/*}*/
-/*.navbar .page-toggle a:hover {*/
-/*    color: var(--lightblue);*/
-/*}*/
-
 
 footer {
     background-color: var(--bs-blue);
