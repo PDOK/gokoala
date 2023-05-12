@@ -1,4 +1,4 @@
-{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 {{ if .Config.OgcAPI.Tiles }}
 <hgroup class="main">
@@ -31,7 +31,7 @@
         </thead>
         <tbody>
             {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-            {{ if eq $type.Srs "EPSG:4258" }}
+            {{ if eq $type.Srs.EPSG "EPSG:4258" }}
             {{ if eq $type.ZoomLevelRange.Start 0 }}
             <tr>
                 <td>0</td>

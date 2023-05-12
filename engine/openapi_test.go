@@ -98,9 +98,9 @@ func Test_newOpenAPI(t *testing.T) {
 					OgcAPI: OgcAPI{
 						GeoVolumes: &OgcAPI3dGeoVolumes{
 							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: GeoSpatialCollection{
-								GeoSpatialCollectionEntry{ID: "feature1"},
-								GeoSpatialCollectionEntry{ID: "feature2"},
+							Collections: GeoSpatialCollections{
+								GeoSpatialCollection{ID: "feature1"},
+								GeoSpatialCollection{ID: "feature2"},
 							},
 						},
 					},

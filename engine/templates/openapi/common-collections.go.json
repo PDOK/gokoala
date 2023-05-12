@@ -1,4 +1,4 @@
-{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {
   "openapi": "3.0.0",
   "info": {
@@ -84,7 +84,7 @@
         }
       }
     },
-    {{- range $index, $type := .Config.GeoSpatialCollections -}}
+    {{- range $index, $type := .Config.AllCollections -}}
     {{- if $index -}},{{- end -}}
     "/collections/{{ $type.ID }}": {
       "get": {

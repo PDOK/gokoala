@@ -41,11 +41,11 @@ type Config struct {
 }
 
 func (c *Config) HasCollections() bool {
-	return c.GeoSpatialCollections() != nil
+	return c.AllCollections() != nil
 }
 
-func (c *Config) GeoSpatialCollections() GeoSpatialCollection {
-	var result GeoSpatialCollection
+func (c *Config) AllCollections() GeoSpatialCollections {
+	var result GeoSpatialCollections
 	if c.OgcAPI.GeoVolumes != nil {
 		result = append(result, c.OgcAPI.GeoVolumes.Collections...)
 	}
@@ -70,23 +70,40 @@ type OgcAPI struct {
 	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes"`
 	Tiles      *OgcAPITiles        `yaml:"tiles"`
 	Styles     *OgcAPIStyles       `yaml:"styles"`
-	Features   *OgcAPIFeatures     // TODO: add yaml tag once implemented
-	Maps       *OgcAPIMaps         // TODO: add yaml tag once implemented
+	Features   *OgcAPIFeatures     `yaml:"features"`
+	Maps       *OgcAPIMaps         `yaml:"maps"`
 }
 
-type GeoSpatialCollection []GeoSpatialCollectionEntry
+type GeoSpatialCollections []GeoSpatialCollection
 
-// Flatten lists all unique GeoSpatialCollectionEntry IDs
-func (g GeoSpatialCollection) Flatten() []string {
-	var ids []string
-	for _, entry := range g {
-		ids = append(ids, entry.ID)
+// Unique lists all unique GeoSpatialCollections (no duplicate IDs)
+func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
+	collectionsByID := g.toMap()
+	flattened := make([]GeoSpatialCollection, 0, len(collectionsByID))
+	for _, v := range collectionsByID {
+		flattened = append(flattened, v)
 	}
-	return removeDuplicates(ids)
+	return flattened
 }
 
-type GeoSpatialCollectionEntry struct {
-	ID         string                       `yaml:"id"`
+// ContainsID check if given collection - by ID - exists
+func (g GeoSpatialCollections) ContainsID(id string) bool {
+	_, ok := g.toMap()[id]
+	return ok
+}
+
+func (g GeoSpatialCollections) toMap() map[string]GeoSpatialCollection {
+	collectionsByID := make(map[string]GeoSpatialCollection)
+	for _, v := range g {
+		collectionsByID[v.ID] = v
+	}
+	return collectionsByID
+}
+
+type GeoSpatialCollection struct {
+	ID       string                        `yaml:"id"`
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata"`
+
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline"`
 	Tiles      *CollectionEntryTiles        `yaml:",inline"`
 	Styles     *CollectionEntryStyles       `yaml:",inline"`
@@ -94,15 +111,26 @@ type GeoSpatialCollectionEntry struct {
 	Maps       *CollectionEntryMaps         `yaml:",inline"`
 }
 
+type GeoSpatialCollectionMetadata struct {
+	Description *string  `yaml:"description"`
+	Thumbnail   *string  `yaml:"thumbnail"`
+	Keywords    []string `yaml:"keywords"`
+	LastUpdated *string  `yaml:"lastUpdated"`
+	Extent      *Extent  `yaml:"extent"`
+}
+
 type CollectionEntry3dGeoVolumes struct {
 	// Optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
 	TileServerPath *string `yaml:"tileServerPath"`
 
-	// Optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb"
+	// Optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb".
 	URITemplate3dTiles *string `yaml:"uriTemplate3dTiles"`
 
-	// Optional URI template for subtrees, only required when "implicit tiling" extension is used
+	// Optional URI template for subtrees, only required when "implicit tiling" extension is used.
 	URITemplateImplicitTilingSubtree *string `yaml:"uriTemplateImplicitTilingSubtree"`
+
+	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
+	URL3DViewer *YAMLURL `yaml:"3dViewerUrl"`
 }
 
 type CollectionEntryTiles struct {
@@ -122,18 +150,18 @@ type CollectionEntryMaps struct {
 }
 
 type OgcAPI3dGeoVolumes struct {
-	TileServer  YAMLURL              `yaml:"tileServer"`
-	Thumbnail   string               `yaml:"thumbnail"`
-	Collections GeoSpatialCollection `yaml:"collections"`
+	TileServer  YAMLURL               `yaml:"tileServer"`
+	Thumbnail   string                `yaml:"thumbnail"`
+	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPITiles struct {
-	Title        string               `yaml:"title"`
-	Abstract     string               `yaml:"abstract"`
-	TileServer   YAMLURL              `yaml:"tileServer"`
-	Types        []string             `yaml:"types"`
-	SupportedSrs []SupportedSrs       `yaml:"supportedSrs"`
-	Collections  GeoSpatialCollection // TODO: add yaml tag once implemented
+	Title        string                `yaml:"title"`
+	Abstract     string                `yaml:"abstract"`
+	TileServer   YAMLURL               `yaml:"tileServer"`
+	Types        []string              `yaml:"types"`
+	SupportedSrs []SupportedSrs        `yaml:"supportedSrs"`
+	Collections  GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPIStyles struct {
@@ -145,15 +173,15 @@ type OgcAPIStyles struct {
 }
 
 type OgcAPIFeatures struct {
-	Collections GeoSpatialCollection `yaml:"collections"`
+	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPIMaps struct {
-	Collections GeoSpatialCollection `yaml:"collections"`
+	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type SupportedSrs struct {
-	Srs            string         `yaml:"srs"`
+	Srs            SRS            `yaml:"srs"`
 	ZoomLevelRange ZoomLevelRange `yaml:"zoomLevelRange"`
 }
 
@@ -164,6 +192,15 @@ type ZoomLevelRange struct {
 
 type YAMLURL struct {
 	*url.URL
+}
+
+type SRS struct {
+	EPSG string
+}
+
+type Extent struct {
+	Srs  SRS      `yaml:"srs"`
+	Bbox []string `yaml:"bbox"`
 }
 
 // StyleMetadata based on OGC API Styles Requirement 7B
@@ -210,17 +247,33 @@ type Link struct {
 	Length        *int    `yaml:"length" json:"length,omitempty"`
 }
 
-type PropertiesSchema struct{} // TODO implement later
+type PropertiesSchema struct {
+	// placeholder
+}
 
 // UnmarshalYAML parses a string to URL and also removes trailing slash if present,
 // so we can easily append a longer path without having to worry about double slashes
-func (j *YAMLURL) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (o *YAMLURL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var s string
 	err := unmarshal(&s)
 	if err != nil {
 		return err
 	}
 	parsedURL, err := url.ParseRequestURI(strings.TrimSuffix(s, "/"))
-	j.URL = parsedURL
+	o.URL = parsedURL
+	return err
+}
+
+// UnmarshalYAML parses a string to EPSG srs/crs
+func (o *SRS) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var s string
+	err := unmarshal(&s)
+	if err != nil {
+		return err
+	}
+	if !strings.HasPrefix(s, "EPSG:") {
+		log.Fatalf("failed to parse SRS, should contain EPSG code and start with 'EPSG:'")
+	}
+	o.EPSG = s
 	return err
 }

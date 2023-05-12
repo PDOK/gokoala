@@ -1,4 +1,4 @@
-{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {
   {{ if .Config.OgcAPI.Tiles }}
   "title": "EuropeanETRS89_GRS80Quad_Draft",
@@ -41,7 +41,7 @@
   "tileMatrixSetLimits": [
     {{ $first := true }}
     {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-      {{ if eq $type.Srs "EPSG:4258" }}
+      {{ if eq $type.Srs.EPSG "EPSG:4258" }}
         {{ if eq $type.ZoomLevelRange.Start 0 }}
         {{ if not $first }}{{else}} {{$first = false}} {{end}}
         {

@@ -1,19 +1,23 @@
-{{- /*gotype: gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {
-  {{ if .Params }}
-  "id" : "{{ .Params }}",
-  "title" : "{{ .Params }}",
-  "description" : "{{ .Params }} collection",
+  "id" : "{{ .Params.ID }}",
+  "title" : "{{ .Params.ID }}",
+  {{ if and .Params.Metadata .Params.Metadata.Description }}
+  "description" : "{{ unmarkdown .Params.Metadata.Description }}",
+  {{ end }}
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   "collectionType" : "3d-container",
   {{ end }}
+  {{ if and .Params.Metadata .Params.Metadata.Extent }}
   "extent" : {
     "spatial": {
-      {{/* Copied bbox values from https://service.pdok.nl/lv/bag/wms/v2_0?request=getCapabilities&service=WMS */}}
-      "bbox": [ [ -25000,250000,280000,860000 ] ],
-      "crs" : "http://www.opengis.net/def/crs/EPSG/0/28992"
+      "bbox": [ [ {{ .Params.Metadata.Extent.Bbox | join "," }} ] ],
+      "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs.EPSG }}"
     }
   },
+  {{/* "crs" : [], */}}
+  {{/* "storageCrs" : "", */}}
+  {{ end }}
   "links" : [
     {
       "rel" : "self",
@@ -39,7 +43,7 @@
     {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
     ,
     {
-      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector",
+      "rel" : "items",
       "type" : "application/json",
       "title" : "The JSON representation of the {{ .Params }} tiles served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params }}/tiles?f=json"
@@ -55,7 +59,7 @@
     ,
     {
       "rel" : "items",
-      "type" : "application/json",
+      "type" : "application/geo+json",
       "title" : "The JSON representation of the {{ .Params }} features served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params }}/items?f=json"
     },
@@ -70,8 +74,8 @@
     ,
     {
       "rel" : "items",
-      "type" : "application/<sometype>",
-      "title" : "TODO",
+      "type" : "application/json",
+      "title" : "The JSON representation of the {{ .Params }} raster map tileset served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params }}/map/tiles?f=json"
     },
     {{ end }}
@@ -87,6 +91,5 @@
       "collectionType": "3d-container"
     }
   ]
-  {{ end }}
   {{ end }}
 }

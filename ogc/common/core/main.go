@@ -34,7 +34,7 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 	router.Get(rootPath, core.LandingPage())
 	router.Get(apiPath, core.API())
 	router.Get(conformancePath, core.Conformance())
-	router.Handle("/swagger-ui/*", http.FileServer(http.Dir("assets")))
+	router.Handle("/*", http.FileServer(http.Dir("assets")))
 
 	return core
 }

@@ -24,11 +24,11 @@
   width: 30%;
   float: right
 }
- 
+
 .swagger-ui .description-table-container {
   padding: 20px 0px 20px 0px
 }
- 
+
 .swagger-ui .description-table-container .details-table p {
   margin: 0
 }
@@ -129,7 +129,7 @@
 }
 
 .swagger-ui .topbar .topbar-wrapper {
-  background-image: url("./logo-pdok.svg");
+  background-image: url("../img/logo-pdok.svg");
   padding: 45px;
   background-repeat: no-repeat;
   background-position: 0px 15px;

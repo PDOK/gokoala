@@ -1,0 +1,20 @@
+@charset "UTF-8";
+
+/* see https://getbootstrap.com/docs/5.2/customize/css-variables/#root-variables */
+:root {
+    --bs-blue: #1a1e4f;
+    --bs-body-color: #444;
+    --bs-link-color: #2288ff;
+}
+
+hgroup {
+    margin-bottom: 0.5rem;
+}
+
+.navbar {
+    background-color: var(--bs-blue);
+}
+
+footer {
+    background-color: var(--bs-blue);
+}

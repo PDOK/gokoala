@@ -73,7 +73,7 @@ func TestNewTiles(t *testing.T) {
 							Types:      []string{"vector"},
 							SupportedSrs: []engine.SupportedSrs{
 								{
-									Srs: "EPSG:28992",
+									Srs: engine.SRS{EPSG: "EPSG:28992"},
 									ZoomLevelRange: engine.ZoomLevelRange{
 										Start: 0,
 										End:   6,
