@@ -41,11 +41,11 @@ type Config struct {
 }
 
 func (c *Config) HasCollections() bool {
-	return c.GeoSpatialCollections() != nil
+	return c.AllCollections() != nil
 }
 
-func (c *Config) GeoSpatialCollections() GeoSpatialCollection {
-	var result GeoSpatialCollection
+func (c *Config) AllCollections() GeoSpatialCollections {
+	var result GeoSpatialCollections
 	if c.OgcAPI.GeoVolumes != nil {
 		result = append(result, c.OgcAPI.GeoVolumes.Collections...)
 	}
@@ -74,33 +74,33 @@ type OgcAPI struct {
 	Maps       *OgcAPIMaps         `yaml:"maps"`
 }
 
-type GeoSpatialCollection []GeoSpatialCollectionEntry
+type GeoSpatialCollections []GeoSpatialCollection
 
-// Flatten lists all unique GeoSpatialCollectionEntry's (no duplicate IDs)
-func (g GeoSpatialCollection) Flatten() []GeoSpatialCollectionEntry {
-	collectionsById := g.toMap()
-	flattened := make([]GeoSpatialCollectionEntry, 0, len(collectionsById))
-	for _, v := range collectionsById {
+// Unique lists all unique GeoSpatialCollections (no duplicate IDs)
+func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
+	collectionsByID := g.toMap()
+	flattened := make([]GeoSpatialCollection, 0, len(collectionsByID))
+	for _, v := range collectionsByID {
 		flattened = append(flattened, v)
 	}
 	return flattened
 }
 
-// ContainsID check if given collection exists
-func (g GeoSpatialCollection) ContainsID(id string) bool {
+// ContainsID check if given collection - by ID - exists
+func (g GeoSpatialCollections) ContainsID(id string) bool {
 	_, ok := g.toMap()[id]
 	return ok
 }
 
-func (g GeoSpatialCollection) toMap() map[string]GeoSpatialCollectionEntry {
-	collectionsById := make(map[string]GeoSpatialCollectionEntry)
+func (g GeoSpatialCollections) toMap() map[string]GeoSpatialCollection {
+	collectionsByID := make(map[string]GeoSpatialCollection)
 	for _, v := range g {
-		collectionsById[v.ID] = v
+		collectionsByID[v.ID] = v
 	}
-	return collectionsById
+	return collectionsByID
 }
 
-type GeoSpatialCollectionEntry struct {
+type GeoSpatialCollection struct {
 	ID       string                        `yaml:"id"`
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata"`
 
@@ -150,18 +150,18 @@ type CollectionEntryMaps struct {
 }
 
 type OgcAPI3dGeoVolumes struct {
-	TileServer  YAMLURL              `yaml:"tileServer"`
-	Thumbnail   string               `yaml:"thumbnail"`
-	Collections GeoSpatialCollection `yaml:"collections"`
+	TileServer  YAMLURL               `yaml:"tileServer"`
+	Thumbnail   string                `yaml:"thumbnail"`
+	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPITiles struct {
-	Title        string               `yaml:"title"`
-	Abstract     string               `yaml:"abstract"`
-	TileServer   YAMLURL              `yaml:"tileServer"`
-	Types        []string             `yaml:"types"`
-	SupportedSrs []SupportedSrs       `yaml:"supportedSrs"`
-	Collections  GeoSpatialCollection `yaml:"collections"`
+	Title        string                `yaml:"title"`
+	Abstract     string                `yaml:"abstract"`
+	TileServer   YAMLURL               `yaml:"tileServer"`
+	Types        []string              `yaml:"types"`
+	SupportedSrs []SupportedSrs        `yaml:"supportedSrs"`
+	Collections  GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPIStyles struct {
@@ -173,11 +173,11 @@ type OgcAPIStyles struct {
 }
 
 type OgcAPIFeatures struct {
-	Collections GeoSpatialCollection `yaml:"collections"`
+	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPIMaps struct {
-	Collections GeoSpatialCollection `yaml:"collections"`
+	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type SupportedSrs struct {
@@ -247,7 +247,9 @@ type Link struct {
 	Length        *int    `yaml:"length" json:"length,omitempty"`
 }
 
-type PropertiesSchema struct{} // TODO implement later
+type PropertiesSchema struct {
+	// placeholder
+}
 
 // UnmarshalYAML parses a string to URL and also removes trailing slash if present,
 // so we can easily append a longer path without having to worry about double slashes

@@ -17,8 +17,8 @@
     }
   ],
   "collections" : [
-    {{ range $index, $coll := $cfg.GeoSpatialCollections.Flatten }}
-    {{/* TIP: temporarily disable the line below to fix intellij/goland hightlighting */}}
+    {{ range $index, $coll := $cfg.AllCollections.Unique }}
+    {{/* TIP: temporarily disable the line below to fix intellij/goland highlighting */}}
     {{ if $index }},{{ end }}
     {
       "id" : "{{ $coll.ID }}",

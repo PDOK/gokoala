@@ -46,9 +46,9 @@ func TestNewCollections(t *testing.T) {
 					OgcAPI: engine.OgcAPI{
 						GeoVolumes: &engine.OgcAPI3dGeoVolumes{
 							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: engine.GeoSpatialCollection{
-								engine.GeoSpatialCollectionEntry{ID: "buildings"},
-								engine.GeoSpatialCollectionEntry{ID: "obstacles"},
+							Collections: engine.GeoSpatialCollections{
+								engine.GeoSpatialCollection{ID: "buildings"},
+								engine.GeoSpatialCollection{ID: "obstacles"},
 							},
 						},
 					},
