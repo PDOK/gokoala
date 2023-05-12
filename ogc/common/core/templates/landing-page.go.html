@@ -10,11 +10,11 @@
     <div class="col-md-12">
     {{ end }}
         {{ markdown .Config.Abstract }}
-        <table class="table table-borderless">
+        <table class="table table-sm w-75">
             <tbody>
                 {{ if .Config.Keywords }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Trefwoorden</b>
                     </td>
                     <td>
@@ -24,7 +24,7 @@
                 {{ end }}
                 {{ if .Config.LastUpdated }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Bijgewerkt op</b>
                     </td>
                     <td>
@@ -33,7 +33,7 @@
                 </tr>
                 {{ end }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Licentie</b>
                     </td>
                     <td>
@@ -42,7 +42,7 @@
                 </tr>
                 {{ if .Config.Support}}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Support</b>
                     </td>
                     <td>
@@ -53,7 +53,7 @@
                 {{ if .Config.DatasetDetails }}
                 {{ range $detailField := .Config.DatasetDetails }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>{{ $detailField.Name }}</b>
                     </td>
                     <td>

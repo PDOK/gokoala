@@ -24,13 +24,13 @@
         <!-- skip link -->
         <a class="visually-hidden visually-hidden-focusable" href="#main">Naar hoofdinhoud</a>
 
-        <nav class="navbar">
+        <nav class="navbar" aria-label="header navigation">
             <div class="container">
                 <a class="navbar-brand py-3" href="{{ .Config.BaseURL }}">
                     <img src="img/logo-pdok.svg" alt="Logo PDOK: Ga naar de landing page">
                 </a>
             </div>
-            <div class="container">
+            <nav class="container" aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">Datasets</li>
                     <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ShortTitle }}</a></li>
@@ -38,15 +38,15 @@
                     <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}">{{ $breadcrumb.Name }}</a></li>
                     {{ end }}
                 </ol>
-                <ol class="breadcrumb" style="float: right;">
+                <ol class="float-end">
                     {{ if .Breadcrumbs }}
                     {{ $lastcrumb := last .Breadcrumbs }}
-                    <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
+                    <li class="page-toggle"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
                     {{ else }}
-                    <li class="breadcrumb-item"><a href="?f=json" target="_blank">JSON</a></li>
+                    <li class="page-toggle"><a href="?f=json" target="_blank">JSON</a></li>
                     {{ end }}
                 </ol>
-            </div>
+            </nav>
         </nav>
     </header>
 
