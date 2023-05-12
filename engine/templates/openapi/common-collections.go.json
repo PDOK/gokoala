@@ -84,7 +84,7 @@
         }
       }
     },
-    {{- range $index, $type := .Config.GeoSpatialCollections -}}
+    {{- range $index, $type := .Config.AllCollections -}}
     {{- if $index -}},{{- end -}}
     "/collections/{{ $type.ID }}": {
       "get": {

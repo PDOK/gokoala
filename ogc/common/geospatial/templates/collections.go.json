@@ -1,174 +1,128 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {
-  {{ $baseUrl := .Config.BaseURL }}
+  {{ $cfg := .Config }}
+  {{ $baseUrl := $cfg.BaseURL }}
   "links" : [
     {
       "rel" : "self",
       "type" : "application/json",
-      "title" : "This document",
+      "title" : "This document as JSON",
       "href" : "{{ $baseUrl }}/collections?f=json"
     },
     {
       "rel" : "alternate",
       "type" : "text/html",
-      "title" : "This document",
+      "title" : "This document as HTML",
       "href" : "{{ $baseUrl }}/collections?f=html"
     }
   ],
   "collections" : [
-    {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-    {{ range $index, $type := .Config.OgcAPI.GeoVolumes.Collections }}
+    {{ range $index, $coll := $cfg.AllCollections.Unique }}
+    {{/* TIP: temporarily disable the line below to fix intellij/goland highlighting */}}
     {{ if $index }},{{ end }}
     {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}",
-      {{ if and $type.Metadata $type.Metadata.Description }}
-      "description" : "{{ unmarkdown $type.Metadata.Description }}",
+      "id" : "{{ $coll.ID }}",
+      "title" : "{{ $coll.ID }}"
+      {{ if and $coll.Metadata $coll.Metadata.Description }}
+      ,"description" : "{{ unmarkdown $coll.Metadata.Description }}"
       {{ end }}
-      "collectionType" : "3d-container"
-      {{ if and $type.Metadata $type.Metadata.Extent }}
-      ,
-      "extent" : {
+      {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
+        {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
+          ,"collectionType" : "3d-container"
+        {{end}}
+      {{end}}
+      {{ if and $coll.Metadata $coll.Metadata.Extent }}
+      ,"extent" : {
         "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
+          "bbox": [ [ {{ $coll.Metadata.Extent.Bbox | join "," }} ] ],
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs.EPSG }}"
         }
       }
+      {{/* "crs" : [], */}}
+      {{/* "storageCrs" : "", */}}
       {{ end }}
-      ,
-      "links" : [
+      ,"links" : [
         {
           "rel" : "self",
           "type" : "application/json",
-          "title" : "Information about the 3D {{ $type.ID }} collection as JSON",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
+          "title" : "Information about the {{ $coll.ID }} collection as JSON",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         },
         {
           "rel" : "alternate",
           "type" : "text/html",
-          "title" : "Information about the 3D {{ $type.ID }} collection as HTML",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
-        },
-        {
-          "rel" : "items",
-          "type" : "application/json+3dtiles",
-          "title" : "Tileset definition of collection {{ $type.ID }} according to the OGC 3D Tiles specification",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}/3dtiles?f=json"
+          "title" : "Information about the {{ $coll.ID }} collection as HTML",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         }
+        {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
+          {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
+          ,{
+            "rel" : "items",
+            "type" : "application/json+3dtiles",
+            "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
+            "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
+          }
+          {{end}}
+        {{end}}
+        {{ if and $cfg.OgcAPI.Tiles $cfg.OgcAPI.Tiles.Collections }}
+          {{ if $cfg.OgcAPI.Tiles.Collections.ContainsID $coll.ID }}
+            ,{
+              "rel" : "items",
+              "type" : "application/json",
+              "title" : "The JSON representation of the {{ $coll.ID }} tiles served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/tiles?f=json"
+            },
+            {
+              "rel" : "items",
+              "type" : "text/html",
+              "title" : "The HTML representation of the {{ $coll.ID }} tiles served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/tiles?f=html"
+            }
+          {{end}}
+        {{end}}
+        {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
+          {{ if $cfg.OgcAPI.Features.Collections.ContainsID $coll.ID }}
+            ,{
+              "rel" : "items",
+              "type" : "application/geo+json",
+              "title" : "The JSON representation of the {{ $coll.ID }} features served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=json"
+            },
+            {
+              "rel" : "items",
+              "type" : "text/html",
+              "title" : "The HTML representation of the {{ $coll.ID }} features served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
+            }
+            {{/* placeholder for more links*/}}
+          {{end}}
+        {{end}}
+        {{ if and $cfg.OgcAPI.Maps $cfg.OgcAPI.Maps.Collections }}
+          {{ if $cfg.OgcAPI.Maps.Collections.ContainsID $coll.ID }}
+            ,{
+              "rel" : "items",
+              "type" : "application/json",
+              "title" : "The JSON representation of the {{ $coll.ID }} raster map tileset served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/map/tiles?f=json"
+            }
+            {{/* placeholder for more links*/}}
+          {{end}}
+        {{end}}
       ],
       "content" : [
-        {
-          "rel" : "original",
-          "type" : "application/json+3dtiles",
-          "title" : "Tileset definition of collection {{ $type.ID }} according to the OGC 3D Tiles specification",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}/3dtiles?f=json",
-          "collectionType": "3d-container"
-        }
+        {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
+          {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
+            {
+              "rel" : "original",
+              "type" : "application/json+3dtiles",
+              "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json",
+              "collectionType": "3d-container"
+            }
+          {{end}}
+        {{end}}
       ]
-    }{{ if $index }},{{ end }}
+    }
     {{end}}
-    {{end}}
-
-    {{/* start placeholder for tiles collections */}}
-    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
-    ,
-    {{ range $index, $type := .Config.OgcAPI.Tiles.Collections }}
-    {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}"
-      {{ if and $type.Metadata $type.Metadata.Description }}
-      ,
-      "description" : "{{ unmarkdown $type.Metadata.Description }}"
-      {{ end }}
-      {{ if and $type.Metadata $type.Metadata.Extent }}
-      ,
-      "extent" : {
-        "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
-        }
-      }
-      {{ end }}
-      ,
-      "links" : [
-        {
-          "rel" : "self",
-          "type" : "application/json",
-          "title" : "This document",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
-        }
-      ]
-    }{{ if $index }},{{ end }}
-    {{ end }}
-    {{ end }}
-    {{/* end placeholder for tiles collections */}}
-
-    {{/* start placeholder for features collections */}}
-    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-    ,
-    {{ range $index, $type := .Config.OgcAPI.Features.Collections }}
-    {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}"
-      {{ if and $type.Metadata $type.Metadata.Description }}
-      ,
-      "description" : "{{ unmarkdown $type.Metadata.Description }}"
-      {{ end }}
-      {{ if and $type.Metadata $type.Metadata.Extent }}
-      ,
-      "extent" : {
-        "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
-        }
-      }
-      {{ end }}
-      ,
-      "links" : [
-        {
-          "rel" : "self",
-          "type" : "application/json",
-          "title" : "This document",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
-        }
-      ]
-    }{{ if $index }},{{ end }}
-    {{ end }}
-    {{ end }}
-    {{/* end placeholder for features collections */}}
-
-    {{/* start placeholder for maps collections */}}
-    {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
-    ,
-    {{ range $index, $type := .Config.OgcAPI.Maps.Collections }}
-    {
-      "id" : "{{ $type.ID }}",
-      "title" : "{{ $type.ID }}"
-      {{ if and $type.Metadata $type.Metadata.Description }}
-      ,
-      "description" : "{{ unmarkdown $type.Metadata.Description }}"
-      {{ end }}
-      {{ if and $type.Metadata $type.Metadata.Extent }}
-      ,
-      "extent" : {
-        "spatial": {
-          "bbox": [ [ {{ $type.Metadata.Extent.Bbox | join "," }} ] ],
-          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $type.Metadata.Extent.Srs.EPSG }}"
-        }
-      }
-      {{ end }}
-      ,
-      "links" : [
-        {
-          "rel" : "self",
-          "type" : "application/json",
-          "title" : "This document",
-          "href" : "{{ $baseUrl }}/collections/{{ $type.ID }}?f=json"
-        }
-      ]
-    }{{ if $index }},{{ end }}
-    {{ end }}
-    {{ end }}
-    {{/* end placeholder for maps collections */}}
   ]
 }

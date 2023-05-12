@@ -38,10 +38,10 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 					Path: "collections/" + coll.ID,
 				},
 			}...)
-			e.RenderTemplatesWithParams(coll.ID,
+			e.RenderTemplatesWithParams(coll,
 				nil,
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.json", coll.ID))
-			e.RenderTemplatesWithParams(coll.ID,
+			e.RenderTemplatesWithParams(coll,
 				collectionBreadcrumbs,
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.html", coll.ID))
 		}

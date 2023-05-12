@@ -1,62 +1,94 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-{{ if .Params }}
 <hgroup>
-    <h2 class="title">Collection: {{ .Params }}</h2>
+    <h2 class="title">Collection: {{ .Params.ID }}</h2>
 </hgroup>
 
 <section class="row row-cols-4 g-4">
     <div class="col-8">
         <div class="card h-100">
             <h5 class="card-header">
-                {{ .Params }}
+                {{ .Params.ID }}
             </h5>
             <div class="card-body">
-                <p class="card-text">
-                    Some quick example text to build on the card title and make up the bulk of the card's content.
-                </p>
+                {{ if and .Params.Metadata .Params.Metadata.Description }}
+                    {{ markdown .Params.Metadata.Description }}
+                {{ end }}
             </div>
 
             <!-- start specific part per OGC spec -->
             <ul class="list-group list-group-flush">
                 {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-                <li class="list-group-item">
-                    <h5 class="card-title">3D GeoVolumes</h5>
-                    <ul>
-                        <li>Ga naar de <a href="{{ .Config.BaseURL }}/collections/{{ .Params }}/3dtiles">3D Tiles</a></li>
-                        <li>Bekijk in de <a href="#">3D viewer</a></li>
-                    </ul>
-                </li>
+                    {{ if .Config.OgcAPI.GeoVolumes.Collections.ContainsID .Params.ID }}
+                    <li class="list-group-item">
+                        <h5 class="card-title">3D GeoVolumes</h5>
+                        <ul>
+                            <li>Ga naar de <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles">3D Tiles</a></li>
+                            {{ if and .Params.GeoVolumes .Params.GeoVolumes.URL3DViewer }}
+                            <li>Bekijk in de <a href="{{ .Params.GeoVolumes.URL3DViewer }}">3D viewer</a></li>
+                            {{ end }}
+                        </ul>
+                    </li>
+                    {{ end }}
                 {{ end }}
+
                 {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
-                    <h5 class="card-title">Tiles</h5>
-                    <ul>
-                        <li>TODO (placeholder)</li>
-                    </ul>
+                    {{ if .Config.OgcAPI.Tiles.Collections.ContainsID .Params.ID }}
+                    <li class="list-group-item">
+                        <h5 class="card-title">Tiles</h5>
+                        <ul>
+                            <li>TODO (placeholder)</li>
+                        </ul>
+                    </li>
+                    {{ end }}
                 {{ end }}
+
                 {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-                    <h5 class="card-title">Features</h5>
-                    <ul>
-                        <li>TODO (placeholder)</li>
-                    </ul>
+                    {{ if .Config.OgcAPI.Features.Collections.ContainsID .Params.ID }}
+                    <li class="list-group-item">
+                        <h5 class="card-title">Features</h5>
+                        <ul>
+                            <li>TODO (placeholder)</li>
+                        </ul>
+                    </li>
+                    {{ end }}
                 {{ end }}
+
                 {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
-                    <h5 class="card-title">Maps</h5>
-                    <ul>
-                        <li>TODO (placeholder)</li>
-                    </ul>
+                    {{ if .Config.OgcAPI.Maps.Collections.ContainsID .Params.ID }}
+                    <li class="list-group-item">
+                        <h5 class="card-title">Maps</h5>
+                        <ul>
+                            <li>TODO (placeholder)</li>
+                        </ul>
+                    </li>
+                    {{ end }}
                 {{ end }}
             </ul>
             <!-- end specific part per OGC spec -->
 
             <ul class="list-group list-group-flush">
-                <li class="list-group-item text-muted"><strong>Trefwoorden</strong>: daff, fsfs, fsfsf</li>
+                {{ if and .Params.Metadata .Params.Metadata.Keywords }}
+                    <li class="list-group-item text-muted">
+                        <strong>Trefwoorden</strong>: {{ .Params.Metadata.Keywords | join ", " }}
+                    </li>
+                {{ end }}
                 {{/* <li class="list-group-item text-muted"><b>Schema</b>: TODO link to collection schema</li> */}}
-                <li class="list-group-item text-muted"><strong>Bijgewerkt op</strong>: daff, fsfs, fsfsf</li>
-                <li class="list-group-item text-muted"><strong>Geografische begrenzing</strong> (<a href="http://www.opengis.net/def/crs/EPSG/0/28992">EPSG:28992</a>): -25000,250000,280000,860000</li>
+                {{ if and .Params.Metadata .Params.Metadata.LastUpdated }}
+                    <li class="list-group-item text-muted">
+                        <strong>Bijgewerkt op</strong>:
+                        {{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}
+                    </li>
+                {{ end }}
+                {{ if and .Params.Metadata .Params.Metadata.Extent }}
+                    <li class="list-group-item text-muted">
+                        <strong>Geografische begrenzing</strong>
+                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs.EPSG }}">{{ .Params.Metadata.Extent.Srs.EPSG }}</a>):
+                        {{ .Params.Metadata.Extent.Bbox | join ", " }}
+                    </li>
+                {{ end }}
             </ul>
         </div>
     </div>
 </section>
-{{end}}
 {{end}}
