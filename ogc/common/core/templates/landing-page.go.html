@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-<hgroup class="main">
-    <h2 class="title">{{ .Config.Title }}</h2>
+<hgroup>
+    <h1 class="title">{{ .Config.Title }}</h1>
 </hgroup>
 <div class="row">
     {{ if and .Config.Thumbnail .Config.ResourcesDir }}
@@ -37,7 +37,7 @@
                         <b>Licentie</b>
                     </td>
                     <td>
-                        {{ markdown .Config.License }}
+                        {{ markdown .Config.License | default "onbekend" }}
                     </td>
                 </tr>
                 {{ if .Config.Support}}
@@ -92,9 +92,9 @@
         </ul>
         {{ end }}
         {{ if .Config.HasCollections }}
-        <h3>Collections</h3>
+        <h3>Collecties</h3>
         <ul>
-            <li><a href="collections">Collections</a> - <a href="collections?f=json">[JSON]</a></li>
+            <li><a href="collections">Collecties</a> - <a href="collections?f=json">[JSON]</a></li>
         </ul>
         {{ end }}
     </div>

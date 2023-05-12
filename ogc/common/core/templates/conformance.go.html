@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-<hgroup class="main">
-    <h2 class="title">Conformiteit voor {{ .Config.Title }}</h2>
+<hgroup>
+    <h1 class="title">{{ .Config.ShortTitle | default .Config.Title }} - Conformance</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
