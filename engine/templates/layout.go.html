@@ -24,28 +24,47 @@
         <!-- skip link -->
         <a class="visually-hidden visually-hidden-focusable" href="#main">Naar hoofdinhoud</a>
 
-        <nav class="navbar">
+        <nav class="navbar" aria-label="top navigation">
+            <!-- logo -->
             <div class="container">
                 <a class="navbar-brand py-3" href="{{ .Config.BaseURL }}">
                     <img src="img/logo-pdok.svg" alt="Logo PDOK: Ga naar de landing page">
                 </a>
             </div>
+
+            <!-- top navigation -->
             <div class="container">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">Datasets</li>
-                    <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ShortTitle }}</a></li>
-                    {{ range $breadcrumb := .Breadcrumbs }}
-                    <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}">{{ $breadcrumb.Name }}</a></li>
-                    {{ end }}
-                </ol>
-                <ol class="breadcrumb" style="float: right;">
-                    {{ if .Breadcrumbs }}
-                    {{ $lastcrumb := last .Breadcrumbs }}
-                    <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
-                    {{ else }}
-                    <li class="breadcrumb-item"><a href="?f=json" target="_blank">JSON</a></li>
-                    {{ end }}
-                </ol>
+                {{ $lastcrumb := last .Breadcrumbs }}
+
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Datasets</a></li>
+                        {{ if .Breadcrumbs }}
+                            <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ShortTitle | default .Config.Title }}</a></li>
+                        {{ else }}
+                            <li class="breadcrumb-item active">{{ .Config.ShortTitle | default .Config.Title }}</li>
+                        {{ end }}
+
+                        {{ range $breadcrumb := .Breadcrumbs }}
+                            {{ if ne $breadcrumb.Name $lastcrumb.Name }}
+                                <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}">{{ $breadcrumb.Name }}</a></li>
+                            {{ else }}
+                                <li class="breadcrumb-item active">{{ $breadcrumb.Name }}</li>
+                            {{ end }}
+                        {{ end }}
+                    </ol>
+                </nav>
+
+                <nav style="--bs-breadcrumb-divider: '|';" aria-label="switch language or format">
+                    <ol class="breadcrumb" >
+                        <li class="breadcrumb-item"><a href="#">English</a></li>
+                        {{ if .Breadcrumbs }}
+                            <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
+                        {{ else }}
+                            <li class="breadcrumb-item"><a href="?f=json" target="_blank">JSON</a></li>
+                        {{ end }}
+                    </ol>
+                </nav>
             </div>
         </nav>
     </header>

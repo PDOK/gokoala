@@ -3,8 +3,7 @@
 /* see https://getbootstrap.com/docs/5.2/customize/css-variables/#root-variables */
 :root {
     --bs-blue: #1a1e4f;
-    --bs-body-color: #444;
-    --bs-link-color: #2288ff;
+    --lightblue: #add8e6;
 }
 
 hgroup {
@@ -14,29 +13,26 @@ hgroup {
 .navbar {
     background-color: var(--bs-blue);
 }
-
 .navbar .breadcrumb .breadcrumb-item,
 .navbar .breadcrumb .breadcrumb-item a {
-    color: #c6c6c6;
-    text-decoration: none;
+    color: var(--bs-white);
+}
+.navbar .breadcrumb .breadcrumb-item a:hover {
+    color: var(--lightblue);
 }
 
-.navbar .breadcrumb .breadcrumb-item:last-of-type,
-.navbar .breadcrumb .breadcrumb-item:last-of-type a {
-    color: #fff;
-    text-decoration: underline;
+.card-header {
+    background-color: var(--bs-blue);
+}
+
+.card-header a {
+    color: var(--bs-white);
 }
 
 footer {
     background-color: var(--bs-blue);
 }
 
-.table-borderless td,
-.table-borderless th {
-    border: 0;
-}
-
-.table td p,
-.table-condensed td p {
+.table-sm td p {
     margin: 0;
 }

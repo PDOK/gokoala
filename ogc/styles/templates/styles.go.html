@@ -1,24 +1,33 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
-<hgroup class="main">
-    <h2 class="title">{{ .Config.OgcAPI.Styles.Title }}</h2>
+<hgroup>
+    <h1 class="title">{{ .Config.OgcAPI.Styles.Title }}</h1>
 </hgroup>
 <div class="row">
-    {{ markdown .Config.OgcAPI.Styles.Abstract }}
     <div class="col-md-12">
-        <table class="table table-borderless">
+        {{ markdown .Config.OgcAPI.Styles.Abstract }}
+        <table class="table table-striped">
             <thead>
                 <tr>
-                    <td>Styles</td>
-                    <td>Content types</td>
+                    <th>Styles</th>
+                    <th>Content types</th>
                 </tr>
             </thead>
             <tbody>
                 {{ $baseUrl := .Config.BaseURL }}
                 {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
                 <tr>
-                    <td>{{ $style.ID }} - <a href="styles/{{ $style.ID }}">[JSON]</a> <a href="styles/{{ $style.ID }}/metadata">[Metadata]</a></td>
+                    <td>
+                        <ul>
+                            <li>
+                                Download de "{{ $style.ID }}" stijl as <a href="styles/{{ $style.ID }}">JSON</a>
+                            </li>
+                            <li>
+                                Bekijk de <a href="styles/{{ $style.ID }}/metadata">Metadata</a>
+                            </li>
+                        </ul>
+                    </td>
                     <td>
                         {{ range $stylesheet := $style.Stylesheets }}
                         {{ $stylesheet.Link.Type }}<br>

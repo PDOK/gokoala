@@ -1,18 +1,17 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-{{ if .Config.OgcAPI.Tiles }}
-<hgroup class="main">
-    <h2 class="title">{{ .Config.OgcAPI.Tiles.Title }}</h2>
+<hgroup>
+    <h1 class="title">{{ .Config.OgcAPI.Tiles.Title }}</h1>
 </hgroup>
-<div class="description">
-    {{ markdown .Config.OgcAPI.Tiles.Abstract }}
-    <div class="table-container">
-        <table class="parameters">
+<div class="row">
+    <div class="col-md-12">
+        {{ markdown .Config.OgcAPI.Tiles.Abstract }}
+        <table class="table table-striped">
             <thead>
                 <tr>
-                    <td>Tiles</td>
-                    <td>CRS</td>
-                    <td>Data type</td>
+                    <th>Tiles</th>
+                    <th>CRS</th>
+                    <th>Data type</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,5 +44,4 @@
         </table>
     </div>
 </div>
-{{end}}
 {{end}}

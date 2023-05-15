@@ -2,13 +2,13 @@
 {{ define "content" }}
 {{ if .Params }}
 {{ $baseUrl := .Config.BaseURL }}
-<hgroup class="main">
-    <h2 class="title">{{ .Params.ID }}</h2>
+<hgroup>
+    <h1 class="title">{{ .Params.ID }}</h1>
 </hgroup>
 <div class="row">
-    {{ markdown .Params.Description }}
     <div class="col-md-12">
-        <table class="table table-borderless">
+        {{ markdown .Params.Description }}
+        <table class="table">
             <tbody>
                 <tr>
                     <td>

@@ -1,20 +1,20 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-<hgroup class="main">
-    <h2 class="title">{{ .Config.Title }}</h2>
+<hgroup>
+    <h1 class="title">{{ .Config.Title }}</h1>
 </hgroup>
-<div class="row">
+<div class="row py-3">
     {{ if and .Config.Thumbnail .Config.ResourcesDir }}
     <div class="col-md-8">
     {{ else }}
     <div class="col-md-12">
     {{ end }}
         {{ markdown .Config.Abstract }}
-        <table class="table table-borderless">
+        <table class="table table-borderless table-sm w-75">
             <tbody>
                 {{ if .Config.Keywords }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Trefwoorden</b>
                     </td>
                     <td>
@@ -24,7 +24,7 @@
                 {{ end }}
                 {{ if .Config.LastUpdated }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Bijgewerkt op</b>
                     </td>
                     <td>
@@ -33,16 +33,16 @@
                 </tr>
                 {{ end }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Licentie</b>
                     </td>
                     <td>
-                        {{ markdown .Config.License }}
+                        {{ markdown .Config.License | default "onbekend" }}
                     </td>
                 </tr>
                 {{ if .Config.Support}}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>Support</b>
                     </td>
                     <td>
@@ -53,7 +53,7 @@
                 {{ if .Config.DatasetDetails }}
                 {{ range $detailField := .Config.DatasetDetails }}
                 <tr>
-                    <td>
+                    <td class="w-25">
                         <b>{{ $detailField.Name }}</b>
                     </td>
                     <td>
@@ -71,32 +71,109 @@
     </div>
     {{ end }}
 </div>
-<div class="row">
-    <div class="col-md-12">
-        <h3>Common</h3>
-        <ul>
-            <li><a href="api">API specificatie</a> - <a href="api?f=json">[JSON]</a></li>
-            <li><a href="conformance">Conformance declaratie</a> - <a href="conformance?f=json">[JSON]</a></li>
-        </ul>
-        {{ if .Config.OgcAPI.Styles }}
-        <h3>Styles</h3>
-        <ul>
-            <li><a href="styles">Beschikbare styles</a> - <a href="styles?f=json">[JSON]</a></li>
-        </ul>
-        {{ end }}
-        {{ if .Config.OgcAPI.Tiles }}
-        <h3>Tiles</h3>
-        <ul>
-            <li><a href="tiles">Tiles</a> - <a href="tiles?f=json">[JSON]</a></li>
-            <li><a href="tileMatrixSets">Tile Matrix Sets</a> - <a href="tileMatrixSets?f=json">[JSON]</a></li>
-        </ul>
-        {{ end }}
-        {{ if .Config.HasCollections }}
-        <h3>Collections</h3>
-        <ul>
-            <li><a href="collections">Collections</a> - <a href="collections?f=json">[JSON]</a></li>
-        </ul>
-        {{ end }}
+
+<div class="row row-cols-4 g-4">
+    <div class="col-4">
+        <div class="card h-100">
+            <h5 class="card-header">
+                <a href="api">Specificatie</a>
+            </h5>
+            <div class="card-body">
+                <p>
+                    De API specificatie bechrijft de OGC API op een manier dat zowel mensen als computers de
+                    mogelijkheden van de API kunnen verkennen. De API toont zowel in- als output mogelijkheden
+                    en helpt om snel een eerste werkende API call te genereren met het gewenste resultaat.
+                    De pagina is zowel in HTML als JSON beschikbaar.
+                </p>
+                <small class="text-body-secondary">Bekijk als <a href="api?f=json">JSON</a></small>
+            </div>
+        </div>
     </div>
+
+    <div class="col-4">
+        <div class="card h-100">
+            <h5 class="card-header">
+                <a href="conformance">Conformance declaratie</a>
+            </h5>
+            <div class="card-body">
+                <p>
+                    Op deze pagina beschrijft PDOK aan welke OGC standaarden PDOK zich confimeert bij het inrichten
+                    van de API. De pagina is zowel in HTML als JSON beschikbaar en verwijst naar de betreffende
+                    standaarden inclusief beschrijvingen.
+                </p>
+                <small class="text-body-secondary">Bekijk als <a href="conformance?f=json">JSON</a></small>
+            </div>
+        </div>
+    </div>
+
+    {{ if .Config.HasCollections }}
+    <div class="col-4">
+        <div class="card h-100">
+            <h5 class="card-header">
+                <a href="collections">Collecties</a>
+            </h5>
+            <div class="card-body">
+                <p>
+                    Deze API biedt één of meerdere collecties waarmee differentiatie gemaakt kan worden door de
+                    dataset van PDOK op te splitsen in verschillende objecten die bijvoorbeeld via features of
+                    tiles separaat aangeroepen kunnen worden. De pagina is zowel in HTML als JSON beschikbaar.
+                </p>
+                <small class="text-body-secondary">Bekijk als <a href="collections?f=json">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Tiles }}
+    <div class="col-4">
+        <div class="card h-100">
+            <h5 class="card-header">
+                <a href="tiles">Tiles</a>
+            </h5>
+            <div class="card-body">
+                <p>
+                    Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data
+                    bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van VectorTiles
+                    biedt PDOK ook Styles aan. De pagina is zowel in HTML als JSON beschikbaar.
+                </p>
+                <small class="text-body-secondary">Bekijk als <a href="tiles?f=json">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Styles }}
+    <div class="col-4">
+        <div class="card h-100">
+            <h5 class="card-header">
+                <a href="styles">Styles</a>
+            </h5>
+            <div class="card-body">
+                <p>
+                    Betreft de offici&#235;le style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld
+                    in het Mapbox formaat. De pagina is zowel in HTML als JSON beschikbaar.
+                </p>
+                <small class="text-body-secondary">Bekijk als <a href="styles?f=json">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Tiles }}
+    <div class="col-4">
+        <div class="card h-100">
+            <h5 class="card-header">
+                <a href="tileMatrixSets">Tile Matrix Sets</a>
+            </h5>
+            <div class="card-body">
+                <p>
+                    De door de PDOK beschikbare Tile Matrix Sets beschikbaar in deze API. De pagina is zowel
+                    in HTML als JSON beschikbaar.
+                </p>
+                <small class="text-body-secondary">Bekijk als <a href="tileMatrixSets?f=json">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
 </div>
 {{end}}

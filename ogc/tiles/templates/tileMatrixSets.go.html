@@ -1,26 +1,43 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-<hgroup class="main">
-    <h2 class="title">Tile Matrix Sets</h2>
+<hgroup>
+    <h1 class="title">Tile Matrix Sets</h1>
 </hgroup>
-<div class="description">
-    Deze API ondersteund de volgende tile matrix sets
-    <ul>
-        {{ if .Config.OgcAPI.Tiles }}
-        {{range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-        {{ if (eq $type.Srs.EPSG "EPSG:28992") }}
-        <li><a href="tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> - Amersfoort / RD New scheme for the
-            Netherlands</li>
-        {{end}}
-        {{ if (eq $type.Srs.EPSG "EPSG:4258") }}
-        <li><a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> - Geodetic
-            Reference System 1980 ETRS89 for Europe</li>
-        {{end}}
-        {{ if (eq $type.Srs.EPSG "EPSG:3857") }}
-        <li><a href="tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> - Google Maps Compatible for the World</li>
-        {{end}}
-        {{end}}
-        {{end}}
-    </ul>
+<div class="row">
+    <div class="col-md-12">
+        <p>
+            Deze API ondersteund de volgende tile matrix sets
+        </p>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tile Matrix Set</th>
+                    <th>Omschrijving</th>
+                </tr>
+            </thead>
+            <tbody>
+            {{range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+                {{ if (eq $type.Srs.EPSG "EPSG:28992") }}
+                    <tr>
+                        <td><a href="tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a></td>
+                        <td>Amersfoort / RD New scheme for the Netherlands</td>
+                    </tr>
+                {{end}}
+                {{ if (eq $type.Srs.EPSG "EPSG:4258") }}
+                    <tr>
+                        <td><a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a></td>
+                        <td>Geodetic Reference System 1980 ETRS89 for Europe</td>
+                    </tr>
+                {{end}}
+                {{ if (eq $type.Srs.EPSG "EPSG:3857") }}
+                    <tr>
+                        <td><a href="tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a></td>
+                        <td>Google Maps Compatible for the World</td>
+                    </tr>
+                {{end}}
+            {{end}}
+            </tbody>
+        </table>
+    </div>
 </div>
 {{end}}
