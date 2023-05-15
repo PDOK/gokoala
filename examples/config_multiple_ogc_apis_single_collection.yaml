@@ -15,7 +15,7 @@ collectionMetadata: &collectionMetadata
 title: New York
 # shortened title, used in breadcrumb path
 shortTitle: New York
-abstract: |
+abstract: >-
   This is a description about the dataset in Markdown.
 thumbnail: 3d.png
 license:
