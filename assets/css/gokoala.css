@@ -21,6 +21,14 @@ hgroup {
     color: var(--lightblue);
 }
 
+.card-header {
+    background-color: var(--bs-blue);
+}
+
+.card-header a {
+    color: var(--bs-white);
+}
+
 footer {
     background-color: var(--bs-blue);
 }
