@@ -6,10 +6,7 @@
     --lightblue: #add8e6;
 }
 
-hgroup {
-    margin-bottom: 0.5rem;
-}
-
+/* navbar */
 .navbar {
     background-color: var(--bs-blue);
 }
@@ -21,12 +18,20 @@ hgroup {
     color: var(--lightblue);
 }
 
+/* cards */
 .card-header {
     color: var(--bs-white);
     background-color: var(--bs-blue);
 }
 .card-header a {
     color: var(--bs-white);
+}
+.card-header a:hover {
+    color: var(--lightblue);
+}
+
+hgroup {
+    margin-bottom: 0.5rem;
 }
 
 footer {

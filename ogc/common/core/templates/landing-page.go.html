@@ -37,7 +37,7 @@
                         <b>Licentie</b>
                     </td>
                     <td>
-                        <a href="{{ .Config.License.Url | default "#" }}">{{ .Config.License.Name | default "onbekend" }}</a>
+                        <a href="{{ .Config.License.URL | default "#" }}">{{ .Config.License.Name | default "onbekend" }}</a>
                     </td>
                 </tr>
                 {{ if .Config.Support}}

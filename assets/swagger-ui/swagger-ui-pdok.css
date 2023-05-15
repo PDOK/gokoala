@@ -114,7 +114,7 @@
   display: none;
 }
 
-.swagger-ui .info a {
+.swagger-ui .main a {
   font-size: 14px;
   -webkit-transition: all .4s;
   transition: all .4s;
@@ -122,8 +122,12 @@
   color: #34495E;
 }
 
-.swagger-ui .info a:hover {
+.swagger-ui .main a:hover {
   color: #34495E;
+}
+
+.swagger-ui .info a {
+  text-decoration: underline;
 }
 
 .swagger-ui .btn.authorize {

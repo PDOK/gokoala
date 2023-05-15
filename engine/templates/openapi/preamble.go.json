@@ -14,7 +14,7 @@
     "termsOfService": "",
     "license": {
       "name": "{{ .Config.License.Name | default "onbekend" }}",
-      "url": "{{ .Config.License.Url | default "onbekend" }}"
+      "url": "{{ .Config.License.URL | default "onbekend" }}"
     }
   },
   "servers": [

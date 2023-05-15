@@ -205,7 +205,7 @@ type Extent struct {
 
 type License struct {
 	Name string `yaml:"name"`
-	Url  string `yaml:"url"`
+	URL  string `yaml:"url"`
 }
 
 // StyleMetadata based on OGC API Styles Requirement 7B
