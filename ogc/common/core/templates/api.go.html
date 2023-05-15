@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{{define "content"}}
+    <div class="row">
+        <div class="col-md-12">
+            <div id="swagger-ui"></div>
+
+            <link rel="stylesheet" type="text/css" href="swagger-ui/swagger-ui.css">
+            <link rel="stylesheet" type="text/css" href="swagger-ui/swagger-ui-pdok.css">
+
+            <script src="swagger-ui/swagger-ui-bundle.js" charset="UTF-8"></script>
+            <script src="swagger-ui/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+            <script>
+                window.onload = function () {
+                    // Begin Swagger UI call region
+                    const ui = SwaggerUIBundle({
+                        url: "./api?f=json",
+                        dom_id: '#swagger-ui',
+                        deepLinking: true,
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIStandalonePreset
+                        ],
+                        plugins: [
+                            SwaggerUIBundle.plugins.DownloadUrl
+                        ],
+                        layout: "BaseLayout"
+                    });
+                    // End Swagger UI call region
+
+                    window.ui = ui
+                }
+            </script>
+
+        </div>
+    </div>
+{{end}}

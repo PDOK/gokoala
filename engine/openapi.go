@@ -176,7 +176,7 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 
 func renderOpenAPITemplate(config *Config, fileName string) []byte {
 	file := filepath.Clean(fileName)
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(customFuncs).ParseFiles(file))
+	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).ParseFiles(file))
 
 	var rendered bytes.Buffer
 	if err := compiled.Execute(&rendered, &TemplateData{Config: config}); err != nil {

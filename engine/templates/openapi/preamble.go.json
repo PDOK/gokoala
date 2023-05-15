@@ -3,16 +3,18 @@
   "openapi": "3.0.0",
   "info": {
     "title": "{{ .Config.Title }}",
-    "description": "{{ unmarkdown .Config.Abstract }}",
+    "description": "{{ .Config.Abstract }} \n\n\n\n {{ .Config.Support }}",
     "version": "1.0",
     "contact": {
-      "name": "Beheer PDOK",
-      "email": "BeheerPDOK@kadaster.nl",
-      "url": "https://www.pdok.nl"
+      {{/* empty contact information to overwrite default OGC info */}}
+      "name": "",
+      "email": "",
+      "url": ""
     },
+    "termsOfService": "",
     "license": {
-      "name": "CC0 1.0",
-      "url": "https://creativecommons.org/publicdomain/zero/1.0/deed.nl"
+      "name": "{{ .Config.License.Name | default "onbekend" }}",
+      "url": "{{ .Config.License.URL | default "onbekend" }}"
     }
   },
   "servers": [
