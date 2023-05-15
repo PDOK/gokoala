@@ -57,7 +57,7 @@
     {{end}}
 
     {{ if .Config.OgcAPI.Processes }}
-      "http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list"
+      ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list"
     {{end}}
 
 
