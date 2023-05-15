@@ -2,7 +2,7 @@
 title: New York in 3D
 # shortened title, used in breadcrumb path
 shortTitle: New York in 3D
-abstract: |
+abstract: >-
   This is a description about the dataset in Markdown.
 # just a dummy picture, but you can put an actual thumbnail here
 thumbnail: 3d.png
