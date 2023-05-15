@@ -3,7 +3,9 @@
   "openapi": "3.0.0",
   "info": {
     "title": "{{ .Config.Title }}",
-    "description": "{{ .Config.Abstract }} \n\n\n\n {{ .Config.Support }}",
+    {{/* Swagger supports markdown in the description, but only a limited set and it can
+         mess up the JSON. Se lets disable that for now*/}}
+    "description": "{{ unmarkdown .Config.Abstract }} \n\n\n\n {{ unmarkdown .Config.Support }}",
     "version": "1.0",
     "contact": {
       {{/* empty contact information to overwrite default OGC info */}}
