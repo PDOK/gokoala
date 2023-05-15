@@ -34,7 +34,7 @@
                     {{ if and $coll.Metadata $coll.Metadata.Extent }}
                     <li class="list-group-item text-muted">
                         <strong>Geografische begrenzing</strong>
-                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs.EPSG }}">{{ $coll.Metadata.Extent.Srs.EPSG }}</a>):
+                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}">{{ $coll.Metadata.Extent.Srs }}</a>):
                         {{ $coll.Metadata.Extent.Bbox | join ", " }}
                     </li>
                     {{ end }}

@@ -29,7 +29,7 @@
             </thead>
             <tbody>
             {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-                {{ if eq $type.Srs.EPSG "EPSG:4258" }}
+                {{ if eq $type.Srs "EPSG:4258" }}
                     {{ if eq $type.ZoomLevelRange.Start 0 }}
                         <tr>
                             <td>0</td>
