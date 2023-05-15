@@ -152,6 +152,7 @@ type CollectionEntryMaps struct {
 
 type OgcAPI3dGeoVolumes struct {
 	TileServer  YAMLURL               `yaml:"tileServer"`
+	Thumbnail   string                `yaml:"thumbnail"`
 	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
