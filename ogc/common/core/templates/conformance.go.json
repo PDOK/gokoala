@@ -55,5 +55,11 @@
       {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff" */}}
       {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf" */}}
     {{end}}
+
+    {{ if .Config.OgcAPI.Processes }}
+      "http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list"
+    {{end}}
+
+
   ]
 }
