@@ -33,7 +33,7 @@ type Config struct {
 	Thumbnail      *string         `yaml:"thumbnail"`
 	Keywords       []string        `yaml:"keywords"`
 	LastUpdated    *string         `yaml:"lastUpdated"`
-	License        string          `yaml:"license"`
+	License        License         `yaml:"license"`
 	Support        *string         `yaml:"support"`
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
 	BaseURL        YAMLURL         `yaml:"baseUrl"`
@@ -201,6 +201,11 @@ type SRS struct {
 type Extent struct {
 	Srs  SRS      `yaml:"srs"`
 	Bbox []string `yaml:"bbox"`
+}
+
+type License struct {
+	Name string `yaml:"name"`
+	Url  string `yaml:"url"`
 }
 
 // StyleMetadata based on OGC API Styles Requirement 7B

@@ -26,11 +26,20 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 			Path: "conformance",
 		},
 	}
+	apiBreadcrumbs := []engine.Breadcrumb{
+		engine.Breadcrumb{
+			Name: "Specificatie",
+			Path: "api",
+		},
+	}
 
 	e.RenderTemplates(rootPath,
 		nil,
 		engine.NewTemplateKey(templatesDir+"landing-page.go.json"),
 		engine.NewTemplateKey(templatesDir+"landing-page.go.html"))
+	e.RenderTemplates(rootPath,
+		apiBreadcrumbs,
+		engine.NewTemplateKey(templatesDir+"api.go.html"))
 	e.RenderTemplates(conformancePath,
 		conformanceBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"conformance.go.json"),
@@ -59,8 +68,8 @@ func (c *CommonCore) API() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		format := c.engine.CN.NegotiateFormat(r)
 		if format == engine.FormatHTML {
-			// skip templating for swagger UI
-			http.ServeFile(w, r, templatesDir+"api.html")
+			key := engine.NewTemplateKey(templatesDir + "api.go.html")
+			c.engine.ServePage(w, r, key)
 			return
 		} else if format == engine.FormatJSON {
 			w.Header().Set("Content-Type", "application/vnd.oai.openapi+json;version=3.0")

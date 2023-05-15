@@ -22,9 +22,9 @@ hgroup {
 }
 
 .card-header {
+    color: var(--bs-white);
     background-color: var(--bs-blue);
 }
-
 .card-header a {
     color: var(--bs-white);
 }

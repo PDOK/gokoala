@@ -10,8 +10,9 @@ keywords:
   - keyword1
   - keyword2
 lastUpdated: "2023-05-08T12:00:00Z"
-license: >-
-  Applicable license (supports Markdown), e.g. [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/deed.nl)
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
 support: >-
   Support contact point (supports Markdown), e.g. [Email support](mailto:support@example.com)
 # further details of the dataset to be shown on the landing page; supports markdown

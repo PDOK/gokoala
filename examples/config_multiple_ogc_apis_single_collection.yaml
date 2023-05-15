@@ -18,9 +18,9 @@ shortTitle: New York
 abstract: |
   This is a description about the dataset in Markdown.
 thumbnail: 3d.png
-license: >-
-  This is the applicable license. Supports Markdown.
-  For instance: [CC0 1.0](http://creativecommons.org/publicdomain/zero/1.0/deed.nl)
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
 baseUrl: http://localhost:8080
 ogcApi:
   3dgeovolumes:

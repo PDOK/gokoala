@@ -10,4 +10,4 @@ The swagger-ui directory contains:
 - PDOK theme copied from:
   `<kadaster git server>/pdok/pdok-swagger-ui/src/branch/master/theme`
 
-It's referenced from `ogc/core/templates/api.html`
+It's referenced from `ogc/core/templates/api.go.html`
