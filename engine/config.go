@@ -38,16 +38,14 @@ func validate(config *Config) {
 		if ok := errors.Is(err, ive); ok {
 			log.Fatalf("failed to validate config file: %v", err)
 		}
-		var validationErrors []string
-		if err != nil {
-			var valErrs validator.ValidationErrors
-			if errors.As(err, &valErrs) {
-				for _, valErr := range valErrs {
-					validationErrors = append(validationErrors, valErr.Error()+"\n")
-				}
+		var errMessages []string
+		var valErrs validator.ValidationErrors
+		if errors.As(err, &valErrs) {
+			for _, valErr := range valErrs {
+				errMessages = append(errMessages, valErr.Error()+"\n")
 			}
 		}
-		log.Fatalf("invalid config file provided:\n %v", validationErrors)
+		log.Fatalf("invalid config file provided:\n %v", errMessages)
 	}
 }
 
