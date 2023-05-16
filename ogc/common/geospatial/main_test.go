@@ -198,7 +198,7 @@ func TestNewCollections_Collection(t *testing.T) {
 
 func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	rr := httptest.NewRecorder()
-	l, err := net.Listen("tcp", "localhost:9090")
+	l, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		log.Fatal(err)
 	}
