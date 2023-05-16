@@ -2,6 +2,10 @@
 title: Minimal OGC API
 abstract: This is a minimal OGC API
 baseUrl: http://localhost:8080
+shortTitle: Min
+license:
+  name: MIT
+  url: https://example.com
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   tiles:
