@@ -2,6 +2,10 @@
 title: Minimal OGC API
 abstract: This is a minimal OGC API
 baseUrl: http://localhost:8080
+shortTitle: Min
+license:
+  name: MIT
+  url: https://www.tldrlegal.com/license/mit-license
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   tiles:
@@ -11,3 +15,10 @@ ogcApi:
     # which hosts the tiles.
     tileServer:
       http://localhost:9090
+    types:
+      - vector
+    supportedSrs:
+      - srs: EPSG:4258
+        zoomLevelRange:
+          start: 0
+          end: 14

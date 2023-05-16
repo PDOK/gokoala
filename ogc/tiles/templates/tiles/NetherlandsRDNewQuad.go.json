@@ -41,7 +41,7 @@
   "tileMatrixSetLimits": [
     {{ $first := true }}
     {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-      {{ if eq $type.Srs.EPSG "EPSG:28992" }}
+      {{ if eq $type.Srs "EPSG:28992" }}
         {{ if eq $type.ZoomLevelRange.Start 0 }}
         {{ if not $first }}{{else}} {{$first = false}} {{end}}
         {

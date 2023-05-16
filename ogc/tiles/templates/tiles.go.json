@@ -20,7 +20,7 @@
   ],
   "tilesets": [
     {{range $index, $type := .Config.OgcAPI.Tiles.SupportedSrs}}
-      {{ if (eq $type.Srs.EPSG "EPSG:28992") }}
+      {{ if (eq $type.Srs "EPSG:28992") }}
         {
           "links": [
             {
@@ -41,7 +41,7 @@
           "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/NetherlandsRDNewQuad"
         }
       {{end}}
-      {{ if (eq $type.Srs.EPSG "EPSG:4258") }}
+      {{ if (eq $type.Srs "EPSG:4258") }}
         {{if $index}},{{end}}
         {
           "links": [
@@ -63,7 +63,7 @@
           "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft"
         }
       {{end}}
-      {{ if (eq $type.Srs.EPSG "EPSG:3857") }}
+      {{ if (eq $type.Srs "EPSG:3857") }}
         {{if $index}},{{end}}
         {
           "links": [

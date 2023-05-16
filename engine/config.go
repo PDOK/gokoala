@@ -1,11 +1,13 @@
 package engine
 
 import (
+	"errors"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,26 +20,47 @@ func ReadConfigFile(configFile string) *Config {
 	// expand environment variables
 	yamlData = []byte(os.ExpandEnv(string(yamlData)))
 
-	var result *Config
-	err = yaml.Unmarshal(yamlData, &result)
+	var config *Config
+	err = yaml.Unmarshal(yamlData, &config)
 	if err != nil {
 		log.Fatalf("failed to unmarshal config file %v", err)
 	}
-	return result
+
+	validate(config)
+	return config
+}
+
+func validate(config *Config) {
+	validate := validator.New()
+	err := validate.Struct(config)
+	if err != nil {
+		var ive *validator.InvalidValidationError
+		if ok := errors.Is(err, ive); ok {
+			log.Fatalf("failed to validate config file: %v", err)
+		}
+		var errMessages []string
+		var valErrs validator.ValidationErrors
+		if errors.As(err, &valErrs) {
+			for _, valErr := range valErrs {
+				errMessages = append(errMessages, valErr.Error()+"\n")
+			}
+		}
+		log.Fatalf("invalid config file provided:\n %v", errMessages)
+	}
 }
 
 type Config struct {
-	Title          string          `yaml:"title"`
-	ShortTitle     string          `yaml:"shortTitle"`
-	Abstract       string          `yaml:"abstract"`
+	Title          string          `yaml:"title" validate:"required"`
+	ShortTitle     string          `yaml:"shortTitle" validate:"required"`
+	Abstract       string          `yaml:"abstract" validate:"required"`
 	Thumbnail      *string         `yaml:"thumbnail"`
 	Keywords       []string        `yaml:"keywords"`
 	LastUpdated    *string         `yaml:"lastUpdated"`
-	License        License         `yaml:"license"`
+	License        License         `yaml:"license" validate:"required"`
 	Support        *string         `yaml:"support"`
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
-	BaseURL        YAMLURL         `yaml:"baseUrl"`
-	OgcAPI         OgcAPI          `yaml:"ogcApi"`
+	BaseURL        YAMLURL         `yaml:"baseUrl" validate:"required,url"`
+	OgcAPI         OgcAPI          `yaml:"ogcApi" validate:"required"`
 	ResourcesDir   string
 }
 
@@ -102,12 +125,11 @@ func (g GeoSpatialCollections) toMap() map[string]GeoSpatialCollection {
 }
 
 type GeoSpatialCollection struct {
-	ID       string                        `yaml:"id"`
+	ID       string                        `yaml:"id" validate:"required"`
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata"`
 
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline"`
 	Tiles      *CollectionEntryTiles        `yaml:",inline"`
-	Styles     *CollectionEntryStyles       `yaml:",inline"`
 	Features   *CollectionEntryFeatures     `yaml:",inline"`
 	Maps       *CollectionEntryMaps         `yaml:",inline"`
 }
@@ -131,14 +153,10 @@ type CollectionEntry3dGeoVolumes struct {
 	URITemplateImplicitTilingSubtree *string `yaml:"uriTemplateImplicitTilingSubtree"`
 
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
-	URL3DViewer *YAMLURL `yaml:"3dViewerUrl"`
+	URL3DViewer *YAMLURL `yaml:"3dViewerUrl" validate:"url"`
 }
 
 type CollectionEntryTiles struct {
-	// placeholder
-}
-
-type CollectionEntryStyles struct {
 	// placeholder
 }
 
@@ -151,16 +169,16 @@ type CollectionEntryMaps struct {
 }
 
 type OgcAPI3dGeoVolumes struct {
-	TileServer  YAMLURL               `yaml:"tileServer"`
+	TileServer  YAMLURL               `yaml:"tileServer" validate:"required,url"`
 	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPITiles struct {
-	Title        string                `yaml:"title"`
-	Abstract     string                `yaml:"abstract"`
-	TileServer   YAMLURL               `yaml:"tileServer"`
-	Types        []string              `yaml:"types"`
-	SupportedSrs []SupportedSrs        `yaml:"supportedSrs"`
+	Title        string                `yaml:"title" validate:"required"`
+	Abstract     string                `yaml:"abstract" validate:"required"`
+	TileServer   YAMLURL               `yaml:"tileServer" validate:"required,url"`
+	Types        []string              `yaml:"types" validate:"required"`
+	SupportedSrs []SupportedSrs        `yaml:"supportedSrs" validate:"required,dive"`
 	Collections  GeoSpatialCollections `yaml:"collections"`
 }
 
@@ -181,31 +199,27 @@ type OgcAPIMaps struct {
 }
 
 type SupportedSrs struct {
-	Srs            SRS            `yaml:"srs"`
-	ZoomLevelRange ZoomLevelRange `yaml:"zoomLevelRange"`
+	Srs            string         `yaml:"srs" validate:"required,startswith=EPSG:"`
+	ZoomLevelRange ZoomLevelRange `yaml:"zoomLevelRange" validate:"required"`
 }
 
 type ZoomLevelRange struct {
-	Start int `yaml:"start"`
-	End   int `yaml:"end"`
+	Start int `yaml:"start" validate:"gte=0,ltefield=End"`
+	End   int `yaml:"end" validate:"required,gtefield=Start"`
 }
 
 type YAMLURL struct {
 	*url.URL
 }
 
-type SRS struct {
-	EPSG string
-}
-
 type Extent struct {
-	Srs  SRS      `yaml:"srs"`
+	Srs  string   `yaml:"srs" validate:"required,startswith=EPSG:"`
 	Bbox []string `yaml:"bbox"`
 }
 
 type License struct {
-	Name string `yaml:"name"`
-	URL  string `yaml:"url"`
+	Name string `yaml:"name" validate:"required"`
+	URL  string `yaml:"url" validate:"required,url"`
 }
 
 // StyleMetadata based on OGC API Styles Requirement 7B
@@ -266,19 +280,5 @@ func (o *YAMLURL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	parsedURL, err := url.ParseRequestURI(strings.TrimSuffix(s, "/"))
 	o.URL = parsedURL
-	return err
-}
-
-// UnmarshalYAML parses a string to EPSG srs/crs
-func (o *SRS) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var s string
-	err := unmarshal(&s)
-	if err != nil {
-		return err
-	}
-	if !strings.HasPrefix(s, "EPSG:") {
-		log.Fatalf("failed to parse SRS, should contain EPSG code and start with 'EPSG:'")
-	}
-	o.EPSG = s
 	return err
 }
