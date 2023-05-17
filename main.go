@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/PDOK/gokoala/ogc/processes"
 	"log"
 	"net"
 	"net/http"
@@ -123,6 +124,11 @@ func newRouter(engine *gokoalaEngine.Engine, resourcesDir string) *chi.Mux {
 	// OGC Styles API
 	if engine.Config.OgcAPI.Styles != nil {
 		styles.NewStyles(engine, router)
+	}
+
+	// OGC Processe API
+	if engine.Config.OgcAPI.Processes != nil {
+		processes.NewProcesses(engine, router)
 	}
 
 	// Resources endpoint to serve static assets
