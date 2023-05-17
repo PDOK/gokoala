@@ -58,6 +58,13 @@
 
     {{ if .Config.OgcAPI.Processes }}
       ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list"
+      ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/ogc-process-description"
+      {{ if .Config.OgcAPI.Processes.SupportsDismiss }}
+        ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/dismiss"
+      {{end}}
+      {{ if .Config.OgcAPI.Processes.SupportsCallback }}
+        ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/callback"
+      {{end}}
     {{end}}
 
 
