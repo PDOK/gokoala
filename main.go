@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/PDOK/gokoala/ogc/processes"
 	"log"
 	"net"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"github.com/PDOK/gokoala/ogc/common/core"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/geovolumes"
+	"github.com/PDOK/gokoala/ogc/processes"
 	"github.com/PDOK/gokoala/ogc/styles"
 	"github.com/PDOK/gokoala/ogc/tiles"
 
@@ -126,7 +126,7 @@ func newRouter(engine *gokoalaEngine.Engine, resourcesDir string) *chi.Mux {
 		styles.NewStyles(engine, router)
 	}
 
-	// OGC Processe API
+	// OGC Processes API
 	if engine.Config.OgcAPI.Processes != nil {
 		processes.NewProcesses(engine, router)
 	}
