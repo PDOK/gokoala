@@ -96,6 +96,7 @@ type OgcAPI struct {
 	Styles     *OgcAPIStyles       `yaml:"styles"`
 	Features   *OgcAPIFeatures     `yaml:"features"`
 	Maps       *OgcAPIMaps         `yaml:"maps"`
+	Processes  *OgcAPIProcesses    `yaml:"processes"`
 }
 
 type GeoSpatialCollections []GeoSpatialCollection
@@ -196,6 +197,12 @@ type OgcAPIFeatures struct {
 
 type OgcAPIMaps struct {
 	Collections GeoSpatialCollections `yaml:"collections"`
+}
+
+type OgcAPIProcesses struct {
+	SupportsDismiss  bool    `yaml:"supportsDismiss"`
+	SupportsCallback bool    `yaml:"supportsCallback"`
+	ProcessesServer  YAMLURL `yaml:"processesServer"`
 }
 
 type SupportedSrs struct {

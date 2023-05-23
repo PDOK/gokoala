@@ -46,6 +46,17 @@
                     {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff</li> */}}
                     {{/* <li>http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf</li> */}}
                 {{ end }}
+
+                {{ if .Config.OgcAPI.Processes }}
+                    <li><a href=">http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list" target="_blank">http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list</a></li>
+                    <li><a href="http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/ogc-process-description" target="_blank">http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/ogc-process-description</a></li>
+                    {{ if .Config.OgcAPI.Processes.SupportsDismiss }}
+                        <li><a href="http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/dismiss" target="_blank">http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/dismiss</a></li>
+                    {{end}}
+                    {{ if .Config.OgcAPI.Processes.SupportsCallback }}
+                        <li><a href="http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/callback" target="_blank">http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/callback</a></li>
+                    {{end}}
+                {{end}}
             </ul>
         </p>
     </div>

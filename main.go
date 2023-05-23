@@ -12,6 +12,7 @@ import (
 	"github.com/PDOK/gokoala/ogc/common/core"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/geovolumes"
+	"github.com/PDOK/gokoala/ogc/processes"
 	"github.com/PDOK/gokoala/ogc/styles"
 	"github.com/PDOK/gokoala/ogc/tiles"
 
@@ -123,6 +124,11 @@ func newRouter(engine *gokoalaEngine.Engine, resourcesDir string) *chi.Mux {
 	// OGC Styles API
 	if engine.Config.OgcAPI.Styles != nil {
 		styles.NewStyles(engine, router)
+	}
+
+	// OGC Processes API
+	if engine.Config.OgcAPI.Processes != nil {
+		processes.NewProcesses(engine, router)
 	}
 
 	// Resources endpoint to serve static assets
