@@ -1,9 +1,11 @@
 package processes
 
 import (
-	"github.com/PDOK/gokoala/engine"
-	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/PDOK/gokoala/engine"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type Processes struct {
