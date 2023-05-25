@@ -33,9 +33,8 @@ type Engine struct {
 }
 
 // NewEngine builds a new Engine
-func NewEngine(configFile string, openAPIFile string, resourcesDir string) *Engine {
+func NewEngine(configFile string, openAPIFile string) *Engine {
 	config := ReadConfigFile(configFile)
-	config.ResourcesDir = resourcesDir
 
 	return NewEngineWithConfig(config, openAPIFile)
 }

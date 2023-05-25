@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	gokoalaEngine "github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/core"
@@ -66,12 +65,6 @@ func main() {
 			Required: false,
 			EnvVars:  []string{"OPENAPI_FILE"},
 		},
-		&cli.StringFlag{
-			Name:     "resources-dir",
-			Usage:    "reference to a directory containing static files, like images",
-			Required: false,
-			EnvVars:  []string{"RESOURCES_DIR"},
-		},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -82,12 +75,11 @@ func main() {
 		shutdownDelay := c.Int("shutdown-delay")
 		configFile := c.String("config-file")
 		openAPIFile := c.String("openapi-file")
-		resourcesDir := c.String("resources-dir")
 
 		// Engine encapsulates shared non-OGC API specific logic
-		engine := gokoalaEngine.NewEngine(configFile, openAPIFile, resourcesDir)
+		engine := gokoalaEngine.NewEngine(configFile, openAPIFile)
 
-		router := newRouter(engine, resourcesDir)
+		router := newRouter(engine)
 
 		return engine.Start(address, router, debugPort, shutdownDelay)
 	}
@@ -98,7 +90,7 @@ func main() {
 	}
 }
 
-func newRouter(engine *gokoalaEngine.Engine, resourcesDir string) *chi.Mux {
+func newRouter(engine *gokoalaEngine.Engine) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
@@ -126,8 +118,7 @@ func newRouter(engine *gokoalaEngine.Engine, resourcesDir string) *chi.Mux {
 	}
 
 	// Resources endpoint to serve static assets
-	resourcesPath := strings.TrimSuffix(resourcesDir, "/resources")
-	router.Handle("/resources/*", http.FileServer(http.Dir(resourcesPath)))
+	gokoalaEngine.NewResources(engine, router)
 
 	// Health endpoint
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
