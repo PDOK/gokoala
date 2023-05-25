@@ -50,18 +50,18 @@ func validate(config *Config) {
 }
 
 type Config struct {
-	Title           string          `yaml:"title" validate:"required"`
-	ShortTitle      string          `yaml:"shortTitle" validate:"required"`
-	Abstract        string          `yaml:"abstract" validate:"required"`
-	Thumbnail       *string         `yaml:"thumbnail"`
-	Keywords        []string        `yaml:"keywords"`
-	LastUpdated     *string         `yaml:"lastUpdated"`
-	License         License         `yaml:"license" validate:"required"`
-	Support         *string         `yaml:"support"`
-	DatasetDetails  []DatasetDetail `yaml:"datasetDetails"`
-	BaseURL         YAMLURL         `yaml:"baseUrl" validate:"required,url"`
-	ResourcesServer ResourcesServer `yaml:"resourcesServer" validate:"required"`
-	OgcAPI          OgcAPI          `yaml:"ogcApi" validate:"required"`
+	Title          string          `yaml:"title" validate:"required"`
+	ShortTitle     string          `yaml:"shortTitle" validate:"required"`
+	Abstract       string          `yaml:"abstract" validate:"required"`
+	Thumbnail      *string         `yaml:"thumbnail"`
+	Keywords       []string        `yaml:"keywords"`
+	LastUpdated    *string         `yaml:"lastUpdated"`
+	License        License         `yaml:"license" validate:"required"`
+	Support        *string         `yaml:"support"`
+	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
+	BaseURL        YAMLURL         `yaml:"baseUrl" validate:"required,url"`
+	Resources      Resources       `yaml:"resources" validate:"required"`
+	OgcAPI         OgcAPI          `yaml:"ogcApi" validate:"required"`
 }
 
 func (c *Config) HasCollections() bool {
@@ -90,9 +90,9 @@ type DatasetDetail struct {
 	Value string `yaml:"value"`
 }
 
-type ResourcesServer struct {
-	URL       YAMLURL `yaml:"url" validate:"url"`
-	Directory string  `yaml:"directory"`
+type Resources struct {
+	URL       YAMLURL `yaml:"url" validate:"required_without_all,url"`
+	Directory string  `yaml:"directory" validate:"required_without_all,dir"`
 }
 
 type OgcAPI struct {

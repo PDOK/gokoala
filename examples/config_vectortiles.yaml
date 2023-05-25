@@ -26,7 +26,7 @@ datasetDetails:
       [Link to metadata](https://example.com/my-dataset/metadata)
 baseUrl: http://localhost:8080
 # how to serve resources. Possible values: directory (serve local files), url (serve through reverse proxy)
-resourcesServer:
+resources:
   directory: ./examples/resources
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps

@@ -9,20 +9,20 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type Resources struct {
+type ResourcesEndpoint struct {
 	engine *Engine
 }
 
-func NewResources(e *Engine, router *chi.Mux) *Resources {
-	resources := &Resources{
+func NewResourcesEndpoint(e *Engine, router *chi.Mux) *ResourcesEndpoint {
+	resources := &ResourcesEndpoint{
 		engine: e,
 	}
 
 	// Serve static assets either from local storage or through reverse proxy
-	if resourcesDir := e.Config.ResourcesServer.Directory; resourcesDir != "" {
+	if resourcesDir := e.Config.Resources.Directory; resourcesDir != "" {
 		resourcesPath := strings.TrimSuffix(resourcesDir, "/resources")
 		router.Handle("/resources/*", http.FileServer(http.Dir(resourcesPath)))
-	} else if resourcesURL := e.Config.ResourcesServer.URL.String(); resourcesURL != "" {
+	} else if resourcesURL := e.Config.Resources.URL.String(); resourcesURL != "" {
 		router.Get("/resources/*",
 			func(w http.ResponseWriter, r *http.Request) {
 				resourcePath, _ := url.JoinPath("/", chi.URLParam(r, "*"))
