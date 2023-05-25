@@ -3,10 +3,14 @@ package styles
 import (
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
+	"regexp"
 
 	"github.com/PDOK/gokoala/engine"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/walle/targz"
 )
 
 const (
@@ -19,9 +23,22 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
-	if e.Config.Resources == nil {
-		log.Fatalf("resources is required in config when using OGC styles")
-	}
+	// if e.Config.OgcAPI.Styles.MapboxStylesPath contains any .tar.gz files, extract them
+	filepath.WalkDir(e.Config.OgcAPI.Styles.MapboxStylesPath, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+		log.Printf("found file: %s", path)
+		isTarGz, err := regexp.MatchString(".*\\.tar\\.gz", path)
+		if isTarGz {
+			err = targz.Extract(path, e.Config.OgcAPI.Styles.MapboxStylesPath)
+			if err != nil {
+				log.Print(err)
+			}
+		}
+		return err
+	})
 
 	stylesBreadcrumbs := []engine.Breadcrumb{
 		engine.Breadcrumb{
@@ -56,7 +73,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 			formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
 			styleKey := engine.TemplateKey{
 				Name:         style.ID + formatExtension,
-				Directory:    templatesDir,
+				Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
 				Format:       *stylesheet.Link.Format,
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
 			}
@@ -95,7 +112,7 @@ func (s *Styles) Style() http.HandlerFunc {
 		}
 		key := engine.TemplateKey{
 			Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
-			Directory:    templatesDir,
+			Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
 			Format:       styleFormat,
 			InstanceName: instanceName,
 		}

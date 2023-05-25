@@ -91,8 +91,8 @@ type DatasetDetail struct {
 }
 
 type Resources struct {
-	URL       YAMLURL `yaml:"url" validate:"required_without_all,url"`
-	Directory string  `yaml:"directory" validate:"required_without_all,dir"`
+	URL       YAMLURL `yaml:"url" validate:"required_without=Directory,omitempty,url"`
+	Directory string  `yaml:"directory" validate:"required_without=URL,omitempty,dir"`
 }
 
 type OgcAPI struct {
@@ -189,11 +189,12 @@ type OgcAPITiles struct {
 }
 
 type OgcAPIStyles struct {
-	BaseURL         YAMLURL
-	Title           string          `yaml:"title"`
-	Abstract        string          `yaml:"abstract"`
-	Default         string          `yaml:"default,omitempty"`
-	SupportedStyles []StyleMetadata `yaml:"supportedStyles"`
+	BaseURL          YAMLURL
+	Title            string          `yaml:"title"`
+	Abstract         string          `yaml:"abstract"`
+	Default          string          `yaml:"default,omitempty"`
+	MapboxStylesPath string          `yaml:"mapboxStylesPath" validate:"required,dir"`
+	SupportedStyles  []StyleMetadata `yaml:"supportedStyles"`
 }
 
 type OgcAPIFeatures struct {

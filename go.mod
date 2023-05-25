@@ -6,8 +6,8 @@ require (
 	github.com/elnormous/contenttype v1.0.4
 	github.com/getkin/kin-openapi v0.116.0
 	github.com/go-chi/chi/v5 v5.0.8
-	github.com/go-task/slim-sprig v2.20.0+incompatible
 	github.com/go-playground/validator/v10 v10.13.0
+	github.com/go-task/slim-sprig v2.20.0+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.25.3
@@ -36,6 +36,7 @@ require (
 	github.com/perimeterx/marshmallow v1.1.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/walle/targz v0.0.0-20140417120357-57fe4206da5a // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
