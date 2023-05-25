@@ -60,8 +60,8 @@ type Config struct {
 	Support        *string         `yaml:"support"`
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
 	BaseURL        YAMLURL         `yaml:"baseUrl" validate:"required,url"`
+	Resources      *Resources      `yaml:"resources"`
 	OgcAPI         OgcAPI          `yaml:"ogcApi" validate:"required"`
-	ResourcesDir   string
 }
 
 func (c *Config) HasCollections() bool {
@@ -88,6 +88,11 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 type DatasetDetail struct {
 	Name  string `yaml:"name"`
 	Value string `yaml:"value"`
+}
+
+type Resources struct {
+	URL       YAMLURL `yaml:"url" validate:"required_without_all,url"`
+	Directory string  `yaml:"directory" validate:"required_without_all,dir"`
 }
 
 type OgcAPI struct {
@@ -232,7 +237,7 @@ type License struct {
 // StyleMetadata based on OGC API Styles Requirement 7B
 type StyleMetadata struct {
 	ID             string       `yaml:"id" json:"id"`
-	Title          *string      `yaml:"title" json:"title,omitempty"`
+	Title          string       `yaml:"title" json:"title,omitempty"`
 	Description    *string      `yaml:"description" json:"description,omitempty"`
 	Keywords       []string     `yaml:"keywords" json:"keywords,omitempty"`
 	PointOfContact *string      `yaml:"pointOfContact" json:"pointOfContact,omitempty"`

@@ -113,7 +113,7 @@ func TestNewCollections_Collections(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", "")
+			newEngine := engine.NewEngine(tt.fields.configFile, "")
 			collections := NewCollections(newEngine, chi.NewRouter())
 			handler := collections.Collections()
 			handler.ServeHTTP(rr, req)
@@ -185,7 +185,7 @@ func TestNewCollections_Collection(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", "")
+			newEngine := engine.NewEngine(tt.fields.configFile, "")
 			collections := NewCollections(newEngine, chi.NewRouter())
 			handler := collections.Collection()
 			handler.ServeHTTP(rr, req)

@@ -19,9 +19,8 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
-	if e.Config.ResourcesDir == "" {
-		// TODO: Should become optional once we support CDNs for resources
-		log.Fatalf("resources-dir is required when using OGC styles")
+	if e.Config.Resources == nil {
+		log.Fatalf("resources is required in config when using OGC styles")
 	}
 
 	stylesBreadcrumbs := []engine.Breadcrumb{
@@ -42,7 +41,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 		styleMetadataBreadcrumbs := stylesBreadcrumbs
 		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
 			engine.Breadcrumb{
-				Name: style.ID,
+				Name: style.Title,
 				Path: "styles/" + style.ID,
 			},
 			engine.Breadcrumb{
@@ -57,7 +56,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 			formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
 			styleKey := engine.TemplateKey{
 				Name:         style.ID + formatExtension,
-				Directory:    e.Config.ResourcesDir,
+				Directory:    templatesDir,
 				Format:       *stylesheet.Link.Format,
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
 			}
@@ -96,7 +95,7 @@ func (s *Styles) Style() http.HandlerFunc {
 		}
 		key := engine.TemplateKey{
 			Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
-			Directory:    s.engine.Config.ResourcesDir,
+			Directory:    templatesDir,
 			Format:       styleFormat,
 			InstanceName: instanceName,
 		}
