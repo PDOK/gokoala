@@ -46,12 +46,11 @@ func TestNewStyles(t *testing.T) {
 							SupportedStyles: []engine.StyleMetadata{
 								{
 									ID:    "foo",
-									Title: nil,
+									Title: "bar",
 								},
 							},
 						},
 					},
-					ResourcesDir: "/fakedir",
 				}, ""),
 			},
 		},
