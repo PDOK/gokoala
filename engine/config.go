@@ -60,7 +60,7 @@ type Config struct {
 	Support        *string         `yaml:"support"`
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
 	BaseURL        YAMLURL         `yaml:"baseUrl" validate:"required,url"`
-	Resources      Resources       `yaml:"resources" validate:"required"`
+	Resources      *Resources      `yaml:"resources"`
 	OgcAPI         OgcAPI          `yaml:"ogcApi" validate:"required"`
 }
 

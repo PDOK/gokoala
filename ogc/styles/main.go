@@ -1,6 +1,7 @@
 package styles
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
@@ -18,6 +19,10 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
+	if e.Config.Resources == nil {
+		log.Fatalf("resources is required in config when using OGC styles")
+	}
+
 	stylesBreadcrumbs := []engine.Breadcrumb{
 		engine.Breadcrumb{
 			Name: "Styles",

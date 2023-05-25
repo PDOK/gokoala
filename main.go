@@ -118,7 +118,9 @@ func newRouter(engine *gokoalaEngine.Engine) *chi.Mux {
 	}
 
 	// Resources endpoint to serve static assets
-	gokoalaEngine.NewResourcesEndpoint(engine, router)
+	if engine.Config.Resources != nil {
+		gokoalaEngine.NewResourcesEndpoint(engine, router)
+	}
 
 	// Health endpoint
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
