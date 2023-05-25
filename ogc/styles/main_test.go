@@ -37,7 +37,10 @@ func TestNewStyles(t *testing.T) {
 				e: engine.NewEngineWithConfig(&engine.Config{
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					Resources: &engine.Resources{
+						Directory: "/fakedirectory",
+					},
+					BaseURL: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: engine.OgcAPI{
 						GeoVolumes: nil,
 						Styles: &engine.OgcAPIStyles{
