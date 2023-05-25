@@ -91,7 +91,7 @@ type DatasetDetail struct {
 }
 
 type ResourcesServer struct {
-	URL       YAMLURL `yaml:"url", validate:"url"`
+	URL       YAMLURL `yaml:"url" validate:"url"`
 	Directory string  `yaml:"directory"`
 }
 
