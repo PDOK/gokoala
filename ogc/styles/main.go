@@ -56,7 +56,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 			formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
 			styleKey := engine.TemplateKey{
 				Name:         style.ID + formatExtension,
-				Directory:    templatesDir,
+				Directory:    e.Config.Resources.Directory,
 				Format:       *stylesheet.Link.Format,
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
 			}

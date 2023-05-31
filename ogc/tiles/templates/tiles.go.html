@@ -1,11 +1,15 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title">{{ .Config.OgcAPI.Tiles.Title }}</h1>
+    <h1 class="title">{{ .Config.Title }} - Tiles</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
-        {{ markdown .Config.OgcAPI.Tiles.Abstract }}
+        <p>
+            Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data
+            bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles
+            biedt PDOK ook styles aan.
+        </p>
         <table class="table table-striped">
             <thead>
                 <tr>

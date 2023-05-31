@@ -50,18 +50,18 @@ func validate(config *Config) {
 }
 
 type Config struct {
-	Title          string          `yaml:"title" validate:"required"`
-	ShortTitle     string          `yaml:"shortTitle" validate:"required"`
-	Abstract       string          `yaml:"abstract" validate:"required"`
-	Thumbnail      *string         `yaml:"thumbnail"`
-	Keywords       []string        `yaml:"keywords"`
-	LastUpdated    *string         `yaml:"lastUpdated"`
-	License        License         `yaml:"license" validate:"required"`
-	Support        *string         `yaml:"support"`
-	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
-	BaseURL        YAMLURL         `yaml:"baseUrl" validate:"required,url"`
-	Resources      *Resources      `yaml:"resources"`
-	OgcAPI         OgcAPI          `yaml:"ogcApi" validate:"required"`
+	Title             string          `yaml:"title" validate:"required"`
+	ServiceIdentifier string          `yaml:"serviceIdentifier" validate:"required"`
+	Abstract          string          `yaml:"abstract" validate:"required"`
+	Thumbnail         *string         `yaml:"thumbnail"`
+	Keywords          []string        `yaml:"keywords"`
+	LastUpdated       *string         `yaml:"lastUpdated"`
+	License           License         `yaml:"license" validate:"required"`
+	Support           *string         `yaml:"support"`
+	DatasetDetails    []DatasetDetail `yaml:"datasetDetails"`
+	BaseURL           YAMLURL         `yaml:"baseUrl" validate:"required,url"`
+	Resources         *Resources      `yaml:"resources"`
+	OgcAPI            OgcAPI          `yaml:"ogcApi" validate:"required"`
 }
 
 func (c *Config) HasCollections() bool {
@@ -180,8 +180,6 @@ type OgcAPI3dGeoVolumes struct {
 }
 
 type OgcAPITiles struct {
-	Title        string                `yaml:"title" validate:"required"`
-	Abstract     string                `yaml:"abstract" validate:"required"`
 	TileServer   YAMLURL               `yaml:"tileServer" validate:"required,url"`
 	Types        []string              `yaml:"types" validate:"required"`
 	SupportedSrs []SupportedSrs        `yaml:"supportedSrs" validate:"required,dive"`
@@ -190,8 +188,6 @@ type OgcAPITiles struct {
 
 type OgcAPIStyles struct {
 	BaseURL         YAMLURL
-	Title           string          `yaml:"title"`
-	Abstract        string          `yaml:"abstract"`
 	Default         string          `yaml:"default,omitempty"`
 	SupportedStyles []StyleMetadata `yaml:"supportedStyles"`
 }

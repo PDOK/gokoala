@@ -1,12 +1,14 @@
 ---
 title: PDOK Updater
-# yamllint disable rule:trailing-spaces
+serviceIdentifier: Updater
 abstract: |
   updater conform OGC API Processes
 baseUrl: http://localhost:8080
-# yamllint enable rule:trailing-spaces
+license:
+  name: None
+  url: https://pdok.nl
 ogcApi:
   processes:
     processesServer: http://localhost:8081/ogcapi
-    supportsCallback: FALSE
-    supportsDismiss: TRUE
+    supportsCallback: false
+    supportsDismiss: true

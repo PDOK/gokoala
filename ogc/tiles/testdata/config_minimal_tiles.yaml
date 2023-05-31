@@ -2,15 +2,13 @@
 title: Minimal OGC API
 abstract: This is a minimal OGC API
 baseUrl: http://localhost:8080
-shortTitle: Min
+serviceIdentifier: Min
 license:
   name: MIT
   url: https://www.tldrlegal.com/license/mit-license
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   tiles:
-    title: test
-    abstract: test abstract
     # base URL to webserver or object storage (e.g. azure blob or S3)
     # which hosts the tiles.
     tileServer:
@@ -22,10 +20,6 @@ ogcApi:
         zoomLevelRange:
           start: 0
           end: 12
-      - srs: EPSG:4258
-        zoomLevelRange:
-          start: 0
-          end: 14
       - srs: EPSG:3857
         zoomLevelRange:
           start: 0

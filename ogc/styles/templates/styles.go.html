@@ -2,11 +2,14 @@
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
 <hgroup>
-    <h1 class="title">{{ .Config.OgcAPI.Styles.Title }}</h1>
+    <h1 class="title">{{ .Config.Title }} - Styles</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
-        {{ markdown .Config.OgcAPI.Styles.Abstract }}
+        <p>
+            Betreft de offici&#235;le style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld
+            in het Mapbox formaat
+        </p>
         <table class="table table-striped">
             <thead>
                 <tr>

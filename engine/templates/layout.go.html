@@ -40,9 +40,9 @@
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="#">Datasets</a></li>
                         {{ if .Breadcrumbs }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ShortTitle | default .Config.Title }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ServiceIdentifier }}</a></li>
                         {{ else }}
-                            <li class="breadcrumb-item active">{{ .Config.ShortTitle | default .Config.Title }}</li>
+                            <li class="breadcrumb-item active">{{ .Config.ServiceIdentifier }}</li>
                         {{ end }}
 
                         {{ range $breadcrumb := .Breadcrumbs }}
