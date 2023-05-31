@@ -180,7 +180,7 @@ func gunzip(file string) ([]byte, error) {
 	}
 	defer gzipReader.Close()
 	var buffer bytes.Buffer
-	_, err = io.Copy(&buffer, gzipReader)
+	_, err = io.Copy(&buffer, gzipReader) //nolint:gosec
 	if err != nil {
 		return nil, err
 	}
