@@ -2,9 +2,12 @@ package engine
 
 import (
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	htmltemplate "html/template"
+	"io"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	texttemplate "text/template"
@@ -119,7 +122,22 @@ func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb
 
 func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).ParseFiles(file))
+	var compiled *texttemplate.Template
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		gzipFile := file + ".gz"
+		if _, err := os.Stat(gzipFile); os.IsNotExist(err) {
+			log.Fatalf("unable to find (gzipped) file %s", key.Name)
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		fileContents, err := gunzip(gzipFile)
+		if err != nil {
+			log.Fatalf("unable to decompress gzip file %s", gzipFile)
+		}
+		compiled = texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).Parse(string(fileContents)))
+	} else {
+		compiled = texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).ParseFiles(file))
+	}
 	var rendered bytes.Buffer
 
 	if err := compiled.Execute(&rendered, &TemplateData{
@@ -147,6 +165,26 @@ func combinedFuncMap(customFuncs map[string]interface{}, sprigFuncs map[string]i
 		cfm[k] = v
 	}
 	return cfm
+}
+
+// decompress gzip files
+func gunzip(file string) ([]byte, error) {
+	gzipFile, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer gzipFile.Close()
+	gzipReader, err := gzip.NewReader(gzipFile)
+	if err != nil {
+		return nil, err
+	}
+	defer gzipReader.Close()
+	var buffer bytes.Buffer
+	_, err = io.Copy(&buffer, gzipReader)
+	if err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
 }
 
 // markdown turn Markdown into HTML

@@ -1,16 +1,11 @@
 package styles
 
 import (
-	"log"
 	"net/http"
-	"os"
-	"path/filepath"
-	"regexp"
 
 	"github.com/PDOK/gokoala/engine"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/walle/targz"
 )
 
 const (
@@ -23,23 +18,6 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
-	// if e.Config.OgcAPI.Styles.MapboxStylesPath contains any .tar.gz files, extract them
-	filepath.WalkDir(e.Config.OgcAPI.Styles.MapboxStylesPath, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			log.Print(err)
-			return err
-		}
-		log.Printf("found file: %s", path)
-		isTarGz, err := regexp.MatchString(".*\\.tar\\.gz", path)
-		if isTarGz {
-			err = targz.Extract(path, e.Config.OgcAPI.Styles.MapboxStylesPath)
-			if err != nil {
-				log.Print(err)
-			}
-		}
-		return err
-	})
-
 	stylesBreadcrumbs := []engine.Breadcrumb{
 		engine.Breadcrumb{
 			Name: "Styles",
