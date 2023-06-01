@@ -139,7 +139,7 @@ func TestTiles_Tile(t *testing.T) {
 				tileCol:         "15",
 			},
 			want: want{
-				body:       "/NetherlandsRDNewQuad/5/10/15.pbf",
+				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
 				statusCode: http.StatusOK,
 			},
 		},

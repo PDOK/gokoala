@@ -144,10 +144,10 @@ func (t *Tiles) Tile() http.HandlerFunc {
 					" Mapbox Vector Tiles (?f=mvt) tiles are supported", http.StatusBadRequest)
 				return
 			}
-			tileCol += ".pbf"
 		}
 
-		path, _ := url.JoinPath("/", tileMatrixSetID, tileMatrix, tileRow, tileCol)
+		// ogc spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
+		path, _ := url.JoinPath("/", tileMatrixSetID, tileMatrix, tileCol, tileRow+".pbf")
 
 		target, err := url.Parse(t.engine.Config.OgcAPI.Tiles.TileServer.String() + path)
 		if err != nil {
