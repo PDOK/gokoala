@@ -1,7 +1,6 @@
 package styles
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
@@ -19,10 +18,6 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
-	if e.Config.Resources == nil {
-		log.Fatalf("resources is required in config when using OGC styles")
-	}
-
 	stylesBreadcrumbs := []engine.Breadcrumb{
 		engine.Breadcrumb{
 			Name: "Styles",
@@ -56,7 +51,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 			formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
 			styleKey := engine.TemplateKey{
 				Name:         style.ID + formatExtension,
-				Directory:    e.Config.Resources.Directory,
+				Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
 				Format:       *stylesheet.Link.Format,
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
 			}
@@ -95,7 +90,7 @@ func (s *Styles) Style() http.HandlerFunc {
 		}
 		key := engine.TemplateKey{
 			Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
-			Directory:    templatesDir,
+			Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
 			Format:       styleFormat,
 			InstanceName: instanceName,
 		}
