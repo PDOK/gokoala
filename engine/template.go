@@ -195,7 +195,7 @@ func readFileContents(filePath string) (string, error) {
 	}
 	defer file.Close()
 	var buffer bytes.Buffer
-	_, err = io.Copy(&buffer, file) //nolint:gosec
+	_, err = io.Copy(&buffer, file)
 	if err != nil {
 		return "", err
 	}
