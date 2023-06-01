@@ -11,6 +11,7 @@ resources:
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+lastUpdated: "2023-06-01T12:00:00Z"
 baseUrl: http://localhost:8080
 ogcApi:
   3dgeovolumes:

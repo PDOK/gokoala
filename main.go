@@ -117,7 +117,6 @@ func newRouter(engine *gokoalaEngine.Engine) *chi.Mux {
 	if engine.Config.OgcAPI.Styles != nil {
 		styles.NewStyles(engine, router)
 	}
-
 	// OGC Processes API
 	if engine.Config.OgcAPI.Processes != nil {
 		processes.NewProcesses(engine, router)
@@ -127,7 +126,6 @@ func newRouter(engine *gokoalaEngine.Engine) *chi.Mux {
 	if engine.Config.Resources != nil {
 		gokoalaEngine.NewResourcesEndpoint(engine, router)
 	}
-
 	// Health endpoint
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		gokoalaEngine.SafeWrite(w.Write, []byte("OK"))
