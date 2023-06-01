@@ -425,7 +425,7 @@ func TestTile_TilematrixSets(t *testing.T) {
 		{
 			name: "EuropeanETRS89_GRS80Quad_Draft",
 			fields: fields{
-				configFile: "ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile: "ogc/tiles/testdata/config_minimal_tiles_2.yaml",
 				url:        "http://localhost:8080/tileMatrixSets",
 			},
 			want: want{
