@@ -6,6 +6,8 @@ abstract: >-
   This is a description about the dataset in Markdown.
 # just a dummy picture, but you can put an actual thumbnail here
 thumbnail: 3d.png
+resources:
+  directory: ./examples/resources
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
