@@ -22,16 +22,6 @@
                     </td>
                 </tr>
                 {{ end }}
-                {{ if .Config.LastUpdated }}
-                <tr>
-                    <td class="w-25">
-                        <b>Bijgewerkt op</b>
-                    </td>
-                    <td>
-                        {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
-                    </td>
-                </tr>
-                {{ end }}
                 <tr>
                     <td class="w-25">
                         <b>Licentie</b>
