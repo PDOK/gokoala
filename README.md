@@ -41,6 +41,9 @@ _one_ dataset.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) support: Serves
   HTML and JSON metadata and functions as a proxy in front of a [3D
   Tiles](https://www.ogc.org/standard/3dtiles/) server of your choosing.
+- [OGC API Processes](https://ogcapi.ogc.org/processes/) provides a proxy for
+  an OGC API Processes implementation, but enables the use of the OGC API Common
+  features of GoKoala.
 
 ## Build
 

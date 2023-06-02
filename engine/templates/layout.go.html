@@ -38,7 +38,9 @@
 
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
+                        {{ if not .Config.OgcAPI.Processes }}
                         <li class="breadcrumb-item"><a href="#">Datasets</a></li>
+                        {{ end }}
                         {{ if .Breadcrumbs }}
                             <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ShortTitle | default .Config.Title }}</a></li>
                         {{ else }}
