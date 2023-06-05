@@ -60,8 +60,8 @@ type Config struct {
 	Support        *string         `yaml:"support"`
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails"`
 	BaseURL        YAMLURL         `yaml:"baseUrl" validate:"required,url"`
+	Resources      *Resources      `yaml:"resources"`
 	OgcAPI         OgcAPI          `yaml:"ogcApi" validate:"required"`
-	ResourcesDir   string
 }
 
 func (c *Config) HasCollections() bool {
@@ -90,12 +90,18 @@ type DatasetDetail struct {
 	Value string `yaml:"value"`
 }
 
+type Resources struct {
+	URL       YAMLURL `yaml:"url" validate:"required_without=Directory,omitempty,url"`
+	Directory string  `yaml:"directory" validate:"required_without=URL,omitempty,dir"`
+}
+
 type OgcAPI struct {
 	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes"`
 	Tiles      *OgcAPITiles        `yaml:"tiles"`
 	Styles     *OgcAPIStyles       `yaml:"styles"`
 	Features   *OgcAPIFeatures     `yaml:"features"`
 	Maps       *OgcAPIMaps         `yaml:"maps"`
+	Processes  *OgcAPIProcesses    `yaml:"processes"`
 }
 
 type GeoSpatialCollections []GeoSpatialCollection
@@ -183,11 +189,12 @@ type OgcAPITiles struct {
 }
 
 type OgcAPIStyles struct {
-	BaseURL         YAMLURL
-	Title           string          `yaml:"title"`
-	Abstract        string          `yaml:"abstract"`
-	Default         string          `yaml:"default,omitempty"`
-	SupportedStyles []StyleMetadata `yaml:"supportedStyles"`
+	BaseURL          YAMLURL
+	Title            string          `yaml:"title"`
+	Abstract         string          `yaml:"abstract"`
+	Default          string          `yaml:"default,omitempty"`
+	MapboxStylesPath string          `yaml:"mapboxStylesPath" validate:"required,dir"`
+	SupportedStyles  []StyleMetadata `yaml:"supportedStyles"`
 }
 
 type OgcAPIFeatures struct {
@@ -196,6 +203,12 @@ type OgcAPIFeatures struct {
 
 type OgcAPIMaps struct {
 	Collections GeoSpatialCollections `yaml:"collections"`
+}
+
+type OgcAPIProcesses struct {
+	SupportsDismiss  bool    `yaml:"supportsDismiss"`
+	SupportsCallback bool    `yaml:"supportsCallback"`
+	ProcessesServer  YAMLURL `yaml:"processesServer"`
 }
 
 type SupportedSrs struct {
@@ -225,7 +238,7 @@ type License struct {
 // StyleMetadata based on OGC API Styles Requirement 7B
 type StyleMetadata struct {
 	ID             string       `yaml:"id" json:"id"`
-	Title          *string      `yaml:"title" json:"title,omitempty"`
+	Title          string       `yaml:"title" json:"title,omitempty"`
 	Description    *string      `yaml:"description" json:"description,omitempty"`
 	Keywords       []string     `yaml:"keywords" json:"keywords,omitempty"`
 	PointOfContact *string      `yaml:"pointOfContact" json:"pointOfContact,omitempty"`

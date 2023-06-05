@@ -4,7 +4,7 @@
     <h1 class="title">{{ .Config.Title }}</h1>
 </hgroup>
 <div class="row py-3">
-    {{ if and .Config.Thumbnail .Config.ResourcesDir }}
+    {{ if and .Config.Thumbnail .Config.Resources }}
     <div class="col-md-8">
     {{ else }}
     <div class="col-md-12">
@@ -65,7 +65,7 @@
             </tbody>
         </table>
     </div>
-    {{ if and .Config.Thumbnail .Config.ResourcesDir }}
+    {{ if and .Config.Thumbnail .Config.Resources }}
     <div class="col-md-4">
         <img src="resources/{{ .Config.Thumbnail }}" class="img-fluid" alt="thumbnail van {{ .Config.Title }}"/>
     </div>

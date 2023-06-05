@@ -2,9 +2,14 @@ package engine
 
 import (
 	"bytes"
+	"compress/gzip"
+	"errors"
 	"fmt"
 	htmltemplate "html/template"
+	"io"
+	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	texttemplate "text/template"
@@ -119,7 +124,20 @@ func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb
 
 func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).ParseFiles(file))
+	gzipFile := file + ".gz"
+	var fileContents string
+	if _, err := os.Stat(gzipFile); !errors.Is(err, fs.ErrNotExist) {
+		fileContents, err = readGzipContents(gzipFile)
+		if err != nil {
+			log.Fatalf("unable to decompress gzip file %s", gzipFile)
+		}
+	} else {
+		fileContents, err = readFileContents(file)
+		if err != nil {
+			log.Fatalf("unable to read file %s", file)
+		}
+	}
+	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).Parse(fileContents))
 	var rendered bytes.Buffer
 
 	if err := compiled.Execute(&rendered, &TemplateData{
@@ -147,6 +165,41 @@ func combinedFuncMap(customFuncs map[string]interface{}, sprigFuncs map[string]i
 		cfm[k] = v
 	}
 	return cfm
+}
+
+// decompress gzip files, return contents as string
+func readGzipContents(filePath string) (string, error) {
+	gzipFile, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer gzipFile.Close()
+	gzipReader, err := gzip.NewReader(gzipFile)
+	if err != nil {
+		return "", err
+	}
+	defer gzipReader.Close()
+	var buffer bytes.Buffer
+	_, err = io.Copy(&buffer, gzipReader) //nolint:gosec
+	if err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
+}
+
+// read file, return contents as string
+func readFileContents(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	var buffer bytes.Buffer
+	_, err = io.Copy(&buffer, file)
+	if err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
 }
 
 // markdown turn Markdown into HTML

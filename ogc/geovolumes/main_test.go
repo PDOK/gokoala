@@ -88,7 +88,7 @@ func TestThreeDimensionalGeoVolume_Tile(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", "")
+			newEngine := engine.NewEngine(tt.fields.configFile, "")
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine, chi.NewRouter())
 			handler := threeDimensionalGeoVolume.Tile()
 			handler.ServeHTTP(rr, req)
@@ -148,7 +148,7 @@ func TestThreeDimensionalGeoVolume_TileSet(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", "")
+			newEngine := engine.NewEngine(tt.fields.configFile, "")
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine, chi.NewRouter())
 			handler := threeDimensionalGeoVolume.CollectionContent()
 			handler.ServeHTTP(rr, req)

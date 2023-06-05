@@ -33,9 +33,8 @@ type Engine struct {
 }
 
 // NewEngine builds a new Engine
-func NewEngine(configFile string, openAPIFile string, resourcesDir string) *Engine {
+func NewEngine(configFile string, openAPIFile string) *Engine {
 	config := ReadConfigFile(configFile)
-	config.ResourcesDir = resourcesDir
 
 	return NewEngineWithConfig(config, openAPIFile)
 }
@@ -179,9 +178,11 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *url.URL,
 	prefer204 bool, contentTypeOverwrite string) {
 
-	director := func(proxyReq *http.Request) {
-		proxyReq.URL = target
-		proxyReq.Host = "" // Don't pass Host header (similar to Traefik's passHostHeader=false)
+	rewrite := func(r *httputil.ProxyRequest) {
+		r.Out.URL = target
+		r.Out.Host = ""   // Don't pass Host header (similar to Traefik's passHostHeader=false)
+		r.SetXForwarded() // Set X-Forwarded-* headers.
+		r.Out.Header.Set("X-BaseUrl", e.Config.BaseURL.String())
 	}
 
 	modifyResponse := func(proxyRes *http.Response) error {
@@ -200,7 +201,7 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 		return nil
 	}
 
-	reverseProxy := &httputil.ReverseProxy{Director: director, ModifyResponse: modifyResponse}
+	reverseProxy := &httputil.ReverseProxy{Rewrite: rewrite, ModifyResponse: modifyResponse}
 	reverseProxy.ServeHTTP(w, r)
 }
 

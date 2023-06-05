@@ -1,0 +1,15 @@
+---
+title: PDOK Processor
+shortTitle: PDOK Processor
+# yamllint disable rule:trailing-spaces
+abstract: |
+  processor conform OGC API Processes
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+baseUrl: http://localhost:8081
+ogcApi:
+  processes:
+    processesServer: http://localhost:8084/ogcapi
+    supportsCallback: FALSE
+    supportsDismiss: TRUE
