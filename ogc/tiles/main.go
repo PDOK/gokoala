@@ -16,6 +16,7 @@ const (
 	templatesDir       = "ogc/tiles/templates/"
 	tilesPath          = "/tiles"
 	tileMatrixSetsPath = "/tileMatrixSets"
+	defaultTilesTmpl   = "{tms}/{z}/{x}/{y}.pbf"
 )
 
 type Tiles struct {
@@ -147,7 +148,12 @@ func (t *Tiles) Tile() http.HandlerFunc {
 		}
 
 		// ogc spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
-		path, _ := url.JoinPath("/", tileMatrixSetID, tileMatrix, tileCol, tileRow+".pbf")
+		replacer := strings.NewReplacer("{tms}", tileMatrixSetID, "{z}", tileMatrix, "{x}", tileCol, "{y}", tileRow)
+		tilesTmpl := defaultTilesTmpl
+		if t.engine.Config.OgcAPI.Tiles.URITemplateTiles != nil {
+			tilesTmpl = *t.engine.Config.OgcAPI.Tiles.URITemplateTiles
+		}
+		path, _ := url.JoinPath("/", replacer.Replace(tilesTmpl))
 
 		target, err := url.Parse(t.engine.Config.OgcAPI.Tiles.TileServer.String() + path)
 		if err != nil {

@@ -158,6 +158,21 @@ func TestTiles_Tile(t *testing.T) {
 				statusCode: http.StatusBadRequest,
 			},
 		},
+		{
+			name: "different uriTemplateTiles",
+			fields: fields{
+				configFile:      "ogc/tiles/testdata/config_minimal_tiles_2.yaml",
+				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+			},
+			want: want{
+				body:       "/foo/NetherlandsRDNewQuad/5/10/15",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -15,6 +15,8 @@ ogcApi:
     # which hosts the tiles.
     tileServer:
       http://localhost:9090
+    uriTemplateTiles:
+      /foo/{tms}/{z}/{y}/{x}
     types:
       - vector
     supportedSrs:
