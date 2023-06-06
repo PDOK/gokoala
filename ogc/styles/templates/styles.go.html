@@ -8,39 +8,68 @@
     <div class="col-md-12">
         <p>
             Betreft de offici&#235;le style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld
-            in het Mapbox formaat
+            in het Mapbox formaat.
         </p>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Styles</th>
-                    <th>Content types</th>
-                </tr>
-            </thead>
+        <table class="table table-borderless table-sm w-75">
             <tbody>
                 {{ $baseUrl := .Config.BaseURL }}
-                {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
                 <tr>
-                    <td>
-                        <ul>
-                            <li>
-                                Download de "{{ $style.ID }}" stijl as <a href="styles/{{ $style.ID }}">JSON</a>
-                            </li>
-                            <li>
-                                Bekijk de <a href="styles/{{ $style.ID }}/metadata">Metadata</a>
-                            </li>
-                        </ul>
+                    <td class="w-25">
+                        <b>Beschikbare style(s)</b>
                     </td>
                     <td>
-                        {{ range $stylesheet := $style.Stylesheets }}
-                        {{ $stylesheet.Link.Type }}<br>
+                        {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
+                        {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }}
+                        {{ else }}
+                        <select id="styles">
+                            {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
+                            <option value="{{ $style.ID }}">{{ $style.Title }}</option>
+                            {{ end }}
+                        </select>
                         {{ end }}
+                    </td>
+                </tr>
+                {{ range $index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
+                <tr id="{{ $style.ID }}_url" class="toggle-content{{ if not $index }} is-visible{{ end }}">
+                    <td class="w-25">
+                        <b>Style - URL</b>
+                    </td>
+                    <td>
+                        <a href="styles/{{ $style.ID }}">{{ $baseUrl }}/styles/{{ $style.ID }}</a>
+                    </td>
+                </tr>
+                <tr id="{{ $style.ID }}_meta" class="toggle-content{{ if not $index }} is-visible{{ end }}">
+                    <td class="w-25">
+                        <b>Metadata style</b>
+                    </td>
+                    <td>
+                        <a href="styles/{{ $style.ID }}/metadata">Link</a>
                     </td>
                 </tr>
                 {{ end }}
             </tbody>
         </table>
+        <p>Voorbeeld styling:</p>
+        <!-- TODO: replace with generated image (reuse viewer from tiles page) -->
+        {{ if and .Config.Thumbnail .Config.Resources }}
+        <img src="resources/{{ .Config.Thumbnail }}" class="img-fluid" alt="thumbnail van {{ .Config.Title }}" />
+        {{ end }}
     </div>
 </div>
+<script>
+    document.addEventListener('input', function (event) {
+        // only operate on styles dropdown
+        if (event.target.id !== 'styles') return;
+        // hide currently visible rows
+        var visibleRows = document.getElementsByClassName('toggle-content is-visible');
+        Array.from(visibleRows).forEach((row) => { row.classList.toggle('is-visible') });
+        // make rows for newly selected style visible
+        var selectedStyle = event.target.value
+        var styleUrl = document.getElementById(selectedStyle + '_url');
+        var styleMeta = document.getElementById(selectedStyle + '_meta');
+        styleUrl.classList.toggle('is-visible');
+        styleMeta.classList.toggle('is-visible');
+    }, false);
+</script>
 {{ end }}
 {{ end }}

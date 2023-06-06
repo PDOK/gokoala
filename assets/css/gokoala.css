@@ -41,3 +41,11 @@ footer {
 .table-sm td p {
     margin: 0;
 }
+
+.toggle-content {
+    display: none;
+}
+
+.toggle-content.is-visible {
+    display: table-row;
+}
