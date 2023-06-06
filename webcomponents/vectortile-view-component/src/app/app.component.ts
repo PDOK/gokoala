@@ -40,6 +40,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
   @Input() zoom!: number
   @Input() centerX!: number;
   @Input() centerY!: number;
+  @Input() xySwap:boolean= false; 
 
   constructor(private elementRef: ElementRef
   ) {
@@ -135,7 +136,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
 
   private getVectorTileSource(projection: Projection, url: string) {
     let selector = '/{z}/{y}/{x}?f=mvt'
-    if (url.includes('pdok')) {
+    if (this.xySwap) {
       selector = '/{z}/{x}/{y}?f=mvt'
     }
     return new VectorTileSource({

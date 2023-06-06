@@ -1,4 +1,11 @@
 ARG REGISTRY="docker.io"
+FROM ${REGISTRY}/node:lts-alpine3.17 AS build-component 
+RUN mkdir -p /usr/src/app
+COPY ./webcomponents/vectortile-view-component /usr/src/app
+WORKDIR /usr/src/app
+RUN npm install
+RUN npm run build 
+
 FROM ${REGISTRY}/golang:1.20 AS build-env
 
 WORKDIR /go/src/service
@@ -32,6 +39,13 @@ COPY --from=build-env /gokoala /
 
 # include assets/templates/etc (be specific here to only include required dirs)
 COPY --from=build-env /go/src/service/assets/ /assets/
+# include vectortile-view-component webcomponent as asset
+COPY --from=build-component /usr/src/app/dist/vectortile-view-component/styles.css  /assets/vectortile-view-component/styles.css
+COPY --from=build-component /usr/src/app/dist/vectortile-view-component/main.js  /assets/vectortile-view-component/main.js
+COPY --from=build-component /usr/src/app/dist/vectortile-view-component/polyfills.js  /assets/vectortile-view-component/polyfills.js
+COPY --from=build-component /usr/src/app/dist/vectortile-view-component/runtime.js  /assets/vectortile-view-component/runtime.js
+
+
 COPY --from=build-env /go/src/service/engine/ /engine/
 COPY --from=build-env /go/src/service/ogc/ /ogc/
 
