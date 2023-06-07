@@ -70,7 +70,6 @@ GLOBAL OPTIONS:
    --shutdown-delay value  delay (in seconds) before initiating graceful shutdown (default: 0) [$SHUTDOWN_DELAY]
    --config-file value     reference to YAML configuration file [$CONFIG_FILE]
    --openapi-file value    reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
-   --resources-dir value   reference to a directory containing static files, like images [$RESOURCES_DIR]
    --help, -h              show help
 
 ```
@@ -78,7 +77,7 @@ GLOBAL OPTIONS:
 Example:
 
 ```docker
-docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml --resources-dir /examples/resources
+docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml
 ```
 
 Now open <http://localhost:8080>
