@@ -144,10 +144,10 @@ func TestTiles_Tile(t *testing.T) {
 			},
 		},
 		{
-			name: "NetherlandsRDNewQuad/5/10/15.pbf",
+			name: "NetherlandsRDNewQuad/5/10/15",
 			fields: fields{
 				configFile:      "ogc/tiles/testdata/config_minimal_tiles.yaml",
-				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol.pbf",
+				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "5",
 				tileRow:         "10",
@@ -156,6 +156,21 @@ func TestTiles_Tile(t *testing.T) {
 			want: want{
 				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported\n",
 				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "NetherlandsRDNewQuad/5/10/15.pbf",
+			fields: fields{
+				configFile:      "ogc/tiles/testdata/config_minimal_tiles.yaml",
+				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15.pbf",
+			},
+			want: want{
+				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
+				statusCode: http.StatusOK,
 			},
 		},
 		{
