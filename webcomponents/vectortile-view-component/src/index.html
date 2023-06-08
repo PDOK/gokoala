@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>vectortile-viewComponent</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+
+<body>
+  <H2>World map NaturalEarth</H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+    tile-url="https://maps.gnosis.earth/ogcapi/collections/NaturalEarth:cultural:ne_10m_admin_0_countries/tiles/WebMercatorQuad"
+    zoom=4 center-x=5.3896944 center-y=52.1562499>
+  </app-vectortile-view>
+
+  <H2>LD proxy Dalaraa (https://demo.ldproxy.net/daraa/) </H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+    tile-url="https://demo.ldproxy.net/daraa/tiles/WebMercatorQuad" zoom=13 center-x=36.1033 center-y=32.6264>
+  </app-vectortile-view>
+
+  <H2>BAG WebMercato</H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+    tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/WebMercatorQuad" zoom=17 center-x=5.3896944 center-y=52.1562499  xy-swap="true">
+ 
+  </app-vectortile-view>
+
+  <H2>BAG RD</H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+    tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/NetherlandsRDNewQuad" zoom=12 center-x=5.3896944
+    center-y=52.1562499 xy-swap="true">
+  </app-vectortile-view>
+
+  <H2>BAG EU grid (not working Yet)</H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+    tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/EuropeanETRS89_GRS80Quad_Draft" " zoom=14 center-x=5.3896944
+    center-y=52.1562499 xy-swap="true"></app-vectortile-view>
+</body>
+</html>
