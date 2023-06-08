@@ -145,6 +145,8 @@ func (t *Tiles) Tile() http.HandlerFunc {
 					" Mapbox Vector Tiles (?f=mvt) tiles are supported", http.StatusBadRequest)
 				return
 			}
+		} else {
+			tileCol = tileCol[:len(tileCol)-4] // remove .pbf extension
 		}
 
 		// ogc spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
