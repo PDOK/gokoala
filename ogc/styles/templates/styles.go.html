@@ -50,10 +50,12 @@
             </tbody>
         </table>
         <p>Voorbeeld styling:</p>
-        <!-- TODO: replace with generated image (reuse viewer from tiles page) -->
-        {{ if and .Config.Thumbnail .Config.Resources }}
-        <img src="resources/{{ .Config.Thumbnail }}" class="img-fluid" alt="thumbnail van {{ .Config.Title }}" />
-        {{ end }}
+        <app-vectortile-view id="style-vectortile-viewer" style="width: 800px; height: 600px;"
+            tile-url="{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad"
+            style-url="{{ .Config.BaseURL }}/styles/{{ (index .Config.OgcAPI.Styles.SupportedStyles 0).ID }}"
+            zoom="{{ (index .Config.OgcAPI.Tiles.SupportedSrs 0).ZoomLevelRange.End }}" center-x="5.3896944"
+            center-y="52.1562499" xy-swap="false">
+        </app-vectortile-view>
     </div>
 </div>
 <script>
@@ -69,6 +71,9 @@
         var styleMeta = document.getElementById(selectedStyle + '_meta');
         styleUrl.classList.toggle('is-visible');
         styleMeta.classList.toggle('is-visible');
+        // update style-url in app-vectortile-view
+        var viewer = document.getElementById('style-vectortile-viewer')
+        viewer.setAttribute('style-url', '{{ .Config.BaseURL }}/styles/' + selectedStyle)
     }, false);
 </script>
 {{ end }}
