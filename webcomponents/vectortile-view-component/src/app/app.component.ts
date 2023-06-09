@@ -4,13 +4,17 @@ import {
   Input,
   ElementRef,
 } from '@angular/core';
+import { coerceBooleanProperty } from '@angular/cdk/coercion';
 
 
-import OGCVectorTile from 'ol/source/OGCVectorTile.js';
+
 import VectorTileSource from 'ol/source/VectorTile.js';
+import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import { MapProjection } from '../app/mapprojection'
+
+import { applyStyle } from 'ol-mapbox-style';
 
 
 import Projection from 'ol/proj/Projection';
@@ -21,6 +25,11 @@ import { getTopLeft, getWidth } from 'ol/extent';
 import TileGrid from 'ol/tilegrid/TileGrid';
 import { ProjectionLike, useGeographic } from 'ol/proj';
 import { Coordinate } from 'ol/coordinate';
+import TileLayer from 'ol/layer/Tile';
+import BaseLayer from 'ol/layer/Base';
+import Collection from 'ol/Collection';
+import LayerGroup from 'ol/layer/Group';
+
 
 
 @Component({
@@ -36,17 +45,28 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
   map = new Map({});
 
   @Input() tileUrl!: string
-  @Input() styleUrl!: string
+  @Input() styleUrl!: string| undefined
   @Input() zoom!: number
   @Input() centerX!: number;
   @Input() centerY!: number;
-  @Input() xySwap:boolean= false; 
+  private _showGrid: boolean = false;
+  @Input()
+  set showGrid(showGrid: any) {
+    this._showGrid = coerceBooleanProperty(showGrid);
+  }
+  get showGrid() {
+    return this._showGrid
+  }
+
+
+
+
 
   constructor(private elementRef: ElementRef
   ) {
   }
 
-  ngOnInit() { 
+  ngOnInit() {
     this.checkParams();
     this.map = this.getMap()
     this.map.setTarget(this.elementRef.nativeElement);
@@ -57,7 +77,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
       console.error("No TilteUrl was provided for the app-vectortile-view");
     }
     if (!this.styleUrl) {
-      console.error("No StyleUrl was provided for the app-vectortile-view");
+      console.log("No StyleUrl was provided for the app-vectortile-view");
     }
     if (!this.zoom) {
       console.error("No zoom was provided for the app-vectortile-view");
@@ -90,10 +110,26 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
     })
 
     const vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection, style)
-    console.log(JSON.stringify(new OGCVectorTile({
-      url: this.tileUrl,
-      format: new MVT(),
-    }) as any))
+    if (this.styleUrl){
+    applyStyle(vectorTileLayer, this.styleUrl)
+      .then(() => console.log('style loaded'))
+      .catch(() => console.log('error loading: '+ this.styleUrl));
+    }
+
+    let layers = [vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined
+
+    if (this.showGrid) {
+      const debugLayer = new TileLayer({
+        source: new TileDebug({
+          template: 'z:{z} y:{y} x:{x}',
+          projection: vectorTileLayer.getSource()!.getProjection() as ProjectionLike,
+          tileGrid: vectorTileLayer.getSource()!.getTileGrid() as TileGrid,
+          wrapX: vectorTileLayer.getSource()!.getWrapX(),
+          zDirection: vectorTileLayer.getSource()!.zDirection
+        }),
+      });
+      layers = [vectorTileLayer, debugLayer]
+    }
 
     let acenter: Coordinate = [this.centerX, this.centerY]
     console.log("project " + JSON.stringify(vectorTileLayer.getSource()?.getProjection()))
@@ -101,7 +137,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
     console.log("acenter=" + acenter)
     return new Map({
       target: 'app-vectortile-view',
-      layers: [vectorTileLayer],
+      layers: layers,
       view: new View({
         center: acenter,
         zoom: this.zoom,
@@ -136,9 +172,6 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
 
   private getVectorTileSource(projection: Projection, url: string) {
     let selector = '/{z}/{y}/{x}?f=mvt'
-    if (this.xySwap) {
-      selector = '/{z}/{x}/{y}?f=mvt'
-    }
     return new VectorTileSource({
       format: new MVT(),
       projection: projection,
