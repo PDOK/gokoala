@@ -3,8 +3,10 @@ import {
   OnInit,
   Input,
   ElementRef,
+  SimpleChanges,
 } from '@angular/core';
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
+import { Subject } from 'rxjs';
 
 
 
@@ -14,7 +16,7 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import { MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
 
-import { applyStyle } from 'ol-mapbox-style';
+import { applyStyle, apply } from 'ol-mapbox-style';
 
 
 import Projection from 'ol/proj/Projection';
@@ -29,6 +31,27 @@ import TileLayer from 'ol/layer/Tile';
 import BaseLayer from 'ol/layer/Base';
 import Collection from 'ol/Collection';
 import LayerGroup from 'ol/layer/Group';
+
+
+export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
+  [Key in keyof Props]: {
+    previousValue: Props[Key];
+    currentValue: Props[Key];
+    firstChange: boolean;
+    isFirstChange(): boolean;
+  }
+}
+
+type MarkFunctionPropertyNames<Component> = {
+  [Key in keyof Component]: Component[Key] extends Function | Subject<any> ? never : Key;
+}
+
+
+type ExcludeFunctionPropertyNames<T extends object> = MarkFunctionPropertyNames<T>[keyof T];
+
+
+type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T>>;
+
 
 
 
@@ -52,6 +75,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
   @Input() centerX!: number;
   @Input() centerY!: number;
   private _showGrid: boolean = false;
+  vectorTileLayer!: VectorTileLayer;
   @Input()
   set showGrid(showGrid: any) {
     this._showGrid = coerceBooleanProperty(showGrid);
@@ -66,6 +90,13 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
 
   constructor(private elementRef: ElementRef
   ) {
+  }
+
+  ngOnChanges(changes: NgChanges<AppComponent>) {
+    if (changes.styleUrl.previousValue !== changes.styleUrl.currentValue) {
+      console.log('changed')
+      this.setStyle(this.vectorTileLayer);
+    }
   }
 
   ngOnInit() {
@@ -111,39 +142,28 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
       })
     })
 
-    const vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection, style)
-    if (this.styleUrl) {
-      applyStyle(vectorTileLayer, this.styleUrl)
-        .then(() => {
-          console.log('style loaded ' + this.styleUrl)
-
-          //overrule source url from style
-          if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
-            vectorTileLayer.getSource()?.setUrl(this.tileUrl + this.selector)
-          }
-        })
-        .catch(() => console.log('error loading: ' + this.styleUrl));
-    }
+    this.vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection, style)
+    this.setStyle(this.vectorTileLayer);
 
 
-    let layers = [vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined
+    let layers = [this.vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined
 
     if (this.showGrid) {
       const debugLayer = new TileLayer({
         source: new TileDebug({
           template: 'z:{z} y:{y} x:{x}',
-          projection: vectorTileLayer.getSource()!.getProjection() as ProjectionLike,
-          tileGrid: vectorTileLayer.getSource()!.getTileGrid() as TileGrid,
-          wrapX: vectorTileLayer.getSource()!.getWrapX(),
-          zDirection: vectorTileLayer.getSource()!.zDirection
+          projection: this.vectorTileLayer.getSource()!.getProjection() as ProjectionLike,
+          tileGrid: this.vectorTileLayer.getSource()!.getTileGrid() as TileGrid,
+          wrapX: this.vectorTileLayer.getSource()!.getWrapX(),
+          zDirection: this.vectorTileLayer.getSource()!.zDirection
         }),
       });
-      layers = [vectorTileLayer, debugLayer]
+      layers = [this.vectorTileLayer, debugLayer]
     }
 
     let acenter: Coordinate = [this.centerX, this.centerY]
-    console.log("project " + JSON.stringify(vectorTileLayer.getSource()?.getProjection()))
-    console.log("axis: " + vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
+    console.log("project " + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
+    console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
     console.log("acenter=" + acenter)
     return new Map({
       target: 'app-vectortile-view',
@@ -152,9 +172,24 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
         center: acenter,
         zoom: this.zoom,
         enableRotation: false,
-        projection: vectorTileLayer.getSource()?.getProjection() as ProjectionLike,
+        projection: this.vectorTileLayer.getSource()?.getProjection() as ProjectionLike,
       }),
     });
+  }
+
+  private setStyle(vectorTileLayer: VectorTileLayer) {
+    if (this.styleUrl) {
+      applyStyle(vectorTileLayer, this.styleUrl)
+        .then(() => {
+          console.log('style loaded ' + this.styleUrl);
+
+          //overrule source url from style
+          if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
+            vectorTileLayer.getSource()?.setUrl(this.tileUrl + this.selector);
+          }
+        })
+        .catch(() => console.log('error loading: ' + this.styleUrl));
+    }
   }
 
   getVectortileLayer(projection: Projection, style: Style) {
