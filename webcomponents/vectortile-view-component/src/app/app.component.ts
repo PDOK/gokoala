@@ -12,7 +12,7 @@ import VectorTileSource from 'ol/source/VectorTile.js';
 import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import { MapProjection } from '../app/mapprojection'
+import { MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
 
 import { applyStyle } from 'ol-mapbox-style';
 
@@ -32,6 +32,7 @@ import LayerGroup from 'ol/layer/Group';
 
 
 
+
 @Component({
   selector: 'app-vectortile-view',
   templateUrl: './app.component.html',
@@ -43,9 +44,10 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
 
   title = 'vectortile-view-component';
   map = new Map({});
+  selector = '/{z}/{y}/{x}?f=mvt'
 
-  @Input() tileUrl!: string
-  @Input() styleUrl!: string| undefined
+  @Input() tileUrl: string = NetherlandsRDNewQuadDefault
+  @Input() styleUrl!: string | undefined
   @Input() zoom!: number
   @Input() centerX!: number;
   @Input() centerY!: number;
@@ -110,11 +112,19 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
     })
 
     const vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection, style)
-    if (this.styleUrl){
-    applyStyle(vectorTileLayer, this.styleUrl)
-      .then(() => console.log('style loaded'))
-      .catch(() => console.log('error loading: '+ this.styleUrl));
+    if (this.styleUrl) {
+      applyStyle(vectorTileLayer, this.styleUrl)
+        .then(() => {
+          console.log('style loaded ' + this.styleUrl)
+
+          //overrule source url from style
+          if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
+            vectorTileLayer.getSource()?.setUrl(this.tileUrl + this.selector)
+          }
+        })
+        .catch(() => console.log('error loading: ' + this.styleUrl));
     }
+
 
     let layers = [vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined
 
@@ -171,7 +181,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
   }
 
   private getVectorTileSource(projection: Projection, url: string) {
-    let selector = '/{z}/{y}/{x}?f=mvt'
+
     return new VectorTileSource({
       format: new MVT(),
       projection: projection,
@@ -181,7 +191,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
         tileSize: [256, 256],
         origin: getTopLeft(projection.getExtent())
       }),
-      url: url + selector,
+      url: url + this.selector,
       cacheSize: 0
     })
   }

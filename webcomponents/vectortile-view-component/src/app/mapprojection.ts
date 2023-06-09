@@ -1,7 +1,7 @@
 import { Projection } from 'ol/proj';
 import { register as proj4register } from 'ol/proj/proj4';
 import proj4 from 'proj4';
-
+export const NetherlandsRDNewQuadDefault = "NetherlandsRDNewQuad";
 export class MapProjection {
   private _tileUrl: string;
 
@@ -44,7 +44,7 @@ export class MapProjection {
     })
 
 
-    if (this._tileUrl.includes('NetherlandsRDNewQuad')) {
+    if (this._tileUrl.includes(NetherlandsRDNewQuadDefault )) {
       return rDprojection;
     } else {
       if (this._tileUrl.includes('EuropeanETRS89_GRS80')) {

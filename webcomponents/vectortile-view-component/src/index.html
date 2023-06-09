@@ -10,7 +10,9 @@
 </head>
 
 <body>
-  <H2>World map NaturalEarth</H2>
+  <H1>Web component "app-vectortile-view" usage samples:</H1>
+  
+  <H2>World map NaturalEarth with grid</H2>
   <app-vectortile-view style="width: 800px; height: 600px;"
     tile-url="https://maps.gnosis.earth/ogcapi/collections/NaturalEarth:cultural:ne_10m_admin_0_countries/tiles/WebMercatorQuad"
     zoom=4 center-x=5.3896944 center-y=52.1562499 show-grid>
@@ -21,7 +23,7 @@
     tile-url="https://demo.ldproxy.net/daraa/tiles/WebMercatorQuad" zoom=13 center-x=36.1033 center-y=32.6264 show-grid="false">
   </app-vectortile-view>
 
-  <H2>BAG WebMercato</H2>
+  <H2>BAG WebMercato with grid</H2>
   <app-vectortile-view style="width: 800px; height: 600px;"
     tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/WebMercatorQuad" zoom=17 center-x=5.3896944 center-y=52.1562499 show-grid="true">
  
@@ -30,7 +32,21 @@
   <H2>BAG RD</H2>
   <app-vectortile-view style="width: 800px; height: 600px;"
     tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/NetherlandsRDNewQuad"
-    style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/achtergrondvisualisatie?f=mapbox" zoom=12 center-x=5.3896944
+    zoom=12 center-x=5.3896944
+    center-y=52.1562499 show-grid>
+  </app-vectortile-view>
+
+  <H2>BGT mapbox tile, style and grid </H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+     tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad"
+     style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_standaardvisualisatie" zoom=12 center-x=5.3896944
+    center-y=52.1562499 show-grid>
+  </app-vectortile-view>
+
+  <H2>BGT mapbox url from style url only </H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+     style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_standaardvisualisatie"
+     zoom=12 center-x=5.3896944
     center-y=52.1562499 show-grid>
   </app-vectortile-view>
 
