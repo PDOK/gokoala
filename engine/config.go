@@ -189,7 +189,7 @@ type OgcAPITiles struct {
 
 type OgcAPIStyles struct {
 	BaseURL          YAMLURL
-	Default          string          `yaml:"default,omitempty"`
+	Default          string          `yaml:"default" validate:"required"`
 	MapboxStylesPath string          `yaml:"mapboxStylesPath" validate:"required,dir"`
 	SupportedStyles  []StyleMetadata `yaml:"supportedStyles"`
 }
