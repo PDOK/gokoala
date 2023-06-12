@@ -27,7 +27,7 @@ Embed the webcomponent in a third party web application
     center-y=52.1562499>
   </app-vectortile-view>
 
-see index.html for other samples.
+see [index.html](./src/index.html) for other samples.
   
   ```
 
