@@ -51,7 +51,6 @@ func TestNewTiles(t *testing.T) {
 							SupportedSrs: nil,
 						},
 						Styles: &engine.OgcAPIStyles{
-							BaseURL:         engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 							Default:         "foo",
 							SupportedStyles: nil,
 						},
@@ -81,7 +80,10 @@ func TestNewTiles(t *testing.T) {
 								},
 							},
 						},
-						Styles: nil,
+						Styles: &engine.OgcAPIStyles{
+							Default:         "foo",
+							SupportedStyles: nil,
+						},
 					},
 				}, ""),
 			},

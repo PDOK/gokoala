@@ -24,3 +24,6 @@ ogcApi:
         zoomLevelRange:
           start: 0
           end: 30
+  styles:
+    default: "default"
+    mapboxStylesPath: /tmp
