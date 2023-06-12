@@ -37,18 +37,22 @@
             <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui@4.5.0/dist/swagger-ui.min.css">
             <link rel="stylesheet" type="text/css" href="swagger-ui/swagger-ui-pdok.css">
 
-            <!-- Load React -->
-            <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" crossorigin></script>
-            <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-
             <!-- Load Swagger -->
             <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-bundle.js" charset="UTF-8"></script>
             <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
             <script>
-                // Redefine existing Swagger components (note: JSX is not supported, otherwise we need to include Babel.js).
-                class EmptyInfo extends React.Component {
+                // Redefine existing Swagger components. in this case ee override the Info component since we already
+                // provide these details in our HTML
+                //
+                // Note: This is actually a React component but since we don't use any React feature - it;s an empty
+                // component after all - we don't include the React libs. When you do need to modify an existing
+                // component include the following libs:
+                // - https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js
+                // - https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js
+                // Do note that JSX is not supported since it requires Babel.js
+                class EmptyInfo {
                     render() {
-                        return null // We override the Info component since we already provide these details in our HTML.
+                        return null
                     }
                 }
 
@@ -58,7 +62,7 @@
                         // See https://github.com/swagger-api/swagger-ui/blob/master/src/core/components/layouts/base.jsx
                         // for the components used in Swagger BaseLayout
                         components: {
-                            InfoContainer: EmptyInfo
+                            InfoContainer: () => EmptyInfo
                         }
                     }
                 }
