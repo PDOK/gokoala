@@ -2,3 +2,4 @@
 *.iml
 .vscode/
 gokoala
+assets/vectortile-view-component/
