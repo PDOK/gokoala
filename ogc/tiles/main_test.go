@@ -50,7 +50,11 @@ func TestNewTiles(t *testing.T) {
 							Types:        []string{"vector"},
 							SupportedSrs: nil,
 						},
-						Styles: nil,
+						Styles: &engine.OgcAPIStyles{
+							BaseURL:         engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+							Default:         "foo",
+							SupportedStyles: nil,
+						},
 					},
 				}, ""),
 			},
