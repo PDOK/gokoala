@@ -6,13 +6,13 @@
 </hgroup>
 <div class="row">
     <div class="col-md-12">
+        {{ $baseUrl := .Config.BaseURL }}
         <p>
             Betreft de offici&#235;le style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld
             in het Mapbox formaat.
         </p>
         <table class="table table-borderless table-sm w-75">
             <tbody>
-                {{ $baseUrl := .Config.BaseURL }}
                 <tr>
                     <td class="w-25">
                         <b>Beschikbare style(s)</b>
@@ -50,11 +50,12 @@
             </tbody>
         </table>
         <p>Voorbeeld styling:</p>
-        <app-vectortile-view id="style-vectortile-viewer" style="width: 800px; height: 600px;"
-            tile-url="{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad"
-            style-url="{{ .Config.BaseURL }}/styles/{{ (index .Config.OgcAPI.Styles.SupportedStyles 0).ID }}"
+        {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
+        <app-vectortile-view id="style-vectortile-view" style="width: 800px; height: 600px;"
+            tile-url="{{ $baseUrl }}/tiles/{{ get $projections (index .Config.OgcAPI.Tiles.SupportedSrs 0).Srs }}"
+            style-url="{{ $baseUrl }}/styles/{{ (index .Config.OgcAPI.Styles.SupportedStyles 0).ID }}"
             zoom="{{ (index .Config.OgcAPI.Tiles.SupportedSrs 0).ZoomLevelRange.End }}" center-x="5.3896944"
-            center-y="52.1562499" xy-swap="false">
+            center-y="52.1562499">
         </app-vectortile-view>
     </div>
 </div>
@@ -72,7 +73,7 @@
         styleUrl.classList.toggle('is-visible');
         styleMeta.classList.toggle('is-visible');
         // update style-url in app-vectortile-view
-        var viewer = document.getElementById('style-vectortile-viewer')
+        var viewer = document.getElementById('style-vectortile-view')
         viewer.setAttribute('style-url', '{{ .Config.BaseURL }}/styles/' + selectedStyle)
     }, false);
 </script>

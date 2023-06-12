@@ -7,7 +7,7 @@ require (
 	github.com/getkin/kin-openapi v0.116.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-playground/validator/v10 v10.13.0
-	github.com/go-task/slim-sprig v2.20.0+incompatible
+	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.25.3
