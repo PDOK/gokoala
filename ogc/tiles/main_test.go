@@ -50,7 +50,10 @@ func TestNewTiles(t *testing.T) {
 							Types:        []string{"vector"},
 							SupportedSrs: nil,
 						},
-						Styles: nil,
+						Styles: &engine.OgcAPIStyles{
+							Default:         "foo",
+							SupportedStyles: nil,
+						},
 					},
 				}, ""),
 			},
@@ -77,7 +80,10 @@ func TestNewTiles(t *testing.T) {
 								},
 							},
 						},
-						Styles: nil,
+						Styles: &engine.OgcAPIStyles{
+							Default:         "foo",
+							SupportedStyles: nil,
+						},
 					},
 				}, ""),
 			},

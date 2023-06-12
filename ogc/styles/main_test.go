@@ -43,6 +43,19 @@ func TestNewStyles(t *testing.T) {
 					BaseURL: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: engine.OgcAPI{
 						GeoVolumes: nil,
+						Tiles: &engine.OgcAPITiles{
+							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							Types:      []string{"vector"},
+							SupportedSrs: []engine.SupportedSrs{
+								{
+									Srs: "EPSG:28992",
+									ZoomLevelRange: engine.ZoomLevelRange{
+										Start: 12,
+										End:   12,
+									},
+								},
+							},
+						},
 						Styles: &engine.OgcAPIStyles{
 							BaseURL: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 							Default: "",
