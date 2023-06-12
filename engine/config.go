@@ -180,8 +180,8 @@ type OgcAPI3dGeoVolumes struct {
 }
 
 type OgcAPITiles struct {
-	TileServer       YAMLURL               `yaml:"tileServer" validate:"required,url"`
-  // Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
+	TileServer YAMLURL `yaml:"tileServer" validate:"required,url"`
+	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
 	URITemplateTiles *string               `yaml:"uriTemplateTiles"`
 	Types            []string              `yaml:"types" validate:"required"`
 	SupportedSrs     []SupportedSrs        `yaml:"supportedSrs" validate:"required,dive"`
