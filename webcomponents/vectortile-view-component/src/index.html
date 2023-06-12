@@ -9,7 +9,7 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
-<body>
+<body onload="getFeatures()">
   <H1>Web component "app-vectortile-view" usage samples:</H1>
 
   <H2>World map NaturalEarth with grid</H2>
@@ -37,6 +37,13 @@
     center-y=52.1562499 show-grid>
   </app-vectortile-view>
 
+  <H2>BGT mapbox tile, no style and grid </H2>
+  <app-vectortile-view style="width: 800px; height: 600px;"
+    tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad"
+  zoom=12 center-x=5.3896944
+    center-y=52.1562499 show-grid>
+  </app-vectortile-view>
+
   <H2>BGT mapbox tile, style and grid </H2>
   <app-vectortile-view style="width: 800px; height: 600px;"
     tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad"
@@ -56,6 +63,7 @@
     center-y=52.1562499 show-grid></app-vectortile-view>
 
   <H2>BGT mapbox style switch sample</H2>
+  
 
   <label for="style">Choose a style:</label>
 
@@ -67,17 +75,37 @@
   <p>Style: <span id='output'></span>
   </p>
   <script type='text/javascript'>
+
+    
+
+    function getFeatures() {
+        selectsample.addEventListener('activeFeature', e => {
+        console.log('activeFeature');
+      //  console.log(JSON.stringify(e.detail))
+        objectinfo.feature= e.detail;
+       
+      });
+    }
+
     function changeStyle() {
       var optionValue = document.getElementById("stylessample").value;
       document.getElementById("output").innerHTML = optionValue;
       selectsample.setAttribute("style-url", optionValue);
+
     }
   </script>
-  <app-vectortile-view id="selectsample" style="width: 800px; height: 600px;" zoom=12 center-x=5.3896944
-    center-y=52.1562499 show-grid
-    tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad"
-    style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie"
-    >
-  </app-vectortile-view>
+ 
+    <app-vectortile-view id="selectsample" style="width: 800px; height: 600px;" zoom=12 center-x=5.3896944
+      center-y=52.1562499 show-grid tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad"
+      style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie">
+      
+    </app-vectortile-view>
+
+    <H3>BGT ObjectInfo on click outside map :</H2>
+    <app-objectinfo-view id="objectinfo">     
+    </app-objectinfo-view>
+
+
 </body>
+
 </html>

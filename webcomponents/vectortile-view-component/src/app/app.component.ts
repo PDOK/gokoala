@@ -4,12 +4,17 @@ import {
   Input,
   ElementRef,
   SimpleChanges,
+  Output,
+  EventEmitter,
+  CUSTOM_ELEMENTS_SCHEMA 
 } from '@angular/core';
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Subject } from 'rxjs';
 
+import {getUid} from 'ol/util';
 
-
+import Select from 'ol/interaction/Select.js';
+import { altKeyOnly, click, pointerMove } from 'ol/events/condition.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
@@ -31,6 +36,14 @@ import TileLayer from 'ol/layer/Tile';
 import BaseLayer from 'ol/layer/Base';
 import Collection from 'ol/Collection';
 import LayerGroup from 'ol/layer/Group';
+import { Feature } from 'ol';
+import { StyleFunction } from 'ol/style/Style';
+import { FeatureLike } from 'ol/Feature';
+import RenderFeature from 'ol/render/Feature';
+import { ObjectInfoComponent } from './object-info/object-info.component';
+
+
+
 
 
 export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
@@ -61,6 +74,12 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   // encapsulation: ViewEncapsulation.ShadowDom
+  standalone: true,
+   imports: [ObjectInfoComponent],
+   schemas: [
+    CUSTOM_ELEMENTS_SCHEMA // Tells Angular we will have custom tags in our templates
+  ]
+ 
 })
 export class // encapsulation: ViewEncapsulation.ShadowDom
   AppComponent implements OnInit {
@@ -69,6 +88,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
   map = new Map({});
   selector = '/{z}/{y}/{x}?f=mvt'
 
+
   @Input() tileUrl: string = NetherlandsRDNewQuadDefault
   @Input() styleUrl!: string | undefined
   @Input() zoom!: number
@@ -76,6 +96,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
   @Input() centerY!: number;
   private _showGrid: boolean = false;
   vectorTileLayer!: VectorTileLayer;
+  curFeature:Feature| undefined= undefined;
   @Input()
   set showGrid(showGrid: any) {
     this._showGrid = coerceBooleanProperty(showGrid);
@@ -84,12 +105,15 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
     return this._showGrid
   }
 
+  @Output() activeFeature = new EventEmitter<RenderFeature>();
+
+ 
 
 
+  constructor( private elementRef:ElementRef) {
 
-
-  constructor(private elementRef: ElementRef
-  ) {
+   
+   
   }
 
   ngOnChanges(changes: NgChanges<AppComponent>) {
@@ -101,9 +125,25 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
 
   ngOnInit() {
     this.checkParams();
+
     this.map = this.getMap()
-    this.map.setTarget(this.elementRef.nativeElement);
+    const mapdiv= this.elementRef.nativeElement.querySelector("[id='map']")
+    this.map.setTarget(mapdiv);
+
+
+    this.map.on('pointermove', (evt: { pixel: any; }) => {
+      this.map.forEachFeatureAtPixel(evt.pixel,  (feature: any, layer: any) => {
+      
+        this.curFeature = feature
+        this.activeFeature.emit(feature)
+     
+        //console.log(layer);
+      });
+
+    })
   }
+
+
 
   private checkParams(): void {
     if (!this.tileUrl) {
@@ -166,7 +206,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
     console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
     console.log("acenter=" + acenter)
     return new Map({
-      target: 'app-vectortile-view',
+    
       layers: layers,
       view: new View({
         center: acenter,
@@ -178,7 +218,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
   }
 
   private setStyle(vectorTileLayer: VectorTileLayer) {
-    if (this.styleUrl) {
+   // if (this.styleUrl) {
       applyStyle(vectorTileLayer, this.styleUrl)
         .then(() => {
           console.log('style loaded ' + this.styleUrl);
@@ -189,7 +229,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
           }
         })
         .catch(() => console.log('error loading: ' + this.styleUrl));
-    }
+   // }
   }
 
   getVectortileLayer(projection: Projection, style: Style) {
@@ -229,5 +269,20 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
       url: url + this.selector,
       cacheSize: 0
     })
+  }
+
+  private selectStyle(feature: FeatureLike, resolution: number): Style {
+    const selected = new Style({
+      fill: new Fill({
+        color: '#eeeeee',
+      }),
+      stroke: new Stroke({
+        color: 'rgba(255, 255, 255, 0.7)',
+        width: 2,
+      }),
+    });
+    const color = feature.get('COLOR') || '#eeeeee';
+    selected.getFill().setColor(color);
+    return selected;
   }
 }
