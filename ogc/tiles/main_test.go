@@ -46,8 +46,6 @@ func TestNewTiles(t *testing.T) {
 					OgcAPI: engine.OgcAPI{
 						GeoVolumes: nil,
 						Tiles: &engine.OgcAPITiles{
-							Title:        "Some dataset",
-							Abstract:     "Vector tiles for some dataset",
 							TileServer:   engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:        []string{"vector"},
 							SupportedSrs: nil,
@@ -67,8 +65,6 @@ func TestNewTiles(t *testing.T) {
 					OgcAPI: engine.OgcAPI{
 						GeoVolumes: nil,
 						Tiles: &engine.OgcAPITiles{
-							Title:      "Some dataset",
-							Abstract:   "Vector tiles for some dataset",
 							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:      []string{"vector"},
 							SupportedSrs: []engine.SupportedSrs{
@@ -223,24 +219,24 @@ func TestTile_TilesetsList(t *testing.T) {
 		want   want
 	}{
 		{
-			name: "test abstract",
+			name: "test NetherlandsRDNewQuad present",
 			fields: fields{
 				configFile: "ogc/tiles/testdata/config_minimal_tiles.yaml",
 				url:        "http://localhost:8080/tiles",
 			},
 			want: want{
-				bodyContains: "test abstract",
+				bodyContains: "NetherlandsRDNewQuad",
 				statusCode:   http.StatusOK,
 			},
 		},
 		{
-			name: "test different abstract",
+			name: "test EuropeanETRS89_GRS80Quad_Draft present",
 			fields: fields{
 				configFile: "ogc/tiles/testdata/config_minimal_tiles_2.yaml",
 				url:        "http://localhost:8080/tiles",
 			},
 			want: want{
-				bodyContains: "test different abstract",
+				bodyContains: "EuropeanETRS89_GRS80Quad_Draft",
 				statusCode:   http.StatusOK,
 			},
 		},
@@ -459,7 +455,7 @@ func TestTile_TilematrixSets(t *testing.T) {
 		{
 			name: "EuropeanETRS89_GRS80Quad_Draft",
 			fields: fields{
-				configFile: "ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile: "ogc/tiles/testdata/config_minimal_tiles_2.yaml",
 				url:        "http://localhost:8080/tileMatrixSets",
 			},
 			want: want{

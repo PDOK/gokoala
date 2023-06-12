@@ -22,16 +22,6 @@
                     </td>
                 </tr>
                 {{ end }}
-                {{ if .Config.LastUpdated }}
-                <tr>
-                    <td class="w-25">
-                        <b>Bijgewerkt op</b>
-                    </td>
-                    <td>
-                        {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
-                    </td>
-                </tr>
-                {{ end }}
                 <tr>
                     <td class="w-25">
                         <b>Licentie</b>
@@ -72,8 +62,8 @@
     {{ end }}
 </div>
 
-<div class="row row-cols-4 g-4">
-    <div class="col-4">
+<div class="row row-cols-md-4 g-4">
+    <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
                 <a href="api">Specificatie</a>
@@ -90,7 +80,7 @@
         </div>
     </div>
 
-    <div class="col-4">
+    <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
                 <a href="conformance">Conformance</a>
@@ -107,7 +97,7 @@
     </div>
 
     {{ if .Config.HasCollections }}
-    <div class="col-4">
+    <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
                 <a href="collections">Collecties</a>
@@ -125,7 +115,7 @@
     {{ end }}
 
     {{ if .Config.OgcAPI.Tiles }}
-    <div class="col-4">
+    <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
                 <a href="tiles">Tiles</a>
@@ -133,8 +123,8 @@
             <div class="card-body">
                 <p>
                     Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data
-                    bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van VectorTiles
-                    biedt PDOK ook Styles aan. De pagina is zowel in HTML als JSON beschikbaar.
+                    bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles
+                    biedt PDOK ook styles aan. De pagina is zowel in HTML als JSON beschikbaar.
                 </p>
                 <small class="text-body-secondary">Bekijk als <a href="tiles?f=json" target="_blank">JSON</a></small>
             </div>
@@ -143,7 +133,7 @@
     {{ end }}
 
     {{ if .Config.OgcAPI.Styles }}
-    <div class="col-4">
+    <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
                 <a href="styles">Styles</a>
@@ -160,7 +150,7 @@
     {{ end }}
 
     {{ if .Config.OgcAPI.Tiles }}
-    <div class="col-4">
+    <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
                 <a href="tileMatrixSets">Tile Matrix Sets</a>

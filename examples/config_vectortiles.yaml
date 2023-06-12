@@ -1,11 +1,13 @@
 ---
-title: Example Basisregistratie Grootschalige Topografie (BGT)
+title: Basisregistratie Grootschalige Topografie (BGT)
 # shortened title, used in breadcrumb path
-shortTitle: BGT
+serviceIdentifier: BGT
 abstract: >-
   This is a description about the dataset in Markdown. See [PDOK BGT dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-grootschalige-topografie-bgt-) for details.
 # just a dummy picture, but you can put an actual thumbnail here
 thumbnail: bgt_thumb.png
+resources:
+  directory: ./examples/resources
 keywords:
   - keyword1
   - keyword2
@@ -26,8 +28,6 @@ datasetDetails:
       [Link to metadata](https://example.com/my-dataset/metadata)
 baseUrl: http://localhost:8080
 # how to serve resources (e.g., images, fonts, sprites). Possible values: directory (serve local files), url (serve through reverse proxy)
-resources:
-  directory: ./examples/resources
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   tiles:

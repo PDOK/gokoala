@@ -1,6 +1,6 @@
 ---
 title: PDOK Processor
-shortTitle: PDOK Processor
+serviceIdentifier: PDOK Processor
 # yamllint disable rule:trailing-spaces
 abstract: |
   processor conform OGC API Processes

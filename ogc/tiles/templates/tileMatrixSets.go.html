@@ -1,12 +1,12 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title">Tile Matrix Sets</h1>
+    <h1 class="title">{{ .Config.Title }} - Tile Matrix Sets</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
         <p>
-            Deze API ondersteund de volgende tile matrix sets
+            De door de PDOK beschikbare Tile Matrix Sets beschikbaar in deze API.
         </p>
         <table class="table table-striped">
             <thead>
@@ -25,7 +25,8 @@
                 {{end}}
                 {{ if (eq $type.Srs "EPSG:4258") }}
                     <tr>
-                        <td><a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a></td>
+                        <td><a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a>
+                            (naam/definitie kan in toekomst mogelijk wijzigen)</td>
                         <td>Geodetic Reference System 1980 ETRS89 for Europe</td>
                     </tr>
                 {{end}}

@@ -67,7 +67,7 @@ GLOBAL OPTIONS:
    --host value            bind host for OGC server (default: "0.0.0.0") [$HOST]
    --port value            bind port for OGC server (default: 8080) [$PORT]
    --debug-port value      bind port for debug server (disabled by default), do not expose this port publicly (default: -1) [$DEBUG_PORT]
-   --shutdown-delay value  delay (in seconds) before initiating graceful shutdown (default: 0) [$SHUTDOWN_DELAY]
+   --shutdown-delay value  delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
    --config-file value     reference to YAML configuration file [$CONFIG_FILE]
    --openapi-file value    reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
    --help, -h              show help
@@ -135,12 +135,13 @@ Design principles:
 - The `engine` package should contain general logic. `ogc` may reference
   `engine`.
   > :warning: The other way around is not allowed!
-- The OGC API Specifications are multi-part standards, this means technically
+- The OGC API Specifications are multi-part standards, this means
   that parts can be enabled or disabled, the code should reflect this.
-- Geospatial related configuration is done through the config file.
+- Geospatial related configuration is done through the config file, technical
+  configuration (host/port/etc) is done through CLI flags/env variables.
 - Fail fast, fail hard: do as much pre-processing/validation on startup instead
   of during request handling.
-- Assets/templates/etc are explicitly included in the Docker image, see copy
+- Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
 
 ### Linting

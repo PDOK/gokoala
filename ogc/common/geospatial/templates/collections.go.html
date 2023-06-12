@@ -1,13 +1,14 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-{{$baseUrl := .Config.BaseURL }}
+{{ $cfg := .Config }}
+{{ $baseUrl := $cfg.BaseURL }}
 <hgroup>
     <h2 class="title">{{ .Config.Title }} - Collecties</h2>
 </hgroup>
 
-<section class="row row-cols-4 g-4">
+<section class="row row-cols-md-4 g-4">
     {{ range $index, $coll := .Config.AllCollections.Unique }}
-        <div class="col-4">
+        <div class="col-md-4 col-sm-12">
             <div class="card h-100">
                 <h5 class="card-header">
                     <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}">{{ $coll.ID }}</a>
@@ -29,6 +30,11 @@
                     <li class="list-group-item text-muted">
                         <strong>Bijgewerkt op</strong>:
                         {{ toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated | date "2006-01-02" }}
+                    </li>
+                    {{ else if $cfg.LastUpdated }}
+                    <li class="list-group-item text-muted">
+                        <strong>Bijgewerkt op</strong>:
+                        {{ toDate "2006-01-02T15:04:05Z07:00" $cfg.LastUpdated | date "2006-01-02" }}
                     </li>
                     {{ end }}
                     {{ if and $coll.Metadata $coll.Metadata.Extent }}

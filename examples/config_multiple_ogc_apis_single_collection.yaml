@@ -14,10 +14,12 @@ collectionMetadata: &collectionMetadata
 
 title: New York
 # shortened title, used in breadcrumb path
-shortTitle: New York
+serviceIdentifier: New York
 abstract: >-
   This is a description about the dataset in Markdown.
 thumbnail: 3d.png
+resources:
+  directory: ./examples/resources
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
