@@ -11,14 +11,14 @@
             tile volgens het <a href="/tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
             In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>
             in te laden.
-            <p>
-                <code>{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt</code>
-            </p>
+        </p>
+        <code>{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt</code>
+        <p>
             <app-vectortile-view style="width: 800px; height: 600px;" 
             tile-url="{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad" 
             zoom="12" 
             center-x="5.3896944" center-y="52.1562499"
-            xy-swap="false">
+            show-grid>
             </app-vectortile-view>   
         </p>
         <h2>Tile matrix set limits</h2>

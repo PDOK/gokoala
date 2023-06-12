@@ -24,10 +24,10 @@ Embed the webcomponent in a third party web application
 
     <app-vectortile-view style="width: 800px; height: 600px;"
     tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/NetherlandsRDNewQuad" zoom=12 center-x=5.3896944
-    center-y=52.1562499 xy-swap="true">
+    center-y=52.1562499>
   </app-vectortile-view>
 
-see index.html for other samples.
+see [index.html](./src/index.html) for other samples.
   
   ```
 
