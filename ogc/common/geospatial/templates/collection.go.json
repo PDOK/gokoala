@@ -1,7 +1,11 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {
   "id" : "{{ .Params.ID }}",
+  {{ if and .Params.Metadata .Params.Metadata.Title }}
+  "title" : "{{ .Params.Metadata.Title }}",
+  {{ else }}
   "title" : "{{ .Params.ID }}",
+  {{ end }}
   {{ if and .Params.Metadata .Params.Metadata.Description }}
   "description" : "{{ unmarkdown .Params.Metadata.Description }}",
   {{ end }}

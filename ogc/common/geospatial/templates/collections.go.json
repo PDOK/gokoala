@@ -22,7 +22,11 @@
     {{ if $index }},{{ end }}
     {
       "id" : "{{ $coll.ID }}",
+      {{ if and $coll.Metadata $coll.Metadata.Title }}
+      "title" : "{{ $coll.Metadata.Title }}"
+      {{ else }}
       "title" : "{{ $coll.ID }}"
+      {{ end }}
       {{ if and $coll.Metadata $coll.Metadata.Description }}
       ,"description" : "{{ unmarkdown $coll.Metadata.Description }}"
       {{ end }}

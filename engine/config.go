@@ -141,6 +141,7 @@ type GeoSpatialCollection struct {
 }
 
 type GeoSpatialCollectionMetadata struct {
+	Title       *string  `yaml:"title"`
 	Description *string  `yaml:"description"`
 	Thumbnail   *string  `yaml:"thumbnail"`
 	Keywords    []string `yaml:"keywords"`
