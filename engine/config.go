@@ -56,6 +56,7 @@ type Config struct {
 	Thumbnail         *string         `yaml:"thumbnail"`
 	Keywords          []string        `yaml:"keywords"`
 	LastUpdated       *string         `yaml:"lastUpdated"`
+	LastUpdatedBy     string          `yaml:"lastUpdatedBy"`
 	License           License         `yaml:"license" validate:"required"`
 	Support           *string         `yaml:"support"`
 	DatasetDetails    []DatasetDetail `yaml:"datasetDetails"`
@@ -141,12 +142,13 @@ type GeoSpatialCollection struct {
 }
 
 type GeoSpatialCollectionMetadata struct {
-	Title       *string  `yaml:"title"`
-	Description *string  `yaml:"description"`
-	Thumbnail   *string  `yaml:"thumbnail"`
-	Keywords    []string `yaml:"keywords"`
-	LastUpdated *string  `yaml:"lastUpdated"`
-	Extent      *Extent  `yaml:"extent"`
+	Title         *string  `yaml:"title"`
+	Description   *string  `yaml:"description"`
+	Thumbnail     *string  `yaml:"thumbnail"`
+	Keywords      []string `yaml:"keywords"`
+	LastUpdated   *string  `yaml:"lastUpdated"`
+	LastUpdatedBy string   `yaml:"lastUpdatedBy"`
+	Extent        *Extent  `yaml:"extent"`
 }
 
 type CollectionEntry3dGeoVolumes struct {
