@@ -18,7 +18,9 @@ import (
 	gomarkdown "github.com/gomarkdown/markdown"
 	gomarkdownhtml "github.com/gomarkdown/markdown/html"
 	gomarkdownparser "github.com/gomarkdown/markdown/parser"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	stripmd "github.com/writeas/go-strip-markdown/v2"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -28,13 +30,9 @@ const (
 )
 
 var (
-	customFuncs = texttemplate.FuncMap{
-		// custom template functions
-		"markdown":   markdown,
-		"unmarkdown": unmarkdown,
-	}
-	sprigFuncs    = sprig.FuncMap()
-	combinedFuncs = combinedFuncMap(customFuncs, sprigFuncs)
+	customFuncs   texttemplate.FuncMap
+	sprigFuncs    texttemplate.FuncMap
+	combinedFuncs texttemplate.FuncMap
 )
 
 // TemplateKey unique key to register and lookup Go templates
@@ -47,6 +45,9 @@ type TemplateKey struct {
 
 	// Format the file format based on the filename extension, 'html' or 'json'
 	Format string
+
+	// Language of the contents of the template
+	Language language.Tag
 
 	// Optional. Only required when you want to render the same template multiple times (with different content).
 	// By specifying an 'instance name' you can refer to a certain instance of a rendered template later on.
@@ -63,6 +64,9 @@ type TemplateData struct {
 
 	// Crumb path to the page, in key-value pairs of name, path
 	Breadcrumbs []Breadcrumb
+
+	// Language to render the page in
+	Language language.Tag
 }
 
 type Breadcrumb struct {
@@ -75,13 +79,22 @@ func NewTemplateKey(path string) TemplateKey {
 	return NewTemplateKeyWithName(path, "")
 }
 
+func NewTemplateKeyWithLanguage(path string, language language.Tag) TemplateKey {
+	return NewTemplateKeyWithNameAndLanguage(path, "", language)
+}
+
 // NewTemplateKeyWithName build TemplateKey with InstanceName (see docs in struct)
 func NewTemplateKeyWithName(path string, instanceName string) TemplateKey {
+	return NewTemplateKeyWithNameAndLanguage(path, instanceName, language.Dutch)
+}
+
+func NewTemplateKeyWithNameAndLanguage(path string, instanceName string, language language.Tag) TemplateKey {
 	cleanPath := filepath.Clean(path)
 	return TemplateKey{
 		Name:         filepath.Base(cleanPath),
 		Directory:    filepath.Dir(cleanPath),
 		Format:       strings.TrimPrefix(filepath.Ext(path), "."),
+		Language:     language,
 		InstanceName: instanceName,
 	}
 }
@@ -89,13 +102,24 @@ func NewTemplateKeyWithName(path string, instanceName string) TemplateKey {
 type Templates struct {
 	RenderedTemplates map[TemplateKey][]byte
 	config            *Config
+	localizers        map[language.Tag]i18n.Localizer
 }
 
-func newTemplates(config *Config) *Templates {
-	return &Templates{
+func newTemplates(config *Config, localizers map[language.Tag]i18n.Localizer) *Templates {
+	templates := &Templates{
 		RenderedTemplates: make(map[TemplateKey][]byte),
 		config:            config,
+		localizers:        localizers,
 	}
+	customFuncs = texttemplate.FuncMap{
+		// custom template functions
+		"markdown":   markdown,
+		"unmarkdown": unmarkdown,
+		"i18n":       templates.i18n,
+	}
+	sprigFuncs = sprig.FuncMap()
+	combinedFuncs = combinedFuncMap(customFuncs, sprigFuncs)
+	return templates
 }
 
 // GetRenderedTemplate returns a pre-rendered template, or error if none is found for the given TemplateKey
@@ -115,6 +139,7 @@ func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb
 		Config:      t.config,
 		Params:      params,
 		Breadcrumbs: breadcrumbs,
+		Language:    key.Language,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}
@@ -232,4 +257,9 @@ func unmarkdown(s *string) string {
 	withoutMarkdown := stripmd.Strip(*s)
 	withoutLinebreaks := strings.ReplaceAll(withoutMarkdown, "\n", " ")
 	return withoutLinebreaks
+}
+
+func (t *Templates) i18n(messageID string, lang language.Tag) string {
+	localizer := t.localizers[lang]
+	return localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID})
 }

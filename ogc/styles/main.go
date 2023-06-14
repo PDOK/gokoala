@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
+	"golang.org/x/text/language"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -19,7 +20,7 @@ type Styles struct {
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 	stylesBreadcrumbs := []engine.Breadcrumb{
-		engine.Breadcrumb{
+		{
 			Name: "Styles",
 			Path: "styles",
 		},
@@ -35,11 +36,11 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 		e.RenderTemplatesWithParams(style, nil, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
 		styleMetadataBreadcrumbs := stylesBreadcrumbs
 		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
-			engine.Breadcrumb{
+			{
 				Name: style.Title,
 				Path: "styles/" + style.ID,
 			},
-			engine.Breadcrumb{
+			{
 				Name: "Metadata",
 				Path: "styles/" + style.ID + "/metadata",
 			},
@@ -54,6 +55,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 				Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
 				Format:       *stylesheet.Link.Format,
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
+				Language:     language.Und,
 			}
 			e.RenderTemplatesWithParams(nil, nil, styleKey)
 		}

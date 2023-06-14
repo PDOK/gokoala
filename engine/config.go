@@ -97,7 +97,7 @@ type Resources struct {
 
 type OgcAPI struct {
 	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes"`
-	Tiles      *OgcAPITiles        `yaml:"tiles"`
+	Tiles      *OgcAPITiles        `yaml:"tiles" validate:"required_with=Styles"`
 	Styles     *OgcAPIStyles       `yaml:"styles"`
 	Features   *OgcAPIFeatures     `yaml:"features"`
 	Maps       *OgcAPIMaps         `yaml:"maps"`
@@ -193,7 +193,7 @@ type OgcAPIStyles struct {
 	BaseURL          YAMLURL
 	Default          string          `yaml:"default" validate:"required"`
 	MapboxStylesPath string          `yaml:"mapboxStylesPath" validate:"required,dir"`
-	SupportedStyles  []StyleMetadata `yaml:"supportedStyles"`
+	SupportedStyles  []StyleMetadata `yaml:"supportedStyles" validate:"required"`
 }
 
 type OgcAPIFeatures struct {

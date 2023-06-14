@@ -20,7 +20,7 @@ type Collections struct {
 func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
-			engine.Breadcrumb{
+			{
 				Name: "Collections",
 				Path: "collections",
 			},
@@ -33,7 +33,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
 			collectionBreadcrumbs := collectionsBreadcrumbs
 			collectionBreadcrumbs = append(collectionBreadcrumbs, []engine.Breadcrumb{
-				engine.Breadcrumb{
+				{
 					Name: coll.ID,
 					Path: "collections/" + coll.ID,
 				},

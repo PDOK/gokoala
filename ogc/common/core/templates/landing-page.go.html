@@ -15,7 +15,7 @@
                 {{ if .Config.Keywords }}
                 <tr>
                     <td class="w-25">
-                        <b>Trefwoorden</b>
+                        <b>{{ i18n "Keywords" .Language }}</b>
                     </td>
                     <td>
                         {{ .Config.Keywords | join ", " }}
@@ -24,16 +24,16 @@
                 {{ end }}
                 <tr>
                     <td class="w-25">
-                        <b>Licentie</b>
+                        <b>{{ i18n "License" .Language }}</b>
                     </td>
                     <td>
-                        <a href="{{ .Config.License.URL | default "#" }}">{{ .Config.License.Name | default "onbekend" }}</a>
+                        <a href="{{ .Config.License.URL }}">{{ .Config.License.Name }}</a>
                     </td>
                 </tr>
                 {{ if .Config.Support}}
                 <tr>
                     <td class="w-25">
-                        <b>Support</b>
+                        <b>{{ i18n "Support" .Language }}</b>
                     </td>
                     <td>
                         {{ markdown .Config.Support }}
@@ -66,16 +66,13 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="api">Specificatie</a>
+                <a href="api">{{ i18n "Specification" .Language }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    De API specificatie beschrijft de OGC API op een manier dat zowel mensen als computers de
-                    mogelijkheden van de API kunnen verkennen. De API toont zowel in- als output mogelijkheden
-                    en helpt om snel een eerste werkende API call te genereren met het gewenste resultaat.
-                    De pagina is zowel in HTML als JSON beschikbaar.
+                    {{ i18n "SpecificationText" .Language }}
                 </p>
-                <small class="text-body-secondary">Bekijk als <a href="api?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="api?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -83,15 +80,13 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="conformance">Conformance</a>
+                <a href="conformance">{{ i18n "Conformance" .Language }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    Op deze pagina beschrijft PDOK aan welke OGC standaarden PDOK zich confimeert bij het inrichten
-                    van de API. De pagina is zowel in HTML als JSON beschikbaar en verwijst naar de betreffende
-                    standaarden inclusief beschrijvingen.
+                    {{ i18n "ConformanceText" .Language }}
                 </p>
-                <small class="text-body-secondary">Bekijk als <a href="conformance?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="conformance?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -100,15 +95,13 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="collections">Collecties</a>
+                <a href="collections">{{ i18n "Collections" .Language }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    Deze API biedt één of meerdere collecties waarmee differentiatie gemaakt kan worden door de
-                    dataset van PDOK op te splitsen in verschillende objecten die bijvoorbeeld via features of
-                    tiles separaat aangeroepen kunnen worden. De pagina is zowel in HTML als JSON beschikbaar.
+                    {{ i18n "CollectionsText" .Language }}
                 </p>
-                <small class="text-body-secondary">Bekijk als <a href="collections?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="collections?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -118,15 +111,13 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="tiles">Tiles</a>
+                <a href="tiles">{{ i18n "Tiles" .Language }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data
-                    bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles
-                    biedt PDOK ook styles aan. De pagina is zowel in HTML als JSON beschikbaar.
+                    {{ i18n "TilesText" .Language }}
                 </p>
-                <small class="text-body-secondary">Bekijk als <a href="tiles?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="tiles?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -136,14 +127,13 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="styles">Styles</a>
+                <a href="styles">{{ i18n "Styles" .Language }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    Betreft de offici&#235;le style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld
-                    in het Mapbox formaat. De pagina is zowel in HTML als JSON beschikbaar.
+                    {{ i18n "StylesText" .Language }}
                 </p>
-                <small class="text-body-secondary">Bekijk als <a href="styles?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="styles?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -153,14 +143,13 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="tileMatrixSets">Tile Matrix Sets</a>
+                <a href="tileMatrixSets">{{ i18n "TileMatrixSets" .Language }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    De door de PDOK beschikbare Tile Matrix Sets beschikbaar in deze API. De pagina is zowel
-                    in HTML als JSON beschikbaar.
+                    {{ i18n "TileMatrixSetsText" .Language }}
                 </p>
-                <small class="text-body-secondary">Bekijk als <a href="tileMatrixSets?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="tileMatrixSets?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>

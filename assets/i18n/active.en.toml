@@ -1,0 +1,35 @@
+# Landing page table
+Keywords = "Keywords"
+License = "License"
+Support = "Support"
+
+# Landing page cards
+ViewAs = "View as"
+Specification = "Specification"
+SpecificationText = """
+The API specification describes the OGC API in such a way that both humans and computers can \
+explore the API's options. The API shows both in- and output options, and helps to quickly \
+generate a first working API call with the desired result. \
+The page is available in both HTML and JSON."""
+Conformance = "Conformance"
+ConformanceText = """
+On this page PDOK describes to which OGC standards PDOK conforms in implementing the API. The page is \
+available in both HTML and JSON, and links to the relevant standards including descriptions."""
+Collections = "Collections"
+CollectionsText = """
+This API offers one or more collections that enable differentiation by splitting the PDOK dataset into \
+various objects that can be called separately through for instance features or tiles. \
+The page is available in both HTML and JSON."""
+Tiles = "Tiles"
+TilesText = """
+This entire dataset is available through OGC API Tiles. Tiles can contain both vector and raster data \
+and can be made available in multiple projections. In the case of vector tiles, PDOK also offers styles. \
+The page is available in both HTML and JSON."""
+Styles = "Styles"
+StylesText = """
+This is the official style specified by the supplier. Styles are made available in the Mapbox format. \
+The page is available in both HTML and JSON."""
+TileMatrixSets = "Tile Matrix Sets"
+TileMatrixSetsText = """
+The Tile Matrix Sets made available by PDOK in this API. \
+The page is available in both HTML and JSON."""

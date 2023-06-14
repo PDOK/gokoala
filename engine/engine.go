@@ -15,8 +15,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -42,8 +45,9 @@ func NewEngine(configFile string, openAPIFile string) *Engine {
 // NewEngineWithConfig builds a new Engine
 func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
 	contentNegotiation := newContentNegotiation()
+	localizers := initLocalizers()
+	templates := newTemplates(config, localizers)
 	openAPI := newOpenAPI(config, openAPIFile)
-	templates := newTemplates(config)
 
 	engine := &Engine{
 		Config:    config,
@@ -52,6 +56,21 @@ func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
 		CN:        contentNegotiation,
 	}
 	return engine
+}
+
+func initLocalizers() map[language.Tag]i18n.Localizer {
+	localizers := make(map[language.Tag]i18n.Localizer)
+	// dutch
+	nlBundle := i18n.NewBundle(language.Dutch)
+	nlBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	nlBundle.MustLoadMessageFile("assets/i18n/active.nl.toml")
+	localizers[language.Dutch] = *i18n.NewLocalizer(nlBundle, "nl")
+	// english
+	enBundle := i18n.NewBundle(language.BritishEnglish)
+	enBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	enBundle.MustLoadMessageFile("assets/i18n/active.en.toml")
+	localizers[language.English] = *i18n.NewLocalizer(enBundle, "en")
+	return localizers
 }
 
 // Start the engine by initializing all components and starting the server
