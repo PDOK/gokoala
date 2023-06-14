@@ -149,6 +149,16 @@ Design principles:
 Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
 from the root.
 
+### Webcomponents
+
+GoKoala includes a [vector tile viewer](webcomponents/vectortile-view-component) which is available 
+as a Web Component for embedding in HTML pages. To use the vector tile viewer locally when running 
+GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will build the viewer and add 
+it to the GoKoala assets.
+
+Note this is only required for local development. When running GoKoala as a container this is
+already being taken care of when building the Docker container image.
+
 ### IntelliJ / GoLand
 
 - Install the [Go

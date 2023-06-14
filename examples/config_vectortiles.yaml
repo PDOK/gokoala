@@ -37,7 +37,7 @@ ogcApi:
     # base URL to webserver or object storage (e.g. azure blob or S3)
     # which hosts the tiles.
     tileServer:
-      https://api.pdok.nl/lv/bgt/ogc/v0_1/tiles/
+      https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
     # vector tiles and/or raster tiles
     types:
       - vector
