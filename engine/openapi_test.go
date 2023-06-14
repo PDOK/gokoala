@@ -73,9 +73,7 @@ func Test_newOpenAPI(t *testing.T) {
 					Abstract: "Test API description",
 					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: OgcAPI{
-						Styles: &OgcAPIStyles{
-							BaseURL: YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-						},
+						Styles: &OgcAPIStyles{},
 					},
 				},
 			},
