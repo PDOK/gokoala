@@ -60,6 +60,7 @@ type Config struct {
 	License           License         `yaml:"license" validate:"required"`
 	Support           *string         `yaml:"support"`
 	DatasetDetails    []DatasetDetail `yaml:"datasetDetails"`
+	DatasetCatalogURL YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
 	BaseURL           YAMLURL         `yaml:"baseUrl" validate:"required,url"`
 	Resources         *Resources      `yaml:"resources"`
 	OgcAPI            OgcAPI          `yaml:"ogcApi" validate:"required"`
@@ -192,7 +193,6 @@ type OgcAPITiles struct {
 }
 
 type OgcAPIStyles struct {
-	BaseURL          YAMLURL
 	Default          string          `yaml:"default" validate:"required"`
 	MapboxStylesPath string          `yaml:"mapboxStylesPath" validate:"required,dir"`
 	SupportedStyles  []StyleMetadata `yaml:"supportedStyles"`
@@ -209,7 +209,7 @@ type OgcAPIMaps struct {
 type OgcAPIProcesses struct {
 	SupportsDismiss  bool    `yaml:"supportsDismiss"`
 	SupportsCallback bool    `yaml:"supportsCallback"`
-	ProcessesServer  YAMLURL `yaml:"processesServer"`
+	ProcessesServer  YAMLURL `yaml:"processesServer" validate:"url"`
 }
 
 type SupportedSrs struct {

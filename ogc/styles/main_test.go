@@ -57,7 +57,6 @@ func TestNewStyles(t *testing.T) {
 							},
 						},
 						Styles: &engine.OgcAPIStyles{
-							BaseURL: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 							Default: "",
 							SupportedStyles: []engine.StyleMetadata{
 								{

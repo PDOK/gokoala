@@ -23,6 +23,7 @@ resources:
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
 ogcApi:
   3dgeovolumes:
