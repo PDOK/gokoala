@@ -2,20 +2,7 @@
 
 OGC APIs are constructed by different building blocks. These building blocks
 are composed of the different [OGC API standards](https://ogcapi.ogc.org/) as
-defined by the OGC.
-
-## Parts
-
-The following parts are or will be supported.
-
-- [X] common
-  - part 1: core
-  - part 2: geospatial collections
-- [ ] features
-- [x] geovolumes (3D GeoVolumes, DRAFT)
-- [ ] maps
-- [X] styles
-- [X] tiles
+defined by the OGC. Each OGC building block resides in its own Go package.
 
 ## Coding
 
