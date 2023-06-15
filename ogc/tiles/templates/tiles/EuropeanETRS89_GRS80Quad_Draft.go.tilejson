@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "scheme": "xyz",
   "tiles": [
-    "{{ .Config.BaseURL }}/tiles/EuropeanETRS89_GRS80Quad_Draft/{z}/{x}/{y}?f=mvt"
+    "{{ .Config.BaseURL }}/tiles/EuropeanETRS89_GRS80Quad_Draft/{z}/{y}/{x}?f=mvt"
   ],
   {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
   {{ if eq $type.Srs "EPSG:4258" }}

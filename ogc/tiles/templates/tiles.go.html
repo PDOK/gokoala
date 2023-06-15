@@ -11,9 +11,14 @@
             biedt PDOK ook styles aan.
         </p>
         {{ if .Config.LastUpdated }}
-        <p>
-            <strong>Bijgewerkt op:</strong> {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
-        </p>
+        <li class="list-group-item text-muted">
+            {{ if .Config.LastUpdatedBy }}
+            <strong>Bijgewerkt door {{ .Config.LastUpdatedBy }} op</strong>:
+            {{ else }}
+            <strong>Bijgewerkt op</strong>:
+            {{ end }}
+            {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+        </li>
         {{ end }}
         <table class="table table-striped">
             <thead>
