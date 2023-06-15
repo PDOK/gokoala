@@ -7,31 +7,24 @@
     <div class="col-md-12">
         <p>
             De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
-            <small><code>{tileMatrix}/{tileRow}/{tileCol}</code></small> een verwijzing naar een
+            <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
             tile volgens het <a href="/tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
             In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a> in
             te laden.
-            <p>
-              <code>{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt</code>
-            </p>
-            <app-vectortile-view style="width: 800px; height: 600px;"
-            tile-url="{{ .Config.BaseURL }}/tiles/WebMercatorQuad"
-            {{ if .Config.OgcAPI.Styles }}style-url="{{ .Config.BaseURL }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
-            zoom="17"
-            center-x="5.3896944" center-y="52.1562499"
-            show-grid>
-            </app-vectortile-view>
+        </p>
+        <p>
+          <code>{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt</code>
         </p>
         <h2>Tile matrix set limits</h2>
         De tiles zijn beschikbaar op de volgende zoomniveaus:
         <table class="table table-striped">
           <thead>
           <tr>
-              <th>Zoomniveau (<code>tileMatrix</code>)</th>
-              <th>Minimale waarde <code>tileRow</code></th>
-              <th>Maximale waarde <code>tileRow</code></th>
-              <th>Minimale waarde <code>tileCol</code></th>
-              <th>Maximale waarde <code>tileCol</code></th>
+              <th>Zoomniveau <code>{z}</code></th>
+              <th>Minimale waarde <code>{y}</code></th>
+              <th>Maximale waarde <code>{y}</code></th>
+              <th>Minimale waarde <code>{x}</code></th>
+              <th>Maximale waarde <code>{x}</code></th>
           </tr>
           </thead>
           <tbody>
