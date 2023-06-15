@@ -96,8 +96,6 @@ func (cn *ContentNegotiation) NegotiateLanguage(req *http.Request) language.Tag 
 	if err != nil || requestedLanguage == language.Und {
 		requestedLanguage = language.Dutch // default
 	}
-	log.Printf("dutch language: %v", language.Dutch)
-	log.Printf("negotiated language: %v", requestedLanguage)
 	return requestedLanguage
 }
 

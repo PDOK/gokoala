@@ -2,20 +2,19 @@
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - Styles</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" .Language }}</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
         {{ $baseUrl := .Config.BaseURL }}
         <p>
-            Betreft de offici&#235;le style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld
-            in het Mapbox formaat.
+            {{ i18n "StylesText" .Language }}
         </p>
         <table class="table table-borderless table-sm w-75">
             <tbody>
                 <tr>
                     <td class="w-25">
-                        <b>Beschikbare style(s)</b>
+                        <b>{{ i18n "AvailableStyles" .Language }}</b>
                     </td>
                     <td>
                         {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
@@ -29,6 +28,7 @@
                         {{ end }}
                     </td>
                 </tr>
+                {{ $language := .Language}}
                 {{ range $index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
                 <tr id="{{ $style.ID }}_url" class="toggle-content{{ if not $index }} is-visible{{ end }}">
                     <td class="w-25">
@@ -40,7 +40,7 @@
                 </tr>
                 <tr id="{{ $style.ID }}_meta" class="toggle-content{{ if not $index }} is-visible{{ end }}">
                     <td class="w-25">
-                        <b>Metadata style</b>
+                        <b>{{ i18n "StyleMetadata" $language }}</b>
                     </td>
                     <td>
                         <a href="styles/{{ $style.ID }}/metadata">Link</a>
@@ -49,7 +49,7 @@
                 {{ end }}
             </tbody>
         </table>
-        <p>Voorbeeld styling:</p>
+        <p>{{ i18n "StylingExample" .Language }}:</p>
         {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
         <app-vectortile-view id="style-vectortile-view" style="width: 800px; height: 600px;"
             tile-url="{{ $baseUrl }}/tiles/{{ get $projections (index .Config.OgcAPI.Tiles.SupportedSrs 0).Srs }}"

@@ -1,18 +1,16 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - Tiles</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "Tiles" .Language }}</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
         <p>
-            Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data
-            bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles
-            biedt PDOK ook styles aan.
+        {{ i18n "TilesText" .Language }}
         </p>
         {{ if .Config.LastUpdated }}
         <p>
-            <strong>Bijgewerkt op:</strong> {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+            <strong>{{ i18n "LastUpdated" .Language }}:</strong> {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
         </p>
         {{ end }}
         <table class="table table-striped">
@@ -25,6 +23,7 @@
             </thead>
             <tbody>
                 {{$baseUrl := .Config.BaseURL}}
+                {{ $language := .Language}}
                 {{range $type := .Config.OgcAPI.Tiles.SupportedSrs}}
                 {{ if (eq $type.Srs "EPSG:28992") }}
                 <tr>
@@ -36,7 +35,7 @@
                 {{ if (eq $type.Srs "EPSG:4258") }}
                 <tr>
                     <td><a href="tiles/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a>
-                        (naam/definitie kan in toekomst mogelijk wijzigen)</td>
+                        ({{ i18n "SubjectToChange" $language }})</td>
                     <td><a href="https://www.opengis.net/def/crs/EPSG/0/4258">EPSG:4258</a></td>
                     <td>vector</td>
                 </tr>

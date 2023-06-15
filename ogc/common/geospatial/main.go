@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
+	"golang.org/x/text/language"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -28,7 +29,8 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 		e.RenderTemplates(CollectionsPath,
 			collectionsBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
-			engine.NewTemplateKey(templatesDir+"collections.go.html"))
+			engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go.html", language.Dutch),
+			engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go.html", language.English))
 
 		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
 			collectionBreadcrumbs := collectionsBreadcrumbs
@@ -43,7 +45,8 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.json", coll.ID))
 			e.RenderTemplatesWithParams(coll,
 				collectionBreadcrumbs,
-				engine.NewTemplateKeyWithName(templatesDir+"collection.go.html", coll.ID))
+				engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go.html", coll.ID, language.Dutch),
+				engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go.html", coll.ID, language.English))
 		}
 	}
 
@@ -60,7 +63,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 // Collections returns list of collections
 func (t *Collections) Collections() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKey(templatesDir + "collections.go." + t.engine.CN.NegotiateFormat(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(r))
 		t.engine.ServePage(w, r, key)
 	}
 }
@@ -69,7 +72,7 @@ func (t *Collections) Collection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 
-		key := engine.NewTemplateKeyWithName(templatesDir+"collection.go."+t.engine.CN.NegotiateFormat(r), collectionID)
+		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(r))
 		t.engine.ServePage(w, r, key)
 	}
 }

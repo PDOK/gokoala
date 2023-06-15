@@ -12,7 +12,7 @@
             <tbody>
                 <tr>
                     <td>
-                        <b>Trefwoorden</b>
+                        <b>{{ i18n "Keywords" .Language }}</b>
                     </td>
                     <td>
                         {{ if .Params.Keywords }}
@@ -20,14 +20,14 @@
                         {{ $keyword }}<br/>
                         {{ end }}
                         {{ else }}
-                        Geen
+                        {{ i18n "None" .Language }}
                         {{ end }}
                         <br/>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <b>Aanvullende links</b>
+                        <b>{{ i18n "AdditionalLinks" .Language }}</b>
                     </td>
                     <td>
                         {{ if .Params.Links }}

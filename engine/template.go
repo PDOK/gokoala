@@ -113,9 +113,10 @@ func newTemplates(config *Config, localizers map[language.Tag]i18n.Localizer) *T
 	}
 	customFuncs = texttemplate.FuncMap{
 		// custom template functions
-		"markdown":   markdown,
-		"unmarkdown": unmarkdown,
-		"i18n":       templates.i18n,
+		"markdown":     markdown,
+		"unmarkdown":   unmarkdown,
+		"i18n":         templates.i18n,
+		"unescapeHTML": unescapeHTML,
 	}
 	sprigFuncs = sprig.FuncMap()
 	combinedFuncs = combinedFuncMap(customFuncs, sprigFuncs)
@@ -257,6 +258,10 @@ func unmarkdown(s *string) string {
 	withoutMarkdown := stripmd.Strip(*s)
 	withoutLinebreaks := strings.ReplaceAll(withoutMarkdown, "\n", " ")
 	return withoutLinebreaks
+}
+
+func unescapeHTML(s string) htmltemplate.HTML {
+	return htmltemplate.HTML(s) //nolint:gosec
 }
 
 func (t *Templates) i18n(messageID string, lang language.Tag) string {
