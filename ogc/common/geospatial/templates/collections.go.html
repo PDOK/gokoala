@@ -36,18 +36,18 @@
                     {{ if and $coll.Metadata $coll.Metadata.LastUpdated }}
                     <li class="list-group-item text-muted">
                         {{ if and $coll.Metadata $coll.Metadata.LastUpdatedBy }}
-                        <strong>Bijgewerkt door {{ $coll.Metadata.LastUpdatedBy }} op</strong>:
+                        <strong>{{ i18n "UpdatedBy" $language }} {{ $coll.Metadata.LastUpdatedBy }} {{ i18n "On" $language }}</strong>:
                         {{ else if $cfg.LastUpdatedBy }}
-                        <strong>Bijgewerkt door {{ $cfg.LastUpdatedBy }} op</strong>:
+                        <strong>{{ i18n "UpdatedBy" $language }} {{ $cfg.LastUpdatedBy }} {{ i18n "On" $language }}</strong>:
                         {{ else }}
                         <strong>{{ i18n "LastUpdated" $language }}</strong>:
                         {{ end }}
                         {{ toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated | date "2006-01-02" }}
                     </li>
                     {{ else if $cfg.LastUpdated }}
-                    <li class="list-group-item text-muted"> }}
+                    <li class="list-group-item text-muted">
                         {{ if $cfg.LastUpdatedBy }}
-                        <strong>Bijgewerkt door {{ $cfg.LastUpdatedBy }} op</strong>:
+                        <strong>{{ i18n "UpdatedBy" $language }} {{ $cfg.LastUpdatedBy }} {{ i18n "On" $language }}</strong>:
                         {{ else }}
                         <strong>{{ i18n "LastUpdated" $language }}</strong>:
                         {{ end }}

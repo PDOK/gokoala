@@ -2,6 +2,8 @@
 ViewAs = "View as"
 AvailableIn = "The page is available in both HTML and JSON."
 LastUpdated = "Last updated"
+UpdatedBy = "Updated by"
+On = "on"
 Keywords = "Keywords"
 License = "License"
 Support = "Support"

@@ -2,6 +2,8 @@
 ViewAs = "Bekijk als"
 AvailableIn = "De pagina is zowel in HTML als JSON beschikbaar."
 LastUpdated = "Bijgewerkt op"
+UpdatedBy = "Bijgewerkt door"
+On = "op"
 Keywords = "Trefwoorden"
 License = "Licentie"
 Support = "Support"
