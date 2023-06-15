@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "scheme": "xyz",
   "tiles": [
-    "{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{x}/{y}?f=mvt"
+    "{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt"
   ],
   {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
   {{ if eq $type.Srs "EPSG:3857" }}

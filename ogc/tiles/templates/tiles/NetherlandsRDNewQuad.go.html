@@ -12,7 +12,7 @@
             In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>
             in te laden.
         </p>
-        <code>{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt</code>
+        <code>{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt</code>
         <p>
             <app-vectortile-view style="width: 800px; height: 600px;"
             tile-url="{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad"

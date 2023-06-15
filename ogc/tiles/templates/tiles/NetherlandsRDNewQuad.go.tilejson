@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "scheme": "xyz",
   "tiles": [
-    "{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{z}/{x}/{y}?f=mvt"
+    "{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"
   ],
   {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
   {{ if eq $type.Srs "EPSG:28992" }}
