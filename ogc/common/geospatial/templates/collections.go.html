@@ -27,13 +27,13 @@
                 </div>
                 <ul class="list-group list-group-flush">
                     {{ if and $coll.Metadata $coll.Metadata.Keywords }}
-                    <li class="list-group-item text-muted">
+                    <li class="list-group-item">
                         <strong>Trefwoorden</strong>: {{ $coll.Metadata.Keywords | join ", " }}
                     </li>
                     {{ end }}
-                    {{/* <li class="list-group-item text-muted"><b>Schema</b>: TODO link to collection schema</li> */}}
+                    {{/* <li class="list-group-item"><b>Schema</b>: TODO link to collection schema</li> */}}
                     {{ if and $coll.Metadata $coll.Metadata.LastUpdated }}
-                    <li class="list-group-item text-muted">
+                    <li class="list-group-item">
                         {{ if and $coll.Metadata $coll.Metadata.LastUpdatedBy }}
                         <strong>Bijgewerkt door {{ $coll.Metadata.LastUpdatedBy }} op</strong>:
                         {{ else if $cfg.LastUpdatedBy }}
@@ -44,7 +44,7 @@
                         {{ toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated | date "2006-01-02" }}
                     </li>
                     {{ else if $cfg.LastUpdated }}
-                    <li class="list-group-item text-muted"> }}
+                    <li class="list-group-item"> }}
                         {{ if $cfg.LastUpdatedBy }}
                         <strong>Bijgewerkt door {{ $cfg.LastUpdatedBy }} op</strong>:
                         {{ else }}
@@ -54,7 +54,7 @@
                     </li>
                     {{ end }}
                     {{ if and $coll.Metadata $coll.Metadata.Extent }}
-                    <li class="list-group-item text-muted">
+                    <li class="list-group-item">
                         <strong>Geografische begrenzing</strong>
                         (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}">{{ $coll.Metadata.Extent.Srs }}</a>):
                         {{ $coll.Metadata.Extent.Bbox | join ", " }}
