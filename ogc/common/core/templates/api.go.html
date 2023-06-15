@@ -6,10 +6,10 @@
     <div class="row">
         <div class="col-md-12">
             {{ markdown .Config.Abstract }}
-            <table class="table table-borderless table-sm">
+            <table class="table table-borderless table-sm w-50">
                 <tbody>
                 <tr>
-                    <td class="w-10">
+                    <td class="w-25">
                         <b>{{ i18n "License" .Language }}</b>
                     </td>
                     <td>
@@ -35,7 +35,7 @@
             </div>
 
             <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui@4.5.0/dist/swagger-ui.min.css">
-            <link rel="stylesheet" type="text/css" href="swagger-ui/swagger-ui-pdok.css">
+            <link rel="stylesheet" type="text/css" href="css/swagger-ui-pdok.css">
 
             <!-- Load Swagger -->
             <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-bundle.js" charset="UTF-8"></script>

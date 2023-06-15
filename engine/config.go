@@ -56,9 +56,11 @@ type Config struct {
 	Thumbnail         *string         `yaml:"thumbnail"`
 	Keywords          []string        `yaml:"keywords"`
 	LastUpdated       *string         `yaml:"lastUpdated"`
+	LastUpdatedBy     string          `yaml:"lastUpdatedBy"`
 	License           License         `yaml:"license" validate:"required"`
 	Support           *string         `yaml:"support"`
 	DatasetDetails    []DatasetDetail `yaml:"datasetDetails"`
+	DatasetCatalogURL YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
 	BaseURL           YAMLURL         `yaml:"baseUrl" validate:"required,url"`
 	Resources         *Resources      `yaml:"resources"`
 	OgcAPI            OgcAPI          `yaml:"ogcApi" validate:"required"`
@@ -141,12 +143,13 @@ type GeoSpatialCollection struct {
 }
 
 type GeoSpatialCollectionMetadata struct {
-	Title       *string  `yaml:"title"`
-	Description *string  `yaml:"description"`
-	Thumbnail   *string  `yaml:"thumbnail"`
-	Keywords    []string `yaml:"keywords"`
-	LastUpdated *string  `yaml:"lastUpdated"`
-	Extent      *Extent  `yaml:"extent"`
+	Title         *string  `yaml:"title"`
+	Description   *string  `yaml:"description"`
+	Thumbnail     *string  `yaml:"thumbnail"`
+	Keywords      []string `yaml:"keywords"`
+	LastUpdated   *string  `yaml:"lastUpdated"`
+	LastUpdatedBy string   `yaml:"lastUpdatedBy"`
+	Extent        *Extent  `yaml:"extent"`
 }
 
 type CollectionEntry3dGeoVolumes struct {
@@ -190,7 +193,6 @@ type OgcAPITiles struct {
 }
 
 type OgcAPIStyles struct {
-	BaseURL          YAMLURL
 	Default          string          `yaml:"default" validate:"required"`
 	MapboxStylesPath string          `yaml:"mapboxStylesPath" validate:"required,dir"`
 	SupportedStyles  []StyleMetadata `yaml:"supportedStyles" validate:"required"`
@@ -207,7 +209,7 @@ type OgcAPIMaps struct {
 type OgcAPIProcesses struct {
 	SupportsDismiss  bool    `yaml:"supportsDismiss"`
 	SupportsCallback bool    `yaml:"supportsCallback"`
-	ProcessesServer  YAMLURL `yaml:"processesServer"`
+	ProcessesServer  YAMLURL `yaml:"processesServer" validate:"url"`
 }
 
 type SupportedSrs struct {

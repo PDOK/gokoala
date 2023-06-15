@@ -38,14 +38,19 @@ footer {
     background-color: var(--bs-blue);
 }
 
+/* tables */
 .table-sm td p {
     margin: 0;
+    padding: 0;
+}
+.table-sm>:not(caption)>*>*  {
+    padding: 0.10rem;
 }
 
+/* toggles */
 .toggle-content {
     display: none;
 }
-
 .toggle-content.is-visible {
     display: table-row;
 }

@@ -26,6 +26,7 @@ datasetDetails:
   - name: Metadata dataset
     value: >-
       [Link to metadata](https://example.com/my-dataset/metadata)
+datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
 # how to serve resources (e.g., images, fonts, sprites). Possible values: directory (serve local files), url (serve through reverse proxy)
 ogcApi:
@@ -36,7 +37,7 @@ ogcApi:
     # base URL to webserver or object storage (e.g. azure blob or S3)
     # which hosts the tiles.
     tileServer:
-      https://api.pdok.nl/lv/bgt/ogc/v0_1/tiles/
+      https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
     # vector tiles and/or raster tiles
     types:
       - vector

@@ -10,7 +10,8 @@
     <div class="col-md-12">
     {{ end }}
         {{ markdown .Config.Abstract }}
-        <table class="table table-borderless table-sm w-75">
+        <table class="table table-borderless table-sm w-100">
+            <caption class="visually-hidden">Dataset details</caption>
             <tbody>
                 {{ if .Config.Keywords }}
                 <tr>
