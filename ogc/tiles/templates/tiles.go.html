@@ -42,7 +42,7 @@
         </tr>
         <tr>
           <th>Bijgewerkt door PDOK</th>
-          <td id="field-updated">{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}</td>
+          <td id="field-updated">{{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}</td>
         </tr>
         <tr>
           <th>Type</th>
