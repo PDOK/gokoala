@@ -134,18 +134,23 @@ func (t *Templates) GetRenderedTemplate(key TemplateKey) ([]byte, error) {
 func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
 	compiled := htmltemplate.Must(htmltemplate.New(layoutFile).Funcs(combinedFuncs).ParseFiles(templatesDir+layoutFile, file))
-	var rendered bytes.Buffer
 
-	if err := compiled.Execute(&rendered, &TemplateData{
-		Config:      t.config,
-		Params:      params,
-		Breadcrumbs: breadcrumbs,
-		Language:    key.Language,
-	}); err != nil {
-		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
+	for lang := range t.localizers {
+		var rendered bytes.Buffer
+
+		if err := compiled.Execute(&rendered, &TemplateData{
+			Config:      t.config,
+			Params:      params,
+			Breadcrumbs: breadcrumbs,
+			Language:    lang,
+		}); err != nil {
+			log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
+		}
+
+		// Store rendered template per language
+		key.Language = lang
+		t.RenderedTemplates[key] = rendered.Bytes()
 	}
-
-	t.RenderedTemplates[key] = rendered.Bytes()
 }
 
 func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {

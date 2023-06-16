@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
-	"golang.org/x/text/language"
-
 	"github.com/go-chi/chi/v5"
 )
 
@@ -37,17 +35,14 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 	e.RenderTemplates(rootPath,
 		nil,
 		engine.NewTemplateKey(templatesDir+"landing-page.go.json"),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"landing-page.go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"landing-page.go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"landing-page.go.html"))
 	e.RenderTemplates(rootPath,
 		apiBreadcrumbs,
-		engine.NewTemplateKeyWithLanguage(templatesDir+"api.go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"api.go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"api.go.html"))
 	e.RenderTemplates(conformancePath,
 		conformanceBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"conformance.go.json"),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"conformance.go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"conformance.go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"conformance.go.html"))
 	core := &CommonCore{
 		engine: e,
 	}

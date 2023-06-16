@@ -8,8 +8,6 @@ import (
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
-	"golang.org/x/text/language"
-
 	"github.com/go-chi/chi/v5"
 )
 
@@ -41,13 +39,11 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 	e.RenderTemplates(tilesPath,
 		tilesBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tiles.go.json"),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tiles.go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tiles.go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"tiles.go.html"))
 	e.RenderTemplates(tileMatrixSetsPath,
 		tileMatrixSetsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets.go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets.go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
 
 	// TODO: i18n for srs pages
 	renderTemplatesForSrs(e, "EuropeanETRS89_GRS80Quad_Draft", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
@@ -91,14 +87,12 @@ func renderTemplatesForSrs(e *engine.Engine, srs string, tilesBreadcrumbs []engi
 	e.RenderTemplates(tileMatrixSetsPath+"/"+srs,
 		tileMatrixSetsSrsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets/"+srs+".go.json"),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets/"+srs+".go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets/"+srs+".go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"tileMatrixSets/"+srs+".go.html"))
 
 	e.RenderTemplates(tilesPath+"/"+srs,
 		tilesSrsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.json"),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tiles/"+srs+".go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"tiles/"+srs+".go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.html"))
 
 	e.RenderTemplates(tilesPath+"/"+srs,
 		tilesSrsBreadcrumbs,

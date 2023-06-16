@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
-	"golang.org/x/text/language"
-
 	"github.com/go-chi/chi/v5"
 )
 
@@ -29,8 +27,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 		e.RenderTemplates(CollectionsPath,
 			collectionsBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
-			engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go.html", language.Dutch),
-			engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go.html", language.English))
+			engine.NewTemplateKey(templatesDir+"collections.go.html"))
 
 		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
 			collectionBreadcrumbs := collectionsBreadcrumbs
@@ -45,8 +42,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.json", coll.ID))
 			e.RenderTemplatesWithParams(coll,
 				collectionBreadcrumbs,
-				engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go.html", coll.ID, language.Dutch),
-				engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go.html", coll.ID, language.English))
+				engine.NewTemplateKeyWithName(templatesDir+"collection.go.html", coll.ID))
 		}
 	}
 

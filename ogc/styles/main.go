@@ -29,15 +29,14 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 	e.RenderTemplates(stylesPath,
 		stylesBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"styles.go.json"),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"styles.go.html", language.Dutch),
-		engine.NewTemplateKeyWithLanguage(templatesDir+"styles.go.html", language.English))
+		engine.NewTemplateKey(templatesDir+"styles.go.html"))
 
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
 		// Render metadata templates
 		e.RenderTemplatesWithParams(style,
 			nil,
-			engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"styleMetadata.go.json", style.ID, language.Dutch),
-			engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"styleMetadata.go.json", style.ID, language.English))
+			engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID),
+			engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
 		styleMetadataBreadcrumbs := stylesBreadcrumbs
 		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
 			{
@@ -51,8 +50,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 		}...)
 		e.RenderTemplatesWithParams(style,
 			styleMetadataBreadcrumbs,
-			engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"styleMetadata.go.html", style.ID, language.Dutch),
-			engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"styleMetadata.go.html", style.ID, language.English))
+			engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", style.ID))
 
 		// Add existing style definitions to rendered templates
 		for _, stylesheet := range style.Stylesheets {
