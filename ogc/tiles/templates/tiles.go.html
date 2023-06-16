@@ -24,7 +24,7 @@
           <th>Tile Matrix Set</th>
           <td>
               {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
-                  {{ $defaultSrs.Srs }}
+                  {{ get $projections $defaultSrs.Srs }}
               {{ else }}
                 <select id="srs">
                     {{ range $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
