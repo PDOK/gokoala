@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input,  ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import Feature from 'ol/Feature';
+import Feature, { FeatureLike } from 'ol/Feature';
 import RenderFeature from 'ol/render/Feature';
+
 
 type proprow = {
   title: string
@@ -12,6 +13,7 @@ type proprow = {
 @Component({
   selector: 'app-object-info',
   standalone: true,
+  encapsulation: ViewEncapsulation.ShadowDom, 
   imports: [CommonModule],
   templateUrl: './object-info.component.html',
   styleUrls: ['./object-info.component.css']
@@ -19,7 +21,7 @@ type proprow = {
 
 
 export class ObjectInfoComponent {
-  @Input() feature!: Feature
+  @Input() feature!: RenderFeature
 
 
 

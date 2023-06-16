@@ -13,7 +13,7 @@ import { NgModule, Injector } from '@angular/core';
   bootstrap: [],
   imports: [
     BrowserModule,
-    ObjectInfoComponent,
+  
     AppComponent
   ], 
  

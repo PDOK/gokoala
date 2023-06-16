@@ -4,7 +4,7 @@
     margin-right:1em; 
     background-color: white;    
     overflow-y:scroll; 
-    max-height: 80vh;   
+    max-height: 60vh;   
     font-family: var(--font-family, "Roboto");   
     
   }

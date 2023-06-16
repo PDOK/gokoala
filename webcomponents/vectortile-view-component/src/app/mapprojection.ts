@@ -35,10 +35,13 @@ export class MapProjection {
       global: true
     })
 
+     //extent: [-16.1, 32.88, 39.65, 84.17],
+      // Corner{'bottom-left'} {'bottom-right'} {'top-left'} {'top-right'}
+      //extent = { minx = -43.2303347, miny = 26.2719467, maxx = 32.2893147, maxy = 64.0317714 }
     const ETRS89projection = new Projection({
       code: "EPSG:4258",
-      units: "m",
-      extent: [-16.1, 32.88, 39.65, 84.17],
+      units: "m",     
+      extent: [ -43.2303347, 26.2719467, 32.2893147,  64.0317714], 
       axisOrientation: "enu",
       global: false
     })
