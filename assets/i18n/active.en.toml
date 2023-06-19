@@ -7,9 +7,10 @@ On = "on"
 Keywords = "Keywords"
 License = "License"
 Support = "Support"
-SubjectToChange = "name/definition may change in future"
+LinkToExternalWebsite = "link to external website"
 Description = "Description"
 None = "None"
+Example = "Example"
 
 # Landing page
 Specification = "Specification"
@@ -34,7 +35,9 @@ StylesText = """
 This is the official style specified by the supplier. Styles are made available in the Mapbox format."""
 TileMatrixSets = "Tile Matrix Sets"
 TileMatrixSetsText = """
-The Tile Matrix Sets made available by PDOK in this API."""
+Description of the Tile Matrix Sets that are made available via this API. Note that all zoom levels
+of the tile matrix are described. See the <i>Tile Matrix Set Limits</i> on the <a href="tiles">Tiles</a>
+pages to see what zoom levels are supported by this API."""
 
 # Conformance page
 ConformanceAbstract = """
@@ -43,17 +46,17 @@ These are the references to the OGC API conformance classes that this service co
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract = """
 The tiles can be requested via the URL template below, where
-<small><code>{tileMatrix}/{tileRow}/{tileCol}</code></small> is a reference to a tile according to the
+<small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
 <a href="/tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme. In some tools it is
 also possible to load this through <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>."""
 WebMercatorQuadAbstract = """
 The tiles can be requested via the URL template below, where
-<small><code>{tileMatrix}/{tileRow}/{tileCol}</code></small> is a reference to a tile according to the
+<small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
 <a href="/tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme. In some tools it is
 also possible to load this through <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>."""
 EuropeanETRS89_GRS80Quad_DraftAbstract = """
 The tiles can be requested via the URL template below, where
-<small><code>{tileMatrix}/{tileRow}/{tileCol}</code></small> is a reference to a tile according to the
+<small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
 <a href="/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme. 
 In some tools it is also possible to load this through 
 <a href="tiles/EuropeanETRS89_GRS80Quad_Draft?f=tilejson">TileJSON</a>."""

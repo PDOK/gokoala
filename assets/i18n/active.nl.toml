@@ -7,9 +7,10 @@ On = "op"
 Keywords = "Trefwoorden"
 License = "Licentie"
 Support = "Support"
-SubjectToChange = "naam/definitie kan in toekomst mogelijk wijzigen"
+LinkToExternalWebsite = "link naar externe website"
 Description = "Omschrijving"
 None = "Geen"
+Example = "Voorbeeld"
 
 # Landing page
 Specification = "Specificatie"
@@ -37,7 +38,9 @@ Betreft de officiële style van/door de aanbieder gespecificeerd. Styles worden 
 in het Mapbox formaat."""
 TileMatrixSets = "Tile Matrix Sets"
 TileMatrixSetsText = """
-De door de PDOK beschikbare Tile Matrix Sets beschikbaar in deze API."""
+Beschrijving van de Tile Matrix Sets die via deze API worden ontsloten. Merk op dat alle zoomniveaus
+van de tile matrix zijn beschreven. Zie de <i>Tile Matrix Set Limits</i> op de <a href="tiles">Tiles</a>
+pagina's om te zien welke zoomniveaus door deze API worden ondersteund."""
 
 # Conformance page
 ConformanceAbstract = """
@@ -46,19 +49,19 @@ Hier staan de verwijzingen naar de OGC API conformiteitsklassen waaraan deze ser
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
-<small><code>{tileMatrix}/{tileRow}/{tileCol}</code></small> een verwijzing naar een
+<small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
 tile volgens het <a href="/tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
 In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>
 in te laden."""
 WebMercatorQuadAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
-<small><code>{tileMatrix}/{tileRow}/{tileCol}</code></small> een verwijzing naar een
+<small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
 tile volgens het <a href="/tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
 In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>
 in te laden."""
 EuropeanETRS89_GRS80Quad_DraftAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
-<small><code>{tileMatrix}/{tileRow}/{tileCol}</code></small> een verwijzing naar een
+<small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
 tile volgens het <a href="/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme.
 In sommige tools is het ook mogelijk om dit via <a href="tiles/EuropeanETRS89_GRS80Quad_Draft?f=tilejson">TileJSON</a>
 in te laden."""

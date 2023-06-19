@@ -46,9 +46,17 @@ func TestNewTiles(t *testing.T) {
 					OgcAPI: engine.OgcAPI{
 						GeoVolumes: nil,
 						Tiles: &engine.OgcAPITiles{
-							TileServer:   engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
-							Types:        []string{"vector"},
-							SupportedSrs: nil,
+							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							Types:      []string{"vector"},
+							SupportedSrs: []engine.SupportedSrs{
+								{
+									Srs: "EPSG:28992",
+									ZoomLevelRange: engine.ZoomLevelRange{
+										Start: 0,
+										End:   6,
+									},
+								},
+							},
 						},
 						Styles: &engine.OgcAPIStyles{
 							Default:         "foo",

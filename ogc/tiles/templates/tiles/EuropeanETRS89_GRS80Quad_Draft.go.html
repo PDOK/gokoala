@@ -7,20 +7,20 @@
     <div class="col-md-12">
         <p>
             {{ i18n "EuropeanETRS89_GRS80Quad_DraftAbstract" .Language | unescapeHTML }}
-            <p>
-                <code>{{ .Config.BaseURL }}/tiles/EuropeanETRS89_GRS80Quad_Draft/{tileMatrix}/{tileRow}/{tileCol}?f=mvt</code>
-            </p>
+        </p>
+        <p>
+            <code>{{ .Config.BaseURL }}/tiles/EuropeanETRS89_GRS80Quad_Draft/{z}/{y}/{x}?f=mvt</code>
         </p>
         <h2>Tile matrix set limits</h2>
         {{ i18n "AvailableZoomLevels" .Language }}:
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>{{ i18n "ZoomLevel" .Language }} (<code>tileMatrix</code>)</th>
-                    <th>{{ i18n "MinimumValue" .Language }} <code>tileRow</code></th>
-                    <th>{{ i18n "MaximumValue" .Language }} <code>tileRow</code></th>
-                    <th>{{ i18n "MinimumValue" .Language }} <code>tileCol</code></th>
-                    <th>{{ i18n "MaximumValue" .Language }} <code>tileCol</code></th>
+                    <th>{{ i18n "ZoomLevel" .Language }} <code>{z}</code></th>
+                    <th>{{ i18n "MinimumValue" .Language }} <code>{y}</code></th>
+                    <th>{{ i18n "MaximumValue" .Language }} <code>{y}</code></th>
+                    <th>{{ i18n "MinimumValue" .Language }} <code>{x}</code></th>
+                    <th>{{ i18n "MaximumValue" .Language }} <code>{x}</code></th>
                 </tr>
             </thead>
             <tbody>

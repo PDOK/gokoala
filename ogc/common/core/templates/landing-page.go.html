@@ -153,7 +153,7 @@
             </h5>
             <div class="card-body">
                 <p>
-                    {{ i18n "TileMatrixSetsText" .Language }}
+                    {{ i18n "TileMatrixSetsText" .Language | unescapeHTML }}
                     {{ i18n "AvailableIn" .Language }}
                 </p>
                 <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="tileMatrixSets?f=json" target="_blank">JSON</a></small>

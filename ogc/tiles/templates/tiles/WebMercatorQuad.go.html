@@ -7,27 +7,20 @@
     <div class="col-md-12">
         <p>
             {{ i18n "WebMercatorQuadAbstract" .Language | unescapeHTML }}
-            <p>
-              <code>{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt</code>
-            </p>
-            <app-vectortile-view style="width: 800px; height: 600px;"
-            tile-url="{{ .Config.BaseURL }}/tiles/WebMercatorQuad"
-            {{ if .Config.OgcAPI.Styles }}style-url="{{ .Config.BaseURL }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
-            zoom="17"
-            center-x="5.3896944" center-y="52.1562499"
-            show-grid>
-            </app-vectortile-view>
+        </p>
+        <p>
+          <code>{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt</code>
         </p>
         <h2>Tile matrix set limits</h2>
         {{ i18n "AvailableZoomLevels" .Language }}:
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>{{ i18n "ZoomLevel" .Language }} (<code>tileMatrix</code>)</th>
-                    <th>{{ i18n "MinimumValue" .Language }} <code>tileRow</code></th>
-                    <th>{{ i18n "MaximumValue" .Language }} <code>tileRow</code></th>
-                    <th>{{ i18n "MinimumValue" .Language }} <code>tileCol</code></th>
-                    <th>{{ i18n "MaximumValue" .Language }} <code>tileCol</code></th>
+                    <th>{{ i18n "ZoomLevel" .Language }} <code>{z}</code></th>
+                    <th>{{ i18n "MinimumValue" .Language }} <code>{y}</code></th>
+                    <th>{{ i18n "MaximumValue" .Language }} <code>{y}</code></th>
+                    <th>{{ i18n "MinimumValue" .Language }} <code>{x}</code></th>
+                    <th>{{ i18n "MaximumValue" .Language }} <code>{x}</code></th>
                 </tr>
           </thead>
           <tbody>

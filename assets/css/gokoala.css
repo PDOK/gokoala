@@ -39,6 +39,9 @@ footer {
 }
 
 /* tables */
+td {
+    word-wrap: break-word;
+}
 .table-sm td p {
     margin: 0;
     padding: 0;
