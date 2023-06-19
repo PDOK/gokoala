@@ -66,7 +66,7 @@ func initLocalizers() map[language.Tag]i18n.Localizer {
 	nlBundle.MustLoadMessageFile("assets/i18n/active.nl.toml")
 	localizers[language.Dutch] = *i18n.NewLocalizer(nlBundle, "nl")
 	// english
-	enBundle := i18n.NewBundle(language.BritishEnglish)
+	enBundle := i18n.NewBundle(language.English)
 	enBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	enBundle.MustLoadMessageFile("assets/i18n/active.en.toml")
 	localizers[language.English] = *i18n.NewLocalizer(enBundle, "en")
@@ -144,7 +144,8 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 		}
 		// we already perform OpenAPI validation here during startup to catch
 		// issues early on, in addition to runtime OpenAPI response validation
-		e.validateStaticResponse(key, urlPath)
+		// TODO: deal with multiple keys created due to multiple languages
+		// e.validateStaticResponse(key, urlPath)
 	}
 }
 

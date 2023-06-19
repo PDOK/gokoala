@@ -169,21 +169,26 @@ func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 		}
 	}
 	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).Parse(fileContents))
-	var rendered bytes.Buffer
 
-	if err := compiled.Execute(&rendered, &TemplateData{
-		Config: t.config,
-		Params: params,
-	}); err != nil {
-		log.Fatalf("failed to execute template %s, error: %v", file, err)
-	}
+	for lang := range t.localizers {
+		var rendered bytes.Buffer
 
-	var result = rendered.Bytes()
-	if strings.Contains(key.Format, FormatJSON) {
-		// pretty print all JSON (or derivatives like TileJSON)
-		result = PrettyPrintJSON(result, key.Name)
+		if err := compiled.Execute(&rendered, &TemplateData{
+			Config: t.config,
+			Params: params,
+		}); err != nil {
+			log.Fatalf("failed to execute template %s, error: %v", file, err)
+		}
+
+		var result = rendered.Bytes()
+		if strings.Contains(key.Format, FormatJSON) {
+			// pretty print all JSON (or derivatives like TileJSON)
+			result = PrettyPrintJSON(result, key.Name)
+		}
+		// Store rendered template per language
+		key.Language = lang
+		t.RenderedTemplates[key] = result
 	}
-	t.RenderedTemplates[key] = result
 }
 
 // combine applicable FuncMaps
