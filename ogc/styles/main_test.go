@@ -57,7 +57,7 @@ func TestNewStyles(t *testing.T) {
 							},
 						},
 						Styles: &engine.OgcAPIStyles{
-							Default: "",
+							Default: "foo",
 							SupportedStyles: []engine.StyleMetadata{
 								{
 									ID:    "foo",
