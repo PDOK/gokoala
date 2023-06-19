@@ -49,11 +49,3 @@ td {
 .table-sm>:not(caption)>*>*  {
     padding: 0.10rem;
 }
-
-/* toggles */
-.toggle-content {
-    display: none;
-}
-.toggle-content.is-visible {
-    display: table-row;
-}

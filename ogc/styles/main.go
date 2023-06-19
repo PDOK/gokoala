@@ -1,6 +1,7 @@
 package styles
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
@@ -19,6 +20,11 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
+	// default style must be the first entry in supportedstyles
+	if e.Config.OgcAPI.Styles.Default != e.Config.OgcAPI.Styles.SupportedStyles[0].ID {
+		log.Fatalf("default style must be first entry in supported styles. '%s' does not match '%s'", e.Config.OgcAPI.Styles.SupportedStyles[0].ID, e.Config.OgcAPI.Styles.Default)
+	}
+
 	stylesBreadcrumbs := []engine.Breadcrumb{
 		{
 			Name: "Styles",
