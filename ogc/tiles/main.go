@@ -101,7 +101,7 @@ func renderTemplatesForSrs(e *engine.Engine, srs string, tilesBreadcrumbs []engi
 
 func (t *Tiles) TileMatrixSets() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }
@@ -109,14 +109,14 @@ func (t *Tiles) TileMatrixSets() http.HandlerFunc {
 func (t *Tiles) TileMatrixSet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets/"+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets/"+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }
 
 func (t *Tiles) TilesetsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }
@@ -124,7 +124,7 @@ func (t *Tiles) TilesetsList() http.HandlerFunc {
 func (t *Tiles) Tileset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tiles/"+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tiles/"+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }

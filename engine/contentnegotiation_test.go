@@ -48,7 +48,7 @@ func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader str
 	if err != nil {
 		t.Fatal(err)
 	}
-	language := cn.NegotiateLanguage(req)
+	language := cn.NegotiateLanguage(nil, req)
 	if language != expectedLanguage {
 		t.Fatalf("Expected %v for input %s, got %v", expectedLanguage, givenURL, language)
 	}

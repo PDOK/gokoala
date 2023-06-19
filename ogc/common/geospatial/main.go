@@ -59,7 +59,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 // Collections returns list of collections
 func (t *Collections) Collections() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }
@@ -68,7 +68,7 @@ func (t *Collections) Collection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 
-		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }

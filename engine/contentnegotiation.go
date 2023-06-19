@@ -88,12 +88,15 @@ func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
 }
 
 // NegotiateLanguage performs language negotiation, not idempotent (since it removes the ?lang= param)
-func (cn *ContentNegotiation) NegotiateLanguage(req *http.Request) language.Tag {
-	requestedLanguage, err := cn.getLanguageFromQueryParam(req)
-	if err != nil || requestedLanguage == language.Und {
-		requestedLanguage, err = cn.getLanguageFromAcceptLanguageHeader(req)
+func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http.Request) language.Tag {
+	requestedLanguage := cn.getLanguageFromQueryParam(w, req)
+	if requestedLanguage == language.Und {
+		requestedLanguage = cn.getLanguageFromCookie(req)
 	}
-	if err != nil || requestedLanguage == language.Und {
+	if requestedLanguage == language.Und {
+		requestedLanguage = cn.getLanguageFromAcceptLanguageHeader(req)
+	}
+	if requestedLanguage == language.Und {
 		requestedLanguage = language.Dutch // default
 	}
 	return requestedLanguage
@@ -125,39 +128,72 @@ func (cn *ContentNegotiation) getFormatFromAcceptHeader(req *http.Request) strin
 	return cn.formatsByMediaType[accepted.String()]
 }
 
-func (cn *ContentNegotiation) getLanguageFromQueryParam(req *http.Request) (language.Tag, error) {
+func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, req *http.Request) language.Tag {
 	var requestedLanguage = language.Und
 	queryParams := req.URL.Query()
 	if queryParams.Get(languageParam) != "" {
 		lang := queryParams.Get(languageParam)
 		accepted, _, err := language.ParseAcceptLanguage(lang)
 		if err != nil {
-			return language.Und, err
+			return requestedLanguage
 		}
 		m := language.NewMatcher(cn.availableLanguages)
 		_, langIndex, _ := m.Match(accepted...)
 		requestedLanguage = cn.availableLanguages[langIndex]
+
+		// check for presence of language cookie, create cookie if not present, update if present and language doesn't match
+		cookie, err := req.Cookie("lang")
+		if err != nil {
+			cookie = &http.Cookie{
+				Name:     "lang",
+				Value:    lang,
+				Path:     "/",
+				MaxAge:   21600,
+				SameSite: http.SameSiteStrictMode,
+				Secure:   true,
+			}
+		} else if cookie.Value != lang {
+			cookie.Value = lang
+		}
+		http.SetCookie(w, cookie)
 
 		// remove ?lang= parameter, to prepare for rewrite
 		queryParams.Del(languageParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}
-	return requestedLanguage, nil
+	return requestedLanguage
 }
 
-func (cn *ContentNegotiation) getLanguageFromAcceptLanguageHeader(req *http.Request) (language.Tag, error) {
+func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.Tag {
+	var requestedLanguage = language.Und
+	cookie, err := req.Cookie("lang")
+	if err != nil {
+		return requestedLanguage
+	}
+	lang := cookie.Value
+	accepted, _, err := language.ParseAcceptLanguage(lang)
+	if err != nil {
+		return requestedLanguage
+	}
+	m := language.NewMatcher(cn.availableLanguages)
+	_, langIndex, _ := m.Match(accepted...)
+	requestedLanguage = cn.availableLanguages[langIndex]
+	return requestedLanguage
+}
+
+func (cn *ContentNegotiation) getLanguageFromAcceptLanguageHeader(req *http.Request) language.Tag {
 	var requestedLanguage = language.Und
 	if req.Header.Get("Accept-Language") != "" {
 		accepted, _, err := language.ParseAcceptLanguage(req.Header.Get("Accept-Language"))
 		if err != nil {
 			log.Printf("Failed to parse Accept-Language header: %v. Continuing\n", err)
-			return language.Und, err
+			return requestedLanguage
 		}
 		m := language.NewMatcher(cn.availableLanguages)
 		_, langIndex, _ := m.Match(accepted...)
 		requestedLanguage = cn.availableLanguages[langIndex]
 	}
-	return requestedLanguage, nil
+	return requestedLanguage
 }
 
 func reverseMap(input map[string]string) map[string]string {

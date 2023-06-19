@@ -57,7 +57,7 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 
 func (c *CommonCore) LandingPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"landing-page.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"landing-page.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(w, r))
 		c.engine.ServePage(w, r, key)
 	}
 }
@@ -66,7 +66,7 @@ func (c *CommonCore) API() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		format := c.engine.CN.NegotiateFormat(r)
 		if format == engine.FormatHTML {
-			key := engine.NewTemplateKeyWithLanguage(templatesDir+"api.go.html", c.engine.CN.NegotiateLanguage(r))
+			key := engine.NewTemplateKeyWithLanguage(templatesDir+"api.go.html", c.engine.CN.NegotiateLanguage(w, r))
 			c.engine.ServePage(w, r, key)
 			return
 		} else if format == engine.FormatJSON {
@@ -80,7 +80,7 @@ func (c *CommonCore) API() http.HandlerFunc {
 
 func (c *CommonCore) Conformance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"conformance.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"conformance.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(w, r))
 		c.engine.ServePage(w, r, key)
 	}
 }

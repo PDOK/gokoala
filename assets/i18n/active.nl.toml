@@ -13,6 +13,12 @@ Description = "Omschrijving"
 None = "Geen"
 Example = "Voorbeeld"
 
+# Layout frame
+ToMain = "Naar hoofdinhoud"
+PDOKLogo = "Logo PDOK: Ga naar de landing page"
+LanguageSwitchLabel = "English"
+LanguageSwitchCode = "en"
+
 # Landing page
 Specification = "Specificatie"
 SpecificationText = """
