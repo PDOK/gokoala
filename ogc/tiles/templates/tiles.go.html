@@ -60,13 +60,14 @@
       </table>
     </div>
     <div class="col-md-8">
-      <app-vectortile-view id="tile-vectortile-view" style="width: 800px; height: 600px;"
-                           tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                           {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
-                           zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
-                           center-x="5.3896944"
-                           center-y="52.1562499"
-                           show-grid>
+      <app-vectortile-view id="tile-vectortile-view" class="vectortile-view"
+                          tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+                          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
+                          zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
+                          center-x="5.3896944"
+                          center-y="52.1562499"
+                          show-grid
+                          show-object-info>
       </app-vectortile-view>
       <table class="table">
         <tbody>

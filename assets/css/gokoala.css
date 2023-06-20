@@ -49,3 +49,9 @@ td {
 .table-sm>:not(caption)>*>*  {
     padding: 0.10rem;
 }
+
+.vectortile-view {
+    flex-grow: 1;
+    padding: 5px;
+    margin: 5px;
+}

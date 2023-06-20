@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
-	"golang.org/x/text/language"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -65,7 +64,6 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 				Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
 				Format:       *stylesheet.Link.Format,
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
-				Language:     language.Und,
 			}
 			e.RenderTemplatesWithParams(nil, nil, styleKey)
 		}
@@ -105,7 +103,7 @@ func (s *Styles) Style() http.HandlerFunc {
 			Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
 			Format:       styleFormat,
 			InstanceName: instanceName,
-			Language:     language.Und,
+			Language:     s.engine.CN.NegotiateLanguage(w, r),
 		}
 		s.engine.ServePage(w, r, key)
 	}

@@ -50,11 +50,11 @@
         </table>
         <p>{{ i18n "StylingExample" .Language }}:</p>
         {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
-        <app-vectortile-view id="style-vectortile-view" style="width: 800px; height: 600px;"
-            tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-            style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}"
-            zoom="{{ $defaultSrs.ZoomLevelRange.End }}" center-x="5.3896944"
-            center-y="52.1562499">
+        <app-vectortile-view id="style-vectortile-view" class="vectortile-view"
+                             tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+                             style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}" 
+                             zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
+                             center-x="5.3896944" center-y="52.1562499">
         </app-vectortile-view>
     </div>
 </div>
