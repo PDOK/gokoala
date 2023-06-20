@@ -44,8 +44,12 @@ func NewEngine(configFile string, openAPIFile string) *Engine {
 
 // NewEngineWithConfig builds a new Engine
 func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
-	contentNegotiation := newContentNegotiation()
-	localizers := initLocalizers()
+	if len(config.AvailableLanguages) == 0 {
+		// default to dutch only
+		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch)
+	}
+	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
+	localizers := initLocalizers(config.AvailableLanguages)
 	templates := newTemplates(config, localizers)
 	openAPI := newOpenAPI(config, openAPIFile)
 
@@ -58,18 +62,15 @@ func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
 	return engine
 }
 
-func initLocalizers() map[language.Tag]i18n.Localizer {
+func initLocalizers(availableLanguages []language.Tag) map[language.Tag]i18n.Localizer {
 	localizers := make(map[language.Tag]i18n.Localizer)
-	// dutch
-	nlBundle := i18n.NewBundle(language.Dutch)
-	nlBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-	nlBundle.MustLoadMessageFile("assets/i18n/active.nl.toml")
-	localizers[language.Dutch] = *i18n.NewLocalizer(nlBundle, "nl")
-	// english
-	enBundle := i18n.NewBundle(language.English)
-	enBundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-	enBundle.MustLoadMessageFile("assets/i18n/active.en.toml")
-	localizers[language.English] = *i18n.NewLocalizer(enBundle, "en")
+	// add localizer for each available language
+	for _, language := range availableLanguages {
+		bundle := i18n.NewBundle(language)
+		bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+		bundle.MustLoadMessageFile("assets/i18n/active." + language.String() + ".toml")
+		localizers[language] = *i18n.NewLocalizer(bundle, language.String())
+	}
 	return localizers
 }
 

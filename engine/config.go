@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"golang.org/x/text/language"
 	"gopkg.in/yaml.v3"
 )
 
@@ -50,20 +51,21 @@ func validate(config *Config) {
 }
 
 type Config struct {
-	Title             string          `yaml:"title" validate:"required"`
-	ServiceIdentifier string          `yaml:"serviceIdentifier" validate:"required"`
-	Abstract          string          `yaml:"abstract" validate:"required"`
-	Thumbnail         *string         `yaml:"thumbnail"`
-	Keywords          []string        `yaml:"keywords"`
-	LastUpdated       *string         `yaml:"lastUpdated"`
-	LastUpdatedBy     string          `yaml:"lastUpdatedBy"`
-	License           License         `yaml:"license" validate:"required"`
-	Support           *string         `yaml:"support"`
-	DatasetDetails    []DatasetDetail `yaml:"datasetDetails"`
-	DatasetCatalogURL YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
-	BaseURL           YAMLURL         `yaml:"baseUrl" validate:"required,url"`
-	Resources         *Resources      `yaml:"resources"`
-	OgcAPI            OgcAPI          `yaml:"ogcApi" validate:"required"`
+	Title              string          `yaml:"title" validate:"required"`
+	ServiceIdentifier  string          `yaml:"serviceIdentifier" validate:"required"`
+	Abstract           string          `yaml:"abstract" validate:"required"`
+	Thumbnail          *string         `yaml:"thumbnail"`
+	Keywords           []string        `yaml:"keywords"`
+	LastUpdated        *string         `yaml:"lastUpdated"`
+	LastUpdatedBy      string          `yaml:"lastUpdatedBy"`
+	License            License         `yaml:"license" validate:"required"`
+	Support            *string         `yaml:"support"`
+	DatasetDetails     []DatasetDetail `yaml:"datasetDetails"`
+	DatasetCatalogURL  YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
+	BaseURL            YAMLURL         `yaml:"baseUrl" validate:"required,url"`
+	Resources          *Resources      `yaml:"resources"`
+	AvailableLanguages []language.Tag  `yaml:"availableLanguages"`
+	OgcAPI             OgcAPI          `yaml:"ogcApi" validate:"required"`
 }
 
 func (c *Config) HasCollections() bool {

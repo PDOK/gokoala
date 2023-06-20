@@ -28,6 +28,9 @@ datasetDetails:
       [Link to metadata](https://example.com/my-dataset/metadata)
 datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
 # how to serve resources (e.g., images, fonts, sprites). Possible values: directory (serve local files), url (serve through reverse proxy)
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps

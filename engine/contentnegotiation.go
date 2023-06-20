@@ -21,7 +21,7 @@ type ContentNegotiation struct {
 	mediaTypesByFormat map[string]string
 }
 
-func newContentNegotiation() *ContentNegotiation {
+func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiation {
 	availableMediaTypes := []contenttype.MediaType{
 		// in order
 		contenttype.NewMediaType("application/json"),
@@ -31,12 +31,6 @@ func newContentNegotiation() *ContentNegotiation {
 		contenttype.NewMediaType("application/vnd.mapbox.style+json"),
 		contenttype.NewMediaType("application/vnd.custom.style+json"),
 		contenttype.NewMediaType("application/vnd.ogc.sld+xml;version=1.0"),
-	}
-
-	availableLanguages := []language.Tag{
-		// in order
-		language.Dutch,
-		language.English,
 	}
 
 	formatsByMediaType := map[string]string{
@@ -140,6 +134,8 @@ func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, r
 		m := language.NewMatcher(cn.availableLanguages)
 		_, langIndex, _ := m.Match(accepted...)
 		requestedLanguage = cn.availableLanguages[langIndex]
+		// override for use in cookie
+		lang = requestedLanguage.String()
 
 		// check for presence of language cookie, create cookie if not present, update if present and language doesn't match
 		cookie, err := req.Cookie("lang")
