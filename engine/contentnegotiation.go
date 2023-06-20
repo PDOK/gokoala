@@ -137,27 +137,26 @@ func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, r
 		// override for use in cookie
 		lang = requestedLanguage.String()
 
-		// check for presence of language cookie, create cookie if not present, update if present and language doesn't match
-		cookie, err := req.Cookie("lang")
-		if err != nil {
-			cookie = &http.Cookie{
-				Name:     "lang",
-				Value:    lang,
-				Path:     "/",
-				MaxAge:   60 * 60 * 24,
-				SameSite: http.SameSiteStrictMode,
-				Secure:   true,
-			}
-		} else if cookie.Value != lang {
-			cookie.Value = lang
-		}
-		http.SetCookie(w, cookie)
+		// set requested language in cookie
+		setLanguageCookie(w, lang)
 
 		// remove ?lang= parameter, to prepare for rewrite
 		queryParams.Del(languageParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}
 	return requestedLanguage
+}
+
+func setLanguageCookie(w http.ResponseWriter, lang string) {
+	cookie := &http.Cookie{
+		Name:     "lang",
+		Value:    lang,
+		Path:     "/",
+		MaxAge:   cookieMaxAge,
+		SameSite: http.SameSiteStrictMode,
+		Secure:   true,
+	}
+	http.SetCookie(w, cookie)
 }
 
 func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.Tag {

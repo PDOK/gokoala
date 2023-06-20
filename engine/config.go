@@ -12,6 +12,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	cookieMaxAge = 60 * 60 * 24
+)
+
 func ReadConfigFile(configFile string) *Config {
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {
@@ -26,6 +30,8 @@ func ReadConfigFile(configFile string) *Config {
 	if err != nil {
 		log.Fatalf("failed to unmarshal config file %v", err)
 	}
+
+	config.CookieMaxAge = cookieMaxAge
 
 	validate(config)
 	return config
@@ -66,6 +72,7 @@ type Config struct {
 	Resources          *Resources      `yaml:"resources"`
 	AvailableLanguages []language.Tag  `yaml:"availableLanguages"`
 	OgcAPI             OgcAPI          `yaml:"ogcApi" validate:"required"`
+	CookieMaxAge       int
 }
 
 func (c *Config) HasCollections() bool {
