@@ -2,20 +2,21 @@
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - Styles</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" .Language }}</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
         {{ $baseUrl := .Config.BaseURL }}
+        {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
+        {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}
         <p>
-            Betreft de offici&#235;le style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld
-            in het Mapbox formaat.
+            {{ i18n "StylesText" .Language }}
         </p>
         <table class="table table-borderless table-sm w-75">
             <tbody>
                 <tr>
                     <td class="w-25">
-                        <b>Beschikbare style(s)</b>
+                        <b>{{ i18n "AvailableStyles" .Language }}</b>
                     </td>
                     <td>
                         {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
@@ -29,33 +30,31 @@
                         {{ end }}
                     </td>
                 </tr>
-                {{ range $index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
-                <tr id="{{ $style.ID }}_url" class="toggle-content{{ if not $index }} is-visible{{ end }}">
+                <tr>
                     <td class="w-25">
                         <b>Style - URL</b>
                     </td>
                     <td>
-                        <a href="styles/{{ $style.ID }}">{{ $baseUrl }}/styles/{{ $style.ID }}</a>
+                        <a id="href-url" href="styles/{{ $defaultStyle }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}</a>
                     </td>
                 </tr>
-                <tr id="{{ $style.ID }}_meta" class="toggle-content{{ if not $index }} is-visible{{ end }}">
+                <tr>
                     <td class="w-25">
-                        <b>Metadata style</b>
+                        <b>{{ i18n "StyleMetadata" .Language }}</b>
                     </td>
                     <td>
-                        <a href="styles/{{ $style.ID }}/metadata">Link</a>
+                        <a id="href-meta" href="styles/{{ $defaultStyle }}/metadata">Link</a>
                     </td>
                 </tr>
-                {{ end }}
             </tbody>
         </table>
-        <p>Voorbeeld styling:</p>
+        <p>{{ i18n "StylingExample" .Language }}:</p>
         {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
-        <app-vectortile-view id="style-vectortile-view" style="width: 800px; height: 600px;"
-            tile-url="{{ $baseUrl }}/tiles/{{ get $projections (index .Config.OgcAPI.Tiles.SupportedSrs 0).Srs }}"
-            style-url="{{ $baseUrl }}/styles/{{ (index .Config.OgcAPI.Styles.SupportedStyles 0).ID }}"
-            zoom="{{ (index .Config.OgcAPI.Tiles.SupportedSrs 0).ZoomLevelRange.End }}" center-x="5.3896944"
-            center-y="52.1562499">
+        <app-vectortile-view id="style-vectortile-view" class="vectortile-view"
+                             tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+                             style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}" 
+                             zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
+                             center-x="5.3896944" center-y="52.1562499">
         </app-vectortile-view>
     </div>
 </div>
@@ -63,15 +62,13 @@
     document.addEventListener('input', function (event) {
         // only operate on styles dropdown
         if (event.target.id !== 'styles') return;
-        // hide currently visible rows
-        var visibleRows = document.getElementsByClassName('toggle-content is-visible');
-        Array.from(visibleRows).forEach((row) => { row.classList.toggle('is-visible') });
-        // make rows for newly selected style visible
+        // update table fields
         var selectedStyle = event.target.value
-        var styleUrl = document.getElementById(selectedStyle + '_url');
-        var styleMeta = document.getElementById(selectedStyle + '_meta');
-        styleUrl.classList.toggle('is-visible');
-        styleMeta.classList.toggle('is-visible');
+        var styleUrl = document.getElementById('href-url');
+        var styleMeta = document.getElementById('href-meta');
+        styleUrl.textContent = '{{ $baseUrl }}/styles/' + selectedStyle;
+        styleUrl.setAttribute('href', 'styles/' + selectedStyle);
+        styleMeta.setAttribute('href', 'styles/' + selectedStyle + '/metadata');
         // update style-url in app-vectortile-view
         var viewer = document.getElementById('style-vectortile-view')
         viewer.setAttribute('style-url', '{{ .Config.BaseURL }}/styles/' + selectedStyle)

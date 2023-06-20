@@ -1,0 +1,85 @@
+# General usage
+ViewAs = "View as"
+AvailableIn = "The page is available in both HTML and JSON."
+LastUpdated = "Last updated"
+UpdatedBy = "Updated by"
+On = "on"
+Keywords = "Keywords"
+License = "License"
+Support = "Support"
+SubjectToChange = "name/definition may change in future"
+LinkToExternalWebsite = "link to external website"
+Description = "Description"
+None = "None"
+Example = "Example"
+
+# Layout frame
+ToMain = "To main content"
+PDOKLogo = "PDOK Logo: Go to landing page"
+LanguageSwitchLabel = "Nederlands"
+LanguageSwitchCode = "nl"
+
+# Landing page
+Specification = "Specification"
+SpecificationText = """
+The API specification describes the OGC API in such a way that both humans and computers can \
+explore the API's options. The API shows both in- and output options, and helps to quickly \
+generate a first working API call with the desired result."""
+Conformance = "Conformance"
+ConformanceText = """
+On this page PDOK describes to which OGC standards PDOK conforms in implementing the API, \
+and links to the relevant standards including descriptions."""
+Collections = "Collections"
+CollectionsText = """
+This API offers one or more collections that enable differentiation by splitting the PDOK dataset into \
+various objects that can be called separately through for instance features or tiles."""
+Tiles = "Tiles"
+TilesText = """
+This entire dataset is available through OGC API Tiles. Tiles can contain both vector and raster data \
+and can be made available in multiple projections. In the case of vector tiles, PDOK also offers styles."""
+Styles = "Styles"
+StylesText = """
+This is the official style specified by the supplier. Styles are made available in the Mapbox format."""
+TileMatrixSets = "Tile Matrix Sets"
+TileMatrixSetsText = """
+Description of the Tile Matrix Sets that are made available via this API. Note that all zoom levels
+of the tile matrix are described. See the <i>Tile Matrix Set Limits</i> on the <a href="tiles">Tiles</a>
+pages to see what zoom levels are supported by this API."""
+
+# Conformance page
+ConformanceAbstract = """
+These are the references to the OGC API conformance classes that this service conforms to."""
+
+# Tile/TileMatrixSet page
+NetherlandsRDNewQuadAbstract = """
+The tiles can be requested via the URL template below, where
+<small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
+<a href="/tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme. In some tools it is
+also possible to load this through <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>."""
+WebMercatorQuadAbstract = """
+The tiles can be requested via the URL template below, where
+<small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
+<a href="/tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme. In some tools it is
+also possible to load this through <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>."""
+EuropeanETRS89_GRS80Quad_DraftAbstract = """
+The tiles can be requested via the URL template below, where
+<small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
+<a href="/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme. 
+In some tools it is also possible to load this through 
+<a href="tiles/EuropeanETRS89_GRS80Quad_Draft?f=tilejson">TileJSON</a>."""
+AvailableZoomLevels = "The tiles are available at the following zoomlevels"
+ZoomLevel = "Zoomlevel"
+MinimumValue = "Minimum value"
+MaximumValue = "Maximum value"
+
+# Styles/StyleMetadata page
+AvailableStyles = "Available style(s)"
+StylingExample = "Styling example"
+StyleMetadata = "Style metadata"
+AdditionalLinks = "Additional links"
+
+# Collections/Collection page
+ViewCollectionAs = "View collection as"
+Extent = "Geographic extent"
+GoTo = "Go to the"
+ViewIn = "View in the"

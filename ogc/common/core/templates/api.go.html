@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - API specificatie</h1>
+    <h1 class="title">{{ .Config.Title }} - API {{ i18n "Specification" .Language }}</h1>
 </hgroup>
     <div class="row">
         <div class="col-md-12">
@@ -10,16 +10,16 @@
                 <tbody>
                 <tr>
                     <td class="w-25">
-                        <b>Licentie</b>
+                        <b>{{ i18n "License" .Language }}</b>
                     </td>
                     <td>
-                        <a href="{{ .Config.License.URL | default "#" }}">{{ .Config.License.Name | default "onbekend" }}</a>
+                        <a href="{{ .Config.License.URL }}">{{ .Config.License.Name }}</a>
                     </td>
                 </tr>
                 {{ if .Config.Support}}
                     <tr>
                         <td>
-                            <b>Support</b>
+                            <b>{{ i18n "Support" .Language }}</b>
                         </td>
                         <td>
                             {{ markdown .Config.Support }}

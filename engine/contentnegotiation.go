@@ -5,18 +5,23 @@ import (
 	"net/http"
 
 	"github.com/elnormous/contenttype"
+	"golang.org/x/text/language"
 )
 
-const formatParam = "f"
+const (
+	formatParam   = "f"
+	languageParam = "lang"
+)
 
 type ContentNegotiation struct {
 	availableMediaTypes []contenttype.MediaType
+	availableLanguages  []language.Tag
 
 	formatsByMediaType map[string]string
 	mediaTypesByFormat map[string]string
 }
 
-func newContentNegotiation() *ContentNegotiation {
+func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiation {
 	availableMediaTypes := []contenttype.MediaType{
 		// in order
 		contenttype.NewMediaType("application/json"),
@@ -42,6 +47,7 @@ func newContentNegotiation() *ContentNegotiation {
 
 	return &ContentNegotiation{
 		availableMediaTypes: availableMediaTypes,
+		availableLanguages:  availableLanguages,
 		formatsByMediaType:  formatsByMediaType,
 		mediaTypesByFormat:  mediaTypesByFormat,
 	}
@@ -75,6 +81,21 @@ func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
 	return requestedFormat
 }
 
+// NegotiateLanguage performs language negotiation, not idempotent (since it removes the ?lang= param)
+func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http.Request) language.Tag {
+	requestedLanguage := cn.getLanguageFromQueryParam(w, req)
+	if requestedLanguage == language.Und {
+		requestedLanguage = cn.getLanguageFromCookie(req)
+	}
+	if requestedLanguage == language.Und {
+		requestedLanguage = cn.getLanguageFromAcceptLanguageHeader(req)
+	}
+	if requestedLanguage == language.Und {
+		requestedLanguage = language.Dutch // default
+	}
+	return requestedLanguage
+}
+
 func (cn *ContentNegotiation) formatToMediaType(format string) string {
 	return cn.mediaTypesByFormat[format]
 }
@@ -99,6 +120,75 @@ func (cn *ContentNegotiation) getFormatFromAcceptHeader(req *http.Request) strin
 		return ""
 	}
 	return cn.formatsByMediaType[accepted.String()]
+}
+
+func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, req *http.Request) language.Tag {
+	var requestedLanguage = language.Und
+	queryParams := req.URL.Query()
+	if queryParams.Get(languageParam) != "" {
+		lang := queryParams.Get(languageParam)
+		accepted, _, err := language.ParseAcceptLanguage(lang)
+		if err != nil {
+			return requestedLanguage
+		}
+		m := language.NewMatcher(cn.availableLanguages)
+		_, langIndex, _ := m.Match(accepted...)
+		requestedLanguage = cn.availableLanguages[langIndex]
+		// override for use in cookie
+		lang = requestedLanguage.String()
+
+		// set requested language in cookie
+		setLanguageCookie(w, lang)
+
+		// remove ?lang= parameter, to prepare for rewrite
+		queryParams.Del(languageParam)
+		req.URL.RawQuery = queryParams.Encode()
+	}
+	return requestedLanguage
+}
+
+func setLanguageCookie(w http.ResponseWriter, lang string) {
+	cookie := &http.Cookie{
+		Name:     "lang",
+		Value:    lang,
+		Path:     "/",
+		MaxAge:   cookieMaxAge,
+		SameSite: http.SameSiteStrictMode,
+		Secure:   true,
+	}
+	http.SetCookie(w, cookie)
+}
+
+func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.Tag {
+	var requestedLanguage = language.Und
+	cookie, err := req.Cookie("lang")
+	if err != nil {
+		return requestedLanguage
+	}
+	lang := cookie.Value
+	accepted, _, err := language.ParseAcceptLanguage(lang)
+	if err != nil {
+		return requestedLanguage
+	}
+	m := language.NewMatcher(cn.availableLanguages)
+	_, langIndex, _ := m.Match(accepted...)
+	requestedLanguage = cn.availableLanguages[langIndex]
+	return requestedLanguage
+}
+
+func (cn *ContentNegotiation) getLanguageFromAcceptLanguageHeader(req *http.Request) language.Tag {
+	var requestedLanguage = language.Und
+	if req.Header.Get("Accept-Language") != "" {
+		accepted, _, err := language.ParseAcceptLanguage(req.Header.Get("Accept-Language"))
+		if err != nil {
+			log.Printf("Failed to parse Accept-Language header: %v. Continuing\n", err)
+			return requestedLanguage
+		}
+		m := language.NewMatcher(cn.availableLanguages)
+		_, langIndex, _ := m.Match(accepted...)
+		requestedLanguage = cn.availableLanguages[langIndex]
+	}
+	return requestedLanguage
 }
 
 func reverseMap(input map[string]string) map[string]string {

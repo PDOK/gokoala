@@ -20,19 +20,25 @@
     <script type="text/javascript" src="vectortile-view-component/main.js"></script>
     <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
     <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+    <script type="text/javascript">
+        function setLanguage(lang) {
+            document.cookie = 'lang='+lang+';path=/;max-age={{ .Config.CookieMaxAge }};same-site=strict;secure';
+            return true;
+        }
+    </script>
 </head>
 
 <body class="d-flex flex-column h-100">
     <!-- header -->
     <header>
         <!-- skip link -->
-        <a class="visually-hidden visually-hidden-focusable" href="#main">Naar hoofdinhoud</a>
+        <a class="visually-hidden visually-hidden-focusable" href="#main">{{ i18n "ToMain" .Language }}</a>
 
         <nav class="navbar d-flex flex-column w-100" aria-label="top navigation">
             <!-- logo -->
             <div class="container">
                 <a class="navbar-brand py-3" href="{{ .Config.BaseURL }}">
-                    <img src="img/logo-header.svg" alt="Logo PDOK: Ga naar de landing page">
+                    <img src="img/logo-header.svg" alt="{{ i18n "PDOKLogo" .Language }}">
                 </a>
             </div>
 
@@ -63,10 +69,18 @@
 
                 <nav style="--bs-breadcrumb-divider: '|';" aria-label="switch language or format">
                     <ol class="breadcrumb" >
-                        <li class="breadcrumb-item"><a href="#">English</a></li>
+                        {{ $languageSwitchCode := (i18n "LanguageSwitchCode" .Language) }}
                         {{ if .Breadcrumbs }}
+                            {{ if gt (len .Config.AvailableLanguages) 1 }}
+                            <!-- TODO: support switching between more than two languages -->
+                            <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" .Language }}</a></li>
+                            {{ end }}
                             <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
                         {{ else }}
+                            {{ if gt (len .Config.AvailableLanguages) 1 }}
+                            <!-- TODO: support switching between more than two languages -->
+                            <li class="breadcrumb-item"><a href="" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" .Language }}</a></li>
+                            {{ end }}
                             <li class="breadcrumb-item"><a href="?f=json" target="_blank">JSON</a></li>
                         {{ end }}
                     </ol>

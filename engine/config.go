@@ -8,7 +8,12 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"golang.org/x/text/language"
 	"gopkg.in/yaml.v3"
+)
+
+const (
+	cookieMaxAge = 60 * 60 * 24
 )
 
 func ReadConfigFile(configFile string) *Config {
@@ -25,6 +30,8 @@ func ReadConfigFile(configFile string) *Config {
 	if err != nil {
 		log.Fatalf("failed to unmarshal config file %v", err)
 	}
+
+	config.CookieMaxAge = cookieMaxAge
 
 	validate(config)
 	return config
@@ -50,20 +57,22 @@ func validate(config *Config) {
 }
 
 type Config struct {
-	Title             string          `yaml:"title" validate:"required"`
-	ServiceIdentifier string          `yaml:"serviceIdentifier" validate:"required"`
-	Abstract          string          `yaml:"abstract" validate:"required"`
-	Thumbnail         *string         `yaml:"thumbnail"`
-	Keywords          []string        `yaml:"keywords"`
-	LastUpdated       *string         `yaml:"lastUpdated"`
-	LastUpdatedBy     string          `yaml:"lastUpdatedBy"`
-	License           License         `yaml:"license" validate:"required"`
-	Support           *string         `yaml:"support"`
-	DatasetDetails    []DatasetDetail `yaml:"datasetDetails"`
-	DatasetCatalogURL YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
-	BaseURL           YAMLURL         `yaml:"baseUrl" validate:"required,url"`
-	Resources         *Resources      `yaml:"resources"`
-	OgcAPI            OgcAPI          `yaml:"ogcApi" validate:"required"`
+	Title              string          `yaml:"title" validate:"required"`
+	ServiceIdentifier  string          `yaml:"serviceIdentifier" validate:"required"`
+	Abstract           string          `yaml:"abstract" validate:"required"`
+	Thumbnail          *string         `yaml:"thumbnail"`
+	Keywords           []string        `yaml:"keywords"`
+	LastUpdated        *string         `yaml:"lastUpdated"`
+	LastUpdatedBy      string          `yaml:"lastUpdatedBy"`
+	License            License         `yaml:"license" validate:"required"`
+	Support            *string         `yaml:"support"`
+	DatasetDetails     []DatasetDetail `yaml:"datasetDetails"`
+	DatasetCatalogURL  YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
+	BaseURL            YAMLURL         `yaml:"baseUrl" validate:"required,url"`
+	Resources          *Resources      `yaml:"resources"`
+	AvailableLanguages []language.Tag  `yaml:"availableLanguages"`
+	OgcAPI             OgcAPI          `yaml:"ogcApi" validate:"required"`
+	CookieMaxAge       int
 }
 
 func (c *Config) HasCollections() bool {
@@ -99,7 +108,7 @@ type Resources struct {
 
 type OgcAPI struct {
 	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes"`
-	Tiles      *OgcAPITiles        `yaml:"tiles"`
+	Tiles      *OgcAPITiles        `yaml:"tiles" validate:"required_with=Styles"`
 	Styles     *OgcAPIStyles       `yaml:"styles"`
 	Features   *OgcAPIFeatures     `yaml:"features"`
 	Maps       *OgcAPIMaps         `yaml:"maps"`
@@ -195,7 +204,7 @@ type OgcAPITiles struct {
 type OgcAPIStyles struct {
 	Default          string          `yaml:"default" validate:"required"`
 	MapboxStylesPath string          `yaml:"mapboxStylesPath" validate:"required,dir"`
-	SupportedStyles  []StyleMetadata `yaml:"supportedStyles"`
+	SupportedStyles  []StyleMetadata `yaml:"supportedStyles" validate:"required"`
 }
 
 type OgcAPIFeatures struct {

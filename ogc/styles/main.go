@@ -1,6 +1,7 @@
 package styles
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
@@ -18,8 +19,13 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
+	// default style must be the first entry in supportedstyles
+	if e.Config.OgcAPI.Styles.Default != e.Config.OgcAPI.Styles.SupportedStyles[0].ID {
+		log.Fatalf("default style must be first entry in supported styles. '%s' does not match '%s'", e.Config.OgcAPI.Styles.SupportedStyles[0].ID, e.Config.OgcAPI.Styles.Default)
+	}
+
 	stylesBreadcrumbs := []engine.Breadcrumb{
-		engine.Breadcrumb{
+		{
 			Name: "Styles",
 			Path: "styles",
 		},
@@ -32,19 +38,23 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
 		// Render metadata templates
-		e.RenderTemplatesWithParams(style, nil, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
+		e.RenderTemplatesWithParams(style,
+			nil,
+			engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
 		styleMetadataBreadcrumbs := stylesBreadcrumbs
 		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
-			engine.Breadcrumb{
+			{
 				Name: style.Title,
 				Path: "styles/" + style.ID,
 			},
-			engine.Breadcrumb{
+			{
 				Name: "Metadata",
 				Path: "styles/" + style.ID + "/metadata",
 			},
 		}...)
-		e.RenderTemplatesWithParams(style, styleMetadataBreadcrumbs, engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", style.ID))
+		e.RenderTemplatesWithParams(style,
+			styleMetadataBreadcrumbs,
+			engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", style.ID))
 
 		// Add existing style definitions to rendered templates
 		for _, stylesheet := range style.Stylesheets {
@@ -72,7 +82,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 
 func (s *Styles) Styles() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKey(templatesDir + "styles.go." + s.engine.CN.NegotiateFormat(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"styles.go."+s.engine.CN.NegotiateFormat(r), s.engine.CN.NegotiateLanguage(w, r))
 		s.engine.ServePage(w, r, key)
 	}
 }
@@ -93,6 +103,7 @@ func (s *Styles) Style() http.HandlerFunc {
 			Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
 			Format:       styleFormat,
 			InstanceName: instanceName,
+			Language:     s.engine.CN.NegotiateLanguage(w, r),
 		}
 		s.engine.ServePage(w, r, key)
 	}
@@ -101,7 +112,7 @@ func (s *Styles) Style() http.HandlerFunc {
 func (s *Styles) StyleMetadata() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		styleID := chi.URLParam(r, "style")
-		key := engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), styleID)
+		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), styleID, s.engine.CN.NegotiateLanguage(w, r))
 		s.engine.ServePage(w, r, key)
 	}
 }

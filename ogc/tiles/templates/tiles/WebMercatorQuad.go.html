@@ -6,26 +6,22 @@
 <div class="row">
     <div class="col-md-12">
         <p>
-            De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
-            <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
-            tile volgens het <a href="/tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
-            In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a> in
-            te laden.
+            {{ i18n "WebMercatorQuadAbstract" .Language }}
         </p>
         <p>
           <code>{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt</code>
         </p>
         <h2>Tile matrix set limits</h2>
-        De tiles zijn beschikbaar op de volgende zoomniveaus:
+        {{ i18n "AvailableZoomLevels" .Language }}:
         <table class="table table-striped">
-          <thead>
-          <tr>
-              <th>Zoomniveau <code>{z}</code></th>
-              <th>Minimale waarde <code>{y}</code></th>
-              <th>Maximale waarde <code>{y}</code></th>
-              <th>Minimale waarde <code>{x}</code></th>
-              <th>Maximale waarde <code>{x}</code></th>
-          </tr>
+            <thead>
+                <tr>
+                    <th>{{ i18n "ZoomLevel" .Language }} <code>{z}</code></th>
+                    <th>{{ i18n "MinimumValue" .Language }} <code>{y}</code></th>
+                    <th>{{ i18n "MaximumValue" .Language }} <code>{y}</code></th>
+                    <th>{{ i18n "MinimumValue" .Language }} <code>{x}</code></th>
+                    <th>{{ i18n "MaximumValue" .Language }} <code>{x}</code></th>
+                </tr>
           </thead>
           <tbody>
           {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}

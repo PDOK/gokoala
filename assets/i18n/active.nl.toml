@@ -1,0 +1,90 @@
+# General usage
+ViewAs = "Bekijk als"
+AvailableIn = "De pagina is zowel in HTML als JSON beschikbaar."
+LastUpdated = "Bijgewerkt op"
+UpdatedBy = "Bijgewerkt door"
+On = "op"
+Keywords = "Trefwoorden"
+License = "Licentie"
+Support = "Support"
+SubjectToChange = "naam/definitie kan in toekomst mogelijk wijzigen"
+LinkToExternalWebsite = "link naar externe website"
+Description = "Omschrijving"
+None = "Geen"
+Example = "Voorbeeld"
+
+# Layout frame
+ToMain = "Naar hoofdinhoud"
+PDOKLogo = "Logo PDOK: Ga naar de landing page"
+LanguageSwitchLabel = "English"
+LanguageSwitchCode = "en"
+
+# Landing page
+Specification = "Specificatie"
+SpecificationText = """
+De API specificatie beschrijft de OGC API op een manier dat zowel mensen als computers de \
+mogelijkheden van de API kunnen verkennen. De API toont zowel in- als output mogelijkheden \
+en helpt om snel een eerste werkende API call te genereren met het gewenste resultaat."""
+Conformance = "Conformance"
+ConformanceText = """
+Op deze pagina beschrijft PDOK aan welke OGC standaarden PDOK zich confimeert bij het inrichten \
+van de API, en verwijst naar de betreffende standaarden inclusief beschrijvingen."""
+Collections = "Collecties"
+CollectionsText = """
+Deze API biedt één of meerdere collecties waarmee differentiatie gemaakt kan worden door de \
+dataset van PDOK op te splitsen in verschillende objecten die bijvoorbeeld via features of \
+tiles separaat aangeroepen kunnen worden."""
+Tiles = "Tiles"
+TilesText = """
+Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data \
+bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles \
+biedt PDOK ook styles aan."""
+Styles = "Styles"
+StylesText = """
+Betreft de officiële style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld \
+in het Mapbox formaat."""
+TileMatrixSets = "Tile Matrix Sets"
+TileMatrixSetsText = """
+Beschrijving van de Tile Matrix Sets die via deze API worden ontsloten. Merk op dat alle zoomniveaus
+van de tile matrix zijn beschreven. Zie de <i>Tile Matrix Set Limits</i> op de <a href="tiles">Tiles</a>
+pagina's om te zien welke zoomniveaus door deze API worden ondersteund."""
+
+# Conformance page
+ConformanceAbstract = """
+Hier staan de verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet."""
+
+# Tile/TileMatrixSet page
+NetherlandsRDNewQuadAbstract = """
+De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
+<small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
+tile volgens het <a href="/tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
+In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>
+in te laden."""
+WebMercatorQuadAbstract = """
+De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
+<small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
+tile volgens het <a href="/tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
+In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>
+in te laden."""
+EuropeanETRS89_GRS80Quad_DraftAbstract = """
+De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
+<small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
+tile volgens het <a href="/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme.
+In sommige tools is het ook mogelijk om dit via <a href="tiles/EuropeanETRS89_GRS80Quad_Draft?f=tilejson">TileJSON</a>
+in te laden."""
+AvailableZoomLevels = "De tiles zijn beschikbaar op de volgende zoomniveaus"
+ZoomLevel = "Zoomniveau"
+MinimumValue = "Minimale waarde"
+MaximumValue = "Maximale waarde"
+
+# Styles/StyleMetadata page
+AvailableStyles = "Beschikbare style(s)"
+StylingExample = "Voorbeeld styling"
+StyleMetadata = "Metadata style"
+AdditionalLinks = "Aanvullende links"
+
+# Collections/Collection page
+ViewCollectionAs = "Bekijk collectie als"
+Extent = "Geografische begrenzing"
+GoTo = "Ga naar de"
+ViewIn = "Bekijk in de"

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
-
 	"github.com/go-chi/chi/v5"
 )
 
@@ -20,7 +19,7 @@ type Collections struct {
 func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
-			engine.Breadcrumb{
+			{
 				Name: "Collections",
 				Path: "collections",
 			},
@@ -33,7 +32,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
 			collectionBreadcrumbs := collectionsBreadcrumbs
 			collectionBreadcrumbs = append(collectionBreadcrumbs, []engine.Breadcrumb{
-				engine.Breadcrumb{
+				{
 					Name: coll.ID,
 					Path: "collections/" + coll.ID,
 				},
@@ -60,7 +59,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 // Collections returns list of collections
 func (t *Collections) Collections() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKey(templatesDir + "collections.go." + t.engine.CN.NegotiateFormat(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }
@@ -69,7 +68,7 @@ func (t *Collections) Collection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 
-		key := engine.NewTemplateKeyWithName(templatesDir+"collection.go."+t.engine.CN.NegotiateFormat(r), collectionID)
+		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }

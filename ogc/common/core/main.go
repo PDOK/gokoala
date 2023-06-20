@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
-
 	"github.com/go-chi/chi/v5"
 )
 
@@ -21,13 +20,13 @@ type CommonCore struct {
 
 func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 	conformanceBreadcrumbs := []engine.Breadcrumb{
-		engine.Breadcrumb{
+		{
 			Name: "Conformance",
 			Path: "conformance",
 		},
 	}
 	apiBreadcrumbs := []engine.Breadcrumb{
-		engine.Breadcrumb{
+		{
 			Name: "Specificatie",
 			Path: "api",
 		},
@@ -44,7 +43,6 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 		conformanceBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"conformance.go.json"),
 		engine.NewTemplateKey(templatesDir+"conformance.go.html"))
-
 	core := &CommonCore{
 		engine: e,
 	}
@@ -59,7 +57,7 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 
 func (c *CommonCore) LandingPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKey(templatesDir + "landing-page.go." + c.engine.CN.NegotiateFormat(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"landing-page.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(w, r))
 		c.engine.ServePage(w, r, key)
 	}
 }
@@ -68,7 +66,7 @@ func (c *CommonCore) API() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		format := c.engine.CN.NegotiateFormat(r)
 		if format == engine.FormatHTML {
-			key := engine.NewTemplateKey(templatesDir + "api.go.html")
+			key := engine.NewTemplateKeyWithLanguage(templatesDir+"api.go.html", c.engine.CN.NegotiateLanguage(w, r))
 			c.engine.ServePage(w, r, key)
 			return
 		} else if format == engine.FormatJSON {
@@ -82,7 +80,7 @@ func (c *CommonCore) API() http.HandlerFunc {
 
 func (c *CommonCore) Conformance() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKey(templatesDir + "conformance.go." + c.engine.CN.NegotiateFormat(r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"conformance.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(w, r))
 		c.engine.ServePage(w, r, key)
 	}
 }

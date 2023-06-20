@@ -15,8 +15,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -41,9 +44,14 @@ func NewEngine(configFile string, openAPIFile string) *Engine {
 
 // NewEngineWithConfig builds a new Engine
 func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
-	contentNegotiation := newContentNegotiation()
+	if len(config.AvailableLanguages) == 0 {
+		// default to dutch only
+		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch)
+	}
+	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
+	localizers := initLocalizers(config.AvailableLanguages)
+	templates := newTemplates(config, localizers)
 	openAPI := newOpenAPI(config, openAPIFile)
-	templates := newTemplates(config)
 
 	engine := &Engine{
 		Config:    config,
@@ -52,6 +60,18 @@ func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
 		CN:        contentNegotiation,
 	}
 	return engine
+}
+
+func initLocalizers(availableLanguages []language.Tag) map[language.Tag]i18n.Localizer {
+	localizers := make(map[language.Tag]i18n.Localizer)
+	// add localizer for each available language
+	for _, language := range availableLanguages {
+		bundle := i18n.NewBundle(language)
+		bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+		bundle.MustLoadMessageFile("assets/i18n/active." + language.String() + ".toml")
+		localizers[language] = *i18n.NewLocalizer(bundle, language.String())
+	}
+	return localizers
 }
 
 // Start the engine by initializing all components and starting the server
@@ -125,7 +145,11 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 		}
 		// we already perform OpenAPI validation here during startup to catch
 		// issues early on, in addition to runtime OpenAPI response validation
-		e.validateStaticResponse(key, urlPath)
+		// all templates are created in all available languages, hence all are checked
+		for lang := range e.Templates.localizers {
+			key.Language = lang
+			e.validateStaticResponse(key, urlPath)
+		}
 	}
 }
 

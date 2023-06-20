@@ -50,10 +50,8 @@ td {
     padding: 0.10rem;
 }
 
-/* toggles */
-.toggle-content {
-    display: none;
-}
-.toggle-content.is-visible {
-    display: table-row;
+.vectortile-view {
+    flex-grow: 1;
+    padding: 5px;
+    margin: 5px;
 }

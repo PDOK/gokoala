@@ -4,12 +4,19 @@ import {
   Input,
   ElementRef,
   SimpleChanges,
+  Output,
+  EventEmitter,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ViewEncapsulation
 } from '@angular/core';
+
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Subject } from 'rxjs';
+import { ObjectInfoComponent } from './object-info/object-info.component';
+import { getUid } from 'ol/util';
 
-
-
+import Select from 'ol/interaction/Select.js';
+import { altKeyOnly, click, pointerMove } from 'ol/events/condition.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
@@ -31,6 +38,15 @@ import TileLayer from 'ol/layer/Tile';
 import BaseLayer from 'ol/layer/Base';
 import Collection from 'ol/Collection';
 import LayerGroup from 'ol/layer/Group';
+import { Feature } from 'ol';
+import { StyleFunction } from 'ol/style/Style';
+import { FeatureLike } from 'ol/Feature';
+import RenderFeature from 'ol/render/Feature';
+
+import { CommonModule } from '@angular/common';
+
+
+
 
 
 export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
@@ -60,52 +76,109 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  // encapsulation: ViewEncapsulation.ShadowDom
+  //encapsulation: ViewEncapsulation.ShadowDom, 
+  standalone: true,
+  imports: [CommonModule, ObjectInfoComponent],
+  schemas: [
+    CUSTOM_ELEMENTS_SCHEMA // Tells Angular we will have custom tags in our templates
+  ]
+
 })
-export class // encapsulation: ViewEncapsulation.ShadowDom
+export class 
   AppComponent implements OnInit {
+
 
   title = 'vectortile-view-component';
   map = new Map({});
   selector = '/{z}/{y}/{x}?f=mvt'
-
-  @Input() tileUrl: string = NetherlandsRDNewQuadDefault
-  @Input() styleUrl!: string | undefined
-  @Input() zoom!: number
-  @Input() centerX!: number;
-  @Input() centerY!: number;
   private _showGrid: boolean = false;
+  private _showObjectInfo: boolean = false;
   vectorTileLayer!: VectorTileLayer;
-  @Input()
-  set showGrid(showGrid: any) {
+  curFeature!: FeatureLike;
+  @Input() set showGrid(showGrid: any) {
     this._showGrid = coerceBooleanProperty(showGrid);
   }
   get showGrid() {
     return this._showGrid
   }
 
+  @Input() set showObjectInfo(showObjectInfo: any) {
+    this._showObjectInfo = coerceBooleanProperty(showObjectInfo);
+  }
+  get showObjectInfo() {
+    return this._showObjectInfo
+  }
+
+  @Input() tileUrl: string = NetherlandsRDNewQuadDefault
+  @Input() styleUrl: string | undefined= " "
+  @Input() id!: string | undefined
+  @Input() zoom!: number
+  @Input() centerX!: number;
+  @Input() centerY!: number;
+  totalHeight:number=600
+  totalWidth:number=800
+
+
+ 
+
+
+
+  @Output() activeFeature = new EventEmitter<FeatureLike>();
 
 
 
 
-  constructor(private elementRef: ElementRef
-  ) {
+  constructor(private elementRef: ElementRef) {
+
+
+
+
+
   }
 
   ngOnChanges(changes: NgChanges<AppComponent>) {
     if (changes.styleUrl.previousValue !== changes.styleUrl.currentValue) {
-      console.log('changed')
-      this.setStyle(this.vectorTileLayer);
+      console.log(this.id +' changed')
+      if (this.vectorTileLayer) {
+        this.setStyle(this.vectorTileLayer);
+      }
     }
   }
 
   ngOnInit() {
     this.checkParams();
+
     this.map = this.getMap()
-    this.map.setTarget(this.elementRef.nativeElement);
+    this.map.on('pointermove', (evt: { pixel: any; }) => {
+      this.map.forEachFeatureAtPixel(evt.pixel, (feature: FeatureLike) => {
+        if (feature) {
+          if (this._showObjectInfo) {
+            this.curFeature = feature
+            //this.setSelectStyle(this.curFeature)
+          }
+          this.activeFeature.emit(feature)
+
+        }
+      });
+    })
+
+    const mapdiv:HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']")
+    console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
+    console.log('width' +  this.elementRef.nativeElement.offsetWidth) 
+   this.totalWidth= this.elementRef.nativeElement.offsetWidth 
+   this.totalWidth= this.elementRef.nativeElement.offsetHeigh 
+    
+
+    this.map.setTarget(mapdiv);
+  
+    console.log("surl:" + JSON.stringify(this.styleUrl))
   }
 
+
+
+
   private checkParams(): void {
+    console.log(this.id)
     if (!this.tileUrl) {
       console.error("No TilteUrl was provided for the app-vectortile-view");
     }
@@ -132,17 +205,8 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
 
   getMap() {
     useGeographic();
-    const style = new Style({
-      fill: new Fill({
-        color: 'rgba(255,255,255,0.4)',
-      }),
-      stroke: new Stroke({
-        color: '#3399CC',
-        width: 1.25,
-      })
-    })
 
-    this.vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection, style)
+    this.vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection)
     this.setStyle(this.vectorTileLayer);
 
 
@@ -166,7 +230,7 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
     console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
     console.log("acenter=" + acenter)
     return new Map({
-      target: 'app-vectortile-view',
+
       layers: layers,
       view: new View({
         center: acenter,
@@ -188,18 +252,32 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
             vectorTileLayer.getSource()?.setUrl(this.tileUrl + this.selector);
           }
         })
-        .catch(() => console.log('error loading: ' + this.styleUrl));
+        .catch((err) => console.error('error loading: ' + this.id + ' ' + this.styleUrl + ' ' + err));
+    }
+    else {
+      const defaultStyle = new Style({
+        fill: new Fill({
+          color: 'rgba(255,255,255,0.4)',
+        }),
+        stroke: new Stroke({
+          color: '#3399CC',
+          width: 1.25,
+        })
+      })
+      vectorTileLayer.setStyle(defaultStyle)
+
+
     }
   }
 
-  getVectortileLayer(projection: Projection, style: Style) {
+  getVectortileLayer(projection: Projection): VectorTileLayer {
     const vectorTileLayer = new VectorTileLayer(
       {
         source: this.getVectorTileSource(projection, this.tileUrl),
         renderMode: 'hybrid',
         declutter: true,
-        useInterimTilesOnError: false,
-        style: style
+        useInterimTilesOnError: false
+
       });
 
     return (vectorTileLayer)
@@ -230,4 +308,32 @@ export class // encapsulation: ViewEncapsulation.ShadowDom
       cacheSize: 0
     })
   }
+
+  /*private setSelectStyle(feature: Feature) {
+    const selected = new Style({
+      fill: new Fill({
+        color: '#eeeeee',
+      }),
+      stroke: new Stroke({
+        color: 'rgba(255, 255, 255, 0.7)',
+        width: 2,
+      }),
+    });
+    const color = feature.get('COLOR') || '#eeeeee';
+    
+    feature.setStyle(selected.getFill().setColor(color)!)
+  }
+  */
+
+  getMapStyle() {
+    return ` z-index: 1;
+    position: relative;  
+    display: flex;"
+    width: 300px;
+    height: 400px;
+    `
+    
+    }
 }
+
+

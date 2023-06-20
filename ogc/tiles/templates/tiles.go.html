@@ -1,14 +1,13 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
+
   <hgroup>
-    <h1 class="title">{{ .Config.Title }} - Tiles</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "Tiles" .Language }}</h1>
   </hgroup>
   <div class="row">
     <div class="col-md-12">
       <p>
-        Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data
-        bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles
-        biedt PDOK ook styles aan.
+        {{ i18n "TilesText" .Language }}
       </p>
     </div>
   </div>
@@ -37,10 +36,10 @@
           <th>Schema</th>
           <td id="field-schema"><a id="href-schema"
                                    href="https://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $defaultSrs.Srs }}">HTML
-              (link naar externe website)</a></td>
+              ({{ i18n "LinkToExternalWebsite" .Language }})</a></td>
         </tr>
         <tr>
-          <th>Bijgewerkt door PDOK</th>
+          <th>{{ i18n "UpdatedBy" .Language }} PDOK</th>
           <td id="field-updated">{{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}</td>
         </tr>
         <tr>
@@ -61,13 +60,14 @@
       </table>
     </div>
     <div class="col-md-8">
-      <app-vectortile-view id="tile-vectortile-view" style="width: 800px; height: 600px;"
-                           tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                           {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
-                           zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
-                           center-x="5.3896944"
-                           center-y="52.1562499"
-                           show-grid>
+      <app-vectortile-view id="tile-vectortile-view" class="vectortile-view"
+                          tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+                          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
+                          zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
+                          center-x="5.3896944"
+                          center-y="52.1562499"
+                          show-grid
+                          show-object-info>
       </app-vectortile-view>
       <table class="table">
         <tbody>
@@ -77,7 +77,7 @@
           </td>
         </tr>
         <tr>
-          <th>Voorbeeld URL</th>
+          <th>{{ i18n "Example" .Language }} URL</th>
           <td id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf
           </td>
         </tr>
@@ -94,12 +94,12 @@
           var selectedSrs = event.target.value
           var srsInteger = selectedSrs.replace(/^EPSG:/, '')
           var tileset
-          if (selectedSrs === "EPSG:28992") {
-              tileset = "NetherlandsRDNewQuad"
-          } else if (selectedSrs === "EPSG:4258") {
-              tileset = "EuropeanETRS89_GRS80Quad_Draft"
-          } else if (selectedSrs === "EPSG:3857") {
-              tileset = "WebMercatorQuad"
+          if (selectedSrs === 'EPSG:28992') {
+              tileset = 'NetherlandsRDNewQuad'
+          } else if (selectedSrs === 'EPSG:4258') {
+              tileset = 'EuropeanETRS89_GRS80Quad_Draft'
+          } else if (selectedSrs === 'EPSG:3857') {
+              tileset = 'WebMercatorQuad'
           }
 
           var schemaField = document.getElementById('field-schema');
@@ -110,10 +110,10 @@
           var metadataHref = document.getElementById('href-metadata');
           var schemaHref = document.getElementById('href-schema');
           srsField.textContent = selectedSrs;
-          urlTemplateField.textContent = "{{ $baseUrl }}/tiles/" + tileset + "/{z}/{y}/{x}?f=mvt";
-          urlExampleField.textContent = "{{ $baseUrl }}/tiles/" + tileset + "/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf";
-          metadataHref.setAttribute('href', "{{ $baseUrl }}/tiles/" + tileset);
-          schemaHref.setAttribute('href', "https://www.opengis.net/def/crs/EPSG/0/" + srsInteger);
+          urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
+          urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf';
+          metadataHref.setAttribute('href', 'tiles/' + tileset);
+          schemaHref.setAttribute('href', 'https://www.opengis.net/def/crs/EPSG/0/' + srsInteger);
 
 
           // update tile-url in app-vectortile-view
