@@ -144,7 +144,7 @@ func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, r
 				Name:     "lang",
 				Value:    lang,
 				Path:     "/",
-				MaxAge:   21600,
+				MaxAge:   60 * 60 * 24,
 				SameSite: http.SameSiteStrictMode,
 				Secure:   true,
 			}
