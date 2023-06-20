@@ -144,8 +144,11 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 		}
 		// we already perform OpenAPI validation here during startup to catch
 		// issues early on, in addition to runtime OpenAPI response validation
-		// TODO: deal with multiple keys created due to multiple languages
-		// e.validateStaticResponse(key, urlPath)
+		// all templates are created in all available languages, hence all are checked
+		for lang := range e.Templates.localizers {
+			key.Language = lang
+			e.validateStaticResponse(key, urlPath)
+		}
 	}
 }
 
