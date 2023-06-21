@@ -60,6 +60,11 @@
       </table>
     </div>
     <div class="col-md-8">
+
+      <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
+      <script type="text/javascript" src="vectortile-view-component/main.js"></script>
+      <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
+      <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
       <app-vectortile-view id="tile-vectortile-view" class="vectortile-view"
                           tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
                           {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
@@ -69,6 +74,7 @@
                           show-grid
                           show-object-info>
       </app-vectortile-view>
+
       <table class="table">
         <tbody>
         <tr>
@@ -91,8 +97,8 @@
           // only operate on srs dropdown
           if (event.target.id !== 'srs') return;
 
-          var selectedSrs = event.target.value
-          var srsInteger = selectedSrs.replace(/^EPSG:/, '')
+          const selectedSrs = event.target.value
+          const srsInteger = selectedSrs.replace(/^EPSG:/, '')
           var tileset
           if (selectedSrs === 'EPSG:28992') {
               tileset = 'NetherlandsRDNewQuad'
@@ -102,22 +108,19 @@
               tileset = 'WebMercatorQuad'
           }
 
-          var schemaField = document.getElementById('field-schema');
-          var typeField = document.getElementById('field-type');
-          var srsField = document.getElementById('field-srs');
-          var urlTemplateField = document.getElementById('field-url-template');
-          var urlExampleField = document.getElementById('field-url-example');
-          var metadataHref = document.getElementById('href-metadata');
-          var schemaHref = document.getElementById('href-schema');
+          const srsField = document.getElementById('field-srs');
+          const urlTemplateField = document.getElementById('field-url-template');
+          const urlExampleField = document.getElementById('field-url-example');
+          const metadataHref = document.getElementById('href-metadata');
+          const schemaHref = document.getElementById('href-schema');
           srsField.textContent = selectedSrs;
           urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
           urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf';
           metadataHref.setAttribute('href', 'tiles/' + tileset);
           schemaHref.setAttribute('href', 'https://www.opengis.net/def/crs/EPSG/0/' + srsInteger);
 
-
           // update tile-url in app-vectortile-view
-          var viewer = document.getElementById('tile-vectortile-view')
+          const viewer = document.getElementById('tile-vectortile-view')
           viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
       }, false);
   </script>
