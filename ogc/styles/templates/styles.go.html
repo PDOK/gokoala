@@ -50,12 +50,18 @@
         </table>
         <p>{{ i18n "StylingExample" .Language }}:</p>
         {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
+
+        <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
+        <script type="text/javascript" src="vectortile-view-component/main.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
         <app-vectortile-view id="style-vectortile-view" class="vectortile-view"
                              tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                             style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}" 
+                             style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}"
                              zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
                              center-x="5.3896944" center-y="52.1562499">
         </app-vectortile-view>
+
     </div>
 </div>
 <script>
@@ -63,14 +69,14 @@
         // only operate on styles dropdown
         if (event.target.id !== 'styles') return;
         // update table fields
-        var selectedStyle = event.target.value
-        var styleUrl = document.getElementById('href-url');
-        var styleMeta = document.getElementById('href-meta');
+        const selectedStyle = event.target.value;
+        const styleUrl = document.getElementById('href-url');
+        const styleMeta = document.getElementById('href-meta');
         styleUrl.textContent = '{{ $baseUrl }}/styles/' + selectedStyle;
         styleUrl.setAttribute('href', 'styles/' + selectedStyle);
         styleMeta.setAttribute('href', 'styles/' + selectedStyle + '/metadata');
         // update style-url in app-vectortile-view
-        var viewer = document.getElementById('style-vectortile-view')
+        const viewer = document.getElementById('style-vectortile-view')
         viewer.setAttribute('style-url', '{{ .Config.BaseURL }}/styles/' + selectedStyle)
     }, false);
 </script>
