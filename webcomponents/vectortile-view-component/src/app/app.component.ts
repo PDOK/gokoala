@@ -137,10 +137,16 @@ export class
   }
 
   ngOnChanges(changes: NgChanges<AppComponent>) {
-    if (changes.styleUrl.previousValue !== changes.styleUrl.currentValue) {
-      console.log(this.id +' changed')
+    if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
+      console.log(this.id +' style changed')
       if (this.vectorTileLayer) {
         this.setStyle(this.vectorTileLayer);
+      }
+    }
+    if (changes.tileUrl?.previousValue !== changes.tileUrl?.currentValue) {
+      console.log(this.id + ' projection changed')
+      if (this.vectorTileLayer) {
+        this.setNewProjection();
       }
     }
   }
@@ -206,24 +212,7 @@ export class
   getMap() {
     useGeographic();
 
-    this.vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection)
-    this.setStyle(this.vectorTileLayer);
-
-
-    let layers = [this.vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined
-
-    if (this.showGrid) {
-      const debugLayer = new TileLayer({
-        source: new TileDebug({
-          template: 'z:{z} y:{y} x:{x}',
-          projection: this.vectorTileLayer.getSource()!.getProjection() as ProjectionLike,
-          tileGrid: this.vectorTileLayer.getSource()!.getTileGrid() as TileGrid,
-          wrapX: this.vectorTileLayer.getSource()!.getWrapX(),
-          zDirection: this.vectorTileLayer.getSource()!.zDirection
-        }),
-      });
-      layers = [this.vectorTileLayer, debugLayer]
-    }
+    let layers = this.generateLayers();
 
     let acenter: Coordinate = [this.centerX, this.centerY]
     console.log("project " + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
@@ -239,6 +228,28 @@ export class
         projection: this.vectorTileLayer.getSource()?.getProjection() as ProjectionLike,
       }),
     });
+  }
+
+  private generateLayers() {
+    this.vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection);
+    this.setStyle(this.vectorTileLayer);
+
+
+    let layers = [this.vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined;
+
+    if (this.showGrid) {
+      const debugLayer = new TileLayer({
+        source: new TileDebug({
+          template: 'z:{z} y:{y} x:{x}',
+          projection: this.vectorTileLayer.getSource()!.getProjection() as ProjectionLike,
+          tileGrid: this.vectorTileLayer.getSource()!.getTileGrid() as TileGrid,
+          wrapX: this.vectorTileLayer.getSource()!.getWrapX(),
+          zDirection: this.vectorTileLayer.getSource()!.zDirection
+        }),
+      });
+      layers = [this.vectorTileLayer, debugLayer];
+    }
+    return layers;
   }
 
   private setStyle(vectorTileLayer: VectorTileLayer) {
@@ -268,6 +279,19 @@ export class
 
 
     }
+  }
+
+  private setNewProjection() {
+    const newLayers = this.generateLayers() as BaseLayer[] | Collection<BaseLayer>;
+    const newView = new View({
+      center: this.map.getView().getCenter(),
+      zoom: this.zoom,
+      enableRotation: false,
+      projection: this.vectorTileLayer.getSource()?.getProjection() as ProjectionLike,
+    });
+    this.map.setView(newView);
+    this.map.setLayers(newLayers);
+    console.log('project ' + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
   }
 
   getVectortileLayer(projection: Projection): VectorTileLayer {
