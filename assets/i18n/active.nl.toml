@@ -15,9 +15,10 @@ Example = "Voorbeeld"
 
 # Layout frame
 ToMain = "Naar hoofdinhoud"
-PDOKLogo = "Logo PDOK: Ga naar de landing page"
+Logo = "Logo PDOK: Ga naar de landing page"
 LanguageSwitchLabel = "English"
 LanguageSwitchCode = "en"
+FooterLogo = "Logo van het Kadaster"
 
 # Landing page
 Specification = "Specificatie"
@@ -51,7 +52,9 @@ pagina's om te zien welke zoomniveaus door deze API worden ondersteund."""
 
 # Conformance page
 ConformanceAbstract = """
-Hier staan de verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet."""
+Hieronder staan verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet."""
+Standard = "Standaard"
+Draft = "Concept"
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract = """
@@ -80,7 +83,7 @@ MaximumValue = "Maximale waarde"
 # Styles/StyleMetadata page
 AvailableStyles = "Beschikbare style(s)"
 StylingExample = "Voorbeeld styling"
-StyleMetadata = "Metadata style"
+StyleMetadata = "Bekijk metadata"
 AdditionalLinks = "Aanvullende links"
 
 # Collections/Collection page

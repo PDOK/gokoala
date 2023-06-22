@@ -14,6 +14,9 @@ license:
 lastUpdated: "2023-06-01T12:00:00Z"
 datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
 ogcApi:
   3dgeovolumes:
     tileServer: https://maps.ecere.com/3DAPI/collections/

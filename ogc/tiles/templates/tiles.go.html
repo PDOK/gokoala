@@ -1,6 +1,5 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-
   <hgroup>
     <h1 class="title">{{ .Config.Title }} - {{ i18n "Tiles" .Language }}</h1>
   </hgroup>
@@ -39,8 +38,12 @@
               ({{ i18n "LinkToExternalWebsite" .Language }})</a></td>
         </tr>
         <tr>
-          <th>{{ i18n "UpdatedBy" .Language }} PDOK</th>
-          <td id="field-updated">{{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}</td>
+            {{ if .Config.LastUpdatedBy }}
+                <th>{{ i18n "UpdatedBy" .Language }} {{ .Config.LastUpdatedBy }} {{ i18n "On" .Language }}</th>
+            {{ else }}
+                <th>{{ i18n "LastUpdated" .Language }}</th>
+            {{ end }}
+            <td id="field-updated">{{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}</td>
         </tr>
         <tr>
           <th>Type</th>
@@ -51,9 +54,8 @@
           <td id="field-srs">{{ $defaultSrs.Srs }}</td>
         </tr>
         <tr>
-          <th>Metadata Tiles</th>
-          <td id="field-metadata"><a id="href-metadata"
-                                     href="tiles/{{ get $projections $defaultSrs.Srs }}">Link</a>
+          <th>Metadata</th>
+          <td id="field-metadata"><a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">Bekijk {{ get $projections $defaultSrs.Srs }} tiles metadata</a>
           </td>
         </tr>
         </tbody>

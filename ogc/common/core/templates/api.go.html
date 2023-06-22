@@ -41,10 +41,11 @@
             <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-bundle.js" charset="UTF-8"></script>
             <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
             <script>
-                // Redefine existing Swagger components. in this case we override the Info component since we already
-                // provide these details in our HTML
+                // Redefine existing Swagger components.
                 //
-                // Note: This is actually a React component but since we don't use any React feature - it's an empty
+                // In this case we override the 'Info' component since we already provide these details in our HTML.
+                //
+                // Note: This is actually a React component but since we don't use any React features - it's an empty
                 // component after all - we don't include the React libs. When you do need to modify an existing
                 // component include the following libs:
                 // - https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js
@@ -56,7 +57,7 @@
                     }
                 }
 
-                // Create plugin to wire the refined components
+                // Create plugin to wire the redefined components
                 const GoKoalaLayoutPlugin = () => {
                     return {
                         // See https://github.com/swagger-api/swagger-ui/blob/master/src/core/components/layouts/base.jsx

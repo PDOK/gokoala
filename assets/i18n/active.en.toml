@@ -15,9 +15,10 @@ Example = "Example"
 
 # Layout frame
 ToMain = "To main content"
-PDOKLogo = "PDOK Logo: Go to landing page"
+Logo = "PDOK Logo: Go to landing page"
 LanguageSwitchLabel = "Nederlands"
 LanguageSwitchCode = "nl"
+FooterLogo = "Logo of The Netherlands Cadastre, Land Registry and Mapping Agency"
 
 # Landing page
 Specification = "Specification"
@@ -48,7 +49,9 @@ pages to see what zoom levels are supported by this API."""
 
 # Conformance page
 ConformanceAbstract = """
-These are the references to the OGC API conformance classes that this service conforms to."""
+Below are references to OGC API conformance classes to which this service conforms."""
+Standard = "Standard"
+Draft = "Draft"
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract = """
@@ -64,8 +67,8 @@ also possible to load this through <a href="tiles/WebMercatorQuad?f=tilejson">Ti
 EuropeanETRS89_GRS80Quad_DraftAbstract = """
 The tiles can be requested via the URL template below, where
 <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
-<a href="/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme. 
-In some tools it is also possible to load this through 
+<a href="/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme.
+In some tools it is also possible to load this through
 <a href="tiles/EuropeanETRS89_GRS80Quad_Draft?f=tilejson">TileJSON</a>."""
 AvailableZoomLevels = "The tiles are available at the following zoomlevels"
 ZoomLevel = "Zoomlevel"
@@ -75,7 +78,7 @@ MaximumValue = "Maximum value"
 # Styles/StyleMetadata page
 AvailableStyles = "Available style(s)"
 StylingExample = "Styling example"
-StyleMetadata = "Style metadata"
+StyleMetadata = "View metadata"
 AdditionalLinks = "Additional links"
 
 # Collections/Collection page
