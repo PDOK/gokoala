@@ -79,6 +79,7 @@ AvailableZoomLevels = "De tiles zijn beschikbaar op de volgende zoomniveaus"
 ZoomLevel = "Zoomniveau"
 MinimumValue = "Minimale waarde"
 MaximumValue = "Maximale waarde"
+View = "Bekijk"
 
 # Styles/StyleMetadata page
 AvailableStyles = "Beschikbare style(s)"

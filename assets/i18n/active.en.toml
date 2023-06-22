@@ -74,6 +74,7 @@ AvailableZoomLevels = "The tiles are available at the following zoomlevels"
 ZoomLevel = "Zoomlevel"
 MinimumValue = "Minimum value"
 MaximumValue = "Maximum value"
+View = "View"
 
 # Styles/StyleMetadata page
 AvailableStyles = "Available style(s)"
