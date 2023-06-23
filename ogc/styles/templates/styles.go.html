@@ -2,7 +2,7 @@
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" .Language }}</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
@@ -10,13 +10,13 @@
         {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
         {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}
         <p>
-            {{ i18n "StylesText" .Language }}
+            {{ i18n "StylesText" }}
         </p>
         <table class="table table-borderless table-sm w-75">
             <tbody>
                 <tr>
                     <td class="w-25">
-                        <b>{{ i18n "AvailableStyles" .Language }}</b>
+                        <b>{{ i18n "AvailableStyles" }}</b>
                     </td>
                     <td>
                         {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
@@ -43,12 +43,12 @@
                         <b>Metadata</b>
                     </td>
                     <td>
-                        <a id="href-meta" href="styles/{{ $defaultStyle }}/metadata">{{ i18n "StyleMetadata" .Language }}</a>
+                        <a id="href-meta" href="styles/{{ $defaultStyle }}/metadata">{{ i18n "StyleMetadata" }}</a>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <p>{{ i18n "StylingExample" .Language }}:</p>
+        <p>{{ i18n "StylingExample" }}:</p>
         {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
 
         <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">

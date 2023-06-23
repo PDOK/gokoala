@@ -1,22 +1,21 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ i18n "TileMatrixSets" .Language }}</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "TileMatrixSets" }}</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
         <p>
-            {{ i18n "TileMatrixSetsText" .Language }}
+            {{ i18n "TileMatrixSetsText" }}
         </p>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Tile Matrix Set</th>
-                    <th>{{ i18n "Description" .Language }}</th>
+                    <th>{{ i18n "Description" }}</th>
                 </tr>
             </thead>
             <tbody>
-            {{ $language := .Language}}
             {{range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
                 {{ if (eq $type.Srs "EPSG:28992") }}
                     <tr>
@@ -27,7 +26,7 @@
                 {{ if (eq $type.Srs "EPSG:4258") }}
                     <tr>
                         <td><a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a>
-                            ({{ i18n "SubjectToChange" $language }})</td>
+                            ({{ i18n "SubjectToChange" }})</td>
                         <td>Geodetic Reference System 1980 ETRS89 for Europe</td>
                     </tr>
                 {{end}}

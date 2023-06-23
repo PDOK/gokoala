@@ -30,9 +30,7 @@ const (
 )
 
 var (
-	customFuncs   texttemplate.FuncMap
-	sprigFuncs    texttemplate.FuncMap
-	combinedFuncs texttemplate.FuncMap
+	globalTemplateFuncs texttemplate.FuncMap
 )
 
 // TemplateKey unique key to register and lookup Go templates
@@ -64,9 +62,6 @@ type TemplateData struct {
 
 	// Crumb path to the page, in key-value pairs of name, path
 	Breadcrumbs []Breadcrumb
-
-	// Language to render the page in
-	Language language.Tag
 }
 
 type Breadcrumb struct {
@@ -105,20 +100,20 @@ type Templates struct {
 	localizers        map[language.Tag]i18n.Localizer
 }
 
-func newTemplates(config *Config, localizers map[language.Tag]i18n.Localizer) *Templates {
+func newTemplates(config *Config) *Templates {
 	templates := &Templates{
 		RenderedTemplates: make(map[TemplateKey][]byte),
 		config:            config,
-		localizers:        localizers,
+		localizers:        NewLocalizers(config.AvailableLanguages),
 	}
-	customFuncs = texttemplate.FuncMap{
+	customFuncs := texttemplate.FuncMap{
 		// custom template functions
 		"markdown":   markdown,
 		"unmarkdown": unmarkdown,
-		"i18n":       templates.i18n,
 	}
-	sprigFuncs = sprig.FuncMap()
-	combinedFuncs = combinedFuncMap(customFuncs, sprigFuncs)
+	// we also support https://github.com/go-task/slim-sprig functions
+	sprigFuncs := sprig.FuncMap()
+	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
 	return templates
 }
 
@@ -132,16 +127,17 @@ func (t *Templates) GetRenderedTemplate(key TemplateKey) ([]byte, error) {
 
 func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-	compiled := htmltemplate.Must(htmltemplate.New(layoutFile).Funcs(combinedFuncs).ParseFiles(templatesDir+layoutFile, file))
 
 	for lang := range t.localizers {
-		var rendered bytes.Buffer
+		templateFuncs := t.createTemplateFuncs(lang)
+		compiled := htmltemplate.Must(htmltemplate.New(layoutFile).
+			Funcs(templateFuncs).ParseFiles(templatesDir+layoutFile, file))
 
+		var rendered bytes.Buffer
 		if err := compiled.Execute(&rendered, &TemplateData{
 			Config:      t.config,
 			Params:      params,
 			Breadcrumbs: breadcrumbs,
-			Language:    lang,
 		}); err != nil {
 			log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 		}
@@ -154,24 +150,13 @@ func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb
 
 func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-	gzipFile := file + ".gz"
-	var fileContents string
-	if _, err := os.Stat(gzipFile); !errors.Is(err, fs.ErrNotExist) {
-		fileContents, err = readGzipContents(gzipFile)
-		if err != nil {
-			log.Fatalf("unable to decompress gzip file %s", gzipFile)
-		}
-	} else {
-		fileContents, err = readFileContents(file)
-		if err != nil {
-			log.Fatalf("unable to read file %s", file)
-		}
-	}
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(combinedFuncs).Parse(fileContents))
 
 	for lang := range t.localizers {
-		var rendered bytes.Buffer
+		templateFuncs := t.createTemplateFuncs(lang)
+		compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).
+			Funcs(templateFuncs).Parse(t.readFile(file)))
 
+		var rendered bytes.Buffer
 		if err := compiled.Execute(&rendered, &TemplateData{
 			Config: t.config,
 			Params: params,
@@ -184,22 +169,40 @@ func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 			// pretty print all JSON (or derivatives like TileJSON)
 			result = PrettyPrintJSON(result, key.Name)
 		}
+
 		// Store rendered template per language
 		key.Language = lang
 		t.RenderedTemplates[key] = result
 	}
 }
 
-// combine applicable FuncMaps
-func combinedFuncMap(customFuncs map[string]interface{}, sprigFuncs map[string]interface{}) map[string]interface{} {
-	cfm := make(map[string]interface{}, len(customFuncs)+len(sprigFuncs))
-	for k, v := range sprigFuncs {
-		cfm[k] = v
+func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]interface{} {
+	return combineFuncMaps(globalTemplateFuncs, texttemplate.FuncMap{
+		// create func just-in-time based on TemplateKey
+		"i18n": func(messageID string) htmltemplate.HTML {
+			localizer := t.localizers[lang]
+			translated := localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID})
+			return htmltemplate.HTML(translated) //nolint:gosec // since we trust our language files
+		},
+	})
+}
+
+// read file, return contents as string
+func (t *Templates) readFile(filePath string) string {
+	gzipFile := filePath + ".gz"
+	var fileContents string
+	if _, err := os.Stat(gzipFile); !errors.Is(err, fs.ErrNotExist) {
+		fileContents, err = readGzipContents(gzipFile)
+		if err != nil {
+			log.Fatalf("unable to decompress gzip file %s", gzipFile)
+		}
+	} else {
+		fileContents, err = readPlainContents(filePath)
+		if err != nil {
+			log.Fatalf("unable to read file %s", filePath)
+		}
 	}
-	for k, v := range customFuncs {
-		cfm[k] = v
-	}
-	return cfm
+	return fileContents
 }
 
 // decompress gzip files, return contents as string
@@ -223,7 +226,7 @@ func readGzipContents(filePath string) (string, error) {
 }
 
 // read file, return contents as string
-func readFileContents(filePath string) (string, error) {
+func readPlainContents(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", err
@@ -235,6 +238,17 @@ func readFileContents(filePath string) (string, error) {
 		return "", err
 	}
 	return buffer.String(), nil
+}
+
+// combine given FuncMaps
+func combineFuncMaps(funcMaps ...map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	for _, funcMap := range funcMaps {
+		for k, v := range funcMap {
+			result[k] = v
+		}
+	}
+	return result
 }
 
 // markdown turn Markdown into HTML
@@ -267,9 +281,4 @@ func unmarkdown(s *string) string {
 	withoutMarkdown := stripmd.Strip(*s)
 	withoutLinebreaks := strings.ReplaceAll(withoutMarkdown, "\n", " ")
 	return withoutLinebreaks
-}
-
-func (t *Templates) i18n(messageID string, lang language.Tag) htmltemplate.HTML {
-	localizer := t.localizers[lang]
-	return htmltemplate.HTML(localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID})) //nolint:gosec
 }

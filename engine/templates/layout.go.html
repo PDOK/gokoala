@@ -28,13 +28,13 @@
     <!-- header -->
     <header>
         <!-- skip link -->
-        <a class="visually-hidden visually-hidden-focusable" href="#main">{{ i18n "ToMain" .Language }}</a>
+        <a class="visually-hidden visually-hidden-focusable" href="#main">{{ i18n "ToMain" }}</a>
 
         <nav class="navbar d-flex flex-column w-100" aria-label="top navigation">
             <!-- logo -->
             <div class="container">
                 <a class="navbar-brand py-3" href="{{ .Config.BaseURL }}">
-                    <img src="img/logo-header.svg" alt="{{ i18n "Logo" .Language }}">
+                    <img src="img/logo-header.svg" alt="{{ i18n "Logo" }}">
                 </a>
             </div>
 
@@ -65,17 +65,17 @@
 
                 <nav style="--bs-breadcrumb-divider: '|';" aria-label="switch language or format">
                     <ol class="breadcrumb" >
-                        {{ $languageSwitchCode := (i18n "LanguageSwitchCode" .Language) }}
+                        {{ $languageSwitchCode := (i18n "LanguageSwitchCode") }}
                         {{ if .Breadcrumbs }}
                             {{ if gt (len .Config.AvailableLanguages) 1 }}
                             <!-- TODO: support switching between more than two languages -->
-                            <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" .Language }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
                             {{ end }}
                             <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
                         {{ else }}
                             {{ if gt (len .Config.AvailableLanguages) 1 }}
                             <!-- TODO: support switching between more than two languages -->
-                            <li class="breadcrumb-item"><a href="" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" .Language }}</a></li>
+                            <li class="breadcrumb-item"><a href="" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
                             {{ end }}
                             <li class="breadcrumb-item"><a href="?f=json" target="_blank">JSON</a></li>
                         {{ end }}
@@ -101,7 +101,7 @@
                     &nbsp <!-- place additional footer links here -->
                 </div>
                 <div class="col-11 text-end">
-                    <img src="img/logo-footer.png" alt="{{ i18n "FooterLogo" .Language }}">
+                    <img src="img/logo-footer.png" alt="{{ i18n "FooterLogo" }}">
                 </div>
             </div>
         </div>

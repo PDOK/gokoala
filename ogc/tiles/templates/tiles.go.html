@@ -1,12 +1,12 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
   <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ i18n "Tiles" .Language }}</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "Tiles" }}</h1>
   </hgroup>
   <div class="row">
     <div class="col-md-12">
       <p>
-        {{ i18n "TilesText" .Language }}
+        {{ i18n "TilesText" }}
       </p>
     </div>
   </div>
@@ -35,13 +35,13 @@
           <th>Schema</th>
           <td id="field-schema"><a id="href-schema"
                                    href="https://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $defaultSrs.Srs }}">HTML
-              ({{ i18n "LinkToExternalWebsite" .Language }})</a></td>
+              ({{ i18n "LinkToExternalWebsite" }})</a></td>
         </tr>
         <tr>
             {{ if .Config.LastUpdatedBy }}
-                <th>{{ i18n "UpdatedBy" .Language }} {{ .Config.LastUpdatedBy }} {{ i18n "On" .Language }}</th>
+                <th>{{ i18n "UpdatedBy" }} {{ .Config.LastUpdatedBy }} {{ i18n "On" }}</th>
             {{ else }}
-                <th>{{ i18n "LastUpdated" .Language }}</th>
+                <th>{{ i18n "LastUpdated" }}</th>
             {{ end }}
             <td id="field-updated">{{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}</td>
         </tr>
@@ -55,7 +55,7 @@
         </tr>
         <tr>
           <th>Metadata</th>
-          <td id="field-metadata"><a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">{{ i18n "View" .Language }} {{ get $projections $defaultSrs.Srs }} tiles metadata</a>
+          <td id="field-metadata"><a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">{{ i18n "View" }} {{ get $projections $defaultSrs.Srs }} tiles metadata</a>
           </td>
         </tr>
         </tbody>
@@ -83,7 +83,7 @@
           </td>
         </tr>
         <tr>
-          <th>{{ i18n "Example" .Language }} URL</th>
+          <th>{{ i18n "Example" }} URL</th>
           <td id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf
           </td>
         </tr>

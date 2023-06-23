@@ -31,10 +31,18 @@ func ReadConfigFile(configFile string) *Config {
 		log.Fatalf("failed to unmarshal config file %v", err)
 	}
 
-	config.CookieMaxAge = cookieMaxAge
-
+	setDefaults(config)
 	validate(config)
 	return config
+}
+
+func setDefaults(config *Config) {
+	config.CookieMaxAge = cookieMaxAge
+
+	if len(config.AvailableLanguages) == 0 {
+		// default to Dutch only
+		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch)
+	}
 }
 
 func validate(config *Config) {
