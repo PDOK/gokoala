@@ -16,7 +16,7 @@
                 {{ if .Config.Keywords }}
                 <tr>
                     <td class="w-25">
-                        <b>{{ i18n "Keywords" .Language }}</b>
+                        <b>{{ i18n "Keywords" }}</b>
                     </td>
                     <td>
                         {{ .Config.Keywords | join ", " }}
@@ -25,7 +25,7 @@
                 {{ end }}
                 <tr>
                     <td class="w-25">
-                        <b>{{ i18n "License" .Language }}</b>
+                        <b>{{ i18n "License" }}</b>
                     </td>
                     <td>
                         <a href="{{ .Config.License.URL }}">{{ .Config.License.Name }}</a>
@@ -34,7 +34,7 @@
                 {{ if .Config.Support}}
                 <tr>
                     <td class="w-25">
-                        <b>{{ i18n "Support" .Language }}</b>
+                        <b>{{ i18n "Support" }}</b>
                     </td>
                     <td>
                         {{ markdown .Config.Support }}
@@ -67,14 +67,14 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="api">{{ i18n "Specification" .Language }}</a>
+                <a href="api">{{ i18n "Specification" }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    {{ i18n "SpecificationText" .Language }}
-                    {{ i18n "AvailableIn" .Language }}
+                    {{ i18n "SpecificationText" }}
+                    {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="api?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="api?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -82,14 +82,14 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="conformance">{{ i18n "Conformance" .Language }}</a>
+                <a href="conformance">{{ i18n "Conformance" }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    {{ i18n "ConformanceText" .Language }}
-                    {{ i18n "AvailableIn" .Language }}
+                    {{ i18n "ConformanceText" }}
+                    {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="conformance?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="conformance?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -98,14 +98,14 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="collections">{{ i18n "Collections" .Language }}</a>
+                <a href="collections">{{ i18n "Collections" }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    {{ i18n "CollectionsText" .Language }}
-                    {{ i18n "AvailableIn" .Language }}
+                    {{ i18n "CollectionsText" }}
+                    {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="collections?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="collections?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -115,14 +115,14 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="tiles">{{ i18n "Tiles" .Language }}</a>
+                <a href="tiles">{{ i18n "Tiles" }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    {{ i18n "TilesText" .Language }}
-                    {{ i18n "AvailableIn" .Language }}
+                    {{ i18n "TilesText" }}
+                    {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="tiles?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tiles?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -132,14 +132,14 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="styles">{{ i18n "Styles" .Language }}</a>
+                <a href="styles">{{ i18n "Styles" }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    {{ i18n "StylesText" .Language }}
-                    {{ i18n "AvailableIn" .Language }}
+                    {{ i18n "StylesText" }}
+                    {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="styles?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="styles?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>
@@ -149,14 +149,14 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
-                <a href="tileMatrixSets">{{ i18n "TileMatrixSets" .Language }}</a>
+                <a href="tileMatrixSets">{{ i18n "TileMatrixSets" }}</a>
             </h5>
             <div class="card-body">
                 <p>
-                    {{ i18n "TileMatrixSetsText" .Language }}
-                    {{ i18n "AvailableIn" .Language }}
+                    {{ i18n "TileMatrixSetsText" }}
+                    {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" .Language }} <a href="tileMatrixSets?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tileMatrixSets?f=json" target="_blank">JSON</a></small>
             </div>
         </div>
     </div>

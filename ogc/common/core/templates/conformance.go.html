@@ -1,11 +1,10 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
-{{ $lang := .Language }}
 <hgroup>
     <h1 class="title">{{ .Config.Title }} - Conformance</h1>
 </hgroup>
 <p>
-    {{ i18n "ConformanceAbstract" .Language }}
+    {{ i18n "ConformanceAbstract" }}
 </p>
 <div class="row row-cols-2 g-4">
     <div class="col">
@@ -22,24 +21,24 @@
                     <tbody>
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core</a></td>
-                        <td>{{ i18n "Standard" .Language }}</td>
+                        <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json</a></td>
-                        <td>{{ i18n "Standard" .Language }}</td>
+                        <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html</a></td>
-                        <td>{{ i18n "Standard" .Language }}</td>
+                        <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30</a></td>
-                        <td>{{ i18n "Standard" .Language }}</td>
+                        <td>{{ i18n "Standard" }}</td>
                     </tr>
                     {{ if .Config.HasCollections }}
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     {{ end }}
                     </tbody>
@@ -63,11 +62,11 @@
                     <tbody>
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -91,7 +90,7 @@
                     <tbody>
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -115,54 +114,54 @@
                     <tbody>
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core</a></td>
-                        <td>{{ i18n "Standard" .Language }}</td>
+                        <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list</a></td>
-                        <td>{{ i18n "Standard" .Language }}</td>
+                        <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets</a></td>
-                        <td>{{ i18n "Standard" .Language }}</td>
+                        <td>{{ i18n "Standard" }}</td>
                     </tr>
 {{/*  Enable the classes below once we support tiles inside collections */}}
 {{/*                        <tr>*/}}
 {{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</a></td>*/}}
-{{/*                            <td>{{ i18n "Standard" .Language }}</td>*/}}
+{{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
 {{/*                        <tr>*/}}
 {{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection</a></td>*/}}
-{{/*                            <td>{{ i18n "Standard" .Language }}</td>*/}}
+{{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
                     {{range $type := .Config.OgcAPI.Tiles.Types}}
                         {{ if (eq $type "raster") }}
 {{/*                                <tr>*/}}
 {{/*                                    <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg</a></td>*/}}
-{{/*                                    <td>{{ i18n "Standard" .Language }}</td>*/}}
+{{/*                                    <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                                </tr>*/}}
                             <tr>
                                 <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png</a></td>
-                                <td>{{ i18n "Standard" $lang }}</td>
+                                <td>{{ i18n "Standard" }}</td>
                             </tr>
                         {{ end }}
                         {{ if (eq $type "vector") }}
                             <tr>
                                 <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt</a></td>
-                                <td>{{ i18n "Standard" $lang }}</td>
+                                <td>{{ i18n "Standard" }}</td>
                             </tr>
                         {{ end }}
                     {{end}}
 {{/*                        <tr>*/}}
 {{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson</a></td>*/}}
-{{/*                            <td>{{ i18n "Standard" .Language }}</td>*/}}
+{{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
 {{/*                        <tr>*/}}
 {{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff</a></td>*/}}
-{{/*                            <td>{{ i18n "Standard" .Language }}</td>*/}}
+{{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
 {{/*                        <tr>*/}}
 {{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf</a></td>*/}}
-{{/*                            <td>{{ i18n "Standard" .Language }}</td>*/}}
+{{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
                     </tbody>
                 </table>
@@ -186,22 +185,22 @@
                     <tbody>
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/ogc-process-description</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     {{ if .Config.OgcAPI.Processes.SupportsDismiss }}
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/dismiss</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     {{ end }}
                     {{ if .Config.OgcAPI.Processes.SupportsCallback }}
                     <tr>
                         <td>http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/callback</td>
-                        <td>{{ i18n "Draft" .Language }}</td>
+                        <td>{{ i18n "Draft" }}</td>
                     </tr>
                     {{ end }}
                     </tbody>

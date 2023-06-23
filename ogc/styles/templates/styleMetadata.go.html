@@ -12,7 +12,7 @@
             <tbody>
                 <tr>
                     <td>
-                        <b>{{ i18n "Keywords" .Language }}</b>
+                        <b>{{ i18n "Keywords" }}</b>
                     </td>
                     <td>
                         {{ if .Params.Keywords }}
@@ -20,14 +20,14 @@
                         {{ $keyword }}<br/>
                         {{ end }}
                         {{ else }}
-                        {{ i18n "None" .Language }}
+                        {{ i18n "None" }}
                         {{ end }}
                         <br/>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <b>{{ i18n "AdditionalLinks" .Language }}</b>
+                        <b>{{ i18n "AdditionalLinks" }}</b>
                     </td>
                     <td>
                         {{ if .Params.Links }}
