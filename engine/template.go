@@ -187,17 +187,6 @@ func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]interface{
 	})
 }
 
-// combine given FuncMaps
-func combineFuncMaps(funcMaps ...map[string]interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
-	for _, funcMap := range funcMaps {
-		for k, v := range funcMap {
-			result[k] = v
-		}
-	}
-	return result
-}
-
 // read file, return contents as string
 func (t *Templates) readFile(filePath string) string {
 	gzipFile := filePath + ".gz"
@@ -249,6 +238,17 @@ func readPlainContents(filePath string) (string, error) {
 		return "", err
 	}
 	return buffer.String(), nil
+}
+
+// combine given FuncMaps
+func combineFuncMaps(funcMaps ...map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	for _, funcMap := range funcMaps {
+		for k, v := range funcMap {
+			result[k] = v
+		}
+	}
+	return result
 }
 
 // markdown turn Markdown into HTML

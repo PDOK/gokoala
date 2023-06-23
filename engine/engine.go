@@ -134,7 +134,7 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 }
 
 // RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
-// This method does bot perform OpenAPI validation of the rendered template (will be done during runtime).
+// This method does not perform OpenAPI validation of the rendered template (will be done during runtime).
 func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		if key.Format == FormatHTML {

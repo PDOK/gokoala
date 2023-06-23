@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/engine"
+	"golang.org/x/text/language"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -40,7 +41,8 @@ func TestNewStyles(t *testing.T) {
 					Resources: &engine.Resources{
 						Directory: "/fakedirectory",
 					},
-					BaseURL: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					AvailableLanguages: []language.Tag{language.Dutch},
+					BaseURL:            engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: engine.OgcAPI{
 						GeoVolumes: nil,
 						Tiles: &engine.OgcAPITiles{
