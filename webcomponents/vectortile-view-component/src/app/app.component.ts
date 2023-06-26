@@ -21,7 +21,7 @@ import VectorTileSource from 'ol/source/VectorTile.js';
 import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import { MapProjection, NetherlandsRDNewQuadDefault, EuropeanETRS89_GRS80 } from '../app/mapprojection'
+import { EuropeanETRS89_GRS80, MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
 
 import { applyStyle, apply } from 'ol-mapbox-style';
 
@@ -65,13 +65,7 @@ type MarkFunctionPropertyNames<Component> = {
 
 
 type ExcludeFunctionPropertyNames<T extends object> = MarkFunctionPropertyNames<T>[keyof T];
-
-
 type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T>>;
-
-
-
-
 
 @Component({
   selector: 'app-vectortile-view',
@@ -87,8 +81,6 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
 })
 export class
   AppComponent implements OnInit {
-
-
   title = 'vectortile-view-component';
   map = new Map({});
   selector = '/{z}/{y}/{x}?f=mvt'
@@ -98,6 +90,8 @@ export class
   curFeature!: FeatureLike;
 
   tileGrid: TileGrid | undefined;
+  minZoom?: number;
+  maxZoom?: number;
 
   @Input() set showGrid(showGrid: any) {
     this._showGrid = coerceBooleanProperty(showGrid);
@@ -121,23 +115,9 @@ export class
   @Input() centerY!: number;
   totalHeight: number = 600
   totalWidth: number = 800
-
-
-
-
-
-
   @Output() activeFeature = new EventEmitter<FeatureLike>();
 
-
-
-
   constructor(private elementRef: ElementRef, private matrixsetService: MatrixsetService) {
-
-
-
-
-
   }
 
   ngOnChanges(changes: NgChanges<AppComponent>) {
@@ -157,20 +137,55 @@ export class
 
   ngOnInit() {
     this.checkParams();
-
-
     const matrixurl = this.tileUrl.replace("tiles", "tileMatrixSets") + '?f=json';
     //console.log("matrixurl:" + matrixurl)
+    this.matrixsetService.getMatrix(this.tileUrl).subscribe(x => {
+      x.tileMatrixSetLimits.forEach(x => {
+
+        if (!this.zoom) {
+
+          this.zoom = parseFloat(x.tileMatrix) + 1
+        }
+
+
+        if (!this.minZoom) {
+
+          //     this.minZoom = parseFloat (x.tileMatrix) + 1
+        }
+
+
+
+        //    this.maxZoom = parseFloat (x.tileMatrix) + 1
+
+
+
+      })
+
+
+    })
+
+
+
     this.matrixsetService.getMatrixSet(matrixurl).subscribe({
 
-      next: x => {
+      next: matrixset => {
         let resolutions: number[] = [];
-        let origins:number[][]=[]
+        let origins: number[][] = []
+        let sizes: number[][] = []
 
-        x.tileMatrices.forEach(x => {
+
+        matrixset.tileMatrices.forEach(x => {
           resolutions[x.id] = x.cellSize
-          origins[x.id]=x.pointOfOrigin
+
+          if (this.tileUrl.includes(EuropeanETRS89_GRS80)) {
+            origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]] //  x,y swap Workaround? 
+          }
+          else {
+             
+            origins[x.id] = x.pointOfOrigin
+          }
           
+          sizes[x.id] = [x.tileWidth, x.tileHeight]
 
         })
 
@@ -178,44 +193,41 @@ export class
 
         this.tileGrid = new TileGrid({
           resolutions: resolutions,
-          tileSize: [256, 256],
+          tileSizes: sizes,
           origins: origins
         })
 
 
         if (this.tileUrl.includes(EuropeanETRS89_GRS80)) {
-
-       
-          this.tileGrid =  new TileGrid({
-            // extent: projection.getExtent(),
-            resolutions: [
-              0.157906983536634,
-              0.0789534917683172,
-              0.0394767458841586,
-              0.0197383729420793,
-              0.00986918647103966,
-              0.00493459323551983,
-              0.00246729661775991,
-              0.00123364830887996,
-              0.000616824154439978,
-              0.000308412077219989,
-              0.000154206038609995,
-              7.71030193049973e-05,
-              3.85515096524987e-05,
-              1.92757548262493e-05,
-              9.6378774131247e-06,
-              4.8189387065623e-06
-            ] // dit zijn de cellsizes
-            ,
-            tileSize: [256, 256],
-            origin: [-43.2303347, 64.0317714] // x,y
-          })
+          /*   this.tileGrid =  new TileGrid({
+               // extent: projection.getExtent(),
+               resolutions: [
+                 0.157906983536634,
+                 0.0789534917683172,
+                 0.0394767458841586,
+                 0.0197383729420793,
+                 0.00986918647103966,
+                 0.00493459323551983,
+                 0.00246729661775991,
+                 0.00123364830887996,
+                 0.000616824154439978,
+                 0.000308412077219989,
+                 0.000154206038609995,
+                 7.71030193049973e-05,
+                 3.85515096524987e-05,
+                 1.92757548262493e-05,
+                 9.6378774131247e-06,
+                 4.8189387065623e-06
+               ] // dit zijn de cellsizes
+               ,
+               tileSize: [256, 256],
+               origin: [-43.2303347, 64.0317714] // x,y
+             })
+             */
+          console.log(JSON.stringify(this.tileGrid))
         }
 
-
-
         this.drawMap();
-
       },
       error: error => {
         console.log("tilematrixset not found" + this.id + ' ' + matrixurl)
@@ -315,7 +327,9 @@ export class
       layers: layers,
       view: new View({
         center: acenter,
-        zoom: this.zoom ,
+        zoom: this.zoom,
+        maxZoom: this.maxZoom,
+        minZoom: this.minZoom,
         enableRotation: false,
         projection: this.vectorTileLayer.getSource()?.getProjection() as ProjectionLike,
       }),

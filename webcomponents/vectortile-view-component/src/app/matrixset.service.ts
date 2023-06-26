@@ -30,6 +30,33 @@ export interface TileMatrix {
 }
 
 
+
+export interface Matrix {
+  title:               string;
+  links:               Link[];
+  crs:                 string;
+  dataType:            string;
+  tileMatrixSetId:     string;
+  tileMatrixSetLimits: TileMatrixSetLimit[];
+}
+
+export interface Link {
+  rel:        string;
+  type:       string;
+  title:      string;
+  href:       string;
+  templated?: boolean;
+}
+
+export interface TileMatrixSetLimit {
+  tileMatrix: string;
+  minTileRow: number;
+  maxTileRow: number;
+  minTileCol: number;
+  maxTileCol: number;
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,6 +67,16 @@ export class MatrixsetService {
       this.http.get<MatrixSet>(url)
     )
   }
+
+
+  getMatrix(url: string): Observable<Matrix> {
+    return (
+      this.http.get<Matrix>(url)
+    )
+  }
+
+
+
 
   
 
