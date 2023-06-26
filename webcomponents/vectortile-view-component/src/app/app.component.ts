@@ -21,7 +21,7 @@ import VectorTileSource from 'ol/source/VectorTile.js';
 import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import { MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
+import { MapProjection, NetherlandsRDNewQuadDefault, EuropeanETRS89_GRS80 } from '../app/mapprojection'
 
 import { applyStyle, apply } from 'ol-mapbox-style';
 
@@ -44,6 +44,7 @@ import { FeatureLike } from 'ol/Feature';
 import RenderFeature from 'ol/render/Feature';
 
 import { CommonModule } from '@angular/common';
+import { MatrixsetService } from './matrixset.service';
 
 
 
@@ -84,7 +85,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   ]
 
 })
-export class 
+export class
   AppComponent implements OnInit {
 
 
@@ -95,6 +96,9 @@ export class
   private _showObjectInfo: boolean = false;
   vectorTileLayer!: VectorTileLayer;
   curFeature!: FeatureLike;
+
+  tileGrid: TileGrid | undefined;
+
   @Input() set showGrid(showGrid: any) {
     this._showGrid = coerceBooleanProperty(showGrid);
   }
@@ -110,16 +114,16 @@ export class
   }
 
   @Input() tileUrl: string = NetherlandsRDNewQuadDefault
-  @Input() styleUrl: string | undefined= " "
+  @Input() styleUrl: string | undefined = " "
   @Input() id!: string | undefined
   @Input() zoom!: number
   @Input() centerX!: number;
   @Input() centerY!: number;
-  totalHeight:number=600
-  totalWidth:number=800
+  totalHeight: number = 600
+  totalWidth: number = 800
 
 
- 
+
 
 
 
@@ -128,7 +132,7 @@ export class
 
 
 
-  constructor(private elementRef: ElementRef) {
+  constructor(private elementRef: ElementRef, private matrixsetService: MatrixsetService) {
 
 
 
@@ -138,13 +142,13 @@ export class
 
   ngOnChanges(changes: NgChanges<AppComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
-      console.log(this.id +' style changed')
+      //console.log(this.id + ' style changed')
       if (this.vectorTileLayer) {
         this.setStyle(this.vectorTileLayer);
       }
     }
     if (changes.tileUrl?.previousValue !== changes.tileUrl?.currentValue) {
-      console.log(this.id + ' projection changed')
+      //console.log(this.id + ' projection changed')
       if (this.vectorTileLayer) {
         this.setNewProjection();
       }
@@ -154,34 +158,122 @@ export class
   ngOnInit() {
     this.checkParams();
 
-    this.map = this.getMap()
-    this.map.on('pointermove', (evt: { pixel: any; }) => {
-      this.map.forEachFeatureAtPixel(evt.pixel, (feature: FeatureLike) => {
-        if (feature) {
-          if (this._showObjectInfo) {
-            this.curFeature = feature
-            //this.setSelectStyle(this.curFeature)
-          }
-          this.activeFeature.emit(feature)
 
+    const matrixurl = this.tileUrl.replace("tiles", "tileMatrixSets") + '?f=json';
+    //console.log("matrixurl:" + matrixurl)
+    this.matrixsetService.getMatrixSet(matrixurl).subscribe({
+
+      next: x => {
+        let resolutions: number[] = [];
+        let origins:number[][]=[]
+
+        x.tileMatrices.forEach(x => {
+          resolutions[x.id] = x.cellSize
+          origins[x.id]=x.pointOfOrigin
+          
+
+        })
+
+
+
+        this.tileGrid = new TileGrid({
+          resolutions: resolutions,
+          tileSize: [256, 256],
+          origins: origins
+        })
+
+
+        if (this.tileUrl.includes(EuropeanETRS89_GRS80)) {
+
+       
+          this.tileGrid =  new TileGrid({
+            // extent: projection.getExtent(),
+            resolutions: [
+              0.157906983536634,
+              0.0789534917683172,
+              0.0394767458841586,
+              0.0197383729420793,
+              0.00986918647103966,
+              0.00493459323551983,
+              0.00246729661775991,
+              0.00123364830887996,
+              0.000616824154439978,
+              0.000308412077219989,
+              0.000154206038609995,
+              7.71030193049973e-05,
+              3.85515096524987e-05,
+              1.92757548262493e-05,
+              9.6378774131247e-06,
+              4.8189387065623e-06
+            ] // dit zijn de cellsizes
+            ,
+            tileSize: [256, 256],
+            origin: [-43.2303347, 64.0317714] // x,y
+          })
         }
-      });
+
+
+
+        this.drawMap();
+
+      },
+      error: error => {
+        console.log("tilematrixset not found" + this.id + ' ' + matrixurl)
+        const proj = new MapProjection(this.tileUrl).Projection
+        this.tileGrid = new TileGrid({
+          extent: proj.getExtent(),
+          resolutions: this.calcResolutions(proj),
+          tileSize: [256, 256],
+          origin: getTopLeft(proj.getExtent())
+        })
+        this.drawMap();
+
+      }
     })
 
-    const mapdiv:HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']")
-    console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
-    console.log('width' +  this.elementRef.nativeElement.offsetWidth) 
-   this.totalWidth= this.elementRef.nativeElement.offsetWidth 
-   this.totalWidth= this.elementRef.nativeElement.offsetHeigh 
-    
 
-    this.map.setTarget(mapdiv);
-  
-    console.log("surl:" + JSON.stringify(this.styleUrl))
+
+
+
+
+
+
+
+
+
+
+
+
+    //console.log("surl:" + JSON.stringify(this.styleUrl))
   }
 
 
 
+
+  private drawMap() {
+    this.map = this.getMap();
+    this.map.on('pointermove', (evt: { pixel: any; }) => {
+      this.map.forEachFeatureAtPixel(evt.pixel, (feature: FeatureLike) => {
+        if (feature) {
+          if (this._showObjectInfo) {
+            this.curFeature = feature;
+            //this.setSelectStyle(this.curFeature)
+          }
+          this.activeFeature.emit(feature);
+
+        }
+      });
+    });
+
+    const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']");
+    //console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
+    //console.log('width' + this.elementRef.nativeElement.offsetWidth)
+    this.totalWidth = this.elementRef.nativeElement.offsetWidth;
+    this.totalWidth = this.elementRef.nativeElement.offsetHeigh;
+
+
+    this.map.setTarget(mapdiv);
+  }
 
   private checkParams(): void {
     console.log(this.id)
@@ -215,15 +307,15 @@ export class
     let layers = this.generateLayers();
 
     let acenter: Coordinate = [this.centerX, this.centerY]
-    console.log("project " + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
-    console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
-    console.log("acenter=" + acenter)
+    //console.log("project " + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
+    //console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
+    //console.log("acenter=" + acenter)
     return new Map({
 
       layers: layers,
       view: new View({
         center: acenter,
-        zoom: this.zoom,
+        zoom: this.zoom ,
         enableRotation: false,
         projection: this.vectorTileLayer.getSource()?.getProjection() as ProjectionLike,
       }),
@@ -256,7 +348,7 @@ export class
     if (this.styleUrl) {
       applyStyle(vectorTileLayer, this.styleUrl)
         .then(() => {
-          console.log('style loaded ' + this.styleUrl);
+          //console.log('style loaded ' + this.styleUrl);
 
           //overrule source url from style
           if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
@@ -291,7 +383,7 @@ export class
     });
     this.map.setView(newView);
     this.map.setLayers(newLayers);
-    console.log('project ' + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
+    //console.log('project ' + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
   }
 
   getVectortileLayer(projection: Projection): VectorTileLayer {
@@ -322,12 +414,7 @@ export class
     return new VectorTileSource({
       format: new MVT(),
       projection: projection,
-      tileGrid: new TileGrid({
-        extent: projection.getExtent(),
-        resolutions: this.calcResolutions(projection),
-        tileSize: [256, 256],
-        origin: getTopLeft(projection.getExtent())
-      }),
+      tileGrid: this.tileGrid,
       url: url + this.selector,
       cacheSize: 0
     })
@@ -356,8 +443,8 @@ export class
     width: 300px;
     height: 400px;
     `
-    
-    }
+
+  }
 }
 
 

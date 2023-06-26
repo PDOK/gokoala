@@ -4,6 +4,7 @@ import { AppComponent } from './app.component';
 import { createCustomElement } from '@angular/elements';
 import { ObjectInfoComponent } from './object-info/object-info.component';
 import { NgModule, Injector } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -13,6 +14,7 @@ import { NgModule, Injector } from '@angular/core';
   bootstrap: [],
   imports: [
     BrowserModule,
+    HttpClientModule,
   
     AppComponent
   ], 
