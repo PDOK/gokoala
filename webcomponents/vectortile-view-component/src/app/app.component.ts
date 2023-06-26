@@ -76,7 +76,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  //encapsulation: ViewEncapsulation.ShadowDom, 
+  //encapsulation: ViewEncapsulation.ShadowDom,
   standalone: true,
   imports: [CommonModule, ObjectInfoComponent],
   schemas: [
@@ -84,7 +84,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   ]
 
 })
-export class 
+export class
   AppComponent implements OnInit {
 
 
@@ -119,7 +119,7 @@ export class
   totalWidth:number=800
 
 
- 
+
 
 
 
@@ -170,13 +170,13 @@ export class
 
     const mapdiv:HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']")
     console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
-    console.log('width' +  this.elementRef.nativeElement.offsetWidth) 
-   this.totalWidth= this.elementRef.nativeElement.offsetWidth 
-   this.totalWidth= this.elementRef.nativeElement.offsetHeigh 
-    
+    console.log('width' +  this.elementRef.nativeElement.offsetWidth)
+   this.totalWidth= this.elementRef.nativeElement.offsetWidth
+   this.totalWidth= this.elementRef.nativeElement.offsetHeigh
+
 
     this.map.setTarget(mapdiv);
-  
+
     console.log("surl:" + JSON.stringify(this.styleUrl))
   }
 
@@ -323,10 +323,28 @@ export class
       format: new MVT(),
       projection: projection,
       tileGrid: new TileGrid({
-        extent: projection.getExtent(),
-        resolutions: this.calcResolutions(projection),
+        // extent: projection.getExtent(),
+        resolutions: [
+          0.157906983536634,
+          0.0789534917683172,
+          0.0394767458841586,
+          0.0197383729420793,
+          0.00986918647103966,
+          0.00493459323551983,
+          0.00246729661775991,
+          0.00123364830887996,
+          0.000616824154439978,
+          0.000308412077219989,
+          0.000154206038609995,
+          7.71030193049973e-05,
+          3.85515096524987e-05,
+          1.92757548262493e-05,
+          9.6378774131247e-06,
+          4.8189387065623e-06
+        ] // dit zijn de cellsizes
+        ,
         tileSize: [256, 256],
-        origin: getTopLeft(projection.getExtent())
+        origin: [-43.2303347, 64.0317714] // x,y
       }),
       url: url + this.selector,
       cacheSize: 0
@@ -344,19 +362,19 @@ export class
       }),
     });
     const color = feature.get('COLOR') || '#eeeeee';
-    
+
     feature.setStyle(selected.getFill().setColor(color)!)
   }
   */
 
   getMapStyle() {
     return ` z-index: 1;
-    position: relative;  
+    position: relative;
     display: flex;"
     width: 300px;
     height: 400px;
     `
-    
+
     }
 }
 
