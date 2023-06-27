@@ -45,7 +45,6 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
 
-	// TODO: i18n for srs pages
 	renderTemplatesForSrs(e, "EuropeanETRS89_GRS80Quad_Draft", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 	renderTemplatesForSrs(e, "NetherlandsRDNewQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 	renderTemplatesForSrs(e, "WebMercatorQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)

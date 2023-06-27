@@ -29,12 +29,6 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDime
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 
-	// START LEGACY ENDPOINT FOR BACKWARD COMPATIBILITY
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/tileset.json", geoVolumes.CollectionContent())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	// END LEGACY ENDPOINT FOR BACKWARD COMPATIBILITY
-
 	return geoVolumes
 }
 
