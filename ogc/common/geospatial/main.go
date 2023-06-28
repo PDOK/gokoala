@@ -84,7 +84,7 @@ type CollectionSupport interface {
 	// - OGC API Features you would have: /collections/{collectionId}/items
 	// - OGC API Tiles could have: /collections/{collectionId}/tiles
 	// - OGC API Maps could have: /collections/{collectionId}/maps
-	// - OGC API 3d GeoVolumes doesn't have sub resources, just /collections/{collectionId}/tileset.json
+	// - OGC API 3d GeoVolumes could have: /collections/{collectionId}/3dtiles
 	// etc.
 	CollectionContent() http.HandlerFunc
 }
