@@ -1,6 +1,7 @@
 package geovolumes
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
@@ -36,8 +37,11 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDime
 // data from OGC 3D Tiles, separate spec from OGC 3D GeoVolumes)
 func (t *ThreeDimensionalGeoVolumes) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		containerID := t.containerIDToPathPrefix(chi.URLParam(r, "3dContainerId"))
-
+		containerID, err := t.containerIDToPathPrefix(chi.URLParam(r, "3dContainerId"))
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
 		path, _ := url.JoinPath("/", containerID, "tileset.json")
 		t.reverseProxy(w, r, path, false)
 	}
@@ -46,7 +50,11 @@ func (t *ThreeDimensionalGeoVolumes) CollectionContent() http.HandlerFunc {
 // Tile reverse proxy to tileserver for actual 3D tiles (from OGC 3D Tiles, separate spec from OGC 3D GeoVolumes)
 func (t *ThreeDimensionalGeoVolumes) Tile() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		containerID := t.containerIDToPathPrefix(chi.URLParam(r, "3dContainerId"))
+		containerID, err := t.containerIDToPathPrefix(chi.URLParam(r, "3dContainerId"))
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
 		tilePathPrefix := chi.URLParam(r, "tilePathPrefix") // optional
 		tileMatrix := chi.URLParam(r, "tileMatrix")
 		tileRow := chi.URLParam(r, "tileRow")
@@ -68,11 +76,14 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 	t.engine.ReverseProxy(w, r, target, prefer204, "")
 }
 
-func (t *ThreeDimensionalGeoVolumes) containerIDToPathPrefix(cid string) string {
+func (t *ThreeDimensionalGeoVolumes) containerIDToPathPrefix(cid string) (string, error) {
 	for _, collection := range t.engine.Config.OgcAPI.GeoVolumes.Collections {
-		if collection.ID == cid && collection.GeoVolumes != nil && collection.GeoVolumes.TileServerPath != nil {
-			return *collection.GeoVolumes.TileServerPath
+		if collection.ID == cid {
+			if collection.GeoVolumes != nil && collection.GeoVolumes.TileServerPath != nil {
+				return *collection.GeoVolumes.TileServerPath, nil
+			}
+			return cid, nil
 		}
 	}
-	return cid
+	return "", errors.New("no matching collection found")
 }
