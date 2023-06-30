@@ -29,7 +29,7 @@
                         <ul>
                             <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles">3D Tiles</a></li>
                             {{ if and .Params.GeoVolumes .Params.GeoVolumes.URL3DViewer }}
-                            <li>{{ i18n "ViewIn" }} <a href="{{ .Params.GeoVolumes.URL3DViewer }}">3D viewer</a></li>
+                            <li>{{ i18n "ViewIn" }} <a href="{{ .Params.GeoVolumes.URL3DViewer }}" target="_blank">3D viewer</a></li>
                             {{ end }}
                         </ul>
                     </li>
@@ -87,7 +87,7 @@
                 {{ if and .Params.Metadata .Params.Metadata.Extent }}
                     <li class="list-group-item text-muted">
                         <strong>{{ i18n "Extent" }}</strong>
-                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}">{{ .Params.Metadata.Extent.Srs }}</a>):
+                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}" target="_blank">{{ .Params.Metadata.Extent.Srs }}</a>):
                         {{ .Params.Metadata.Extent.Bbox | join ", " }}
                     </li>
                 {{ end }}
