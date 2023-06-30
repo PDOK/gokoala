@@ -15,6 +15,8 @@ import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import { EuropeanETRS89_GRS80, MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
+
+import {FullScreen, defaults as defaultControls} from 'ol/control.js';
 import { applyStyle } from 'ol-mapbox-style';
 import Projection from 'ol/proj/Projection';
 import { Fill, Stroke, Style } from "ol/style";
@@ -218,7 +220,7 @@ export class
 
   private drawMap() {
     this.map = this.getMap();
-    this.map.on('pointermove', (evt: { pixel: any; }) => {
+      this.map.on('pointermove', (evt: { pixel: any; }) => {
       this.map.forEachFeatureAtPixel(evt.pixel, (feature: FeatureLike) => {
         if (feature) {
           if (this._showObjectInfo) {
@@ -277,6 +279,7 @@ export class
     //console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
     //console.log("acenter=" + acenter)
     return new Map({
+      controls: defaultControls().extend([new FullScreen()]),
 
       layers: layers,
       view: new View({
