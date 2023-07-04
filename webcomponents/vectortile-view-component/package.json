@@ -21,6 +21,7 @@
     "@angular/platform-browser-dynamic": "^16.0.2",
     "@angular/router": "^16.0.2",
     "ol": "^7.3.0",
+    "ol-mapbox-style": "^10.6.0",
     "proj4": "^2.9.0",
     "tslib": "^2.5.2",
     "zone.js": "~0.13.0"
@@ -31,6 +32,6 @@
     "@angular/compiler-cli": "^16.0.2",
     "@types/jasmine": "~4.3.1",
     "@types/proj4": "^2.5.2",
-       "typescript": "~5.0.4"
+    "typescript": "~5.0.4"
   }
 }

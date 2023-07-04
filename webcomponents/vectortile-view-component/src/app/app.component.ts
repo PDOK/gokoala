@@ -16,7 +16,7 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import { EuropeanETRS89_GRS80, MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
 
-import {FullScreen, defaults as defaultControls} from 'ol/control.js';
+import { FullScreen, defaults as defaultControls } from 'ol/control.js';
 import { applyStyle } from 'ol-mapbox-style';
 import Projection from 'ol/proj/Projection';
 import { Fill, Stroke, Style } from "ol/style";
@@ -170,6 +170,7 @@ export class
               }
               sizes[x.id] = [x.tileWidth, x.tileHeight]
             })
+            console.log("resolutions:" + JSON.stringify(resolutions))
 
             this.tileGrid = new TileGrid({
               resolutions: resolutions,
@@ -188,6 +189,7 @@ export class
               origin: getTopLeft(proj.getExtent())
             })
             this.drawMap();
+
           }
         })
 
@@ -220,7 +222,7 @@ export class
 
   private drawMap() {
     this.map = this.getMap();
-      this.map.on('pointermove', (evt: { pixel: any; }) => {
+    this.map.on('pointermove', (evt: { pixel: any; }) => {
       this.map.forEachFeatureAtPixel(evt.pixel, (feature: FeatureLike) => {
         if (feature) {
           if (this._showObjectInfo) {
@@ -228,9 +230,13 @@ export class
             //this.setSelectStyle(this.curFeature)
           }
           this.activeFeature.emit(feature);
+          console.log("resolution: " + this.map.getView().getResolution())
 
         }
-      });
+      },
+        { hitTolerance: 3 }
+
+      );
     });
 
     const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']");
