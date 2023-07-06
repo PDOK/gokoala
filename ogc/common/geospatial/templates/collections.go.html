@@ -6,7 +6,7 @@
     <h2 class="title">{{ .Config.Title }} - {{ i18n "Collections" }}</h2>
 </hgroup>
 
-<section class="row row-cols-md-4 g-4">
+<section class="row row-cols-md-4 g-4 py-3">
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">

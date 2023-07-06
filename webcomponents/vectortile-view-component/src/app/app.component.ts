@@ -243,7 +243,8 @@ export class
     //console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
     //console.log('width' + this.elementRef.nativeElement.offsetWidth)
     this.totalWidth = this.elementRef.nativeElement.offsetWidth;
-    this.totalWidth = this.elementRef.nativeElement.offsetHeigh;
+    // this.totalWidth = this.elementRef.nativeElement.offsetHeigh;
+    this.totalHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
 
 
     this.map.setTarget(mapdiv);

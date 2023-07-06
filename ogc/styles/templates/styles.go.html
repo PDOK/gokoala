@@ -4,21 +4,25 @@
 <hgroup>
     <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
 </hgroup>
-<div class="row">
+<div class="row py-3">
     <div class="col-md-12">
-        {{ $baseUrl := .Config.BaseURL }}
-        {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
-        {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}
         <p>
             {{ i18n "StylesText" }}
         </p>
-        <table class="table table-borderless table-sm w-75">
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        {{ $baseUrl := .Config.BaseURL }}
+        {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
+        {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}        
+        <table class="table table-borderless table-sm w-auto">
             <tbody>
                 <tr>
-                    <td class="w-25">
-                        <b>{{ i18n "AvailableStyles" }}</b>
+                    <td class="w-auto text-nowrap">
+                        <b>Style</b>
                     </td>
-                    <td>
+                    <td class="w-auto px-2">
                         {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
                         {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }}
                         {{ else }}
@@ -31,37 +35,38 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="w-25">
-                        <b>Style - URL</b>
+                    <td class="w-auto text-nowrap">
+                        <b>URL</b>
                     </td>
-                    <td>
+                    <td class="w-auto px-2">
                         <a id="href-url" href="styles/{{ $defaultStyle }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}</a>
                     </td>
                 </tr>
                 <tr>
-                    <td class="w-25">
+                    <td class="w-auto text-nowrap">
                         <b>Metadata</b>
                     </td>
-                    <td>
+                    <td class="w-auto px-2">
                         <a id="href-meta" href="styles/{{ $defaultStyle }}/metadata">{{ i18n "StyleMetadata" }}</a>
                     </td>
                 </tr>
             </tbody>
         </table>
-        <p>{{ i18n "StylingExample" }}:</p>
+    </div>
+    <div class="col-md-6">
         {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
-
         <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
         <script type="text/javascript" src="vectortile-view-component/main.js"></script>
         <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
         <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+        {{ $baseUrl2 := "https://api.pdok.nl/lv/bag/ogc/v0_1" }}
+        <p>{{ i18n "StylingExample" }}:</p>
         <app-vectortile-view id="style-vectortile-view" class="vectortile-view"
-                             tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+                             tile-url="{{ $baseUrl2 }}/tiles/{{ get $projections $defaultSrs.Srs }}"
                              style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}"
                              zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
                              center-x="5.3896944" center-y="52.1562499">
         </app-vectortile-view>
-
     </div>
 </div>
 <script>
