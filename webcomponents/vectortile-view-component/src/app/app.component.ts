@@ -3,29 +3,21 @@ import {
   OnInit,
   Input,
   ElementRef,
-  SimpleChanges,
   Output,
   EventEmitter,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ViewEncapsulation
+  CUSTOM_ELEMENTS_SCHEMA
 } from '@angular/core';
-
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Subject } from 'rxjs';
 import { ObjectInfoComponent } from './object-info/object-info.component';
-import { getUid } from 'ol/util';
-
-import Select from 'ol/interaction/Select.js';
-import { altKeyOnly, click, pointerMove } from 'ol/events/condition.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import { MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
+import { EuropeanETRS89_GRS80, MapProjection, NetherlandsRDNewQuadDefault } from '../app/mapprojection'
 
-import { applyStyle, apply } from 'ol-mapbox-style';
-
-
+import { FullScreen, defaults as defaultControls } from 'ol/control.js';
+import { applyStyle } from 'ol-mapbox-style';
 import Projection from 'ol/proj/Projection';
 import { Fill, Stroke, Style } from "ol/style";
 import { MVT } from "ol/format";
@@ -38,15 +30,9 @@ import TileLayer from 'ol/layer/Tile';
 import BaseLayer from 'ol/layer/Base';
 import Collection from 'ol/Collection';
 import LayerGroup from 'ol/layer/Group';
-import { Feature } from 'ol';
-import { StyleFunction } from 'ol/style/Style';
 import { FeatureLike } from 'ol/Feature';
-import RenderFeature from 'ol/render/Feature';
-
 import { CommonModule } from '@angular/common';
-
-
-
+import { MatrixsetService } from './matrixset.service';
 
 
 export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
@@ -62,15 +48,8 @@ type MarkFunctionPropertyNames<Component> = {
   [Key in keyof Component]: Component[Key] extends Function | Subject<any> ? never : Key;
 }
 
-
 type ExcludeFunctionPropertyNames<T extends object> = MarkFunctionPropertyNames<T>[keyof T];
-
-
 type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T>>;
-
-
-
-
 
 @Component({
   selector: 'app-vectortile-view',
@@ -84,10 +63,8 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   ]
 
 })
-export class 
+export class
   AppComponent implements OnInit {
-
-
   title = 'vectortile-view-component';
   map = new Map({});
   selector = '/{z}/{y}/{x}?f=mvt'
@@ -95,6 +72,10 @@ export class
   private _showObjectInfo: boolean = false;
   vectorTileLayer!: VectorTileLayer;
   curFeature!: FeatureLike;
+  tileGrid: TileGrid | undefined;
+  minZoom?: number;
+  maxZoom?: number;
+
   @Input() set showGrid(showGrid: any) {
     this._showGrid = coerceBooleanProperty(showGrid);
   }
@@ -110,41 +91,27 @@ export class
   }
 
   @Input() tileUrl: string = NetherlandsRDNewQuadDefault
-  @Input() styleUrl: string | undefined= " "
+  @Input() styleUrl!: string
   @Input() id!: string | undefined
   @Input() zoom!: number
   @Input() centerX!: number;
   @Input() centerY!: number;
-  totalHeight:number=600
-  totalWidth:number=800
-
-
- 
-
-
-
+  totalHeight: number = 600
+  totalWidth: number = 800
   @Output() activeFeature = new EventEmitter<FeatureLike>();
 
-
-
-
-  constructor(private elementRef: ElementRef) {
-
-
-
-
-
+  constructor(private elementRef: ElementRef, private matrixsetService: MatrixsetService) {
   }
 
   ngOnChanges(changes: NgChanges<AppComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
-      console.log(this.id +' style changed')
+      //console.log(this.id + ' style changed')
       if (this.vectorTileLayer) {
         this.setStyle(this.vectorTileLayer);
       }
     }
     if (changes.tileUrl?.previousValue !== changes.tileUrl?.currentValue) {
-      console.log(this.id + ' projection changed')
+      //console.log(this.id + ' projection changed')
       if (this.vectorTileLayer) {
         this.setNewProjection();
       }
@@ -153,35 +120,134 @@ export class
 
   ngOnInit() {
     this.checkParams();
+    let matrixurl = this.tileUrl.replace("tiles", "tileMatrixSets") + '?f=json';
+    console.log("url: " + this.tileUrl)
+    this.matrixsetService.getMatrix(this.tileUrl).subscribe({
+      next: tile => {
 
-    this.map = this.getMap()
-    this.map.on('pointermove', (evt: { pixel: any; }) => {
-      this.map.forEachFeatureAtPixel(evt.pixel, (feature: FeatureLike) => {
-        if (feature) {
-          if (this._showObjectInfo) {
-            this.curFeature = feature
-            //this.setSelectStyle(this.curFeature)
+        tile.links.forEach(link => {
+
+          if (link.rel == 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme') {
+            console.log(this.id + " url for matrix: " + link.href)
+            let turl = new URL(this.tileUrl)
+
+            if (isFullURL(link.href)) {
+              matrixurl = link.href
+            }
+            else {
+              let mUrl = new URL(turl.origin + link.href)
+              matrixurl = mUrl.href
+            }
           }
-          this.activeFeature.emit(feature)
+        })
 
-        }
-      });
+        tile.tileMatrixSetLimits.forEach(limit => {
+
+
+          if (!this.zoom) {
+            this.zoom = parseFloat(limit.tileMatrix) + 1
+          }
+          // Only show available tiles
+          if (!this.minZoom) {
+
+            this.minZoom = parseFloat(limit.tileMatrix) + 1
+          }
+          this.maxZoom = parseFloat(limit.tileMatrix) + 1
+        })
+        this.matrixsetService.getMatrixSet(matrixurl).subscribe({
+          next: matrixset => {
+            let resolutions: number[] = [];
+            let origins: number[][] = []
+            let sizes: number[][] = []
+            matrixset.tileMatrices.forEach(x => {
+              resolutions[x.id] = x.cellSize
+
+              if (this.tileUrl.includes(EuropeanETRS89_GRS80)) {
+                origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]] //  x,y swap Workaround? 
+              }
+              else {
+                origins[x.id] = x.pointOfOrigin
+              }
+              sizes[x.id] = [x.tileWidth, x.tileHeight]
+            })
+            console.log("resolutions:" + JSON.stringify(resolutions))
+
+            this.tileGrid = new TileGrid({
+              resolutions: resolutions,
+              tileSizes: sizes,
+              origins: origins
+            })
+            this.drawMap();
+          },
+          error: error => {
+            console.log(this.id + 'tilematrixset not found: ' + matrixurl)
+            const proj = new MapProjection(this.tileUrl).Projection
+            this.tileGrid = new TileGrid({
+              extent: proj.getExtent(),
+              resolutions: this.calcResolutions(proj),
+              tileSize: [256, 256],
+              origin: getTopLeft(proj.getExtent())
+            })
+            this.drawMap();
+
+          }
+        })
+
+
+
+
+
+
+
+
+      },
+      error: msg => {
+
+        console.log(this.id + "error: " + JSON.stringify(msg))
+      }
+
     })
 
-    const mapdiv:HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']")
-    console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
-    console.log('width' +  this.elementRef.nativeElement.offsetWidth) 
-   this.totalWidth= this.elementRef.nativeElement.offsetWidth 
-   this.totalWidth= this.elementRef.nativeElement.offsetHeigh 
-    
 
-    this.map.setTarget(mapdiv);
-  
-    console.log("surl:" + JSON.stringify(this.styleUrl))
+    function isFullURL(url: string): boolean {
+      return url.toLowerCase().startsWith('http://') || url.toLowerCase().startsWith('https://');
+    }
+
+
+    //console.log("surl:" + JSON.stringify(this.styleUrl))
   }
 
 
 
+
+  private drawMap() {
+    this.map = this.getMap();
+    this.map.on('pointermove', (evt: { pixel: any; }) => {
+      this.map.forEachFeatureAtPixel(evt.pixel, (feature: FeatureLike) => {
+        if (feature) {
+          if (this._showObjectInfo) {
+            this.curFeature = feature;
+            //this.setSelectStyle(this.curFeature)
+          }
+          this.activeFeature.emit(feature);
+          console.log("resolution: " + this.map.getView().getResolution())
+
+        }
+      },
+        { hitTolerance: 3 }
+
+      );
+    });
+
+    const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']");
+    //console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
+    //console.log('width' + this.elementRef.nativeElement.offsetWidth)
+    this.totalWidth = this.elementRef.nativeElement.offsetWidth;
+    this.totalWidth = this.elementRef.nativeElement.offsetHeigh;
+
+
+    this.map.setTarget(mapdiv);
+  }
 
   private checkParams(): void {
     console.log(this.id)
@@ -192,7 +258,7 @@ export class
       console.log("No StyleUrl was provided for the app-vectortile-view");
     }
     if (!this.zoom) {
-      console.error("No zoom was provided for the app-vectortile-view");
+    //  console.error("No zoom was provided for the app-vectortile-view");
     }
     else
       console.log("zoom=" + this.zoom);
@@ -215,15 +281,18 @@ export class
     let layers = this.generateLayers();
 
     let acenter: Coordinate = [this.centerX, this.centerY]
-    console.log("project " + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
-    console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
-    console.log("acenter=" + acenter)
+    //console.log("project " + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
+    //console.log("axis: " + this.vectorTileLayer.getSource()?.getProjection()?.getAxisOrientation())
+    //console.log("acenter=" + acenter)
     return new Map({
+      controls: defaultControls().extend([new FullScreen()]),
 
       layers: layers,
       view: new View({
         center: acenter,
         zoom: this.zoom,
+        maxZoom: this.maxZoom,
+        minZoom: this.minZoom,
         enableRotation: false,
         projection: this.vectorTileLayer.getSource()?.getProjection() as ProjectionLike,
       }),
@@ -256,7 +325,7 @@ export class
     if (this.styleUrl) {
       applyStyle(vectorTileLayer, this.styleUrl)
         .then(() => {
-          console.log('style loaded ' + this.styleUrl);
+          //console.log('style loaded ' + this.styleUrl);
 
           //overrule source url from style
           if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
@@ -291,7 +360,7 @@ export class
     });
     this.map.setView(newView);
     this.map.setLayers(newLayers);
-    console.log('project ' + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
+    //console.log('project ' + JSON.stringify(this.vectorTileLayer.getSource()?.getProjection()))
   }
 
   getVectortileLayer(projection: Projection): VectorTileLayer {
@@ -322,12 +391,7 @@ export class
     return new VectorTileSource({
       format: new MVT(),
       projection: projection,
-      tileGrid: new TileGrid({
-        extent: projection.getExtent(),
-        resolutions: this.calcResolutions(projection),
-        tileSize: [256, 256],
-        origin: getTopLeft(projection.getExtent())
-      }),
+      tileGrid: this.tileGrid,
       url: url + this.selector,
       cacheSize: 0
     })
@@ -356,8 +420,8 @@ export class
     width: 300px;
     height: 400px;
     `
-    
-    }
+
+  }
 }
 
 

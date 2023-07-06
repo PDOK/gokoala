@@ -2,12 +2,13 @@ import { Projection } from 'ol/proj';
 import { register as proj4register } from 'ol/proj/proj4';
 import proj4 from 'proj4';
 export const NetherlandsRDNewQuadDefault = "NetherlandsRDNewQuad";
+export const EuropeanETRS89_GRS80 = 'EuropeanETRS89_GRS80';
 export class MapProjection {
   private _tileUrl: string;
 
   constructor(tileUrl: string) {
     this.initProj4()
-    this._tileUrl=tileUrl
+    this._tileUrl = tileUrl
   }
 
   private initProj4() {
@@ -25,7 +26,7 @@ export class MapProjection {
       "axisOrientation": "enu",
       "global": false,
     })
-    
+
     const mercator = new Projection({
       code: "EPSG:3857",
       units: "m",
@@ -35,22 +36,24 @@ export class MapProjection {
       global: true
     })
 
-     //extent: [-16.1, 32.88, 39.65, 84.17],
-      // Corner{'bottom-left'} {'bottom-right'} {'top-left'} {'top-right'}
-      //extent = { minx = -43.2303347, miny = 26.2719467, maxx = 32.2893147, maxy = 64.0317714 }
+
     const ETRS89projection = new Projection({
-      code: "EPSG:4258",
-      units: "m",     
-      extent: [ -43.2303347, 26.2719467, 32.2893147,  64.0317714], 
-      axisOrientation: "enu",
-      global: false
-    })
+      axisOrientation: 'neu',
+      code: 'EPSG:4258',
+      units: 'degrees',
+      extent: [-16.1, 32.88, 39.65, 84.17]
+   
+       
+        
+    });
+
+ 
 
 
-    if (this._tileUrl.includes(NetherlandsRDNewQuadDefault )) {
+    if (this._tileUrl.includes(NetherlandsRDNewQuadDefault)) {
       return rDprojection;
     } else {
-      if (this._tileUrl.includes('EuropeanETRS89_GRS80')) {
+      if (this._tileUrl.includes(EuropeanETRS89_GRS80)) {
         return ETRS89projection
 
       } else

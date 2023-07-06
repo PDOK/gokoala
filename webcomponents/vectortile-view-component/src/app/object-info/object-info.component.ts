@@ -35,7 +35,7 @@ export class ObjectInfoComponent {
       }
       return proptable;
     } else {
-      console.log('feature undefined')
+     // console.log('feature undefined')
       return []
     }
 

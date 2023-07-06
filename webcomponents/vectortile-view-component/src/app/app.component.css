@@ -6,15 +6,14 @@
   z-index: 1;
   position: relative;
   display: flex;
+  background: white;
 }
 
 .toprightpanel {
   position: absolute;
   flex: 1;
-  right: 1em;
+  right: 3em;
   max-width:30% ;
- 
-
   z-index: 2;
 
 }
