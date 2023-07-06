@@ -72,10 +72,10 @@
   </app-vectortile-view-->
   
 
-  <H2>5. BAG EU grid with style </H2>
+  <!--H2>5. BAG EU grid with style </H2>
   <app-vectortile-view id="sample5" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/EuropeanETRS89_GRS80Quad_Draft"
   style-url="styles/bagstd.json"
-    zoom=15 center-x=5.3896944 center-y=52.1562499 show-grid show-object-info></app-vectortile-view>
+    zoom=15 center-x=5.3896944 center-y=52.1562499 show-grid show-object-info></app-vectortile-view-->
 
 
 
@@ -94,16 +94,21 @@
   </app-legend-view>
 
 
+  <app-legend-view id="legendview3" style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/achtergrondvisualisatie?f=mapbox">
+ 
+  </app-legend-view>
 
 
   <script type='text/javascript'>
 
     function getFeatures() {
+      /*
       selectsample.addEventListener('activeFeature', e => {
         console.log('activeFeature');
         console.log(JSON.stringify(e.detail));
         objectinfooutside.feature = e.detail;
       });
+      */ 
     }
 
     function changeStyle() {
@@ -113,7 +118,7 @@
 
     }
   </script>
-  <H2>8. BGT mapbox style switch sample</H2>
+  <!--H2>8. BGT mapbox style switch sample</H2>
   <div class="showarea">
     <div class="showbox">
       <label for="style">Choose a style:</label>
@@ -138,7 +143,7 @@
       BGT ObjectInfo on click outside map :
       <app-objectinfo-view class="showbox" id="objectinfooutside">
       </app-objectinfo-view>
-    </div>
+    </div-->
 
 
 </body>

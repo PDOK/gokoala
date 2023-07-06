@@ -1,5 +1,6 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { getStyleForLayer, applyStyle, recordStyleLayer } from 'ol-mapbox-style';
+import { AfterViewInit, Component, Directive, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import apply, { getStyleForLayer, applyStyle, recordStyleLayer } from 'ol-mapbox-style';
 
 import { Style, Fill, Stroke } from 'ol/style';
 import { NetherlandsRDNewQuadDefault } from '../mapprojection';
@@ -7,7 +8,7 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorLayer from 'ol/layer/Vector';
 import { Feature } from 'ol';
 import { Geometry, LineString, Point, Polygon } from 'ol/geom';
-import { MapboxStyle, MapboxStyleService } from '../mapbox-style.service';
+import { LegendCfg, LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service';
 import * as OL from 'ol/Map';
 import { Vector } from 'ol/source';
 import VectorSource from 'ol/source/Vector';
@@ -22,24 +23,20 @@ import { StyleLike } from 'ol/style/Style';
 
 
 
-type LegendItem = {
-  name: string,
-  labelX: number,
-  labelY: number
-  itemStyle: Style[],
-  feature: Feature
-
-}
 
 
 @Component({
   selector: 'app-legend-view',
   templateUrl: './legend-view.component.html',
   styleUrls: ['./legend-view.component.css'],
+  imports: [CommonModule],
   standalone: true,
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class LegendViewComponent implements OnInit, AfterViewInit {
+
+
+
+export class LegendViewComponent implements OnInit {
   @Input() styleUrl!: string
   vectorsource = {
     'geojson': {
@@ -55,9 +52,9 @@ export class LegendViewComponent implements OnInit, AfterViewInit {
 
 
   LegendItems: LegendItem[] = []
-  totalHeight: number = 600
-  itemHeight: number = 0
-  itemWidth: number = 0
+  totalHeight: number = 11600
+  itemHeight: number = 100
+  itemWidth: number = 100
 
   totalWidth: number = 800
   projection = new Projection({
@@ -73,185 +70,64 @@ export class LegendViewComponent implements OnInit, AfterViewInit {
 
 
 
-
-
-
-
-
   constructor(private mapboxStyleService: MapboxStyleService) {
     recordStyleLayer(true)
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
     if (this.styleUrl) {
-      this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((jsonStyle) => {
+      applyStyle(this.Layer, this.styleUrl)
+        .then((x) => {
+          this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((mapboxStyle) => {
 
-        jsonStyle.layers.forEach(layer=> 
-          {
-            layer.id = layer['source-layer']
+            const cfg: LegendCfg = {
+              "itemHeight": this.itemHeight,
+              "itemWidth": this.itemHeight,
+              "iconHeight": this.itemHeight * 0.8,
+              "iconWidth": this.itemWidth * 0.8,
+              "iconOfset": this.itemHeight * 0.1,
 
-          }
-
-        )
-        const allsourcelayers: string[] = [...new Set(jsonStyle.layers.map(
-          layer => layer.id
-        ))]
-        const sourcelayers = allsourcelayers.sort()
-        console.log(sourcelayers)
-        this.itemHeight = this.totalHeight / sourcelayers.length
-        this.itemWidth = this.itemHeight
-        const itemHalf = this.itemHeight / 2
-        const iconHeight = this.itemHeight * 0.8
-        const iconWidth = this.itemWidth * 0.8
-        const iconOfset = this.itemHeight * 0.1
-
-        const resolution = 19.109257071294063
-        applyStyle(this.Layer, this.styleUrl)
-          .then((x) => {
-
+            }
+            this.LegendItems = this.mapboxStyleService.getItems(mapboxStyle, cfg)
+            this.totalHeight = this.LegendItems.length * this.itemHeight + cfg.iconOfset
+            const resolution = 1
             let ctx = this.canvas?.nativeElement.getContext('2d');
             if (ctx) {
               const vectorContext = toContext(ctx, { size: [this.totalWidth, this.totalHeight] });
-              sourcelayers.forEach((el, index) => {
-                const itemName = el
-                console.log("layer:" + itemName + index)
-                const y = this.itemHeight * (index + 1)
+              this.LegendItems.forEach((item, i) => {
+                console.log(item.name)
+              //  item.style = getStyleForLayer(item.feature, resolution, this.Layer, item.name)
+                this.drawItem(item, i, vectorContext, ctx!);
 
-                let Polyfeature = new Feature({
-                  geometry: new Polygon([
-                    [[iconOfset, iconOfset + y], [iconWidth, iconOfset + y], [iconWidth, iconHeight + y], [iconOfset, iconHeight + y], [iconOfset, iconOfset + y]]]
-
-                  )
-                }
-
-                )
-                Polyfeature.setProperties({ 'layer': itemName })
-
-
-                //  this.Layer.getSource().
-                const Polystyle = getStyleForLayer(Polyfeature, resolution, this.Layer, itemName)
-                if (Polystyle) {
-                  // console.log(Polystyle[0].getFill().getColor())
-                  drawItem({ name: itemName, labelX: this.itemWidth * 1.1, labelY: y + itemHalf, itemStyle: [...Polystyle], feature: Polyfeature }, vectorContext, ctx!);
-                  // this.LegendItems.push({ name: itemName, itemStyle: [...Polystyle], feature: Polyfeature })
-                }
-                else {
-                  let PointFeature = new Feature({
-                    geometry: new Point([iconOfset, iconOfset + y]),
-                  })
-                  PointFeature.setProperties({ 'layer': itemName })
-
-                  const Pointstyle = getStyleForLayer(PointFeature, resolution, this.Layer, itemName)
-                  if (Pointstyle) {
-                    drawItem({ name: itemName, labelX: this.itemWidth * 1.1, labelY: y + itemHalf, itemStyle: [...Pointstyle], feature: PointFeature }, vectorContext, ctx!);
-
-                    //   this.LegendItems.push({ name: itemName, itemStyle: [...Pointstyle], feature: PointFeature })
-                  }
-                  else {
-                    let lineFeature = new Feature({
-                      geometry: new LineString([[iconOfset, iconOfset + y], [iconWidth, iconOfset + y]],),
-                    })
-                    lineFeature.setProperties({ 'layer': itemName })
-
-                    const linestyle = getStyleForLayer(lineFeature, resolution, this.Layer, itemName)
-                    if (linestyle) {
-                      // this.LegendItems.push({ name: itemName, itemStyle: [...linestyle], feature: lineFeature })
-                      drawItem({ name: itemName, labelX: this.itemWidth * 1.1, labelY: y + itemHalf, itemStyle: [...linestyle], feature: lineFeature }, vectorContext, ctx!);
-                    }
-
-                    else {
-                      console.log("no style for " + itemName)
-
-                    }
-                  }
-
-
-
-                }
-
-              });
-
-
+              })
             }
-
-
-
-
-
-
-
           })
-        //   .catch((err) => console.error('error loading: ' + this.styleUrl + ' ' + err));
-      })
+        })
     }
-  }
-
-  ngAfterViewInit(): void {
-
-
-  }
-
-  private drawLegend(itemHeight: number = 100) {
-
-
-    let ctx = this.canvas?.nativeElement.getContext('2d');
-    if (ctx) {
-
-      const vectorContext = toContext(ctx, { size: [this.totalWidth, this.totalHeight] });
-
-      this.LegendItems.forEach((item, index) => {
-        console.log(item.name)
-        if (item.itemStyle) {
-          /* item.style.forEach((style : StyleLike, index) => {
-             if (style) {
-               drawItem(item.geometry as Geometry, style, vectorContext);
-             }
-             else {
-               console.log("nog style array for " + item.name)
-             }
-           })
-           */
-
-        }
-
-
-
-
-
-
-
-
-        /*
-        
-              
-                */
-
-
-
-      })
-    }
-
     else {
-      console.log("no canvas")
+      console.error("no style url supplied")
     }
-
-
-
-
   }
 
 
+  drawItem(item: LegendItem, index: number, vectorContext: CanvasImmediateRenderer, ctx: CanvasRenderingContext2D) {
+    console.log('draw: ' + item.name)
+    if (item.style) {
+      item.style.forEach((style) => {
+        vectorContext.drawFeature(item.feature, style);
+
+      })
+
+    }
+
+    ctx!.font = 'italic 18px Arial';
+    ctx!.textAlign = 'left';
+    ctx!.textBaseline = 'middle';
+    ctx!.fillStyle = 'black';
+    ctx!.fillText(item.name, item.labelX, item.labelY);
+
+  }
 }
 
 
-
-function drawItem(item: LegendItem, vectorContext: CanvasImmediateRenderer, ctx: CanvasRenderingContext2D) {
-  vectorContext.drawFeature(item.feature, item.itemStyle[item.itemStyle.length - 1]);
-  ctx!.font = 'italic 18px Arial';
-  ctx!.textAlign = 'left';
-  ctx!.textBaseline = 'middle';
-  ctx!.fillStyle = 'black';
-  ctx!.fillText(item.name, item.labelX, item.labelY);
-
-}
 

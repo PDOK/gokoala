@@ -258,7 +258,7 @@ export class
       console.log("No StyleUrl was provided for the app-vectortile-view");
     }
     if (!this.zoom) {
-      console.error("No zoom was provided for the app-vectortile-view");
+    //  console.error("No zoom was provided for the app-vectortile-view");
     }
     else
       console.log("zoom=" + this.zoom);
