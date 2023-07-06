@@ -79,11 +79,10 @@
       <script type="text/javascript" src="vectortile-view-component/main.js"></script>
       <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
       <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
-      {{ $baseUrl2 := "https://api.pdok.nl/lv/bag/ogc/v0_1" }}
       <p>{{ i18n "TileMatrixSetExample" }}:</p>
-      <app-vectortile-view id="tile-vectortile-view" class="vectortile-view ratio-4x3"
-                          tile-url="{{ $baseUrl2 }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
+      <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
+                          tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+                          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
                           zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
                           center-x="5.3896944" center-y="52.1562499"
                           show-grid show-object-info>
@@ -141,8 +140,8 @@
           metadataHref.setAttribute('href', 'tiles/' + tileset);
 
           // update tile-url in app-vectortile-view
-          const viewer = document.getElementById('tile-vectortile-view')
-          viewer.setAttribute('tile-url', '{{ $baseUrl2 }}/tiles/' + tileset)
+          const viewer = document.getElementById('tiles-vectortile-view')
+          viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
           viewer.setAttribute('zoom', tilesetZoom)
       }, false);
   </script>

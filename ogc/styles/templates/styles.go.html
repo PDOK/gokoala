@@ -59,11 +59,10 @@
         <script type="text/javascript" src="vectortile-view-component/main.js"></script>
         <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
         <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
-        {{ $baseUrl2 := "https://api.pdok.nl/lv/bag/ogc/v0_1" }}
         <p>{{ i18n "StylingExample" }}:</p>
-        <app-vectortile-view id="style-vectortile-view" class="vectortile-view"
-                             tile-url="{{ $baseUrl2 }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                             style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}"
+        <app-vectortile-view id="styles-vectortile-view" class="vectortile-view"
+                             tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+                             style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}?f=mapbox"
                              zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
                              center-x="5.3896944" center-y="52.1562499">
         </app-vectortile-view>
@@ -81,8 +80,8 @@
         styleUrl.setAttribute('href', 'styles/' + selectedStyle);
         styleMeta.setAttribute('href', 'styles/' + selectedStyle + '/metadata');
         // update style-url in app-vectortile-view
-        const viewer = document.getElementById('style-vectortile-view')
-        viewer.setAttribute('style-url', '{{ .Config.BaseURL }}/styles/' + selectedStyle)
+        const viewer = document.getElementById('styles-vectortile-view')
+        viewer.setAttribute('style-url', '{{ .Config.BaseURL }}/styles/' + selectedStyle + '?f=mapbox')
     }, false);
 </script>
 {{ end }}
