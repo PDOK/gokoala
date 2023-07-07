@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Directive, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import apply, { getStyleForLayer, applyStyle, recordStyleLayer } from 'ol-mapbox-style';
+import apply, { getStyleForLayer, applyStyle, recordStyleLayer, stylefunction } from 'ol-mapbox-style';
 
 import { Style, Fill, Stroke } from 'ol/style';
 import { NetherlandsRDNewQuadDefault } from '../mapprojection';
@@ -17,7 +17,8 @@ import { toContext } from 'ol/render';
 import CircleStyle from 'ol/style/Circle';
 import VectorContext from 'ol/render/VectorContext';
 import CanvasImmediateRenderer from 'ol/render/canvas/Immediate';
-import { StyleLike } from 'ol/style/Style';
+import { StyleFunction, StyleLike } from 'ol/style/Style';
+
 
 
 
@@ -62,7 +63,7 @@ export class LegendViewComponent implements OnInit {
     units: 'pixels',
     extent: [0, 0, 100, 400],
   });
-  Layer: VectorTileLayer = new VectorTileLayer({});
+  layer: VectorTileLayer = new VectorTileLayer({});
   // map: OL.default= new OL.default({layers:[this.Layer], projection: this.projection})
   // });
   @ViewChild('canvas', { static: true })
@@ -76,33 +77,55 @@ export class LegendViewComponent implements OnInit {
 
   ngOnInit() {
     if (this.styleUrl) {
-      applyStyle(this.Layer, this.styleUrl)
-        .then((x) => {
-          this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((mapboxStyle) => {
 
-            const cfg: LegendCfg = {
-              "itemHeight": this.itemHeight,
-              "itemWidth": this.itemHeight,
-              "iconHeight": this.itemHeight * 0.8,
-              "iconWidth": this.itemWidth * 0.8,
-              "iconOfset": this.itemHeight * 0.1,
 
-            }
-            this.LegendItems = this.mapboxStyleService.getItems(mapboxStyle, cfg)
-            this.totalHeight = this.LegendItems.length * this.itemHeight + cfg.iconOfset
-            const resolution = 1
-            let ctx = this.canvas?.nativeElement.getContext('2d');
-            if (ctx) {
-              const vectorContext = toContext(ctx, { size: [this.totalWidth, this.totalHeight] });
-              this.LegendItems.forEach((item, i) => {
-                console.log(item.name)
-              //  item.style = getStyleForLayer(item.feature, resolution, this.Layer, item.name)
+      this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((mapboxStyle) => {
+
+        this.mapboxStyleService.getMapboxSpriteData(mapboxStyle.sprite + '.json').subscribe((spritedata) => {
+          let resolutions: number[] = []
+          resolutions.push(1)
+          const sources = this.mapboxStyleService.getLayersids(mapboxStyle)
+          let stfunction = stylefunction(this.layer, this.mapboxStyleService.removefilters(this.mapboxStyleService.removeRasterLayers(mapboxStyle)), sources, resolutions, spritedata, mapboxStyle.glyphs) as StyleFunction;
+          const cfg: LegendCfg = {
+            "itemHeight": this.itemHeight,
+            "itemWidth": this.itemHeight,
+            "iconHeight": this.itemHeight * 0.8,
+            "iconWidth": this.itemWidth * 0.8,
+            "iconOfset": this.itemHeight * 0.1,
+          }
+          this.LegendItems = this.mapboxStyleService.getItems(mapboxStyle, cfg)
+          this.totalHeight = this.LegendItems.length * this.itemHeight + cfg.iconOfset
+          const resolution = 1
+          let ctx = this.canvas?.nativeElement.getContext('2d');
+          if (ctx) {
+            const vectorContext = toContext(ctx, { size: [this.totalWidth, this.totalHeight] });
+            this.LegendItems.forEach((item, i) => {
+              //const style = getStyleForLayer(item.feature, resolution, this.layer, item.name)
+              const style = stfunction(item.feature!, 1) as Style | Style[]
+              if (style) {
+                if ((Array.isArray(style))) {
+                  item.style = style
+                  this.drawItem(item, i, vectorContext, ctx!);
+                }
+                else {
+                  const s: Style[] = []
+                  s.push(style)
+                  item.style = s
+                  this.drawItem(item, i, vectorContext, ctx!);
+                }
+              }
+              else {
                 this.drawItem(item, i, vectorContext, ctx!);
 
-              })
-            }
-          })
+              }
+
+            })
+          }
+
         })
+
+      })
+
     }
     else {
       console.error("no style url supplied")
@@ -111,20 +134,21 @@ export class LegendViewComponent implements OnInit {
 
 
   drawItem(item: LegendItem, index: number, vectorContext: CanvasImmediateRenderer, ctx: CanvasRenderingContext2D) {
-    console.log('draw: ' + item.name)
-    if (item.style) {
+    //console.log('draw: ' + item.name + ' ' + item.style.length)
+     if (item.style) {
       item.style.forEach((style) => {
-        vectorContext.drawFeature(item.feature, style);
-
+        vectorContext.drawFeature(item.feature!, style);
       })
-
+    }
+    else {
+      console.log('null draw: ' + item.name)
     }
 
-    ctx!.font = 'italic 18px Arial';
-    ctx!.textAlign = 'left';
-    ctx!.textBaseline = 'middle';
-    ctx!.fillStyle = 'black';
-    ctx!.fillText(item.name, item.labelX, item.labelY);
+    ctx.font = 'italic 18px Arial';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'black';
+    ctx.fillText(item.title, item.labelX, item.labelY!);
 
   }
 }

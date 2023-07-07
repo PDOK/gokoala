@@ -4,7 +4,7 @@
     "id": "1",
   
     
-    "sprite": "bagstdsprites/sprites",
+    "sprite": "styles/bagstdsprites/sprites",
     "glyphs": "font/{fontstack}/{range}.pbf",
     "layers": [
         {

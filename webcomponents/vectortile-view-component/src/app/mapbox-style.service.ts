@@ -6,12 +6,14 @@ import { Feature } from 'ol';
 import { LineString, Point, Polygon } from 'ol/geom';
 
 export type LegendItem = {
+  sourceLayer: any;
   name: string,
-  geoType: Type
+  title: string,
+  geoType: LayerType
   labelX: number,
-  labelY: number
+  labelY: number | undefined
   style: Style[],
-  feature: Feature
+  feature: Feature | undefined
 
 }
 
@@ -35,11 +37,18 @@ export interface MapboxStyle {
 
 export interface Layer {
   id: string;
-  type: Type;
+  type: LayerType;
   paint: Paint;
   source: string;
   "source-layer": string;
+  filter: Filter;
+
+
 }
+
+
+export type Filter = filterval[];
+type filterval = string | bigint | filterval[];
 
 export interface Paint {
   "fill-color"?: FillPattern | string;
@@ -58,12 +67,18 @@ export interface FillPattern {
   stops: Array<string[]>;
 }
 
+export interface spritedata {
+  height: number;
+  pixelRatio: number;
+  width: number;
+  x: number;
+  y: number;
+}
 
 
 
 
-
-export enum Type {
+export enum LayerType {
   Circle = "circle",
   Fill = "fill",
   Line = "line",
@@ -94,43 +109,74 @@ export class MapboxStyleService {
     )
   }
 
-  xxgetLayersids(url: string): string[] {
+  getMapboxSpriteData(url: string): Observable<spritedata> {
+    return (
+      this.http.get<spritedata>(url)
+    )
+  }
+
+  getLayersids(style: MapboxStyle): string[] {
     let ids: string[] = []
-    this.getMapboxStyle(url).forEach((style: MapboxStyle) => {
-      style.layers.forEach((layer: Layer) => {
-        ids.push(layer.id)
-      })
+    style.layers.forEach((layer: Layer) => {
+      ids.push(layer.id)
     })
     return ids
   }
 
-  getItems(style: MapboxStyle, cfg: LegendCfg): LegendItem[] {
-    let names: LegendItem[] = []
-    style.layers.forEach((layer: Layer, index) => {
-      const y = cfg.itemHeight * index ;
-      const feature = this.newFeature(layer.type, cfg, y);
-      feature.setProperties({ 'layer': layer['source-layer'] })
+  removefilters(style: MapboxStyle): MapboxStyle {
+    style.layers.forEach((layer: Layer) => {
+      layer.filter = []
 
-      const i: LegendItem = {
-        name: layer.id + "/" + layer['source-layer'] + ' ' + layer.type,
-        geoType: layer.type,
-        feature: feature,
-        labelX: cfg.itemWidth * 1.1,
-        labelY: y + cfg.itemHeight / 2,
-        style: this.defaultStyle()
-      }
-      names.push(i)
+
     })
-    return names
+    return style
+  }
+
+  removeRasterLayers(style: MapboxStyle): MapboxStyle {
+    style.layers = style.layers.filter(layer => layer.type !== LayerType.Raster)
+    return style
   }
 
 
 
-  newFeature(geoType: Type, cfg: LegendCfg, y: number) {
-    {
-      const half = cfg.itemHeight/2 
-      switch (geoType) {
-        case Type.Fill: {
+  getItems(style: MapboxStyle, cfg: LegendCfg): LegendItem[] {
+    let names: LegendItem[] = []
+    style.layers.forEach((layer: Layer) => {
+      const title = layer['source-layer']
+      if (!names.find(e => e.title === title)) {
+        const i: LegendItem = {
+          name: layer.id,
+          title : title,
+          geoType: layer.type,
+          labelX: cfg.itemWidth * 1.1,
+          labelY: undefined,
+          style: this.defaultStyle(),
+          sourceLayer: layer['source-layer'],
+          feature: undefined
+
+        }
+        names.push(i)
+      }
+
+    })
+    let sorted = names.sort((a, b) => a.title.localeCompare(b.title))
+    let modified = sorted.map((x, i) => {
+      x.labelY = cfg.itemHeight * i + cfg.itemHeight / 2 - cfg.iconOfset/2
+      x.feature = this.NewFeature(x, cfg,  cfg.itemHeight * i)
+      x.feature.setProperties({ 'layer': x.sourceLayer })
+    
+      return x
+    })
+    return modified
+  }
+
+
+  NewFeature(item: LegendItem, cfg: LegendCfg, y: number) {
+     {
+     
+      const half = cfg.itemHeight / 2
+      switch (item.geoType) {
+        case LayerType.Fill: {
           return new Feature({
 
             geometry: new Polygon([
@@ -140,35 +186,23 @@ export class MapboxStyleService {
 
         }
 
-        case Type.Circle: {
+        case LayerType.Circle:
+        case LayerType.Raster:
+        case LayerType.Symbol: {
           return new Feature({
             geometry: new Point([cfg.iconOfset, cfg.iconOfset + y + half]),
           })
 
         }
 
-        case Type.Raster: {
+        case LayerType.Line: {
           return new Feature({
-            geometry: new Point([cfg.iconOfset, cfg.iconOfset + y+ half]),
-          })
-
-        }
-
-        case Type.Symbol: {
-          return new Feature({
-            geometry: new Point([cfg.iconOfset, cfg.iconOfset + y + half]),
-          })
-
-        }
-
-        case Type.Line: {
-          return new Feature({
-            geometry: new LineString([[cfg.iconOfset, cfg.iconOfset + y + half], [cfg.iconWidth, cfg.iconOfset + y+half]],),
+            geometry: new LineString([[cfg.iconOfset, cfg.iconOfset + y + half], [cfg.iconWidth, cfg.iconOfset + y + half]],),
           })
 
 
         } default: {
-          exhaustiveGuard(geoType);
+          exhaustiveGuard(item.geoType);
 
         }
 
@@ -205,5 +239,11 @@ export class MapboxStyleService {
     ];
     return styles
   }
+
+
+
+
+
+
 
 }
