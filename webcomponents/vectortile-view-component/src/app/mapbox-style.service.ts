@@ -5,6 +5,10 @@ import { Observable } from 'rxjs';
 import { Feature } from 'ol';
 import { LineString, Point, Polygon } from 'ol/geom';
 
+export interface IProperties {
+  [key: string]: string
+}
+
 export type LegendItem = {
   sourceLayer: any;
   name: string,
@@ -14,6 +18,8 @@ export type LegendItem = {
   labelY: number | undefined
   style: Style[],
   feature: Feature | undefined
+  properties: IProperties 
+
 
 }
 
@@ -138,42 +144,71 @@ export class MapboxStyleService {
   }
 
 
+  isFillPatternWithStops(paint: string | FillPattern | undefined): paint is FillPattern {
+    return (paint as FillPattern).stops !== undefined;
+  }
+
 
   getItems(style: MapboxStyle, cfg: LegendCfg): LegendItem[] {
     let names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
-      const title = layer['source-layer']
-      if (!names.find(e => e.title === title)) {
-        const i: LegendItem = {
-          name: layer.id,
-          title : title,
-          geoType: layer.type,
-          labelX: cfg.itemWidth * 1.1,
-          labelY: undefined,
-          style: this.defaultStyle(),
-          sourceLayer: layer['source-layer'],
-          feature: undefined
+      const title = layer['source-layer'];
+      this.PushItem(title, layer, names, cfg, {});
+      // layers[10].paint.circle-color.stops[0][0]
+      const paint = layer.paint['circle-color']
+      if (paint){
+      if (this.isFillPatternWithStops(paint)) {  
+        paint.stops.forEach(stop=> {     
+        let p: IProperties={}
+        p[''+ paint.property+'']=  stop[0]        
+        this.PushItem(  stop[0] , layer, names, cfg, p );         
 
-        }
-        names.push(i)
+        })
+
       }
-
+    }
     })
+
+
+
     let sorted = names.sort((a, b) => a.title.localeCompare(b.title))
     let modified = sorted.map((x, i) => {
-      x.labelY = cfg.itemHeight * i + cfg.itemHeight / 2 - cfg.iconOfset/2
-      x.feature = this.NewFeature(x, cfg,  cfg.itemHeight * i)
-      x.feature.setProperties({ 'layer': x.sourceLayer })
-    
+      x.labelY = cfg.itemHeight * i + cfg.itemHeight / 2 - cfg.iconOfset / 2
+      x.feature = this.NewFeature(x, cfg, cfg.itemHeight * i)    
+
+      x.feature.set( 'layer',  x.sourceLayer)
+      x.feature.setProperties(x.properties)
+      
+
       return x
     })
     return modified
   }
 
 
+  private PushItem(title: string, layer: Layer, names: LegendItem[], cfg: LegendCfg, properties:IProperties={}  ) {
+
+    console.log(JSON.stringify(properties))
+
+    if (!names.find(e => e.title === title)) {
+      const i: LegendItem = {
+        name: layer.id,
+        title: title,
+        geoType: layer.type,
+        labelX: cfg.itemWidth * 1.1,
+        labelY: undefined,
+        style: this.defaultStyle(),
+        sourceLayer: layer['source-layer'],
+        feature: undefined, 
+        properties: properties
+      };
+      names.push(i);
+    }
+  }
+
   NewFeature(item: LegendItem, cfg: LegendCfg, y: number) {
-     {
-     
+    {
+
       const half = cfg.itemHeight / 2
       switch (item.geoType) {
         case LayerType.Fill: {
