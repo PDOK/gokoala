@@ -10,6 +10,10 @@
         {{ markdown .Params.Description }}
     </div>
     <div class="col-md-6">
+        <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
+        <script type="text/javascript" src="vectortile-view-component/main.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
         <app-legend-view id="style-legend-view"
                          style-url="{{ $baseUrl }}/styles/{{ .Params.ID }}?f=mapbox">
         </app-legend-view>
