@@ -39,14 +39,14 @@
   .showbox {
     width: 40vw;
     padding: 0;
-    
+
 
     flex-grow: 1
   }
 
   .showboxsmall {
     width: 10%;
-    height:10%; 
+    height: 10%;
     max-width: 10%;
     max-height: 10%;
 
@@ -56,26 +56,21 @@
 
 <body onload="getFeatures()">
 
- 
+
   </app-legend-view>
   <H1>Web component "app-vectortile-view" usage samples:</H1>
 
   <H2>1. World map NaturalEarth with grid</H2>
-  <app-vectortile-view id="sample1" class ='showbox' 
+  <app-vectortile-view id="sample1" class='showbox'
     tile-url="https://maps.gnosis.earth/ogcapi/collections/NaturalEarth:cultural:ne_10m_admin_0_countries/tiles/WebMercatorQuad"
     style-url="" zoom=4 center-x=5.3896944 center-y=52.1562499 show-grid show-object-info>
   </app-vectortile-view>
 
 
   <H2>2. LD proxy Dalaraa (https://demo.ldproxy.net/daraa/) </H2>
-  <app-vectortile-view id="sample2"
-   tile-url="https://demo.ldproxy.net/daraa/tiles/WebMercatorQuad"
-   style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs" 
-   zoom=13
-    center-x=36.1033 center-y=32.6264
-   
-    show-grid show-object-info
-  >
+  <app-vectortile-view id="sample2" tile-url="https://demo.ldproxy.net/daraa/tiles/WebMercatorQuad"
+    style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs" zoom=13 center-x=36.1033
+    center-y=32.6264 show-grid show-object-info>
   </app-vectortile-view>
 
 
@@ -89,97 +84,105 @@
      zoom=15 
     center-x=5.3896944 center-y=52.1562499 show-grid="true">
   </app-vectortile-view-->
-  
+
 
   <H2>5. BAG EU grid with style </H2>
   <app-vectortile-view id="sample5" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/EuropeanETRS89_GRS80Quad_Draft"
-  style-url="styles/bagstd.json"
-    zoom=15 center-x=5.3896944 center-y=52.1562499 show-grid show-object-info></app-vectortile-view>
+    style-url="styles/bagstd.json" zoom=15 center-x=5.3896944 center-y=52.1562499 show-grid
+    show-object-info></app-vectortile-view>
 
 
 
-  <H2>9. BAG legend sample</H2>
+  <H2>9. BAG legend sample test</H2>
 
 
-  <app-legend-view id="legendview1" 
-  style-url="styles/bagstd.json"
-  sprite-url="styles/bagstdsprites/sprites.json"  ></app-legend-view>
- 
-
-  <H2>10 legend sample</H2>
+  <app-legend-view id="legendview1" style-url="styles/bagstd.json"
+    sprite-url="styles/bagstdsprites/sprites.json"></app-legend-view>
 
 
-  <app-legend-view id="legendview2" style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs">
- 
-  </app-legend-view>
 
-  <H2>11 legend sample</H2>
+  <H2>9. BAG legend sample1 from OGC api test</H2>
 
 
-  <app-legend-view id="legendview3" style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/achtergrondvisualisatie?f=mapbox">
- 
-  </app-legend-view>
+    <app-legend-view id="legendview1" style-url="https://api.pdok.nl/lv/bag/ogc/v0_1/styles/bag_standaardvisualisatie">
+    </app-legend-view>
 
 
-  <H2>12 legend sample</H2>
+    <H2>10 legend sample</H2>
 
 
-  <app-legend-view id="legendview3" style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/standaardvisualisatie?f=mapbox">
- 
-  </app-legend-view>
+    <app-legend-view id="legendview2" style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs">
 
-  <script type='text/javascript'>
+    </app-legend-view>
 
-    function getFeatures() {
-   
-    //  selectsample.addEventListener('activeFeature', e => {
-      //  console.log('activeFeature');
-      //  console.log(JSON.stringify(e.detail));
-     //   objectinfooutside.feature = e.detail;
-     // });
-    
-    }
+    <H2>11 legend sample</H2>
 
-    function changeStyle() {
-      var optionValue = document.getElementById("sample9").value;
-      document.getElementById("output").innerHTML = optionValue;
-      selectsample.setAttribute("style-url", optionValue);
 
-    }
-  </script>
-  <H2>8. BGT mapbox style switch sample</H2>
-  <div class="showarea">
-    <div class="showbox">
-      <label for="style">Choose a style:</label>
+    <app-legend-view id="legendview3"
+      style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/achtergrondvisualisatie?f=mapbox">
 
-      <select title="select style" name="styles" id="sample8" onInput='changeStyle()'>
-        <option value="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/achtergrondvisualisatie?f=mapbox">Background</option>
-        <option value="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/standaardvisualisatie?f=mapbox">Standard</option>
-      </select>
+    </app-legend-view>
 
-      <app-vectortile-view id="selectsample" zoom=13 center-x=5.3896944 center-y=52.1562499 show-grid
-        tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad"
-        style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie" >
-      </app-vectortile-view>
 
-      <p>
-        Style: <span id='output'></span>
-      </p>
-      
-    </div>
+    <H2>12 legend sample</H2>
 
-    <div class="showboxsmall">
-      BGT ObjectInfo on click outside map :
-     <div style=" border: 1px solid;
 
-     box-shadow: 5px 10px blue;"
-    
-     >
+    <app-legend-view id="legendview3"
+      style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/standaardvisualisatie?f=mapbox">
 
-      <app-objectinfo-view  id="objectinfooutside"  >
-      </app-objectinfo-view>
-    <div>
-    </div-->
+    </app-legend-view>
+
+    <script type='text/javascript'>
+
+      function getFeatures() {
+
+        //  selectsample.addEventListener('activeFeature', e => {
+        //  console.log('activeFeature');
+        //  console.log(JSON.stringify(e.detail));
+        //   objectinfooutside.feature = e.detail;
+        // });
+
+      }
+
+      function changeStyle() {
+        var optionValue = document.getElementById("sample9").value;
+        document.getElementById("output").innerHTML = optionValue;
+        selectsample.setAttribute("style-url", optionValue);
+
+      }
+    </script>
+    <H2>8. BGT mapbox style switch sample</H2>
+    <div class="showarea">
+      <div class="showbox">
+        <label for="style">Choose a style:</label>
+
+        <select title="select style" name="styles" id="sample8" onInput='changeStyle()'>
+          <option value="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/achtergrondvisualisatie?f=mapbox">Background
+          </option>
+          <option value="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/standaardvisualisatie?f=mapbox">Standard</option>
+        </select>
+
+        <app-vectortile-view id="selectsample" zoom=13 center-x=5.3896944 center-y=52.1562499 show-grid
+          tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad"
+          style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie">
+        </app-vectortile-view>
+
+        <p>
+          Style: <span id='output'></span>
+        </p>
+
+      </div>
+
+      <div class="showboxsmall">
+        BGT ObjectInfo on click outside map :
+        <div style=" border: 1px solid;
+
+     box-shadow: 5px 10px blue;">
+
+          <app-objectinfo-view id="objectinfooutside">
+          </app-objectinfo-view>
+          <div>
+            </div-->
 
 
 </body>
