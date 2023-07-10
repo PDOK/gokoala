@@ -96,8 +96,9 @@ export class
   @Input() zoom!: number
   @Input() centerX!: number;
   @Input() centerY!: number;
-  totalHeight: number = 600
-  totalWidth: number = 800
+  mapHeight: number = 600
+  mapWidth: number = 800
+
   @Output() activeFeature = new EventEmitter<FeatureLike>();
 
   constructor(private elementRef: ElementRef, private matrixsetService: MatrixsetService) {
@@ -170,8 +171,7 @@ export class
               }
               sizes[x.id] = [x.tileWidth, x.tileHeight]
             })
-            console.log("resolutions:" + JSON.stringify(resolutions))
-
+           
             this.tileGrid = new TileGrid({
               resolutions: resolutions,
               tileSizes: sizes,
@@ -240,13 +240,13 @@ export class
     });
 
     const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']");
-    //console.log('height' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
-    //console.log('width' + this.elementRef.nativeElement.offsetWidth)
-    this.totalWidth = this.elementRef.nativeElement.offsetWidth;
-    // this.totalWidth = this.elementRef.nativeElement.offsetHeigh;
-    this.totalHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
-
-
+    //console.log('mapheight' + this.elementRef.nativeElement.offsetHeight)  //<<<===here
+    //console.log('mapwidth' + this.elementRef.nativeElement.offsetWidth)
+    //if ()
+     this.mapWidth =  this.elementRef.nativeElement.offsetWidth ;
+    //  this.mapHeight= this.elementRef.nativeElement.offsetHeight
+    this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
+ 
     this.map.setTarget(mapdiv);
   }
 
@@ -259,7 +259,7 @@ export class
       console.log("No StyleUrl was provided for the app-vectortile-view");
     }
     if (!this.zoom) {
-    //  console.error("No zoom was provided for the app-vectortile-view");
+      //  console.error("No zoom was provided for the app-vectortile-view");
     }
     else
       console.log("zoom=" + this.zoom);

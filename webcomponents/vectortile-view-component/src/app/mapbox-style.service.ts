@@ -5,13 +5,21 @@ import { Observable } from 'rxjs';
 import { Feature } from 'ol';
 import { LineString, Point, Polygon } from 'ol/geom';
 
+export interface IProperties {
+  [key: string]: string
+}
+
 export type LegendItem = {
+  sourceLayer: any;
   name: string,
-  geoType: Type
+  title: string,
+  geoType: LayerType
   labelX: number,
-  labelY: number
+  labelY: number | undefined
   style: Style[],
-  feature: Feature
+  feature: Feature | undefined
+  properties: IProperties
+
 
 }
 
@@ -35,11 +43,18 @@ export interface MapboxStyle {
 
 export interface Layer {
   id: string;
-  type: Type;
+  type: LayerType;
   paint: Paint;
   source: string;
   "source-layer": string;
+  filter: Filter;
+
+
 }
+
+
+export type Filter = filterval[];
+type filterval = string | bigint | filterval[];
 
 export interface Paint {
   "fill-color"?: FillPattern | string;
@@ -58,12 +73,18 @@ export interface FillPattern {
   stops: Array<string[]>;
 }
 
+export interface spritedata {
+  height: number;
+  pixelRatio: number;
+  width: number;
+  x: number;
+  y: number;
+}
 
 
 
 
-
-export enum Type {
+export enum LayerType {
   Circle = "circle",
   Fill = "fill",
   Line = "line",
@@ -75,18 +96,13 @@ export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`);
 }
 
-
-
 @Injectable({
   providedIn: 'root'
 })
 
 export class MapboxStyleService {
 
-
-
   constructor(private http: HttpClient) { }
-
 
   getMapboxStyle(url: string): Observable<MapboxStyle> {
     return (
@@ -94,93 +110,122 @@ export class MapboxStyleService {
     )
   }
 
-  xxgetLayersids(url: string): string[] {
+  getMapboxSpriteData(url: string): Observable<spritedata> {
+    return (
+      this.http.get<spritedata>(url)
+    )
+  }
+
+  getLayersids(style: MapboxStyle): string[] {
     let ids: string[] = []
-    this.getMapboxStyle(url).forEach((style: MapboxStyle) => {
-      style.layers.forEach((layer: Layer) => {
-        ids.push(layer.id)
-      })
+    style.layers.forEach((layer: Layer) => {
+      ids.push(layer.id)
     })
     return ids
   }
 
-  getItems(style: MapboxStyle, cfg: LegendCfg): LegendItem[] {
-    let names: LegendItem[] = []
-    style.layers.forEach((layer: Layer, index) => {
-      const y = cfg.itemHeight * index ;
-      const feature = this.newFeature(layer.type, cfg, y);
-      feature.setProperties({ 'layer': layer['source-layer'] })
+  removefilters(style: MapboxStyle): MapboxStyle {
+    style.layers.forEach((layer: Layer) => {
+      layer.filter = []
 
-      const i: LegendItem = {
-        name: layer.id + "/" + layer['source-layer'] + ' ' + layer.type,
-        geoType: layer.type,
-        feature: feature,
-        labelX: cfg.itemWidth * 1.1,
-        labelY: y + cfg.itemHeight / 2,
-        style: this.defaultStyle()
-      }
-      names.push(i)
+
     })
-    return names
+    return style
+  }
+
+  removeRasterLayers(style: MapboxStyle): MapboxStyle {
+    style.layers = style.layers.filter(layer => layer.type !== LayerType.Raster)
+    return style
   }
 
 
+  isFillPatternWithStops(paint: string | FillPattern | undefined): paint is FillPattern {
+    return (paint as FillPattern).stops !== undefined;
+  }
 
-  newFeature(geoType: Type, cfg: LegendCfg, y: number) {
+
+  getItems(style: MapboxStyle, cfg: LegendCfg): LegendItem[] {
+    let names: LegendItem[] = []
+    style.layers.forEach((layer: Layer) => {
+      const title = layer['source-layer'];
+      this.PushItem(title, layer, names, cfg, {});
+      let paint = layer.paint['circle-color'] as FillPattern
+      if (layer.type == LayerType.Fill) {
+        paint = layer.paint['fill-color'] as FillPattern
+      }
+      if (paint) {
+        if (this.isFillPatternWithStops(paint)) {
+          paint.stops.forEach(stop => {
+            let prop: IProperties = {}
+            prop['' + paint.property + ''] = stop[0]
+            this.PushItem(stop[0], layer, names, cfg, prop);
+          })
+        }
+      }
+    })
+    let sorted = names.sort((a, b) => a.title.localeCompare(b.title))
+    let modified = sorted.map((x, i) => {
+      x.labelY = cfg.itemHeight * i + cfg.itemHeight / 2 - cfg.iconOfset / 2
+      x.feature = this.NewFeature(x, cfg, cfg.itemHeight * i)
+      x.feature.set('layer', x.sourceLayer)
+      x.feature.setProperties(x.properties)
+      return x
+    })
+    return modified
+  }
+
+
+  private PushItem(title: string, layer: Layer, names: LegendItem[], cfg: LegendCfg, properties: IProperties = {}) {
+   // console.log(JSON.stringify(properties))
+    if (!names.find(e => e.title === title)) {
+      const i: LegendItem = {
+        name: layer.id,
+        title: title,
+        geoType: layer.type,
+        labelX: cfg.itemWidth * 1.1,
+        labelY: undefined,
+        style: this.defaultStyle(),
+        sourceLayer: layer['source-layer'],
+        feature: undefined,
+        properties: properties
+      };
+      names.push(i);
+    }
+  }
+
+  NewFeature(item: LegendItem, cfg: LegendCfg, y: number) {
     {
-      const half = cfg.itemHeight/2 
-      switch (geoType) {
-        case Type.Fill: {
+      const half = cfg.itemHeight / 2
+      switch (item.geoType) {
+        case LayerType.Fill: {
           return new Feature({
 
             geometry: new Polygon([
               [[cfg.iconOfset, cfg.iconOfset + y], [cfg.iconWidth, cfg.iconOfset + y], [cfg.iconWidth, cfg.iconHeight + y], [cfg.iconOfset, cfg.iconHeight + y], [cfg.iconOfset, cfg.iconOfset + y]]
             ])
           })
-
         }
 
-        case Type.Circle: {
+        case LayerType.Circle:
+        case LayerType.Raster:
+        case LayerType.Symbol: {
           return new Feature({
             geometry: new Point([cfg.iconOfset, cfg.iconOfset + y + half]),
           })
 
         }
 
-        case Type.Raster: {
+        case LayerType.Line: {
           return new Feature({
-            geometry: new Point([cfg.iconOfset, cfg.iconOfset + y+ half]),
+            geometry: new LineString([[cfg.iconOfset, cfg.iconOfset + y + half], [cfg.iconWidth, cfg.iconOfset + y + half]],),
           })
-
-        }
-
-        case Type.Symbol: {
-          return new Feature({
-            geometry: new Point([cfg.iconOfset, cfg.iconOfset + y + half]),
-          })
-
-        }
-
-        case Type.Line: {
-          return new Feature({
-            geometry: new LineString([[cfg.iconOfset, cfg.iconOfset + y + half], [cfg.iconWidth, cfg.iconOfset + y+half]],),
-          })
-
 
         } default: {
-          exhaustiveGuard(geoType);
+          exhaustiveGuard(item.geoType);
 
         }
-
       }
-
-
     }
-
-
-
-
-
   }
 
   defaultStyle() {
@@ -205,5 +250,4 @@ export class MapboxStyleService {
     ];
     return styles
   }
-
 }
