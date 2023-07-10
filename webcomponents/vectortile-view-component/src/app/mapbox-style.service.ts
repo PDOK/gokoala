@@ -18,7 +18,7 @@ export type LegendItem = {
   labelY: number | undefined
   style: Style[],
   feature: Feature | undefined
-  properties: IProperties 
+  properties: IProperties
 
 
 }
@@ -96,18 +96,13 @@ export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`);
 }
 
-
-
 @Injectable({
   providedIn: 'root'
 })
 
 export class MapboxStyleService {
 
-
-
   constructor(private http: HttpClient) { }
-
 
   getMapboxStyle(url: string): Observable<MapboxStyle> {
     return (
@@ -154,42 +149,34 @@ export class MapboxStyleService {
     style.layers.forEach((layer: Layer) => {
       const title = layer['source-layer'];
       this.PushItem(title, layer, names, cfg, {});
-      // layers[10].paint.circle-color.stops[0][0]
-      const paint = layer.paint['circle-color']
-      if (paint){
-      if (this.isFillPatternWithStops(paint)) {  
-        paint.stops.forEach(stop=> {     
-        let p: IProperties={}
-        p[''+ paint.property+'']=  stop[0]        
-        this.PushItem(  stop[0] , layer, names, cfg, p );         
-
-        })
-
+      let paint = layer.paint['circle-color'] as FillPattern
+      if (layer.type == LayerType.Fill) {
+        paint = layer.paint['fill-color'] as FillPattern
       }
-    }
+      if (paint) {
+        if (this.isFillPatternWithStops(paint)) {
+          paint.stops.forEach(stop => {
+            let prop: IProperties = {}
+            prop['' + paint.property + ''] = stop[0]
+            this.PushItem(stop[0], layer, names, cfg, prop);
+          })
+        }
+      }
     })
-
-
-
     let sorted = names.sort((a, b) => a.title.localeCompare(b.title))
     let modified = sorted.map((x, i) => {
       x.labelY = cfg.itemHeight * i + cfg.itemHeight / 2 - cfg.iconOfset / 2
-      x.feature = this.NewFeature(x, cfg, cfg.itemHeight * i)    
-
-      x.feature.set( 'layer',  x.sourceLayer)
+      x.feature = this.NewFeature(x, cfg, cfg.itemHeight * i)
+      x.feature.set('layer', x.sourceLayer)
       x.feature.setProperties(x.properties)
-      
-
       return x
     })
     return modified
   }
 
 
-  private PushItem(title: string, layer: Layer, names: LegendItem[], cfg: LegendCfg, properties:IProperties={}  ) {
-
-    console.log(JSON.stringify(properties))
-
+  private PushItem(title: string, layer: Layer, names: LegendItem[], cfg: LegendCfg, properties: IProperties = {}) {
+   // console.log(JSON.stringify(properties))
     if (!names.find(e => e.title === title)) {
       const i: LegendItem = {
         name: layer.id,
@@ -199,7 +186,7 @@ export class MapboxStyleService {
         labelY: undefined,
         style: this.defaultStyle(),
         sourceLayer: layer['source-layer'],
-        feature: undefined, 
+        feature: undefined,
         properties: properties
       };
       names.push(i);
@@ -208,7 +195,6 @@ export class MapboxStyleService {
 
   NewFeature(item: LegendItem, cfg: LegendCfg, y: number) {
     {
-
       const half = cfg.itemHeight / 2
       switch (item.geoType) {
         case LayerType.Fill: {
@@ -218,7 +204,6 @@ export class MapboxStyleService {
               [[cfg.iconOfset, cfg.iconOfset + y], [cfg.iconWidth, cfg.iconOfset + y], [cfg.iconWidth, cfg.iconHeight + y], [cfg.iconOfset, cfg.iconHeight + y], [cfg.iconOfset, cfg.iconOfset + y]]
             ])
           })
-
         }
 
         case LayerType.Circle:
@@ -235,21 +220,12 @@ export class MapboxStyleService {
             geometry: new LineString([[cfg.iconOfset, cfg.iconOfset + y + half], [cfg.iconWidth, cfg.iconOfset + y + half]],),
           })
 
-
         } default: {
           exhaustiveGuard(item.geoType);
 
         }
-
       }
-
-
     }
-
-
-
-
-
   }
 
   defaultStyle() {
@@ -274,11 +250,4 @@ export class MapboxStyleService {
     ];
     return styles
   }
-
-
-
-
-
-
-
 }
