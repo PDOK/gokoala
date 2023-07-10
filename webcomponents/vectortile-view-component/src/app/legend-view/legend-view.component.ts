@@ -39,6 +39,7 @@ import { StyleFunction, StyleLike } from 'ol/style/Style';
 
 export class LegendViewComponent implements OnInit {
   @Input() styleUrl!: string
+  @Input() spriteUrl!: string
   vectorsource = {
     'geojson': {
       type: 'geojson',
@@ -49,12 +50,9 @@ export class LegendViewComponent implements OnInit {
     }
   }
 
-
-
-
   LegendItems: LegendItem[] = []
   totalHeight: number = 11600
-  itemHeight: number = 100
+  itemHeight: number = 30
   itemWidth: number = 100
 
   totalWidth: number = 800
@@ -81,7 +79,12 @@ export class LegendViewComponent implements OnInit {
 
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((mapboxStyle) => {
 
-        this.mapboxStyleService.getMapboxSpriteData(mapboxStyle.sprite + '.json').subscribe((spritedata) => {
+        if (!this.spriteUrl) {
+          this.spriteUrl = mapboxStyle.sprite + '.json'
+        }
+
+
+        this.mapboxStyleService.getMapboxSpriteData(this.spriteUrl).subscribe((spritedata) => {
           let resolutions: number[] = []
           resolutions.push(1)
           const sources = this.mapboxStyleService.getLayersids(mapboxStyle)
@@ -100,7 +103,15 @@ export class LegendViewComponent implements OnInit {
           if (ctx) {
             const vectorContext = toContext(ctx, { size: [this.totalWidth, this.totalHeight] });
             this.LegendItems.forEach((item, i) => {
-              //const style = getStyleForLayer(item.feature, resolution, this.layer, item.name)
+              //const style = getStyleForLayer(item.feature!, resolution, this.layer, item.name)
+             // if (item.title !== 'pattern pand') {
+              
+            //    return
+             // }
+
+              // const styleextra  = getStyleForLayer(item.feature!, resolution, this.layer, item.name) as any
+           
+
               const style = stfunction(item.feature!, 1) as Style | Style[]
               if (style) {
                 if ((Array.isArray(style))) {
@@ -115,6 +126,7 @@ export class LegendViewComponent implements OnInit {
                 }
               }
               else {
+                console.warn("no style "+ item.name + ' ' + item.geoType)
                 this.drawItem(item, i, vectorContext, ctx!);
 
               }
@@ -134,10 +146,26 @@ export class LegendViewComponent implements OnInit {
 
 
   drawItem(item: LegendItem, index: number, vectorContext: CanvasImmediateRenderer, ctx: CanvasRenderingContext2D) {
-    //console.log('draw: ' + item.name + ' ' + item.style.length)
-     if (item.style) {
+    console.log('draw: ' + item.name + ' ' + item.style.length)
+    if (item.title == 'pattern pand') {
+      console.log('draw gesloopt : ' + item.name + ' ' + item.style.length)
+      console.log(JSON.stringify(item.style))
+        console.log(JSON.stringify(item))
+        //vectorContext.drawImage(image, dx, dy)
+
+
+    }
+    if (item.style) {
       item.style.forEach((style) => {
+        vectorContext.setStyle(style)
+        const color = style.getRenderer()
+        console.log(JSON.stringify(color))
+
+
         vectorContext.drawFeature(item.feature!, style);
+     
+
+
       })
     }
     else {

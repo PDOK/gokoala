@@ -4,7 +4,7 @@
     "id": "1",
   
     
-    "sprite": "styles/bagstdsprites/sprites",
+    "sprite": "bagstdsprites/sprites",
     "glyphs": "font/{fontstack}/{range}.pbf",
     "layers": [
         {
@@ -110,10 +110,7 @@
                             "Pand ten onrechte opgevoerd",
                             "rgb(197,226,229)"
                         ],
-                        [
-                            "Pand gesloopt",
-                            "rgb(0,0,0)"
-                        ],
+                     
                         [
                             "Pand geselecteerd",
                             "rgb(195, 195, 205)"
@@ -143,6 +140,7 @@
             "source": "bag",
             "source-layer": "pand"
         },
+        
 
         {
             "id": "outline pand",
