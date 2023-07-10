@@ -147,11 +147,15 @@ export class MapboxStyleService {
   getItems(style: MapboxStyle, cfg: LegendCfg): LegendItem[] {
     let names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
-      const title = layer['source-layer'];
+      const title = this.capitalizeFirstLetter(layer['source-layer']);
+      //   const title = layer['id'];
       this.PushItem(title, layer, names, cfg, {});
       let paint = layer.paint['circle-color'] as FillPattern
       if (layer.type == LayerType.Fill) {
         paint = layer.paint['fill-color'] as FillPattern
+        if (!paint) {
+          paint = layer.paint['fill-pattern'] as FillPattern
+        }
       }
       if (paint) {
         if (this.isFillPatternWithStops(paint)) {
@@ -174,17 +178,22 @@ export class MapboxStyleService {
     return modified
   }
 
+  capitalizeFirstLetter(str: string): string {
+    return [...str][0].toUpperCase() + str.slice(1);
+  }
+
+
 
   private PushItem(title: string, layer: Layer, names: LegendItem[], cfg: LegendCfg, properties: IProperties = {}) {
-   // console.log(JSON.stringify(properties))
+    // console.log(JSON.stringify(properties))
     if (!names.find(e => e.title === title)) {
       const i: LegendItem = {
         name: layer.id,
         title: title,
         geoType: layer.type,
-        labelX: cfg.itemWidth * 1.1,
+        labelX: cfg.itemWidth * 3,
         labelY: undefined,
-        style: this.defaultStyle(),
+        style: [],  
         sourceLayer: layer['source-layer'],
         feature: undefined,
         properties: properties
@@ -210,7 +219,7 @@ export class MapboxStyleService {
         case LayerType.Raster:
         case LayerType.Symbol: {
           return new Feature({
-            geometry: new Point([cfg.iconOfset, cfg.iconOfset + y + half]),
+            geometry: new Point([cfg.iconWidth / 2, cfg.iconOfset + y + half]),
           })
 
         }

@@ -230,7 +230,7 @@ export class
             //this.setSelectStyle(this.curFeature)
           }
           this.activeFeature.emit(feature);
-          console.log("resolution: " + this.map.getView().getResolution())
+        //  console.log("resolution: " + this.map.getView().getResolution())
 
         }
       },
@@ -398,21 +398,7 @@ export class
     })
   }
 
-  /*private setSelectStyle(feature: Feature) {
-    const selected = new Style({
-      fill: new Fill({
-        color: '#eeeeee',
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255, 255, 255, 0.7)',
-        width: 2,
-      }),
-    });
-    const color = feature.get('COLOR') || '#eeeeee';
-    
-    feature.setStyle(selected.getFill().setColor(color)!)
-  }
-  */
+
 
   getMapStyle() {
     return ` z-index: 1;
