@@ -81,33 +81,31 @@
             <td class="w-auto text-nowrap">
               <b>URL template</b>
             </td>
-            <td id="field-url-template" class="w-auto px-2">
-              {{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt
+            <td class="w-auto px-2">
+              <code id="field-url-template">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt</code>
             </td>
           </tr>
           <tr>
             <td class="w-auto text-nowrap">
               <b>{{ i18n "Example" }} URL</b>
             </td>
-            <td id="field-url-example" class="w-auto px-2">
-              {{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf
+            <td class="w-auto px-2">
+              <code id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf</code>
             </td>
           </tr>
         </tbody>
       </table>
-      <div class="col-md-10 offset-md-2">
-        <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
-        <script type="text/javascript" src="vectortile-view-component/main.js"></script>
-        <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
-        <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
-        <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
-          tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
-          zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
-          center-x="5.3896944" center-y="52.1562499" show-grid
-          show-object-info>
-        </app-vectortile-view>
-      </div>
+      <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
+      <script type="text/javascript" src="vectortile-view-component/main.js"></script>
+      <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
+      <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+      <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
+        tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+        {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
+        zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
+        center-x="5.3896944" center-y="52.1562499" show-grid
+        show-object-info>
+      </app-vectortile-view>
     </div>
   </div>
 
