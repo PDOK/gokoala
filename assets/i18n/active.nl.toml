@@ -80,7 +80,6 @@ ZoomLevel = "Zoomniveau"
 MinimumValue = "Minimale waarde"
 MaximumValue = "Maximale waarde"
 View = "Bekijk"
-TileMatrixSetExample = "Voorbeeld Tile Matrix Set"
 
 # Styles/Style/StyleMetadata page
 StylingExample = "Voorbeeld styling"
