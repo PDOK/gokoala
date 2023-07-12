@@ -15,7 +15,7 @@
             <tbody>
                 {{ if .Config.Keywords }}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ i18n "Keywords" }}</b>
                     </td>
                     <td>
@@ -24,7 +24,7 @@
                 </tr>
                 {{ end }}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ i18n "License" }}</b>
                     </td>
                     <td>
@@ -33,7 +33,7 @@
                 </tr>
                 {{ if .Config.Support}}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ i18n "Support" }}</b>
                     </td>
                     <td>
@@ -44,7 +44,7 @@
                 {{ if .Config.DatasetDetails }}
                 {{ range $detailField := .Config.DatasetDetails }}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ $detailField.Name }}</b>
                     </td>
                     <td>
