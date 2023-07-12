@@ -108,36 +108,33 @@
       </app-vectortile-view>
     </div>
   </div>
-
   <script>
-      document.addEventListener('input', function (event) {
-          // only operate on srs dropdown
-          if (event.target.id !== 'srs') return;
-
-          const selectedSrs = event.target.value
-          const srsInteger = selectedSrs.replace(/^EPSG:/, '')
-          var tileset
-          var tilesetZoom
-
-          {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
-          {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
-              tileset = '{{ get $projections $srs.Srs }}'
-              tilesetZoom = {{ $srs.ZoomLevelRange.End }}
-          }{{ end }}
-
-          const srsField = document.getElementById('field-srs');
-          const urlTemplateField = document.getElementById('field-url-template');
-          const urlExampleField = document.getElementById('field-url-example');
-          const metadataHref = document.getElementById('href-metadata');
-          srsField.textContent = selectedSrs;
-          urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
-          urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/' + tilesetZoom + '/0/0.pbf';
-          metadataHref.setAttribute('href', 'tiles/' + tileset);
-
-          // update tile-url in app-vectortile-view
-          const viewer = document.getElementById('tiles-vectortile-view')
-          viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
-          viewer.setAttribute('zoom', tilesetZoom)
-      }, false);
+    document.addEventListener('input', function (event) {
+      // only operate on srs dropdown
+      if (event.target.id !== 'srs') return;
+      // update table fields
+      const selectedSrs = event.target.value
+      const srsInteger = selectedSrs.replace(/^EPSG:/, '')
+      var tileset
+      var tilesetZoom
+      {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
+      {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
+        tileset = '{{ get $projections $srs.Srs }}'
+        tilesetZoom = {{ $srs.ZoomLevelRange.End }}
+      }{{ end }}
+      const srsField = document.getElementById('field-srs');
+      const urlTemplateField = document.getElementById('field-url-template');
+      const urlExampleField = document.getElementById('field-url-example');
+      const metadataHref = document.getElementById('href-metadata');
+      srsField.textContent = selectedSrs;
+      urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
+      urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/' + tilesetZoom + '/0/0.pbf';
+      metadataHref.textContent = '{{ i18n "View" }} ' + tileset + ' tiles metadata';
+      metadataHref.setAttribute('href', 'tiles/' + tileset);
+      // update tile-url and zoom in app-vectortile-view
+      const viewer = document.getElementById('tiles-vectortile-view')
+      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
+      viewer.setAttribute('zoom', tilesetZoom)
+    }, false);
   </script>
 {{end}}
