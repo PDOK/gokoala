@@ -2,87 +2,87 @@
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
+  <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
 </hgroup>
 <div class="row py-3">
-    <div class="col-md-12">
-        <p>
-            {{ i18n "StylesText" }}
-        </p>
-    </div>
+  <div class="col-md-12">
+    <p>
+      {{ i18n "StylesText" }}
+    </p>
+  </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
-        {{ $baseUrl := .Config.BaseURL }}
-        {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
-        {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}        
-        <table class="table table-borderless table-sm w-auto">
-            <tbody>
-                <tr>
-                    <td class="w-auto text-nowrap">
-                        <b>Style</b>
-                    </td>
-                    <td class="w-auto px-2">
-                        {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
-                        {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }}
-                        {{ else }}
-                        <select id="styles">
-                            {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
-                            <option value="{{ $style.ID }}">{{ $style.Title }}</option>
-                            {{ end }}
-                        </select>
-                        {{ end }}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="w-auto text-nowrap">
-                        <b>URL</b>
-                    </td>
-                    <td class="w-auto px-2">
-                        <a id="href-url" href="styles/{{ $defaultStyle }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="w-auto text-nowrap">
-                        <b>Metadata</b>
-                    </td>
-                    <td class="w-auto px-2">
-                        <a id="href-meta" href="styles/{{ $defaultStyle }}/metadata">{{ i18n "StyleMetadata" }}</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="col-md-6">
-        {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
-        <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
-        <script type="text/javascript" src="vectortile-view-component/main.js"></script>
-        <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
-        <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
-        <p>{{ i18n "StylingExample" }}:</p>
-        <app-vectortile-view id="styles-vectortile-view" class="vectortile-view"
-                             tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                             style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}?f=mapbox"
-                             zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
-                             center-x="5.3896944" center-y="52.1562499">
-        </app-vectortile-view>
-    </div>
+  <div class="col-md-6">
+    {{ $baseUrl := .Config.BaseURL }}
+    {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
+    {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}        
+    <table class="table table-borderless table-sm w-auto">
+      <tbody>
+        <tr>
+          <td class="w-auto text-nowrap">
+            <b>Style</b>
+          </td>
+          <td class="w-auto px-2">
+            {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
+            {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }}
+            {{ else }}
+            <select id="styles">
+              {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
+              <option value="{{ $style.ID }}">{{ $style.Title }}</option>
+              {{ end }}
+            </select>
+            {{ end }}
+          </td>
+        </tr>
+        <tr>
+          <td class="w-auto text-nowrap">
+            <b>URL</b>
+          </td>
+          <td class="w-auto px-2">
+            <a id="href-url" href="styles/{{ $defaultStyle }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}</a>
+          </td>
+        </tr>
+        <tr>
+          <td class="w-auto text-nowrap">
+            <b>Metadata</b>
+          </td>
+          <td class="w-auto px-2">
+            <a id="href-meta" href="styles/{{ $defaultStyle }}/metadata">{{ i18n "StyleMetadata" }}</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col-md-6">
+    {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
+    <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
+    <script type="text/javascript" src="vectortile-view-component/main.js"></script>
+    <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
+    <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+    <p>{{ i18n "StylingExample" }}:</p>
+    <app-vectortile-view id="styles-vectortile-view" class="vectortile-view"
+      tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+      style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}?f=mapbox"
+      zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
+      center-x="5.3896944" center-y="52.1562499">
+    </app-vectortile-view>
+  </div>
 </div>
 <script>
-    document.addEventListener('input', function (event) {
-        // only operate on styles dropdown
-        if (event.target.id !== 'styles') return;
-        // update table fields
-        const selectedStyle = event.target.value;
-        const styleUrl = document.getElementById('href-url');
-        const styleMeta = document.getElementById('href-meta');
-        styleUrl.textContent = '{{ $baseUrl }}/styles/' + selectedStyle;
-        styleUrl.setAttribute('href', 'styles/' + selectedStyle);
-        styleMeta.setAttribute('href', 'styles/' + selectedStyle + '/metadata');
-        // update style-url in app-vectortile-view
-        const viewer = document.getElementById('styles-vectortile-view')
-        viewer.setAttribute('style-url', '{{ .Config.BaseURL }}/styles/' + selectedStyle + '?f=mapbox')
-    }, false);
+  document.addEventListener('input', function (event) {
+    // only operate on styles dropdown
+    if (event.target.id !== 'styles') return;
+    // update table fields
+    const selectedStyle = event.target.value;
+    const styleUrl = document.getElementById('href-url');
+    const styleMeta = document.getElementById('href-meta');
+    styleUrl.textContent = '{{ $baseUrl }}/styles/' + selectedStyle;
+    styleUrl.setAttribute('href', 'styles/' + selectedStyle);
+    styleMeta.setAttribute('href', 'styles/' + selectedStyle + '/metadata');
+    // update style-url in app-vectortile-view
+    const viewer = document.getElementById('styles-vectortile-view')
+    viewer.setAttribute('style-url', '{{ $baseUrl }}/styles/' + selectedStyle + '?f=mapbox')
+  }, false);
 </script>
 {{ end }}
 {{ end }}

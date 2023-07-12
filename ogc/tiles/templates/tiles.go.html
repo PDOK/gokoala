@@ -11,10 +11,10 @@
     </div>
   </div>
   <div class="row">
-      {{ $baseUrl := .Config.BaseURL }}
-      {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
-      {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
-    <div class="col-md-6">
+    {{ $baseUrl := .Config.BaseURL }}
+    {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
+    {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
+    <div class="col-md-5">
       <table class="table table-borderless table-sm w-auto">
         <tbody>
         <tr>
@@ -74,23 +74,7 @@
         </tbody>
       </table>
     </div>
-    <div class="col-md-6">
-      <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
-      <script type="text/javascript" src="vectortile-view-component/main.js"></script>
-      <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
-      <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
-      <p>{{ i18n "TileMatrixSetExample" }}:</p>
-      <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
-                          tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
-                          zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
-                          center-x="5.3896944" center-y="52.1562499"
-                          show-grid show-object-info>
-      </app-vectortile-view>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-7 offset-md-5">
+    <div class="col-md-7">
       <table class="table table-borderless table-sm w-auto">
         <tbody>
           <tr>
@@ -111,6 +95,19 @@
           </tr>
         </tbody>
       </table>
+      <div class="col-md-10 offset-md-2">
+        <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
+        <script type="text/javascript" src="vectortile-view-component/main.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+        <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
+          tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
+          zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
+          center-x="5.3896944" center-y="52.1562499" show-grid
+          show-object-info>
+        </app-vectortile-view>
+      </div>
     </div>
   </div>
 

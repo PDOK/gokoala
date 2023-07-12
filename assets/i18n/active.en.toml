@@ -75,7 +75,6 @@ ZoomLevel = "Zoomlevel"
 MinimumValue = "Minimum value"
 MaximumValue = "Maximum value"
 View = "View"
-TileMatrixSetExample = "Tile Matrix Set example"
 
 # Styles/Style/StyleMetadata page
 StylingExample = "Styling example"
