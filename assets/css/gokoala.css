@@ -4,6 +4,7 @@
 :root {
     --bs-blue: #1a1e4f;
     --lightblue: #add8e6;
+    --bs-body-color: var(--bs-blue);
 }
 
 /* navbar */
