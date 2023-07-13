@@ -50,7 +50,7 @@
                         {{ range $stylesheet := .Params.Stylesheets }}
                         {{ $stylesheet.Title }}
                         <ul>
-                            <li><a href="{{ $stylesheet.Specification}}">Specification</a></li>
+                            <li><a href="{{ $stylesheet.Specification}}" target="_blank">Specification</a></li>
                             <li>Version: {{ $stylesheet.Version }}</li>
                             <li>Native: {{ if $stylesheet.Native }}Yes{{ else }}No{{ end }}</li>
                         </ul>
