@@ -22,7 +22,11 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              {
+                "glob": "**/*",
+                "input": "src/assets/teststyles",
+                "output": "styles"
+              }
             ],
             "styles": [
               "node_modules/ol/ol.css",
