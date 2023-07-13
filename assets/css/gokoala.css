@@ -4,6 +4,7 @@
 :root {
     --bs-blue: #1a1e4f;
     --lightblue: #add8e6;
+    --bs-body-color: var(--bs-blue);
 }
 
 /* navbar */
@@ -52,6 +53,4 @@ td {
 
 .vectortile-view {
     flex-grow: 1;
-    padding: 5px;
-    margin: 5px;
 }

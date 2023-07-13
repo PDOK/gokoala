@@ -66,6 +66,16 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 				InstanceName: style.ID + "." + *stylesheet.Link.Format,
 			}
 			e.RenderTemplatesWithParams(nil, nil, styleKey)
+			styleBreadCrumbs := stylesBreadcrumbs
+			styleBreadCrumbs = append(styleBreadCrumbs, []engine.Breadcrumb{
+				{
+					Name: style.Title,
+					Path: "styles/" + style.ID,
+				},
+			}...)
+			e.RenderTemplatesWithParams(style,
+				styleBreadCrumbs,
+				engine.NewTemplateKeyWithName(templatesDir+"style.go.html", style.ID))
 		}
 	}
 
@@ -91,19 +101,25 @@ func (s *Styles) Style() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		styleID := chi.URLParam(r, "style")
 		styleFormat := s.engine.CN.NegotiateFormat(r)
-		var instanceName string
-		if engine.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
-			instanceName = styleID + "." + styleFormat
+		// TODO: improve?
+		var key engine.TemplateKey
+		if styleFormat == engine.FormatHTML {
+			key = engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"style.go.html", styleID, s.engine.CN.NegotiateLanguage(w, r))
 		} else {
-			styleFormat = "mapbox"
-			instanceName = styleID + ".mapbox"
-		}
-		key := engine.TemplateKey{
-			Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
-			Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
-			Format:       styleFormat,
-			InstanceName: instanceName,
-			Language:     s.engine.CN.NegotiateLanguage(w, r),
+			var instanceName string
+			if engine.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
+				instanceName = styleID + "." + styleFormat
+			} else {
+				styleFormat = "mapbox"
+				instanceName = styleID + ".mapbox"
+			}
+			key = engine.TemplateKey{
+				Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
+				Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
+				Format:       styleFormat,
+				InstanceName: instanceName,
+				Language:     s.engine.CN.NegotiateLanguage(w, r),
+			}
 		}
 		s.engine.ServePage(w, r, key)
 	}
