@@ -21,7 +21,7 @@ support: >-
 datasetDetails:
   - name: Dataset-aanbieder
     value: Kadaster (LV-BGT)
-  - name: Kosten
+  - name: Kosten afname
     value: Geen
 metadataLinks:
   api: https://example.com/my-api/metadata
