@@ -73,7 +73,7 @@ export interface FillPattern {
   stops: Array<string[]>;
 }
 
-export interface spritedata {
+export interface SpriteData {
   height: number;
   pixelRatio: number;
   width: number;
@@ -110,9 +110,9 @@ export class MapboxStyleService {
     )
   }
 
-  getMapboxSpriteData(url: string): Observable<spritedata> {
+  getMapboxSpriteData(url: string): Observable<SpriteData> {
     return (
-      this.http.get<spritedata>(url)
+      this.http.get<SpriteData>(url)
     )
   }
 
@@ -185,7 +185,6 @@ export class MapboxStyleService {
 
 
   private PushItem(title: string, layer: Layer, names: LegendItem[], cfg: LegendCfg, properties: IProperties = {}) {
-    // console.log(JSON.stringify(properties))
     if (!names.find(e => e.title === title)) {
       const i: LegendItem = {
         name: layer.id,

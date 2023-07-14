@@ -1,27 +1,14 @@
-import { AfterViewInit, Component, Directive, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import apply, { getStyleForLayer, applyStyle, recordStyleLayer, stylefunction } from 'ol-mapbox-style';
+import { recordStyleLayer, stylefunction } from 'ol-mapbox-style';
 
-import { Style, Fill, Stroke } from 'ol/style';
-import { NetherlandsRDNewQuadDefault } from '../mapprojection';
+import { Style } from 'ol/style';
 import VectorTileLayer from 'ol/layer/VectorTile';
-import VectorLayer from 'ol/layer/Vector';
-import { Feature } from 'ol';
-import { Geometry, LineString, Point, Polygon } from 'ol/geom';
-import { LegendCfg, LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service';
-import * as OL from 'ol/Map';
-import { Vector } from 'ol/source';
-import VectorSource from 'ol/source/Vector';
+import { LegendCfg, LegendItem, MapboxStyleService } from '../mapbox-style.service';
 import { Projection } from 'ol/proj';
 import { toContext } from 'ol/render';
-import CircleStyle from 'ol/style/Circle';
-import VectorContext from 'ol/render/VectorContext';
 import CanvasImmediateRenderer from 'ol/render/canvas/Immediate';
-import { StyleFunction, StyleLike } from 'ol/style/Style';
-
-
-
-
+import { StyleFunction } from 'ol/style/Style';
 
 
 
