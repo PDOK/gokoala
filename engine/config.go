@@ -75,6 +75,7 @@ type Config struct {
 	License            License         `yaml:"license" validate:"required"`
 	Support            *string         `yaml:"support"`
 	DatasetDetails     []DatasetDetail `yaml:"datasetDetails"`
+	MetadataLinks      *MetadataLinks  `yaml:"metadataLinks"`
 	DatasetCatalogURL  YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
 	BaseURL            YAMLURL         `yaml:"baseUrl" validate:"required,url"`
 	Resources          *Resources      `yaml:"resources"`
@@ -107,6 +108,11 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 type DatasetDetail struct {
 	Name  string `yaml:"name"`
 	Value string `yaml:"value"`
+}
+
+type MetadataLinks struct {
+	API     *YAMLURL `yaml:"api" validate:"omitempty,url"`
+	Dataset *YAMLURL `yaml:"dataset" validate:"omitempty,url"`
 }
 
 type Resources struct {

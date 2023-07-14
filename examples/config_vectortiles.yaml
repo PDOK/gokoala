@@ -23,9 +23,9 @@ datasetDetails:
     value: Kadaster (LV-BGT)
   - name: Kosten
     value: Geen
-  - name: Metadata dataset
-    value: >-
-      [Link to metadata](https://example.com/my-dataset/metadata)
+metadataLinks:
+  api: https://example.com/my-api/metadata
+  dataset: https://example.com/my-dataset/metadata
 datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
 availableLanguages:

@@ -53,6 +53,26 @@
                 </tr>
                 {{ end }}
                 {{ end }}
+                {{ if .Config.MetadataLinks.API }}
+                <tr>
+                    <td class="w-25 text-nowrap">
+                        <b>Metadata API</b>
+                    </td>
+                    <td>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.MetadataLinks.API }}" target="_blank">Nationaal Georegister</a>
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if .Config.MetadataLinks.Dataset }}
+                <tr>
+                    <td class="w-25 text-nowrap">
+                        <b>Metadata dataset</b>
+                    </td>
+                    <td>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.MetadataLinks.Dataset }}" target="_blank">Nationaal Georegister</a>
+                    </td>
+                </tr>
+                {{ end }}
             </tbody>
         </table>
     </div>
