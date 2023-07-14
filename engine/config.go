@@ -75,7 +75,7 @@ type Config struct {
 	License            License         `yaml:"license" validate:"required"`
 	Support            *string         `yaml:"support"`
 	DatasetDetails     []DatasetDetail `yaml:"datasetDetails"`
-	MetadataLinks      *MetadataLinks  `yaml:"metadataLinks"`
+	MetadataLinks      MetadataLinks   `yaml:"metadataLinks"`
 	DatasetCatalogURL  YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
 	BaseURL            YAMLURL         `yaml:"baseUrl" validate:"required,url"`
 	Resources          *Resources      `yaml:"resources"`
