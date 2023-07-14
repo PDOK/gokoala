@@ -42,10 +42,12 @@ export interface MapboxStyle {
 }
 
 export interface Layer {
+  filterCopy: Filter
   id: string;
   type: LayerType;
   paint: Paint;
   source: string;
+  layout?:         Layout;
   "source-layer": string;
   filter: Filter;
 
@@ -65,6 +67,23 @@ export interface Paint {
   "fill-pattern"?: FillPattern;
   "circle-radius"?: number;
   "circle-color"?: FillPattern | string;
+}
+
+export enum Line {
+  Round = "round",
+}
+
+export interface Layout {
+  visibility?:         string;
+  "line-join"?:        Line;
+  "line-cap"?:         Line;
+  "text-field"?:       string;
+  "text-size"?:        number;
+  "text-font"?:        string[];
+  "symbol-placement"?:  LayerType;
+  "icon-image"?:       string;
+  "icon-size"?:        number;
+  "text-offset"?:      number[];
 }
 
 export interface FillPattern {
@@ -126,7 +145,9 @@ export class MapboxStyleService {
 
   removefilters(style: MapboxStyle): MapboxStyle {
     style.layers.forEach((layer: Layer) => {
+      layer.filterCopy= layer.filter
       layer.filter = []
+     
 
 
     })
@@ -148,8 +169,24 @@ export class MapboxStyleService {
     let names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
       const title = this.capitalizeFirstLetter(layer['source-layer']);
-      //   const title = layer['id'];
-      this.PushItem(title, layer, names, cfg, {});
+      //   const title = layer['id'] + " "+ JSON.stringify(layer.layout?.['text-size'] + JSON.stringify(layer.filterCopy))
+          
+          
+          
+          
+          
+          
+          
+          
+         
+      let p: IProperties = {}
+
+      if (layer.layout?.['text-field'])
+      {
+        let label= layer.layout?.['text-field'].replace("{", "").replace("}", "")        
+        p['' + label + '']= label.substring(0,6) 
+      }
+      this.PushItem(title, layer, names, cfg, p);
       let paint = layer.paint['circle-color'] as FillPattern
       if (layer.type == LayerType.Fill) {
         paint = layer.paint['fill-color'] as FillPattern
@@ -170,9 +207,14 @@ export class MapboxStyleService {
     let sorted = names.sort((a, b) => a.title.localeCompare(b.title))
     let modified = sorted.map((x, i) => {
       x.labelY = cfg.itemHeight * i + cfg.itemHeight / 2 - cfg.iconOfset / 2
+     
       x.feature = this.NewFeature(x, cfg, cfg.itemHeight * i)
+
       x.feature.set('layer', x.sourceLayer)
+     // x.feature.set( 'tekst', 'bla bla') 
+     
       x.feature.setProperties(x.properties)
+     
       return x
     })
     return modified

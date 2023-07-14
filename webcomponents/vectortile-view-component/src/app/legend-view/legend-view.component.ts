@@ -133,27 +133,34 @@ export class LegendViewComponent implements OnInit {
 
 
   drawItem(item: LegendItem, index: number, vectorContext: CanvasImmediateRenderer, ctx: CanvasRenderingContext2D) {
-    console.log('draw: ' + item.name + ' ' + item.style.length)
-    if (item.title == 'pattern pand') {
-      console.log('draw gesloopt : ' + item.name + ' ' + item.style.length)
-      console.log(JSON.stringify(item.style))
-        console.log(JSON.stringify(item))
-        //vectorContext.drawImage(image, dx, dy)
+
+    //if (item.title == 'Begroeidterreindeel') {
+     // console.log('Openbareruimtelabel : ' + item.name + ' ' + item.style.length)
+     //  console.log(JSON.stringify(item))
+      //  //vectorContext.drawImage(image, dx, dy)
 
 
-    }
+   // }
     if (item.style) {
+      let drawOnce= true
       item.style.forEach((style) => {
         vectorContext.setStyle(style)
         const color = style.getRenderer()
         console.log(JSON.stringify(color))
+        if (!style.getText())   {
+        vectorContext.drawFeature(item.feature!, style);    
+        } else
+        { if (drawOnce)
+          vectorContext.drawFeature(item.feature!, style);  
+          drawOnce= false  
 
 
-        vectorContext.drawFeature(item.feature!, style);
-     
+        }
 
-
+        
       })
+
+
     }
     else {
       console.log('null draw: ' + item.name)
