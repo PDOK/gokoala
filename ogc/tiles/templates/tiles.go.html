@@ -102,9 +102,8 @@
       <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
-        zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
-        center-x="5.3896944" center-y="52.1562499" show-grid
-        show-object-info>
+        center-x="5.3896944" center-y="52.1562499"
+        show-grid="true" show-object-info="true">
       </app-vectortile-view>
     </div>
   </div>
@@ -134,7 +133,6 @@
       // update tile-url and zoom in app-vectortile-view
       const viewer = document.getElementById('tiles-vectortile-view')
       viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
-      viewer.setAttribute('zoom', tilesetZoom)
     }, false);
   </script>
 {{end}}
