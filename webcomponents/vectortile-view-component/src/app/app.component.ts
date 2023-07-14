@@ -1,6 +1,5 @@
 import {
   Component,
-  OnInit,
   Input,
   ElementRef,
   Output,
@@ -37,7 +36,6 @@ import LayerGroup from 'ol/layer/Group';
 import { FeatureLike } from 'ol/Feature';
 import { CommonModule } from '@angular/common';
 import { Link, Matrix, MatrixsetService } from './matrixset.service';
-import { Tile } from 'ol';
 
 export type NgChanges<
   Component extends object,
@@ -280,14 +278,12 @@ export class AppComponent {
 
     const mapdiv: HTMLElement =
       this.elementRef.nativeElement.querySelector("[id='map']");
-    // mapdiv.innerHTML= ''
+   
 
     this.mapWidth = this.elementRef.nativeElement.offsetWidth;
-    this.mapHeight = this.elementRef.nativeElement.offsetHeight;
-    //if (!map.getTarget()) {
+    this.mapHeight = this.elementRef.nativeElement.offsetHeight;    
     map.setTarget(mapdiv);
-
-    //}
+   
   }
 
   private checkParams(): void {
@@ -368,8 +364,6 @@ export class AppComponent {
     if (this.styleUrl) {
       applyStyle(vectorTileLayer, this.styleUrl)
         .then(() => {
-          //console.log('style loaded ' + this.styleUrl);
-
           //overrule source url from style
           if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
             vectorTileLayer.getSource()?.setUrl(this.tileUrl + this.selector);
