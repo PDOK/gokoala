@@ -7,6 +7,7 @@ On = "op"
 Keywords = "Trefwoorden"
 License = "Licentie"
 Support = "Support"
+ViewInThe = "Bekijk in het"
 SubjectToChange = "naam/definitie kan in toekomst mogelijk wijzigen"
 LinkToExternalWebsite = "link naar externe website"
 Description = "Omschrijving"
@@ -60,19 +61,19 @@ Draft = "Concept"
 NetherlandsRDNewQuadAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
 <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
-tile volgens het <a href="/tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
+tile volgens het <a href="tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
 In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>
 in te laden."""
 WebMercatorQuadAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
 <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
-tile volgens het <a href="/tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
+tile volgens het <a href="tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
 In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>
 in te laden."""
 EuropeanETRS89_GRS80Quad_DraftAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
 <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
-tile volgens het <a href="/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme.
+tile volgens het <a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme.
 In sommige tools is het ook mogelijk om dit via <a href="tiles/EuropeanETRS89_GRS80Quad_Draft?f=tilejson">TileJSON</a>
 in te laden."""
 AvailableZoomLevels = "De tiles zijn beschikbaar op de volgende zoomniveaus"
@@ -81,11 +82,12 @@ MinimumValue = "Minimale waarde"
 MaximumValue = "Maximale waarde"
 View = "Bekijk"
 
-# Styles/StyleMetadata page
-AvailableStyles = "Beschikbare style(s)"
+# Styles/Style/StyleMetadata page
 StylingExample = "Voorbeeld styling"
 StyleMetadata = "Bekijk metadata"
 AdditionalLinks = "Aanvullende links"
+LayerExample = "Laag voorbeeld"
+LayerName = "Laagnaam"
 
 # Collections/Collection page
 ViewCollectionAs = "Bekijk collectie als"

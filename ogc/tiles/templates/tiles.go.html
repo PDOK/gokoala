@@ -3,7 +3,7 @@
   <hgroup>
     <h1 class="title">{{ .Config.Title }} - {{ i18n "Tiles" }}</h1>
   </hgroup>
-  <div class="row">
+  <div class="row py-3">
     <div class="col-md-12">
       <p>
         {{ i18n "TilesText" }}
@@ -11,15 +11,17 @@
     </div>
   </div>
   <div class="row">
-      {{ $baseUrl := .Config.BaseURL }}
-      {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
-      {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
-    <div class="col-md-4">
-      <table class="table">
+    {{ $baseUrl := .Config.BaseURL }}
+    {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
+    {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:4258" "EuropeanETRS89_GRS80Quad_Draft" "EPSG:3857" "WebMercatorQuad" }}
+    <div class="col-md-5">
+      <table class="table table-borderless table-sm w-auto">
         <tbody>
         <tr>
-          <th>Tile Matrix Set</th>
-          <td>
+          <td class="w-auto text-nowrap">
+            <b>Tile Matrix Set</b>
+          </td>
+          <td class="w-auto px-2">
               {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
                   {{ get $projections $defaultSrs.Srs }}
               {{ else }}
@@ -32,97 +34,105 @@
           </td>
         </tr>
         <tr>
-          <th>Schema</th>
-          <td id="field-schema"><a id="href-schema"
-                                   href="https://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $defaultSrs.Srs }}">HTML
-              ({{ i18n "LinkToExternalWebsite" }})</a></td>
-        </tr>
-        <tr>
             {{ if .Config.LastUpdatedBy }}
-                <th>{{ i18n "UpdatedBy" }} {{ .Config.LastUpdatedBy }} {{ i18n "On" }}</th>
+                <td class="w-auto text-nowrap">
+                  <b>{{ i18n "UpdatedBy" }} {{ .Config.LastUpdatedBy }} {{ i18n "On" }}</b>
+                </td>
             {{ else }}
-                <th>{{ i18n "LastUpdated" }}</th>
+                <td class="w-auto text-nowrap">
+                  <b>{{ i18n "LastUpdated" }}</b>
+                </td>
             {{ end }}
-            <td id="field-updated">{{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}</td>
+            <td id="field-updated" class="w-auto px-2">
+              {{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}
+            </td>
         </tr>
         <tr>
-          <th>Type</th>
-          <td id="field-type">{{ (index .Config.OgcAPI.Tiles.Types 0) }}</td>
+          <td class="w-auto text-nowrap">
+            <b>Type</b>
+          </td>
+          <td id="field-type" class="w-auto px-2">
+            {{ (index .Config.OgcAPI.Tiles.Types 0) | title }}
+          </td>
         </tr>
         <tr>
-          <th>CRS</th>
-          <td id="field-srs">{{ $defaultSrs.Srs }}</td>
+          <td class="w-auto text-nowrap">
+            <b>CRS</b>
+          </td>
+          <td id="field-srs" class="w-auto px-2">
+            {{ $defaultSrs.Srs }}
+          </td>
         </tr>
         <tr>
-          <th>Metadata</th>
-          <td id="field-metadata"><a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">{{ i18n "View" }} {{ get $projections $defaultSrs.Srs }} tiles metadata</a>
+          <td class="w-auto text-nowrap">
+            <b>Metadata</b>
+          </td>
+          <td id="field-metadata" class="w-auto px-2">
+            <a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">{{ i18n "View" }} {{ get $projections $defaultSrs.Srs }} tiles metadata</a>
           </td>
         </tr>
         </tbody>
       </table>
     </div>
-    <div class="col-md-8">
-
+    <div class="col-md-7">
+      <table class="table table-borderless table-sm w-auto">
+        <tbody>
+          <tr>
+            <td class="w-auto text-nowrap">
+              <b>URL template</b>
+            </td>
+            <td class="w-auto px-2">
+              <code id="field-url-template">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt</code>
+            </td>
+          </tr>
+          <tr>
+            <td class="w-auto text-nowrap">
+              <b>{{ i18n "Example" }} URL</b>
+            </td>
+            <td class="w-auto px-2">
+              <code id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
       <script type="text/javascript" src="vectortile-view-component/main.js"></script>
       <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
       <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
-      <app-vectortile-view id="tile-vectortile-view" class="vectortile-view"
-                          tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-                          {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}"{{ end }}
-                          zoom="{{ $defaultSrs.ZoomLevelRange.End }}"
-                          center-x="5.3896944" center-y="52.1562499"
-                          show-grid show-object-info>
+      <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
+        tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+        {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
+        center-x="5.3896944" center-y="52.1562499"
+        show-grid="true" show-object-info="true">
       </app-vectortile-view>
-
-      <table class="table">
-        <tbody>
-        <tr>
-          <th>URL template</th>
-          <td id="field-url-template">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt
-          </td>
-        </tr>
-        <tr>
-          <th>{{ i18n "Example" }} URL</th>
-          <td id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf
-          </td>
-        </tr>
-        </tbody>
-      </table>
     </div>
   </div>
-
   <script>
-      document.addEventListener('input', function (event) {
-          // only operate on srs dropdown
-          if (event.target.id !== 'srs') return;
-
-          const selectedSrs = event.target.value
-          const srsInteger = selectedSrs.replace(/^EPSG:/, '')
-          var tileset
-          var tilesetZoom
-
-          {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
-          {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
-              tileset = '{{ get $projections $srs.Srs }}'
-              tilesetZoom = {{ $srs.ZoomLevelRange.End }}
-          }{{ end }}
-
-          const srsField = document.getElementById('field-srs');
-          const urlTemplateField = document.getElementById('field-url-template');
-          const urlExampleField = document.getElementById('field-url-example');
-          const metadataHref = document.getElementById('href-metadata');
-          const schemaHref = document.getElementById('href-schema');
-          srsField.textContent = selectedSrs;
-          urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
-          urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/' + tilesetZoom + '/0/0.pbf';
-          metadataHref.setAttribute('href', 'tiles/' + tileset);
-          schemaHref.setAttribute('href', 'https://www.opengis.net/def/crs/EPSG/0/' + srsInteger);
-
-          // update tile-url in app-vectortile-view
-          const viewer = document.getElementById('tile-vectortile-view')
-          viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
-          viewer.setAttribute('zoom', tilesetZoom)
-      }, false);
+    document.addEventListener('input', function (event) {
+      // only operate on srs dropdown
+      if (event.target.id !== 'srs') return;
+      // update table fields
+      const selectedSrs = event.target.value
+      const srsInteger = selectedSrs.replace(/^EPSG:/, '')
+      var tileset
+      var tilesetZoom
+      {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
+      {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
+        tileset = '{{ get $projections $srs.Srs }}'
+        tilesetZoom = {{ $srs.ZoomLevelRange.End }}
+      }{{ end }}
+      const srsField = document.getElementById('field-srs');
+      const urlTemplateField = document.getElementById('field-url-template');
+      const urlExampleField = document.getElementById('field-url-example');
+      const metadataHref = document.getElementById('href-metadata');
+      srsField.textContent = selectedSrs;
+      urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
+      urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/' + tilesetZoom + '/0/0.pbf';
+      metadataHref.textContent = '{{ i18n "View" }} ' + tileset + ' tiles metadata';
+      metadataHref.setAttribute('href', 'tiles/' + tileset);
+      // update tile-url and zoom in app-vectortile-view
+      const viewer = document.getElementById('tiles-vectortile-view')
+      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
+    }, false);
   </script>
 {{end}}

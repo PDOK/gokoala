@@ -6,7 +6,7 @@
     <h2 class="title">{{ .Config.Title }} - {{ i18n "Collections" }}</h2>
 </hgroup>
 
-<section class="row row-cols-md-4 g-4">
+<section class="row row-cols-md-4 g-4 py-3">
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
@@ -23,7 +23,7 @@
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
                         {{ markdown $coll.Metadata.Description }}
                     {{ end }}
-                    <small class="text-body-secondary">{{ i18n "ViewCollectionAs" }} <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json">JSON</a></small>
+                    <small class="text-body-secondary">{{ i18n "ViewCollectionAs" }} <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json" target="_blank">JSON</a></small>
                 </div>
                 <ul class="list-group list-group-flush">
                     {{ if and $coll.Metadata $coll.Metadata.Keywords }}
@@ -56,7 +56,7 @@
                     {{ if and $coll.Metadata $coll.Metadata.Extent }}
                     <li class="list-group-item">
                         <strong>{{ i18n "Extent" }}</strong>
-                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}">{{ $coll.Metadata.Extent.Srs }}</a>):
+                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}" target="_blank">{{ $coll.Metadata.Extent.Srs }}</a>):
                         {{ $coll.Metadata.Extent.Bbox | join ", " }}
                     </li>
                     {{ end }}

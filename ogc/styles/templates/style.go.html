@@ -1,0 +1,23 @@
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{{ define "content" }}
+{{ if .Params }}
+{{ $baseUrl := .Config.BaseURL }}
+<hgroup>
+    <h1 class="title">{{ .Config.Title }} - {{ .Params.Title }}</h1>
+</hgroup>
+<div class="row py-3">
+    <div class="col-md-12">
+        {{ markdown .Params.Description }}
+    </div>
+    <div class="col-md-6">
+        <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
+        <script type="text/javascript" src="vectortile-view-component/main.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
+        <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+        <app-legend-view id="style-legend-view"
+                         style-url="{{ $baseUrl }}/styles/{{ .Params.ID }}?f=mapbox">
+        </app-legend-view>
+    </div>
+</div>
+{{end}}
+{{end}}

@@ -1,18 +1,18 @@
 .objectinfo {
-    margin-top: 1em;
-    margin-bottom: 1em;
-    margin-right:1em; 
-    background-color: white;    
-    overflow-y:scroll; 
-    max-height: 60vh;   
-    font-family: var(--font-family, "Roboto");   
-    
-  }
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-right:0; 
+  background-color: white;    
+  overflow-y:auto; 
+  overflow-x:auto; 
+  max-height:98%;
+}
 
-  .featuretable {
-    text-align: left;
-  }
-  .featuretablecaption {  
-    text-align: left;
-    font-weight: bold;
-  }
+.featuretable {
+  text-align: left;
+}
+
+.featuretablecaption {  
+  text-align: left;
+  font-weight: bold;
+}

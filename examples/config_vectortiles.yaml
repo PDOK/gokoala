@@ -21,11 +21,12 @@ support: >-
 datasetDetails:
   - name: Dataset-aanbieder
     value: Kadaster (LV-BGT)
-  - name: Kosten
+  - name: Kosten afname
     value: Geen
-  - name: Metadata dataset
-    value: >-
-      [Link to metadata](https://example.com/my-dataset/metadata)
+datasetMetadata:
+  source: Example Register
+  api: https://example.com/my-api/metadata
+  dataset: https://example.com/my-dataset/metadata
 datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
 availableLanguages:

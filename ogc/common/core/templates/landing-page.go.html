@@ -15,7 +15,7 @@
             <tbody>
                 {{ if .Config.Keywords }}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ i18n "Keywords" }}</b>
                     </td>
                     <td>
@@ -24,16 +24,16 @@
                 </tr>
                 {{ end }}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ i18n "License" }}</b>
                     </td>
                     <td>
-                        <a href="{{ .Config.License.URL }}">{{ .Config.License.Name }}</a>
+                        <a href="{{ .Config.License.URL }}" target="_blank">{{ .Config.License.Name }}</a>
                     </td>
                 </tr>
                 {{ if .Config.Support}}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ i18n "Support" }}</b>
                     </td>
                     <td>
@@ -44,7 +44,7 @@
                 {{ if .Config.DatasetDetails }}
                 {{ range $detailField := .Config.DatasetDetails }}
                 <tr>
-                    <td class="w-25">
+                    <td class="w-25 text-nowrap">
                         <b>{{ $detailField.Name }}</b>
                     </td>
                     <td>
@@ -52,6 +52,26 @@
                     </td>
                 </tr>
                 {{ end }}
+                {{ end }}
+                {{ if .Config.DatasetMetadata.API }}
+                <tr>
+                    <td class="w-25 text-nowrap">
+                        <b>Metadata API</b>
+                    </td>
+                    <td>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.API }}" target="_blank">{{ .Config.DatasetMetadata.Source }}</a>
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if .Config.DatasetMetadata.Dataset }}
+                <tr>
+                    <td class="w-25 text-nowrap">
+                        <b>Metadata dataset</b>
+                    </td>
+                    <td>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.Dataset }}" target="_blank">{{ .Config.DatasetMetadata.Source }}</a>
+                    </td>
+                </tr>
                 {{ end }}
             </tbody>
         </table>

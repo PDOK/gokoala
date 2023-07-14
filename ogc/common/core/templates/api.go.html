@@ -3,92 +3,92 @@
 <hgroup>
     <h1 class="title">{{ .Config.Title }} - API {{ i18n "Specification" }}</h1>
 </hgroup>
-    <div class="row">
-        <div class="col-md-12">
-            {{ markdown .Config.Abstract }}
-            <table class="table table-borderless table-sm w-50">
-                <tbody>
+<div class="row py-3">
+    <div class="col-md-12">
+        {{ markdown .Config.Abstract }}
+        <table class="table table-borderless table-sm w-50">
+            <tbody>
+            <tr>
+                <td class="w-25">
+                    <b>{{ i18n "License" }}</b>
+                </td>
+                <td>
+                    <a href="{{ .Config.License.URL }}" target="_blank">{{ .Config.License.Name }}</a>
+                </td>
+            </tr>
+            {{ if .Config.Support}}
                 <tr>
-                    <td class="w-25">
-                        <b>{{ i18n "License" }}</b>
+                    <td>
+                        <b>{{ i18n "Support" }}</b>
                     </td>
                     <td>
-                        <a href="{{ .Config.License.URL }}">{{ .Config.License.Name }}</a>
+                        {{ markdown .Config.Support }}
                     </td>
                 </tr>
-                {{ if .Config.Support}}
-                    <tr>
-                        <td>
-                            <b>{{ i18n "Support" }}</b>
-                        </td>
-                        <td>
-                            {{ markdown .Config.Support }}
-                        </td>
-                    </tr>
-                {{ end }}
-                </tbody>
-            </table>
+            {{ end }}
+            </tbody>
+        </table>
 
-            <!-- Anchor node for Swagger -->
-            <div id="swagger-ui">
-                Loading...
-            </div>
-
-            <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui@4.5.0/dist/swagger-ui.min.css">
-            <link rel="stylesheet" type="text/css" href="css/swagger-ui-pdok.css">
-
-            <!-- Load Swagger -->
-            <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-bundle.js" charset="UTF-8"></script>
-            <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
-            <script>
-                // Redefine existing Swagger components.
-                //
-                // In this case we override the 'Info' component since we already provide these details in our HTML.
-                //
-                // Note: This is actually a React component but since we don't use any React features - it's an empty
-                // component after all - we don't include the React libs. When you do need to modify an existing
-                // component include the following libs:
-                // - https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js
-                // - https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js
-                // Do note that JSX is not supported since it requires Babel.js
-                class EmptyInfo {
-                    render() {
-                        return null
-                    }
-                }
-
-                // Create plugin to wire the redefined components
-                const GoKoalaLayoutPlugin = () => {
-                    return {
-                        // See https://github.com/swagger-api/swagger-ui/blob/master/src/core/components/layouts/base.jsx
-                        // for the components used in Swagger BaseLayout
-                        components: {
-                            InfoContainer: () => EmptyInfo
-                        }
-                    }
-                }
-
-                window.onload = function () {
-                    // Begin Swagger UI call region
-                    const ui = SwaggerUIBundle({
-                        url: "./api?f=json",
-                        dom_id: '#swagger-ui',
-                        deepLinking: true,
-                        presets: [
-                            SwaggerUIBundle.presets.apis,
-                            SwaggerUIStandalonePreset
-                        ],
-                        plugins: [
-                            GoKoalaLayoutPlugin,
-                            SwaggerUIBundle.plugins.DownloadUrl
-                        ],
-                        layout: "BaseLayout"
-                    });
-                    // End Swagger UI call region
-
-                    window.ui = ui
-                }
-            </script>
+        <!-- Anchor node for Swagger -->
+        <div id="swagger-ui">
+            Loading...
         </div>
+
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui@4.5.0/dist/swagger-ui.min.css">
+        <link rel="stylesheet" type="text/css" href="css/swagger-ui-pdok.css">
+
+        <!-- Load Swagger -->
+        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-bundle.js" charset="UTF-8"></script>
+        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@4.5.0/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+        <script>
+            // Redefine existing Swagger components.
+            //
+            // In this case we override the 'Info' component since we already provide these details in our HTML.
+            //
+            // Note: This is actually a React component but since we don't use any React features - it's an empty
+            // component after all - we don't include the React libs. When you do need to modify an existing
+            // component include the following libs:
+            // - https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js
+            // - https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js
+            // Do note that JSX is not supported since it requires Babel.js
+            class EmptyInfo {
+                render() {
+                    return null
+                }
+            }
+
+            // Create plugin to wire the redefined components
+            const GoKoalaLayoutPlugin = () => {
+                return {
+                    // See https://github.com/swagger-api/swagger-ui/blob/master/src/core/components/layouts/base.jsx
+                    // for the components used in Swagger BaseLayout
+                    components: {
+                        InfoContainer: () => EmptyInfo
+                    }
+                }
+            }
+
+            window.onload = function () {
+                // Begin Swagger UI call region
+                const ui = SwaggerUIBundle({
+                    url: "./api?f=json",
+                    dom_id: '#swagger-ui',
+                    deepLinking: true,
+                    presets: [
+                        SwaggerUIBundle.presets.apis,
+                        SwaggerUIStandalonePreset
+                    ],
+                    plugins: [
+                        GoKoalaLayoutPlugin,
+                        SwaggerUIBundle.plugins.DownloadUrl
+                    ],
+                    layout: "BaseLayout"
+                });
+                // End Swagger UI call region
+
+                window.ui = ui
+            }
+        </script>
     </div>
+</div>
 {{end}}
