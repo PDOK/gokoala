@@ -111,8 +111,8 @@ type DatasetDetail struct {
 }
 
 type MetadataLinks struct {
-	API     *YAMLURL `yaml:"api" validate:"omitempty,url"`
-	Dataset *YAMLURL `yaml:"dataset" validate:"omitempty,url"`
+	API     *string `yaml:"api" validate:"omitempty,url"`
+	Dataset *string `yaml:"dataset" validate:"omitempty,url"`
 }
 
 type Resources struct {
