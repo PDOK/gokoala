@@ -111,7 +111,7 @@ type DatasetDetail struct {
 }
 
 type DatasetMetadata struct {
-	Source  string  `yaml:"source" validate:"required"`
+	Source  string  `yaml:"source"`
 	API     *string `yaml:"api" validate:"omitempty,url"`
 	Dataset *string `yaml:"dataset" validate:"omitempty,url"`
 }
