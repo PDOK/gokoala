@@ -53,23 +53,23 @@
                 </tr>
                 {{ end }}
                 {{ end }}
-                {{ if .Config.MetadataLinks.API }}
+                {{ if .Config.DatasetMetadata.API }}
                 <tr>
                     <td class="w-25 text-nowrap">
                         <b>Metadata API</b>
                     </td>
                     <td>
-                        {{ i18n "ViewInThe" }} <a href="{{ .Config.MetadataLinks.API }}" target="_blank">Nationaal Georegister</a>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.API }}" target="_blank">{{ .Config.DatasetMetadata.Source }}</a>
                     </td>
                 </tr>
                 {{ end }}
-                {{ if .Config.MetadataLinks.Dataset }}
+                {{ if .Config.DatasetMetadata.Dataset }}
                 <tr>
                     <td class="w-25 text-nowrap">
                         <b>Metadata dataset</b>
                     </td>
                     <td>
-                        {{ i18n "ViewInThe" }} <a href="{{ .Config.MetadataLinks.Dataset }}" target="_blank">Nationaal Georegister</a>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.Dataset }}" target="_blank">{{ .Config.DatasetMetadata.Source }}</a>
                     </td>
                 </tr>
                 {{ end }}

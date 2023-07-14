@@ -23,7 +23,8 @@ datasetDetails:
     value: Kadaster (LV-BGT)
   - name: Kosten afname
     value: Geen
-metadataLinks:
+datasetMetadata:
+  source: Example Register
   api: https://example.com/my-api/metadata
   dataset: https://example.com/my-dataset/metadata
 datasetCatalogUrl: https://www.pdok.nl/datasets

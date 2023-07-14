@@ -75,7 +75,7 @@ type Config struct {
 	License            License         `yaml:"license" validate:"required"`
 	Support            *string         `yaml:"support"`
 	DatasetDetails     []DatasetDetail `yaml:"datasetDetails"`
-	MetadataLinks      MetadataLinks   `yaml:"metadataLinks"`
+	DatasetMetadata    DatasetMetadata `yaml:"datasetMetadata"`
 	DatasetCatalogURL  YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
 	BaseURL            YAMLURL         `yaml:"baseUrl" validate:"required,url"`
 	Resources          *Resources      `yaml:"resources"`
@@ -110,7 +110,8 @@ type DatasetDetail struct {
 	Value string `yaml:"value"`
 }
 
-type MetadataLinks struct {
+type DatasetMetadata struct {
+	Source  string  `yaml:"source" validate:"required"`
 	API     *string `yaml:"api" validate:"omitempty,url"`
 	Dataset *string `yaml:"dataset" validate:"omitempty,url"`
 }
