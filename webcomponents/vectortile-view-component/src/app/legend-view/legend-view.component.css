@@ -1,0 +1,17 @@
+
+.legendarea {
+    z-index: 1;
+    position: relative;
+    display: flex;
+    
+  }
+  
+  .canvasarea {
+    position: absolute;
+    flex: 1;
+    top: 0%;
+    left: 40%;
+    z-index: 2;
+
+  
+  }

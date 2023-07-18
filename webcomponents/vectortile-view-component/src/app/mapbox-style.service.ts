@@ -1,22 +1,23 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Circle, Fill, Stroke, Style } from 'ol/style';
-import { Observable } from 'rxjs';
-import { Feature } from 'ol';
-import { LineString, Point, Polygon } from 'ol/geom';
+import { HttpClient } from '@angular/common/http'
+import { Injectable } from '@angular/core'
+import { Circle, Fill, Stroke, Style } from 'ol/style'
+import { Observable } from 'rxjs'
+import { Feature } from 'ol'
+import { LineString, Point, Polygon } from 'ol/geom'
+import { StyleLike } from 'ol/style/Style'
 
 export interface IProperties {
   [key: string]: string
 }
 
 export type LegendItem = {
-  sourceLayer: any;
+  sourceLayer: any
   name: string,
   title: string,
   geoType: LayerType
   labelX: number,
   labelY: number | undefined
-  style: Style[],
+  style: StyleLike,
   feature: Feature | undefined
   properties: IProperties
 
@@ -24,49 +25,50 @@ export type LegendItem = {
 }
 
 export type LegendCfg = {
-  itemHeight: number;
+  itemHeight: number
   itemWidth: number,
-  iconOfset: number;
-  iconWidth: number;
-  iconHeight: number;
+  iconOfset: number
+  iconWidth: number
+  iconHeight: number
+  totalHeight: number
 }
 
 export interface MapboxStyle {
-  version: number;
-  name: string;
-  id: string;
-  sprite: string;
-  glyphs: string;
-  layers: Layer[];
-  sources: {};
+  version: number
+  name: string
+  id: string
+  sprite: string
+  glyphs: string
+  layers: Layer[]
+  sources: {}
 }
 
 export interface Layer {
   filterCopy: Filter
-  id: string;
-  type: LayerType;
-  paint: Paint;
-  source: string;
-  layout?:         Layout;
-  "source-layer": string;
-  filter: Filter;
+  id: string
+  type: LayerType
+  paint: Paint
+  source: string
+  layout?: Layout
+  "source-layer": string
+  filter: Filter
 
 
 }
 
 
-export type Filter = filterval[];
-type filterval = string | bigint | filterval[];
+export type Filter = filterval[]
+type filterval = string | bigint | filterval[]
 
 export interface Paint {
-  "fill-color"?: FillPattern | string;
-  "fill-opacity"?: number;
-  "line-color"?: string;
-  "line-width"?: number;
-  "fill-outline-color"?: string;
-  "fill-pattern"?: FillPattern;
-  "circle-radius"?: number;
-  "circle-color"?: FillPattern | string;
+  "fill-color"?: FillPattern | string
+  "fill-opacity"?: number
+  "line-color"?: string
+  "line-width"?: number
+  "fill-outline-color"?: string
+  "fill-pattern"?: FillPattern
+  "circle-radius"?: number
+  "circle-color"?: FillPattern | string
 }
 
 export enum Line {
@@ -74,30 +76,30 @@ export enum Line {
 }
 
 export interface Layout {
-  visibility?:         string;
-  "line-join"?:        Line;
-  "line-cap"?:         Line;
-  "text-field"?:       string;
-  "text-size"?:        number;
-  "text-font"?:        string[];
-  "symbol-placement"?:  LayerType;
-  "icon-image"?:       string;
-  "icon-size"?:        number;
-  "text-offset"?:      number[];
+  visibility?: string
+  "line-join"?: Line
+  "line-cap"?: Line
+  "text-field"?: string
+  "text-size"?: number
+  "text-font"?: string[]
+  "symbol-placement"?: LayerType
+  "icon-image"?: string
+  "icon-size"?: number
+  "text-offset"?: number[]
 }
 
 export interface FillPattern {
-  property: string;
-  type: string;
-  stops: Array<string[]>;
+  property: string
+  type: string
+  stops: Array<string[]>
 }
 
 export interface SpriteData {
-  height: number;
-  pixelRatio: number;
-  width: number;
-  x: number;
-  y: number;
+  height: number
+  pixelRatio: number
+  width: number
+  x: number
+  y: number
 }
 
 
@@ -112,7 +114,7 @@ export enum LayerType {
 }
 
 export function exhaustiveGuard(_value: never): never {
-  throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`);
+  throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
 
 @Injectable({
@@ -145,9 +147,9 @@ export class MapboxStyleService {
 
   removefilters(style: MapboxStyle): MapboxStyle {
     style.layers.forEach((layer: Layer) => {
-      layer.filterCopy= layer.filter
+      layer.filterCopy = layer.filter
       layer.filter = []
-     
+
 
 
     })
@@ -159,34 +161,36 @@ export class MapboxStyleService {
     return style
   }
 
+ 
+
 
   isFillPatternWithStops(paint: string | FillPattern | undefined): paint is FillPattern {
-    return (paint as FillPattern).stops !== undefined;
+    return (paint as FillPattern).stops !== undefined
   }
 
 
   getItems(style: MapboxStyle, cfg: LegendCfg): LegendItem[] {
     let names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
-      const title = this.capitalizeFirstLetter(layer['source-layer']);
-      //   const title = layer['id'] + " "+ JSON.stringify(layer.layout?.['text-size'] + JSON.stringify(layer.filterCopy))
-          
-          
-          
-          
-          
-          
-          
-          
-         
+      //const title = this.capitalizeFirstLetter(layer['source-layer']);
+      const title = layer['id'] + " " + JSON.stringify(layer.layout?.['text-size'] + JSON.stringify(layer.filterCopy))
+
+
+
+
+
+
+
+
+
       let p: IProperties = {}
 
-      if (layer.layout?.['text-field'])
-      {
-        let label= layer.layout?.['text-field'].replace("{", "").replace("}", "")        
-        p['' + label + '']= label.substring(0,6) 
+      if (layer.layout?.['text-field']) {
+        let label = layer.layout?.['text-field'].replace("{", "").replace("}", "")
+        p['' + label + ''] = label.substring(0, 6)
       }
-      this.PushItem(title, layer, names, cfg, p);
+      this.PushItem(title, layer, names, cfg, p)
+
       let paint = layer.paint['circle-color'] as FillPattern
       if (layer.type == LayerType.Fill) {
         paint = layer.paint['fill-color'] as FillPattern
@@ -199,7 +203,7 @@ export class MapboxStyleService {
           paint.stops.forEach(stop => {
             let prop: IProperties = {}
             prop['' + paint.property + ''] = stop[0]
-            this.PushItem(stop[0], layer, names, cfg, prop);
+            this.PushItem(stop[0], layer, names, cfg, prop)
           })
         }
       }
@@ -207,21 +211,21 @@ export class MapboxStyleService {
     let sorted = names.sort((a, b) => a.title.localeCompare(b.title))
     let modified = sorted.map((x, i) => {
       x.labelY = cfg.itemHeight * i + cfg.itemHeight / 2 - cfg.iconOfset / 2
-     
+
       x.feature = this.NewFeature(x, cfg, cfg.itemHeight * i)
 
       x.feature.set('layer', x.sourceLayer)
-     // x.feature.set( 'tekst', 'bla bla') 
-     
+      // x.feature.set( 'tekst', 'bla bla') 
+
       x.feature.setProperties(x.properties)
-     
+
       return x
     })
     return modified
   }
 
   capitalizeFirstLetter(str: string): string {
-    return [...str][0].toUpperCase() + str.slice(1);
+    return [...str][0].toUpperCase() + str.slice(1)
   }
 
 
@@ -234,14 +238,18 @@ export class MapboxStyleService {
         geoType: layer.type,
         labelX: cfg.itemWidth * 3,
         labelY: undefined,
-        style: [],  
+        style: [],
         sourceLayer: layer['source-layer'],
         feature: undefined,
         properties: properties
-      };
-      names.push(i);
+      }
+      names.push(i)
     }
   }
+
+
+
+
 
   NewFeature(item: LegendItem, cfg: LegendCfg, y: number) {
     {
@@ -271,7 +279,7 @@ export class MapboxStyleService {
           })
 
         } default: {
-          exhaustiveGuard(item.geoType);
+          exhaustiveGuard(item.geoType)
 
         }
       }
@@ -282,11 +290,11 @@ export class MapboxStyleService {
     const fill = new Fill({
       color: 'rgba(255,255,255,0.4)',
 
-    });
+    })
     const stroke = new Stroke({
       color: '#3399CC',
       width: 1.25,
-    });
+    })
     const styles = [
       new Style({
         image: new Circle({
@@ -297,7 +305,7 @@ export class MapboxStyleService {
         fill: fill,
         stroke: stroke,
       }),
-    ];
+    ]
     return styles
   }
 }
