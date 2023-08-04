@@ -2168,7 +2168,7 @@
         "type": "string",
         "enum": [
           "NetherlandsRDNewQuad",
-          "EuropeanETRS89_GRS80Quad_Draft",
+          "EuropeanETRS89_LAEAQuad",
           "WebMercatorQuad"
         ]
       }
