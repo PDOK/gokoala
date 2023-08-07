@@ -2,26 +2,26 @@
 {
   {{ if .Config.OgcAPI.Tiles }}
   "tilejson": "2.2.0",
-  "name": "EuropeanETRS89_GRS80Quad_Draft",
-  "description": "EuropeanETRS89_GRS80Quad_Draft as TileJSON (https://github.com/maptiler/tilejson-spec/tree/custom-projection/2.2.0)",
+  "name": "EuropeanETRS89_LAEAQuad",
+  "description": "EuropeanETRS89_LAEAQuad as TileJSON (https://github.com/maptiler/tilejson-spec/tree/custom-projection/2.2.0)",
   "version": "1.0.0",
   "scheme": "xyz",
   "tiles": [
-    "{{ .Config.BaseURL }}/tiles/EuropeanETRS89_GRS80Quad_Draft/{z}/{y}/{x}?f=mvt"
+    "{{ .Config.BaseURL }}/tiles/EuropeanETRS89_LAEAQuad/{z}/{y}/{x}?f=mvt"
   ],
   {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-  {{ if eq $type.Srs "EPSG:4258" }}
+  {{ if eq $type.Srs "EPSG:3035" }}
   "minzoom": {{ $type.ZoomLevelRange.Start }},
   "maxzoom": {{ $type.ZoomLevelRange.End }},
   {{ end }}
   {{ end }}
   "profile": "custom",
-  "crs": "EPSG:4258",
+  "crs": "EPSG:3035",
 {{/*  "extent": [0, 0, 0, 0],*/}}
   "tile_matrix": [
     {{ $first := true }}
     {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-    {{ if eq $type.Srs "EPSG:4258" }}
+    {{ if eq $type.Srs "EPSG:3035" }}
     {{ if eq $type.ZoomLevelRange.Start 0 }}
     {{ if not $first }}{{else}} {{$first = false}} {{end}}
     {
@@ -31,8 +31,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 62779017.8571428,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -45,8 +45,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 31389508.9285714,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -59,8 +59,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 15694754.4642857,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -73,8 +73,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 7847377.23214285,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -87,8 +87,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 3923688.61607142,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -101,8 +101,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 1961844.30803571,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -115,8 +115,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 980922.154017857,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -129,8 +129,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 490461.077008928,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -143,8 +143,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 245230.538504464,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -157,8 +157,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 122615.269252232,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -171,8 +171,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 61307.634626116,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -185,8 +185,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 30653.817313058,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -199,8 +199,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 15326.908656529,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -213,8 +213,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 7663.45432826451,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}
@@ -227,8 +227,8 @@
       {{/*  "pixel_size": [0, 0],*/}}
       "scale_denominator": 3831.72716413225,
       "origin": [
-        64.0317714,
-        -43.2303347
+        5500000.0,
+        2000000.0
       ]
     }
     {{end}}

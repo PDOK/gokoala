@@ -41,26 +41,26 @@
           "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/NetherlandsRDNewQuad"
         }
       {{end}}
-      {{ if (eq $type.Srs "EPSG:4258") }}
+      {{ if (eq $type.Srs "EPSG:3035") }}
         {{if $index}},{{end}}
         {
           "links": [
             {
               "rel": "self",
-              "title": "Access the data as tiles in the tile matrix set 'EuropeanETRS89_GRS80Quad_Draft'",
-              "href": "{{ $baseUrl }}/tiles/EuropeanETRS89_GRS80Quad_Draft"
+              "title": "Access the data as tiles in the tile matrix set 'EuropeanETRS89_LAEAQuad'",
+              "href": "{{ $baseUrl }}/tiles/EuropeanETRS89_LAEAQuad"
             },
             {
               "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
               "type": "application/json",
-              "title": "Definition of a draft for EuropeanETRS89_GRS80Quad TileMatrixSet - name and definition may change",
-              "href": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft"
+              "title": "Definition of EuropeanETRS89_LAEAQuad TileMatrixSet",
+              "href": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
             }
           ],
           "dataType": "vector",
-          "crs": "https://www.opengis.net/def/crs/EPSG/0/4258",
-          "tileMatrixSetId": "EuropeanETRS89_GRS80Quad_Draft",
-          "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft"
+          "crs": "https://www.opengis.net/def/crs/EPSG/0/3035",
+          "tileMatrixSetId": "EuropeanETRS89_LAEAQuad",
+          "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
         }
       {{end}}
       {{ if (eq $type.Srs "EPSG:3857") }}

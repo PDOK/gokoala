@@ -31,18 +31,18 @@
           "id": "NetherlandsRDNewQuad"
         }
       {{end}}
-      {{ if (eq $type.Srs "EPSG:4258") }}
+      {{ if (eq $type.Srs "EPSG:3035") }}
         {{if $index}},{{end}}
         {
-          "title": "Geodetic Reference System 1980 ETRS89 for Europe",
+          "title": "Lambert Azimuthal Equal Area ETRS89 for Europe",
           "links": [
             {
               "rel": "self",
-              "title": "Draft tile matrix set 'EuropeanETRS89_GRS80Quad' - name and definition may change",
-              "href": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft"
+              "title": "Tile matrix set 'EuropeanETRS89_LAEAQuad'",
+              "href": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
             }
           ],
-          "id": "EuropeanETRS89_GRS80Quad_Draft"
+          "id": "EuropeanETRS89_LAEAQuad"
         }
       {{end}}
       {{ if (eq $type.Srs "EPSG:3857") }}

@@ -65,12 +65,12 @@ The tiles can be requested via the URL template below, where
 <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
 <a href="tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme. In some tools it is
 also possible to load this through <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>."""
-EuropeanETRS89_GRS80Quad_DraftAbstract = """
+EuropeanETRS89_LAEAQuadAbstract = """
 The tiles can be requested via the URL template below, where
 <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
-<a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a> tiling scheme.
+<a href="tileMatrixSets/EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
 In some tools it is also possible to load this through
-<a href="tiles/EuropeanETRS89_GRS80Quad_Draft?f=tilejson">TileJSON</a>."""
+<a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson">TileJSON</a>."""
 AvailableZoomLevels = "The tiles are available at the following zoomlevels"
 ZoomLevel = "Zoomlevel"
 MinimumValue = "Minimum value"

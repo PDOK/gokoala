@@ -20,7 +20,7 @@ ogcApi:
     types:
       - vector
     supportedSrs:
-      - srs: EPSG:4258
+      - srs: EPSG:3035
         zoomLevelRange:
           start: 0
           end: 14

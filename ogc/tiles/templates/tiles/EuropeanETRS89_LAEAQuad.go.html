@@ -1,15 +1,15 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title">EuropeanETRS89_GRS80Quad_Draft</h1>
+    <h1 class="title">EuropeanETRS89_LAEAQuad</h1>
 </hgroup>
 <div class="row py-3">
     <div class="col-md-12">
         <p>
-            {{ i18n "EuropeanETRS89_GRS80Quad_DraftAbstract" }}
+            {{ i18n "EuropeanETRS89_LAEAQuadAbstract" }}
         </p>
         <p>
-            <code>{{ .Config.BaseURL }}/tiles/EuropeanETRS89_GRS80Quad_Draft/{z}/{y}/{x}?f=mvt</code>
+            <code>{{ .Config.BaseURL }}/tiles/EuropeanETRS89_LAEAQuad/{z}/{y}/{x}?f=mvt</code>
         </p>
         <h2>Tile matrix set limits</h2>
         {{ i18n "AvailableZoomLevels" }}:
@@ -25,14 +25,14 @@
             </thead>
             <tbody>
             {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
-                {{ if eq $type.Srs "EPSG:4258" }}
+                {{ if eq $type.Srs "EPSG:3035" }}
                     {{ if eq $type.ZoomLevelRange.Start 0 }}
                         <tr>
                             <td>0</td>
                             <td>0</td>
                             <td>0</td>
                             <td>0</td>
-                            <td>1</td>
+                            <td>0</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 1) (ge $type.ZoomLevelRange.End 1) }}
@@ -41,7 +41,7 @@
                             <td>0</td>
                             <td>1</td>
                             <td>0</td>
-                            <td>2</td>
+                            <td>1</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 2) (ge $type.ZoomLevelRange.End 2) }}
@@ -50,7 +50,7 @@
                             <td>0</td>
                             <td>3</td>
                             <td>0</td>
-                            <td>7</td>
+                            <td>3</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 3) (ge $type.ZoomLevelRange.End 3) }}
@@ -59,7 +59,7 @@
                             <td>0</td>
                             <td>7</td>
                             <td>0</td>
-                            <td>15</td>
+                            <td>7</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 4) (ge $type.ZoomLevelRange.End 4) }}
@@ -68,7 +68,7 @@
                             <td>0</td>
                             <td>15</td>
                             <td>0</td>
-                            <td>31</td>
+                            <td>15</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 5) (ge $type.ZoomLevelRange.End 5) }}
@@ -77,7 +77,7 @@
                             <td>0</td>
                             <td>31</td>
                             <td>0</td>
-                            <td>63</td>
+                            <td>31</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 6) (ge $type.ZoomLevelRange.End 6) }}
@@ -86,7 +86,7 @@
                             <td>0</td>
                             <td>63</td>
                             <td>0</td>
-                            <td>127</td>
+                            <td>63</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 7) (ge $type.ZoomLevelRange.End 7) }}
@@ -95,7 +95,7 @@
                             <td>0</td>
                             <td>127</td>
                             <td>0</td>
-                            <td>255</td>
+                            <td>127</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 8) (ge $type.ZoomLevelRange.End 8) }}
@@ -104,7 +104,7 @@
                             <td>0</td>
                             <td>255</td>
                             <td>0</td>
-                            <td>511</td>
+                            <td>255</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 9) (ge $type.ZoomLevelRange.End 9) }}
@@ -113,7 +113,7 @@
                             <td>0</td>
                             <td>511</td>
                             <td>0</td>
-                            <td>1023</td>
+                            <td>511</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 10) (ge $type.ZoomLevelRange.End 10) }}
@@ -122,16 +122,16 @@
                             <td>0</td>
                             <td>1023</td>
                             <td>0</td>
-                            <td>2047</td>
+                            <td>1023</td>
                         </tr>
                     {{end}}
-                    {{ if and (le $type.ZoomLevelRange.Start 11) (ge $type.ZoomLevelRange.End 12) }}
+                    {{ if and (le $type.ZoomLevelRange.Start 11) (ge $type.ZoomLevelRange.End 11) }}
                         <tr>
                             <td>11</td>
                             <td>0</td>
                             <td>2047</td>
                             <td>0</td>
-                            <td>4095</td>
+                            <td>2047</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 12) (ge $type.ZoomLevelRange.End 12) }}
@@ -140,7 +140,7 @@
                             <td>0</td>
                             <td>4095</td>
                             <td>0</td>
-                            <td>8191</td>
+                            <td>4095</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 13) (ge $type.ZoomLevelRange.End 13) }}
@@ -149,7 +149,7 @@
                             <td>0</td>
                             <td>8191</td>
                             <td>0</td>
-                            <td>16383</td>
+                            <td>8191</td>
                         </tr>
                     {{end}}
                     {{ if and (le $type.ZoomLevelRange.Start 14) (ge $type.ZoomLevelRange.End 14) }}
@@ -157,6 +157,15 @@
                             <td>14</td>
                             <td>0</td>
                             <td>16383</td>
+                            <td>0</td>
+                            <td>16383</td>
+                        </tr>
+                    {{end}}
+                    {{ if and (le $type.ZoomLevelRange.Start 15) (ge $type.ZoomLevelRange.End 15) }}
+                        <tr>
+                            <td>15</td>
+                            <td>0</td>
+                            <td>32767</td>
                             <td>0</td>
                             <td>32767</td>
                         </tr>
