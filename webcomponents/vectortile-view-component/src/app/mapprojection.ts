@@ -41,7 +41,7 @@ export class MapProjection {
       axisOrientation: 'neu',
       code: 'EPSG:3035',
       units: 'm',
-      extent: [-285401.92, 22598.08, 595401.92, 903401.92] // TODO: determine correct extent for EPSG:3035
+      extent: [2000000.0, 2164940.6031185603, 5394791.161618613, 5500000.0]
     });
 
 

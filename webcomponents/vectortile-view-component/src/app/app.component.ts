@@ -182,6 +182,11 @@ export class AppComponent {
         zoomHack = 1;
       }
 
+      if (this.tileUrl.includes('EuropeanETRS89_LAEAQuad')){
+        //why is this needed??
+        zoomHack = -1;
+      }
+
 
         this.zoom = parseFloat(limit.tileMatrix) + 1 + zoomHack;
             // Only show available tiles
