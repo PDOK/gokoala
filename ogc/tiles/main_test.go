@@ -41,6 +41,7 @@ func TestNewTiles(t *testing.T) {
 			name: "Test render templates with OGC Tiles config",
 			args: args{
 				e: engine.NewEngineWithConfig(&engine.Config{
+					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
@@ -72,6 +73,7 @@ func TestNewTiles(t *testing.T) {
 			name: "Test render templates with OGC Tiles config and one SRS",
 			args: args{
 				e: engine.NewEngineWithConfig(&engine.Config{
+					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},

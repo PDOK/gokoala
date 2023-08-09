@@ -27,6 +27,7 @@ func Test_newOpenAPI(t *testing.T) {
 			name: "Test render OpenAPI spec with MINIMAL config",
 			args: args{
 				config: &Config{
+					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
 					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
@@ -47,6 +48,7 @@ func Test_newOpenAPI(t *testing.T) {
 			name: "Test render OpenAPI spec with OGC Tiles config",
 			args: args{
 				config: &Config{
+					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
 					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
@@ -69,6 +71,7 @@ func Test_newOpenAPI(t *testing.T) {
 			name: "Test render OpenAPI spec with OGC Styles config",
 			args: args{
 				config: &Config{
+					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
 					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
@@ -90,6 +93,7 @@ func Test_newOpenAPI(t *testing.T) {
 			name: "Test render OpenAPI spec with OGC GeoVolumes config",
 			args: args{
 				config: &Config{
+					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
 					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
@@ -116,6 +120,7 @@ func Test_newOpenAPI(t *testing.T) {
 			name: "Test render OpenAPI spec with OGC Tiles and extra spec provided through CLI for overwrite",
 			args: args{
 				config: &Config{
+					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
 					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},

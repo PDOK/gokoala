@@ -70,11 +70,11 @@ GLOBAL OPTIONS:
    --shutdown-delay value  delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
    --config-file value     reference to YAML configuration file [$CONFIG_FILE]
    --openapi-file value    reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
+   --allow-trailing-slash  support API calls to URLs with a trailing slash (default: false) [$ALLOW_TRAILING_SLASH]
    --help, -h              show help
-
 ```
 
-Example:
+Example (config-file is mandatory):
 
 ```docker
 docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml

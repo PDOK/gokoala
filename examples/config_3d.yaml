@@ -1,4 +1,5 @@
 ---
+version: 1.0.0
 title: New York in 3D
 # shortened title, used in breadcrumb path
 serviceIdentifier: 3D

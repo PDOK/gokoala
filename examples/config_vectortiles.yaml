@@ -1,4 +1,5 @@
 ---
+version: 1.0.0
 title: Basisregistratie Grootschalige Topografie (BGT)
 # shortened title, used in breadcrumb path
 serviceIdentifier: BGT
@@ -15,8 +16,10 @@ lastUpdated: "2023-05-08T12:00:00Z"
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
-support: >-
-  Support contact point (supports Markdown), e.g. [Email support](mailto:support@example.com)
+support:
+  name: Example Support
+  email: support@example.com
+  url: https://support.example.com
 # further details of the dataset to be shown on the landing page; supports markdown
 datasetDetails:
   - name: Dataset-aanbieder

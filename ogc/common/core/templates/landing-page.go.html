@@ -37,7 +37,7 @@
                         <b>{{ i18n "Support" }}</b>
                     </td>
                     <td>
-                        {{ markdown .Config.Support }}
+                        <a href="{{ .Config.Support.URL }}" target="_blank">{{ .Config.Support.Name }}</a>
                     </td>
                 </tr>
                 {{ end }}
