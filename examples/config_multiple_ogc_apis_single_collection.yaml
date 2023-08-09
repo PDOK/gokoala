@@ -12,6 +12,7 @@ collectionMetadata: &collectionMetadata
     srs: EPSG:3857
     bbox: ["-74.391538", "40.435655", "-73.430235", "41.030882"]
 
+version: 1.0.0
 title: New York
 # shortened title, used in breadcrumb path
 serviceIdentifier: New York

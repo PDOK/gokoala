@@ -66,6 +66,13 @@ func main() {
 			Required: false,
 			EnvVars:  []string{"OPENAPI_FILE"},
 		},
+		&cli.BoolFlag{
+			Name:     "allow-trailing-slash",
+			Usage:    "support API calls to URLs with a trailing slash",
+			Value:    false, // to satisfy https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-48
+			Required: false,
+			EnvVars:  []string{"ALLOW_TRAILING_SLASH"},
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -80,7 +87,7 @@ func main() {
 		// Engine encapsulates shared non-OGC API specific logic
 		engine := gokoalaEngine.NewEngine(configFile, openAPIFile)
 
-		router := newRouter(engine)
+		router := newRouter(engine, c.Bool("allow-trailing-slash"))
 
 		return engine.Start(address, router, debugPort, shutdownDelay)
 	}
@@ -91,11 +98,16 @@ func main() {
 	}
 }
 
-func newRouter(engine *gokoalaEngine.Engine) *chi.Mux {
+func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
-	router.Use(middleware.RedirectSlashes)
+	router.Use(middleware.RealIP)
+	if allowTrailingSlash {
+		router.Use(middleware.RedirectSlashes)
+	}
+	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
+	router.Use(middleware.SetHeader("API-Version", engine.Config.Version))
 	router.Use(middleware.Compress(5)) // enable gzip responses
 
 	// OGC Common Part 1, will always be started

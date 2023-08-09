@@ -41,6 +41,7 @@ func TestNewCollections(t *testing.T) {
 			name: "Test render templates with Collections (using OGC GeoVolumes config, since that contains collections)",
 			args: args{
 				e: engine.NewEngineWithConfig(&engine.Config{
+					Version:            "1.0.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
