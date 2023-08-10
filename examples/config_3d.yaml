@@ -12,6 +12,9 @@ resources:
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+support:
+  name: Example Support
+  url: https://support.example.com
 lastUpdated: "2023-06-01T12:00:00Z"
 datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
