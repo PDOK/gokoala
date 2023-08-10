@@ -5,11 +5,6 @@
     "title": "A sample API definition based on the draft OGC API - 3D GeoVolumes candidate standard",
     "version": "0.0.2",
     "description": "This is a sample OpenAPI definition produced by the OGC 3D Container API Pilot and adapted for the July 2022 OGC API Code Sprint - The Vector Data Code Sprint.",
-    "contact": {
-      "name": "Open Geospatial Consortium (OGC)",
-      "email": "standards-team@ogc.org",
-      "url": "https://www.ogc.org/contacts"
-    },
     "license": {
       "name": "OGC License",
       "url": "http://www.opengeospatial.org/legal/"

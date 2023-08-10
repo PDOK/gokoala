@@ -5,17 +5,9 @@
     "title": "Building Blocks specified in OGC API - Common - Part 1: Core",
     "description": "Common components used in the\n[OGC standard \"OGC API - Common - Part 1: Core\"](http://docs.opengeospatial.org/is/19-072/19-072.html).\n\nOGC API - Common - Part 1: Core 1.0 is an OGC Standard.\n\nFor OGC API - Common - Part 2: Geospatial Data, refer to [Example 2](index2.html).\n\nCopyright (c) 2021 Open Geospatial Consortium.\nTo obtain additional rights of use, visit http://www.opengeospatial.org/legal/ .",
     "version": "1.0.0",
-    "contact": {
-      "name": "Open Geospatial Consortium (OGC)",
-      "email": "standards-team@ogc.org",
-      "url": "https://www.ogc.org/contacts"
-    },
     "license": {
       "name": "OGC License",
       "url": "http://www.opengeospatial.org/legal/"
-    },
-    "x-logo": {
-      "url": "https://www.ogc.org/pub/www/files/OGC_Logo_2D_Blue_x_0_0.png"
     }
   },
   "servers": [
