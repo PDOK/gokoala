@@ -20,7 +20,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
 [common-1.0](https://developer.ogc.org/api/common/openapi.yaml)
 
 - Changes:
-  - n/a
+  - Removed default contact details
 
 ### OGC Common Core (Part 2)
 
@@ -35,6 +35,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
     OpenAPI Go lib_)
   - Removal of `crs` enum restriction
   - Change values for `f` param from `application/json` to just `json`, same for HTML.
+  - Removed default contact details
 
 ### OGC Tiles
 
@@ -58,6 +59,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
     "Support for alternative encodings for tileset metadata can be added, such as TileJSON."
   - Remove superfluous `/api/tileMatrixSets`, since it does the same as `/tileMatrixSets`
   - Replaced "EuropeanETRS89_GRS80Quad_Draft" with "EuropeanETRS89_LAEAQuad"
+  - Removed default contact details
 
 ### OGC 3D GeoVolumes
 
@@ -69,6 +71,7 @@ and [cologne_lod2](https://demo.ldproxy.net/cologne_lod2/api/?f=json)
   - Removal of OGC Common endpoints (landing page, api, conformance), already
     covered by `common.json`
   - Removed most endpoints only included 3d tiles specific endpoints
+  - Removed default contact details
 
 ### OGC Styles
 
@@ -84,3 +87,4 @@ and [cologne_lod2](https://demo.ldproxy.net/cologne_lod2/api/?f=json)
     - Tidy up `tags`
   - Support HTML responses for `/styles` and `/styles/{styleId}/metadata` calls
   - Add `style-set` and `style-set-entry` schemas from [style-set](https://api.swaggerhub.com/domains/cportele/ogcapi-draft-extensions/1.0.0#/components/schemas/style-set)
+  - Removed default contact details
