@@ -108,7 +108,7 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 
 type Support struct {
 	Name  string `yaml:"name" validate:"required"`
-	Email string `yaml:"email" validate:"email"`
+	Email string `yaml:"email" validate:"omitempty,email"`
 	URL   string `yaml:"url" validate:"required,url"`
 }
 
