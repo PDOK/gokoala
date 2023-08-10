@@ -61,6 +61,7 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 	router.Get(tileMatrixSetsPath+"/{tileMatrixSetId}", tiles.TileMatrixSet())
 	router.Get(tilesPath, tiles.TilesetsList())
 	router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
+	router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
 	router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/tiles", tiles.CollectionContent())
 
