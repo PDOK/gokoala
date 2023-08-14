@@ -1,17 +1,20 @@
 
-.legendarea {
-    z-index: 1;
-    position: relative;
-    display: flex;
-    
-  }
-  
-  .canvasarea {
-    position: absolute;
-    flex: 1;
-    top: 0%;
-    left: 40%;
-    z-index: 2;
-
-  
-  }
+.legendtable
+{
+font-family: var(--font-family, "Roboto"); 
+background: white;
+border-spacing : 0em; 
+}
+.legendrow{
+  padding: 1px;
+  height: 0px ;
+}
+.legendicon{
+  display: inline-block; 
+  padding-top: 0.1em;
+  padding-right: 2em;
+  padding-bottom: 0.1em;
+  padding-left: 2em;
+  margin:0 ; 
+  height: 35px ;
+}
