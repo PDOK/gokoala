@@ -164,6 +164,8 @@ export class MapboxStyleService {
     let names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
       const title = this.capitalizeFirstLetter(layer['source-layer']);
+     //const title = this.capitalizeFirstLetter(layer['id'])
+
      // const title = layer['id'] + " " + JSON.stringify(layer.layout?.['text-size'] + JSON.stringify(layer.filterCopy))
 
       let p: IProperties = {}

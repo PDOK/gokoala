@@ -8,6 +8,7 @@ import { getCenter } from 'ol/extent'
 import { Geometry, LineString, Point, Polygon } from 'ol/geom'
 import { LayerType, LegendItem, MapboxStyle, MapboxStyleService, exhaustiveGuard } from '../mapbox-style.service'
 import { applyStyle } from 'ol-mapbox-style'
+import { fromExtent } from 'ol/geom/Polygon'
 
 type LegendCfg = {
   iconOfset: number
@@ -31,7 +32,7 @@ export class LegendItemComponent implements OnInit {
   @Input() item!: LegendItem
   @Input() mapboxStyle!: MapboxStyle
 
-  itemHeight: number = 30
+  itemHeight: number = 40
   itemWidth: number = 60
   itemLeft: number = 10
   itemRight: number = 50
@@ -109,19 +110,16 @@ export class LegendItemComponent implements OnInit {
   }
 
   NewFeature(item: LegendItem): Feature {
-    const cfg: LegendCfg = {
-      "iconHeight": this.itemHeight * 0.6,
-      "iconWidth": this.itemWidth * 0.8,
-      "iconOfset": this.itemWidth * 0.1
-    }
+  
     const half = this.itemHeight / 2
     switch (item.geoType) {
       case LayerType.Fill: {
+
+        let ageom = fromExtent(this.extent)
+        ageom.scale(0.05, 0.05)
         let f = new Feature({
 
-          geometry: new Polygon([
-            [[cfg.iconOfset, cfg.iconOfset], [cfg.iconWidth, cfg.iconOfset], [cfg.iconWidth, cfg.iconHeight], [cfg.iconOfset, cfg.iconHeight], [cfg.iconOfset, cfg.iconOfset]]
-          ]),
+          geometry: ageom, 
           layer: item.sourceLayer
 
 
@@ -140,6 +138,7 @@ export class LegendItemComponent implements OnInit {
         return f
       }
       case LayerType.Line: {
+        
         let f = new Feature({
           geometry: new LineString([[this.itemLeft, half], [this.itemRight, half]]),
           layer: item.sourceLayer

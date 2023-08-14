@@ -1,11 +1,9 @@
-
-<div>
-    <div class="legendarea" id="lmap" [style.width.px]="totalWidth" [style.height.px]="totalHeight">
-
-  
-        <canvas class="canvasarea" #canvas class="canvasarea" [style.width.px]="totalWidth" [style.height.px]="totalHeight"></canvas>
+<table class="legendtable" *ngIf="LegendItems.length > 0"> 
    
-    </div>
-   
-</div>
-
+    <tbody>
+        <tr class="legendrow" *ngFor="let i of  LegendItems">              
+            <app-legend-item class="legendicon" [item]=i [mapboxStyle]=mapboxStyle></app-legend-item>
+            <td>{{i.title }}</td>     
+        </tr>
+    </tbody>
+</table>
