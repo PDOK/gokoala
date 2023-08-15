@@ -27,7 +27,7 @@ export class LegendViewComponent implements OnInit {
   ngOnInit() {
     if (this.styleUrl) {
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((style) => {
-        this.mapboxStyle=this.mapboxStyleService.removefilters(style)
+        this.mapboxStyle=this.mapboxStyleService.removeRasterLayers(this.mapboxStyleService.removefilters(style))
         if (!this.spriteUrl) {
           this.spriteUrl = this.mapboxStyle.sprite + '.json'
         }
