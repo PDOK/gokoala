@@ -227,7 +227,7 @@ export class AppComponent {
             origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]]; //  x,y swap Workaround?
           } else {
             origins[x.id] = x.pointOfOrigin;
-         // }
+          }
           sizes[x.id] = [x.tileWidth, x.tileHeight];
         });
 
