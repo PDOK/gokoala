@@ -14,7 +14,7 @@ import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import {
-  EuropeanETRS89_GRS80,
+  EuropeanETRS89_LAEAQuad,
   MapProjection,
   NetherlandsRDNewQuadDefault,
 } from '../app/mapprojection';
@@ -218,11 +218,11 @@ export class AppComponent {
         matrixset.tileMatrices.forEach((x) => {
           resolutions[x.id] = x.cellSize;
 
-          if (this.tileUrl.includes(EuropeanETRS89_GRS80)) {
-            origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]]; //  x,y swap Workaround?
-          } else {
+         // if (this.tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
+         //   origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]]; //  x,y swap Workaround?
+        //  } else {
             origins[x.id] = x.pointOfOrigin;
-          }
+         // }
           sizes[x.id] = [x.tileWidth, x.tileHeight];
         });
 

@@ -87,11 +87,11 @@
     center-x=5.3896944 center-y=52.1562499 show-grid="true">
   </app-vectortile-view>
 
-  <H2>4. BAG with grid and selectable TileMatrixSet (NetherlandsRDNew/WebMercator/EuropeanETRS89_GRS80Quad_Draft)</H2>
+  <H2>4. BAG with grid and selectable TileMatrixSet (NetherlandsRDNew/WebMercator/EuropeanETRS89_LAEAQuad)</H2>
   <select id="sample4-select" style="width: 15%;">
     <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
     <option value="WebMercatorQuad">WebMercatorQuad</option>
-    <option value="EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</option>
+    <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
   </select>
   <app-vectortile-view id="sample4view" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/NetherlandsRDNewQuad"
     style-url="styles/bagstd.json" center-x=5.3896944 center-y=52.1562499 show-grid="true">
@@ -122,7 +122,7 @@
   </script>
 
   <H2>5. BAG EU grid with style </H2>
-  <app-vectortile-view id="sample5" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/EuropeanETRS89_GRS80Quad_Draft"
+  <app-vectortile-view id="sample5" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/EuropeanETRS89_LAEAQuad"
     style-url="styles/bagstd.json" zoom=18 center-x=5.3896944 center-y=52.1562499 show-grid
     show-object-info></app-vectortile-view>
 
@@ -176,7 +176,7 @@
     }
 
     function changeStyle() {
-      var optionValue = document.getElementById("sample9").value;
+      var optionValue = document.getElementById("sample8").value;
       document.getElementById("output").innerHTML = optionValue;
       selectsample.setAttribute("style-url", optionValue);
 
