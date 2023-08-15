@@ -45,7 +45,7 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
 
-	renderTemplatesForSrs(e, "EuropeanETRS89_GRS80Quad_Draft", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+	renderTemplatesForSrs(e, "EuropeanETRS89_LAEAQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 	renderTemplatesForSrs(e, "NetherlandsRDNewQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 	renderTemplatesForSrs(e, "WebMercatorQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 
@@ -61,6 +61,7 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 	router.Get(tileMatrixSetsPath+"/{tileMatrixSetId}", tiles.TileMatrixSet())
 	router.Get(tilesPath, tiles.TilesetsList())
 	router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
+	router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
 	router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/tiles", tiles.CollectionContent())
 

@@ -177,17 +177,22 @@ export class AppComponent {
 
       if (this.tileUrl.includes('WebMercatorQuad')) {
         //the matrix is not correct on server?  size of vector 512px,  256px in tile grid correct?
-      
-        
+
+
         zoomHack = 1;
       }
 
-     
+      if (this.tileUrl.includes('EuropeanETRS89_LAEAQuad')){
+        //why is this needed??
+        zoomHack = -1;
+      }
+
+
         this.zoom = parseFloat(limit.tileMatrix) + 1 + zoomHack;
             // Only show available tiles
-    
+
         this.minZoom = parseFloat(limit.tileMatrix) + 1 + zoomHack;
-     
+
       this.maxZoom = parseFloat(limit.tileMatrix) + 1 + zoomHack  ;
     });
   }
@@ -218,9 +223,9 @@ export class AppComponent {
         matrixset.tileMatrices.forEach((x) => {
           resolutions[x.id] = x.cellSize;
 
-         // if (this.tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
-         //   origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]]; //  x,y swap Workaround?
-        //  } else {
+          if (this.tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
+            origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]]; //  x,y swap Workaround?
+          } else {
             origins[x.id] = x.pointOfOrigin;
          // }
           sizes[x.id] = [x.tileWidth, x.tileHeight];
@@ -251,7 +256,7 @@ export class AppComponent {
   private drawMap(tile: Matrix) {
     this.map.setTarget(undefined);
     this.map =new Map({});
-    this.zoom = -1 
+    this.zoom = -1
     let map = this.getMap();
 
     map.on('pointermove', (evt: { pixel: any }) => {
@@ -278,12 +283,12 @@ export class AppComponent {
 
     const mapdiv: HTMLElement =
       this.elementRef.nativeElement.querySelector("[id='map']");
-   
+
 
     this.mapWidth = this.elementRef.nativeElement.offsetWidth;
-    this.mapHeight = this.elementRef.nativeElement.offsetHeight;    
+    this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     map.setTarget(mapdiv);
-   
+
   }
 
   private checkParams(): void {
@@ -332,7 +337,7 @@ export class AppComponent {
   }
 
   private generateLayers() {
-  
+
 
     let vectorTileLayer = this.getVectortileLayer(new MapProjection(this.tileUrl).Projection);
     this.setStyle(vectorTileLayer);

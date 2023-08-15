@@ -65,6 +65,7 @@ func validate(config *Config) {
 }
 
 type Config struct {
+	Version            string          `yaml:"version" validate:"required,semver"`
 	Title              string          `yaml:"title" validate:"required"`
 	ServiceIdentifier  string          `yaml:"serviceIdentifier" validate:"required"`
 	Abstract           string          `yaml:"abstract" validate:"required"`
@@ -73,8 +74,9 @@ type Config struct {
 	LastUpdated        *string         `yaml:"lastUpdated"`
 	LastUpdatedBy      string          `yaml:"lastUpdatedBy"`
 	License            License         `yaml:"license" validate:"required"`
-	Support            *string         `yaml:"support"`
+	Support            *Support        `yaml:"support"`
 	DatasetDetails     []DatasetDetail `yaml:"datasetDetails"`
+	DatasetMetadata    DatasetMetadata `yaml:"datasetMetadata"`
 	DatasetCatalogURL  YAMLURL         `yaml:"datasetCatalogUrl" validate:"url"`
 	BaseURL            YAMLURL         `yaml:"baseUrl" validate:"required,url"`
 	Resources          *Resources      `yaml:"resources"`
@@ -104,9 +106,21 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	return result
 }
 
+type Support struct {
+	Name  string `yaml:"name" validate:"required"`
+	Email string `yaml:"email" validate:"omitempty,email"`
+	URL   string `yaml:"url" validate:"required,url"`
+}
+
 type DatasetDetail struct {
 	Name  string `yaml:"name"`
 	Value string `yaml:"value"`
+}
+
+type DatasetMetadata struct {
+	Source  string  `yaml:"source"`
+	API     *string `yaml:"api" validate:"omitempty,url"`
+	Dataset *string `yaml:"dataset" validate:"omitempty,url"`
 }
 
 type Resources struct {

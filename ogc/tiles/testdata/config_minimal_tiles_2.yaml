@@ -1,4 +1,5 @@
 ---
+version: 2.0.2
 title: Minimal OGC API
 abstract: This is a minimal OGC API
 baseUrl: http://localhost:8080
@@ -20,7 +21,7 @@ ogcApi:
     types:
       - vector
     supportedSrs:
-      - srs: EPSG:4258
+      - srs: EPSG:3035
         zoomLevelRange:
           start: 0
           end: 14

@@ -41,6 +41,7 @@ func TestNewTiles(t *testing.T) {
 			name: "Test render templates with OGC Tiles config",
 			args: args{
 				e: engine.NewEngineWithConfig(&engine.Config{
+					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
@@ -72,6 +73,7 @@ func TestNewTiles(t *testing.T) {
 			name: "Test render templates with OGC Tiles config and one SRS",
 			args: args{
 				e: engine.NewEngineWithConfig(&engine.Config{
+					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
@@ -247,13 +249,13 @@ func TestTile_TilesetsList(t *testing.T) {
 			},
 		},
 		{
-			name: "test EuropeanETRS89_GRS80Quad_Draft present",
+			name: "test EuropeanETRS89_LAEAQuad present",
 			fields: fields{
 				configFile: "ogc/tiles/testdata/config_minimal_tiles_2.yaml",
 				url:        "http://localhost:8080/tiles",
 			},
 			want: want{
-				bodyContains: "EuropeanETRS89_GRS80Quad_Draft",
+				bodyContains: "EuropeanETRS89_LAEAQuad",
 				statusCode:   http.StatusOK,
 			},
 		},
@@ -306,14 +308,14 @@ func TestTile_Tileset(t *testing.T) {
 			},
 		},
 		{
-			name: "EuropeanETRS89_GRS80Quad_Draft",
+			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
 				configFile:      "ogc/tiles/testdata/config_minimal_tiles.yaml",
-				url:             "http://localhost:8080/tiles/EuropeanETRS89_GRS80Quad_Draft",
-				tileMatrixSetID: "EuropeanETRS89_GRS80Quad_Draft",
+				url:             "http://localhost:8080/tiles/EuropeanETRS89_LAEAQuad",
+				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
 			},
 			want: want{
-				bodyContains: "EuropeanETRS89_GRS80Quad_Draft",
+				bodyContains: "EuropeanETRS89_LAEAQuad",
 				statusCode:   http.StatusOK,
 			},
 		},
@@ -389,14 +391,14 @@ func TestTile_TilematrixSet(t *testing.T) {
 			},
 		},
 		{
-			name: "EuropeanETRS89_GRS80Quad_Draft",
+			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
 				configFile:      "ogc/tiles/testdata/config_minimal_tiles.yaml",
-				url:             "http://localhost:8080/tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft",
-				tileMatrixSetID: "EuropeanETRS89_GRS80Quad_Draft",
+				url:             "http://localhost:8080/tileMatrixSets/EuropeanETRS89_LAEAQuad",
+				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
 			},
 			want: want{
-				bodyContains: "EuropeanETRS89_GRS80Quad_Draft",
+				bodyContains: "EuropeanETRS89_LAEAQuad",
 				statusCode:   http.StatusOK,
 			},
 		},
@@ -470,18 +472,18 @@ func TestTile_TilematrixSets(t *testing.T) {
 			},
 		},
 		{
-			name: "EuropeanETRS89_GRS80Quad_Draft",
+			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
 				configFile: "ogc/tiles/testdata/config_minimal_tiles_2.yaml",
 				url:        "http://localhost:8080/tileMatrixSets",
 			},
 			want: want{
-				bodyContains: "EuropeanETRS89_GRS80Quad_Draft",
+				bodyContains: "EuropeanETRS89_LAEAQuad",
 				statusCode:   http.StatusOK,
 			},
 		},
 		{
-			name: "EuropeanETRS89_GRS80Quad_Draft",
+			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
 				configFile: "ogc/tiles/testdata/config_minimal_tiles.yaml",
 				url:        "http://localhost:8080/tileMatrixSets",

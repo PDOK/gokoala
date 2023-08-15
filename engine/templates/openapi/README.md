@@ -9,7 +9,7 @@ The OpenAPI files/templates in this directory are merged to one spec by GoKoala.
 addition, it's possible to provide GoKoala with a custom OpenAPI spec (using a
 CLI flag) and overwrite any defaults or specify additional endpoints.
 
-(*) This is also the intent of the OGC: _"An implementation should only include the paths 
+(*) This is also the intent of the OGC: _"An implementation should only include the paths
 that are implemented and remove the references to the rest."_ source: OGC API Tiles 1.0 spec.
 
 ## Changes
@@ -20,7 +20,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
 [common-1.0](https://developer.ogc.org/api/common/openapi.yaml)
 
 - Changes:
-  - n/a
+  - Removed default contact details
 
 ### OGC Common Core (Part 2)
 
@@ -35,6 +35,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
     OpenAPI Go lib_)
   - Removal of `crs` enum restriction
   - Change values for `f` param from `application/json` to just `json`, same for HTML.
+  - Removed default contact details
 
 ### OGC Tiles
 
@@ -48,15 +49,17 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
     moment)
   - Removal of OGC Style endpoint (/styles), already - and better - covered by `styles.json`
   - Removal of GeoJSON as tiles format, only MapBox Vector Tiles are supported.
-  - Removal of optional parameters for `/tiles` endpoint like datetime (temporal data) 
+  - Removal of optional parameters for `/tiles` endpoint like datetime (temporal data)
     and crs (on-the-fly re-projection)
   - Changed TileMatrixSet enum values to  "NetherlandsRDNewQuad",
     "EuropeanETRS89_GRS80Quad_Draft", "WebMercatorQuad"
   - Changed `tags` from "server" to "common".
   - Support HTML responses for `/tileMatrixSets/{tileMatrixSetId}` calls
-  - Added TileJSON support to `/tiles/{tileMatrixSetId}`. This is allowed in the OGC Tiles spec since it mentions 
+  - Added TileJSON support to `/tiles/{tileMatrixSetId}`. This is allowed in the OGC Tiles spec since it mentions
     "Support for alternative encodings for tileset metadata can be added, such as TileJSON."
   - Remove superfluous `/api/tileMatrixSets`, since it does the same as `/tileMatrixSets`
+  - Replaced "EuropeanETRS89_GRS80Quad_Draft" with "EuropeanETRS89_LAEAQuad"
+  - Removed default contact details
 
 ### OGC 3D GeoVolumes
 
@@ -68,6 +71,7 @@ and [cologne_lod2](https://demo.ldproxy.net/cologne_lod2/api/?f=json)
   - Removal of OGC Common endpoints (landing page, api, conformance), already
     covered by `common.json`
   - Removed most endpoints only included 3d tiles specific endpoints
+  - Removed default contact details
 
 ### OGC Styles
 
@@ -83,3 +87,4 @@ and [cologne_lod2](https://demo.ldproxy.net/cologne_lod2/api/?f=json)
     - Tidy up `tags`
   - Support HTML responses for `/styles` and `/styles/{styleId}/metadata` calls
   - Add `style-set` and `style-set-entry` schemas from [style-set](https://api.swaggerhub.com/domains/cportele/ogcapi-draft-extensions/1.0.0#/components/schemas/style-set)
+  - Removed default contact details

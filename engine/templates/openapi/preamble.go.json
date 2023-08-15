@@ -5,14 +5,17 @@
     "title": "{{ .Config.Title }}",
     {{/* Swagger supports markdown in the description, but only a limited set and it can
          mess up the JSON. So lets disable that for now*/}}
-    "description": "{{ unmarkdown .Config.Abstract }} \n\n\n\n {{ unmarkdown .Config.Support }}",
-    "version": "1.0",
+    "description": "{{ unmarkdown .Config.Abstract }}",
+    "version": "{{ .Config.Version }}",
+    {{- if .Config.Support -}}
     "contact": {
-      {{/* empty contact information to overwrite default OGC info */}}
-      "name": "",
-      "email": "",
-      "url": ""
+      "name": "{{ .Config.Support.Name }}",
+      {{ if .Config.Support.Email }}
+      "email": "{{ .Config.Support.Email }}",
+      {{ end }}
+      "url": "{{ .Config.Support.URL }}"
     },
+    {{- end -}}
     "termsOfService": "",
     "license": {
       "name": "{{ .Config.License.Name | default "onbekend" }}",

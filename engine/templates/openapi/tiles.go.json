@@ -5,10 +5,6 @@
     "version": "1.0",
     "title": "OGC API - Tiles",
     "description": "Example API Definition for OGC API - Tiles - Part 1: Core",
-    "contact": {
-      "name": "Open Geospatial Consortium",
-      "email": "info@ogc.org"
-    },
     "license": {
       "name": "OGC License",
       "url": "http://www.opengeospatial.org/legal/"
@@ -2168,7 +2164,7 @@
         "type": "string",
         "enum": [
           "NetherlandsRDNewQuad",
-          "EuropeanETRS89_GRS80Quad_Draft",
+          "EuropeanETRS89_LAEAQuad",
           "WebMercatorQuad"
         ]
       }

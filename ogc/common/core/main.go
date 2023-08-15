@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	templatesDir    = "ogc/common/core/templates/"
-	rootPath        = "/"
-	apiPath         = "/api"
-	conformancePath = "/conformance"
+	templatesDir       = "ogc/common/core/templates/"
+	rootPath           = "/"
+	apiPath            = "/api"
+	alternativeAPIPath = "/openapi.json"
+	conformancePath    = "/conformance"
 )
 
 type CommonCore struct {
@@ -49,6 +50,8 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 
 	router.Get(rootPath, core.LandingPage())
 	router.Get(apiPath, core.API())
+	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-17
+	router.Get(alternativeAPIPath, func(w http.ResponseWriter, r *http.Request) { core.apiAsJSON(w) })
 	router.Get(conformancePath, core.Conformance())
 	router.Handle("/*", http.FileServer(http.Dir("assets")))
 
@@ -66,16 +69,24 @@ func (c *CommonCore) API() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		format := c.engine.CN.NegotiateFormat(r)
 		if format == engine.FormatHTML {
-			key := engine.NewTemplateKeyWithLanguage(templatesDir+"api.go.html", c.engine.CN.NegotiateLanguage(w, r))
-			c.engine.ServePage(w, r, key)
+			c.apiAsHTML(w, r)
 			return
 		} else if format == engine.FormatJSON {
-			w.Header().Set("Content-Type", "application/vnd.oai.openapi+json;version=3.0")
-			engine.SafeWrite(w.Write, c.engine.OpenAPI.SpecJSON)
+			c.apiAsJSON(w)
 			return
 		}
 		http.NotFound(w, r)
 	}
+}
+
+func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
+	key := engine.NewTemplateKeyWithLanguage(templatesDir+"api.go.html", c.engine.CN.NegotiateLanguage(w, r))
+	c.engine.ServePage(w, r, key)
+}
+
+func (c *CommonCore) apiAsJSON(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/vnd.oai.openapi+json;version=3.0")
+	engine.SafeWrite(w.Write, c.engine.OpenAPI.SpecJSON)
 }
 
 func (c *CommonCore) Conformance() http.HandlerFunc {

@@ -36,6 +36,7 @@ func TestNewStyles(t *testing.T) {
 			name: "Test render templates with OGC Styles config",
 			args: args{
 				e: engine.NewEngineWithConfig(&engine.Config{
+					Version:  "0.4.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
 					Resources: &engine.Resources{

@@ -36,6 +36,7 @@ func TestNewCommonCore(t *testing.T) {
 			name: "Test render templates with MINIMAL config",
 			args: args{
 				e: engine.NewEngineWithConfig(&engine.Config{
+					Version:            "2.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},

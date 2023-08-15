@@ -3,7 +3,7 @@
 <hgroup>
     <h1 class="title">{{ .Config.Title }} - {{ i18n "TileMatrixSets" }}</h1>
 </hgroup>
-<div class="row">
+<div class="row py-3">
     <div class="col-md-12">
         <p>
             {{ i18n "TileMatrixSetsText" }}
@@ -23,11 +23,10 @@
                         <td>Amersfoort / RD New scheme for the Netherlands</td>
                     </tr>
                 {{end}}
-                {{ if (eq $type.Srs "EPSG:4258") }}
+                {{ if (eq $type.Srs "EPSG:3035") }}
                     <tr>
-                        <td><a href="tileMatrixSets/EuropeanETRS89_GRS80Quad_Draft">EuropeanETRS89_GRS80Quad_Draft</a>
-                            ({{ i18n "SubjectToChange" }})</td>
-                        <td>Geodetic Reference System 1980 ETRS89 for Europe</td>
+                        <td><a href="tileMatrixSets/EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a></td>
+                        <td>Lambert Azimuthal Equal Area ETRS89 for Europe</td>
                     </tr>
                 {{end}}
                 {{ if (eq $type.Srs "EPSG:3857") }}
