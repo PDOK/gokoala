@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build --output-hashing none",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "deploy":  "ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl"
   },
   "private": true,
   "dependencies": {
@@ -32,6 +33,7 @@
     "@angular/compiler-cli": "^16.2.1",
     "@types/jasmine": "~4.3.5",
     "@types/proj4": "^2.5.2",
+    "angular-cli-ghpages": "^1.0.6",
     "typescript": "~5.1.6"
   }
 }
