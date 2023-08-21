@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ "PDOK-15453-work-in-process-show-patterns" ]
 
+defaults:
+  run:
+    working-directory: ./webcomponents/vectortile-view-component
+
 jobs:
   build:
 
@@ -25,7 +29,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-      working-directory: ./webcomponents/vectortile-view-component
     - run: npm run deploy
-      working-directory: ./webcomponents/vectortile-view-component
+   
   
