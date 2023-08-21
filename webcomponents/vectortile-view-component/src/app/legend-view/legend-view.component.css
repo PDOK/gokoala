@@ -1,20 +1,41 @@
 
-.legendtable
+.legendContainer
 {
-font-family: var(--font-family, "Roboto"); 
-background: white;
-border-spacing : 0em; 
+
+
+
+display: flex;
+flex: 0 1 auto;
+flex-wrap: wrap;
+flex-direction:  column; 
+justify-content: flex-start;
+align-items: flex-start;
+max-height: 100%;
+padding: 5px;
+margin: 5px;
+min-height: 0; /* new */
+
 }
-.legendrow{
-  padding: 1px;
-  height: 0px ;
+.legendItem{
+  max-width: 23vw;
+ 
+  display: flex;
+flex-wrap: nowrap;
+flex-direction:  row; 
+align-items: center;
+flex: 0 1 auto;
+
 }
-.legendicon{
-  display: inline-block; 
-  padding-top: 0.1em;
-  padding-right: 2em;
-  padding-bottom: 0.1em;
-  padding-left: 2em;
-  margin:0 ; 
-  height: 35px ;
+
+.legendIcon{
+
+
+}
+.legendText{
+  font-size:calc((var(--h) / 3));
+  margin-left: 1em;
+
+
+ 
+
 }

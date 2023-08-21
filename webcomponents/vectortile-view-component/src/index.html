@@ -24,10 +24,54 @@
     flex-grow: 1;
   }
 
+  app-legend-view {
+background-color: whitesmoke;
+width: 30%;
+border:white; 
+border-style: solid;
+margin-left:3em; 
+
+
+border-radius: 1em;
+box-shadow: 20px 20px rgba(0,0,0,.15);
+transition: all .4s ease;
+font-weight: bold;
+font-size:x-large
+
+  }
   app-vectortile-view {
     flex-grow: 1;
     padding: 5px;
     margin: 5px;
+   
+  }
+
+  .largebox 
+
+  { width: 95vw;
+    height: 95vh; 
+    margin: 2em; 
+   
+    font-family: "Gill Sans", sans-serif;
+    background-color: whitesmoke;
+    border:black;
+   border-style: solid;
+    transform: rotate(+1deg);
+
+
+
+  }
+  .extralargebox 
+  { width: 50vw;
+    height: 200vh; 
+    font-family: cursive;
+    margin: 2em; 
+    background-color: white;
+
+   
+ 
+
+
   }
 
   .showarea {
@@ -143,10 +187,18 @@
   </script>
 
   <H2>12 legend sample</H2>
-  <app-legend-view id="legendview4"
+  <app-legend-view class="largebox" id="legendview4"
     style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/standaardvisualisatie?f=mapbox"
     title-items="type,plus_type,functie,fysiek_voorkomen">
   </app-legend-view>
+
+  <H2>13 legend sample</H2>
+
+  <app-legend-view class="extralargebox" id="legendview5"
+    style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/standaardvisualisatie?f=mapbox"
+    title-items="type,plus_type,functie,fysiek_voorkomen">
+  </app-legend-view>
+
 
   <H2>8. BGT mapbox style switch sample</H2>
   <div class="showarea">

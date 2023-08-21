@@ -1,9 +1,8 @@
-<table class="legendtable" *ngIf="LegendItems.length > 0"> 
+<div class="legendContainer" *ngIf="LegendItems.length > 0">
    
-    <tbody>
-        <tr class="legendrow" *ngFor="let i of  LegendItems">              
-            <app-legend-item class="legendicon" [item]=i [mapboxStyle]=mapboxStyle></app-legend-item>
-            <td>{{i.title }}</td>     
-        </tr>
-    </tbody>
-</table>
+        <div class="legendItem" *ngFor="let i of  LegendItems">
+            <app-legend-item class="legendIcon" [item]=i [mapboxStyle]=mapboxStyle></app-legend-item>
+            <div class="legendText">{{i.title }}</div>
+        </div>
+   
+</div>
