@@ -30,6 +30,9 @@ jobs:
         cache: 'npm'
         cache-dependency-path: './webcomponents/vectortile-view-component/package-lock.json'
     - run: npm ci
-    - run: npm run deploy
+    - name: Deploy
+      run: npm run deploy
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
    
   
