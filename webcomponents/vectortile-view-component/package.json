@@ -16,7 +16,7 @@
     "@angular/core": "^16.2.1",
     "@angular/elements": "^16.2.1",
     "@angular/forms": "^16.2.1",
-    "@angular/material": "^16.0.1",
+    "@angular/material": "^16.2.1",
     "@angular/platform-browser": "^16.2.1",
     "@angular/platform-browser-dynamic": "^16.2.1",
     "@angular/router": "^16.2.1",
