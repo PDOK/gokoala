@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit, ViewEncapsulation } from '@angula
 import { CommonModule } from '@angular/common'
 import { LegendItemComponent } from '../legend-item/legend-item.component'
 import { recordStyleLayer } from 'ol-mapbox-style'
-import { LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service'
+import { IProperties, LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service'
 
 @Component({
   selector: 'app-legend-view',
@@ -17,6 +17,8 @@ export class LegendViewComponent implements OnInit {
 
   @Input() styleUrl!: string
   @Input() spriteUrl!: string
+  @Input() titleItems!: string
+
   LegendItems: LegendItem[] = []
   mapboxStyle!: MapboxStyle
 
@@ -27,12 +29,18 @@ export class LegendViewComponent implements OnInit {
   ngOnInit() {
     if (this.styleUrl) {
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((style) => {
-        this.mapboxStyle=this.mapboxStyleService.removeRasterLayers(this.mapboxStyleService.removefilters(style))
+        this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)
         if (!this.spriteUrl) {
           this.spriteUrl = this.mapboxStyle.sprite + '.json'
         }
         this.mapboxStyleService.getMapboxSpriteData(this.spriteUrl).subscribe((spritedata) => {
-          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle)
+          if (this.titleItems) {
+            let titlepart = this.titleItems.split(',')
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
+          }
+          else {
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [])
+          }
         })
       })
     }
@@ -40,7 +48,6 @@ export class LegendViewComponent implements OnInit {
       console.error("no style url supplied")
     }
   }
-
 }
 
 

@@ -14,7 +14,7 @@ export type LegendItem = {
   sourceLayer: any
   name: string,
   title: string,
-  geoType: LayerType, 
+  geoType: LayerType,
   style: StyleLike,
   feature: Feature | undefined
   properties: IProperties
@@ -152,28 +152,21 @@ export class MapboxStyleService {
     return style
   }
 
- 
-
 
   isFillPatternWithStops(paint: string | FillPattern | undefined): paint is FillPattern {
     return (paint as FillPattern).stops !== undefined
   }
 
-
-  getItems(style: MapboxStyle): LegendItem[] {
+  getItems(style: MapboxStyle, titleFunction: Function, customTitlePart: string[]): LegendItem[] {
     let names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
-      const title = this.capitalizeFirstLetter(layer['source-layer']);
-     //const title = this.capitalizeFirstLetter(layer['id'])
-
-     // const title = layer['id'] + " " + JSON.stringify(layer.layout?.['text-size'] + JSON.stringify(layer.filterCopy))
-
-      let p: IProperties = {}
+      let p: IProperties = extractPropertiesFromFilter({}, layer.filter)
 
       if (layer.layout?.['text-field']) {
         let label = layer.layout?.['text-field'].replace("{", "").replace("}", "")
         p['' + label + ''] = label.substring(0, 6)
       }
+      let title = titleFunction(layer['source-layer'], p, customTitlePart)
       this.PushItem(title, layer, names, p)
 
       let paint = layer.paint['circle-color'] as FillPattern
@@ -188,7 +181,8 @@ export class MapboxStyleService {
           paint.stops.forEach(stop => {
             let prop: IProperties = {}
             prop['' + paint.property + ''] = stop[0]
-            this.PushItem(stop[0], layer, names,  prop)
+            title = stop[0]
+            this.PushItem(title, layer, names, prop)
           })
         }
       }
@@ -201,9 +195,30 @@ export class MapboxStyleService {
     return [...str][0].toUpperCase() + str.slice(1)
   }
 
+  customTitle(layername: string, props: IProperties, customTitlePart: string[]): string {
+    function gettext(intitle: string, index: string): string {
+      if (props[index]) {
+        return (intitle + ' ' + props[index])
+      } else {
+        return (intitle)
+      }
+    }
+    let title = ""
+    customTitlePart.forEach(element => {
+      title = gettext(title, element)
+    })
+    if (title === "") {
+      title = layername + " "
+    }
+    title = title.trimStart()
+    title = title.replace('_', ' ')
+    return [...title][0].toUpperCase() + title.slice(1)
+  }
 
 
-  private PushItem(title: string, layer: Layer, names: LegendItem[],  properties: IProperties = {}) {
+
+
+  private PushItem(title: string, layer: Layer, names: LegendItem[], properties: IProperties = {}) {
     if (!names.find(e => e.title === title)) {
       const i: LegendItem = {
         name: layer.id,
@@ -247,3 +262,48 @@ export class MapboxStyleService {
     return styles
   }
 }
+
+function extractPropertiesFromFilter(prop: IProperties, filter: Filter) {
+
+  function traverseFilter(filter: filterval) {
+    if (Array.isArray(filter)) {
+      const operator = filter[0]
+      const conditions = filter.slice(1)
+      if (operator === 'all' || operator === 'any') {
+        conditions.forEach((i) => traverseFilter(i))
+      }
+      else {
+        if (typeof filter[1] === 'string' && (typeof filter[2] === 'string')) {
+
+          const key: string = filter[1]
+
+          prop[key] = filter[2]
+        }
+        if (typeof filter[1] === 'string' && (typeof filter[2] === 'number')) {
+
+          const key: string = filter[1]
+
+          prop[key] = filter[2]
+        }
+
+      }
+    }
+  }
+  traverseFilter(filter)
+  return prop
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
