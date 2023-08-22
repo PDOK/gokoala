@@ -30,19 +30,21 @@ export class LegendViewComponent implements OnInit {
   ngOnChanges(changes: NgChanges<LegendViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
       if (!changes.styleUrl.isFirstChange()) {
-        this.generateLegend(this.styleUrl, this.titleItems)
+        this.generateLegend()
       }
     }
+    if (this.titleItems) {
+      if (changes.titleItems.previousValue !== changes.titleItems.currentValue) {
+        if (!changes.titleItems.isFirstChange()) {
 
-    if (changes.titleItems.previousValue !== changes.titleItems.currentValue) {
-      if (!changes.titleItems.isFirstChange()) {
-        this.generateLegend(this.styleUrl, this.titleItems)
+          this.generateLegend()
+        }
       }
     }
   }
 
   ngOnInit(): void {
-    this.generateLegend(this.styleUrl, this.titleItems)
+    this.generateLegend()
 
   }
 
@@ -50,11 +52,11 @@ export class LegendViewComponent implements OnInit {
 
 
 
-  generateLegend(styleUrl: string, titleItems: string) {
-    if (styleUrl) {
+  generateLegend() {
+    if (this.styleUrl) {
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((style) => {
         this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)
-        if (titleItems) {
+        if (this.titleItems) {
           let titlepart = this.titleItems.split(',')
           this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
         }
