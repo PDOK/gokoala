@@ -172,6 +172,7 @@ font-size:x-large
       var optionValue = document.getElementById("sample8").value;
       document.getElementById("output").innerHTML = optionValue;
       selectsample.setAttribute("style-url", optionValue);
+      selectlegendsample.setAttribute("style-url", optionValue);
 
     }
   </script>
@@ -209,5 +210,9 @@ font-size:x-large
         <app-objectinfo-view id="objectinfooutside">
         </app-objectinfo-view>
       </div>
-<script src="runtime.076f20a594d8613d.js" type="module"></script><script src="polyfills.f83445722e06c254.js" type="module"></script><script src="main.e453add33ce41c0a.js" type="module"></script></div></div></body>
+
+      <app-legend-view id="selectlegendsample" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie" title-items="type,plus_type,functie,fysiek_voorkomen">
+    </app-legend-view>
+
+<script src="runtime.076f20a594d8613d.js" type="module"></script><script src="polyfills.f83445722e06c254.js" type="module"></script><script src="main.93327a1d525c0fa3.js" type="module"></script></div></div></body>
 </html>
