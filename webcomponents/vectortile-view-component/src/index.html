@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <title>vectortile-viewComponent</title>
@@ -25,53 +24,41 @@
   }
 
   app-legend-view {
-background-color: whitesmoke;
-width: 30%;
-border:white; 
-border-style: solid;
-margin-left:3em; 
-
-
-border-radius: 1em;
-box-shadow: 20px 20px rgba(0,0,0,.15);
-transition: all .4s ease;
-font-weight: bold;
-font-size:x-large
-
+    background-color: whitesmoke;
+    width: 30%;
+    border: white;
+    border-style: solid;
+    margin-left: 3em;
+    border-radius: 1em;
+    box-shadow: 20px 20px rgba(0, 0, 0, .15);
+    transition: all .4s ease;
+    font-weight: bold;
+    font-size: x-large
   }
+
   app-vectortile-view {
     flex-grow: 1;
     padding: 5px;
     margin: 5px;
-   
   }
 
-  .largebox 
-
-  { width: 95vw;
-    height: 95vh; 
-    margin: 2em; 
-   
+  .largebox {
+    width: 95vw;
+    height: 95vh;
+    margin: 2em;
     font-family: "Gill Sans", sans-serif;
     background-color: whitesmoke;
-    border:black;
-   border-style: solid;
+    border: black;
+    border-style: solid;
     transform: rotate(+1deg);
-
-
-
   }
-  .extralargebox 
-  { width: 50vw;
-    height: 200vh; 
+
+  .extralargebox {
+    width: 50vw;
+    height: 200vh;
     font-family: cursive;
-    margin: 2em; 
+    margin: 2em;
     background-color: white;
-
-   
- 
-
-
   }
 
   .showarea {
@@ -93,7 +80,6 @@ font-size:x-large
     flex-grow: 1
   }
 </style>
-
 <body onload="load()">
   <H1>Web component "app-vectortile-view" usage samples:</H1>
 
@@ -114,7 +100,6 @@ font-size:x-large
     sample2.addEventListener('currentZoomLevel', a1 => {
       console.log('zoomlevel sample2: ');
       console.log(JSON.stringify(a1.detail));
-
     });
   </script>
 
@@ -141,9 +126,7 @@ font-size:x-large
     sample4view.addEventListener('currentZoomLevel', a => {
       console.log('zoomlevels sample4view');
       console.log(JSON.stringify(a.detail));
-
     });
-
     document.addEventListener('input', function (event) {
       // only operate on srs dropdown
       if (event.target.id !== 'sample4-select') return;
@@ -183,7 +166,6 @@ font-size:x-large
       document.getElementById("output").innerHTML = optionValue;
       selectsample.setAttribute("style-url", optionValue);
       selectlegendsample.setAttribute("style-url", optionValue);
-
     }
   </script>
 
@@ -199,7 +181,6 @@ font-size:x-large
     style-url="https://api.pdok.nl/lv/bgt/ogc/v0_1/styles/standaardvisualisatie?f=mapbox"
     title-items="type,plus_type,functie,fysiek_voorkomen">
   </app-legend-view>
-
 
   <H2>8. BGT mapbox style switch sample</H2>
   <div class="showarea">
@@ -227,10 +208,10 @@ font-size:x-large
         </app-objectinfo-view>
       </div>
 
-      <app-legend-view  id="selectlegendsample"
-      style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie"
-      title-items="type,plus_type,functie,fysiek_voorkomen">
-    </app-legend-view>
+      <app-legend-view id="selectlegendsample"
+        style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie"
+        title-items="type,plus_type,functie,fysiek_voorkomen">
+      </app-legend-view>
 
 </body>
 </html>
