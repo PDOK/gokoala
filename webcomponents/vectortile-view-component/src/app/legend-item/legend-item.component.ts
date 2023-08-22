@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ElementRef } from '@angular/core'
+import { Component, Input, OnInit, ElementRef, ChangeDetectionStrategy } from '@angular/core'
 import { Feature, Map as OLMap, Tile, VectorTile, View } from 'ol'
 import { Projection } from 'ol/proj'
 import { MVT } from 'ol/format'
@@ -21,7 +21,9 @@ type LegendCfg = {
   selector: 'app-legend-item',
   templateUrl: './legend-item.component.html',
   styleUrls: ['./legend-item.component.css'],
-  standalone: true,
+  standalone: true, 
+ changeDetection: ChangeDetectionStrategy.OnPush
+
 })
 export class LegendItemComponent implements OnInit {
 
