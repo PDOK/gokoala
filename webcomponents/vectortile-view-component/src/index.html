@@ -182,6 +182,7 @@ font-size:x-large
       var optionValue = document.getElementById("sample8").value;
       document.getElementById("output").innerHTML = optionValue;
       selectsample.setAttribute("style-url", optionValue);
+      selectlegendsample.setAttribute("style-url", optionValue);
 
     }
   </script>
@@ -225,5 +226,11 @@ font-size:x-large
         <app-objectinfo-view id="objectinfooutside">
         </app-objectinfo-view>
       </div>
+
+      <app-legend-view  id="selectlegendsample"
+      style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie"
+      title-items="type,plus_type,functie,fysiek_voorkomen">
+    </app-legend-view>
+
 </body>
 </html>
