@@ -167,7 +167,7 @@ export class MapboxStyleService {
         p['' + label + ''] = label.substring(0, 6)
       }
       let title = titleFunction(layer['source-layer'], p, customTitlePart)
-      this.PushItem(title, layer, names, p)
+      this.pushItem(title, layer, names, p)
 
       let paint = layer.paint['circle-color'] as FillPattern
       if (layer.type == LayerType.Fill) {
@@ -182,7 +182,7 @@ export class MapboxStyleService {
             let prop: IProperties = {}
             prop['' + paint.property + ''] = stop[0]
             title = stop[0]
-            this.PushItem(title, layer, names, prop)
+            this.pushItem(title, layer, names, prop)
           })
         }
       }
@@ -218,7 +218,7 @@ export class MapboxStyleService {
 
 
 
-  private PushItem(title: string, layer: Layer, names: LegendItem[], properties: IProperties = {}) {
+  private pushItem(title: string, layer: Layer, names: LegendItem[], properties: IProperties = {}) {
     if (!names.find(e => e.title === title)) {
       const i: LegendItem = {
         name: layer.id,
