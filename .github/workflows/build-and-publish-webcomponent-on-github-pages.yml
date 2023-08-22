@@ -3,9 +3,9 @@ name: deploy web components
 
 on:
   push:
-    branches: [ "PDOK-15453-work-in-process-show-patterns" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "PDOK-15453-work-in-process-show-patterns" ]
+    branches: [ "master" ]
 
 defaults:
   run:
