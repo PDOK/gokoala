@@ -24,7 +24,7 @@ FooterLogo = "Logo of The Netherlands Cadastre, Land Registry and Mapping Agency
 # Landing page
 Specification = "Specification"
 SpecificationText = """
-The API specification describes the OGC API in such a way that both humans and computers can \
+The API specification in OpenAPI v3 format describes the OGC API in such a way that both humans and computers can \
 explore the API's options. The API shows both in- and output options, and helps to quickly \
 generate a first working API call with the desired result."""
 Conformance = "Conformance"
