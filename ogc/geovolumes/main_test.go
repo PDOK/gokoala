@@ -99,11 +99,12 @@ func TestThreeDimensionalGeoVolume_Tile(t *testing.T) {
 	}
 }
 
-func TestThreeDimensionalGeoVolume_TileSet(t *testing.T) {
+func TestThreeDimensionalGeoVolume_CollectionContent(t *testing.T) {
 	type fields struct {
 		configFile  string
 		url         string
 		containerID string
+		tileSet     string
 	}
 	type want struct {
 		body       string
@@ -120,6 +121,7 @@ func TestThreeDimensionalGeoVolume_TileSet(t *testing.T) {
 				configFile:  "ogc/geovolumes/testdata/config_minimal_3d.yaml",
 				url:         "http://localhost:8080/collections/:3dContainerId/tileset.json",
 				containerID: "container_1",
+				tileSet:     "tileset.json",
 			},
 			want: want{
 				body:       "/container_1/tileset.json",
@@ -132,6 +134,7 @@ func TestThreeDimensionalGeoVolume_TileSet(t *testing.T) {
 				configFile:  "ogc/geovolumes/testdata/config_minimal_3d.yaml",
 				url:         "http://localhost:8080/collections/:3dContainerId/tileset.json",
 				containerID: "container_2",
+				tileSet:     "tileset.json",
 			},
 			want: want{
 				body:       "/container_2/tileset.json",
@@ -141,7 +144,7 @@ func TestThreeDimensionalGeoVolume_TileSet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := createTileSetRequest(tt.fields.url, tt.fields.containerID)
+			req, err := createTileSetRequest(tt.fields.url, tt.fields.containerID, tt.fields.tileSet)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -151,6 +154,56 @@ func TestThreeDimensionalGeoVolume_TileSet(t *testing.T) {
 			newEngine := engine.NewEngine(tt.fields.configFile, "")
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine, chi.NewRouter())
 			handler := threeDimensionalGeoVolume.CollectionContent()
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.Equal(t, tt.want.body, rr.Body.String())
+		})
+	}
+}
+
+func TestThreeDimensionalGeoVolume_ExplicitTileSet(t *testing.T) {
+	type fields struct {
+		configFile  string
+		url         string
+		containerID string
+		tileSet     string
+	}
+	type want struct {
+		body       string
+		statusCode int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "container_2/tileset-5-768-896.json",
+			fields: fields{
+				configFile:  "ogc/geovolumes/testdata/config_minimal_3d.yaml",
+				url:         "http://localhost:8080/collections/:3dContainerId/:explicitTileSet.json",
+				containerID: "container_2",
+				tileSet:     "tileset-5-768-896",
+			},
+			want: want{
+				body:       "/container_2/tileset-5-768-896.json",
+				statusCode: http.StatusOK,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createTileSetRequest(tt.fields.url, tt.fields.containerID, tt.fields.tileSet)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine := engine.NewEngine(tt.fields.configFile, "")
+			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine, chi.NewRouter())
+			handler := threeDimensionalGeoVolume.ExplicitTileset()
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
@@ -187,11 +240,12 @@ func createTileRequest(url string, containerID string, tilePathPrefix string, ti
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err
 }
-func createTileSetRequest(url string, containerID string) (*http.Request, error) {
+func createTileSetRequest(url string, containerID string, tileSet string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
 
 	rctx.URLParams.Add("3dContainerId", containerID)
+	rctx.URLParams.Add("explicitTileSet", tileSet)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err
