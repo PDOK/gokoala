@@ -81,10 +81,11 @@ and [cologne_lod2](https://demo.ldproxy.net/cologne_lod2/api/?f=json)
 - Changes:
   - Removal of OGC Common endpoints (landing page, api, conformance), already
     covered by `common.json`
-  - Removal of mutating endpoint (POST/PUT/DELETE/etc). We only support
+  - Removal of mutating endpoints (POST/PUT/DELETE/etc). We only support
     read-only endpoints
     - Removal of securitySchemes
     - Tidy up `tags`
   - Support HTML responses for `/styles` and `/styles/{styleId}/metadata` calls
   - Add `style-set` and `style-set-entry` schemas from [style-set](https://api.swaggerhub.com/domains/cportele/ogcapi-draft-extensions/1.0.0#/components/schemas/style-set)
   - Removed default contact details
+  - Removed resources endpoints `/resources` (and sub endpoints). We do support the resources endpoint but we don't support/allow listing all available resources. There's also [discussion](https://github.com/opengeospatial/ogcapi-styles/issues/12) about the merit of this endpoint

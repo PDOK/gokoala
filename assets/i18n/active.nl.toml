@@ -1,7 +1,7 @@
 # General usage
 ViewAs = "Bekijk als"
 AvailableIn = "De pagina is zowel in HTML als JSON beschikbaar."
-LastUpdated = "Bijgewerkt op"
+LastUpdated = "Bijgewerkt tot"
 UpdatedBy = "Bijgewerkt door"
 On = "op"
 Keywords = "Trefwoorden"
@@ -22,7 +22,7 @@ LanguageSwitchCode = "en"
 FooterLogo = "Logo van het Kadaster"
 
 # Landing page
-Specification = "Specificatie"
+Specification = "specificatie"
 SpecificationText = """
 De API specificatie in OpenAPI v3 formaat beschrijft de OGC API op een manier dat zowel mensen als computers de \
 mogelijkheden van de API kunnen verkennen. De API toont zowel in- als output mogelijkheden \
