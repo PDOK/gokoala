@@ -15,10 +15,6 @@
     {
       "name": "Styles",
       "description": "Discover and fetch styles"
-    },
-    {
-      "name": "Resources",
-      "description": "Fetch symbols/sprites"
     }
   ],
   "paths": {
@@ -125,82 +121,6 @@
           },
           "404": {
             "description": "style not found"
-          }
-        }
-      }
-    },
-    "/resources": {
-      "get": {
-        "tags": [
-          "Resources"
-        ],
-        "summary": "information about the available resources (symbols, sprites)",
-        "operationId": "getResources",
-        "description": "This operation fetches the set of resources that have been\ncreated and that may be used by reference in stylesheets.\nResources in this Style API are symbols and sprites.\n\nFor each resource the id and a link to the resource is provided.\n\nTestbed-15 only requires support for a limited number of the\nresources. Therefore, the currently simple approach is sufficient,\nbut in general the operation should support paging (using a\nparameter `limit` and links to the `next` page in responses).",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/f-json"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "the set of available resources",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/resource-set"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "invalid or unknown query parameters"
-          },
-          "406": {
-            "description": "The media types accepted by the client are not\nsupported for this resource"
-          }
-        }
-      }
-    },
-    "/resources/{resourceId}": {
-      "get": {
-        "tags": [
-          "Resources"
-        ],
-        "summary": "fetch a symbol resource by id",
-        "description": "Fetches the resource with identifier `resourceId`. The set of\navailable resources can be retrieved at `/resources`.",
-        "operationId": "getResource",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/resourceId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The symbol resource",
-            "content": {
-              "image/png": {
-                "schema": {
-                  "$ref": "#/components/schemas/bitmap"
-                }
-              },
-              "image/svg+xml": {
-                "schema": {
-                  "$ref": "#/components/schemas/svg"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mb-sprite-index"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "resource not found"
-          },
-          "406": {
-            "description": "The requested style encoding is not supported\nfor this style"
           }
         }
       }

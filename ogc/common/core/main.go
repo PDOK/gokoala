@@ -28,7 +28,7 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 	}
 	apiBreadcrumbs := []engine.Breadcrumb{
 		{
-			Name: "Specificatie",
+			Name: "OpenAPI specificatie",
 			Path: "api",
 		},
 	}
