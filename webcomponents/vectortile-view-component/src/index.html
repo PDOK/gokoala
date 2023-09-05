@@ -104,7 +104,7 @@
   </script>
 
   <H2>3. BAG WebMercato with grid</H2>
-  <app-vectortile-view id="sample3a" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/WebMercatorQuad"
+  <app-vectortile-view id="sample3a" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad"
     center-x=5.3896944 center-y=52.1562499 show-grid="true">
   </app-vectortile-view>
 
@@ -114,12 +114,12 @@
     <option value="WebMercatorQuad">WebMercatorQuad</option>
     <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
   </select>
-  <app-vectortile-view id="sample4view" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/NetherlandsRDNewQuad"
+  <app-vectortile-view id="sample4view" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/NetherlandsRDNewQuad"
     style-url="styles/bagstd.json" center-x=5.3896944 center-y=52.1562499 show-grid="true">
   </app-vectortile-view>
 
   <H2>4. BAG WebMercato with style</H2>
-  <app-vectortile-view id="sample4" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/WebMercatorQuad"
+  <app-vectortile-view id="sample4" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad"
     style-url="styles/bagstd.json" center-x=5.3896944 center-y=52.1562499 show-grid>
   </app-vectortile-view>
   <script>
@@ -132,17 +132,17 @@
       if (event.target.id !== 'sample4-select') return;
       var projection = event.target.value
       const view = document.getElementById('sample4view')
-      view.setAttribute('tile-url', 'https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/' + projection)
+      view.setAttribute('tile-url', 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection)
     }, false);
   </script>
 
   <H2>5. BAG EU grid with style </H2>
-  <app-vectortile-view id="sample5" tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/EuropeanETRS89_LAEAQuad"
+  <app-vectortile-view id="sample5" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/EuropeanETRS89_LAEAQuad"
     style-url="styles/bagstd.json" zoom=18 center-x=5.3896944 center-y=52.1562499 show-grid
     show-object-info></app-vectortile-view>
 
   <H2>9. BAG legend sample1 from OGC api test</H2>
-  <app-legend-view id="legendview1" style-url="https://api.pdok.nl/lv/bag/ogc/v0_1/styles/bag_standaardvisualisatie">
+  <app-legend-view id="legendview1" style-url="https://api.pdok.nl/lv/bag/ogc/v1_0/styles/bag_standaardvisualisatie">
   </app-legend-view>
 
   <H2>10 legend sample</H2>
