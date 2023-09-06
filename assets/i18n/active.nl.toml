@@ -24,13 +24,13 @@ FooterLogo = "Logo van het Kadaster"
 # Landing page
 Specification = "specificatie"
 SpecificationText = """
-De API specificatie in OpenAPI v3 formaat beschrijft de OGC API op een manier dat zowel mensen als computers de \
+De specificatie in OpenAPI v3 formaat beschrijft de OGC API op een manier dat zowel mensen als computers de \
 mogelijkheden van de API kunnen verkennen. De API toont zowel in- als output mogelijkheden \
 en helpt om snel een eerste werkende API call te genereren met het gewenste resultaat."""
 Conformance = "Conformance"
 ConformanceText = """
-Op deze pagina beschrijft PDOK aan welke OGC standaarden PDOK zich confimeert bij het inrichten \
-van de API, en verwijst naar de betreffende standaarden inclusief beschrijvingen."""
+De conformance beschrijft aan welke OGC standaarden PDOK zich confirmeert bij het inrichten van deze API, \
+en verwijst naar de betreffende standaarden inclusief beschrijvingen."""
 Collections = "Collecties"
 CollectionsText = """
 Deze API biedt één of meerdere collecties waarmee differentiatie gemaakt kan worden door de \
@@ -38,13 +38,12 @@ dataset van PDOK op te splitsen in verschillende objecten die bijvoorbeeld via f
 tiles separaat aangeroepen kunnen worden."""
 Tiles = "Tiles"
 TilesText = """
-Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data \
-bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles \
-biedt PDOK ook styles aan."""
+Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er \
+&eacute;&eacute;n of meerdere <a href="styles">styles</a> beschikbaar gesteld."""
 Styles = "Styles"
 StylesText = """
-Betreft de officiële style van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld \
-in het Mapbox formaat."""
+Betreft één of meerdere officiële styles van/door de aanbieder gespecificeerd. \
+Styles worden beschikbaar gesteld in het Mapbox formaat."""
 TileMatrixSets = "Tile Matrix Sets"
 TileMatrixSetsText = """
 Beschrijving van de Tile Matrix Sets die via deze API worden ontsloten. Merk op dat alle zoomniveaus
@@ -88,6 +87,7 @@ StyleMetadata = "Bekijk metadata"
 AdditionalLinks = "Aanvullende links"
 LayerExample = "Laag voorbeeld"
 LayerName = "Laagnaam"
+Format = "Formaat"
 
 # Collections/Collection page
 ViewCollectionAs = "Bekijk collectie als"
