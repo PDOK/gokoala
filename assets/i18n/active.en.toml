@@ -24,12 +24,12 @@ FooterLogo = "Logo of The Netherlands Cadastre, Land Registry and Mapping Agency
 # Landing page
 Specification = "specification"
 SpecificationText = """
-The API specification in OpenAPI v3 format describes the OGC API in such a way that both humans and computers can \
+The specification in OpenAPI v3 format describes the OGC API in such a way that both humans and computers can \
 explore the API's options. The API shows both in- and output options, and helps to quickly \
 generate a first working API call with the desired result."""
 Conformance = "Conformance"
 ConformanceText = """
-On this page PDOK describes to which OGC standards PDOK conforms in implementing the API, \
+The conformance describes to which OGC standards PDOK conforms in implementing the API, \
 and links to the relevant standards including descriptions."""
 Collections = "Collections"
 CollectionsText = """
@@ -37,11 +37,10 @@ This API offers one or more collections that enable differentiation by splitting
 various objects that can be called separately through for instance features or tiles."""
 Tiles = "Tiles"
 TilesText = """
-This entire dataset is available through OGC API Tiles. Tiles can contain both vector and raster data \
-and can be made available in multiple projections. In the case of vector tiles, PDOK also offers styles."""
+This entire dataset is available as vector tiles in multiple projections. One or more <a href="styles">styles</a> are also available."""
 Styles = "Styles"
 StylesText = """
-This is the official style specified by the supplier. Styles are made available in the Mapbox format."""
+One or more official styles as specified by the supplier. Styles are made available in the Mapbox format."""
 TileMatrixSets = "Tile Matrix Sets"
 TileMatrixSetsText = """
 Description of the Tile Matrix Sets that are made available via this API. Note that all zoom levels
@@ -83,6 +82,7 @@ StyleMetadata = "View metadata"
 AdditionalLinks = "Additional links"
 LayerExample = "Layer example"
 LayerName = "Layer name"
+Format = "Format"
 
 # Collections/Collection page
 ViewCollectionAs = "View collection as"
