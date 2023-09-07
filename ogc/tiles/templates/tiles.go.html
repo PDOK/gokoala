@@ -90,7 +90,7 @@
               <b>{{ i18n "Example" }} URL</b>
             </td>
             <td class="w-auto px-2">
-              <code id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/0/0.pbf</code>
+              <code id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/2047/2048?f=mvt</code>
             </td>
           </tr>
         </tbody>
@@ -111,25 +111,39 @@
     document.addEventListener('input', function (event) {
       // only operate on srs dropdown
       if (event.target.id !== 'srs') return;
+
       // update table fields
       const selectedSrs = event.target.value
-      const srsInteger = selectedSrs.replace(/^EPSG:/, '')
-      var tileset
-      var tilesetZoom
+      let tileset, tilesetZoom = '0', tilesetY = '0', tilesetX = '0';
       {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
       {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
         tileset = '{{ get $projections $srs.Srs }}'
         tilesetZoom = {{ $srs.ZoomLevelRange.End }}
+        {{ if eq $srs.Srs "EPSG:28992" }}
+          tilesetY = '2047'; // also hard-coded in example URL above in HTML
+          tilesetX = '2048'; // also hard-coded in example URL above in HTML
+        {{ else if eq $srs.Srs "EPSG:3035" }}
+          tilesetY = '8237';
+          tilesetX = '7302';
+        {{ else if eq $srs.Srs "EPSG:3857" }}
+          tilesetY = '43144';
+          tilesetX = '67270';
+        {{ end }}
       }{{ end }}
+
       const srsField = document.getElementById('field-srs');
-      const urlTemplateField = document.getElementById('field-url-template');
-      const urlExampleField = document.getElementById('field-url-example');
-      const metadataHref = document.getElementById('href-metadata');
       srsField.textContent = selectedSrs;
+
+      const urlTemplateField = document.getElementById('field-url-template');
       urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
-      urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/' + tilesetZoom + '/0/0.pbf';
+
+      const urlExampleField = document.getElementById('field-url-example');
+      urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/' + tilesetZoom + '/' + tilesetY + '/' + tilesetX + '?f=mvt';
+
+      const metadataHref = document.getElementById('href-metadata');
       metadataHref.textContent = '{{ i18n "View" }} ' + tileset + ' tiles metadata';
       metadataHref.setAttribute('href', 'tiles/' + tileset);
+
       // update tile-url and zoom in app-vectortile-view
       const viewer = document.getElementById('tiles-vectortile-view')
       viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
