@@ -35,7 +35,7 @@ _one_ dataset.
     with your own custom spec.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) support: Serves HTML, JSON and
   TileJSON metadata. Serves as a proxy in front of a vector tiles engine of your
-  choosing.
+  choosing. Currently support for 3 projections (RD, ETRS89 and WebMercator) is included.
 - [OGC API Styles](https://ogcapi.ogc.org/styles/) support: Serves HTML and JSON
   representation of supported styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) support: Serves
