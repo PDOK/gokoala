@@ -61,6 +61,18 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Replaced "EuropeanETRS89_GRS80Quad_Draft" with "EuropeanETRS89_LAEAQuad"
   - Removed default contact details
 
+### OGC Features
+
+`features.go.json` is based on
+[ogcapi-features-1.0.1](https://app.swaggerhub.com/apis/OGC/ogcapi-features-1-example-1/1.0.1)
+
+- Changes:
+  - Removal of OGC Common endpoints (landing page, api, conformance), already
+    covered by `common.json`
+  - Removal of generic OGC Collection endpoints, already covered in `commons-collections.json`
+  - Changed tags from "Data" to "Features"
+  - Removed default contact details
+
 ### OGC 3D GeoVolumes
 
 `3dgeovolumes.go.json` is based on

@@ -25,6 +25,7 @@ const (
 	specPath          = templatesDir + "openapi/"
 	preamble          = specPath + "preamble.go.json"
 	commonCollections = specPath + "common-collections.go.json"
+	featuresSpec      = specPath + "features.go.json"
 	tilesSpec         = specPath + "tiles.go.json"
 	stylesSpec        = specPath + "styles.go.json"
 	geoVolumesSpec    = specPath + "3dgeovolumes.go.json"
@@ -45,11 +46,14 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 
 	// order matters, see mergeSpecs for details.
 	defaultOpenAPIFiles := []string{commonSpec}
-	if config.OgcAPI.GeoVolumes != nil {
+	if config.AllCollections() != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, commonCollections)
 	}
 	if config.OgcAPI.Tiles != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, tilesSpec)
+	}
+	if config.OgcAPI.Features != nil {
+		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSpec)
 	}
 	if config.OgcAPI.Styles != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, stylesSpec)

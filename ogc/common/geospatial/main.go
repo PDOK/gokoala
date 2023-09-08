@@ -29,7 +29,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
 
-		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
+		for _, coll := range e.Config.AllCollections() {
 			collectionBreadcrumbs := collectionsBreadcrumbs
 			collectionBreadcrumbs = append(collectionBreadcrumbs, []engine.Breadcrumb{
 				{

@@ -1,0 +1,1177 @@
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Building Blocks specified in the OGC API - Features - Part 1: Core corrigendum standard",
+    "description": "Common components used in the\n[\"OGC API - Features - Part 1: Core corrigendum standard\"](https://docs.opengeospatial.org/is/17-069r4/17-069r4.html).\n\nOGC API - Features - Part 1: Core corrigendum 1.0.1 is an OGC Standard.\nCopyright (c) 2022 Open Geospatial Consortium.\nTo obtain additional rights of use, visit http://www.opengeospatial.org/legal/ .\n\nThis is an informative document. The building blocks in this document are also available on the\n[OGC](http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml) schema repository.",
+    "license": {
+      "name": "OGC License",
+      "url": "http://www.opengeospatial.org/legal/"
+    },
+    "version": "1.0.1"
+  },
+  "paths": {
+    {{- range $index, $type := .Config.OgcAPI.Features.Collections -}}
+    {{- if $index -}},{{- end -}}
+    "/collections/{{ $type.ID }}/items": {
+      "get": {
+        "tags" : [ "Features" ],
+        "summary": "fetch features",
+        "description": "Fetch features of the feature collection with id `{{ $type.ID }}`.\n\nEvery feature in a dataset belongs to a collection. A dataset may\nconsist of multiple feature collections. A feature collection is often a\ncollection of features of a similar type, based on a common schema.\n\nUse content negotiation to request HTML or GeoJSON.",
+        "operationId": "{{ $type.ID }}.getFeatures",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 10000. Default = 10.",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "bbox",
+            "in": "query",
+            "description": "Only features that have a geometry that intersects the bounding box are selected.\nThe bounding box is provided as four or six numbers, depending on whether the\ncoordinate reference system includes a vertical axis (height or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Minimum value, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Maximum value, coordinate axis 3 (optional)\n\nIf the value consists of four numbers, the coordinate reference system is\nWGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nIf the value consists of six numbers, the coordinate reference system is WGS 84\nlongitude/latitude/ellipsoidal height (http://www.opengis.net/def/crs/OGC/0/CRS84h)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nThe query parameter `bbox-crs` is specified in OGC API - Features - Part 2: Coordinate\nReference Systems by Reference.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf the vertical axis is included, the third and the sixth number are\nthe bottom and the top of the 3-dimensional bounding box.\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "name": "datetime",
+            "in": "query",
+            "description": "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\nIntervals may be bounded or half-bounded (double-dots at start or end).\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include information about the number of selected and\nreturned features (`numberMatched` and `numberReturned`) as well as\nlinks to support paging (link relation `next`).",
+            "content": {
+              "application/geo+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/featureCollectionGeoJSON"
+                },
+                "example": {
+                  "type": "FeatureCollection",
+                  "links": [
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.json",
+                      "rel": "self",
+                      "type": "application/geo+json",
+                      "title": "this document"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.html",
+                      "rel": "alternate",
+                      "type": "text/html",
+                      "title": "this document as HTML"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.json&offset=10&limit=2",
+                      "rel": "next",
+                      "type": "application/geo+json",
+                      "title": "next page"
+                    }
+                  ],
+                  "timeStamp": "2018-04-03T14:52:23Z",
+                  "numberMatched": 123,
+                  "numberReturned": 2,
+                  "features": [
+                    {
+                      "type": "Feature",
+                      "id": "123",
+                      "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "properties": {
+                        "function": "residential",
+                        "floors": "2",
+                        "lastUpdate": "2015-08-01T12:34:56Z"
+                      }
+                    },
+                    {
+                      "type": "Feature",
+                      "id": "132",
+                      "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "properties": {
+                        "function": "public use",
+                        "floors": "10",
+                        "lastUpdate": "2013-12-03T10:15:37Z"
+                      }
+                    }
+                  ]
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A query parameter has an invalid value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exception"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist on the server. For example, a path parameter had an incorrect value."
+          },
+          "500": {
+            "description": "A server error occurred.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exception"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collections/{{ $type.ID }}/items/{featureId}": {
+      "get": {
+        "tags" : [ "Features" ],
+        "summary": "fetch a single feature",
+        "description": "Fetch the feature with id `featureId` in the feature collection\nwith id `{{ $type.ID }}`.\n\nUse content negotiation to request HTML or GeoJSON.",
+        "operationId": "{{ $type.ID }}.getFeature",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "path",
+            "description": "local identifier of a feature",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "fetch the feature with id `featureId` in the feature collection\nwith id `collectionId`",
+            "content": {
+              "application/geo+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/featureGeoJSON"
+                },
+                "example": {
+                  "type": "Feature",
+                  "links": [
+                    {
+                      "href": "http://data.example.com/id/building/123",
+                      "rel": "canonical",
+                      "title": "canonical URI of the building"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items/123.json",
+                      "rel": "self",
+                      "type": "application/geo+json",
+                      "title": "this document"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items/123.html",
+                      "rel": "alternate",
+                      "type": "text/html",
+                      "title": "this document as HTML"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings",
+                      "rel": "collection",
+                      "type": "application/geo+json",
+                      "title": "the collection document"
+                    }
+                  ],
+                  "id": "123",
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      "..."
+                    ]
+                  },
+                  "properties": {
+                    "function": "residential",
+                    "floors": "2",
+                    "lastUpdate": "2015-08-01T12:34:56Z"
+                  }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist on the server. For example, a path parameter had an incorrect value."
+          },
+          "500": {
+            "description": "A server error occurred.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/exception"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    {{ end }}
+  },
+  "components": {
+    "schemas": {
+      "collection": {
+        "required": [
+          "id",
+          "links"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "identifier of the collection used, for example, in URIs",
+            "example": "address"
+          },
+          "title": {
+            "type": "string",
+            "description": "human readable title of the collection",
+            "example": "address"
+          },
+          "description": {
+            "type": "string",
+            "description": "a description of the features in the collection",
+            "example": "An address."
+          },
+          "links": {
+            "type": "array",
+            "example": [
+              {
+                "href": "http://data.example.com/buildings",
+                "rel": "item"
+              },
+              {
+                "href": "http://example.com/concepts/buildings.html",
+                "rel": "describedby",
+                "type": "text/html"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "extent": {
+            "$ref": "#/components/schemas/extent"
+          },
+          "itemType": {
+            "type": "string",
+            "description": "indicator about the type of the items in the collection (the default value is 'feature').",
+            "default": "feature"
+          },
+          "crs": {
+            "type": "array",
+            "description": "the list of coordinate reference systems supported by the service",
+            "example": [
+              "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+              "http://www.opengis.net/def/crs/EPSG/0/4326"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            ]
+          }
+        }
+      },
+      "collections": {
+        "required": [
+          "collections",
+          "links"
+        ],
+        "type": "object",
+        "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/collection"
+            }
+          }
+        }
+      },
+      "exception": {
+        "required": [
+          "code"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "description": "Information about the exception: an error code plus an optional description."
+      },
+      "extent": {
+        "type": "object",
+        "properties": {
+          "spatial": {
+            "$ref": "#/components/schemas/extent_spatial"
+          },
+          "temporal": {
+            "$ref": "#/components/schemas/extent_temporal"
+          }
+        },
+        "description": "The extent of the features in the collection. In the Core only spatial and temporal\nextents are specified. Extensions may add additional members to represent other\nextents, for example, thermal or pressure ranges."
+      },
+      "featureCollectionGeoJSON": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/featureGeoJSON"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "timeStamp": {
+            "$ref": "#/components/schemas/timeStamp"
+          },
+          "numberMatched": {
+            "$ref": "#/components/schemas/numberMatched"
+          },
+          "numberReturned": {
+            "$ref": "#/components/schemas/numberReturned"
+          }
+        }
+      },
+      "featureGeoJSON": {
+        "required": [
+          "geometry",
+          "properties",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/geometryGeoJSON"
+          },
+          "properties": {
+            "type": "object",
+            "nullable": true
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      },
+      "geometryGeoJSON": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/pointGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/multipointGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/linestringGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/multilinestringGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/polygonGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/multipolygonGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/geometrycollectionGeoJSON"
+          }
+        ]
+      },
+      "geometrycollectionGeoJSON": {
+        "required": [
+          "geometries",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "GeometryCollection"
+            ]
+          },
+          "geometries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/geometryGeoJSON"
+            }
+          }
+        }
+      },
+      "linestringGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "LineString"
+            ]
+          },
+          "coordinates": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "minItems": 2,
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "link": {
+        "required": [
+          "href"
+        ],
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string",
+            "example": "http://data.example.com/buildings/123"
+          },
+          "rel": {
+            "type": "string",
+            "example": "alternate"
+          },
+          "type": {
+            "type": "string",
+            "example": "application/geo+json"
+          },
+          "hreflang": {
+            "type": "string",
+            "example": "en"
+          },
+          "title": {
+            "type": "string",
+            "example": "Trierer Strasse 70, 53115 Bonn"
+          },
+          "length": {
+            "type": "integer"
+          }
+        }
+      },
+      "multilinestringGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MultiLineString"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "minItems": 2,
+              "type": "array",
+              "items": {
+                "minItems": 2,
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "multipointGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MultiPoint"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "minItems": 2,
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "multipolygonGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MultiPolygon"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "minItems": 4,
+                "type": "array",
+                "items": {
+                  "minItems": 2,
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "numberMatched": {
+        "minimum": 0,
+        "type": "integer",
+        "description": "The number of features of the feature type that match the selection\nparameters like `bbox`.",
+        "example": 127
+      },
+      "numberReturned": {
+        "minimum": 0,
+        "type": "integer",
+        "description": "The number of features in the feature collection.\n\nA server may omit this information in a response, if the information\nabout the number of features is not known or difficult to compute.\n\nIf the value is provided, the value shall be identical to the number\nof items in the \"features\" array.",
+        "example": 10
+      },
+      "pointGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Point"
+            ]
+          },
+          "coordinates": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "polygonGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Polygon"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "minItems": 4,
+              "type": "array",
+              "items": {
+                "minItems": 2,
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "timeStamp": {
+        "type": "string",
+        "description": "This property indicates the time and date when the response was generated.",
+        "format": "date-time",
+        "example": "2017-08-17T08:05:32Z"
+      },
+      "extent_spatial": {
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "minItems": 1,
+            "type": "array",
+            "description": "One or more bounding boxes that describe the spatial extent of the dataset.\nIn the Core only a single bounding box is supported. Extensions may support\nadditional areas. If multiple areas are provided, the union of the bounding\nboxes describes the spatial extent.",
+            "items": {
+              "type": "array",
+              "description": "Each bounding box is provided as four or six numbers, depending on\nwhether the coordinate reference system includes a vertical axis\n(height or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Minimum value, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Maximum value, coordinate axis 3 (optional)\n\nThe coordinate reference system of the values is WGS 84 longitude/latitude\n(http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless a different coordinate\nreference system is specified in `crs`.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf the vertical axis is included, the third and the sixth number are\nthe bottom and the top of the 3-dimensional bounding box.\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
+              "example": [
+                -180,
+                -90,
+                180,
+                90
+              ],
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "crs": {
+            "type": "string",
+            "description": "Coordinate reference system of the coordinates in the spatial extent\n(property `bbox`). The default reference system is WGS 84 longitude/latitude.\nIn the Core this is the only supported coordinate reference system.\nExtensions may support additional coordinate reference systems and add\nadditional enum values.",
+            "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+            "enum": [
+              "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            ]
+          }
+        },
+        "description": "The spatial extent of the features in the collection."
+      },
+      "extent_temporal": {
+        "type": "object",
+        "properties": {
+          "interval": {
+            "minItems": 1,
+            "type": "array",
+            "description": "One or more time intervals that describe the temporal extent of the dataset.\nThe value `null` is supported and indicates an unbounded interval end.\nIn the Core only a single time interval is supported. Extensions may support\nmultiple intervals. If multiple intervals are provided, the union of the\nintervals describes the temporal extent.",
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array",
+              "description": "Begin and end times of the time interval. The timestamps are in the\ntemporal coordinate reference system specified in `trs`. By default\nthis is the Gregorian calendar.",
+              "example": [
+                "2011-11-11T12:22:11Z",
+                null
+              ],
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          },
+          "trs": {
+            "type": "string",
+            "description": "Coordinate reference system of the coordinates in the temporal extent\n(property `interval`). The default reference system is the Gregorian calendar.\nIn the Core this is the only supported temporal coordinate reference system.\nExtensions may support additional temporal coordinate reference systems and add\nadditional enum values.",
+            "default": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian",
+            "enum": [
+              "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+            ]
+          }
+        },
+        "description": "The temporal extent of the features in the collection."
+      }
+    },
+    "responses": {
+      "Collections": {
+        "description": "The feature collections shared by this API.\n\nThe dataset is organized as one or more feature collections. This resource\nprovides information about and access to the collections.\n\nThe response contains the list of collections. For each collection, a link\nto the items in the collection (path `/collections/{collectionId}/items`,\nlink relation `items`) as well as key information about the collection.\nThis information includes:\n\n* A local identifier for the collection that is unique for the dataset;\n* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. The first CRS is the default coordinate reference system (the default is always WGS 84 with axis order longitude/latitude);\n* An optional title and description for the collection;\n* An optional extent that can be used to provide an indication of the spatial and temporal extent of the collection - typically derived from the data;\n* An optional indicator about the type of the items in the collection (the default value, if the indicator is not provided, is 'feature').",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/collections"
+            },
+            "example": {
+              "links": [
+                {
+                  "href": "http://data.example.org/collections.json",
+                  "rel": "self",
+                  "type": "application/json",
+                  "title": "this document"
+                },
+                {
+                  "href": "http://data.example.org/collections.html",
+                  "rel": "alternate",
+                  "type": "text/html",
+                  "title": "this document as HTML"
+                },
+                {
+                  "href": "http://schemas.example.org/1.0/buildings.xsd",
+                  "rel": "describedby",
+                  "type": "application/xml",
+                  "title": "GML application schema for Acme Corporation building data"
+                },
+                {
+                  "href": "http://download.example.org/buildings.gpkg",
+                  "rel": "enclosure",
+                  "type": "application/geopackage+sqlite3",
+                  "title": "Bulk download (GeoPackage)",
+                  "length": 472546
+                }
+              ],
+              "collections": [
+                {
+                  "id": "buildings",
+                  "title": "Buildings",
+                  "description": "Buildings in the city of Bonn.",
+                  "extent": {
+                    "spatial": {
+                      "bbox": [
+                        [
+                          7.01,
+                          50.63,
+                          7.22,
+                          50.78
+                        ]
+                      ]
+                    },
+                    "temporal": {
+                      "interval": [
+                        [
+                          "2010-02-15T12:34:56Z",
+                          null
+                        ]
+                      ]
+                    }
+                  },
+                  "links": [
+                    {
+                      "href": "http://data.example.org/collections/buildings/items",
+                      "rel": "items",
+                      "type": "application/geo+json",
+                      "title": "Buildings"
+                    },
+                    {
+                      "href": "http://data.example.org/collections/buildings/items.html",
+                      "rel": "items",
+                      "type": "text/html",
+                      "title": "Buildings"
+                    },
+                    {
+                      "href": "https://creativecommons.org/publicdomain/zero/1.0/",
+                      "rel": "license",
+                      "type": "text/html",
+                      "title": "CC0-1.0"
+                    },
+                    {
+                      "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
+                      "rel": "license",
+                      "type": "application/rdf+xml",
+                      "title": "CC0-1.0"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Collection": {
+        "description": "Information about the feature collection with id `collectionId`.\n\nThe response contains a link to the items in the collection\n(path `/collections/{collectionId}/items`, link relation `items`)\nas well as key information about the collection. This information\nincludes:\n\n* A local identifier for the collection that is unique for the dataset;\n* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. The first CRS is the default coordinate reference system (the default is always WGS 84 with axis order longitude/latitude);\n* An optional title and description for the collection;\n* An optional extent that can be used to provide an indication of the spatial and temporal extent of the collection - typically derived from the data;\n* An optional indicator about the type of the items in the collection (the default value, if the indicator is not provided, is 'feature').",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/collection"
+            },
+            "example": {
+              "id": "buildings",
+              "title": "Buildings",
+              "description": "Buildings in the city of Bonn.",
+              "extent": {
+                "spatial": {
+                  "bbox": [
+                    [
+                      7.01,
+                      50.63,
+                      7.22,
+                      50.78
+                    ]
+                  ]
+                },
+                "temporal": {
+                  "interval": [
+                    [
+                      "2010-02-15T12:34:56Z",
+                      null
+                    ]
+                  ]
+                }
+              },
+              "links": [
+                {
+                  "href": "http://data.example.org/collections/buildings/items",
+                  "rel": "items",
+                  "type": "application/geo+json",
+                  "title": "Buildings"
+                },
+                {
+                  "href": "http://data.example.org/collections/buildings/items.html",
+                  "rel": "items",
+                  "type": "text/html",
+                  "title": "Buildings"
+                },
+                {
+                  "href": "https://creativecommons.org/publicdomain/zero/1.0/",
+                  "rel": "license",
+                  "type": "text/html",
+                  "title": "CC0-1.0"
+                },
+                {
+                  "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
+                  "rel": "license",
+                  "type": "application/rdf+xml",
+                  "title": "CC0-1.0"
+                }
+              ]
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Features": {
+        "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include information about the number of selected and\nreturned features (`numberMatched` and `numberReturned`) as well as\nlinks to support paging (link relation `next`).",
+        "content": {
+          "application/geo+json": {
+            "schema": {
+              "$ref": "#/components/schemas/featureCollectionGeoJSON"
+            },
+            "example": {
+              "type": "FeatureCollection",
+              "links": [
+                {
+                  "href": "http://data.example.com/collections/buildings/items.json",
+                  "rel": "self",
+                  "type": "application/geo+json",
+                  "title": "this document"
+                },
+                {
+                  "href": "http://data.example.com/collections/buildings/items.html",
+                  "rel": "alternate",
+                  "type": "text/html",
+                  "title": "this document as HTML"
+                },
+                {
+                  "href": "http://data.example.com/collections/buildings/items.json&offset=10&limit=2",
+                  "rel": "next",
+                  "type": "application/geo+json",
+                  "title": "next page"
+                }
+              ],
+              "timeStamp": "2018-04-03T14:52:23Z",
+              "numberMatched": 123,
+              "numberReturned": 2,
+              "features": [
+                {
+                  "type": "Feature",
+                  "id": "123",
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      "..."
+                    ]
+                  },
+                  "properties": {
+                    "function": "residential",
+                    "floors": "2",
+                    "lastUpdate": "2015-08-01T12:34:56Z"
+                  }
+                },
+                {
+                  "type": "Feature",
+                  "id": "132",
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      "..."
+                    ]
+                  },
+                  "properties": {
+                    "function": "public use",
+                    "floors": "10",
+                    "lastUpdate": "2013-12-03T10:15:37Z"
+                  }
+                }
+              ]
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Feature": {
+        "description": "fetch the feature with id `featureId` in the feature collection\nwith id `collectionId`",
+        "content": {
+          "application/geo+json": {
+            "schema": {
+              "$ref": "#/components/schemas/featureGeoJSON"
+            },
+            "example": {
+              "type": "Feature",
+              "links": [
+                {
+                  "href": "http://data.example.com/id/building/123",
+                  "rel": "canonical",
+                  "title": "canonical URI of the building"
+                },
+                {
+                  "href": "http://data.example.com/collections/buildings/items/123.json",
+                  "rel": "self",
+                  "type": "application/geo+json",
+                  "title": "this document"
+                },
+                {
+                  "href": "http://data.example.com/collections/buildings/items/123.html",
+                  "rel": "alternate",
+                  "type": "text/html",
+                  "title": "this document as HTML"
+                },
+                {
+                  "href": "http://data.example.com/collections/buildings",
+                  "rel": "collection",
+                  "type": "application/geo+json",
+                  "title": "the collection document"
+                }
+              ],
+              "id": "123",
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                  "..."
+                ]
+              },
+              "properties": {
+                "function": "residential",
+                "floors": "2",
+                "lastUpdate": "2015-08-01T12:34:56Z"
+              }
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InvalidParameter": {
+        "description": "A query parameter has an invalid value.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/exception"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The requested resource does not exist on the server. For example, a path parameter had an incorrect value."
+      },
+      "NotAcceptable": {
+        "description": "Content negotiation failed. For example, the `Accept` header submitted in the request did not support any of the media types supported by the server for the requested resource."
+      },
+      "ServerError": {
+        "description": "A server error occurred.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/exception"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "bbox": {
+        "name": "bbox",
+        "in": "query",
+        "description": "Only features that have a geometry that intersects the bounding box are selected.\nThe bounding box is provided as four or six numbers, depending on whether the\ncoordinate reference system includes a vertical axis (height or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Minimum value, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Maximum value, coordinate axis 3 (optional)\n\nIf the value consists of four numbers, the coordinate reference system is\nWGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nIf the value consists of six numbers, the coordinate reference system is WGS 84\nlongitude/latitude/ellipsoidal height (http://www.opengis.net/def/crs/OGC/0/CRS84h)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nThe query parameter `bbox-crs` is specified in OGC API - Features - Part 2: Coordinate\nReference Systems by Reference.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf the vertical axis is included, the third and the sixth number are\nthe bottom and the top of the 3-dimensional bounding box.\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "collectionId": {
+        "name": "collectionId",
+        "in": "path",
+        "description": "local identifier of a collection",
+        "required": true,
+        "style": "simple",
+        "explode": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "datetime": {
+        "name": "datetime",
+        "in": "query",
+        "description": "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\nIntervals may be bounded or half-bounded (double-dots at start or end).\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "featureId": {
+        "name": "featureId",
+        "in": "path",
+        "description": "local identifier of a feature",
+        "required": true,
+        "style": "simple",
+        "explode": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 10000. Default = 10.",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "maximum": 10000,
+          "minimum": 1,
+          "type": "integer",
+          "default": 10
+        }
+      }
+    }
+  }
+}
