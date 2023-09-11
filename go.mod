@@ -13,6 +13,8 @@ require (
 	github.com/urfave/cli/v2 v2.25.3
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
 	gopkg.in/yaml.v3 v3.0.1
+	github.com/paulmach/orb v0.10.0
+	github.com/nicksnyder/go-i18n/v2 v2.2.1
 )
 
 require (
@@ -34,7 +36,6 @@ require (
 	github.com/leodido/go-urn v1.2.3 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
-	github.com/nicksnyder/go-i18n/v2 v2.2.1 // indirect
 	github.com/perimeterx/marshmallow v1.1.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

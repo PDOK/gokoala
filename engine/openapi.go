@@ -80,7 +80,7 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 	return &OpenAPI{
 		config:   config,
 		spec:     resultSpec,
-		SpecJSON: PrettyPrintJSON(resultSpecJSON, ""),
+		SpecJSON: prettyPrintJSON(resultSpecJSON, ""),
 		router:   newOpenAPIRouter(resultSpec),
 	}
 }

@@ -104,7 +104,7 @@ func newTemplates(config *Config) *Templates {
 	templates := &Templates{
 		RenderedTemplates: make(map[TemplateKey][]byte),
 		config:            config,
-		localizers:        NewLocalizers(config.AvailableLanguages),
+		localizers:        newLocalizers(config.AvailableLanguages),
 	}
 	customFuncs := texttemplate.FuncMap{
 		// custom template functions
@@ -167,7 +167,7 @@ func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
 		var result = rendered.Bytes()
 		if strings.Contains(key.Format, FormatJSON) {
 			// pretty print all JSON (or derivatives like TileJSON)
-			result = PrettyPrintJSON(result, key.Name)
+			result = prettyPrintJSON(result, key.Name)
 		}
 
 		// Store rendered template per language

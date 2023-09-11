@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func PrettyPrintJSON(content []byte, name string) []byte {
+func prettyPrintJSON(content []byte, name string) []byte {
 	var pretty bytes.Buffer
 	if err := json.Indent(&pretty, content, "", " "); err != nil {
 		log.Print(string(content))

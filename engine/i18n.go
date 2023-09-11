@@ -6,7 +6,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-func NewLocalizers(availableLanguages []language.Tag) map[language.Tag]i18n.Localizer {
+func newLocalizers(availableLanguages []language.Tag) map[language.Tag]i18n.Localizer {
 	localizers := make(map[language.Tag]i18n.Localizer)
 	// add localizer for each available language
 	for _, lang := range availableLanguages {

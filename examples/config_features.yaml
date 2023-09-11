@@ -1,4 +1,16 @@
 ---
+collectionMetadata: &collectionMetadata
+  description: >-
+    This is a description about lorum ipsum
+  keywords:
+    - Keyword1
+    - Keyword2
+  thumbnail: 3d.png
+  lastUpdated: "2030-01-02T12:00:00Z"
+  extent:
+    srs: EPSG:3857
+    bbox: ["-74.391538", "40.435655", "-73.430235", "41.030882"]
+
 version: 1.0.0
 title: Basisregistratie Adressen en Gebouwen
 # shortened title, used in breadcrumb path
@@ -6,7 +18,7 @@ serviceIdentifier: BAG
 abstract: >-
   This is a description about the dataset in Markdown. See [PDOK BAG dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-adressen-en-gebouwen-ba-1) for details.
 # just a dummy picture, but you can put an actual thumbnail here
-thumbnail: 3d_thumb.png
+thumbnail: 3d.png
 resources:
   directory: ./examples/resources
 keywords:
@@ -39,8 +51,14 @@ availableLanguages:
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   features:
+    datasource:
+      fakedb: true
     collections:
       - id: verblijfsobjecten
+        metadata: *collectionMetadata
       - id: panden
+        metadata: *collectionMetadata
       - id: ligplaatsen
+        metadata: *collectionMetadata
       - id: standplaatsen
+        metadata: *collectionMetadata

@@ -34,7 +34,7 @@ type Engine struct {
 
 // NewEngine builds a new Engine
 func NewEngine(configFile string, openAPIFile string) *Engine {
-	config := ReadConfigFile(configFile)
+	config := readConfigFile(configFile)
 
 	return NewEngineWithConfig(config, openAPIFile)
 }
