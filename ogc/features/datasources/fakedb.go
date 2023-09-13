@@ -36,15 +36,16 @@ func (fdb FakeDB) GetFeature(_ string, featureID string) *geojson.Feature {
 func generateFakeFeatureCollection() *geojson.FeatureCollection {
 	var features []*geojson.Feature
 	for i := 0; i < nrOfFakeFeatures; i++ {
+		address := gofakeit.Address()
 		var props = map[string]interface{}{
-			"streetnane": gofakeit.Address().Street,
-			"city":       gofakeit.Address().City,
+			"streetname": address.Street,
+			"city":       address.City,
 			"year":       gofakeit.Year(),
 			"floorsize":  gofakeit.Number(10, 300),
-			"purpose":    gofakeit.BuzzWord(),
+			"purpose":    gofakeit.Blurb(),
 		}
 
-		geom := orb.LineString{{1, 2}, {3, 4}, {5, 6}}
+		geom := orb.Point{address.Longitude, address.Latitude}
 		feature := geojson.NewFeature(geom)
 		feature.ID = i
 		feature.Properties = props

@@ -52,7 +52,8 @@
                     <li class="list-group-item">
                         <h5 class="card-title">Features</h5>
                         <ul>
-                            <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features in JSON</a></li>
+                            <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features in HTML</a></li>
+                            <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">Features in JSON</a></li>
                         </ul>
                     </li>
                     {{ end }}

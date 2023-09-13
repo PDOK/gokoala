@@ -88,7 +88,7 @@ func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http
 		requestedLanguage = cn.getLanguageFromCookie(req)
 	}
 	if requestedLanguage == language.Und {
-		requestedLanguage = cn.getLanguageFromAcceptLanguageHeader(req)
+		requestedLanguage = cn.getLanguageFromHeader(req)
 	}
 	if requestedLanguage == language.Und {
 		requestedLanguage = language.Dutch // default
@@ -176,7 +176,7 @@ func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.
 	return requestedLanguage
 }
 
-func (cn *ContentNegotiation) getLanguageFromAcceptLanguageHeader(req *http.Request) language.Tag {
+func (cn *ContentNegotiation) getLanguageFromHeader(req *http.Request) language.Tag {
 	var requestedLanguage = language.Und
 	if req.Header.Get("Accept-Language") != "" {
 		accepted, _, err := language.ParseAcceptLanguage(req.Header.Get("Accept-Language"))

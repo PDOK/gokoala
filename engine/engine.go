@@ -30,6 +30,8 @@ type Engine struct {
 	OpenAPI   *OpenAPI
 	Templates *Templates
 	CN        *ContentNegotiation
+
+	shutdownHooks []func()
 }
 
 // NewEngine builds a new Engine
@@ -76,7 +78,7 @@ func (e *Engine) Start(address string, router *chi.Mux, debugPort int, shutdownD
 
 // startServer creates and starts an HTTP server, also takes care of graceful shutdown
 func (e *Engine) startServer(name string, address string, shutdownDelay int, router *chi.Mux) error {
-	// Create HTTP server
+	// create HTTP server
 	server := http.Server{
 		Addr:    address,
 		Handler: router,
@@ -98,9 +100,14 @@ func (e *Engine) startServer(name string, address string, shutdownDelay int, rou
 		}
 	}()
 
-	// Listen for interrupt signal and then perform shutdown
+	// listen for interrupt signal and then perform shutdown
 	<-ctx.Done()
 	stop()
+
+	// execute shutdown hooks
+	for _, shutdownHook := range e.shutdownHooks {
+		shutdownHook()
+	}
 
 	if shutdownDelay > 0 {
 		log.Printf("stop signal received, initiating shutdown of %s after %d seconds delay", name, shutdownDelay)
@@ -108,10 +115,14 @@ func (e *Engine) startServer(name string, address string, shutdownDelay int, rou
 	}
 	log.Printf("shutting down %s gracefully", name)
 
-	// Shutdown with a max timeout.
+	// shutdown with a max timeout.
 	timeoutCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 	return server.Shutdown(timeoutCtx)
+}
+
+func (e *Engine) RegisterShutdownHook(fn func()) {
+	e.shutdownHooks = append(e.shutdownHooks, fn)
 }
 
 // RenderTemplates renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
