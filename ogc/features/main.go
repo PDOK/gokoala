@@ -1,7 +1,6 @@
 package features
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
@@ -11,13 +10,11 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Features !!! Placeholder implementation, for future reference !!!
 type Features struct {
 	engine     *engine.Engine
 	datasource datasources.Datasource
 }
 
-// NewFeatures !!! Placeholder implementation, for future reference !!!
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	var datasource datasources.Datasource
 	if e.Config.OgcAPI.Features.Datasource.FakeDB {
@@ -25,6 +22,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	} else if e.Config.OgcAPI.Features.Datasource.GeoPackage != nil {
 		datasource = datasources.NewGeoPackage()
 	}
+	// TODO: call datasource.Close() once server exists.
 
 	features := &Features{
 		engine:     e,
@@ -32,14 +30,37 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	}
 
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items", features.CollectionContent())
+	router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", features.Feature())
 	return features
 }
 
-func (t *Features) CollectionContent() http.HandlerFunc {
+// CollectionContent serve FeatureCollection with the given collectionId
+func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 
-		// TODO: not implemented yet
-		log.Printf("TODO: return features for collection %s", collectionID)
+		fc := f.datasource.GetFeatures(collectionID)
+		fcJSON, err := fc.MarshalJSON()
+		if err != nil {
+			http.Error(w, "Failed to marshall FeatureCollection to JSON", http.StatusInternalServerError)
+			return
+		}
+		engine.SafeWrite(w.Write, fcJSON)
+	}
+}
+
+// Feature serves a specific Feature
+func (f *Features) Feature() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		collectionID := chi.URLParam(r, "collectionId")
+		featureID := chi.URLParam(r, "featureId")
+
+		feat := f.datasource.GetFeature(collectionID, featureID)
+		featJSON, err := feat.MarshalJSON()
+		if err != nil {
+			http.Error(w, "Failed to marshall Feature to JSON", http.StatusInternalServerError)
+			return
+		}
+		engine.SafeWrite(w.Write, featJSON)
 	}
 }

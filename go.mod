@@ -3,18 +3,19 @@ module github.com/PDOK/gokoala
 go 1.20
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.23.2
 	github.com/elnormous/contenttype v1.0.4
 	github.com/getkin/kin-openapi v0.116.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-playground/validator/v10 v10.13.0
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
+	github.com/nicksnyder/go-i18n/v2 v2.2.1
+	github.com/paulmach/orb v0.10.0
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.25.3
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
 	gopkg.in/yaml.v3 v3.0.1
-	github.com/paulmach/orb v0.10.0
-	github.com/nicksnyder/go-i18n/v2 v2.2.1
 )
 
 require (
@@ -40,6 +41,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	go.mongodb.org/mongo-driver v1.11.4 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
