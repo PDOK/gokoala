@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -130,9 +131,9 @@ func (e *Engine) RegisterShutdownHook(fn func()) {
 func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		if key.Format == FormatHTML {
-			e.Templates.renderHTMLTemplate(key, breadcrumbs, nil)
+			e.Templates.renderAndSaveHTMLTemplate(key, breadcrumbs, nil)
 		} else {
-			e.Templates.renderNonHTMLTemplate(key, nil)
+			e.Templates.renderAndSaveNonHTMLTemplate(key, nil)
 		}
 		// we already perform OpenAPI validation here during startup to catch
 		// issues early on, in addition to runtime OpenAPI response validation
@@ -149,44 +150,40 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		if key.Format == FormatHTML {
-			e.Templates.renderHTMLTemplate(key, breadcrumbs, params)
+			e.Templates.renderAndSaveHTMLTemplate(key, breadcrumbs, params)
 		} else {
-			e.Templates.renderNonHTMLTemplate(key, params)
+			e.Templates.renderAndSaveNonHTMLTemplate(key, params)
 		}
 	}
 }
 
-// ServePage validates incoming HTTP request against OpenAPI spec, renders given template and serves as HTTP response
-func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
-	// validate request
-	if err := e.OpenAPI.validateRequest(r); err != nil {
-		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+// RenderAndServePage renders either an HTML or non-HTML template on-the-fly depending on the format
+// given in the TemplateKey. The result isn't store in engine, it's served directly to the client.
+//
+// NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a backing store).
+func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, params interface{}, breadcrumbs []Breadcrumb, key TemplateKey, lang language.Tag) {
+	var output []byte
+	if key.Format == FormatHTML {
+		output = e.Templates.renderHTMLTemplate(key, breadcrumbs, params, lang)
+	} else {
+		output = e.Templates.renderNonHTMLTemplate(key, params, lang)
 	}
 
+	contentType := e.CN.formatToMediaType(key.Format)
+	e.validateAndServe(w, r, contentType, output)
+}
+
+// ServePage validates incoming HTTP request against OpenAPI spec, renders given template and serves as HTTP response
+func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
 	// render output
-	template, err := e.Templates.GetRenderedTemplate(templateKey)
+	output, err := e.Templates.GetRenderedTemplate(templateKey)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
+
 	contentType := e.CN.formatToMediaType(templateKey.Format)
-
-	// validate response
-	if err := e.OpenAPI.validateResponse(contentType, template, r); err != nil {
-		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// return response to client
-	if contentType != "" {
-		w.Header().Set("Content-Type", contentType)
-	}
-	if _, err = w.Write(template); err != nil {
-		log.Printf("Write failed: %v\n", err)
-	}
+	e.validateAndServe(w, r, contentType, output)
 }
 
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
@@ -225,6 +222,30 @@ func removeBody(proxyRes *http.Response) {
 	proxyRes.Body = io.NopCloser(buf)
 	proxyRes.Header["Content-Length"] = []string{"0"}
 	proxyRes.Header["Content-Type"] = []string{}
+}
+
+func (e *Engine) validateAndServe(w http.ResponseWriter, r *http.Request, contentType string, output []byte) {
+	// validate request
+	if err := e.OpenAPI.validateRequest(r); err != nil {
+		log.Printf("%v", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// validate response
+	if err := e.OpenAPI.validateResponse(contentType, output, r); err != nil {
+		log.Printf("%v", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// return response output to client
+	if contentType != "" {
+		w.Header().Set("Content-Type", contentType)
+	}
+	if _, err := w.Write(output); err != nil {
+		log.Printf("Write failed: %v\n", err)
+	}
 }
 
 func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) {

@@ -14,38 +14,21 @@ const (
 	templatesDir = "ogc/features/templates/"
 )
 
+var (
+	collectionsBreadcrumb = []engine.Breadcrumb{
+		{
+			Name: "Collections",
+			Path: "collections",
+		},
+	}
+)
+
 type Features struct {
 	engine     *engine.Engine
 	datasource datasources.Datasource
 }
 
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
-	if e.Config.OgcAPI.Features.Collections != nil {
-		collectionsBreadcrumbs := []engine.Breadcrumb{
-			{
-				Name: "Collections",
-				Path: "collections",
-			},
-		}
-
-		for _, coll := range e.Config.OgcAPI.Features.Collections.Unique() {
-			itemsBreadcrumbs := collectionsBreadcrumbs
-			itemsBreadcrumbs = append(itemsBreadcrumbs, []engine.Breadcrumb{
-				{
-					Name: coll.ID,
-					Path: "collections/" + coll.ID,
-				},
-				{
-					Name: "items",
-					Path: "collections/" + coll.ID + "/items",
-				},
-			}...)
-			e.RenderTemplatesWithParams(coll,
-				itemsBreadcrumbs,
-				engine.NewTemplateKeyWithName(templatesDir+"features.go.html", coll.ID))
-		}
-	}
-
 	var datasource datasources.Datasource
 	if e.Config.OgcAPI.Features.Datasource.FakeDB {
 		datasource = datasources.NewFakeDB()
@@ -64,7 +47,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	return features
 }
 
-// CollectionContent serve FeatureCollection with the given collectionId
+// CollectionContent serve a FeatureCollection with the given collectionId
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
@@ -73,12 +56,25 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"features.go."+f.engine.CN.NegotiateFormat(r), collectionID, f.engine.CN.NegotiateLanguage(w, r))
-			f.engine.ServePage(w, r, key)
+			breadcrumbs := collectionsBreadcrumb
+			breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
+				{
+					Name: collectionID,
+					Path: "collections/" + collectionID,
+				},
+				{
+					Name: "items",
+					Path: "collections/" + collectionID + "/items",
+				},
+			}...)
+
+			lang := f.engine.CN.NegotiateLanguage(w, r)
+			key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"features.go."+f.engine.CN.NegotiateFormat(r), collectionID, lang)
+			f.engine.RenderAndServePage(w, r, fc, breadcrumbs, key, lang)
 		case engine.FormatJSON:
 			fcJSON, err := fc.MarshalJSON()
 			if err != nil {
-				http.Error(w, "Failed to marshall FeatureCollection to JSON", http.StatusInternalServerError)
+				http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
 				return
 			}
 			engine.SafeWrite(w.Write, fcJSON)
@@ -88,7 +84,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 	}
 }
 
-// Feature serves a specific Feature
+// Feature serves a single Feature
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
@@ -97,7 +93,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		feat := f.datasource.GetFeature(collectionID, featureID)
 		featJSON, err := feat.MarshalJSON()
 		if err != nil {
-			http.Error(w, "Failed to marshall Feature to JSON", http.StatusInternalServerError)
+			http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
 			return
 		}
 		engine.SafeWrite(w.Write, featJSON)

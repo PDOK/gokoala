@@ -125,55 +125,63 @@ func (t *Templates) GetRenderedTemplate(key TemplateKey) ([]byte, error) {
 	return nil, fmt.Errorf("no rendered template with name %s", key.Name)
 }
 
-func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
-	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-
+func (t *Templates) renderAndSaveHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
 	for lang := range t.localizers {
-		templateFuncs := t.createTemplateFuncs(lang)
-		compiled := htmltemplate.Must(htmltemplate.New(layoutFile).
-			Funcs(templateFuncs).ParseFiles(templatesDir+layoutFile, file))
-
-		var rendered bytes.Buffer
-		if err := compiled.Execute(&rendered, &TemplateData{
-			Config:      t.config,
-			Params:      params,
-			Breadcrumbs: breadcrumbs,
-		}); err != nil {
-			log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
-		}
-
-		// Store rendered template per language
-		key.Language = lang
-		t.RenderedTemplates[key] = rendered.Bytes()
-	}
-}
-
-func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}) {
-	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
-
-	for lang := range t.localizers {
-		templateFuncs := t.createTemplateFuncs(lang)
-		compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).
-			Funcs(templateFuncs).Parse(t.readFile(file)))
-
-		var rendered bytes.Buffer
-		if err := compiled.Execute(&rendered, &TemplateData{
-			Config: t.config,
-			Params: params,
-		}); err != nil {
-			log.Fatalf("failed to execute template %s, error: %v", file, err)
-		}
-
-		var result = rendered.Bytes()
-		if strings.Contains(key.Format, FormatJSON) {
-			// pretty print all JSON (or derivatives like TileJSON)
-			result = prettyPrintJSON(result, key.Name)
-		}
+		result := t.renderHTMLTemplate(key, breadcrumbs, params, lang)
 
 		// Store rendered template per language
 		key.Language = lang
 		t.RenderedTemplates[key] = result
 	}
+}
+
+func (t *Templates) renderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}, lang language.Tag) []byte {
+	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
+	templateFuncs := t.createTemplateFuncs(lang)
+	compiled := htmltemplate.Must(htmltemplate.New(layoutFile).
+		Funcs(templateFuncs).ParseFiles(templatesDir+layoutFile, file))
+
+	var rendered bytes.Buffer
+	if err := compiled.Execute(&rendered, &TemplateData{
+		Config:      t.config,
+		Params:      params,
+		Breadcrumbs: breadcrumbs,
+	}); err != nil {
+		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
+	}
+	return rendered.Bytes()
+}
+
+func (t *Templates) renderAndSaveNonHTMLTemplate(key TemplateKey, params interface{}) {
+	for lang := range t.localizers {
+		result := t.renderNonHTMLTemplate(key, params, lang)
+
+		// Store rendered template per language
+		key.Language = lang
+		t.RenderedTemplates[key] = result
+	}
+}
+
+func (t *Templates) renderNonHTMLTemplate(key TemplateKey, params interface{}, lang language.Tag) []byte {
+	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
+	templateFuncs := t.createTemplateFuncs(lang)
+	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).
+		Funcs(templateFuncs).Parse(t.readFile(file)))
+
+	var rendered bytes.Buffer
+	if err := compiled.Execute(&rendered, &TemplateData{
+		Config: t.config,
+		Params: params,
+	}); err != nil {
+		log.Fatalf("failed to execute template %s, error: %v", file, err)
+	}
+
+	var result = rendered.Bytes()
+	if strings.Contains(key.Format, FormatJSON) {
+		// pretty print all JSON (or derivatives like TileJSON)
+		result = prettyPrintJSON(result, key.Name)
+	}
+	return result
 }
 
 func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]interface{} {
