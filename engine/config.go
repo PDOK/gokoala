@@ -252,7 +252,7 @@ type OgcAPIProcesses struct {
 type Datasource struct {
 	GeoPackage *GeoPackage `yaml:"geopackage" validate:"required_without_all=FakeDB"`
 	FakeDB     bool        `yaml:"fakedb" validate:"required_without_all=GeoPackage"`
-	// Add more datasources here such as PostGIS, etc
+	// Add more datasources here such as PostGIS, Mongo, etc
 }
 
 type GeoPackage struct {

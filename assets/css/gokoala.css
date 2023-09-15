@@ -50,6 +50,16 @@ td {
 .table-sm>:not(caption)>*>*  {
     padding: 0.10rem;
 }
+.table th {
+    color: var(--bs-white);
+    background-color:  var(--bs-blue);
+}
+.table th a {
+    color: var(--bs-white);
+}
+.table th a:hover {
+    color: var(--lightblue);
+}
 
 .vectortile-view {
     flex-grow: 1;

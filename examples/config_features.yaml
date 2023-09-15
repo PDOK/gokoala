@@ -1,11 +1,11 @@
 ---
-collectionMetadata: &collectionMetadata
+collectionMetadata: &exampleMetadata
   description: >-
     This is a description about lorum ipsum
   keywords:
     - Keyword1
     - Keyword2
-  thumbnail: 3d.png
+  thumbnail: old.png
   lastUpdated: "2030-01-02T12:00:00Z"
   extent:
     srs: EPSG:3857
@@ -18,7 +18,7 @@ serviceIdentifier: BAG
 abstract: >-
   This is a description about the dataset in Markdown. See [PDOK BAG dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-adressen-en-gebouwen-ba-1) for details.
 # just a dummy picture, but you can put an actual thumbnail here
-thumbnail: 3d.png
+thumbnail: bgt.png
 resources:
   directory: ./examples/resources
 keywords:
@@ -47,7 +47,6 @@ baseUrl: http://localhost:8080
 availableLanguages:
   - nl
   - en
-# how to serve resources (e.g., images, fonts, sprites). Possible values: directory (serve local files), url (serve through reverse proxy)
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   features:
@@ -55,10 +54,19 @@ ogcApi:
       fakedb: true
     collections:
       - id: verblijfsobjecten
-        metadata: *collectionMetadata
+        metadata:
+          # inherit common metadata (to tidy example)
+          <<: *exampleMetadata
+          title: Verblijfsobjecten
       - id: panden
-        metadata: *collectionMetadata
+        metadata:
+          <<: *exampleMetadata
+          title: Panden
       - id: ligplaatsen
-        metadata: *collectionMetadata
+        metadata:
+          <<: *exampleMetadata
+          title: Ligplaatsen
       - id: standplaatsen
-        metadata: *collectionMetadata
+        metadata:
+          <<: *exampleMetadata
+          title: Standplaatsen

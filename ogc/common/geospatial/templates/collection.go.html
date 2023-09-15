@@ -52,10 +52,19 @@
                     <li class="list-group-item">
                         <h5 class="card-title">Features</h5>
                         <ul>
-                            <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features in HTML</a></li>
-                            <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">Features in JSON</a></li>
+                            <li>Blader door de <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features</a></li>
+                            <li>{{ i18n "GoTo" }} Features als <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a> in WGS84</li>
+                            <li>{{ i18n "GoTo" }} Features als <a href="#" onclick="alert('TODO')">JSON-FG</a> in WGS84</li>
+                            <li>{{ i18n "GoTo" }} Features als <a href="#" onclick="alert('TODO')">JSON-FG</a> in RD</li>
+                            <li>{{ i18n "GoTo" }} Features als <a href="#" onclick="alert('TODO')">JSON-FG</a> in ETRS89</li>
+                            <li>Download als <a href="#" onclick="alert('TODO')">GeoPackage</a></li>
                         </ul>
+                        <br/>
+                        <div class="alert alert-primary" role="alert">
+                            Uitleg over welke JSON, wanneer kies je voor GeoJSON en wanneer voor JSON-FG. Verschil tussen projecties, etc.
+                        </div>
                     </li>
+
                     {{ end }}
                 {{ end }}
 
@@ -74,19 +83,19 @@
 
             <ul class="list-group list-group-flush">
                 {{ if and .Params.Metadata .Params.Metadata.Keywords }}
-                    <li class="list-group-item text-muted">
+                    <li class="list-group-item">
                         <strong>{{ i18n "Keywords" }}</strong>: {{ .Params.Metadata.Keywords | join ", " }}
                     </li>
                 {{ end }}
-                {{/* <li class="list-group-item text-muted"><b>Schema</b>: TODO link to collection schema</li> */}}
+                {{/* <li class="list-group-item"><b>Schema</b>: TODO link to collection schema</li> */}}
                 {{ if and .Params.Metadata .Params.Metadata.LastUpdated }}
-                    <li class="list-group-item text-muted">
+                    <li class="list-group-item">
                         <strong>{{ i18n "LastUpdated" }}</strong>:
                         {{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}
                     </li>
                 {{ end }}
                 {{ if and .Params.Metadata .Params.Metadata.Extent }}
-                    <li class="list-group-item text-muted">
+                    <li class="list-group-item">
                         <strong>{{ i18n "Extent" }}</strong>
                         (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}" target="_blank">{{ .Params.Metadata.Extent.Srs }}</a>):
                         {{ .Params.Metadata.Extent.Bbox | join ", " }}

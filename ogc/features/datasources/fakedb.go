@@ -1,14 +1,14 @@
 package datasources
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
 )
 
-const nrOfFakeFeatures = 1500
+const nrOfFakeFeatures = 100
 
 type FakeDB struct {
 	featureCollection *geojson.FeatureCollection
@@ -29,8 +29,12 @@ func (fdb FakeDB) GetFeatures(_ string) *geojson.FeatureCollection {
 }
 
 func (fdb FakeDB) GetFeature(_ string, featureID string) *geojson.Feature {
-	fid, _ := strconv.Atoi(featureID)
-	return fdb.featureCollection.Features[fid]
+	for _, feat := range fdb.featureCollection.Features {
+		if feat.ID == featureID {
+			return feat
+		}
+	}
+	return nil
 }
 
 func generateFakeFeatureCollection() *geojson.FeatureCollection {
@@ -47,7 +51,7 @@ func generateFakeFeatureCollection() *geojson.FeatureCollection {
 
 		geom := orb.Point{address.Longitude, address.Latitude}
 		feature := geojson.NewFeature(geom)
-		feature.ID = i
+		feature.ID = gofakeit.Numerify(fmt.Sprintf("%d#######", i))
 		feature.Properties = props
 
 		features = append(features, feature)

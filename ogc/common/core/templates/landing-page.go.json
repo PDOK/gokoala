@@ -54,7 +54,7 @@
     {
       "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-schemes",
       "type": "application/json",
-      "title": "Retrieve the list of shared TileMatrixSets available from this API implementation \u0026 deployment.",
+      "title": "Retrieve the list of shared TileMatrixSets available from this API implementation.",
       "href": "{{ .Config.BaseURL }}/tileMatrixSets"
     }
     {{ end }}
