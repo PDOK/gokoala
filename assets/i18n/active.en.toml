@@ -89,3 +89,6 @@ ViewCollectionAs = "View collection as"
 Extent = "Geographic extent"
 GoTo = "Go to the"
 ViewIn = "View in the"
+
+# Features page
+Geometry = "geometry"

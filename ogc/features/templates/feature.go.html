@@ -19,8 +19,16 @@
                     <td>{{ $value }}</td>
                 </tr>
             {{ end }}
+                <tr>
+                    <td class="w-25">{{ i18n "Geometry" }}</td>
+                    <td>{{ .Params.Geometry }}</td>
+                </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="col-8" style="background-color: lightblue">
+        TODO: Display map with feature here
     </div>
 
 </section>

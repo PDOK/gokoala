@@ -94,3 +94,6 @@ ViewCollectionAs = "Bekijk collectie als"
 Extent = "Geografische begrenzing"
 GoTo = "Ga naar de"
 ViewIn = "Bekijk in de"
+
+# Features page
+Geometry = "geometrie"
