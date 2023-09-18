@@ -161,7 +161,9 @@ func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Bre
 // given in the TemplateKey. The result isn't store in engine, it's served directly to the client.
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a backing store).
-func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, params interface{}, breadcrumbs []Breadcrumb, key TemplateKey, lang language.Tag) {
+func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, params interface{},
+	breadcrumbs []Breadcrumb, key TemplateKey, lang language.Tag) {
+
 	// validate request
 	if err := e.OpenAPI.validateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
@@ -189,9 +191,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, para
 	if contentType != "" {
 		w.Header().Set("Content-Type", contentType)
 	}
-	if _, err := w.Write(output); err != nil {
-		log.Printf("Write failed: %v\n", err)
-	}
+	SafeWrite(w.Write, output)
 }
 
 // ServePage validates incoming HTTP request against OpenAPI spec, renders given template and serves as HTTP response
@@ -222,9 +222,7 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	if contentType != "" {
 		w.Header().Set("Content-Type", contentType)
 	}
-	if _, err := w.Write(output); err != nil {
-		log.Printf("Write failed: %v\n", err)
-	}
+	SafeWrite(w.Write, output)
 }
 
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
