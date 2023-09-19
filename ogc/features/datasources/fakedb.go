@@ -3,15 +3,15 @@ package datasources
 import (
 	"fmt"
 
+	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/geojson"
+	"github.com/go-spatial/geom"
 )
 
 const nrOfFakeFeatures = 100
 
 type FakeDB struct {
-	featureCollection *geojson.FeatureCollection
+	featureCollection *domain.FeatureCollection
 }
 
 func NewFakeDB() *FakeDB {
@@ -24,11 +24,11 @@ func (FakeDB) Close() {
 	// noop
 }
 
-func (fdb FakeDB) GetFeatures(_ string) *geojson.FeatureCollection {
+func (fdb FakeDB) GetFeatures(_ string) *domain.FeatureCollection {
 	return fdb.featureCollection
 }
 
-func (fdb FakeDB) GetFeature(_ string, featureID string) *geojson.Feature {
+func (fdb FakeDB) GetFeature(_ string, featureID string) *domain.Feature {
 	for _, feat := range fdb.featureCollection.Features {
 		if feat.ID == featureID {
 			return feat
@@ -37,8 +37,8 @@ func (fdb FakeDB) GetFeature(_ string, featureID string) *geojson.Feature {
 	return nil
 }
 
-func generateFakeFeatureCollection() *geojson.FeatureCollection {
-	var features []*geojson.Feature
+func generateFakeFeatureCollection() *domain.FeatureCollection {
+	var feats []*domain.Feature
 	for i := 0; i < nrOfFakeFeatures; i++ {
 		address := gofakeit.Address()
 		var props = map[string]interface{}{
@@ -49,14 +49,15 @@ func generateFakeFeatureCollection() *geojson.FeatureCollection {
 			"purpose":    gofakeit.Blurb(),
 		}
 
-		geom := orb.Point{address.Longitude, address.Latitude}
-		feature := geojson.NewFeature(geom)
+		geometry := geom.Point{address.Longitude, address.Latitude}
+		feature := domain.Feature{}
 		feature.ID = gofakeit.Numerify(fmt.Sprintf("%d#######", i))
+		feature.Geometry.Geometry = geometry
 		feature.Properties = props
 
-		features = append(features, feature)
+		feats = append(feats, &feature)
 	}
-	fc := geojson.NewFeatureCollection()
-	fc.Features = features
-	return fc
+	fc := domain.FeatureCollection{}
+	fc.Features = feats
+	return &fc
 }

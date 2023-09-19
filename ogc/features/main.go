@@ -1,13 +1,13 @@
 package features
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
-	"github.com/paulmach/orb/geojson"
-
+	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -64,36 +64,9 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			collectionMetadata := collectionsMetadata[collectionID]
-
-			breadcrumbs := collectionsBreadcrumb
-			breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
-				{
-					Name: f.getCollectionTitle(collectionID, collectionMetadata),
-					Path: "collections/" + collectionID,
-				},
-				{
-					Name: "Items",
-					Path: "collections/" + collectionID + "/items",
-				},
-			}...)
-
-			pageContent := &featureCollectionPage{
-				fc,
-				collectionID,
-				collectionMetadata,
-			}
-
-			lang := f.engine.CN.NegotiateLanguage(w, r)
-			key := engine.NewTemplateKeyWithLanguage(templatesDir+"features.go."+format, lang)
-			f.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
+			f.featuresAsHTML(w, r, collectionID, fc, format)
 		case engine.FormatJSON:
-			fcJSON, err := fc.MarshalJSON()
-			if err != nil {
-				http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
-				return
-			}
-			engine.SafeWrite(w.Write, fcJSON)
+			f.featuresAsJSON(w, fc)
 		default:
 			http.NotFound(w, r)
 		}
@@ -115,49 +88,92 @@ func (f *Features) Feature() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			collectionMetadata := collectionsMetadata[collectionID]
-
-			breadcrumbs := collectionsBreadcrumb
-			breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
-				{
-					Name: f.getCollectionTitle(collectionID, collectionMetadata),
-					Path: "collections/" + collectionID,
-				},
-				{
-					Name: "Items",
-					Path: "collections/" + collectionID + "/items",
-				},
-				{
-					Name: featureID,
-					Path: "collections/" + collectionID + "/items/" + featureID,
-				},
-			}...)
-
-			pageContent := &featurePage{
-				feat,
-				featureID,
-				collectionMetadata,
-			}
-
-			lang := f.engine.CN.NegotiateLanguage(w, r)
-			key := engine.NewTemplateKeyWithLanguage(templatesDir+"feature.go."+format, lang)
-			f.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
+			f.featureAsHTML(w, r, collectionID, featureID, feat, format)
 		case engine.FormatJSON:
-			featJSON, err := feat.MarshalJSON()
-			if err != nil {
-				http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
-				return
-			}
-			engine.SafeWrite(w.Write, featJSON)
+			f.featureAsJSON(w, feat)
 		default:
 			http.NotFound(w, r)
 		}
 	}
 }
 
+func (f *Features) featuresAsHTML(w http.ResponseWriter, r *http.Request, collectionID string, fc *domain.FeatureCollection, format string) {
+	collectionMetadata := collectionsMetadata[collectionID]
+
+	breadcrumbs := collectionsBreadcrumb
+	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
+		{
+			Name: f.getCollectionTitle(collectionID, collectionMetadata),
+			Path: "collections/" + collectionID,
+		},
+		{
+			Name: "Items",
+			Path: "collections/" + collectionID + "/items",
+		},
+	}...)
+
+	pageContent := &featureCollectionPage{
+		*fc,
+		collectionID,
+		collectionMetadata,
+	}
+
+	lang := f.engine.CN.NegotiateLanguage(w, r)
+	key := engine.NewTemplateKeyWithLanguage(templatesDir+"features.go."+format, lang)
+	f.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
+}
+
+func (f *Features) featureAsHTML(w http.ResponseWriter, r *http.Request, collectionID string, featureID string, feat *domain.Feature, format string) {
+	collectionMetadata := collectionsMetadata[collectionID]
+
+	breadcrumbs := collectionsBreadcrumb
+	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
+		{
+			Name: f.getCollectionTitle(collectionID, collectionMetadata),
+			Path: "collections/" + collectionID,
+		},
+		{
+			Name: "Items",
+			Path: "collections/" + collectionID + "/items",
+		},
+		{
+			Name: featureID,
+			Path: "collections/" + collectionID + "/items/" + featureID,
+		},
+	}...)
+
+	pageContent := &featurePage{
+		*feat,
+		featureID,
+		collectionMetadata,
+	}
+
+	lang := f.engine.CN.NegotiateLanguage(w, r)
+	key := engine.NewTemplateKeyWithLanguage(templatesDir+"feature.go."+format, lang)
+	f.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
+}
+
+func (f *Features) featuresAsJSON(w http.ResponseWriter, fc *domain.FeatureCollection) {
+	fcJSON, err := json.Marshal(&fc)
+	if err != nil {
+		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
+		return
+	}
+	engine.SafeWrite(w.Write, fcJSON)
+}
+
+func (f *Features) featureAsJSON(w http.ResponseWriter, feat *domain.Feature) {
+	featJSON, err := json.Marshal(feat)
+	if err != nil {
+		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
+		return
+	}
+	engine.SafeWrite(w.Write, featJSON)
+}
+
 // featureCollectionPage enriched FeatureCollection for HTML representation.
 type featureCollectionPage struct {
-	*geojson.FeatureCollection
+	domain.FeatureCollection
 
 	CollectionID string
 	Metadata     *engine.GeoSpatialCollectionMetadata
@@ -165,7 +181,7 @@ type featureCollectionPage struct {
 
 // featurePage enriched Feature for HTML representation.
 type featurePage struct {
-	*geojson.Feature
+	domain.Feature
 
 	FeatureID string
 	Metadata  *engine.GeoSpatialCollectionMetadata
