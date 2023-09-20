@@ -57,25 +57,32 @@ func NewCursor(features []*Feature, column string, limit int, last bool) Cursor 
 	}
 	max := len(features) - 1
 
-	prev := features[0].Properties[column]
-	if prev == nil {
+	start := features[0].Properties[column]
+	end := features[max].Properties[column]
+
+	if start == nil {
 		log.Printf("cursor column '%s' doesn't exists, defaulting to first page\n", column)
-		prev = 0
-	} else if prev != 0 {
-		prev = prev.(int) - max
+		start = 0
+	}
+	if end == nil {
+		log.Printf("cursor column '%s' doesn't exists, defaulting to first page\n", column)
+		end = 0
 	}
 
-	next := features[max].Properties[column]
-	if next == nil {
-		log.Printf("cursor column '%s' doesn't exists, defaulting to first page\n", column)
-		next = 0
+	prev := start.(int)
+	if prev != 0 {
+		prev = prev - max
+		if prev < 0 {
+			prev = 0
+		}
 	}
+	next := end.(int)
 
 	return Cursor{
-		Prev: prev.(int),
-		Next: next.(int),
+		Prev: prev,
+		Next: next,
 
-		IsFirst: next.(int) < limit,
+		IsFirst: next < limit,
 		IsLast:  last,
 	}
 }

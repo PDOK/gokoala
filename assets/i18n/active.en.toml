@@ -92,3 +92,5 @@ ViewIn = "View in the"
 
 # Features page
 Geometry = "geometry"
+Prev = "Previous"
+Next = "Next"

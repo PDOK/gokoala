@@ -127,6 +127,8 @@ func (f *Features) featuresAsHTML(w http.ResponseWriter, r *http.Request, collec
 		*fc,
 		collectionID,
 		collectionMetadata,
+		cursor,
+		limit,
 	}
 
 	lang := f.engine.CN.NegotiateLanguage(w, r)
@@ -169,39 +171,7 @@ func (f *Features) featureAsHTML(w http.ResponseWriter, r *http.Request, collect
 func (f *Features) featuresAsJSON(w http.ResponseWriter, collectionID string,
 	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
 
-	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", f.engine.Config.BaseURL.String(), collectionID)
-
-	links := make([]domain.Link, 0)
-	links = append(links, domain.Link{
-		Rel:   "self",
-		Title: "This document as GeoJSON",
-		Type:  engine.MediaTypeGeoJSON,
-		Href:  featuresBaseURL + "?f=json",
-	})
-	links = append(links, domain.Link{
-		Rel:   "alternate",
-		Title: "This document as HTML",
-		Type:  engine.MediaTypeHTML,
-		Href:  featuresBaseURL + "?f=html",
-	})
-	if !cursor.IsLast {
-		links = append(links, domain.Link{
-			Rel:   "next",
-			Title: "Next page",
-			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Next, limit),
-		})
-	}
-	if !cursor.IsFirst {
-		links = append(links, domain.Link{
-			Rel:   "prev",
-			Title: "Previous page",
-			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Prev, limit),
-		})
-	}
-
-	fc.Links = links
+	fc.Links = f.createJSONLinks(collectionID, cursor, limit)
 	fcJSON, err := json.Marshal(&fc)
 	if err != nil {
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
@@ -225,6 +195,8 @@ type featureCollectionPage struct {
 
 	CollectionID string
 	Metadata     *engine.GeoSpatialCollectionMetadata
+	Cursor       domain.Cursor
+	Limit        int
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -261,4 +233,39 @@ func (f *Features) getLimit(r *http.Request) (int, error) {
 		limit = 0
 	}
 	return limit, err
+}
+
+func (f *Features) createJSONLinks(collectionID string, cursor domain.Cursor, limit int) []domain.Link {
+	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", f.engine.Config.BaseURL.String(), collectionID)
+
+	links := make([]domain.Link, 0)
+	links = append(links, domain.Link{
+		Rel:   "self",
+		Title: "This document as GeoJSON",
+		Type:  engine.MediaTypeGeoJSON,
+		Href:  featuresBaseURL + "?f=json",
+	})
+	links = append(links, domain.Link{
+		Rel:   "alternate",
+		Title: "This document as HTML",
+		Type:  engine.MediaTypeHTML,
+		Href:  featuresBaseURL + "?f=html",
+	})
+	if !cursor.IsLast {
+		links = append(links, domain.Link{
+			Rel:   "next",
+			Title: "Next page",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Next, limit),
+		})
+	}
+	if !cursor.IsFirst {
+		links = append(links, domain.Link{
+			Rel:   "prev",
+			Title: "Previous page",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Prev, limit),
+		})
+	}
+	return links
 }

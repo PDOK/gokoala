@@ -97,3 +97,5 @@ ViewIn = "Bekijk in de"
 
 # Features page
 Geometry = "geometrie"
+Prev = "Vorige"
+Next = "Volgende"
