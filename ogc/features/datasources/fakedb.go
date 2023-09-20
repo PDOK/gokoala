@@ -13,6 +13,7 @@ import (
 const nrOfFakeFeatures = 1000
 const cursorColumnName = "cursor"
 
+// FakeDB fake/mock datasource used for prototyping/testing/demos/etc.
 type FakeDB struct {
 	featureCollection *domain.FeatureCollection
 }
@@ -36,7 +37,8 @@ func (fdb FakeDB) GetFeatures(_ string, cursor string, limit int) (*domain.Featu
 	}
 
 	high := low + limit
-	if high > len(fdb.featureCollection.Features) {
+	last := high > len(fdb.featureCollection.Features)
+	if last {
 		high = len(fdb.featureCollection.Features)
 	}
 
@@ -44,7 +46,7 @@ func (fdb FakeDB) GetFeatures(_ string, cursor string, limit int) (*domain.Featu
 	return &domain.FeatureCollection{
 			Features: page,
 		},
-		domain.NewCursor(page, cursorColumnName)
+		domain.NewCursor(page, cursorColumnName, limit, last)
 }
 
 func (fdb FakeDB) GetFeature(_ string, featureID string) *domain.Feature {
@@ -79,7 +81,7 @@ func generateFakeFeatureCollection() *domain.FeatureCollection {
 		feats = append(feats, &feature)
 	}
 
-	// the column that will be used as a cursor must be ordered
+	// the collection must be ordered by the cursor column
 	sort.Slice(feats, func(i, j int) bool {
 		return feats[i].Properties[cursorColumnName].(int) < feats[j].Properties[cursorColumnName].(int)
 	})

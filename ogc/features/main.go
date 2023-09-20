@@ -184,18 +184,22 @@ func (f *Features) featuresAsJSON(w http.ResponseWriter, collectionID string,
 		Type:  engine.MediaTypeHTML,
 		Href:  featuresBaseURL + "?f=html",
 	})
-	links = append(links, domain.Link{
-		Rel:   "next",
-		Title: "Next page",
-		Type:  engine.MediaTypeGeoJSON,
-		Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.End, limit),
-	})
-	links = append(links, domain.Link{
-		Rel:   "prev",
-		Title: "Previous page",
-		Type:  engine.MediaTypeGeoJSON,
-		Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Start, limit),
-	})
+	if !cursor.IsLast {
+		links = append(links, domain.Link{
+			Rel:   "next",
+			Title: "Next page",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Next, limit),
+		})
+	}
+	if !cursor.IsFirst {
+		links = append(links, domain.Link{
+			Rel:   "prev",
+			Title: "Previous page",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Prev, limit),
+		})
+	}
 
 	fc.Links = links
 	fcJSON, err := json.Marshal(&fc)

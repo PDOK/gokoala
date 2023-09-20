@@ -44,30 +44,38 @@ type Link struct {
 }
 
 type Cursor struct {
-	Start int
-	End   int
+	Prev int
+	Next int
+
+	IsFirst bool
+	IsLast  bool
 }
 
-func NewCursor(features []*Feature, column string) Cursor {
+func NewCursor(features []*Feature, column string, limit int, last bool) Cursor {
 	if len(features) == 0 {
 		return Cursor{}
 	}
 	max := len(features) - 1
 
-	start := features[0].Properties[column]
-	if start == nil {
+	prev := features[0].Properties[column]
+	if prev == nil {
 		log.Printf("cursor column '%s' doesn't exists, defaulting to first page\n", column)
-		start = 0
-	} else if start != 0 {
-		start = start.(int) - max
+		prev = 0
+	} else if prev != 0 {
+		prev = prev.(int) - max
 	}
-	end := features[max].Properties[column]
-	if end == nil {
+
+	next := features[max].Properties[column]
+	if next == nil {
 		log.Printf("cursor column '%s' doesn't exists, defaulting to first page\n", column)
-		end = 0
+		next = 0
 	}
+
 	return Cursor{
-		Start: start.(int),
-		End:   end.(int),
+		Prev: prev.(int),
+		Next: next.(int),
+
+		IsFirst: next.(int) < limit,
+		IsLast:  last,
 	}
 }
