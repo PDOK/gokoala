@@ -9,6 +9,7 @@ require (
 	github.com/getkin/kin-openapi v0.116.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-playground/validator/v10 v10.13.0
+	github.com/go-spatial/geom v0.0.0-20220918193402-3cd2f5a9a082
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
@@ -26,7 +27,6 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-spatial/geom v0.0.0-20220918193402-3cd2f5a9a082 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect

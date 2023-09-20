@@ -2,7 +2,9 @@ package features
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
@@ -13,6 +15,7 @@ import (
 
 const (
 	templatesDir = "ogc/features/templates/"
+	defaultLimit = 10
 )
 
 var (
@@ -54,8 +57,14 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
+		cursorParam := r.URL.Query().Get("cursor")
+		limit, err := f.getLimit(r)
+		if err != nil {
+			http.Error(w, "limit should be a number", http.StatusBadRequest)
+			return
+		}
 
-		fc := f.datasource.GetFeatures(collectionID)
+		fc, cursor := f.datasource.GetFeatures(collectionID, cursorParam, limit)
 		if fc == nil {
 			http.NotFound(w, r)
 			return
@@ -64,9 +73,9 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.featuresAsHTML(w, r, collectionID, fc, format)
+			f.featuresAsHTML(w, r, collectionID, cursor, limit, fc, format)
 		case engine.FormatJSON:
-			f.featuresAsJSON(w, fc)
+			f.featuresAsJSON(w, collectionID, cursor, limit, fc)
 		default:
 			http.NotFound(w, r)
 		}
@@ -97,7 +106,9 @@ func (f *Features) Feature() http.HandlerFunc {
 	}
 }
 
-func (f *Features) featuresAsHTML(w http.ResponseWriter, r *http.Request, collectionID string, fc *domain.FeatureCollection, format string) {
+func (f *Features) featuresAsHTML(w http.ResponseWriter, r *http.Request, collectionID string,
+	cursor domain.Cursor, limit int, fc *domain.FeatureCollection, format string) {
+
 	collectionMetadata := collectionsMetadata[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
@@ -123,7 +134,9 @@ func (f *Features) featuresAsHTML(w http.ResponseWriter, r *http.Request, collec
 	f.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
 }
 
-func (f *Features) featureAsHTML(w http.ResponseWriter, r *http.Request, collectionID string, featureID string, feat *domain.Feature, format string) {
+func (f *Features) featureAsHTML(w http.ResponseWriter, r *http.Request, collectionID string,
+	featureID string, feat *domain.Feature, format string) {
+
 	collectionMetadata := collectionsMetadata[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
@@ -153,7 +166,38 @@ func (f *Features) featureAsHTML(w http.ResponseWriter, r *http.Request, collect
 	f.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
 }
 
-func (f *Features) featuresAsJSON(w http.ResponseWriter, fc *domain.FeatureCollection) {
+func (f *Features) featuresAsJSON(w http.ResponseWriter, collectionID string,
+	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
+
+	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", f.engine.Config.BaseURL.String(), collectionID)
+
+	links := make([]domain.Link, 0)
+	links = append(links, domain.Link{
+		Rel:   "self",
+		Title: "This document as GeoJSON",
+		Type:  "application/geo+json",
+		Href:  featuresBaseURL + "?f=json",
+	})
+	links = append(links, domain.Link{
+		Rel:   "alternate",
+		Title: "This document as HTML",
+		Type:  "text/html",
+		Href:  featuresBaseURL + "?f=html",
+	})
+	links = append(links, domain.Link{
+		Rel:   "next",
+		Title: "Next page",
+		Type:  "application/geo+json",
+		Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.End, limit),
+	})
+	links = append(links, domain.Link{
+		Rel:   "prev",
+		Title: "Previous page",
+		Type:  "application/geo+json",
+		Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Start, limit),
+	})
+
+	fc.Links = links
 	fcJSON, err := json.Marshal(&fc)
 	if err != nil {
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
@@ -195,10 +239,19 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 	return result
 }
 
-func (f *Features) getCollectionTitle(collectionID string, collectionMetadata *engine.GeoSpatialCollectionMetadata) string {
+func (f *Features) getCollectionTitle(collectionID string, metadata *engine.GeoSpatialCollectionMetadata) string {
 	title := collectionID
-	if collectionMetadata != nil && collectionMetadata.Title != nil {
-		title = *collectionMetadata.Title
+	if metadata != nil && metadata.Title != nil {
+		title = *metadata.Title
 	}
 	return title
+}
+
+func (f *Features) getLimit(r *http.Request) (int, error) {
+	limit := defaultLimit
+	var err error
+	if r.URL.Query().Get("limit") != "" {
+		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
+	}
+	return limit, err
 }
