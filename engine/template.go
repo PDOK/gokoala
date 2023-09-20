@@ -25,8 +25,6 @@ import (
 
 const (
 	layoutFile = "layout.go.html"
-	FormatHTML = "html"
-	FormatJSON = "json"
 )
 
 var (

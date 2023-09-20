@@ -11,6 +11,27 @@ import (
 const (
 	formatParam   = "f"
 	languageParam = "lang"
+
+	MediaTypeJSON        = "application/json"
+	MediaTypeHTML        = "text/html"
+	MediaTypeTileJSON    = "application/vnd.mapbox.tile+json"
+	MediaTypeMVT         = "application/vnd.mapbox-vector-tile"
+	MediaTypeMapboxStyle = "application/vnd.mapbox.style+json"
+	MediaTypeCustomStyle = "application/vnd.custom.style+json"
+	MediaTypeSLD         = "application/vnd.ogc.sld+xml;version=1.0"
+	MediaTypeOpenAPI     = "application/vnd.oai.openapi+json;version=3.0"
+	MediaTypeGeoJSON     = "application/geo+json"
+	MediaTypeJSONFG      = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
+
+	FormatHTML        = "html"
+	FormatJSON        = "json"
+	FormatTileJSON    = "tilejson"
+	FormatMVT         = "pbf" // could also be 'mvt', but 'pbf' is more widely used
+	FormatMapboxStyle = "mapbox"
+	FormatCustomStyle = "custom"
+	FormatSLD         = "sld10"
+	FormatGeoJSON     = "geojson" // ?=json should also work for geojson
+	FormatJSONFG      = "jsonfg"
 )
 
 type ContentNegotiation struct {
@@ -24,23 +45,25 @@ type ContentNegotiation struct {
 func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiation {
 	availableMediaTypes := []contenttype.MediaType{
 		// in order
-		contenttype.NewMediaType("application/json"),
-		contenttype.NewMediaType("text/html"),
-		contenttype.NewMediaType("application/vnd.mapbox.tile+json"),
-		contenttype.NewMediaType("application/vnd.mapbox-vector-tile"),
-		contenttype.NewMediaType("application/vnd.mapbox.style+json"),
-		contenttype.NewMediaType("application/vnd.custom.style+json"),
-		contenttype.NewMediaType("application/vnd.ogc.sld+xml;version=1.0"),
+		contenttype.NewMediaType(MediaTypeJSON),
+		contenttype.NewMediaType(MediaTypeHTML),
+		contenttype.NewMediaType(MediaTypeTileJSON),
+		contenttype.NewMediaType(MediaTypeMVT),
+		contenttype.NewMediaType(MediaTypeMapboxStyle),
+		contenttype.NewMediaType(MediaTypeCustomStyle),
+		contenttype.NewMediaType(MediaTypeSLD),
 	}
 
 	formatsByMediaType := map[string]string{
-		"application/json":                        FormatJSON,
-		"text/html":                               FormatHTML,
-		"application/vnd.mapbox.tile+json":        "tilejson",
-		"application/vnd.mapbox-vector-tile":      "pbf", // could also be 'mvt', but 'pbf' is more widely used.
-		"application/vnd.mapbox.style+json":       "mapbox",
-		"application/vnd.custom.style+json":       "custom",
-		"application/vnd.ogc.sld+xml;version=1.0": "sld10",
+		MediaTypeJSON:        FormatJSON,
+		MediaTypeHTML:        FormatHTML,
+		MediaTypeTileJSON:    FormatTileJSON,
+		MediaTypeGeoJSON:     FormatGeoJSON,
+		MediaTypeJSONFG:      FormatJSONFG,
+		MediaTypeMVT:         FormatMVT,
+		MediaTypeMapboxStyle: FormatMapboxStyle,
+		MediaTypeCustomStyle: FormatCustomStyle,
+		MediaTypeSLD:         FormatSLD,
 	}
 
 	mediaTypesByFormat := reverseMap(formatsByMediaType)
@@ -54,14 +77,14 @@ func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiatio
 }
 
 func (cn *ContentNegotiation) GetSupportedStyleFormats() []string {
-	return []string{"mapbox", "custom", "sld10"}
+	return []string{FormatMapboxStyle, FormatCustomStyle, FormatSLD}
 }
 
 func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
 	extensionsByFormat := map[string]string{
-		"mapbox": ".json",
-		"custom": ".style",
-		"sld10":  ".sld",
+		FormatMapboxStyle: ".json",
+		FormatCustomStyle: ".style",
+		FormatSLD:         ".sld",
 	}
 	if extension, exists := extensionsByFormat[format]; exists {
 		return extension
@@ -149,7 +172,7 @@ func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, r
 
 func setLanguageCookie(w http.ResponseWriter, lang string) {
 	cookie := &http.Cookie{
-		Name:     "lang",
+		Name:     languageParam,
 		Value:    lang,
 		Path:     "/",
 		MaxAge:   cookieMaxAge,
@@ -161,7 +184,7 @@ func setLanguageCookie(w http.ResponseWriter, lang string) {
 
 func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.Tag {
 	var requestedLanguage = language.Und
-	cookie, err := req.Cookie("lang")
+	cookie, err := req.Cookie(languageParam)
 	if err != nil {
 		return requestedLanguage
 	}

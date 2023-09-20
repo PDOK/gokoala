@@ -175,25 +175,25 @@ func (f *Features) featuresAsJSON(w http.ResponseWriter, collectionID string,
 	links = append(links, domain.Link{
 		Rel:   "self",
 		Title: "This document as GeoJSON",
-		Type:  "application/geo+json",
+		Type:  engine.MediaTypeGeoJSON,
 		Href:  featuresBaseURL + "?f=json",
 	})
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as HTML",
-		Type:  "text/html",
+		Type:  engine.MediaTypeHTML,
 		Href:  featuresBaseURL + "?f=html",
 	})
 	links = append(links, domain.Link{
 		Rel:   "next",
 		Title: "Next page",
-		Type:  "application/geo+json",
+		Type:  engine.MediaTypeGeoJSON,
 		Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.End, limit),
 	})
 	links = append(links, domain.Link{
 		Rel:   "prev",
 		Title: "Previous page",
-		Type:  "application/geo+json",
+		Type:  engine.MediaTypeGeoJSON,
 		Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Start, limit),
 	})
 

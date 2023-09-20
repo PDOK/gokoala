@@ -88,7 +88,7 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 func setupRequestResponseValidation() {
 	htmlRegex := regexp.MustCompile(HTMLRegex)
 
-	openapi3filter.RegisterBodyDecoder("text/html",
+	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
 		func(body io.Reader, header http.Header, ref *openapi3.SchemaRef,
 			fn openapi3filter.EncodingFn) (interface{}, error) {
 
@@ -102,7 +102,7 @@ func setupRequestResponseValidation() {
 			return string(data), nil
 		})
 
-	openapi3filter.RegisterBodyDecoder("application/vnd.mapbox.tile+json",
+	openapi3filter.RegisterBodyDecoder(MediaTypeTileJSON,
 		func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
 			fn openapi3filter.EncodingFn) (interface{}, error) {
 			var value interface{}
