@@ -33,6 +33,12 @@
       "type": "application/json",
       "title": "OGC API conformance classes implemented by the API offered at this endpoint",
       "href": "{{ .Config.BaseURL }}/conformance?f=json"
+    },
+    {
+      "rel": "license",
+      "type": "text/html",
+      "title": "{{ .Config.License.Name }}",
+      "href": "{{ .Config.License.URL }}"
     }
     {{ if .Config.OgcAPI.Styles }}
     ,
