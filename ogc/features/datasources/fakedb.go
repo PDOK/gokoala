@@ -34,12 +34,18 @@ func (fdb FakeDB) GetFeatures(_ string, cursor string, limit int) (*domain.Featu
 		low = 0
 	} else {
 		low, _ = strconv.Atoi(cursor)
+		if low < 0 {
+			low = 0
+		}
 	}
 
 	high := low + limit
 	last := high > len(fdb.featureCollection.Features)
 	if last {
 		high = len(fdb.featureCollection.Features)
+	}
+	if high < 0 {
+		high = 0
 	}
 
 	page := fdb.featureCollection.Features[low:high]

@@ -257,5 +257,8 @@ func (f *Features) getLimit(r *http.Request) (int, error) {
 	if r.URL.Query().Get("limit") != "" {
 		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
 	}
+	if limit < 0 {
+		limit = 0
+	}
 	return limit, err
 }
