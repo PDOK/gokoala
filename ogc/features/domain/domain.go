@@ -71,7 +71,7 @@ func NewCursor(features []*Feature, column string, limit int, last bool) Cursor 
 
 	prev := start.(int)
 	if prev != 0 {
-		prev = prev - max
+		prev -= max
 		if prev < 0 {
 			prev = 0
 		}
