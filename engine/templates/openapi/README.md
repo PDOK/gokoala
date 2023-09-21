@@ -72,6 +72,11 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Removal of generic OGC Collection endpoints, already covered in `commons-collections.json`
   - Changed tags from "Data" to "Features"
   - Removed default contact details
+  - Removed datatime parameters (we currently don't support temporal request)
+  - Removed numberMatched and numberReturned, these are optional in the spec and not implemented in GoKoala
+  - changed examples
+    - to use `?f=format` instead of `.format` to be more inline with the OGC spec/docs
+    - removed `offset` since we (will) use `cursor` for pagination
 
 ### OGC 3D GeoVolumes
 

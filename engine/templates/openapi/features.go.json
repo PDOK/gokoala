@@ -47,18 +47,19 @@
                 "type": "number"
               }
             }
-          },
-          {
-            "name": "datetime",
-            "in": "query",
-            "description": "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\nIntervals may be bounded or half-bounded (double-dots at start or end).\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
-            "required": false,
-            "style": "form",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
           }
+{{/*        ,*/}}
+{{/*          {*/}}
+{{/*            "name": "datetime",*/}}
+{{/*            "in": "query",*/}}
+{{/*            "description": "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\nIntervals may be bounded or half-bounded (double-dots at start or end).\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",*/}}
+{{/*            "required": false,*/}}
+{{/*            "style": "form",*/}}
+{{/*            "explode": false,*/}}
+{{/*            "schema": {*/}}
+{{/*              "type": "string"*/}}
+{{/*            }*/}}
+{{/*          }*/}}
         ],
         "responses": {
           "200": {
@@ -84,15 +85,15 @@
                       "title": "this document as HTML"
                     },
                     {
-                      "href": "http://data.example.com/collections/buildings/items.json&offset=10&limit=2",
+                      "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
                       "rel": "next",
                       "type": "application/geo+json",
                       "title": "next page"
                     }
                   ],
-                  "timeStamp": "2018-04-03T14:52:23Z",
-                  "numberMatched": 123,
-                  "numberReturned": 2,
+{{/*                  "timeStamp": "2018-04-03T14:52:23Z",*/}}
+{{/*                  "numberMatched": 123,*/}}
+{{/*                  "numberReturned": 2,*/}}
                   "features": [
                     {
                       "type": "Feature",
@@ -206,13 +207,13 @@
                       "title": "canonical URI of the building"
                     },
                     {
-                      "href": "http://data.example.com/collections/buildings/items/123.json",
+                      "href": "http://data.example.com/collections/buildings/items/123?f=json",
                       "rel": "self",
                       "type": "application/geo+json",
                       "title": "this document"
                     },
                     {
-                      "href": "http://data.example.com/collections/buildings/items/123.html",
+                      "href": "http://data.example.com/collections/buildings/items/123?f=html",
                       "rel": "alternate",
                       "type": "text/html",
                       "title": "this document as HTML"
@@ -405,16 +406,17 @@
             "items": {
               "$ref": "#/components/schemas/link"
             }
-          },
-          "timeStamp": {
-            "$ref": "#/components/schemas/timeStamp"
-          },
-          "numberMatched": {
-            "$ref": "#/components/schemas/numberMatched"
-          },
-          "numberReturned": {
-            "$ref": "#/components/schemas/numberReturned"
           }
+{{/*,*/}}
+{{/*          "timeStamp": {*/}}
+{{/*            "$ref": "#/components/schemas/timeStamp"*/}}
+{{/*          },*/}}
+{{/*          "numberMatched": {*/}}
+{{/*            "$ref": "#/components/schemas/numberMatched"*/}}
+{{/*          },*/}}
+{{/*          "numberReturned": {*/}}
+{{/*            "$ref": "#/components/schemas/numberReturned"*/}}
+{{/*          }*/}}
         }
       },
       "featureGeoJSON": {
@@ -645,18 +647,18 @@
           }
         }
       },
-      "numberMatched": {
-        "minimum": 0,
-        "type": "integer",
-        "description": "The number of features of the feature type that match the selection\nparameters like `bbox`.",
-        "example": 127
-      },
-      "numberReturned": {
-        "minimum": 0,
-        "type": "integer",
-        "description": "The number of features in the feature collection.\n\nA server may omit this information in a response, if the information\nabout the number of features is not known or difficult to compute.\n\nIf the value is provided, the value shall be identical to the number\nof items in the \"features\" array.",
-        "example": 10
-      },
+{{/*      "numberMatched": {*/}}
+{{/*        "minimum": 0,*/}}
+{{/*        "type": "integer",*/}}
+{{/*        "description": "The number of features of the feature type that match the selection\nparameters like `bbox`.",*/}}
+{{/*        "example": 127*/}}
+{{/*      },*/}}
+{{/*      "numberReturned": {*/}}
+{{/*        "minimum": 0,*/}}
+{{/*        "type": "integer",*/}}
+{{/*        "description": "The number of features in the feature collection.\n\nA server may omit this information in a response, if the information\nabout the number of features is not known or difficult to compute.\n\nIf the value is provided, the value shall be identical to the number\nof items in the \"features\" array.",*/}}
+{{/*        "example": 10*/}}
+{{/*      },*/}}
       "pointGeoJSON": {
         "required": [
           "coordinates",
@@ -708,12 +710,12 @@
           }
         }
       },
-      "timeStamp": {
-        "type": "string",
-        "description": "This property indicates the time and date when the response was generated.",
-        "format": "date-time",
-        "example": "2017-08-17T08:05:32Z"
-      },
+{{/*      "timeStamp": {*/}}
+{{/*        "type": "string",*/}}
+{{/*        "description": "This property indicates the time and date when the response was generated.",*/}}
+{{/*        "format": "date-time",*/}}
+{{/*        "example": "2017-08-17T08:05:32Z"*/}}
+{{/*      },*/}}
       "extent_spatial": {
         "type": "object",
         "properties": {
@@ -792,13 +794,13 @@
             "example": {
               "links": [
                 {
-                  "href": "http://data.example.org/collections.json",
+                  "href": "http://data.example.org/collections?f=json",
                   "rel": "self",
                   "type": "application/json",
                   "title": "this document"
                 },
                 {
-                  "href": "http://data.example.org/collections.html",
+                  "href": "http://data.example.org/collections?f=html",
                   "rel": "alternate",
                   "type": "text/html",
                   "title": "this document as HTML"
@@ -850,7 +852,7 @@
                       "title": "Buildings"
                     },
                     {
-                      "href": "http://data.example.org/collections/buildings/items.html",
+                      "href": "http://data.example.org/collections/buildings/items?=fhtml",
                       "rel": "items",
                       "type": "text/html",
                       "title": "Buildings"
@@ -918,7 +920,7 @@
                   "title": "Buildings"
                 },
                 {
-                  "href": "http://data.example.org/collections/buildings/items.html",
+                  "href": "http://data.example.org/collections/buildings/items?f=html",
                   "rel": "items",
                   "type": "text/html",
                   "title": "Buildings"
@@ -956,27 +958,27 @@
               "type": "FeatureCollection",
               "links": [
                 {
-                  "href": "http://data.example.com/collections/buildings/items.json",
+                  "href": "http://data.example.com/collections/buildings/items?f=json",
                   "rel": "self",
                   "type": "application/geo+json",
                   "title": "this document"
                 },
                 {
-                  "href": "http://data.example.com/collections/buildings/items.html",
+                  "href": "http://data.example.com/collections/buildings/items?f=html",
                   "rel": "alternate",
                   "type": "text/html",
                   "title": "this document as HTML"
                 },
                 {
-                  "href": "http://data.example.com/collections/buildings/items.json&offset=10&limit=2",
+                  "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
                   "rel": "next",
                   "type": "application/geo+json",
                   "title": "next page"
                 }
               ],
-              "timeStamp": "2018-04-03T14:52:23Z",
-              "numberMatched": 123,
-              "numberReturned": 2,
+{{/*              "timeStamp": "2018-04-03T14:52:23Z",*/}}
+{{/*              "numberMatched": 123,*/}}
+{{/*              "numberReturned": 2,*/}}
               "features": [
                 {
                   "type": "Feature",
@@ -1034,13 +1036,13 @@
                   "title": "canonical URI of the building"
                 },
                 {
-                  "href": "http://data.example.com/collections/buildings/items/123.json",
+                  "href": "http://data.example.com/collections/buildings/items/123?f=json",
                   "rel": "self",
                   "type": "application/geo+json",
                   "title": "this document"
                 },
                 {
-                  "href": "http://data.example.com/collections/buildings/items/123.html",
+                  "href": "http://data.example.com/collections/buildings/items/123?f=html",
                   "rel": "alternate",
                   "type": "text/html",
                   "title": "this document as HTML"
@@ -1136,17 +1138,17 @@
           "type": "string"
         }
       },
-      "datetime": {
-        "name": "datetime",
-        "in": "query",
-        "description": "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\nIntervals may be bounded or half-bounded (double-dots at start or end).\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
-        "required": false,
-        "style": "form",
-        "explode": false,
-        "schema": {
-          "type": "string"
-        }
-      },
+{{/*      "datetime": {*/}}
+{{/*        "name": "datetime",*/}}
+{{/*        "in": "query",*/}}
+{{/*        "description": "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\nIntervals may be bounded or half-bounded (double-dots at start or end).\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",*/}}
+{{/*        "required": false,*/}}
+{{/*        "style": "form",*/}}
+{{/*        "explode": false,*/}}
+{{/*        "schema": {*/}}
+{{/*          "type": "string"*/}}
+{{/*        }*/}}
+{{/*      },*/}}
       "featureId": {
         "name": "featureId",
         "in": "path",
