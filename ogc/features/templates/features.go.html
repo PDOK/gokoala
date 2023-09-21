@@ -2,6 +2,15 @@
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
+<script>
+    {{- /* generic function to update query string parameters */ -}}
+    function updateQueryString(name, value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(name, value);
+        window.location.href = url.toString();
+    }
+</script>
+
 <hgroup>
     <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h2>
 </hgroup>
@@ -42,6 +51,13 @@
                         {{ i18n "Next" }}
                         <span aria-hidden="true">&raquo;</span>
                     </a>
+                </li>
+                <li class="ms-2">
+                    <select id="limit-select" class="form-select" aria-label="Limit selection" onchange="updateQueryString('limit', this.value)">
+                        <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>{{ i18n "Limit" }} 10 {{ i18n "Items" }} </option>
+                        <option value="50" {{if eq .Params.Limit 50 }}selected{{end}}>{{ i18n "Limit" }} 50 {{ i18n "Items" }}</option>
+                        <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>{{ i18n "Limit" }} 100 {{ i18n "Items" }}</option>
+                    </select>
                 </li>
             </ul>
         </nav>
