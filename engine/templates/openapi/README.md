@@ -61,7 +61,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Replaced "EuropeanETRS89_GRS80Quad_Draft" with "EuropeanETRS89_LAEAQuad"
   - Removed default contact details
 
-### OGC Features
+### OGC Features (Part 1)
 
 `features.go.json` is based on
 [ogcapi-features-1.0.1](https://app.swaggerhub.com/apis/OGC/ogcapi-features-1-example-1/1.0.1)

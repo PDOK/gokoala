@@ -16,9 +16,8 @@ Pulls](https://img.shields.io/docker/pulls/pdok/gokoala.svg)](https://hub.docker
 
 ## Description
 
-This server implements modern OGC APIs such as OGC Common Core, OGC Tiles, OGC
-Styles. In the future other APIs like OGC Features or OGC Maps may be added. The
-goal of this server is to keep a narrow focus and not implement every aspect of 
+This server implements modern OGC APIs such as Common, Tiles, Styles. The goal of 
+this server is to keep a narrow focus and not implement every aspect of 
 these APIs, for complex logic this application will delegate to other implementations. 
 For example vector tiles hosting is delegated to a vector tile engine or object storage, 
 raster map hosting may be delegated to a WMS server, etc.
@@ -44,6 +43,7 @@ _one_ dataset.
 - [OGC API Processes](https://ogcapi.ogc.org/processes/) provides a proxy for
   an OGC API Processes implementation, but enables the use of the OGC API Common
   features of GoKoala.
+- [OGC API Features](https://ogcapi.ogc.org/features/) _in development_.
 
 ## Build
 
@@ -130,6 +130,7 @@ A similar flow can be used to profile memory issues.
 
 Design principles:
 
+- Performance and scalability are key!
 - The `ogc` [package](ogc/README.md) contains logic per specific OGC API
   building block.
 - The `engine` package should contain general logic. `ogc` may reference

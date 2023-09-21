@@ -12,11 +12,11 @@ collectionMetadata: &exampleMetadata
     bbox: ["-74.391538", "40.435655", "-73.430235", "41.030882"]
 
 version: 1.0.0
-title: Basisregistratie Adressen en Gebouwen
+title: Basisregistratie Grootschalige Topografie (BGT)
 # shortened title, used in breadcrumb path
-serviceIdentifier: BAG
+serviceIdentifier: BGT
 abstract: >-
-  This is a description about the dataset in Markdown. See [PDOK BAG dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-adressen-en-gebouwen-ba-1) for details.
+  This is a description about the dataset in Markdown. See [PDOK BGT dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-grootschalige-topografie-bgt-) for details.
 # just a dummy picture, but you can put an actual thumbnail here
 thumbnail: bgt.png
 resources:
@@ -35,7 +35,7 @@ support:
 # further details of the dataset to be shown on the landing page; supports markdown
 datasetDetails:
   - name: Dataset-aanbieder
-    value: Kadaster (LV-BAG)
+    value: Kadaster (LV-BGT)
   - name: Kosten afname
     value: Geen
 datasetMetadata:
@@ -53,20 +53,24 @@ ogcApi:
     datasource:
       fakedb: true
     collections:
-      - id: verblijfsobjecten
+      - id: wegdelen
         metadata:
           # inherit common metadata (to tidy example)
           <<: *exampleMetadata
-          title: Verblijfsobjecten
+          title: Wegdelen
       - id: panden
         metadata:
           <<: *exampleMetadata
           title: Panden
-      - id: ligplaatsen
+      - id: tunneldelen
         metadata:
           <<: *exampleMetadata
-          title: Ligplaatsen
-      - id: standplaatsen
+          title: Tunneldelen
+      - id: waterdelen
         metadata:
           <<: *exampleMetadata
-          title: Standplaatsen
+          title: Waterdelen
+      - id: spoordelen
+        metadata:
+          <<: *exampleMetadata
+          title: Spoordelen
