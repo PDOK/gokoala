@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	htmltemplate "html/template"
 	"io"
 	"log"
 	"net/http"
@@ -13,11 +14,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	texttemplate "text/template"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"golang.org/x/text/language"
 )
 
 const (
@@ -126,6 +127,21 @@ func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
 }
 
+func (e *Engine) CompileTemplate(key TemplateKey) map[TemplateKey]interface{} {
+	result := make(map[TemplateKey]interface{}, 2)
+	for lang := range e.Templates.localizers {
+		keyWithLang := ExpandTemplateKey(key, lang)
+		if key.Format == FormatHTML {
+			_, compiled := e.Templates.compileHTMLTemplate(keyWithLang, lang)
+			result[keyWithLang] = compiled
+		} else {
+			_, compiled := e.Templates.compileNonHTMLTemplate(keyWithLang, lang)
+			result[keyWithLang] = compiled
+		}
+	}
+	return result
+}
+
 // RenderTemplates renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
 // This method also performs OpenAPI validation of the rendered template, therefore we also need the URL path.
 func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
@@ -157,12 +173,12 @@ func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Bre
 	}
 }
 
-// RenderAndServePage renders either an HTML or non-HTML template on-the-fly depending on the format
+// RenderAndServePage renders the given HTML or non-HTML template on-the-fly depending on the format
 // given in the TemplateKey. The result isn't store in engine, it's served directly to the client.
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a backing store).
-func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, params interface{},
-	breadcrumbs []Breadcrumb, key TemplateKey, lang language.Tag) {
+func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key TemplateKey,
+	compiledTemplate interface{}, params interface{}, breadcrumbs []Breadcrumb) {
 
 	// validate request
 	if err := e.OpenAPI.validateRequest(r); err != nil {
@@ -174,9 +190,11 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, para
 	// render output
 	var output []byte
 	if key.Format == FormatHTML {
-		output = e.Templates.renderHTMLTemplate(key, breadcrumbs, params, lang)
+		htmlTmpl := compiledTemplate.(*htmltemplate.Template)
+		output = e.Templates.renderHTMLTemplate(htmlTmpl, params, breadcrumbs, "")
 	} else {
-		output = e.Templates.renderNonHTMLTemplate(key, params, lang)
+		jsonTmpl := compiledTemplate.(*texttemplate.Template)
+		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")
 	}
 	contentType := e.CN.formatToMediaType(key.Format)
 
@@ -204,7 +222,7 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	}
 
 	// render output
-	output, err := e.Templates.GetRenderedTemplate(templateKey)
+	output, err := e.Templates.getRenderedTemplate(templateKey)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -264,7 +282,7 @@ func removeBody(proxyRes *http.Response) {
 }
 
 func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) {
-	template, _ := e.Templates.GetRenderedTemplate(key)
+	template, _ := e.Templates.getRenderedTemplate(key)
 	serverURL := normalizeBaseURL(e.Config.BaseURL.String())
 	req, err := http.NewRequest(http.MethodGet, serverURL+urlPath, nil)
 	if err != nil {

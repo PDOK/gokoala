@@ -9,11 +9,17 @@ import (
 	"github.com/PDOK/gokoala/ogc/features/domain"
 )
 
-type JSONFeatures struct {
+type jsonFeatures struct {
 	engine *engine.Engine
 }
 
-func (jf *JSONFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID string,
+func newJSONFeatures(e *engine.Engine) *jsonFeatures {
+	return &jsonFeatures{
+		engine: e,
+	}
+}
+
+func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID string,
 	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
 
 	fc.Links = jf.createJSONLinks(collectionID, cursor, limit)
@@ -25,7 +31,7 @@ func (jf *JSONFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID st
 	engine.SafeWrite(w.Write, fcJSON)
 }
 
-func (jf *JSONFeatures) featureAsGeoJSON(w http.ResponseWriter, feat *domain.Feature) {
+func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, feat *domain.Feature) {
 	featJSON, err := json.Marshal(feat)
 	if err != nil {
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
@@ -34,15 +40,15 @@ func (jf *JSONFeatures) featureAsGeoJSON(w http.ResponseWriter, feat *domain.Fea
 	engine.SafeWrite(w.Write, featJSON)
 }
 
-func (jf *JSONFeatures) featuresAsJSONFG() {
+func (jf *jsonFeatures) featuresAsJSONFG() {
 	// TODO: not implemented yet
 }
 
-func (jf *JSONFeatures) featureAsJSONFG() {
+func (jf *jsonFeatures) featureAsJSONFG() {
 	// TODO: not implemented yet
 }
 
-func (jf *JSONFeatures) createJSONLinks(collectionID string, cursor domain.Cursor, limit int) []domain.Link {
+func (jf *jsonFeatures) createJSONLinks(collectionID string, cursor domain.Cursor, limit int) []domain.Link {
 	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", jf.engine.Config.BaseURL.String(), collectionID)
 
 	links := make([]domain.Link, 0)

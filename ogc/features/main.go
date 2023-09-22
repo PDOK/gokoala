@@ -23,8 +23,8 @@ type Features struct {
 	engine     *engine.Engine
 	datasource datasources.Datasource
 
-	html *HTMLFeatures
-	json *JSONFeatures
+	html *htmlFeatures
+	json *jsonFeatures
 }
 
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
@@ -39,12 +39,8 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	f := &Features{
 		engine:     e,
 		datasource: datasource,
-		html: &HTMLFeatures{
-			engine: e,
-		},
-		json: &JSONFeatures{
-			engine: e,
-		},
+		html:       newHTMLFeatures(e),
+		json:       newJSONFeatures(e),
 	}
 	collectionsMetadata = f.cacheCollectionsMetadata()
 

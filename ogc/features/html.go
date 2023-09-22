@@ -14,10 +14,24 @@ var (
 			Path: "collections",
 		},
 	}
+	featuresKey = engine.NewTemplateKey(templatesDir + "features.go.html")
+	featureKey  = engine.NewTemplateKey(templatesDir + "feature.go.html")
 )
 
-type HTMLFeatures struct {
-	engine *engine.Engine
+type htmlFeatures struct {
+	engine            *engine.Engine
+	compiledTemplates map[engine.TemplateKey]interface{}
+}
+
+func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
+	compiledTemplates := make(map[engine.TemplateKey]interface{}, 4)
+	compiledTemplates = mergeMaps(compiledTemplates, e.CompileTemplate(featuresKey))
+	compiledTemplates = mergeMaps(compiledTemplates, e.CompileTemplate(featureKey))
+
+	return &htmlFeatures{
+		engine:            e,
+		compiledTemplates: compiledTemplates,
+	}
 }
 
 // featureCollectionPage enriched FeatureCollection for HTML representation.
@@ -38,7 +52,7 @@ type featurePage struct {
 	Metadata  *engine.GeoSpatialCollectionMetadata
 }
 
-func (hf *HTMLFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
+func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursor, limit int, fc *domain.FeatureCollection, format string) {
 
 	collectionMetadata := collectionsMetadata[collectionID]
@@ -64,11 +78,11 @@ func (hf *HTMLFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	key := engine.NewTemplateKeyWithLanguage(templatesDir+"features.go."+format, lang)
-	hf.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
+	key := engine.ExpandTemplateKey(featuresKey, lang)
+	hf.engine.RenderAndServePage(w, r, key, hf.compiledTemplates[key], pageContent, breadcrumbs)
 }
 
-func (hf *HTMLFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
+func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
 	featureID string, feat *domain.Feature, format string) {
 
 	collectionMetadata := collectionsMetadata[collectionID]
@@ -96,8 +110,8 @@ func (hf *HTMLFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	key := engine.NewTemplateKeyWithLanguage(templatesDir+"feature.go."+format, lang)
-	hf.engine.RenderAndServePage(w, r, pageContent, breadcrumbs, key, lang)
+	key := engine.ExpandTemplateKey(featureKey, lang)
+	hf.engine.RenderAndServePage(w, r, key, hf.compiledTemplates[key], pageContent, breadcrumbs)
 }
 
 func getCollectionTitle(collectionID string, metadata *engine.GeoSpatialCollectionMetadata) string {
@@ -106,4 +120,18 @@ func getCollectionTitle(collectionID string, metadata *engine.GeoSpatialCollecti
 		title = *metadata.Title
 	}
 	return title
+}
+
+func mergeMaps(
+	m1 map[engine.TemplateKey]interface{},
+	m2 map[engine.TemplateKey]interface{}) map[engine.TemplateKey]interface{} {
+
+	merged := make(map[engine.TemplateKey]interface{})
+	for k, v := range m1 {
+		merged[k] = v
+	}
+	for key, value := range m2 {
+		merged[key] = value
+	}
+	return merged
 }
