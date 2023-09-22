@@ -105,7 +105,7 @@ func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool) *chi.Mux {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
 	if allowTrailingSlash {
-		router.Use(middleware.RedirectSlashes)
+		router.Use(middleware.StripSlashes)
 	}
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
 	router.Use(middleware.SetHeader("API-Version", engine.Config.Version))
