@@ -75,8 +75,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	key := engine.ExpandTemplateKey(featuresKey, lang)
-	hf.engine.RenderAndServePage(w, r, key, pageContent, breadcrumbs)
+	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featuresKey, lang), pageContent, breadcrumbs)
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -107,8 +106,7 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	key := engine.ExpandTemplateKey(featureKey, lang)
-	hf.engine.RenderAndServePage(w, r, key, pageContent, breadcrumbs)
+	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featureKey, lang), pageContent, breadcrumbs)
 }
 
 func getCollectionTitle(collectionID string, metadata *engine.GeoSpatialCollectionMetadata) string {
@@ -117,18 +115,4 @@ func getCollectionTitle(collectionID string, metadata *engine.GeoSpatialCollecti
 		title = *metadata.Title
 	}
 	return title
-}
-
-func mergeMaps(
-	m1 map[engine.TemplateKey]interface{},
-	m2 map[engine.TemplateKey]interface{}) map[engine.TemplateKey]interface{} {
-
-	merged := make(map[engine.TemplateKey]interface{})
-	for k, v := range m1 {
-		merged[k] = v
-	}
-	for key, value := range m2 {
-		merged[key] = value
-	}
-	return merged
 }

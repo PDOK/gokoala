@@ -127,12 +127,15 @@ func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
 }
 
+// ParseTemplate parses both HTML and non-HTML templates depending on the format given in the TemplateKey and
+// stores it in the engine for future rendering using RenderAndServePage.
 func (e *Engine) ParseTemplate(key TemplateKey) {
 	e.Templates.parseAndSaveTemplate(key)
 }
 
-// RenderTemplates renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
+// RenderTemplates renders both HTML and non-HTML templates depending on the format given in the TemplateKey.
 // This method also performs OpenAPI validation of the rendered template, therefore we also need the URL path.
+// The rendered templates are stored in the engine for future serving using ServePage.
 func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		e.Templates.renderAndSaveTemplate(key, breadcrumbs, nil)
@@ -155,8 +158,8 @@ func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Bre
 	}
 }
 
-// RenderAndServePage renders the given HTML or non-HTML template on-the-fly depending on the format
-// given in the TemplateKey. The result isn't store in engine, it's served directly to the client.
+// RenderAndServePage renders an already parsed HTML or non-HTML template and renders it on-the-fly depending
+// on the format in the given TemplateKey. The result isn't store in engine, it's served directly to the client.
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a backing store).
 func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key TemplateKey,
@@ -201,7 +204,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	SafeWrite(w.Write, output)
 }
 
-// ServePage validates incoming HTTP request against OpenAPI spec, renders given template and serves as HTTP response
+// ServePage validates incoming HTTP request against OpenAPI spec and serve a pre-rendered template as HTTP response
 func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
 	// validate request
 	if err := e.OpenAPI.validateRequest(r); err != nil {

@@ -49,7 +49,7 @@ pages to see what zoom levels are supported by this API."""
 
 # Conformance page
 ConformanceAbstract = """
-Below are references to OGC API conformance classes to which this service conforms. The status column indicates whether the given specification is deemed an official standard by the OGC."""
+Below are references to OGC API conformance classes to which this service conforms. <br/>The status column indicates whether the given specification is deemed an official standard by the OGC."""
 Standard = "Standard"
 Draft = "Draft"
 
