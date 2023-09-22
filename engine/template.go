@@ -99,13 +99,16 @@ func ExpandTemplateKey(key TemplateKey, language language.Tag) TemplateKey {
 }
 
 type Templates struct {
+	CompiledTemplates map[TemplateKey]interface{}
 	RenderedTemplates map[TemplateKey][]byte
-	config            *Config
-	localizers        map[language.Tag]i18n.Localizer
+
+	config     *Config
+	localizers map[language.Tag]i18n.Localizer
 }
 
 func newTemplates(config *Config) *Templates {
 	templates := &Templates{
+		CompiledTemplates: make(map[TemplateKey]interface{}),
 		RenderedTemplates: make(map[TemplateKey][]byte),
 		config:            config,
 		localizers:        newLocalizers(config.AvailableLanguages),
@@ -121,12 +124,32 @@ func newTemplates(config *Config) *Templates {
 	return templates
 }
 
+func (t *Templates) getCompiledTemplate(key TemplateKey) (interface{}, error) {
+	if compiledTemplate, ok := t.CompiledTemplates[key]; ok {
+		return compiledTemplate, nil
+	}
+	return nil, fmt.Errorf("no compiled template with name %s", key.Name)
+}
+
 // getRenderedTemplate returns a pre-rendered template, or error if none is found for the given TemplateKey
 func (t *Templates) getRenderedTemplate(key TemplateKey) ([]byte, error) {
 	if renderedTemplate, ok := t.RenderedTemplates[key]; ok {
 		return renderedTemplate, nil
 	}
 	return nil, fmt.Errorf("no rendered template with name %s", key.Name)
+}
+
+func (t *Templates) compileAndSaveTemplate(key TemplateKey) {
+	for lang := range t.localizers {
+		keyWithLang := ExpandTemplateKey(key, lang)
+		if key.Format == FormatHTML {
+			_, compiled := t.compileHTMLTemplate(keyWithLang, lang)
+			t.CompiledTemplates[keyWithLang] = compiled
+		} else {
+			_, compiled := t.compileNonHTMLTemplate(keyWithLang, lang)
+			t.CompiledTemplates[keyWithLang] = compiled
+		}
+	}
 }
 
 func (t *Templates) renderAndSaveHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {

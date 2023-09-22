@@ -127,19 +127,8 @@ func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
 }
 
-func (e *Engine) CompileTemplate(key TemplateKey) map[TemplateKey]interface{} {
-	result := make(map[TemplateKey]interface{}, 2)
-	for lang := range e.Templates.localizers {
-		keyWithLang := ExpandTemplateKey(key, lang)
-		if key.Format == FormatHTML {
-			_, compiled := e.Templates.compileHTMLTemplate(keyWithLang, lang)
-			result[keyWithLang] = compiled
-		} else {
-			_, compiled := e.Templates.compileNonHTMLTemplate(keyWithLang, lang)
-			result[keyWithLang] = compiled
-		}
-	}
-	return result
+func (e *Engine) CompileTemplate(key TemplateKey) {
+	e.Templates.compileAndSaveTemplate(key)
 }
 
 // RenderTemplates renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
@@ -178,13 +167,20 @@ func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Bre
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a backing store).
 func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key TemplateKey,
-	compiledTemplate interface{}, params interface{}, breadcrumbs []Breadcrumb) {
+	params interface{}, breadcrumbs []Breadcrumb) {
 
 	// validate request
 	if err := e.OpenAPI.validateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	// get template
+	compiledTemplate, err := e.Templates.getCompiledTemplate(key)
+	if err != nil {
+		log.Printf("%v", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	// render output

@@ -69,7 +69,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, cursor, limit, fc, format)
+			f.html.features(w, r, collectionID, cursor, limit, fc)
 		case engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, collectionID, cursor, limit, fc)
 		case engine.FormatJSONFG:
@@ -95,7 +95,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.feature(w, r, collectionID, featureID, feat, format)
+			f.html.feature(w, r, collectionID, featureID, feat)
 		case engine.FormatJSON:
 			f.json.featureAsGeoJSON(w, feat)
 		case engine.FormatJSONFG:
