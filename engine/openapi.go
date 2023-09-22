@@ -180,10 +180,10 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 
 func renderOpenAPITemplate(config *Config, fileName string) []byte {
 	file := filepath.Clean(fileName)
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(file))
+	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(file))
 
 	var rendered bytes.Buffer
-	if err := compiled.Execute(&rendered, &TemplateData{Config: config}); err != nil {
+	if err := parsed.Execute(&rendered, &TemplateData{Config: config}); err != nil {
 		log.Fatalf("failed to render %s, error: %v", file, err)
 	}
 	return rendered.Bytes()

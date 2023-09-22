@@ -23,8 +23,8 @@ type htmlFeatures struct {
 }
 
 func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
-	e.CompileTemplate(featuresKey)
-	e.CompileTemplate(featureKey)
+	e.ParseTemplate(featuresKey)
+	e.ParseTemplate(featureKey)
 
 	return &htmlFeatures{
 		engine: e,

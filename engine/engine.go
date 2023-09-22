@@ -127,8 +127,8 @@ func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
 }
 
-func (e *Engine) CompileTemplate(key TemplateKey) {
-	e.Templates.compileAndSaveTemplate(key)
+func (e *Engine) ParseTemplate(key TemplateKey) {
+	e.Templates.parseAndSaveTemplate(key)
 }
 
 // RenderTemplates renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
@@ -177,7 +177,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	}
 
 	// get template
-	compiledTemplate, err := e.Templates.getCompiledTemplate(key)
+	parsedTemplate, err := e.Templates.getParsedTemplate(key)
 	if err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -186,10 +186,10 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	// render output
 	var output []byte
 	if key.Format == FormatHTML {
-		htmlTmpl := compiledTemplate.(*htmltemplate.Template)
+		htmlTmpl := parsedTemplate.(*htmltemplate.Template)
 		output = e.Templates.renderHTMLTemplate(htmlTmpl, params, breadcrumbs, "")
 	} else {
-		jsonTmpl := compiledTemplate.(*texttemplate.Template)
+		jsonTmpl := parsedTemplate.(*texttemplate.Template)
 		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")
 	}
 	contentType := e.CN.formatToMediaType(key.Format)

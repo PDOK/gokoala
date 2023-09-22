@@ -99,7 +99,7 @@ func ExpandTemplateKey(key TemplateKey, language language.Tag) TemplateKey {
 }
 
 type Templates struct {
-	CompiledTemplates map[TemplateKey]interface{}
+	ParsedTemplates   map[TemplateKey]interface{}
 	RenderedTemplates map[TemplateKey][]byte
 
 	config     *Config
@@ -108,7 +108,7 @@ type Templates struct {
 
 func newTemplates(config *Config) *Templates {
 	templates := &Templates{
-		CompiledTemplates: make(map[TemplateKey]interface{}),
+		ParsedTemplates:   make(map[TemplateKey]interface{}),
 		RenderedTemplates: make(map[TemplateKey][]byte),
 		config:            config,
 		localizers:        newLocalizers(config.AvailableLanguages),
@@ -124,11 +124,11 @@ func newTemplates(config *Config) *Templates {
 	return templates
 }
 
-func (t *Templates) getCompiledTemplate(key TemplateKey) (interface{}, error) {
-	if compiledTemplate, ok := t.CompiledTemplates[key]; ok {
-		return compiledTemplate, nil
+func (t *Templates) getParsedTemplate(key TemplateKey) (interface{}, error) {
+	if parsedTemplate, ok := t.ParsedTemplates[key]; ok {
+		return parsedTemplate, nil
 	}
-	return nil, fmt.Errorf("no compiled template with name %s", key.Name)
+	return nil, fmt.Errorf("no parsed template with name %s", key.Name)
 }
 
 // getRenderedTemplate returns a pre-rendered template, or error if none is found for the given TemplateKey
@@ -139,22 +139,22 @@ func (t *Templates) getRenderedTemplate(key TemplateKey) ([]byte, error) {
 	return nil, fmt.Errorf("no rendered template with name %s", key.Name)
 }
 
-func (t *Templates) compileAndSaveTemplate(key TemplateKey) {
+func (t *Templates) parseAndSaveTemplate(key TemplateKey) {
 	for lang := range t.localizers {
 		keyWithLang := ExpandTemplateKey(key, lang)
 		if key.Format == FormatHTML {
-			_, compiled := t.compileHTMLTemplate(keyWithLang, lang)
-			t.CompiledTemplates[keyWithLang] = compiled
+			_, parsed := t.parseHTMLTemplate(keyWithLang, lang)
+			t.ParsedTemplates[keyWithLang] = parsed
 		} else {
-			_, compiled := t.compileNonHTMLTemplate(keyWithLang, lang)
-			t.CompiledTemplates[keyWithLang] = compiled
+			_, parsed := t.parseNonHTMLTemplate(keyWithLang, lang)
+			t.ParsedTemplates[keyWithLang] = parsed
 		}
 	}
 }
 
 func (t *Templates) renderAndSaveHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
 	for lang := range t.localizers {
-		result := t.compileAndRenderHTMLTemplate(key, breadcrumbs, params, lang)
+		result := t.parseAndRenderHTMLTemplate(key, breadcrumbs, params, lang)
 
 		// Store rendered template per language
 		key.Language = lang
@@ -162,22 +162,22 @@ func (t *Templates) renderAndSaveHTMLTemplate(key TemplateKey, breadcrumbs []Bre
 	}
 }
 
-func (t *Templates) compileAndRenderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}, lang language.Tag) []byte {
-	file, compiled := t.compileHTMLTemplate(key, lang)
-	return t.renderHTMLTemplate(compiled, params, breadcrumbs, file)
+func (t *Templates) parseAndRenderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}, lang language.Tag) []byte {
+	file, parsed := t.parseHTMLTemplate(key, lang)
+	return t.renderHTMLTemplate(parsed, params, breadcrumbs, file)
 }
 
-func (t *Templates) compileHTMLTemplate(key TemplateKey, lang language.Tag) (string, *htmltemplate.Template) {
+func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (string, *htmltemplate.Template) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
 	templateFuncs := t.createTemplateFuncs(lang)
-	compiled := htmltemplate.Must(htmltemplate.New(layoutFile).
+	parsed := htmltemplate.Must(htmltemplate.New(layoutFile).
 		Funcs(templateFuncs).ParseFiles(templatesDir+layoutFile, file))
-	return file, compiled
+	return file, parsed
 }
 
-func (t *Templates) renderHTMLTemplate(compiled *htmltemplate.Template, params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
+func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
 	var rendered bytes.Buffer
-	if err := compiled.Execute(&rendered, &TemplateData{
+	if err := parsed.Execute(&rendered, &TemplateData{
 		Config:      t.config,
 		Params:      params,
 		Breadcrumbs: breadcrumbs,
@@ -189,7 +189,7 @@ func (t *Templates) renderHTMLTemplate(compiled *htmltemplate.Template, params i
 
 func (t *Templates) renderAndSaveNonHTMLTemplate(key TemplateKey, params interface{}) {
 	for lang := range t.localizers {
-		result := t.compileAndRenderNonHTMLTemplate(key, params, lang)
+		result := t.parseAndRenderNonHTMLTemplate(key, params, lang)
 
 		// Store rendered template per language
 		key.Language = lang
@@ -197,22 +197,22 @@ func (t *Templates) renderAndSaveNonHTMLTemplate(key TemplateKey, params interfa
 	}
 }
 
-func (t *Templates) compileAndRenderNonHTMLTemplate(key TemplateKey, params interface{}, lang language.Tag) []byte {
-	file, compiled := t.compileNonHTMLTemplate(key, lang)
-	return t.renderNonHTMLTemplate(compiled, params, key, file)
+func (t *Templates) parseAndRenderNonHTMLTemplate(key TemplateKey, params interface{}, lang language.Tag) []byte {
+	file, parsed := t.parseNonHTMLTemplate(key, lang)
+	return t.renderNonHTMLTemplate(parsed, params, key, file)
 }
 
-func (t *Templates) compileNonHTMLTemplate(key TemplateKey, lang language.Tag) (string, *texttemplate.Template) {
+func (t *Templates) parseNonHTMLTemplate(key TemplateKey, lang language.Tag) (string, *texttemplate.Template) {
 	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
 	templateFuncs := t.createTemplateFuncs(lang)
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).
+	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).
 		Funcs(templateFuncs).Parse(t.readFile(file)))
-	return file, compiled
+	return file, parsed
 }
 
-func (t *Templates) renderNonHTMLTemplate(compiled *texttemplate.Template, params interface{}, key TemplateKey, file string) []byte {
+func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params interface{}, key TemplateKey, file string) []byte {
 	var rendered bytes.Buffer
-	if err := compiled.Execute(&rendered, &TemplateData{
+	if err := parsed.Execute(&rendered, &TemplateData{
 		Config: t.config,
 		Params: params,
 	}); err != nil {
