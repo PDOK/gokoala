@@ -99,7 +99,11 @@ func ExpandTemplateKey(key TemplateKey, language language.Tag) TemplateKey {
 }
 
 type Templates struct {
-	ParsedTemplates   map[TemplateKey]interface{}
+	// ParsedTemplates templates loaded from disk and parsed to an in-memory Go representation.
+	ParsedTemplates map[TemplateKey]interface{}
+
+	// RenderedTemplates templates parsed + rendered to their actual output format like JSON, HTMl, etc.
+	// We prefer pre-rendered templates whenever possible. These are stored in this map.
 	RenderedTemplates map[TemplateKey][]byte
 
 	config     *Config
@@ -131,10 +135,9 @@ func (t *Templates) getParsedTemplate(key TemplateKey) (interface{}, error) {
 	return nil, fmt.Errorf("no parsed template with name %s", key.Name)
 }
 
-// getRenderedTemplate returns a pre-rendered template, or error if none is found for the given TemplateKey
 func (t *Templates) getRenderedTemplate(key TemplateKey) ([]byte, error) {
-	if renderedTemplate, ok := t.RenderedTemplates[key]; ok {
-		return renderedTemplate, nil
+	if RenderedTemplate, ok := t.RenderedTemplates[key]; ok {
+		return RenderedTemplate, nil
 	}
 	return nil, fmt.Errorf("no rendered template with name %s", key.Name)
 }
@@ -152,19 +155,21 @@ func (t *Templates) parseAndSaveTemplate(key TemplateKey) {
 	}
 }
 
-func (t *Templates) renderAndSaveHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
+func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
 	for lang := range t.localizers {
-		result := t.parseAndRenderHTMLTemplate(key, breadcrumbs, params, lang)
+		var result []byte
+		if key.Format == FormatHTML {
+			file, parsed := t.parseHTMLTemplate(key, lang)
+			result = t.renderHTMLTemplate(parsed, params, breadcrumbs, file)
+		} else {
+			file, parsed := t.parseNonHTMLTemplate(key, lang)
+			result = t.renderNonHTMLTemplate(parsed, params, key, file)
+		}
 
 		// Store rendered template per language
 		key.Language = lang
 		t.RenderedTemplates[key] = result
 	}
-}
-
-func (t *Templates) parseAndRenderHTMLTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}, lang language.Tag) []byte {
-	file, parsed := t.parseHTMLTemplate(key, lang)
-	return t.renderHTMLTemplate(parsed, params, breadcrumbs, file)
 }
 
 func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (string, *htmltemplate.Template) {
@@ -185,21 +190,6 @@ func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, params int
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}
 	return rendered.Bytes()
-}
-
-func (t *Templates) renderAndSaveNonHTMLTemplate(key TemplateKey, params interface{}) {
-	for lang := range t.localizers {
-		result := t.parseAndRenderNonHTMLTemplate(key, params, lang)
-
-		// Store rendered template per language
-		key.Language = lang
-		t.RenderedTemplates[key] = result
-	}
-}
-
-func (t *Templates) parseAndRenderNonHTMLTemplate(key TemplateKey, params interface{}, lang language.Tag) []byte {
-	file, parsed := t.parseNonHTMLTemplate(key, lang)
-	return t.renderNonHTMLTemplate(parsed, params, key, file)
 }
 
 func (t *Templates) parseNonHTMLTemplate(key TemplateKey, lang language.Tag) (string, *texttemplate.Template) {

@@ -135,11 +135,8 @@ func (e *Engine) ParseTemplate(key TemplateKey) {
 // This method also performs OpenAPI validation of the rendered template, therefore we also need the URL path.
 func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
-		if key.Format == FormatHTML {
-			e.Templates.renderAndSaveHTMLTemplate(key, breadcrumbs, nil)
-		} else {
-			e.Templates.renderAndSaveNonHTMLTemplate(key, nil)
-		}
+		e.Templates.renderAndSaveTemplate(key, breadcrumbs, nil)
+
 		// we already perform OpenAPI validation here during startup to catch
 		// issues early on, in addition to runtime OpenAPI response validation
 		// all templates are created in all available languages, hence all are checked
@@ -154,11 +151,7 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 // This method does not perform OpenAPI validation of the rendered template (will be done during runtime).
 func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
-		if key.Format == FormatHTML {
-			e.Templates.renderAndSaveHTMLTemplate(key, breadcrumbs, params)
-		} else {
-			e.Templates.renderAndSaveNonHTMLTemplate(key, params)
-		}
+		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
 	}
 }
 
