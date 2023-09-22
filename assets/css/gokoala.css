@@ -52,14 +52,14 @@ td {
 .table-sm>:not(caption)>*>*  {
     padding: 0.10rem;
 }
-.table th {
+.table-striped>thead>tr>th {
     color: var(--bs-white);
     background-color:  var(--bs-blue);
 }
-.table th a {
+.table-striped>thead>tr>th a {
     color: var(--bs-white);
 }
-.table th a:hover {
+.table-striped>thead>tr>th a:hover {
     color: var(--lightblue);
 }
 
