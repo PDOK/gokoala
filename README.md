@@ -27,20 +27,18 @@ _one_ dataset.
 
 ## Features
 
-- [OGC API Common](https://ogcapi.ogc.org/common/) support: Serves landing page
+- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page
   and conformance declaration. Also serves OpenAPI specification and interactive
   Swagger UI.
   - Comes with default OGC OpenAPI specs out-of-the box with option to overwrite
     with your own custom spec.
-- [OGC API Tiles](https://ogcapi.ogc.org/tiles/) support: Serves HTML, JSON and
-  TileJSON metadata. Serves as a proxy in front of a vector tiles engine of your
+- [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and
+  TileJSON metadata. Act as a proxy in front of a vector tiles engine of your
   choosing. Currently support for 3 projections (RD, ETRS89 and WebMercator) is included.
-- [OGC API Styles](https://ogcapi.ogc.org/styles/) support: Serves HTML and JSON
-  representation of supported styles.
-- [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) support: Serves
-  HTML and JSON metadata and functions as a proxy in front of a [3D
-  Tiles](https://www.ogc.org/standard/3dtiles/) server of your choosing.
-- [OGC API Processes](https://ogcapi.ogc.org/processes/) provides a proxy for
+- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML and JSON representation of supported styles.
+- [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy 
+  in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server of your choosing.
+- [OGC API Processes](https://ogcapi.ogc.org/processes/) act as a passthrough proxy to
   an OGC API Processes implementation, but enables the use of the OGC API Common
   features of GoKoala.
 - [OGC API Features](https://ogcapi.ogc.org/features/) _in development_.
@@ -162,8 +160,7 @@ already being taken care of when building the Docker container image.
 
 ### IntelliJ / GoLand
 
-- Install the [Go
-  Template](https://plugins.jetbrains.com/plugin/10581-go-template) plugin
+- Install the [Go Template](https://plugins.jetbrains.com/plugin/10581-go-template) plugin
 - Open `Preferences` > `Editor` > `File Types` select `Go Template files` and
   add the following file patterns:
   - `"*.go.html"`
@@ -180,8 +177,7 @@ Also:
 
 ### VSCode
 
-- Install the [Go
-  Template](https://marketplace.visualstudio.com/items?itemName=jinliming2.vscode-go-template)
+- Install the [Go Template](https://marketplace.visualstudio.com/items?itemName=jinliming2.vscode-go-template)
   extension
 - Open Extension Settings and add the following file patterns:
   - `"*.go.html"`
@@ -189,6 +185,18 @@ Also:
   - `"*.go.tilejson"`
 - Also add `html` and `json` to the list of Go template languages.
 - Now you'll have IDE support in the GoKoala templates.
+
+### OGC compliance validation
+
+Use the OGC [TEAM Engine](https://cite.opengeospatial.org/teamengine/) to validate 
+compliance when available. In the case of OGC API Features follow these steps:
+
+- Run `docker run -p 8081:8080 ogccite/ets-ogcapi-features10`
+- Open http://localhost:8081/teamengine/
+- Start GoKoala. 
+  - When running Docker in a VM (like on macOS) make sure to start GoKoala with base url: http://host.docker.internal:8080.
+- Start a new test session in the TEAM Engine against http://localhost:8080 (or http://host.docker.internal:8080).
+- More details in the [features conformance test suite](https://opengeospatial.github.io/ets-ogcapi-features10/).
 
 ## Misc
 

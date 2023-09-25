@@ -73,9 +73,11 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Changed tags from "Data" to "Features"
   - Removed default contact details
   - Removed numberMatched and numberReturned, these are optional in the spec and not implemented in GoKoala
-  - changed examples
+  - Changed examples
     - to use `?f=format` instead of `.format` to be more inline with the OGC spec/docs
     - removed `offset` since we (will) use `cursor` for pagination
+  - Added `cursor` query param to feature collection request. Vendor specific parameters need to be explicitly listed 
+    (the same holds true if you would use offset-based pagination, you would need to list the `offset` param).
 
 ### OGC 3D GeoVolumes
 

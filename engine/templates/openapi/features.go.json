@@ -23,15 +23,26 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 10000. Default = 10.",
+            "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 1000. Default = 10.",
             "required": false,
             "style": "form",
             "explode": false,
             "schema": {
-              "maximum": 10000,
+              "maximum": 1000,
               "minimum": 1,
               "type": "integer",
               "default": 10
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "The optional cursor parameter identifies the page in the features result set. You shouldn't specify the cursor value yourself, instead you should obtain the cursor value from the `next`-link in the features response.\n\nThis API uses \"_cursor-based pagination_\" which has the advantage of allowing users to pagination though all features regardless of the size of the dataset. This wouldn't be possible using traditional \"_offset-based pagination_\".",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -1162,15 +1173,26 @@
       "limit": {
         "name": "limit",
         "in": "query",
-        "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 10000. Default = 10.",
+        "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 1000. Default = 10.",
         "required": false,
         "style": "form",
         "explode": false,
         "schema": {
-          "maximum": 10000,
+          "maximum": 1000,
           "minimum": 1,
           "type": "integer",
           "default": 10
+        }
+      },
+      "cursor": {
+        "name": "cursor",
+        "in": "query",
+        "description": "The optional cursor parameter identifies the page in the features result set. You shouldn't specify the cursor value yourself, instead you should obtain the cursor value from the `next`-link in the features response.\n\nThis API uses \"_cursor-based pagination_\" which has the advantage of allowing users to pagination though all features regardless of the size of the dataset. This wouldn't be possible using traditional \"_offset-based pagination_\".",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "string"
         }
       }
     }

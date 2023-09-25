@@ -1,6 +1,8 @@
 package features
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -56,7 +58,11 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 		cursorParam := r.URL.Query().Get("cursor")
 		limit, err := getLimit(r)
 		if err != nil {
-			http.Error(w, "limit should be a number", http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if err = f.validateNoUnknownFeatureCollectionQueryParams(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -85,6 +91,10 @@ func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 		featureID := chi.URLParam(r, "featureId")
+		if err := f.validateNoUnknownFeatureQueryParams(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
 		feat := f.datasource.GetFeature(collectionID, featureID)
 		if feat == nil {
@@ -119,9 +129,41 @@ func getLimit(r *http.Request) (int, error) {
 	var err error
 	if r.URL.Query().Get("limit") != "" {
 		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
+		if err != nil {
+			err = errors.New("limit query parameter must be a number")
+		}
 	}
 	if limit < 0 {
 		limit = 0
 	}
 	return limit, err
+}
+
+// validateNoUnknownFeatureCollectionQueryParams implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
+func (f *Features) validateNoUnknownFeatureCollectionQueryParams(r *http.Request) error {
+	copyQueryString := r.URL.Query()
+	copyQueryString.Del("f")
+	copyQueryString.Del("limit")
+	copyQueryString.Del("cursor")
+	copyQueryString.Del("datetime")
+	copyQueryString.Del("crs")
+	copyQueryString.Del("bbox")
+	copyQueryString.Del("bbox-crs")
+	copyQueryString.Del("filter")
+	copyQueryString.Del("filter-crs")
+	if len(copyQueryString) > 0 {
+		return fmt.Errorf("unknown query parameter(s) found: %v", copyQueryString.Encode())
+	}
+	return nil
+}
+
+// validateNoUnknownFeatureQueryParams implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
+func (f *Features) validateNoUnknownFeatureQueryParams(r *http.Request) error {
+	copyQueryString := r.URL.Query()
+	copyQueryString.Del("f")
+	copyQueryString.Del("crs")
+	if len(copyQueryString) > 0 {
+		return fmt.Errorf("unknown query parameter(s) found: %v", copyQueryString.Encode())
+	}
+	return nil
 }
