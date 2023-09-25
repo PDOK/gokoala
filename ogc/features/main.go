@@ -95,9 +95,9 @@ func (f *Features) Feature() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.feature(w, r, collectionID, featureID, feat)
+			f.html.feature(w, r, collectionID, feat)
 		case engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, feat)
+			f.json.featureAsGeoJSON(w, collectionID, feat)
 		case engine.FormatJSONFG:
 			f.json.featureAsJSONFG()
 		default:

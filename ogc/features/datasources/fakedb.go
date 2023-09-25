@@ -10,7 +10,7 @@ import (
 	"github.com/go-spatial/geom"
 )
 
-const nrOfFakeFeatures = 1000
+const nrOfFakeFeatures = 10000
 const cursorColumnName = "cursor"
 
 // FakeDB fake/mock datasource used for prototyping/testing/demos/etc.
