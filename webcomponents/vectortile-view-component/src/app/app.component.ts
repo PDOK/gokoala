@@ -123,10 +123,8 @@ export class AppComponent {
     }
   }
   get zoom(): number {
-
     return this._zoom
   }
-
 
   @Output() currentZoomLevel = new EventEmitter<number>();
   @Output() activeFeature = new EventEmitter<FeatureLike>();
@@ -136,14 +134,10 @@ export class AppComponent {
   mapHeight: number = 600;
   mapWidth: number = 800;
 
-
-
   constructor(
     private elementRef: ElementRef,
     private matrixsetService: MatrixsetService,
     private cdf: ChangeDetectorRef
-
-
   ) { }
 
 
@@ -168,16 +162,14 @@ export class AppComponent {
 
   private initialize() {
     this.vectorTileLayer = undefined
-
     let matrixurl = this.tileUrl.replace('tiles', 'tileMatrixSets') + '?f=json'
-   // console.log('url: ' + this.tileUrl)
+    // console.log('url: ' + this.tileUrl)
     this.matrixsetService.getMatrix(this.tileUrl).subscribe({
       next: (tile) => {
         const linkurl = this.FindMatrixUrl(tile.links)
         if (linkurl) {
           matrixurl = linkurl
         }
-
         this.drawFromMatrixUrl(tile, matrixurl)
         this.SetZoom(tile)
         this.cdf.detectChanges()
@@ -189,42 +181,27 @@ export class AppComponent {
   }
 
   private SetZoom(tile: Matrix) {
-
     tile.tileMatrixSetLimits.forEach((limit) => {
-    
       if (this.tileUrl.includes('WebMercatorQuad')) {
         //the matrix is not correct on server?  size of vector 512px,  256px in tile grid correct?
         if (!this.minZoom) {
           this.minZoom = parseFloat(limit.tileMatrix) + 1
         }
-
       }
-
-      if (this.tileUrl.includes('EuropeanETRS89_LAEAQuad')) {
-
-      }
-
-
       if (this.zoom === -1) {
         this.zoom = parseFloat(limit.tileMatrix)
       }
-
       if (!this.minZoom) {
         this.minZoom = parseFloat(limit.tileMatrix) + 1
       }
-
       this.maxZoom = parseFloat(limit.tileMatrix) + 1
     })
-
-   
-
   }
 
   private FindMatrixUrl(links: Link[]) {
     let matrixurl = undefined
     links.forEach((link) => {
       if (link.rel == 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme') {
-   
         let turl = new URL(this.tileUrl)
         if (this.isFullURL(link.href)) {
           matrixurl = link.href
@@ -245,7 +222,6 @@ export class AppComponent {
         let sizes: number[][] = []
         matrixset.tileMatrices.forEach((x) => {
           resolutions[x.id] = x.cellSize
-
           if (this.tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
             origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]] //  x,y swap Workaround?
           } else {
@@ -259,8 +235,6 @@ export class AppComponent {
           tileSizes: sizes,
           origins: origins,
         })
-       
-
         this.drawMap(matrix)
       },
       error: (error) => {
@@ -280,11 +254,7 @@ export class AppComponent {
   private drawMap(tile: Matrix) {
     this.map.setTarget(undefined)
     this.map = new Map({})
-
     let map = this.getMap()
-
-
-
     map.on('pointermove', (evt: MapBrowserEvent<any>) => {
       map.forEachFeatureAtPixel(
         evt.pixel,
@@ -296,10 +266,7 @@ export class AppComponent {
               this.cdf.detectChanges()
             }
             this.activeFeature.emit(feature)
-
-
           }
-
         },
         { hitTolerance: 3 }
       )
@@ -308,23 +275,18 @@ export class AppComponent {
     map.getView().on('change:resolution', (event) => {
       const zoom = this.map.getView().getZoom()
       if (zoom) {
-       
         this._zoom = zoom
         this.currentZoomLevel.next(zoom)
       }
     })
 
     this.SetZoom(tile)
-
     const mapdiv: HTMLElement =
       this.elementRef.nativeElement.querySelector("[id='map']")
-
-
     this.mapWidth = this.elementRef.nativeElement.offsetWidth
     this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     map.setTarget(mapdiv)
     this.cdf.detectChanges()
-
   }
 
   private checkParams(): void {
@@ -348,15 +310,12 @@ export class AppComponent {
 
   getMap() {
     useGeographic()
-
     const l = this.generateLayers()
     const layers = l.layers
-
     let acenter: Coordinate = [this.centerX, this.centerY]
     this.vectorTileLayer = l.vectorTileLayer
     this.map = new Map({
       controls: defaultControls().extend([new FullScreen()]),
-
       layers: layers,
       view: new View({
         center: acenter,
@@ -371,12 +330,9 @@ export class AppComponent {
   }
 
   private generateLayers() {
-
-
     this.projection = new MapProjection(this.tileUrl).Projection
     let vectorTileLayer = this.getVectortileLayer(this.projection)
     this.setStyle(vectorTileLayer)
-
     let layers = [vectorTileLayer] as
       | BaseLayer[]
       | Collection<BaseLayer>
@@ -385,8 +341,6 @@ export class AppComponent {
 
     if (this.showGrid) {
       let source = vectorTileLayer.getSource()
-
-    
       if (source) {
         let grid = source.getTileGrid()
         if (grid) {
@@ -400,7 +354,6 @@ export class AppComponent {
 
             }),
           })
-
           layers = [vectorTileLayer, debugLayer]
         }
       }
@@ -463,15 +416,11 @@ export class AppComponent {
       tileGrid: this.tileGrid,
       url: url + this.selector,
       cacheSize: 0,
-
     })
     source.on(['tileloadend'], e => {
-
-
       let evt: { type: 'tileloadend', target: VectorTile, tile: VectorTile } = e as any
       this.activeTileUrl.next(evt.tile.key)
     })
-
     return source
   }
 
