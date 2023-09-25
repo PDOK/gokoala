@@ -52,7 +52,7 @@ func (jf *jsonFeatures) featureAsJSONFG() {
 func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursor, limit int) []domain.Link {
 	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", jf.engine.Config.BaseURL.String(), collectionID)
 
-	links := make([]domain.Link, 4)
+	links := make([]domain.Link, 0)
 	links = append(links, domain.Link{
 		Rel:   "self",
 		Title: "This document as GeoJSON",
@@ -87,7 +87,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 func (jf *jsonFeatures) createFeatureLinks(collectionID string, featureID string) []domain.Link {
 	featureBaseURL := fmt.Sprintf("%s/collections/%s/items/%s", jf.engine.Config.BaseURL.String(), collectionID, featureID)
 
-	links := make([]domain.Link, 3)
+	links := make([]domain.Link, 0)
 	links = append(links, domain.Link{
 		Rel:   "self",
 		Title: "This document as GeoJSON",
