@@ -43,6 +43,7 @@ type Link struct {
 	Templated bool   `json:"templated,omitempty"`
 }
 
+// Cursor since we use cursor-based pagination as opposed to offset-based pagination
 type Cursor struct {
 	Prev int
 	Next int
