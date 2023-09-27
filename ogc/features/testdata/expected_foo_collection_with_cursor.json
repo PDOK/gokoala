@@ -1,0 +1,70 @@
+{
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items?f=html"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json\u0026cursor=10\u0026limit=2"
+    },
+    {
+      "rel": "prev",
+      "title": "Previous page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json\u0026cursor=8\u0026limit=2"
+    }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "99788834",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -55.129004,
+          -42.771257
+        ]
+      },
+      "properties": {
+        "city": "Irvine",
+        "cursor": 9,
+        "floorsize": 290,
+        "purpose": "Performance",
+        "streetname": "36820 Portsberg",
+        "year": 1912
+      }
+    },
+    {
+      "id": "106726152",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.915044,
+          59.623386
+        ]
+      },
+      "properties": {
+        "city": "Virginia Beach",
+        "cursor": 10,
+        "floorsize": 286,
+        "purpose": "Discovery",
+        "streetname": "4676 Mountville",
+        "year": 1961
+      }
+    }
+  ]
+}

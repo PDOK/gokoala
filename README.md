@@ -134,8 +134,6 @@ Design principles:
 - The `engine` package should contain general logic. `ogc` may reference
   `engine`.
   > :warning: The other way around is not allowed!
-- The OGC API Specifications are multi-part standards, this means
-  that parts can be enabled or disabled, the code should reflect this.
 - Geospatial related configuration is done through the config file, technical
   configuration (host/port/etc) is done through CLI flags/env variables.
 - Fail fast, fail hard: do as much pre-processing/validation on startup instead

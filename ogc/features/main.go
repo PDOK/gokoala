@@ -66,6 +66,11 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
+		if _, ok := collectionsMetadata[collectionID]; !ok {
+			http.NotFound(w, r)
+			return
+		}
+
 		fc, cursor := f.datasource.GetFeatures(collectionID, cursorParam, limit)
 		if fc == nil {
 			http.NotFound(w, r)
@@ -134,7 +139,7 @@ func getLimit(r *http.Request) (int, error) {
 		}
 	}
 	if limit < 0 {
-		limit = 0
+		err = errors.New("limit can't be negative")
 	}
 	return limit, err
 }

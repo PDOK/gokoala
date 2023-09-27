@@ -1,0 +1,64 @@
+{
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items?f=html"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json\u0026cursor=1\u0026limit=2"
+    }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "17778051",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.852725,
+          -50.660451
+        ]
+      },
+      "properties": {
+        "city": "Philadelphia",
+        "cursor": 0,
+        "floorsize": 16,
+        "purpose": "Luxury",
+        "streetname": "79185 Lake Crossingtown",
+        "year": 1920
+      }
+    },
+    {
+      "id": "19058835",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -49.750028,
+          51.948884
+        ]
+      },
+      "properties": {
+        "city": "El Paso",
+        "cursor": 1,
+        "floorsize": 295,
+        "purpose": "Teamwork",
+        "streetname": "967 Mallshire",
+        "year": 2021
+      }
+    }
+  ]
+}

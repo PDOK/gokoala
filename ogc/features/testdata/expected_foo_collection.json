@@ -1,0 +1,216 @@
+{
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items?f=html"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json\u0026cursor=9\u0026limit=10"
+    }
+  ],
+  "numberReturned": 10,
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "17778051",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -106.852725,
+          -50.660451
+        ]
+      },
+      "properties": {
+        "city": "Philadelphia",
+        "cursor": 0,
+        "floorsize": 16,
+        "purpose": "Luxury",
+        "streetname": "79185 Lake Crossingtown",
+        "year": 1920
+      }
+    },
+    {
+      "id": "19058835",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -49.750028,
+          51.948884
+        ]
+      },
+      "properties": {
+        "city": "El Paso",
+        "cursor": 1,
+        "floorsize": 295,
+        "purpose": "Teamwork",
+        "streetname": "967 Mallshire",
+        "year": 2021
+      }
+    },
+    {
+      "id": "21933128",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.096462,
+          9.317708
+        ]
+      },
+      "properties": {
+        "city": "Fort Worth",
+        "cursor": 2,
+        "floorsize": 204,
+        "purpose": "Expression",
+        "streetname": "56681 East Riverborough",
+        "year": 1941
+      }
+    },
+    {
+      "id": "34777146",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.432116,
+          -0.38374
+        ]
+      },
+      "properties": {
+        "city": "Winston-Salem",
+        "cursor": 3,
+        "floorsize": 197,
+        "purpose": "Solutions",
+        "streetname": "70323 Unionsberg",
+        "year": 1949
+      }
+    },
+    {
+      "id": "49061601",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.020457,
+          -48.270593
+        ]
+      },
+      "properties": {
+        "city": "San Bernardino",
+        "cursor": 4,
+        "floorsize": 17,
+        "purpose": "Discovery",
+        "streetname": "96036 North Islandville",
+        "year": 1935
+      }
+    },
+    {
+      "id": "54275190",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.860155,
+          -65.195269
+        ]
+      },
+      "properties": {
+        "city": "Detroit",
+        "cursor": 5,
+        "floorsize": 261,
+        "purpose": "Growth",
+        "streetname": "5310 Fordside",
+        "year": 1913
+      }
+    },
+    {
+      "id": "60927281",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -146.837656,
+          50.535735
+        ]
+      },
+      "properties": {
+        "city": "Los Angeles",
+        "cursor": 6,
+        "floorsize": 223,
+        "purpose": "Success",
+        "streetname": "9030 New Cornersshire",
+        "year": 1985
+      }
+    },
+    {
+      "id": "70944011",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          45.301185,
+          40.963906
+        ]
+      },
+      "properties": {
+        "city": "Norfolk",
+        "cursor": 7,
+        "floorsize": 133,
+        "purpose": "Motivation",
+        "streetname": "86977 Port Hillchester",
+        "year": 1960
+      }
+    },
+    {
+      "id": "80682454",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -29.762697,
+          55.056918
+        ]
+      },
+      "properties": {
+        "city": "Laredo",
+        "cursor": 8,
+        "floorsize": 97,
+        "purpose": "Power",
+        "streetname": "59731 East Pinemouth",
+        "year": 1967
+      }
+    },
+    {
+      "id": "99788834",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -55.129004,
+          -42.771257
+        ]
+      },
+      "properties": {
+        "city": "Irvine",
+        "cursor": 9,
+        "floorsize": 290,
+        "purpose": "Performance",
+        "streetname": "36820 Portsberg",
+        "year": 1912
+      }
+    }
+  ]
+}

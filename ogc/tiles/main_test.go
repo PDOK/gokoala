@@ -223,6 +223,7 @@ func TestTiles_Tile(t *testing.T) {
 		})
 	}
 }
+
 func TestTile_TilesetsList(t *testing.T) {
 	type fields struct {
 		configFile string
@@ -363,6 +364,7 @@ func TestTile_Tileset(t *testing.T) {
 		})
 	}
 }
+
 func TestTile_TilematrixSet(t *testing.T) {
 	type fields struct {
 		configFile      string
@@ -446,6 +448,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 		})
 	}
 }
+
 func TestTile_TilematrixSets(t *testing.T) {
 	type fields struct {
 		configFile string
@@ -540,6 +543,7 @@ func createTileRequest(url string, tileMatrixSetID string, tileMatrix string, ti
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err
 }
+
 func createTilesetsListRequest(url string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
@@ -547,6 +551,7 @@ func createTilesetsListRequest(url string) (*http.Request, error) {
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err
 }
+
 func createTilesetRequest(url string, tileMatrixSetID string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
@@ -555,6 +560,7 @@ func createTilesetRequest(url string, tileMatrixSetID string) (*http.Request, er
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err
 }
+
 func createTilematrixSetRequest(url string, tileMatrixSetID string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
@@ -563,6 +569,7 @@ func createTilematrixSetRequest(url string, tileMatrixSetID string) (*http.Reque
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err
 }
+
 func createTilematrixSetsRequest(url string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
