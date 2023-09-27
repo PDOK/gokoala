@@ -171,11 +171,12 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				if tt.fields.format == "json" {
+				switch {
+				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
-				} else if tt.fields.format == "html" {
+				case tt.fields.format == "html":
 					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
-				} else {
+				default:
 					log.Fatalf("implement support to test format: %s", tt.fields.format)
 				}
 			}
@@ -279,11 +280,12 @@ func TestFeatures_Feature(t *testing.T) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				if tt.fields.format == "json" {
+				switch {
+				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
-				} else if tt.fields.format == "html" {
+				case tt.fields.format == "html":
 					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
-				} else {
+				default:
 					log.Fatalf("implement support to test format: %s", tt.fields.format)
 				}
 			}
@@ -293,7 +295,7 @@ func TestFeatures_Feature(t *testing.T) {
 
 func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	rr := httptest.NewRecorder()
-	l, err := net.Listen("tcp", "localhost:9090")
+	l, err := net.Listen("tcp", "localhost:9095")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -306,10 +308,10 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	return rr, ts
 }
 
-func createRequest(url string, collectionId string, featureID string, format string) (*http.Request, error) {
+func createRequest(url string, collectionID string, featureID string, format string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("collectionId", collectionId)
+	rctx.URLParams.Add("collectionId", collectionID)
 	rctx.URLParams.Add("featureId", featureID)
 
 	queryString := req.URL.Query()
