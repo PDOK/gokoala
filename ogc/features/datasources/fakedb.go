@@ -50,7 +50,8 @@ func (fdb FakeDB) GetFeatures(_ string, cursor string, limit int) (*domain.Featu
 
 	page := fdb.featureCollection.Features[low:high]
 	return &domain.FeatureCollection{
-			Features: page,
+			NumberReturned: len(page),
+			Features:       page,
 		},
 		domain.NewCursor(page, cursorColumnName, limit, last)
 }

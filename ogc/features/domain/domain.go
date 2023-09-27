@@ -19,8 +19,9 @@ func (fc *featureCollectionType) UnmarshalJSON([]byte) error { return nil }
 type FeatureCollection struct {
 	Links []Link `json:"links,omitempty"`
 
-	Type     featureCollectionType `json:"type"`
-	Features []*Feature            `json:"features"`
+	NumberReturned int                   `json:"numberReturned"`
+	Type           featureCollectionType `json:"type"`
+	Features       []*Feature            `json:"features"`
 }
 
 // Feature is a GeoJSON Feature with extras such as links
