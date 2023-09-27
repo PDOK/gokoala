@@ -197,7 +197,8 @@ compliance when available. In the case of OGC API Features follow these steps:
   - When running Docker in a VM (like on macOS) make sure to start GoKoala with base url: http://host.docker.internal:8080.
 - Start a new test session in the TEAM Engine against http://localhost:8080 (or http://host.docker.internal:8080).
   - More details in the [features conformance test suite](https://opengeospatial.github.io/ets-ogcapi-features10/).
-- Publish test results HTML report in [docs](./docs/ogc-features-test-report).
+- Publish test results HTML report in [docs](./docs/ogc-features-test-report) and list below.
+  - Test results on [27-09-2023](https://htmlpreview.github.io/?https://github.com/PDOK/gokoala/blob/features/docs/ogc-features-test-report/20230927.html)
 
 ## Misc
 
