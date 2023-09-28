@@ -45,8 +45,9 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
 - Changes:
   - Removal of OGC Common endpoints (landing page, api, conformance), already
     covered by `common.json`
-  - Removal of OGC Collection endpoints (we don't support these for Tiles at the
-    moment)
+  - Removal of generic OGC Collection types, already covered in `commons-collections.json`
+    - Also removal of OGC Collection endpoints (we don't support these for Tiles at the
+    moment), this may change in the future.
   - Removal of OGC Style endpoint (/styles), already - and better - covered by `styles.json`
   - Removal of GeoJSON as tiles format, only MapBox Vector Tiles are supported.
   - Removal of optional parameters for `/tiles` endpoint like datetime (temporal data)
