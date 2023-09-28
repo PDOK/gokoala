@@ -29,11 +29,15 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
 
-		for _, coll := range e.Config.OgcAPI.GeoVolumes.Collections {
+		for _, coll := range e.Config.AllCollections() {
+			title := coll.ID
+			if coll.Metadata != nil && coll.Metadata.Title != nil {
+				title = *coll.Metadata.Title
+			}
 			collectionBreadcrumbs := collectionsBreadcrumbs
 			collectionBreadcrumbs = append(collectionBreadcrumbs, []engine.Breadcrumb{
 				{
-					Name: coll.ID,
+					Name: title,
 					Path: "collections/" + coll.ID,
 				},
 			}...)
@@ -57,19 +61,19 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 }
 
 // Collections returns list of collections
-func (t *Collections) Collections() http.HandlerFunc {
+func (c *Collections) Collections() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(w, r))
+		c.engine.ServePage(w, r, key)
 	}
 }
 
-func (t *Collections) Collection() http.HandlerFunc {
+func (c *Collections) Collection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 
-		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+c.engine.CN.NegotiateFormat(r), collectionID, c.engine.CN.NegotiateLanguage(w, r))
+		c.engine.ServePage(w, r, key)
 	}
 }
 

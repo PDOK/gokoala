@@ -15,7 +15,7 @@ const (
 	templatesDir       = "ogc/tiles/templates/"
 	tilesPath          = "/tiles"
 	tileMatrixSetsPath = "/tileMatrixSets"
-	defaultTilesTmpl   = "{tms}/{z}/{x}/{y}.pbf"
+	defaultTilesTmpl   = "{tms}/{z}/{x}/{y}." + engine.FormatMVT
 )
 
 type Tiles struct {
@@ -163,7 +163,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
-		t.engine.ReverseProxy(w, r, target, true, "application/vnd.mapbox-vector-tile")
+		t.engine.ReverseProxy(w, r, target, true, engine.MediaTypeMVT)
 	}
 }
 

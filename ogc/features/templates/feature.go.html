@@ -1,0 +1,31 @@
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{{define "content"}}
+<hgroup>
+    <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h2>
+</hgroup>
+
+<section class="row row-cols-4 g-4 py-3">
+    <div class="col-8">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th colspan="2">{{ .Params.FeatureID }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ range $key, $value := .Params.Properties }}
+                <tr>
+                    <td class="w-25">{{ $key }}</td>
+                    <td>{{ $value }}</td>
+                </tr>
+            {{ end }}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-8" style="background-color: lightblue">
+        TODO: Display map with feature here
+    </div>
+
+</section>
+{{end}}

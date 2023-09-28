@@ -1,4 +1,16 @@
 ---
+collectionMetadata: &exampleMetadata
+  description: >-
+    This is a description about lorum ipsum
+  keywords:
+    - Keyword1
+    - Keyword2
+  thumbnail: old.png
+  lastUpdated: "2030-01-02T12:00:00Z"
+  extent:
+    srs: EPSG:3857
+    bbox: ["-13512504.4191", "-19500889.3517", "31493617.8353", "19869683.6812"]
+
 version: 1.0.0
 title: Basisregistratie Grootschalige Topografie (BGT)
 # shortened title, used in breadcrumb path
@@ -12,7 +24,7 @@ resources:
 keywords:
   - keyword1
   - keyword2
-lastUpdated: "2023-05-08T12:00:00Z"
+lastUpdated: "2023-09-08T12:00:00Z"
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
@@ -35,21 +47,30 @@ baseUrl: http://localhost:8080
 availableLanguages:
   - nl
   - en
-# how to serve resources (e.g., images, fonts, sprites). Possible values: directory (serve local files), url (serve through reverse proxy)
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
-  tiles:
-    title: BGT
-    abstract: BGT multi-layer vector tiles
-    # base URL to webserver or object storage (e.g. azure blob or S3)
-    # which hosts the tiles.
-    tileServer:
-      https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
-    # vector tiles and/or raster tiles
-    types:
-      - vector
-    supportedSrs:
-      - srs: EPSG:28992
-        zoomLevelRange:
-          start: 12
-          end: 12
+  features:
+    datasource:
+      fakedb: true
+    collections:
+      - id: wegdelen
+        metadata:
+          # inherit common metadata (to tidy example)
+          <<: *exampleMetadata
+          title: Wegdelen
+      - id: panden
+        metadata:
+          <<: *exampleMetadata
+          title: Panden
+      - id: tunneldelen
+        metadata:
+          <<: *exampleMetadata
+          title: Tunneldelen
+      - id: waterdelen
+        metadata:
+          <<: *exampleMetadata
+          title: Waterdelen
+      - id: spoordelen
+        metadata:
+          <<: *exampleMetadata
+          title: Spoordelen

@@ -33,6 +33,12 @@
       "type": "application/json",
       "title": "OGC API conformance classes implemented by the API offered at this endpoint",
       "href": "{{ .Config.BaseURL }}/conformance?f=json"
+    },
+    {
+      "rel": "license",
+      "type": "text/html",
+      "title": "{{ .Config.License.Name }}",
+      "href": "{{ .Config.License.URL }}"
     }
     {{ if .Config.OgcAPI.Styles }}
     ,
@@ -54,7 +60,7 @@
     {
       "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-schemes",
       "type": "application/json",
-      "title": "Retrieve the list of shared TileMatrixSets available from this API implementation \u0026 deployment.",
+      "title": "Retrieve the list of shared TileMatrixSets available from this API implementation.",
       "href": "{{ .Config.BaseURL }}/tileMatrixSets"
     }
     {{ end }}
@@ -65,13 +71,13 @@
       "rel" : "data",
       "type" : "application/json",
       "title" : "The JSON representation of the list of all data layers (collections) served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/"
+      "href" : "{{ .Config.BaseURL }}/collections"
     },
     {
       "rel" : "http://www.opengis.net/def/rel/ogc/1.0/data",
       "type" : "application/json",
       "title" : "The JSON representation of the list of all data layers (collections) served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/"
+      "href" : "{{ .Config.BaseURL }}/collections"
     }
     {{ end }}
   ]

@@ -3,15 +3,15 @@
 <hgroup>
     <h1 class="title">{{ .Config.Title }} - Conformance</h1>
 </hgroup>
-<div class="row py-3">
+<div class="row">
     <div class="col-md-12">
         <p>
             {{ i18n "ConformanceAbstract" }}
         </p>
     </div>
 </div>
-<div class="row row-cols-2 g-4">
-    <div class="col">
+<section class="row row-cols-md-6 g-4 py-3">
+    <div class="col-md-6 col-sm-12">
         <div class="card">
             <h5 class="card-header">Common</h5>
             <div class="card-body">
@@ -51,8 +51,70 @@
         </div>
     </div>
 
+    {{ if .Config.OgcAPI.Features }}
+        <div class="col-md-6 col-sm-12">
+            <div class="card">
+                <h5 class="card-header">Features</h5>
+                <div class="card-body">
+                    <table class="table table-borderless table-sm">
+                        <thead>
+                        <tr>
+                            <th>Conformance</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core</a></td>
+                            <td>{{ i18n "Standard" }}</td>
+                        </tr>
+                        <tr>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html</a></td>
+                            <td>{{ i18n "Standard" }}</td>
+                        </tr>
+                        <tr>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson</a></td>
+                            <td>{{ i18n "Standard" }}</td>
+                        </tr>
+{{/*  Enable once we support GML output */}}
+{{/*                    <tr>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0</a></td>*/}}
+{{/*                        <td>{{ i18n "Standard" }}</td>*/}}
+{{/*                    </tr>*/}}
+{{/*                    <tr>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2</a></td>*/}}
+{{/*                        <td>{{ i18n "Standard" }}</td>*/}}
+{{/*                    </tr>*/}}
+                        <tr>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs" target="_blank">http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs</a></td>
+                            <td>{{ i18n "Standard" }}</td>
+                        </tr>
+{{/*  Enable once we support Features part 3 */}}
+{{/*                    <tr>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filterr</a></td>*/}}
+{{/*                        <td>{{ i18n "Draft" }}</td>*/}}
+{{/*                    </tr>*/}}
+{{/*                    <tr>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter</a></td>*/}}
+{{/*                        <td>{{ i18n "Draft" }}</td>*/}}
+{{/*                    </tr>*/}}
+{{/*                    <tr>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables</a></td>*/}}
+{{/*                        <td>{{ i18n "Draft" }}</td>*/}}
+{{/*                    </tr>*/}}
+{{/*                    <tr>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters</a></td>*/}}
+{{/*                        <td>{{ i18n "Draft" }}</td>*/}}
+{{/*                    </tr>*/}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {{ end }}
+
     {{ if .Config.OgcAPI.Styles }}
-    <div class="col">
+    <div class="col-md-6 col-sm-12">
         <div class="card">
             <h5 class="card-header">Styles</h5>
             <div class="card-body">
@@ -80,7 +142,7 @@
     {{ end }}
 
     {{ if .Config.OgcAPI.GeoVolumes }}
-    <div class="col">
+    <div class="col-md-6 col-sm-12">
         <div class="card">
             <h5 class="card-header">3D GeoVolumes</h5>
             <div class="card-body">
@@ -104,7 +166,7 @@
     {{ end }}
 
     {{ if .Config.OgcAPI.Tiles }}
-    <div class="col">
+    <div class="col-md-6 col-sm-12">
         <div class="card">
             <h5 class="card-header">Tiles</h5>
             <div class="card-body">
@@ -175,7 +237,7 @@
     {{ end }}
 
     {{ if .Config.OgcAPI.Processes }}
-    <div class="col">
+    <div class="col-md-6 col-sm-12">
         <div class="card">
             <h5 class="card-header">Processes</h5>
             <div class="card-body">
@@ -213,5 +275,5 @@
         </div>
     </div>
     {{ end }}
-</div>
+</section>
 {{end}}

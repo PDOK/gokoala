@@ -10,6 +10,7 @@ import (
 	gokoalaEngine "github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/core"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
+	"github.com/PDOK/gokoala/ogc/features"
 	"github.com/PDOK/gokoala/ogc/geovolumes"
 	"github.com/PDOK/gokoala/ogc/processes"
 	"github.com/PDOK/gokoala/ogc/styles"
@@ -104,7 +105,7 @@ func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool) *chi.Mux {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
 	if allowTrailingSlash {
-		router.Use(middleware.RedirectSlashes)
+		router.Use(middleware.StripSlashes)
 	}
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
 	router.Use(middleware.SetHeader("API-Version", engine.Config.Version))
@@ -128,6 +129,10 @@ func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool) *chi.Mux {
 	// OGC Styles API
 	if engine.Config.OgcAPI.Styles != nil {
 		styles.NewStyles(engine, router)
+	}
+	// OGC Features API
+	if engine.Config.OgcAPI.Features != nil {
+		features.NewFeatures(engine, router)
 	}
 	// OGC Processes API
 	if engine.Config.OgcAPI.Processes != nil {

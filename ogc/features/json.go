@@ -1,0 +1,110 @@
+package features
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/ogc/features/domain"
+)
+
+type jsonFeatures struct {
+	engine *engine.Engine
+}
+
+func newJSONFeatures(e *engine.Engine) *jsonFeatures {
+	return &jsonFeatures{
+		engine: e,
+	}
+}
+
+func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID string,
+	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
+
+	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, limit)
+	fcJSON, err := json.Marshal(&fc)
+	if err != nil {
+		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
+		return
+	}
+	engine.SafeWrite(w.Write, fcJSON)
+}
+
+func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, collectionID string, feat *domain.Feature) {
+	feat.Links = jf.createFeatureLinks(collectionID, feat.ID)
+	featJSON, err := json.Marshal(feat)
+	if err != nil {
+		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
+		return
+	}
+	engine.SafeWrite(w.Write, featJSON)
+}
+
+func (jf *jsonFeatures) featuresAsJSONFG() {
+	// TODO: not implemented yet
+}
+
+func (jf *jsonFeatures) featureAsJSONFG() {
+	// TODO: not implemented yet
+}
+
+func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursor, limit int) []domain.Link {
+	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", jf.engine.Config.BaseURL.String(), collectionID)
+
+	links := make([]domain.Link, 0)
+	links = append(links, domain.Link{
+		Rel:   "self",
+		Title: "This document as GeoJSON",
+		Type:  engine.MediaTypeGeoJSON,
+		Href:  featuresBaseURL + "?f=json",
+	})
+	links = append(links, domain.Link{
+		Rel:   "alternate",
+		Title: "This document as HTML",
+		Type:  engine.MediaTypeHTML,
+		Href:  featuresBaseURL + "?f=html",
+	})
+	if !cursor.IsLast {
+		links = append(links, domain.Link{
+			Rel:   "next",
+			Title: "Next page",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Next, limit),
+		})
+	}
+	if !cursor.IsFirst {
+		links = append(links, domain.Link{
+			Rel:   "prev",
+			Title: "Previous page",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Prev, limit),
+		})
+	}
+	return links
+}
+
+func (jf *jsonFeatures) createFeatureLinks(collectionID string, featureID string) []domain.Link {
+	featureBaseURL := fmt.Sprintf("%s/collections/%s/items/%s", jf.engine.Config.BaseURL.String(), collectionID, featureID)
+
+	links := make([]domain.Link, 0)
+	links = append(links, domain.Link{
+		Rel:   "self",
+		Title: "This document as GeoJSON",
+		Type:  engine.MediaTypeGeoJSON,
+		Href:  featureBaseURL + "?f=json",
+	})
+	links = append(links, domain.Link{
+		Rel:   "alternate",
+		Title: "This document as HTML",
+		Type:  engine.MediaTypeHTML,
+		Href:  featureBaseURL + "?f=html",
+	})
+	links = append(links, domain.Link{
+		Rel:   "collection",
+		Title: "The collection to which this feature belongs",
+		Type:  engine.MediaTypeJSON,
+		Href:  fmt.Sprintf("%s/collections/%s?f=json", jf.engine.Config.BaseURL.String(), collectionID),
+	})
+	return links
+}

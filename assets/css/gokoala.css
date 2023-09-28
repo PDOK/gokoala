@@ -41,7 +41,9 @@ footer {
 
 /* tables */
 td {
+    overflow-wrap: break-word;
     word-wrap: break-word;
+    word-break: break-all;
 }
 .table-sm td p {
     margin: 0;
@@ -49,6 +51,16 @@ td {
 }
 .table-sm>:not(caption)>*>*  {
     padding: 0.10rem;
+}
+.table-striped>thead>tr>th {
+    color: var(--bs-white);
+    background-color:  var(--bs-blue);
+}
+.table-striped>thead>tr>th a {
+    color: var(--bs-white);
+}
+.table-striped>thead>tr>th a:hover {
+    color: var(--lightblue);
 }
 
 .vectortile-view {

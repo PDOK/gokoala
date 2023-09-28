@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -16,7 +17,7 @@ const (
 	cookieMaxAge = 60 * 60 * 24
 )
 
-func ReadConfigFile(configFile string) *Config {
+func readConfigFile(configFile string) *Config {
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {
 		log.Fatalf("failed to read config file %v", err)
@@ -139,13 +140,17 @@ type OgcAPI struct {
 
 type GeoSpatialCollections []GeoSpatialCollection
 
-// Unique lists all unique GeoSpatialCollections (no duplicate IDs)
+// Unique lists all unique GeoSpatialCollections (no duplicate IDs),
+// return results in alphabetic order
 func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 	collectionsByID := g.toMap()
 	flattened := make([]GeoSpatialCollection, 0, len(collectionsByID))
 	for _, v := range collectionsByID {
 		flattened = append(flattened, v)
 	}
+	sort.Slice(flattened, func(i, j int) bool {
+		return flattened[i].ID < flattened[j].ID
+	})
 	return flattened
 }
 
@@ -230,7 +235,8 @@ type OgcAPIStyles struct {
 }
 
 type OgcAPIFeatures struct {
-	Collections GeoSpatialCollections `yaml:"collections"`
+	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
+	Datasource  Datasource            `yaml:"datasource" validate:"required"`
 }
 
 type OgcAPIMaps struct {
@@ -241,6 +247,26 @@ type OgcAPIProcesses struct {
 	SupportsDismiss  bool    `yaml:"supportsDismiss"`
 	SupportsCallback bool    `yaml:"supportsCallback"`
 	ProcessesServer  YAMLURL `yaml:"processesServer" validate:"url"`
+}
+
+type Datasource struct {
+	GeoPackage *GeoPackage `yaml:"geopackage" validate:"required_without_all=FakeDB"`
+	FakeDB     bool        `yaml:"fakedb" validate:"required_without_all=GeoPackage"`
+	// Add more datasources here such as PostGIS, Mongo, etc
+}
+
+type GeoPackage struct {
+	File  GeoPackageFile  `yaml:"file"`
+	Azure GeoPackageAzure `yaml:"azure"`
+}
+
+type GeoPackageFile struct {
+	Filepath string  `yaml:"filepath" validate:"filepath"`
+	Fid      *string `yaml:"fid"`
+}
+
+type GeoPackageAzure struct {
+	// TODO: settings for Azure Cloud Backed Sqlite
 }
 
 type SupportedSrs struct {

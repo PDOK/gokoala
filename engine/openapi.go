@@ -25,6 +25,7 @@ const (
 	specPath          = templatesDir + "openapi/"
 	preamble          = specPath + "preamble.go.json"
 	commonCollections = specPath + "common-collections.go.json"
+	featuresSpec      = specPath + "features.go.json"
 	tilesSpec         = specPath + "tiles.go.json"
 	stylesSpec        = specPath + "styles.go.json"
 	geoVolumesSpec    = specPath + "3dgeovolumes.go.json"
@@ -45,11 +46,14 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 
 	// order matters, see mergeSpecs for details.
 	defaultOpenAPIFiles := []string{commonSpec}
-	if config.OgcAPI.GeoVolumes != nil {
+	if config.AllCollections() != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, commonCollections)
 	}
 	if config.OgcAPI.Tiles != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, tilesSpec)
+	}
+	if config.OgcAPI.Features != nil {
+		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSpec)
 	}
 	if config.OgcAPI.Styles != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, stylesSpec)
@@ -76,7 +80,7 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 	return &OpenAPI{
 		config:   config,
 		spec:     resultSpec,
-		SpecJSON: PrettyPrintJSON(resultSpecJSON, ""),
+		SpecJSON: prettyPrintJSON(resultSpecJSON, ""),
 		router:   newOpenAPIRouter(resultSpec),
 	}
 }
@@ -84,7 +88,7 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 func setupRequestResponseValidation() {
 	htmlRegex := regexp.MustCompile(HTMLRegex)
 
-	openapi3filter.RegisterBodyDecoder("text/html",
+	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
 		func(body io.Reader, header http.Header, ref *openapi3.SchemaRef,
 			fn openapi3filter.EncodingFn) (interface{}, error) {
 
@@ -98,7 +102,7 @@ func setupRequestResponseValidation() {
 			return string(data), nil
 		})
 
-	openapi3filter.RegisterBodyDecoder("application/vnd.mapbox.tile+json",
+	openapi3filter.RegisterBodyDecoder(MediaTypeTileJSON,
 		func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
 			fn openapi3filter.EncodingFn) (interface{}, error) {
 			var value interface{}
@@ -176,10 +180,10 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 
 func renderOpenAPITemplate(config *Config, fileName string) []byte {
 	file := filepath.Clean(fileName)
-	compiled := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(file))
+	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(file))
 
 	var rendered bytes.Buffer
-	if err := compiled.Execute(&rendered, &TemplateData{Config: config}); err != nil {
+	if err := parsed.Execute(&rendered, &TemplateData{Config: config}); err != nil {
 		log.Fatalf("failed to render %s, error: %v", file, err)
 	}
 	return rendered.Bytes()

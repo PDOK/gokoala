@@ -1,0 +1,86 @@
+{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{{define "content"}}
+{{ $cfg := .Config }}
+{{ $baseUrl := $cfg.BaseURL }}
+<script>
+    {{- /* generic function to update query string parameters */ -}}
+    function updateQueryString(name, value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(name, value);
+        window.location.href = url.toString();
+    }
+</script>
+
+<hgroup>
+    <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h2>
+</hgroup>
+
+<section class="row row-cols-4 g-4 py-3">
+    <div class="col-8">
+        <div class="card h-100">
+            <h5 class="card-header">
+                {{ if and .Params.Metadata .Params.Metadata.Title }}
+                    {{ .Params.Metadata.Title }}
+                {{ else }}
+                    {{ .Params.CollectionID }}
+                {{ end }}
+            </h5>
+            <div class="card-body">
+                {{ if and .Params.Metadata .Params.Metadata.Description }}
+                    {{ markdown .Params.Metadata.Description }}
+                {{ end }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-4" style="background-color: lightblue">
+        TODO: Display map with features here
+    </div>
+
+    <div class="col-8">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li>
+                    <a class="page-link {{if .Params.Cursor.IsFirst }}disabled{{end}}" href="{{ $baseUrl }}/collections/{{ .Params.CollectionID }}/items?cursor={{ .Params.Cursor.Prev }}&limit={{ .Params.Limit }}" aria-label="{{ i18n "Prev" }}">
+                        <span aria-hidden="true">&laquo;</span>
+                        {{ i18n "Prev" }}
+                    </a>
+                </li>
+                <li>
+                    <a class="page-link {{if .Params.Cursor.IsLast }}disabled{{end}}" href="{{ $baseUrl }}/collections/{{ .Params.CollectionID }}/items?cursor={{ .Params.Cursor.Next }}&limit={{ .Params.Limit }}" aria-label="{{ i18n "Next" }}">
+                        {{ i18n "Next" }}
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="ms-2">
+                    <select id="limit-select" class="form-select" aria-label="Limit selection" onchange="updateQueryString('limit', this.value)">
+                        <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>{{ i18n "Limit" }} 10 {{ i18n "Items" }} </option>
+                        <option value="50" {{if eq .Params.Limit 50 }}selected{{end}}>{{ i18n "Limit" }} 50 {{ i18n "Items" }}</option>
+                        <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>{{ i18n "Limit" }} 100 {{ i18n "Items" }}</option>
+                    </select>
+                </li>
+            </ul>
+        </nav>
+
+    {{ $collId := .Params.CollectionID }}
+    {{ range $feat := .Params.Features }}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th colspan="2"><a href="{{ $baseUrl }}/collections/{{ $collId }}/items/{{ $feat.ID }}">{{ $feat.ID }}</a></th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ range $key, $value := $feat.Properties }}
+                <tr>
+                    <td class="w-25">{{ $key }}</td>
+                    <td>{{ $value }}</td>
+                </tr>
+            {{ end }}
+            </tbody>
+        </table>
+    {{ end }}
+    </div>
+
+</section>
+{{end}}

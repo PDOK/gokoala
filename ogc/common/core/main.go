@@ -85,7 +85,7 @@ func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CommonCore) apiAsJSON(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/vnd.oai.openapi+json;version=3.0")
+	w.Header().Set("Content-Type", engine.MediaTypeOpenAPI)
 	engine.SafeWrite(w.Write, c.engine.OpenAPI.SpecJSON)
 }
 
