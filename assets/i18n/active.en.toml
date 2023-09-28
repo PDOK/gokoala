@@ -71,7 +71,7 @@ The tiles can be requested via the URL template below, where
 In some tools it is also possible to load this through
 <a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson">TileJSON</a>."""
 AvailableZoomLevels = "The tiles are available at the following zoomlevels"
-ZoomLevel = "Zoomlevel"
+ZoomLevel = "Zoom level"
 MinimumValue = "Minimum value"
 MaximumValue = "Maximum value"
 View = "View"
