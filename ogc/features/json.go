@@ -1,6 +1,7 @@
 package features
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -23,7 +24,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID st
 	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
 
 	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, limit)
-	fcJSON, err := json.Marshal(&fc)
+	fcJSON, err := toJSON(&fc)
 	if err != nil {
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
 		return
@@ -33,7 +34,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID st
 
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, collectionID string, feat *domain.Feature) {
 	feat.Links = jf.createFeatureLinks(collectionID, feat.ID)
-	featJSON, err := json.Marshal(feat)
+	featJSON, err := toJSON(feat)
 	if err != nil {
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
 		return
@@ -107,4 +108,15 @@ func (jf *jsonFeatures) createFeatureLinks(collectionID string, featureID string
 		Href:  fmt.Sprintf("%s/collections/%s?f=json", jf.engine.Config.BaseURL.String(), collectionID),
 	})
 	return links
+}
+
+// toJSON performs the equivalent of json.Marshal but without escaping '<', '>' and '&'.
+// Especially the '&' is important since we use this character in the next/prev links.
+func toJSON(input interface{}) ([]byte, error) {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(input)
+	marshalled := bytes.TrimRight(buffer.Bytes(), "\n")
+	return marshalled, err
 }

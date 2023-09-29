@@ -124,8 +124,7 @@ func (c EncodedCursor) Decode() int64 {
 	if len(decodedValue) > 1 {
 		log.Printf("encountered more than one cursor value after decoding: '%v', "+
 			"this is not allowed! Defaulting to first value.", decodedValue)
-	}
-	if len(decodedValue) == 0 {
+	} else if len(decodedValue) == 0 {
 		log.Printf("decoding cursor value '%v' failed, defaulting to first page", decodedValue)
 		return 0
 	}
