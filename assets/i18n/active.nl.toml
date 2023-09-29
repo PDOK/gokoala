@@ -52,7 +52,7 @@ pagina's om te zien welke zoomniveaus door deze API worden ondersteund."""
 
 # Conformance page
 ConformanceAbstract = """
-Hieronder staan verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet. <br/>De statuskolom geeft aan of de betreffende specificatie reeds tot officiele standaard is verklaard door het OGC."""
+Hieronder staan verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet. <br/>De statuskolom geeft aan of de betreffende specificatie reeds tot officiële standaard is verklaard door het OGC."""
 Standard = "Standaard"
 Draft = "Concept"
 
