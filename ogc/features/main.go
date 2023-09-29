@@ -56,7 +56,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
-		encodedCursorValue := domain.EncodedCursorValue(r.URL.Query().Get("cursor"))
+		encodedCursor := domain.EncodedCursor(r.URL.Query().Get("cursor"))
 		limit, err := getLimit(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -72,7 +72,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		fc, cursor := f.datasource.GetFeatures(collectionID, encodedCursorValue.Decode(), limit)
+		fc, cursor := f.datasource.GetFeatures(collectionID, encodedCursor.Decode(), limit)
 		if fc == nil {
 			http.NotFound(w, r)
 			return

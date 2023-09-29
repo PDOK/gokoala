@@ -27,13 +27,13 @@ func (FakeDB) Close() {
 	// noop
 }
 
-func (fdb FakeDB) GetFeatures(_ string, cursor int, limit int) (*domain.FeatureCollection, domain.Cursor) {
+func (fdb FakeDB) GetFeatures(_ string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor) {
 	low := cursor
-	high := low + limit
+	high := low + int64(limit)
 
-	last := high > len(fdb.featureCollection.Features)
+	last := high > int64(len(fdb.featureCollection.Features))
 	if last {
-		high = len(fdb.featureCollection.Features)
+		high = int64(len(fdb.featureCollection.Features))
 	}
 	if high < 0 {
 		high = 0
@@ -68,7 +68,7 @@ func generateFakeFeatureCollection() *domain.FeatureCollection {
 			"purpose":    gofakeit.Blurb(),
 
 			// we use an explicit cursor column in our fake data to keep things simple
-			cursorColumnName: i,
+			cursorColumnName: int64(i),
 		}
 
 		feature := domain.Feature{}
@@ -81,7 +81,7 @@ func generateFakeFeatureCollection() *domain.FeatureCollection {
 
 	// the collection must be ordered by the cursor column
 	sort.Slice(feats, func(i, j int) bool {
-		return feats[i].Properties[cursorColumnName].(int) < feats[j].Properties[cursorColumnName].(int)
+		return feats[i].Properties[cursorColumnName].(int64) < feats[j].Properties[cursorColumnName].(int64)
 	})
 
 	fc := domain.FeatureCollection{}
