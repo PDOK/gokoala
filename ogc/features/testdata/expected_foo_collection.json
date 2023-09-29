@@ -16,7 +16,7 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json\u0026cursor=9\u0026limit=10"
+      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=iUMnUmcz&limit=10"
     }
   ],
   "numberReturned": 10,

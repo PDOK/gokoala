@@ -74,7 +74,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features.yaml",
-				url:          "http://localhost:8080/collections/:collectionId/items?cursor=9&limit=2",
+				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=iUMnUmcz&limit=2",
 				collectionID: "foo",
 				format:       "json",
 			},
