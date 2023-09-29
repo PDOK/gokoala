@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
+	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -55,7 +56,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
-		cursorParam := r.URL.Query().Get("cursor")
+		encodedCursorValue := domain.EncodedCursorValue(r.URL.Query().Get("cursor"))
 		limit, err := getLimit(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -71,7 +72,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		fc, cursor := f.datasource.GetFeatures(collectionID, cursorParam, limit)
+		fc, cursor := f.datasource.GetFeatures(collectionID, encodedCursorValue.Decode(), limit)
 		if fc == nil {
 			http.NotFound(w, r)
 			return

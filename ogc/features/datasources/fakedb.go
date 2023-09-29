@@ -3,7 +3,6 @@ package datasources
 import (
 	"fmt"
 	"sort"
-	"strconv"
 
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/brianvoe/gofakeit/v6"
@@ -28,18 +27,10 @@ func (FakeDB) Close() {
 	// noop
 }
 
-func (fdb FakeDB) GetFeatures(_ string, cursor string, limit int) (*domain.FeatureCollection, domain.Cursor) {
-	var low int
-	if cursor == "" {
-		low = 0
-	} else {
-		low, _ = strconv.Atoi(cursor)
-		if low < 0 {
-			low = 0
-		}
-	}
-
+func (fdb FakeDB) GetFeatures(_ string, cursor int, limit int) (*domain.FeatureCollection, domain.Cursor) {
+	low := cursor
 	high := low + limit
+
 	last := high > len(fdb.featureCollection.Features)
 	if last {
 		high = len(fdb.featureCollection.Features)

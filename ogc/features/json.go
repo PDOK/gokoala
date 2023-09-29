@@ -70,7 +70,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 			Rel:   "next",
 			Title: "Next page",
 			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Next, limit),
+			Href:  fmt.Sprintf("%s?f=json&cursor=%s&limit=%d", featuresBaseURL, cursor.Next, limit),
 		})
 	}
 	if !cursor.IsFirst {
@@ -78,7 +78,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 			Rel:   "prev",
 			Title: "Previous page",
 			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%d&limit=%d", featuresBaseURL, cursor.Prev, limit),
+			Href:  fmt.Sprintf("%s?f=json&cursor=%s&limit=%d", featuresBaseURL, cursor.Prev, limit),
 		})
 	}
 	return links

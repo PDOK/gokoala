@@ -2,6 +2,7 @@ package domain
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/go-spatial/geom/encoding/geojson"
 )
@@ -46,11 +47,31 @@ type Link struct {
 
 // Cursor since we use cursor-based pagination as opposed to offset-based pagination
 type Cursor struct {
-	Prev int
-	Next int
+	Prev EncodedCursorValue
+	Next EncodedCursorValue
 
 	IsFirst bool
 	IsLast  bool
+}
+
+type EncodedCursorValue string
+
+func (c EncodedCursorValue) Decode() int {
+	decoded := string(c)
+	var result int
+	if decoded == "" {
+		result = 0
+	} else {
+		result, _ = strconv.Atoi(decoded)
+		if result < 0 {
+			result = 0
+		}
+	}
+	return result
+}
+
+func encodeCursorValue(value int) EncodedCursorValue {
+	return EncodedCursorValue(strconv.Itoa(value))
 }
 
 func NewCursor(features []*Feature, column string, limit int, last bool) Cursor {
@@ -81,8 +102,8 @@ func NewCursor(features []*Feature, column string, limit int, last bool) Cursor 
 	next := end.(int)
 
 	return Cursor{
-		Prev: prev,
-		Next: next,
+		Prev: encodeCursorValue(prev),
+		Next: encodeCursorValue(next),
 
 		IsFirst: next < limit,
 		IsLast:  last,

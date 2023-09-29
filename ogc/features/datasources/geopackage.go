@@ -17,9 +17,9 @@ func (GeoPackage) Close() {
 	// TODO: clean up DB connection to gpkg
 }
 
-func (GeoPackage) GetFeatures(collection string, cursor string, limit int) (*domain.FeatureCollection, domain.Cursor) {
+func (GeoPackage) GetFeatures(collection string, cursor int, limit int) (*domain.FeatureCollection, domain.Cursor) {
 	// TODO: not implemented yet
-	log.Printf("TODO: return data from gpkg for collection %s using cursor %s with limt %d",
+	log.Printf("TODO: return data from gpkg for collection %s using cursor %d with limt %d",
 		collection, cursor, limit)
 	return nil, domain.Cursor{}
 }
