@@ -1,80 +1,72 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>vectortile-viewComponent</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  </head>
 
-<head>
-  <meta charset="utf-8">
-  <title>vectortile-viewComponent</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
+  <body>
+    <H1>administrative unit NL </H1>
+    <div>
+      <div id="sample1viewlink"></div>
+      <div id="zoomlevel"></div>
+      <div id="current-url"></div>
+    </div>
 
+    <select id="admin-selector" style="width: 15%">
+      <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
+      <option value="WebMercatorQuad">WebMercatorQuad</option>
+      <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
+    </select>
 
+    <app-vectortile-view
+      id="adminunit"
+      style="width: 746px; height: 559.5px"
+      style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/styles/bestuurlijkegebieden_standaardvisualisatie?f=mapbox"
+      center-x="5.3896944"
+      center-y="52.1562499"
+      show-grid="true"
+      show-object-info="true">
+    </app-vectortile-view>
 
+    <script>
+      adminunit.addEventListener('currentZoomLevel', a1 => {
+        console.log('zoomlevel sample1: ');
+        console.log(JSON.stringify(a1.detail));
+        const zooml = document.getElementById('zoomlevel');
+        zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2);
+      });
 
-<H1>administrative unit NL </H1>
-<div>
-  <div id="sample1viewlink"></div>
-  <div id="zoomlevel"> </div>
-  <div id="current-url"> </div>
-</div>
+      adminunit.addEventListener('activeTileUrl', activeurl => {
+        console.log(JSON.stringify(activeurl.detail));
 
+        const cururl = document.getElementById('current-url');
+        cururl.innerHTML = 'url ' + activeurl.detail;
+      });
 
+      seturl('NetherlandsRDNewQuad');
 
-<select id="admin-selector" style="width: 15%;">
-  <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
-  <option value="WebMercatorQuad">WebMercatorQuad</option>
-  <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
-</select>
+      document.addEventListener(
+        'input',
+        function (event) {
+          // only operate on srs dropdown
+          if (event.target.id !== 'admin-selector') return;
+          var projection = event.target.value;
+          seturl(projection);
+        },
+        false
+      );
 
-<app-vectortile-view id="adminunit" style="width: 746px; height: 559.5px;"
-  style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/styles/bestuurlijkegebieden_standaardvisualisatie?f=mapbox"
-  center-x="5.3896944" center-y="52.1562499" show-grid="true" show-object-info="true">
-</app-vectortile-view>
-
-<script>
-  adminunit.addEventListener('currentZoomLevel', a1 => {
-    console.log('zoomlevel sample1: ');
-    console.log(JSON.stringify(a1.detail));
-    const zooml = document.getElementById('zoomlevel')
-    zooml.innerHTML = "openlayers zoomlevel " + a1.detail.toFixed(2)
-  })
-
-  adminunit.addEventListener('activeTileUrl', activeurl => {
-    console.log(JSON.stringify(activeurl.detail));
-
-    const cururl = document.getElementById('current-url')
-    cururl.innerHTML = "url " + activeurl.detail
-  })
-
-
-  seturl("NetherlandsRDNewQuad")
-
-
-
-  document.addEventListener('input', function (event) {
-    // only operate on srs dropdown
-    if (event.target.id !== 'admin-selector') return;
-    var projection = event.target.value
-    seturl(projection)
-
-
-
-  }, false);
-
-  function seturl(projection) {
-
-    const view = document.getElementById('adminunit')
-    const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' + projection
-    view.setAttribute('tile-url', url)
-    const link = document.getElementById('sample1viewlink')
-    link.innerHTML = "<a href='" + url + "'> " + url + "</a>"
-  }
-
-
-</script>
-
-
-</body>
-
+      function seturl(projection) {
+        const view = document.getElementById('adminunit');
+        const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' + projection;
+        view.setAttribute('tile-url', url);
+        const link = document.getElementById('sample1viewlink');
+        link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
+      }
+    </script>
+  </body>
 </html>

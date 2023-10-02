@@ -1,4 +1,3 @@
-
 .maparea {
   z-index: 1;
   position: relative;
@@ -14,13 +13,5 @@
   z-index: 2;
   max-height: 90%;
   max-width: 40%;
-  height:100%
-
+  height: 100%;
 }
-
-
-
-
-
-
-

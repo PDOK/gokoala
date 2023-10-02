@@ -29,22 +29,20 @@ export interface TileMatrix {
   pointOfOrigin: number[];
 }
 
-
-
 export interface Matrix {
-  title:               string;
-  links:               Link[];
-  crs:                 string;
-  dataType:            string;
-  tileMatrixSetId:     string;
+  title: string;
+  links: Link[];
+  crs: string;
+  dataType: string;
+  tileMatrixSetId: string;
   tileMatrixSetLimits: TileMatrixSetLimit[];
 }
 
 export interface Link {
-  rel:        string;
-  type:       string;
-  title:      string;
-  href:       string;
+  rel: string;
+  type: string;
+  title: string;
+  href: string;
   templated?: boolean;
 }
 
@@ -56,28 +54,16 @@ export interface TileMatrixSetLimit {
   maxTileCol: number;
 }
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MatrixsetService {
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
   getMatrixSet(url: string): Observable<MatrixSet> {
-    return (
-      this.http.get<MatrixSet>(url)
-    )
+    return this.http.get<MatrixSet>(url);
   }
-
 
   getMatrix(url: string): Observable<Matrix> {
-    return (
-      this.http.get<Matrix>(url)
-    )
+    return this.http.get<Matrix>(url);
   }
-
-
-
-
-  
-
 }

@@ -1,9 +1,9 @@
-import { Component, ElementRef, Input, OnInit, ViewEncapsulation } from '@angular/core'
-import { CommonModule } from '@angular/common'
-import { LegendItemComponent } from '../legend-item/legend-item.component'
-import { recordStyleLayer } from 'ol-mapbox-style'
-import { IProperties, LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service'
-import { NgChanges } from '../app.component'
+import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { LegendItemComponent } from '../legend-item/legend-item.component';
+import { recordStyleLayer } from 'ol-mapbox-style';
+import { LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service';
+import { NgChanges } from '../app.component';
 
 @Component({
   selector: 'app-legend-view',
@@ -13,64 +13,52 @@ import { NgChanges } from '../app.component'
   standalone: true,
   encapsulation: ViewEncapsulation.Emulated,
 })
+export class LegendViewComponent implements OnInit, OnChanges {
+  mapboxStyle!: MapboxStyle;
+  @Input() styleUrl!: string;
+  @Input() titleItems!: string;
 
-export class LegendViewComponent implements OnInit {
+  LegendItems: LegendItem[] = [];
 
-  mapboxStyle!: MapboxStyle
-  @Input() styleUrl!: string
-  @Input() titleItems!: string
-
-  LegendItems: LegendItem[] = []
-
-
-  constructor(private mapboxStyleService: MapboxStyleService, private elementRef: ElementRef) {
-    recordStyleLayer(true)
+  constructor(
+    private mapboxStyleService: MapboxStyleService,
+    private elementRef: ElementRef
+  ) {
+    recordStyleLayer(true);
   }
 
   ngOnChanges(changes: NgChanges<LegendViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
       if (!changes.styleUrl.isFirstChange()) {
-        this.generateLegend()
+        this.generateLegend();
       }
     }
     if (this.titleItems) {
       if (changes.titleItems.previousValue !== changes.titleItems.currentValue) {
         if (!changes.titleItems.isFirstChange()) {
-
-          this.generateLegend()
+          this.generateLegend();
         }
       }
     }
   }
 
   ngOnInit(): void {
-    this.generateLegend()
-
+    this.generateLegend();
   }
-
-
-
-
 
   generateLegend() {
     if (this.styleUrl) {
-      this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe((style) => {
-        this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)
+      this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe(style => {
+        this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style);
         if (this.titleItems) {
-          let titlepart = this.titleItems.split(',')
-          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
+          const titlepart = this.titleItems.split(',');
+          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart);
+        } else {
+          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, []);
         }
-        else {
-          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [])
-        }
-
-      })
-    }
-    else {
-      console.error("no style url supplied")
+      });
+    } else {
+      console.error('no style url supplied');
     }
   }
-
 }
-
-

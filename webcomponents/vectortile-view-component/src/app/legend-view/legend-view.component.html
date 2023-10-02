@@ -1,8 +1,6 @@
 <div class="legendContainer" *ngIf="LegendItems.length > 0">
-   
-        <div class="legendItem" *ngFor="let i of  LegendItems">
-            <app-legend-item [item]=i [mapboxStyle]=mapboxStyle></app-legend-item>
-            <div class="legendText">{{i.title }}</div>
-        </div>
-   
+  <div class="legendItem" *ngFor="let i of LegendItems">
+    <app-legend-item [item]="i" [mapboxStyle]="mapboxStyle"></app-legend-item>
+    <div class="legendText">{{ i.title }}</div>
+  </div>
 </div>

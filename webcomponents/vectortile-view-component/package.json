@@ -4,10 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --output-hashing none",
+    "build": "npm run format && npm run lint && ng build --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "deploy":  "ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl"
+    "deploy": "ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
+    "lint": "ng lint",
+    "format": "npx prettier --write ."
   },
   "private": true,
   "dependencies": {
@@ -29,11 +31,23 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^16.2.0",
+    "@angular-eslint/builder": "16.2.0",
+    "@angular-eslint/eslint-plugin": "16.2.0",
+    "@angular-eslint/eslint-plugin-template": "16.2.0",
+    "@angular-eslint/schematics": "16.2.0",
+    "@angular-eslint/template-parser": "16.2.0",
     "@angular/cli": "~16.2.0",
     "@angular/compiler-cli": "^16.2.1",
     "@types/jasmine": "~4.3.5",
     "@types/proj4": "^2.5.2",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "5.62.0",
     "angular-cli-ghpages": "^1.0.6",
+    "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.3",
+    "prettier-eslint": "^15.0.1",
     "typescript": "~5.1.6"
   }
 }
