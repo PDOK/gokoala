@@ -79,7 +79,6 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string, feat *domain.Feature) {
-
 	collectionMetadata := collectionsMetadata[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb

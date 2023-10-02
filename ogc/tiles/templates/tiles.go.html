@@ -99,11 +99,11 @@
       <script type="text/javascript" src="vectortile-view-component/main.js"></script>
       <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
       <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
-      <app-vectortile-view id="tiles-vectortile-view" class="vectortile-view"
+      <app-vectortile-view id="vectortileviewer" class="vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
         center-x="5.3896944" center-y="52.1562499"
-        show-grid="true" show-object-info="true">
+        show-grid="false" show-object-info="true">
       </app-vectortile-view>
     </div>
   </div>
@@ -114,21 +114,10 @@
 
       // update table fields
       const selectedSrs = event.target.value
-      let tileset, tilesetZoom = '0', tilesetY = '0', tilesetX = '0';
+      let tileset;
       {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
       {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
         tileset = '{{ get $projections $srs.Srs }}'
-        tilesetZoom = {{ $srs.ZoomLevelRange.End }}
-        {{ if eq $srs.Srs "EPSG:28992" }}
-          tilesetY = '2047'; // also hard-coded in example URL above in HTML
-          tilesetX = '2048'; // also hard-coded in example URL above in HTML
-        {{ else if eq $srs.Srs "EPSG:3035" }}
-          tilesetY = '8237';
-          tilesetX = '7302';
-        {{ else if eq $srs.Srs "EPSG:3857" }}
-          tilesetY = '43144';
-          tilesetX = '67270';
-        {{ end }}
       }{{ end }}
 
       const srsField = document.getElementById('field-srs');
@@ -137,16 +126,18 @@
       const urlTemplateField = document.getElementById('field-url-template');
       urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
 
-      const urlExampleField = document.getElementById('field-url-example');
-      urlExampleField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/' + tilesetZoom + '/' + tilesetY + '/' + tilesetX + '?f=mvt';
-
       const metadataHref = document.getElementById('href-metadata');
       metadataHref.textContent = '{{ i18n "View" }} ' + tileset + ' tiles metadata';
       metadataHref.setAttribute('href', 'tiles/' + tileset);
 
       // update tile-url and zoom in app-vectortile-view
-      const viewer = document.getElementById('tiles-vectortile-view')
-      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset)
+      const viewer = document.getElementById('vectortileviewer');
+      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset);
     }, false);
+
+    vectortileviewer.addEventListener('activeTileUrl', activeUrl => {
+      const urlExampleField = document.getElementById('field-url-example');
+      urlExampleField.textContent = activeUrl.detail
+    });
   </script>
 {{end}}
