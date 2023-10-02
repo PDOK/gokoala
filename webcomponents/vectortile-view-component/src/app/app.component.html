@@ -1,6 +1,14 @@
-<div class="maparea" id="map" [style.width.px]="mapWidth" [style.height.px]="mapHeight">
-    <div class="toprightpanel">
-        <app-objectinfo-view class="objectinfopanel" id="objectinfo" [feature]=curFeature *ngIf="showObjectInfo">
-        </app-objectinfo-view>
-    </div>
+<div
+  class="maparea"
+  id="map"
+  [style.width.px]="mapWidth"
+  [style.height.px]="mapHeight">
+  <div class="toprightpanel">
+    <app-objectinfo-view
+      class="objectinfopanel"
+      id="objectinfo"
+      [feature]="curFeature"
+      *ngIf="showObjectInfo">
+    </app-objectinfo-view>
+  </div>
 </div>

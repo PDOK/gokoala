@@ -8,7 +8,7 @@ describe('LegendViewComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [LegendViewComponent]
+      declarations: [LegendViewComponent],
     });
     fixture = TestBed.createComponent(LegendViewComponent);
     component = fixture.componentInstance;
