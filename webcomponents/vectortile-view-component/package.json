@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run format && ng build --output-hashing none",
+    "build": "npm run format && npm run lint && ng build --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "deploy": "ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",

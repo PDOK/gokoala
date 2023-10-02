@@ -1,12 +1,13 @@
 import {
-  Component,
-  Input,
-  ElementRef,
-  Output,
-  EventEmitter,
-  CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
 } from '@angular/core';
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Subject } from 'rxjs';
@@ -15,13 +16,9 @@ import VectorTileSource from 'ol/source/VectorTile.js';
 import TileDebug from 'ol/source/TileDebug.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import {
-  EuropeanETRS89_LAEAQuad,
-  MapProjection,
-  NetherlandsRDNewQuadDefault,
-} from '../app/mapprojection';
+import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from './mapprojection';
 
-import { FullScreen, defaults as defaultControls } from 'ol/control.js';
+import { defaults as defaultControls, FullScreen } from 'ol/control.js';
 import { applyStyle } from 'ol-mapbox-style';
 import Projection from 'ol/proj/Projection';
 import { Fill, Stroke, Style } from 'ol/style';
@@ -38,16 +35,9 @@ import LayerGroup from 'ol/layer/Group';
 import { FeatureLike } from 'ol/Feature';
 import { CommonModule } from '@angular/common';
 import { Link, Matrix, MatrixsetService } from './matrixset.service';
-import { Geometry } from 'ol/geom';
-import { TileCoord } from 'ol/tilecoord';
 import { MapBrowserEvent, VectorTile } from 'ol';
-import { Listener } from 'ol/events';
-import { TileSourceEvent } from 'ol/source/Tile';
 
-export type NgChanges<
-  Component extends object,
-  Props = ExcludeFunctions<Component>,
-> = {
+export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
   [Key in keyof Props]: {
     previousValue: Props[Key];
     currentValue: Props[Key];
@@ -57,17 +47,12 @@ export type NgChanges<
 };
 
 type MarkFunctionPropertyNames<Component> = {
-  [Key in keyof Component]: Component[Key] extends Function | Subject<any>
-    ? never
-    : Key;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  [Key in keyof Component]: Component[Key] extends Function | Subject<never> ? never : Key;
 };
 
-type ExcludeFunctionPropertyNames<T extends object> =
-  MarkFunctionPropertyNames<T>[keyof T];
-type ExcludeFunctions<T extends object> = Pick<
-  T,
-  ExcludeFunctionPropertyNames<T>
->;
+type ExcludeFunctionPropertyNames<T extends object> = MarkFunctionPropertyNames<T>[keyof T];
+type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T>>;
 
 @Component({
   selector: 'app-vectortile-view',
@@ -82,28 +67,28 @@ type ExcludeFunctions<T extends object> = Pick<
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnChanges {
   title = 'vectortile-view-component';
   map = new Map({});
   selector = '/{z}/{y}/{x}?f=mvt';
-  private _showGrid: boolean = false;
-  private _showObjectInfo: boolean = false;
+  private _showGrid = false;
+  private _showObjectInfo = false;
   vectorTileLayer: VectorTileLayer | undefined;
   curFeature!: FeatureLike;
   tileGrid: TileGrid | undefined;
   minZoom?: number;
   maxZoom?: number;
-  private _zoom: number = -1;
+  private _zoom = -1;
   private projection!: Projection;
 
-  @Input() set showGrid(showGrid: any) {
+  @Input() set showGrid(showGrid: boolean) {
     this._showGrid = coerceBooleanProperty(showGrid);
   }
   get showGrid() {
     return this._showGrid;
   }
 
-  @Input() set showObjectInfo(showObjectInfo: any) {
+  @Input() set showObjectInfo(showObjectInfo: boolean) {
     this._showObjectInfo = coerceBooleanProperty(showObjectInfo);
   }
   get showObjectInfo() {
@@ -131,8 +116,8 @@ export class AppComponent {
   @Output() activeTileUrl = new EventEmitter<string>();
   @Input() centerX!: number;
   @Input() centerY!: number;
-  mapHeight: number = 600;
-  mapWidth: number = 800;
+  mapHeight = 600;
+  mapWidth = 800;
 
   constructor(
     private elementRef: ElementRef,
@@ -201,11 +186,11 @@ export class AppComponent {
     let matrixurl = undefined;
     links.forEach(link => {
       if (link.rel == 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme') {
-        let turl = new URL(this.tileUrl);
+        const turl = new URL(this.tileUrl);
         if (this.isFullURL(link.href)) {
           matrixurl = link.href;
         } else {
-          let mUrl = new URL(turl.origin + link.href);
+          const mUrl = new URL(turl.origin + link.href);
           matrixurl = mUrl.href;
         }
       }
@@ -216,9 +201,9 @@ export class AppComponent {
   private drawFromMatrixUrl(matrix: Matrix, matrixurl: string) {
     this.matrixsetService.getMatrixSet(matrixurl).subscribe({
       next: matrixset => {
-        let resolutions: number[] = [];
-        let origins: number[][] = [];
-        let sizes: number[][] = [];
+        const resolutions: number[] = [];
+        const origins: number[][] = [];
+        const sizes: number[][] = [];
         matrixset.tileMatrices.forEach(x => {
           resolutions[x.id] = x.cellSize;
           if (this.tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
@@ -237,7 +222,7 @@ export class AppComponent {
         this.drawMap(matrix);
       },
       error: error => {
-        console.log(this.id + 'tilematrixset not found: ' + matrixurl);
+        console.log(this.id + 'tilematrixset not found: ' + matrixurl, error);
         this.projection = new MapProjection(this.tileUrl).Projection;
         this.tileGrid = new TileGrid({
           extent: this.projection.getExtent(),
@@ -253,7 +238,8 @@ export class AppComponent {
   private drawMap(tile: Matrix) {
     this.map.setTarget(undefined);
     this.map = new Map({});
-    let map = this.getMap();
+    const map = this.getMap();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     map.on('pointermove', (evt: MapBrowserEvent<any>) => {
       map.forEachFeatureAtPixel(
         evt.pixel,
@@ -271,7 +257,7 @@ export class AppComponent {
       );
     });
 
-    map.getView().on('change:resolution', event => {
+    map.getView().on('change:resolution', () => {
       const zoom = this.map.getView().getZoom();
       if (zoom) {
         this._zoom = zoom;
@@ -280,8 +266,7 @@ export class AppComponent {
     });
 
     this.SetZoom(tile);
-    const mapdiv: HTMLElement =
-      this.elementRef.nativeElement.querySelector("[id='map']");
+    const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']");
     this.mapWidth = this.elementRef.nativeElement.offsetWidth;
     this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75; // height = 0.75 * width creates 4:3 aspect ratio
     map.setTarget(mapdiv);
@@ -298,9 +283,7 @@ export class AppComponent {
     }
 
     if (!this.centerX) {
-      console.error(
-        'No zoom center-x was provided for the app-vectortile-view'
-      );
+      console.error('No zoom center-x was provided for the app-vectortile-view');
     } else console.log('center-x=' + this.centerX);
     if (!this.centerY) {
       console.error('No center-y was provided for the app-vectortile-view');
@@ -311,7 +294,7 @@ export class AppComponent {
     useGeographic();
     const l = this.generateLayers();
     const layers = l.layers;
-    let acenter: Coordinate = [this.centerX, this.centerY];
+    const acenter: Coordinate = [this.centerX, this.centerY];
     this.vectorTileLayer = l.vectorTileLayer;
     this.map = new Map({
       controls: defaultControls().extend([new FullScreen()]),
@@ -330,18 +313,14 @@ export class AppComponent {
 
   private generateLayers() {
     this.projection = new MapProjection(this.tileUrl).Projection;
-    let vectorTileLayer = this.getVectortileLayer(this.projection);
+    const vectorTileLayer = this.getVectortileLayer(this.projection);
     this.setStyle(vectorTileLayer);
-    let layers = [vectorTileLayer] as
-      | BaseLayer[]
-      | Collection<BaseLayer>
-      | LayerGroup
-      | undefined;
+    let layers = [vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined;
 
     if (this.showGrid) {
-      let source = vectorTileLayer.getSource();
+      const source = vectorTileLayer.getSource();
       if (source) {
-        let grid = source.getTileGrid();
+        const grid = source.getTileGrid();
         if (grid) {
           const debugLayer = new TileLayer({
             source: new TileDebug({
@@ -368,11 +347,7 @@ export class AppComponent {
             vectorTileLayer.getSource()?.setUrl(this.tileUrl + this.selector);
           }
         })
-        .catch(err =>
-          console.error(
-            'error loading: ' + this.id + ' ' + this.styleUrl + ' ' + err
-          )
-        );
+        .catch(err => console.error('error loading: ' + this.id + ' ' + this.styleUrl + ' ' + err));
     } else {
       const defaultStyle = new Style({
         fill: new Fill({
@@ -388,19 +363,18 @@ export class AppComponent {
   }
 
   getVectortileLayer(projection: Projection): VectorTileLayer {
-    const vectorTileLayer = new VectorTileLayer({
+    return new VectorTileLayer({
       source: this.getVectorTileSource(projection, this.tileUrl),
       renderMode: 'hybrid',
       declutter: true,
       useInterimTilesOnError: false,
     });
-    return vectorTileLayer;
   }
 
   private calcResolutions(projection: Projection) {
     const tileSizePixels = 256;
     const tileSizeMtrs = getWidth(projection.getExtent()) / tileSizePixels;
-    let resolutions: Array<number> = [];
+    const resolutions: Array<number> = [];
     for (let i = 0; i <= 21; i++) {
       resolutions[i] = tileSizeMtrs / Math.pow(2, i);
     }
@@ -408,7 +382,7 @@ export class AppComponent {
   }
 
   private getVectorTileSource(projection: Projection, url: string) {
-    let source = new VectorTileSource({
+    const source = new VectorTileSource({
       format: new MVT(),
       projection: projection,
       tileGrid: this.tileGrid,
@@ -416,17 +390,13 @@ export class AppComponent {
       cacheSize: 0,
     });
     source.on(['tileloadend'], e => {
-      let evt: { type: 'tileloadend'; target: VectorTile; tile: VectorTile } =
-        e as any;
+      const evt: { type: 'tileloadend'; target: VectorTile; tile: VectorTile } = e as never;
       this.activeTileUrl.next(evt.tile.key);
     });
     return source;
   }
 
   isFullURL(url: string): boolean {
-    return (
-      url.toLowerCase().startsWith('http://') ||
-      url.toLowerCase().startsWith('https://')
-    );
+    return url.toLowerCase().startsWith('http://') || url.toLowerCase().startsWith('https://');
   }
 }

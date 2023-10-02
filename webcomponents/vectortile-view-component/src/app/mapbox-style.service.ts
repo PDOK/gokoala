@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 import { Observable } from 'rxjs';
 import { Feature } from 'ol';
-import { LineString, Point, Polygon } from 'ol/geom';
 import { StyleLike } from 'ol/style/Style';
 
 export interface IProperties {
@@ -11,7 +10,7 @@ export interface IProperties {
 }
 
 export type LegendItem = {
-  sourceLayer: any;
+  sourceLayer: unknown;
   name: string;
   title: string;
   geoType: LayerType;
@@ -27,7 +26,7 @@ export interface MapboxStyle {
   sprite: string;
   glyphs: string;
   layers: Layer[];
-  sources: {};
+  sources: NonNullable<unknown>;
 }
 
 export interface Layer {
@@ -95,11 +94,7 @@ export enum LayerType {
 }
 
 export function exhaustiveGuard(_value: never): never {
-  throw new Error(
-    `ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(
-      _value
-    )}`
-  );
+  throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`);
 }
 
 @Injectable({
@@ -117,7 +112,7 @@ export class MapboxStyleService {
   }
 
   getLayersids(style: MapboxStyle): string[] {
-    let ids: string[] = [];
+    const ids: string[] = [];
     style.layers.forEach((layer: Layer) => {
       ids.push(layer.id);
     });
@@ -133,31 +128,26 @@ export class MapboxStyleService {
   }
 
   removeRasterLayers(style: MapboxStyle): MapboxStyle {
-    style.layers = style.layers.filter(
-      layer => layer.type !== LayerType.Raster
-    );
+    style.layers = style.layers.filter(layer => layer.type !== LayerType.Raster);
     return style;
   }
 
-  isFillPatternWithStops(
-    paint: string | FillPattern | undefined
-  ): paint is FillPattern {
+  isFillPatternWithStops(paint: string | FillPattern | undefined): paint is FillPattern {
     return (paint as FillPattern).stops !== undefined;
   }
 
   getItems(
     style: MapboxStyle,
+    // eslint-disable-next-line @typescript-eslint/ban-types
     titleFunction: Function,
     customTitlePart: string[]
   ): LegendItem[] {
-    let names: LegendItem[] = [];
+    const names: LegendItem[] = [];
     style.layers.forEach((layer: Layer) => {
-      let p: IProperties = extractPropertiesFromFilter({}, layer.filter);
+      const p: IProperties = extractPropertiesFromFilter({}, layer.filter);
 
       if (layer.layout?.['text-field']) {
-        let label = layer.layout?.['text-field']
-          .replace('{', '')
-          .replace('}', '');
+        const label = layer.layout?.['text-field'].replace('{', '').replace('}', '');
         p['' + label + ''] = label.substring(0, 6);
       }
       let title = titleFunction(layer['source-layer'], p, customTitlePart);
@@ -173,7 +163,7 @@ export class MapboxStyleService {
       if (paint) {
         if (this.isFillPatternWithStops(paint)) {
           paint.stops.forEach(stop => {
-            let prop: IProperties = {};
+            const prop: IProperties = {};
             prop['' + paint.property + ''] = stop[0];
             title = stop[0];
             this.pushItem(title, layer, names, prop);
@@ -181,19 +171,14 @@ export class MapboxStyleService {
         }
       }
     });
-    let sorted = names.sort((a, b) => a.title.localeCompare(b.title));
-    return sorted;
+    return names.sort((a, b) => a.title.localeCompare(b.title));
   }
 
   capitalizeFirstLetter(str: string): string {
     return [...str][0].toUpperCase() + str.slice(1);
   }
 
-  customTitle(
-    layername: string,
-    props: IProperties,
-    customTitlePart: string[]
-  ): string {
+  customTitle(layername: string, props: IProperties, customTitlePart: string[]): string {
     function gettext(intitle: string, index: string): string {
       if (props[index]) {
         return intitle + ' ' + props[index];
@@ -213,12 +198,7 @@ export class MapboxStyleService {
     return [...title][0].toUpperCase() + title.slice(1);
   }
 
-  private pushItem(
-    title: string,
-    layer: Layer,
-    names: LegendItem[],
-    properties: IProperties = {}
-  ) {
+  private pushItem(title: string, layer: Layer, names: LegendItem[], properties: IProperties = {}) {
     if (!names.find(e => e.title === title)) {
       const i: LegendItem = {
         name: layer.id,

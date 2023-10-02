@@ -35,10 +35,7 @@ export class MapProjection {
     const mercator = new Projection({
       code: 'EPSG:3857',
       units: 'm',
-      extent: [
-        -20037508.342789244, -20037508.342789244, 20037508.342789244,
-        20037508.342789244,
-      ],
+      extent: [-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244],
       worldExtent: [-180, -85, 180, 85],
       axisOrientation: 'enu',
       global: true,

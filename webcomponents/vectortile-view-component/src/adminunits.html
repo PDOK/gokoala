@@ -62,9 +62,7 @@
 
       function seturl(projection) {
         const view = document.getElementById('adminunit');
-        const url =
-          'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' +
-          projection;
+        const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' + projection;
         view.setAttribute('tile-url', url);
         const link = document.getElementById('sample1viewlink');
         link.innerHTML = "<a href='" + url + "'> " + url + '</a>';

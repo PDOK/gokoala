@@ -1,19 +1,8 @@
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LegendItemComponent } from '../legend-item/legend-item.component';
 import { recordStyleLayer } from 'ol-mapbox-style';
-import {
-  IProperties,
-  LegendItem,
-  MapboxStyle,
-  MapboxStyleService,
-} from '../mapbox-style.service';
+import { LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service';
 import { NgChanges } from '../app.component';
 
 @Component({
@@ -24,7 +13,7 @@ import { NgChanges } from '../app.component';
   standalone: true,
   encapsulation: ViewEncapsulation.Emulated,
 })
-export class LegendViewComponent implements OnInit {
+export class LegendViewComponent implements OnInit, OnChanges {
   mapboxStyle!: MapboxStyle;
   @Input() styleUrl!: string;
   @Input() titleItems!: string;
@@ -45,9 +34,7 @@ export class LegendViewComponent implements OnInit {
       }
     }
     if (this.titleItems) {
-      if (
-        changes.titleItems.previousValue !== changes.titleItems.currentValue
-      ) {
+      if (changes.titleItems.previousValue !== changes.titleItems.currentValue) {
         if (!changes.titleItems.isFirstChange()) {
           this.generateLegend();
         }
@@ -64,18 +51,10 @@ export class LegendViewComponent implements OnInit {
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe(style => {
         this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style);
         if (this.titleItems) {
-          let titlepart = this.titleItems.split(',');
-          this.LegendItems = this.mapboxStyleService.getItems(
-            this.mapboxStyle,
-            this.mapboxStyleService.customTitle,
-            titlepart
-          );
+          const titlepart = this.titleItems.split(',');
+          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart);
         } else {
-          this.LegendItems = this.mapboxStyleService.getItems(
-            this.mapboxStyle,
-            this.mapboxStyleService.capitalizeFirstLetter,
-            []
-          );
+          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, []);
         }
       });
     } else {

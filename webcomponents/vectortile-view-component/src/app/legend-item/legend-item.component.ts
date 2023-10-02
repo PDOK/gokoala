@@ -1,32 +1,14 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  ElementRef,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit } from '@angular/core';
 import { Feature, Map as OLMap, Tile, VectorTile, View } from 'ol';
 import { Projection } from 'ol/proj';
 import { MVT } from 'ol/format';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import { getCenter } from 'ol/extent';
-import { Geometry, LineString, Point, Polygon } from 'ol/geom';
-import {
-  LayerType,
-  LegendItem,
-  MapboxStyle,
-  MapboxStyleService,
-  exhaustiveGuard,
-} from '../mapbox-style.service';
+import { Geometry, LineString, Point } from 'ol/geom';
+import { exhaustiveGuard, LayerType, LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service';
 import { applyStyle } from 'ol-mapbox-style';
 import { fromExtent } from 'ol/geom/Polygon';
-
-type LegendCfg = {
-  iconOfset: number;
-  iconWidth: number;
-  iconHeight: number;
-};
 
 @Component({
   selector: 'app-legend-item',
@@ -44,10 +26,10 @@ export class LegendItemComponent implements OnInit {
   @Input() item!: LegendItem;
   @Input() mapboxStyle!: MapboxStyle;
 
-  itemHeight: number = 40;
-  itemWidth: number = 60;
-  itemLeft: number = 10;
-  itemRight: number = 50;
+  itemHeight = 40;
+  itemWidth = 60;
+  itemLeft = 10;
+  itemRight = 50;
   extent = [0, 0, this.itemWidth, this.itemHeight];
 
   projection = new Projection({
@@ -67,7 +49,7 @@ export class LegendItemComponent implements OnInit {
   });
 
   ngOnInit() {
-    let feature = this.NewFeature(this.item);
+    const feature = this.NewFeature(this.item);
     this.map = new OLMap({
       controls: [],
       interactions: [],
@@ -82,37 +64,30 @@ export class LegendItemComponent implements OnInit {
       }),
     });
 
-    this.cvectorLayer.getSource()!.setTileLoadFunction((tile: Tile, url) => {
+    this.cvectorLayer.getSource()?.setTileLoadFunction((tile: Tile) => {
       const vtile = tile as VectorTile;
-      vtile.setLoader(function (extent, resolution, projection) {
-        let features: Feature<Geometry>[] = [];
+      vtile.setLoader(() => {
+        const features: Feature<Geometry>[] = [];
 
         features.push(feature);
         vtile.setFeatures(features);
       });
     });
 
-    let resolutions: number[] = [];
+    const resolutions: number[] = [];
     resolutions.push(1);
     const sources = this.mapboxStyleService.getLayersids(this.mapboxStyle);
 
-    applyStyle(
-      this.cvectorLayer,
-      this.mapboxStyle,
-      sources,
-      undefined,
-      resolutions
-    )
-      .then((mp: OLMap) => {
+    applyStyle(this.cvectorLayer, this.mapboxStyle, sources, undefined, resolutions)
+      .then(() => {
         console.log(' loading legend style');
       })
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((err: any) => {
         console.error('error loading legend style: ' + ' ' + err);
       });
     this.cvectorLayer.getSource()?.refresh();
-    const mapdiv: HTMLElement =
-      this.elementRef.nativeElement.querySelector("[id='itemmap']");
+    const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='itemmap']");
     this.map.setTarget(mapdiv);
   }
 
@@ -120,9 +95,9 @@ export class LegendItemComponent implements OnInit {
     const half = this.itemHeight / 2;
     switch (item.geoType) {
       case LayerType.Fill: {
-        let ageom = fromExtent(this.extent);
+        const ageom = fromExtent(this.extent);
         ageom.scale(0.05, 0.05);
-        let f = new Feature({
+        const f = new Feature({
           geometry: ageom,
           layer: item.sourceLayer,
         });
@@ -132,7 +107,7 @@ export class LegendItemComponent implements OnInit {
       case LayerType.Circle:
       case LayerType.Raster:
       case LayerType.Symbol: {
-        let f = new Feature({
+        const f = new Feature({
           geometry: new Point(getCenter(this.extent)),
           layer: item.sourceLayer,
         });
@@ -140,7 +115,7 @@ export class LegendItemComponent implements OnInit {
         return f;
       }
       case LayerType.Line: {
-        let f = new Feature({
+        const f = new Feature({
           geometry: new LineString([
             [this.itemLeft, half],
             [this.itemRight, half],

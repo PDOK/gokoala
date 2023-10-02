@@ -23,5 +23,9 @@ export class AppModule {
     const webLegend = createCustomElement(LegendViewComponent, { injector });
     customElements.define('app-legend-view', webLegend);
   }
-  ngDoBootstrap() {}
+
+  // eslint-disable-next-line
+  ngDoBootstrap() {
+    // noop
+  }
 }

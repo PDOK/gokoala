@@ -1,6 +1,5 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import Feature, { FeatureLike } from 'ol/Feature';
 import RenderFeature from 'ol/render/Feature';
 
 type proprow = {
@@ -20,7 +19,7 @@ export class ObjectInfoComponent {
   @Input() feature!: RenderFeature;
 
   public getFeatureProperties(): proprow[] {
-    let proptable: proprow[] = [];
+    const proptable: proprow[] = [];
     if (this.feature) {
       const prop = this.feature.getProperties();
 
@@ -32,7 +31,6 @@ export class ObjectInfoComponent {
       }
       return proptable;
     } else {
-      // console.log('feature undefined')
       return [];
     }
   }
