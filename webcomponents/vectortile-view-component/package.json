@@ -1,6 +1,6 @@
 {
   "name": "vectortile-view-component",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -21,11 +21,11 @@
     "@angular/platform-browser": "^16.2.1",
     "@angular/platform-browser-dynamic": "^16.2.1",
     "@angular/router": "^16.2.1",
-    "ol": "^7.5.1",
-    "ol-mapbox-style": "^11.0.0",
+    "ol": "^8.1.0",
+    "ol-mapbox-style": "^12.0.0",
     "proj4": "^2.9.0",
     "tslib": "^2.6.2",
-    "zone.js": "~0.13.1"
+    "zone.js": "~0.13.3"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^16.2.0",

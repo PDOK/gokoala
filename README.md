@@ -34,13 +34,12 @@ _one_ dataset.
     with your own custom spec.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and
   TileJSON metadata. Act as a proxy in front of a vector tiles engine of your
-  choosing. Currently support for 3 projections (RD, ETRS89 and WebMercator) is included.
+  choosing. Currently 3 projections (RD, ETRS89 and WebMercator) are supported.
 - [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML and JSON representation of supported styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy 
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server of your choosing.
-- [OGC API Processes](https://ogcapi.ogc.org/processes/) act as a passthrough proxy to
-  an OGC API Processes implementation, but enables the use of the OGC API Common
-  features of GoKoala.
+- [OGC API Processes](https://ogcapi.ogc.org/processes/) act as a passthrough proxy to an OGC API Processes 
+  implementation of your choosing, but enables the use of OGC API Common functionality.
 - [OGC API Features](https://ogcapi.ogc.org/features/) _in development_.
 
 ## Build
