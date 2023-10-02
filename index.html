@@ -97,10 +97,7 @@
       });
     </script>
 
-    <h2>3.
-      <a href="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad">
-        BAG WebMercato with grid
-      </a></h2>
+    <h2>3. <a href="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad"> BAG WebMercato with grid </a></h2>
     <app-vectortile-view id="sample3a" class="showbox" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad" center-x="5.3896944" center-y="52.1562499" show-grid="true">
     </app-vectortile-view>
 
@@ -131,10 +128,7 @@
           if (event.target.id !== 'sample4-select') return;
           var projection = event.target.value;
 
-          view.setAttribute(
-            'tile-url',
-            'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection
-          );
+          view.setAttribute('tile-url', 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection);
           const link = document.getElementById('sample4viewlink');
           const url = 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection;
           link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
@@ -157,9 +151,7 @@
         <select id="admin-selector" style="width: 15%">
           <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
           <option value="WebMercatorQuad">WebMercatorQuad</option>
-          <option value="EuropeanETRS89_LAEAQuad">
-            EuropeanETRS89_LAEAQuad
-          </option>
+          <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
         </select>
       </div>
 
@@ -197,9 +189,7 @@
 
           function seturl(projection) {
             const view = document.getElementById('adminunit');
-            const url =
-              'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' +
-              projection;
+            const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' + projection;
             view.setAttribute('tile-url', url);
             const link = document.getElementById('sample1viewlink');
             link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
@@ -217,8 +207,7 @@
     </app-legend-view>
 
     <h2>10 legend sample</h2>
-    <app-legend-view id="legendview2" style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs">
-    </app-legend-view>
+    <app-legend-view id="legendview2" style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs"> </app-legend-view>
 
     <h2>11 legend sample</h2>
     <app-legend-view id="legendview3" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=mapbox"></app-legend-view>
@@ -253,12 +242,8 @@
       <div class="showbox">
         <label for="style">Choose a style:</label>
         <select title="select style" name="styles" id="sample8" oninput="changeStyle()">
-          <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=mapbox">
-            Background
-          </option>
-          <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_standaardvisualisatie?f=mapbox">
-            Standard
-          </option>
+          <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=mapbox">Background</option>
+          <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_standaardvisualisatie?f=mapbox">Standard</option>
         </select>
         <app-vectortile-view id="selectsample" zoom="13" center-x="5.3896944" center-y="52.1562499" show-grid tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=json">
         </app-vectortile-view>
