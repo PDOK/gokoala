@@ -302,7 +302,10 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		engine.SafeWrite(w.Write, []byte(r.URL.String()))
 	}))
-	ts.Listener.Close()
+	err = ts.Listener.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 	ts.Listener = l
 	ts.Start()
 	return rr, ts

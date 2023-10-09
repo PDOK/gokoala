@@ -8,6 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: setup cgo dependencies
+        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev
+
       - name: Set up Go
         uses: actions/setup-go@v3
         with:

@@ -252,21 +252,41 @@ type OgcAPIProcesses struct {
 type Datasource struct {
 	GeoPackage *GeoPackage `yaml:"geopackage" validate:"required_without_all=FakeDB"`
 	FakeDB     bool        `yaml:"fakedb" validate:"required_without_all=GeoPackage"`
-	// Add more datasources here such as PostGIS, Mongo, etc
+	// Add more datasources here such as PostGIS, Mongo, Elastic, etc
 }
 
 type GeoPackage struct {
-	File  GeoPackageFile  `yaml:"file"`
-	Azure GeoPackageAzure `yaml:"azure"`
+	Local *GeoPackageLocal `yaml:"local" validate:"required_without_all=Cloud"`
+	Cloud *GeoPackageCloud `yaml:"cloud" validate:"required_without_all=Local"`
 }
 
-type GeoPackageFile struct {
-	Filepath string  `yaml:"filepath" validate:"filepath"`
-	Fid      *string `yaml:"fid"`
+type GeoPackageLocal struct {
+	File string  `yaml:"file" validate:"filepath"`
+	Fid  *string `yaml:"fid"`
 }
 
-type GeoPackageAzure struct {
-	// TODO: settings for Azure Cloud Backed Sqlite
+// GeoPackageCloud settings to read a GeoPackage as a Cloud-Backed SQLite database
+type GeoPackageCloud struct {
+	// reference to the cloud storage (either azure or google at the moment), e.g:
+	// - azure?emulator=127.0.0.1:10000&sas=0
+	// - google
+	Connection string `yaml:"connection" validate:"required"`
+
+	// username of the storage account, e.g: devstoreaccount1 when using Azurite
+	User string `yaml:"user" validate:"required"`
+
+	// some kind of credential like a password or key to authenticate with the storage backend, e.g:
+	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite
+	Auth string `yaml:"auth" validate:"required"`
+
+	// container/bucket on the storage account
+	Container string `yaml:"container" validate:"required"`
+
+	// filename of the GeoPackage
+	File string `yaml:"file" validate:"required"`
+
+	// local cache of fetched blocks from cloud storage
+	Cache *string `yaml:"cache" validate:"omitempty,dir"`
 }
 
 type SupportedSrs struct {

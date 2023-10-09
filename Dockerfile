@@ -1,4 +1,6 @@
 ARG REGISTRY="docker.io"
+
+####### Node.js build
 FROM ${REGISTRY}/node:lts-alpine3.17 AS build-component
 RUN mkdir -p /usr/src/app
 COPY ./webcomponents/vectortile-view-component /usr/src/app
@@ -6,30 +8,43 @@ WORKDIR /usr/src/app
 RUN npm install
 RUN npm run build
 
-FROM ${REGISTRY}/golang:1.20 AS build-env
-
+####### Go build
+FROM ${REGISTRY}/golang:1.20-bookworm AS build-env
 WORKDIR /go/src/service
 ADD . /go/src/service
 
-# disable crosscompiling
-ENV CGO_ENABLED=0
-# compile linux only
+# enable cgo in order to interface with sqlite
+ENV CGO_ENABLED=1
 ENV GOOS=linux
+
+# install cloud-backed sqlite compile-time dependencies
+RUN set -eux && \
+    apt-get update && \
+    apt-get install -y libcurl4-openssl-dev libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN go mod download all
 
 # build the binary with debug information removed.
 # also run tests, the short flag skips integration tests since we can't run Testcontainers in multistage Docker :-(
-RUN go test -short && go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala
+RUN go test -short && \
+    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala
 
 # delete all go files (and testdata dirs) so only assets/templates/etc remain, since in a later
 # stage we need to copy these remaining files including their subdirectories to the final docker image.
 RUN find . -type f -name "*.go" -delete && find . -type d -name "testdata" -prune -exec rm -rf {} \;
 
-##########################################################
-FROM scratch
+####### Final image
+FROM ${REGISTRY}/debian:bookworm-slim
+
+# install cloud-backed sqlite runtime dependencies
+RUN set -eux && \
+    apt-get update && \
+    apt-get install -y libcurl4 openssl && \
+    rm -rf /var/lib/apt/lists/*
+
 EXPOSE 8080
-# use the WORKDIR to create a /tmp folder, mkdir is not available
+# use the WORKDIR to create a /tmp folder
 WORKDIR /tmp
 WORKDIR /
 ENV PATH=/

@@ -9,6 +9,8 @@ import (
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
+	"github.com/PDOK/gokoala/ogc/features/datasources/fakedb"
+	"github.com/PDOK/gokoala/ogc/features/datasources/geopackage"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
@@ -33,9 +35,9 @@ type Features struct {
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	var datasource datasources.Datasource
 	if e.Config.OgcAPI.Features.Datasource.FakeDB {
-		datasource = datasources.NewFakeDB()
+		datasource = fakedb.NewFakeDB()
 	} else if e.Config.OgcAPI.Features.Datasource.GeoPackage != nil {
-		datasource = datasources.NewGeoPackage()
+		datasource = geopackage.NewGeoPackage(e)
 	}
 	e.RegisterShutdownHook(datasource.Close)
 
