@@ -261,8 +261,11 @@ type GeoPackage struct {
 }
 
 type GeoPackageLocal struct {
-	File string  `yaml:"file" validate:"filepath"`
-	Fid  *string `yaml:"fid"`
+	// location of GeoPackage on disk
+	File string `yaml:"file" validate:"filepath"`
+
+	// feature id column name
+	Fid *string `yaml:"fid"`
 }
 
 // GeoPackageCloud settings to read a GeoPackage as a Cloud-Backed SQLite database
@@ -284,6 +287,9 @@ type GeoPackageCloud struct {
 
 	// filename of the GeoPackage
 	File string `yaml:"file" validate:"required"`
+
+	// feature id column name
+	Fid *string `yaml:"fid"`
 
 	// local cache of fetched blocks from cloud storage
 	Cache *string `yaml:"cache" validate:"omitempty,dir"`
