@@ -40,8 +40,9 @@ type FeatureCollection struct {
 
 // Feature is a GeoJSON Feature with extras such as links
 type Feature struct {
-	// overwrite ID in geojson.Feature so strings are also allowed as id
-	ID    string `json:"id,omitempty"`
+	// we overwrite ID since we want to make it a required attribute. We also expect feature ids to be
+	// auto-incrementing integers (which is the default in geopackages) since we use it for cursor-based pagination.
+	ID    int64  `json:"id"`
 	Links []Link `json:"links,omitempty"`
 
 	geojson.Feature
@@ -67,38 +68,28 @@ type Cursor struct {
 	IsLast  bool
 }
 
-func NewCursor(features []*Feature, column string, limit int, last bool) Cursor {
+func NewCursor(features []*Feature, limit int, last bool) Cursor {
 	if len(features) == 0 {
 		return Cursor{}
 	}
-	max := int64(len(features) - 1)
 
-	start := features[0].Properties[column]
-	end := features[max].Properties[column]
+	start := features[0].ID
+	end := features[len(features)-1].ID
 
-	if start == nil {
-		log.Printf("cursor column '%s' doesn't exists, defaulting to first page\n", column)
-		start = 0
-	}
-	if end == nil {
-		log.Printf("cursor column '%s' doesn't exists, defaulting to first page\n", column)
-		end = 0
-	}
-
-	prev := start.(int64)
+	prev := start
 	if prev != 0 {
-		prev -= max
+		prev -= int64(limit + 1)
 		if prev < 0 {
 			prev = 0
 		}
 	}
-	next := end.(int64)
+	next := end
 
 	return Cursor{
 		Prev: encodeCursor(prev),
 		Next: encodeCursor(next),
 
-		IsFirst: next < int64(limit),
+		IsFirst: next <= int64(limit),
 		IsLast:  last,
 	}
 }
@@ -128,5 +119,9 @@ func (c EncodedCursor) Decode() int64 {
 		log.Printf("decoding cursor value '%v' failed, defaulting to first page", decodedValue)
 		return 0
 	}
-	return int64(decodedValue[0])
+	result := int64(decodedValue[0])
+	if result < 0 {
+		result = 0
+	}
+	return result
 }

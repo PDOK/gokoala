@@ -85,8 +85,8 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 	return links
 }
 
-func (jf *jsonFeatures) createFeatureLinks(collectionID string, featureID string) []domain.Link {
-	featureBaseURL := fmt.Sprintf("%s/collections/%s/items/%s", jf.engine.Config.BaseURL.String(), collectionID, featureID)
+func (jf *jsonFeatures) createFeatureLinks(collectionID string, featureID int64) []domain.Link {
+	featureBaseURL := fmt.Sprintf("%s/collections/%s/items/%d", jf.engine.Config.BaseURL.String(), collectionID, featureID)
 
 	links := make([]domain.Link, 0)
 	links = append(links, domain.Link{

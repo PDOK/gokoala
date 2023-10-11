@@ -3,34 +3,36 @@ package geopackage
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
-	cloudsqlitevfs "github.com/PDOK/go-cloud-sqlite-vfs"
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
+	"github.com/go-spatial/geom/encoding/geojson"
+	"github.com/go-spatial/geom/encoding/gpkg"
 	"github.com/jmoiron/sqlx"
+
+	_ "github.com/mattn/go-sqlite3" // import for side effect (= sqlite3 driver) only
 )
 
 const (
 	sqliteDriverName = "sqlite3"
 	vfsName          = "cloudbackedvfs"
 	queryGpkgContent = `select
-							c.table_name, c.data_type, c.identifier, c.description, c.last_change,
-							c.min_x, c.min_y, c.max_x, c.max_y, c.srs_id, gc.column_name, gc.geometry_type_name
-						from
-							gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
-						where
-							c.data_type = 'features' and 
-							c.min_x is not null`
+			c.table_name, c.data_type, c.identifier, c.description, c.last_change,
+			c.min_x, c.min_y, c.max_x, c.max_y, c.srs_id, gc.column_name, gc.geometry_type_name
+		from
+			gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
+		where
+			c.data_type = 'features' and 
+			c.min_x is not null`
 )
 
-type Genre struct { // FIXME remove me once features are implemented
-	ID   string `db:"GenreId"`
-	Name string `db:"Name"`
+type geoPackageBackend interface {
+	getDB() *sqlx.DB
+	close()
 }
 
-type GpkgContent struct {
+type gpkgFeatureTable struct {
 	TableName          string    `db:"table_name"`
 	DataType           string    `db:"data_type"`
 	Identifier         string    `db:"identifier"`
@@ -38,157 +40,202 @@ type GpkgContent struct {
 	GeometryColumnName string    `db:"column_name"`
 	GeometryType       string    `db:"geometry_type_name"`
 	LastChange         time.Time `db:"last_change"`
-	MinX               float64   `db:"min_x"`  // bbox
-	MinY               float64   `db:"min_y"`  // bbox
-	MaxX               float64   `db:"max_x"`  // bbox
-	MaxY               float64   `db:"max_y"`  // bbox
-	SrsId              int64     `db:"srs_id"` //nolint:revive
-
-	Columns *[]GpkgColumn
-}
-
-type GpkgColumn struct {
-	Cid          int    `db:"cid"`
-	Name         string `db:"name"`
-	DataType     string `db:"type"`
-	NotNull      int    `db:"notnull"`
-	DefaultValue int    `db:"dflt_value"`
-	PrimaryKey   int    `db:"pk"`
+	MinX               float64   `db:"min_x"` // bbox
+	MinY               float64   `db:"min_y"` // bbox
+	MaxX               float64   `db:"max_x"` // bbox
+	MaxY               float64   `db:"max_y"` // bbox
+	SRS                int64     `db:"srs_id"`
 }
 
 type GeoPackage struct {
-	db              *sqlx.DB
-	cloudVFS        *cloudsqlitevfs.VFS
-	gpkgContentByID map[string]*GpkgContent
+	backend geoPackageBackend
+
+	fidColumn        string
+	featureTableByID map[string]*gpkgFeatureTable
 }
 
 func NewGeoPackage(e *engine.Engine) *GeoPackage {
 	gpkgConfig := e.Config.OgcAPI.Features.Datasource.GeoPackage
 
-	var gpkg *GeoPackage
-	if gpkgConfig.Local != nil {
-		gpkg = newLocalGeoPackage(gpkgConfig.Local)
-	} else if gpkgConfig.Cloud != nil {
-		gpkg = newCloudBackedGeoPackage(gpkgConfig.Cloud)
-	} else {
+	geopackage := &GeoPackage{}
+	switch {
+	case gpkgConfig.Local != nil:
+		geopackage.backend = newLocalGeoPackage(gpkgConfig.Local)
+		geopackage.fidColumn = gpkgConfig.Local.Fid
+	case gpkgConfig.Cloud != nil:
+		geopackage.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
+		geopackage.fidColumn = gpkgConfig.Cloud.Fid
+	default:
 		log.Fatal("unknown geopackage config encountered")
 	}
 
-	content, err := readGpkgContents(gpkg.db)
+	featureTables, err := readGpkgContents(geopackage.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
-	gpkg.gpkgContentByID = content
-	return gpkg
-}
+	geopackage.featureTableByID = featureTables
 
-func newLocalGeoPackage(gpkg *engine.GeoPackageLocal) *GeoPackage {
-	if _, err := os.Stat(gpkg.File); os.IsNotExist(err) {
-		log.Fatalf("failed to locate GeoPackage: %s", gpkg.File)
-	}
-
-	db, err := sqlx.Open(sqliteDriverName, gpkg.File)
-	if err != nil {
-		log.Fatalf("failed to open GeoPackage: %v", err)
-	}
-	log.Printf("connected to local GeoPackage: %s", gpkg.File)
-
-	return &GeoPackage{db, nil, nil}
-}
-
-func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) *GeoPackage {
-	cacheDir := os.TempDir()
-	if gpkg.Cache != nil {
-		cacheDir = *gpkg.Cache
-	}
-
-	log.Printf("connecting to Cloud-Backed GeoPackage: %s\n", gpkg.Connection)
-	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth, gpkg.Container, cacheDir)
-	if err != nil {
-		log.Fatalf("failed to connect with Cloud-Backed GeoPackage: %v", err)
-	}
-	log.Printf("connected to Cloud-Backed GeoPackage: %s\n", gpkg.Connection)
-
-	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("/%s/%s?vfs=%s", gpkg.Container, gpkg.File, vfsName))
-	if err != nil {
-		log.Fatalf("failed to open Cloud-Backed GeoPackage: %v", err)
-	}
-
-	return &GeoPackage{db, &vfs, nil}
+	return geopackage
 }
 
 func (g *GeoPackage) Close() {
-	err := g.db.Close()
-	if err != nil {
-		log.Printf("failed to close GeoPackage: %v", err)
-	}
-	if g.cloudVFS != nil {
-		err = g.cloudVFS.Close()
-		if err != nil {
-			log.Printf("failed to close Cloud-Backed GeoPackage: %v", err)
-		}
-	}
+	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(collection string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor) {
-	result := domain.FeatureCollection{}
-
-	gpkgContent, ok := g.gpkgContentByID[collection]
+func (g *GeoPackage) GetFeatures(collection string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
+	gpkgContent, ok := g.featureTableByID[collection]
 	if !ok {
-		log.Printf("can't query collection '%s' since it doesn't exist in geopackage, "+
-			"available in geopackage: %v\n", collection, engine.Keys(g.gpkgContentByID))
-		return nil, domain.Cursor{}
+		return nil, domain.Cursor{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByID))
 	}
 
-	log.Print(gpkgContent)
-	query := ""
-
-	rows, err := g.db.Queryx(query)
+	query := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?",
+		gpkgContent.TableName, g.fidColumn, g.fidColumn)
+	rows, err := g.backend.getDB().Queryx(query, cursor, limit)
 	if err != nil {
-		log.Printf("failed to query features using query: %v\n, error: %v", query, err)
+		return nil, domain.Cursor{}, fmt.Errorf("query for feature collection %s failed: %w", collection, err)
 	}
 	defer rows.Close()
 
-	return &result, domain.Cursor{}
+	result := domain.FeatureCollection{}
+	result.Features, err = g.mapRowsToFeatures(rows, g.fidColumn, gpkgContent.GeometryColumnName)
+	if err != nil {
+		return nil, domain.Cursor{}, err
+	}
+
+	result.NumberReturned = len(result.Features)
+	last := result.NumberReturned < limit // we could make this more reliable (by querying one record more), but sufficient for now
+	return &result, domain.NewCursor(result.Features, limit, last), nil
 }
 
-func (g *GeoPackage) GetFeature(collection string, featureID string) *domain.Feature {
-	// TODO: not implemented yet
-	log.Printf("TODO: return feature %s from gpkg in collection %s", featureID, collection)
-	return nil
+func (g *GeoPackage) GetFeature(collection string, featureID int64) (*domain.Feature, error) {
+	gpkgContent, ok := g.featureTableByID[collection]
+	if !ok {
+		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByID))
+	}
+
+	query := fmt.Sprintf("select * from %s f where f.%s = ? limit 1", gpkgContent.TableName, g.fidColumn)
+	rows, err := g.backend.getDB().Queryx(query, featureID)
+	if err != nil {
+		return nil, fmt.Errorf("query for feature %d in collection %s failed: %w", featureID, collection, err)
+	}
+	defer rows.Close()
+
+	features, err := g.mapRowsToFeatures(rows, g.fidColumn, gpkgContent.GeometryColumnName)
+	if err != nil {
+		return nil, err
+	}
+	if len(features) != 1 {
+		return nil, nil //nolint:nilnil
+	}
+	return features[0], nil
 }
 
-func readGpkgContents(db *sqlx.DB) (map[string]*GpkgContent, error) {
+func readGpkgContents(db *sqlx.DB) (map[string]*gpkgFeatureTable, error) {
 	rows, err := db.Queryx(queryGpkgContent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", queryGpkgContent, err)
 	}
 	defer rows.Close()
 
-	result := make(map[string]*GpkgContent, 10)
+	result := make(map[string]*gpkgFeatureTable, 10)
 	for rows.Next() {
-		// read a gpkg_contents record
-		row := GpkgContent{}
+		row := gpkgFeatureTable{}
 		if err = rows.StructScan(&row); err != nil {
 			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 		}
-
-		// read metadata of table mentioned in gpkg_contents record
-		var columns []GpkgColumn
-		if err = db.Select(&columns, `pragma table_info("?");`, row.TableName); err != nil {
-			return nil, fmt.Errorf("failed to read columns of table %s, error: %w", row.TableName, err)
+		if row.TableName == "" {
+			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
-		row.Columns = &columns
-
 		result[row.Identifier] = &row
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Panic(err)
+		return nil, err
 	}
 	if len(result) == 0 {
-		log.Panic("no records found in gpkg_contents, can't serve features")
+		return nil, fmt.Errorf("no records found in gpkg_contents, can't serve features")
 	}
 
 	return result, nil
+}
+
+func (g *GeoPackage) mapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string) ([]*domain.Feature, error) {
+	result := make([]*domain.Feature, 0)
+	cols, err := rows.Columns()
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		vals := make([]interface{}, len(cols))
+		valPtrs := make([]interface{}, len(cols))
+		for i := 0; i < len(cols); i++ {
+			valPtrs[i] = &vals[i]
+		}
+		if err = rows.Scan(valPtrs...); err != nil {
+			return result, err
+		}
+
+		feature := &domain.Feature{Feature: geojson.Feature{Properties: make(map[string]interface{})}}
+
+		if err = g.mapColumnsToFeature(feature, cols, vals, fidColumn, geomColumn); err != nil {
+			return result, err
+		}
+		result = append(result, feature)
+	}
+	return result, nil
+}
+
+//nolint:cyclop
+func (g *GeoPackage) mapColumnsToFeature(feature *domain.Feature, cols []string, vals []interface{}, fidColumn string, geomColumn string) error {
+	for i, colName := range cols {
+		columnValue := vals[i]
+		if columnValue == nil {
+			continue
+		}
+
+		switch colName {
+		case fidColumn:
+			feature.ID = columnValue.(int64)
+
+		case geomColumn:
+			rawGeom, ok := columnValue.([]byte)
+			if !ok {
+				return fmt.Errorf("failed to read geometry from %s column in geopackage", geomColumn)
+			}
+			geom, err := gpkg.DecodeGeometry(rawGeom)
+			if err != nil {
+				return fmt.Errorf("failed to decode geometry from geopackage: %w", err)
+			}
+			feature.Geometry = geojson.Geometry{Geometry: geom.Geometry}
+
+		case "minx", "miny", "maxx", "maxy", "min_zoom", "max_zoom":
+			// Skip these columns used for bounding box and zoom filtering
+			continue
+
+		default:
+			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a tag
+			switch v := columnValue.(type) {
+			case []uint8:
+				asBytes := make([]byte, len(v))
+				copy(asBytes, v)
+				feature.Properties[colName] = string(asBytes)
+			case int64:
+				feature.Properties[colName] = v
+			case float64:
+				feature.Properties[colName] = v
+			case time.Time:
+				feature.Properties[colName] = v
+			case string:
+				feature.Properties[colName] = v
+			case bool:
+				feature.Properties[colName] = v
+			default:
+				return fmt.Errorf("unexpected type for sqlite column data: %v: %T", cols[i], v)
+			}
+		}
+	}
+	return nil
 }

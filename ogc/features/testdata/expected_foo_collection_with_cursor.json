@@ -22,48 +22,46 @@
       "rel": "prev",
       "title": "Previous page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=VCHYvtZJ&limit=2"
+      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=rV7TnxOd&limit=2"
     }
   ],
   "numberReturned": 2,
   "type": "FeatureCollection",
   "features": [
     {
-      "id": "99788834",
+      "id": 9,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -55.129004,
-          -42.771257
+          -94.92211,
+          69.74055
         ]
       },
       "properties": {
-        "city": "Irvine",
-        "cursor": 9,
-        "floorsize": 290,
-        "purpose": "Performance",
-        "streetname": "36820 Portsberg",
-        "year": 1912
+        "city": "Irving",
+        "floorsize": 46,
+        "purpose": "Motivation",
+        "streetname": "886 Shoremouth",
+        "year": 1933
       }
     },
     {
-      "id": "106726152",
+      "id": 10,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -1.915044,
-          59.623386
+          174.767608,
+          26.853914
         ]
       },
       "properties": {
-        "city": "Virginia Beach",
-        "cursor": 10,
-        "floorsize": 286,
-        "purpose": "Discovery",
-        "streetname": "4676 Mountville",
-        "year": 1961
+        "city": "Orlando",
+        "floorsize": 129,
+        "purpose": "Growth",
+        "streetname": "10094 Port Freewayfort",
+        "year": 1947
       }
     }
   ]

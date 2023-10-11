@@ -23,7 +23,7 @@
   "type": "FeatureCollection",
   "features": [
     {
-      "id": "17778051",
+      "id": 0,
       "type": "Feature",
       "geometry": {
         "type": "Point",
@@ -34,7 +34,6 @@
       },
       "properties": {
         "city": "Philadelphia",
-        "cursor": 0,
         "floorsize": 16,
         "purpose": "Luxury",
         "streetname": "79185 Lake Crossingtown",
@@ -42,174 +41,165 @@
       }
     },
     {
-      "id": "19058835",
+      "id": 1,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -49.750028,
-          51.948884
+          -79.737257,
+          7.948003
         ]
       },
       "properties": {
-        "city": "El Paso",
-        "cursor": 1,
-        "floorsize": 295,
-        "purpose": "Teamwork",
-        "streetname": "967 Mallshire",
-        "year": 2021
+        "city": "Atlanta",
+        "floorsize": 208,
+        "purpose": "Revolution",
+        "streetname": "7805 North Curvefurt",
+        "year": 1988
       }
     },
     {
-      "id": "21933128",
+      "id": 2,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          92.096462,
-          9.317708
+          142.917104,
+          -12.895726
         ]
       },
       "properties": {
-        "city": "Fort Worth",
-        "cursor": 2,
-        "floorsize": 204,
-        "purpose": "Expression",
-        "streetname": "56681 East Riverborough",
-        "year": 1941
+        "city": "Hialeah",
+        "floorsize": 118,
+        "purpose": "Honesty",
+        "streetname": "3719 North Spurshire",
+        "year": 1979
       }
     },
     {
-      "id": "34777146",
+      "id": 3,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          37.432116,
-          -0.38374
+          61.047107,
+          -74.606309
         ]
       },
       "properties": {
-        "city": "Winston-Salem",
-        "cursor": 3,
-        "floorsize": 197,
-        "purpose": "Solutions",
-        "streetname": "70323 Unionsberg",
-        "year": 1949
+        "city": "Lubbock",
+        "floorsize": 277,
+        "purpose": "Honesty",
+        "streetname": "28747 Centerside",
+        "year": 1991
       }
     },
     {
-      "id": "49061601",
+      "id": 4,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          46.020457,
-          -48.270593
+          -178.976506,
+          -89.657299
         ]
       },
       "properties": {
-        "city": "San Bernardino",
-        "cursor": 4,
-        "floorsize": 17,
-        "purpose": "Discovery",
-        "streetname": "96036 North Islandville",
-        "year": 1935
+        "city": "Corpus Christi",
+        "floorsize": 65,
+        "purpose": "Freedom",
+        "streetname": "32358 Port Hillston",
+        "year": 1925
       }
     },
     {
-      "id": "54275190",
+      "id": 5,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -63.860155,
-          -65.195269
+          -125.652944,
+          45.569029
         ]
       },
       "properties": {
-        "city": "Detroit",
-        "cursor": 5,
-        "floorsize": 261,
-        "purpose": "Growth",
-        "streetname": "5310 Fordside",
-        "year": 1913
+        "city": "Pittsburgh",
+        "floorsize": 96,
+        "purpose": "Endurance",
+        "streetname": "62196 Trackshire",
+        "year": 2023
       }
     },
     {
-      "id": "60927281",
+      "id": 6,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -146.837656,
-          50.535735
+          86.337281,
+          -55.794103
         ]
       },
       "properties": {
-        "city": "Los Angeles",
-        "cursor": 6,
-        "floorsize": 223,
-        "purpose": "Success",
-        "streetname": "9030 New Cornersshire",
-        "year": 1985
+        "city": "Tucson",
+        "floorsize": 226,
+        "purpose": "Knowledge",
+        "streetname": "2690 North Coveburgh",
+        "year": 2012
       }
     },
     {
-      "id": "70944011",
+      "id": 7,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          45.301185,
-          40.963906
+          -47.119785,
+          -72.354443
         ]
       },
       "properties": {
-        "city": "Norfolk",
-        "cursor": 7,
-        "floorsize": 133,
+        "city": "Columbus",
+        "floorsize": 245,
+        "purpose": "Pride",
+        "streetname": "28386 Pinestown",
+        "year": 1940
+      }
+    },
+    {
+      "id": 8,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -103.478059,
+          85.298737
+        ]
+      },
+      "properties": {
+        "city": "Louisville/Jefferson",
+        "floorsize": 244,
+        "purpose": "Taste",
+        "streetname": "1529 West Stationhaven",
+        "year": 1931
+      }
+    },
+    {
+      "id": 9,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -94.92211,
+          69.74055
+        ]
+      },
+      "properties": {
+        "city": "Irving",
+        "floorsize": 46,
         "purpose": "Motivation",
-        "streetname": "86977 Port Hillchester",
-        "year": 1960
-      }
-    },
-    {
-      "id": "80682454",
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -29.762697,
-          55.056918
-        ]
-      },
-      "properties": {
-        "city": "Laredo",
-        "cursor": 8,
-        "floorsize": 97,
-        "purpose": "Power",
-        "streetname": "59731 East Pinemouth",
-        "year": 1967
-      }
-    },
-    {
-      "id": "99788834",
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -55.129004,
-          -42.771257
-        ]
-      },
-      "properties": {
-        "city": "Irvine",
-        "cursor": 9,
-        "floorsize": 290,
-        "purpose": "Performance",
-        "streetname": "36820 Portsberg",
-        "year": 1912
+        "streetname": "886 Shoremouth",
+        "year": 1933
       }
     }
   ]

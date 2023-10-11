@@ -58,26 +58,10 @@ ogcApi:
           user: devstoreaccount1
           auth: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
           container: example
-          file: chinook.db
+          file: addresses.gpkg
     collections:
-      - id: wegdelen
+      - id: addresses
         metadata:
           # inherit common metadata (to tidy example)
           <<: *exampleMetadata
-          title: Wegdelen
-      - id: panden
-        metadata:
-          <<: *exampleMetadata
-          title: Panden
-      - id: tunneldelen
-        metadata:
-          <<: *exampleMetadata
-          title: Tunneldelen
-      - id: waterdelen
-        metadata:
-          <<: *exampleMetadata
-          title: Waterdelen
-      - id: spoordelen
-        metadata:
-          <<: *exampleMetadata
-          title: Spoordelen
+          title: Adressen

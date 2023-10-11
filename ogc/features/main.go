@@ -3,6 +3,7 @@ package features
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -68,13 +69,18 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		if _, ok := collectionsMetadata[collectionID]; !ok {
 			http.NotFound(w, r)
 			return
 		}
 
-		fc, cursor := f.datasource.GetFeatures(collectionID, encodedCursor.Decode(), limit)
+		fc, cursor, err := f.datasource.GetFeatures(collectionID, encodedCursor.Decode(), limit)
+		if err != nil {
+			// log error, but sent generic message to client to prevent possible information leakage from datasource
+			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
+			log.Printf("%s, error: %v\n", msg, err)
+			http.Error(w, msg, http.StatusInternalServerError)
+		}
 		if fc == nil {
 			http.NotFound(w, r)
 			return
@@ -98,13 +104,24 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
-		featureID := chi.URLParam(r, "featureId")
-		if err := f.validateNoUnknownFeatureQueryParams(r); err != nil {
+		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
+		if err != nil {
+			http.Error(w, "feature ID must be a number", http.StatusBadRequest)
+			return
+		}
+		if err = f.validateNoUnknownFeatureQueryParams(r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		feat := f.datasource.GetFeature(collectionID, featureID)
+		feat, err := f.datasource.GetFeature(collectionID, int64(featureID))
+		if err != nil {
+			// log error, but sent generic message to client to prevent possible information leakage from datasource
+			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)
+			log.Printf("%s, error: %v\n", msg, err)
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
 		if feat == nil {
 			http.NotFound(w, r)
 			return

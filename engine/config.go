@@ -265,7 +265,7 @@ type GeoPackageLocal struct {
 	File string `yaml:"file" validate:"filepath"`
 
 	// feature id column name
-	Fid *string `yaml:"fid"`
+	Fid string `yaml:"fid" validate:"required"`
 }
 
 // GeoPackageCloud settings to read a GeoPackage as a Cloud-Backed SQLite database
@@ -289,7 +289,7 @@ type GeoPackageCloud struct {
 	File string `yaml:"file" validate:"required"`
 
 	// feature id column name
-	Fid *string `yaml:"fid"`
+	Fid string `yaml:"fid" validate:"required"`
 
 	// local cache of fetched blocks from cloud storage
 	Cache *string `yaml:"cache" validate:"omitempty,dir"`

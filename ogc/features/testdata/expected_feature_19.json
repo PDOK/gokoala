@@ -1,17 +1,17 @@
 {
-  "id": "19058835",
+  "id": 19,
   "links": [
     {
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items/19058835?f=json"
+      "href": "http://localhost:8080/collections/foo/items/19?f=json"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/foo/items/19058835?f=html"
+      "href": "http://localhost:8080/collections/foo/items/19?f=html"
     },
     {
       "rel": "collection",
@@ -24,16 +24,15 @@
   "geometry": {
     "type": "Point",
     "coordinates": [
-      -49.750028,
-      51.948884
+      -74.417633,
+      62.106302
     ]
   },
   "properties": {
-    "city": "El Paso",
-    "cursor": 1,
-    "floorsize": 295,
-    "purpose": "Teamwork",
-    "streetname": "967 Mallshire",
-    "year": 2021
+    "city": "Jersey",
+    "floorsize": 35,
+    "purpose": "Engagement",
+    "streetname": "42340 North Landingside",
+    "year": 2003
   }
 }

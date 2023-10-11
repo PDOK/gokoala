@@ -1,7 +1,6 @@
 package fakedb
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/PDOK/gokoala/ogc/features/domain"
@@ -10,7 +9,6 @@ import (
 )
 
 const nrOfFakeFeatures = 10000
-const cursorColumnName = "cursor"
 
 // FakeDB fake/mock datasource used for prototyping/testing/demos/etc.
 type FakeDB struct {
@@ -27,7 +25,7 @@ func (FakeDB) Close() {
 	// noop
 }
 
-func (fdb FakeDB) GetFeatures(_ string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor) {
+func (fdb FakeDB) GetFeatures(_ string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
 	low := cursor
 	high := low + int64(limit)
 
@@ -44,16 +42,17 @@ func (fdb FakeDB) GetFeatures(_ string, cursor int64, limit int) (*domain.Featur
 			NumberReturned: len(page),
 			Features:       page,
 		},
-		domain.NewCursor(page, cursorColumnName, limit, last)
+		domain.NewCursor(page, limit, last),
+		nil
 }
 
-func (fdb FakeDB) GetFeature(_ string, featureID string) *domain.Feature {
+func (fdb FakeDB) GetFeature(_ string, featureID int64) (*domain.Feature, error) {
 	for _, feat := range fdb.featureCollection.Features {
 		if feat.ID == featureID {
-			return feat
+			return feat, nil
 		}
 	}
-	return nil
+	return nil, nil //nolint:nilnil
 }
 
 func generateFakeFeatureCollection() *domain.FeatureCollection {
@@ -66,13 +65,10 @@ func generateFakeFeatureCollection() *domain.FeatureCollection {
 			"year":       gofakeit.Year(),
 			"floorsize":  gofakeit.Number(10, 300),
 			"purpose":    gofakeit.Blurb(),
-
-			// we use an explicit cursor column in our fake data to keep things simple
-			cursorColumnName: int64(i),
 		}
 
 		feature := domain.Feature{}
-		feature.ID = gofakeit.Numerify(fmt.Sprintf("%d#######", i))
+		feature.ID = int64(i)
 		feature.Geometry.Geometry = geom.Point{address.Longitude, address.Latitude}
 		feature.Properties = props
 
@@ -81,7 +77,7 @@ func generateFakeFeatureCollection() *domain.FeatureCollection {
 
 	// the collection must be ordered by the cursor column
 	sort.Slice(feats, func(i, j int) bool {
-		return feats[i].Properties[cursorColumnName].(int64) < feats[j].Properties[cursorColumnName].(int64)
+		return feats[i].ID < feats[j].ID
 	})
 
 	fc := domain.FeatureCollection{}
