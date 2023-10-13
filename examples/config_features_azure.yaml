@@ -1,16 +1,4 @@
 ---
-collectionMetadata: &exampleMetadata
-  description: >-
-    This is a description about lorum ipsum
-  keywords:
-    - Keyword1
-    - Keyword2
-  thumbnail: old.png
-  lastUpdated: "2030-01-02T12:00:00Z"
-  extent:
-    srs: EPSG:3857
-    bbox: ["-13512504.4191", "-19500889.3517", "31493617.8353", "19869683.6812"]
-
 version: 1.0.0
 title: Basisregistratie Grootschalige Topografie (BGT)
 # shortened title, used in breadcrumb path
@@ -54,14 +42,22 @@ ogcApi:
       geopackage:
         cloud:
           # connect to Azurite docker container (docker run -p 10000:10000 mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0)
-          connection: azure?emulator=172.17.0.1:10000
+          connection: azure?emulator=azurite:10000
           user: devstoreaccount1
           auth: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
           container: example
           file: addresses.gpkg
+          fid: fid
     collections:
       - id: addresses
         metadata:
-          # inherit common metadata (to tidy example)
-          <<: *exampleMetadata
           title: Adressen
+          description: These are example addresses
+          keywords:
+            - Building
+            - Address
+          thumbnail: old.png
+          lastUpdated: "2030-01-02T12:00:00Z"
+          extent:
+            srs: EPSG:3857
+            bbox: [ "-13512504.4191", "-19500889.3517", "31493617.8353", "19869683.6812" ]
