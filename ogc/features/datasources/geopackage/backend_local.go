@@ -2,7 +2,6 @@ package geopackage
 
 import (
 	"log"
-	"os"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/jmoiron/sqlx"
@@ -14,10 +13,6 @@ type localGeoPackage struct {
 }
 
 func newLocalGeoPackage(gpkg *engine.GeoPackageLocal) geoPackageBackend {
-	if _, err := os.Stat(gpkg.File); os.IsNotExist(err) {
-		log.Fatalf("failed to locate GeoPackage: %s", gpkg.File)
-	}
-
 	db, err := sqlx.Open(sqliteDriverName, gpkg.File)
 	if err != nil {
 		log.Fatalf("failed to open GeoPackage: %v", err)

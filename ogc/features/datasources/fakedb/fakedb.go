@@ -1,6 +1,7 @@
 package fakedb
 
 import (
+	"context"
 	"sort"
 
 	"github.com/PDOK/gokoala/ogc/features/domain"
@@ -25,7 +26,7 @@ func (FakeDB) Close() {
 	// noop
 }
 
-func (fdb FakeDB) GetFeatures(_ string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
+func (fdb FakeDB) GetFeatures(_ context.Context, _ string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
 	low := cursor
 	high := low + int64(limit)
 
@@ -46,7 +47,7 @@ func (fdb FakeDB) GetFeatures(_ string, cursor int64, limit int) (*domain.Featur
 		nil
 }
 
-func (fdb FakeDB) GetFeature(_ string, featureID int64) (*domain.Feature, error) {
+func (fdb FakeDB) GetFeature(_ context.Context, _ string, featureID int64) (*domain.Feature, error) {
 	for _, feat := range fdb.featureCollection.Features {
 		if feat.ID == featureID {
 			return feat, nil

@@ -12,6 +12,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+const vfsName = "cloudbackedvfs"
+
 // Cloud-Backed SQLite (CBS) GeoPackage in Azure or Google object storage
 type cloudGeoPackage struct {
 	db       *sqlx.DB

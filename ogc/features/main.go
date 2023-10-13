@@ -74,7 +74,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		fc, cursor, err := f.datasource.GetFeatures(collectionID, encodedCursor.Decode(), limit)
+		fc, cursor, err := f.datasource.GetFeatures(r.Context(), collectionID, encodedCursor.Decode(), limit)
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
@@ -114,7 +114,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 
-		feat, err := f.datasource.GetFeature(collectionID, int64(featureID))
+		feat, err := f.datasource.GetFeature(r.Context(), collectionID, int64(featureID))
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)

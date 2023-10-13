@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/text/language"
@@ -14,7 +15,8 @@ import (
 )
 
 const (
-	cookieMaxAge = 60 * 60 * 24
+	cookieMaxAge        = 60 * 60 * 24
+	defaultQueryTimeout = 10 * time.Second
 )
 
 func readConfigFile(configFile string) *Config {
@@ -260,16 +262,34 @@ type GeoPackage struct {
 	Cloud *GeoPackageCloud `yaml:"cloud" validate:"required_without_all=Local"`
 }
 
-type GeoPackageLocal struct {
-	// location of GeoPackage on disk
-	File string `yaml:"file" validate:"filepath"`
-
+// GeoPackageCommon shared config between local and cloud GeoPackage
+type GeoPackageCommon struct {
 	// feature id column name
 	Fid string `yaml:"fid" validate:"required"`
+
+	// optional timeout after which queries are canceled (default is 10s, see constant)
+	QueryTimeout *time.Duration `yaml:"queryTimeout"`
+}
+
+func (gc *GeoPackageCommon) GetQueryTimeout() time.Duration {
+	if gc.QueryTimeout != nil {
+		return *gc.QueryTimeout
+	}
+	return defaultQueryTimeout
+}
+
+// GeoPackageLocal settings to read a GeoPackage from local disk
+type GeoPackageLocal struct {
+	GeoPackageCommon `yaml:",inline"`
+
+	// location of GeoPackage on disk
+	File string `yaml:"file" validate:"file"`
 }
 
 // GeoPackageCloud settings to read a GeoPackage as a Cloud-Backed SQLite database
 type GeoPackageCloud struct {
+	GeoPackageCommon `yaml:",inline"`
+
 	// reference to the cloud storage (either azure or google at the moment), e.g:
 	// - azure?emulator=127.0.0.1:10000&sas=0
 	// - google
@@ -287,9 +307,6 @@ type GeoPackageCloud struct {
 
 	// filename of the GeoPackage
 	File string `yaml:"file" validate:"required"`
-
-	// feature id column name
-	Fid string `yaml:"fid" validate:"required"`
 
 	// local cache of fetched blocks from cloud storage
 	Cache *string `yaml:"cache" validate:"omitempty,dir"`

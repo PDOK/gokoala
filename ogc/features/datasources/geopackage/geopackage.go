@@ -1,6 +1,7 @@
 package geopackage
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -16,7 +17,6 @@ import (
 
 const (
 	sqliteDriverName = "sqlite3"
-	vfsName          = "cloudbackedvfs"
 	queryGpkgContent = `select
 			c.table_name, c.data_type, c.identifier, c.description, c.last_change,
 			c.min_x, c.min_y, c.max_x, c.max_y, c.srs_id, gc.column_name, gc.geometry_type_name
@@ -52,63 +52,71 @@ type GeoPackage struct {
 
 	fidColumn        string
 	featureTableByID map[string]*gpkgFeatureTable
+	queryTimeout     time.Duration
 }
 
 func NewGeoPackage(e *engine.Engine) *GeoPackage {
 	gpkgConfig := e.Config.OgcAPI.Features.Datasource.GeoPackage
 
-	geopackage := &GeoPackage{}
+	g := &GeoPackage{}
 	switch {
 	case gpkgConfig.Local != nil:
-		geopackage.backend = newLocalGeoPackage(gpkgConfig.Local)
-		geopackage.fidColumn = gpkgConfig.Local.Fid
+		g.backend = newLocalGeoPackage(gpkgConfig.Local)
+		g.fidColumn = gpkgConfig.Local.Fid
+		g.queryTimeout = gpkgConfig.Local.GetQueryTimeout()
 	case gpkgConfig.Cloud != nil:
-		geopackage.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
-		geopackage.fidColumn = gpkgConfig.Cloud.Fid
+		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
+		g.fidColumn = gpkgConfig.Cloud.Fid
+		g.queryTimeout = gpkgConfig.Cloud.GetQueryTimeout()
 	default:
 		log.Fatal("unknown geopackage config encountered")
 	}
 
-	featureTables, err := readGpkgContents(geopackage.backend.getDB())
+	featureTables, err := readGpkgContents(g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
-	geopackage.featureTableByID = featureTables
+	g.featureTableByID = featureTables
 
-	return geopackage
+	return g
 }
 
 func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(collection string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
-	gpkgContent, ok := g.featureTableByID[collection]
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
+	featureTable, ok := g.featureTableByID[collection]
 	if !ok {
 		return nil, domain.Cursor{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
 			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByID))
 	}
 
 	query := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?",
-		gpkgContent.TableName, g.fidColumn, g.fidColumn)
-	rows, err := g.backend.getDB().Queryx(query, cursor, limit)
+		featureTable.TableName, g.fidColumn, g.fidColumn)
+
+	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
+	defer cancel()
+
+	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, cursor, limit)
 	if err != nil {
-		return nil, domain.Cursor{}, fmt.Errorf("query for feature collection %s failed: %w", collection, err)
+		return nil, domain.Cursor{}, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
 
 	result := domain.FeatureCollection{}
-	result.Features, err = g.mapRowsToFeatures(rows, g.fidColumn, gpkgContent.GeometryColumnName)
+	result.Features, err = g.mapRowsToFeatures(rows, g.fidColumn, featureTable.GeometryColumnName)
 	if err != nil {
 		return nil, domain.Cursor{}, err
 	}
 
 	result.NumberReturned = len(result.Features)
 	last := result.NumberReturned < limit // we could make this more reliable (by querying one record more), but sufficient for now
+
 	return &result, domain.NewCursor(result.Features, limit, last), nil
 }
 
-func (g *GeoPackage) GetFeature(collection string, featureID int64) (*domain.Feature, error) {
+func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
 	gpkgContent, ok := g.featureTableByID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
@@ -116,9 +124,13 @@ func (g *GeoPackage) GetFeature(collection string, featureID int64) (*domain.Fea
 	}
 
 	query := fmt.Sprintf("select * from %s f where f.%s = ? limit 1", gpkgContent.TableName, g.fidColumn)
-	rows, err := g.backend.getDB().Queryx(query, featureID)
+
+	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
+	defer cancel()
+
+	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, featureID)
 	if err != nil {
-		return nil, fmt.Errorf("query for feature %d in collection %s failed: %w", featureID, collection, err)
+		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
 
