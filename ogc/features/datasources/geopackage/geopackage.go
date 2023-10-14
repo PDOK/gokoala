@@ -175,24 +175,19 @@ func readGpkgContents(db *sqlx.DB) (map[string]*gpkgFeatureTable, error) {
 
 func (g *GeoPackage) mapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string) ([]*domain.Feature, error) {
 	result := make([]*domain.Feature, 0)
-	cols, err := rows.Columns()
+	columns, err := rows.Columns()
 	if err != nil {
 		return result, err
 	}
 
 	for rows.Next() {
-		vals := make([]interface{}, len(cols))
-		valPtrs := make([]interface{}, len(cols))
-		for i := 0; i < len(cols); i++ {
-			valPtrs[i] = &vals[i]
-		}
-		if err = rows.Scan(valPtrs...); err != nil {
+		var values []interface{}
+		if values, err = rows.SliceScan(); err != nil {
 			return result, err
 		}
-
 		feature := &domain.Feature{Feature: geojson.Feature{Properties: make(map[string]interface{})}}
 
-		if err = g.mapColumnsToFeature(feature, cols, vals, fidColumn, geomColumn); err != nil {
+		if err = g.mapColumnsToFeature(feature, columns, values, fidColumn, geomColumn); err != nil {
 			return result, err
 		}
 		result = append(result, feature)
@@ -201,14 +196,14 @@ func (g *GeoPackage) mapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomCo
 }
 
 //nolint:cyclop
-func (g *GeoPackage) mapColumnsToFeature(feature *domain.Feature, cols []string, vals []interface{}, fidColumn string, geomColumn string) error {
-	for i, colName := range cols {
-		columnValue := vals[i]
+func (g *GeoPackage) mapColumnsToFeature(feature *domain.Feature, columns []string, values []interface{}, fidColumn string, geomColumn string) error {
+	for i, columnName := range columns {
+		columnValue := values[i]
 		if columnValue == nil {
 			continue
 		}
 
-		switch colName {
+		switch columnName {
 		case fidColumn:
 			feature.ID = columnValue.(int64)
 
@@ -233,19 +228,19 @@ func (g *GeoPackage) mapColumnsToFeature(feature *domain.Feature, cols []string,
 			case []uint8:
 				asBytes := make([]byte, len(v))
 				copy(asBytes, v)
-				feature.Properties[colName] = string(asBytes)
+				feature.Properties[columnName] = string(asBytes)
 			case int64:
-				feature.Properties[colName] = v
+				feature.Properties[columnName] = v
 			case float64:
-				feature.Properties[colName] = v
+				feature.Properties[columnName] = v
 			case time.Time:
-				feature.Properties[colName] = v
+				feature.Properties[columnName] = v
 			case string:
-				feature.Properties[colName] = v
+				feature.Properties[columnName] = v
 			case bool:
-				feature.Properties[colName] = v
+				feature.Properties[columnName] = v
 			default:
-				return fmt.Errorf("unexpected type for sqlite column data: %v: %T", cols[i], v)
+				return fmt.Errorf("unexpected type for sqlite column data: %v: %T", columns[i], v)
 			}
 		}
 	}
