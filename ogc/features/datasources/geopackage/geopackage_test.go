@@ -20,6 +20,43 @@ func init() {
 	pwd = path.Dir(filename)
 }
 
+func newAddressesGeoPackage() geoPackageBackend {
+	return newLocalGeoPackage(&engine.GeoPackageLocal{
+		GeoPackageCommon: engine.GeoPackageCommon{
+			Fid: "feature_id",
+		},
+		File: pwd + "/testdata/addresses.gpkg",
+	})
+}
+
+func TestNewGeoPackage(t *testing.T) {
+	type args struct {
+		config engine.GeoPackage
+	}
+	tests := []struct {
+		name                        string
+		args                        args
+		wantNrOfFeatureTablesInGpkg int
+	}{
+		{
+			name: "open local geopackage",
+			args: args{
+				engine.GeoPackage{
+					Local: &engine.GeoPackageLocal{
+						File: pwd + "/testdata/addresses.gpkg",
+					},
+				},
+			},
+			wantNrOfFeatureTablesInGpkg: 3,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(tt.args.config).featureTableByID), "NewGeoPackage(%v)", tt.args.config)
+		})
+	}
+}
+
 func TestGeoPackage_GetFeatures(t *testing.T) {
 	type fields struct {
 		backend          geoPackageBackend
@@ -175,15 +212,6 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			assert.Equal(t, tt.wantCursor.Next, cursor.Next)
 		})
 	}
-}
-
-func newAddressesGeoPackage() geoPackageBackend {
-	return newLocalGeoPackage(&engine.GeoPackageLocal{
-		GeoPackageCommon: engine.GeoPackageCommon{
-			Fid: "feature_id",
-		},
-		File: pwd + "/testdata/addresses.gpkg",
-	})
 }
 
 func TestGeoPackage_GetFeature(t *testing.T) {

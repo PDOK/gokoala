@@ -55,9 +55,7 @@ type GeoPackage struct {
 	queryTimeout     time.Duration
 }
 
-func NewGeoPackage(e *engine.Engine) *GeoPackage {
-	gpkgConfig := e.Config.OgcAPI.Features.Datasource.GeoPackage
-
+func NewGeoPackage(gpkgConfig engine.GeoPackage) *GeoPackage {
 	g := &GeoPackage{}
 	switch {
 	case gpkgConfig.Local != nil:

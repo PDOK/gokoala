@@ -38,7 +38,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	if e.Config.OgcAPI.Features.Datasource.FakeDB {
 		datasource = fakedb.NewFakeDB()
 	} else if e.Config.OgcAPI.Features.Datasource.GeoPackage != nil {
-		datasource = geopackage.NewGeoPackage(e)
+		datasource = geopackage.NewGeoPackage(*e.Config.OgcAPI.Features.Datasource.GeoPackage)
 	}
 	e.RegisterShutdownHook(datasource.Close)
 
