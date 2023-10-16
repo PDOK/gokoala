@@ -8,7 +8,7 @@ import (
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
-	"github.com/go-spatial/geom/encoding/geojson"
+	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/gpkg"
 	"github.com/jmoiron/sqlx"
 
@@ -105,7 +105,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, cursor 
 	defer rows.Close()
 
 	result := domain.FeatureCollection{}
-	result.Features, err = g.mapRowsToFeatures(rows, g.fidColumn, featureTable.GeometryColumnName)
+	result.Features, err = domain.MapRowsToFeatures(rows, g.fidColumn, featureTable.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, domain.Cursor{}, err
 	}
@@ -134,7 +134,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, err := g.mapRowsToFeatures(rows, g.fidColumn, gpkgContent.GeometryColumnName)
+	features, err := domain.MapRowsToFeatures(rows, g.fidColumn, gpkgContent.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, err
 	}
@@ -173,76 +173,10 @@ func readGpkgContents(db *sqlx.DB) (map[string]*gpkgFeatureTable, error) {
 	return result, nil
 }
 
-func (g *GeoPackage) mapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string) ([]*domain.Feature, error) {
-	result := make([]*domain.Feature, 0)
-	columns, err := rows.Columns()
+func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
+	geometry, err := gpkg.DecodeGeometry(rawGeom)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-
-	for rows.Next() {
-		var values []interface{}
-		if values, err = rows.SliceScan(); err != nil {
-			return result, err
-		}
-		feature := &domain.Feature{Feature: geojson.Feature{Properties: make(map[string]interface{})}}
-
-		if err = g.mapColumnsToFeature(feature, columns, values, fidColumn, geomColumn); err != nil {
-			return result, err
-		}
-		result = append(result, feature)
-	}
-	return result, nil
-}
-
-//nolint:cyclop
-func (g *GeoPackage) mapColumnsToFeature(feature *domain.Feature, columns []string, values []interface{}, fidColumn string, geomColumn string) error {
-	for i, columnName := range columns {
-		columnValue := values[i]
-		if columnValue == nil {
-			continue
-		}
-
-		switch columnName {
-		case fidColumn:
-			feature.ID = columnValue.(int64)
-
-		case geomColumn:
-			rawGeom, ok := columnValue.([]byte)
-			if !ok {
-				return fmt.Errorf("failed to read geometry from %s column in geopackage", geomColumn)
-			}
-			geom, err := gpkg.DecodeGeometry(rawGeom)
-			if err != nil {
-				return fmt.Errorf("failed to decode geometry from geopackage: %w", err)
-			}
-			feature.Geometry = geojson.Geometry{Geometry: geom.Geometry}
-
-		case "minx", "miny", "maxx", "maxy", "min_zoom", "max_zoom":
-			// Skip these columns used for bounding box and zoom filtering
-			continue
-
-		default:
-			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a tag
-			switch v := columnValue.(type) {
-			case []uint8:
-				asBytes := make([]byte, len(v))
-				copy(asBytes, v)
-				feature.Properties[columnName] = string(asBytes)
-			case int64:
-				feature.Properties[columnName] = v
-			case float64:
-				feature.Properties[columnName] = v
-			case time.Time:
-				feature.Properties[columnName] = v
-			case string:
-				feature.Properties[columnName] = v
-			case bool:
-				feature.Properties[columnName] = v
-			default:
-				return fmt.Errorf("unexpected type for sqlite column data: %v: %T", columns[i], v)
-			}
-		}
-	}
-	return nil
+	return geometry.Geometry, nil
 }
