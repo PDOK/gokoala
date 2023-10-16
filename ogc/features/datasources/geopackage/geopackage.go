@@ -92,11 +92,15 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, cursor 
 			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByID))
 	}
 
-	query := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?",
-		featureTable.TableName, g.fidColumn, g.fidColumn)
-
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
+
+	query := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", featureTable.TableName, g.fidColumn, g.fidColumn)
+	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
+	if err != nil {
+		return nil, domain.Cursor{}, err
+	}
+	defer stmt.Close()
 
 	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, cursor, limit)
 	if err != nil {
@@ -123,12 +127,17 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByID))
 	}
 
-	query := fmt.Sprintf("select * from %s f where f.%s = ? limit 1", gpkgContent.TableName, g.fidColumn)
-
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, featureID)
+	query := fmt.Sprintf("select * from %s f where f.%s = ? limit 1", gpkgContent.TableName, g.fidColumn)
+	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryxContext(queryCtx, featureID)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}

@@ -51,11 +51,11 @@ func mapColumnsToFeature(feature *Feature, columns []string, values []interface{
 		case geomColumn:
 			rawGeom, ok := columnValue.([]byte)
 			if !ok {
-				return fmt.Errorf("failed to read geometry from %s column in datastore", geomColumn)
+				return fmt.Errorf("failed to read geometry from %s column in datasource", geomColumn)
 			}
 			mappedGeom, err := geomMapper(rawGeom)
 			if err != nil {
-				return fmt.Errorf("failed to map/decode geometry from datastore: %w", err)
+				return fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
 			feature.Geometry = geojson.Geometry{Geometry: mappedGeom}
 
