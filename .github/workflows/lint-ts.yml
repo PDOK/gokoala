@@ -1,5 +1,5 @@
+---
 name: lint (web/typescript)
-
 on:
   push:
     branches:
@@ -11,7 +11,7 @@ defaults:
     working-directory: ./webcomponents/vectortile-view-component
 
 jobs:
-  build:
+  lint-ts:
     runs-on: ubuntu-latest
 
     strategy:

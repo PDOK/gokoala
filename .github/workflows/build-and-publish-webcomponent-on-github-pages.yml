@@ -1,6 +1,5 @@
-
+---
 name: deploy web components
-
 on:
   push:
     branches: ["master"]

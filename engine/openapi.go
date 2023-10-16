@@ -74,7 +74,7 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 
 	for _, server := range resultSpec.Servers {
 		server.URL = normalizeBaseURL(server.URL)
-		log.Printf("URL used for OpenAPI validation: %v", server.URL)
+		log.Printf("url used for OpenAPI validation: %v", server.URL)
 	}
 
 	return &OpenAPI{

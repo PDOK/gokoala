@@ -47,3 +47,9 @@ services:
       - ./:/examples
     ports:
       - "8080:8080"
+
+  smoketest:
+    image: alpine/curl
+    depends_on:
+      - gokoala
+    command: "-fsSL http://gokoala:8080/collections/addresses/items?f=json&limit=2"

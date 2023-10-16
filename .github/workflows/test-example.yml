@@ -1,0 +1,12 @@
+---
+name: test-examples
+on:
+  pull_request:
+jobs:
+  test-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: test OGC API Features with Azure GeoPackage
+        run: docker-compose -f ./examples/docker-compose-features-azure.yaml up --exit-code-from smoketest
