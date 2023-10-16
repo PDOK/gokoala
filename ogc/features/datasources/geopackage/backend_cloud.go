@@ -12,7 +12,10 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const vfsName = "cloudbackedvfs"
+const (
+	vfsName     = "cloudbackedvfs"
+	tempDirName = "gokoala"
+)
 
 // Cloud-Backed SQLite (CBS) GeoPackage in Azure or Google object storage
 type cloudGeoPackage struct {
@@ -21,13 +24,8 @@ type cloudGeoPackage struct {
 }
 
 func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) geoPackageBackend {
-	cacheDir := os.TempDir()
-	if gpkg.Cache != nil {
-		cacheDir = *gpkg.Cache
-	}
-
 	log.Printf("connecting to Cloud-Backed GeoPackage: %s\n", gpkg.Connection)
-	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth, gpkg.Container, cacheDir)
+	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth, gpkg.Container, getCacheDir(gpkg))
 	if err != nil {
 		log.Fatalf("failed to connect with Cloud-Backed GeoPackage: %v", err)
 	}
@@ -39,6 +37,17 @@ func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) geoPackageBackend {
 	}
 
 	return &cloudGeoPackage{db, &vfs}
+}
+
+func getCacheDir(gpkg *engine.GeoPackageCloud) string {
+	if gpkg.Cache != nil {
+		return *gpkg.Cache
+	}
+	cacheDir, err := os.MkdirTemp("", tempDirName)
+	if err != nil {
+		log.Fatalf("failed to create tempdir %s, error %v", tempDirName, err)
+	}
+	return cacheDir
 }
 
 func (g *cloudGeoPackage) getDB() *sqlx.DB {
