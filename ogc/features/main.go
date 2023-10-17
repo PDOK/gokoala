@@ -74,7 +74,12 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		fc, cursor, err := f.datasource.GetFeatures(r.Context(), collectionID, encodedCursor.Decode(), limit)
+		params := datasources.QueryParams{
+			Cursor: encodedCursor.Decode(),
+			Limit:  limit,
+			// TODO set bbox, bbox-crs, etc
+		}
+		fc, cursor, err := f.datasource.GetFeatures(r.Context(), collectionID, params)
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)

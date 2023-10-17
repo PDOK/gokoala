@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/gpkg"
@@ -32,7 +33,7 @@ type geoPackageBackend interface {
 	close()
 }
 
-type gpkgFeatureTable struct {
+type featureTable struct {
 	TableName          string    `db:"table_name"`
 	DataType           string    `db:"data_type"`
 	Identifier         string    `db:"identifier"`
@@ -51,7 +52,7 @@ type GeoPackage struct {
 	backend geoPackageBackend
 
 	fidColumn        string
-	featureTableByID map[string]*gpkgFeatureTable
+	featureTableByID map[string]*featureTable
 	queryTimeout     time.Duration
 }
 
@@ -83,7 +84,7 @@ func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params datasources.QueryParams) (*domain.FeatureCollection, domain.Cursor, error) {
 	featureTable, ok := g.featureTableByID[collection]
 	if !ok {
 		return nil, domain.Cursor{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
@@ -93,14 +94,14 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, cursor 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", featureTable.TableName, g.fidColumn, g.fidColumn)
+	query, queryArgs := g.makeFeaturesQuery(featureTable, params)
 	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
 	if err != nil {
 		return nil, domain.Cursor{}, err
 	}
 	defer stmt.Close()
 
-	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, cursor, limit)
+	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, queryArgs...)
 	if err != nil {
 		return nil, domain.Cursor{}, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
@@ -113,9 +114,9 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, cursor 
 	}
 
 	result.NumberReturned = len(result.Features)
-	last := result.NumberReturned < limit // we could make this more reliable (by querying one record more), but sufficient for now
+	last := result.NumberReturned < params.Limit // we could make this more reliable (by querying one record more), but sufficient for now
 
-	return &result, domain.NewCursor(result.Features, limit, last), nil
+	return &result, domain.NewCursor(result.Features, params.Limit, last), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
@@ -151,16 +152,26 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], nil
 }
 
-func readGpkgContents(db *sqlx.DB) (map[string]*gpkgFeatureTable, error) {
+func (g *GeoPackage) makeFeaturesQuery(ft *featureTable, params datasources.QueryParams) (string, []any) {
+	if params.Bbox != nil {
+		// TODO create bbox query
+		bboxQuery := ""
+		return bboxQuery, []any{params.Cursor, params.Limit, params.Bbox}
+	}
+	defaultQuery := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", ft.TableName, g.fidColumn, g.fidColumn)
+	return defaultQuery, []any{params.Cursor, params.Limit}
+}
+
+func readGpkgContents(db *sqlx.DB) (map[string]*featureTable, error) {
 	rows, err := db.Queryx(queryGpkgContent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", queryGpkgContent, err)
 	}
 	defer rows.Close()
 
-	result := make(map[string]*gpkgFeatureTable, 10)
+	result := make(map[string]*featureTable, 10)
 	for rows.Next() {
-		row := gpkgFeatureTable{}
+		row := featureTable{}
 		if err = rows.StructScan(&row); err != nil {
 			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 		}

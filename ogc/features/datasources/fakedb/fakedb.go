@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 
+	"github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-spatial/geom"
@@ -26,9 +27,9 @@ func (FakeDB) Close() {
 	// noop
 }
 
-func (fdb FakeDB) GetFeatures(_ context.Context, _ string, cursor int64, limit int) (*domain.FeatureCollection, domain.Cursor, error) {
-	low := cursor
-	high := low + int64(limit)
+func (fdb FakeDB) GetFeatures(_ context.Context, _ string, params datasources.QueryParams) (*domain.FeatureCollection, domain.Cursor, error) {
+	low := params.Cursor
+	high := low + int64(params.Limit)
 
 	last := high > int64(len(fdb.featureCollection.Features))
 	if last {
@@ -43,7 +44,7 @@ func (fdb FakeDB) GetFeatures(_ context.Context, _ string, cursor int64, limit i
 			NumberReturned: len(page),
 			Features:       page,
 		},
-		domain.NewCursor(page, limit, last),
+		domain.NewCursor(page, params.Limit, last),
 		nil
 }
 
