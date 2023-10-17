@@ -129,7 +129,7 @@ A similar flow can be used to profile memory issues.
 Design principles:
 
 - Performance and scalability are key!
-- Be optioned when you can, only make stuff configurable when you must.
+- Be opinionated when you can, only make stuff configurable when you must.
 - The `ogc` [package](ogc/README.md) contains logic per specific OGC API
   building block.
 - The `engine` package should contain general logic. `ogc` may reference

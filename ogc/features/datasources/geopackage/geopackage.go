@@ -116,7 +116,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params 
 	result.NumberReturned = len(result.Features)
 	last := result.NumberReturned < params.Limit // we could make this more reliable (by querying one record more), but sufficient for now
 
-	return &result, domain.NewCursor(result.Features, params.Limit, last), nil
+	return &result, domain.NewCursor(result.Features, last), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {

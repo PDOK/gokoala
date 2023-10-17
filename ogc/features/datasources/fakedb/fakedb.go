@@ -44,7 +44,7 @@ func (fdb FakeDB) GetFeatures(_ context.Context, _ string, params datasources.Qu
 			NumberReturned: len(page),
 			Features:       page,
 		},
-		domain.NewCursor(page, params.Limit, last),
+		domain.NewCursor(page, last),
 		nil
 }
 

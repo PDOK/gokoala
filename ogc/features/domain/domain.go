@@ -68,13 +68,14 @@ type Cursor struct {
 	IsLast  bool
 }
 
-func NewCursor(features []*Feature, limit int, last bool) Cursor {
-	if len(features) == 0 {
+func NewCursor(features []*Feature, last bool) Cursor {
+	limit := len(features)
+	if limit == 0 {
 		return Cursor{}
 	}
 
 	start := features[0].ID
-	end := features[len(features)-1].ID
+	end := features[limit-1].ID
 
 	prev := start
 	if prev != 0 {
