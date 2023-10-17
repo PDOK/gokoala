@@ -3,12 +3,15 @@ package features
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
+	"github.com/PDOK/gokoala/ogc/features/datasources/fakedb"
+	"github.com/PDOK/gokoala/ogc/features/datasources/geopackage"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
@@ -33,9 +36,9 @@ type Features struct {
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	var datasource datasources.Datasource
 	if e.Config.OgcAPI.Features.Datasource.FakeDB {
-		datasource = datasources.NewFakeDB()
+		datasource = fakedb.NewFakeDB()
 	} else if e.Config.OgcAPI.Features.Datasource.GeoPackage != nil {
-		datasource = datasources.NewGeoPackage()
+		datasource = geopackage.NewGeoPackage(*e.Config.OgcAPI.Features.Datasource.GeoPackage)
 	}
 	e.RegisterShutdownHook(datasource.Close)
 
@@ -66,13 +69,23 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		if _, ok := collectionsMetadata[collectionID]; !ok {
 			http.NotFound(w, r)
 			return
 		}
 
-		fc, cursor := f.datasource.GetFeatures(collectionID, encodedCursor.Decode(), limit)
+		params := datasources.QueryParams{
+			Cursor: encodedCursor.Decode(),
+			Limit:  limit,
+			// TODO set bbox, bbox-crs, etc
+		}
+		fc, cursor, err := f.datasource.GetFeatures(r.Context(), collectionID, params)
+		if err != nil {
+			// log error, but sent generic message to client to prevent possible information leakage from datasource
+			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
+			log.Printf("%s, error: %v\n", msg, err)
+			http.Error(w, msg, http.StatusInternalServerError)
+		}
 		if fc == nil {
 			http.NotFound(w, r)
 			return
@@ -96,13 +109,24 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
-		featureID := chi.URLParam(r, "featureId")
-		if err := f.validateNoUnknownFeatureQueryParams(r); err != nil {
+		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
+		if err != nil {
+			http.Error(w, "feature ID must be a number", http.StatusBadRequest)
+			return
+		}
+		if err = f.validateNoUnknownFeatureQueryParams(r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		feat := f.datasource.GetFeature(collectionID, featureID)
+		feat, err := f.datasource.GetFeature(r.Context(), collectionID, int64(featureID))
+		if err != nil {
+			// log error, but sent generic message to client to prevent possible information leakage from datasource
+			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)
+			log.Printf("%s, error: %v\n", msg, err)
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
 		if feat == nil {
 			http.NotFound(w, r)
 			return

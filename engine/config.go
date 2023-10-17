@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/text/language"
@@ -14,7 +15,8 @@ import (
 )
 
 const (
-	cookieMaxAge = 60 * 60 * 24
+	cookieMaxAge        = 60 * 60 * 24
+	defaultQueryTimeout = 10 * time.Second
 )
 
 func readConfigFile(configFile string) *Config {
@@ -252,21 +254,62 @@ type OgcAPIProcesses struct {
 type Datasource struct {
 	GeoPackage *GeoPackage `yaml:"geopackage" validate:"required_without_all=FakeDB"`
 	FakeDB     bool        `yaml:"fakedb" validate:"required_without_all=GeoPackage"`
-	// Add more datasources here such as PostGIS, Mongo, etc
+	// Add more datasources here such as PostGIS, Mongo, Elastic, etc
 }
 
 type GeoPackage struct {
-	File  GeoPackageFile  `yaml:"file"`
-	Azure GeoPackageAzure `yaml:"azure"`
+	Local *GeoPackageLocal `yaml:"local" validate:"required_without_all=Cloud"`
+	Cloud *GeoPackageCloud `yaml:"cloud" validate:"required_without_all=Local"`
 }
 
-type GeoPackageFile struct {
-	Filepath string  `yaml:"filepath" validate:"filepath"`
-	Fid      *string `yaml:"fid"`
+// GeoPackageCommon shared config between local and cloud GeoPackage
+type GeoPackageCommon struct {
+	// feature id column name
+	Fid string `yaml:"fid" validate:"required"`
+
+	// optional timeout after which queries are canceled (default is 10s, see constant)
+	QueryTimeout *time.Duration `yaml:"queryTimeout"`
 }
 
-type GeoPackageAzure struct {
-	// TODO: settings for Azure Cloud Backed Sqlite
+func (gc *GeoPackageCommon) GetQueryTimeout() time.Duration {
+	if gc.QueryTimeout != nil {
+		return *gc.QueryTimeout
+	}
+	return defaultQueryTimeout
+}
+
+// GeoPackageLocal settings to read a GeoPackage from local disk
+type GeoPackageLocal struct {
+	GeoPackageCommon `yaml:",inline"`
+
+	// location of GeoPackage on disk
+	File string `yaml:"file" validate:"file"`
+}
+
+// GeoPackageCloud settings to read a GeoPackage as a Cloud-Backed SQLite database
+type GeoPackageCloud struct {
+	GeoPackageCommon `yaml:",inline"`
+
+	// reference to the cloud storage (either azure or google at the moment), e.g:
+	// - azure?emulator=127.0.0.1:10000&sas=0
+	// - google
+	Connection string `yaml:"connection" validate:"required"`
+
+	// username of the storage account, e.g: devstoreaccount1 when using Azurite
+	User string `yaml:"user" validate:"required"`
+
+	// some kind of credential like a password or key to authenticate with the storage backend, e.g:
+	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite
+	Auth string `yaml:"auth" validate:"required"`
+
+	// container/bucket on the storage account
+	Container string `yaml:"container" validate:"required"`
+
+	// filename of the GeoPackage
+	File string `yaml:"file" validate:"required"`
+
+	// local cache of fetched blocks from cloud storage
+	Cache *string `yaml:"cache" validate:"omitempty,dir"`
 }
 
 type SupportedSrs struct {

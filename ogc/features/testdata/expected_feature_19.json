@@ -1,0 +1,38 @@
+{
+  "id": 19,
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items/19?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items/19?f=html"
+    },
+    {
+      "rel": "collection",
+      "title": "The collection to which this feature belongs",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/foo?f=json"
+    }
+  ],
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      -74.417633,
+      62.106302
+    ]
+  },
+  "properties": {
+    "city": "Jersey",
+    "floorsize": 35,
+    "purpose": "Engagement",
+    "streetname": "42340 North Landingside",
+    "year": 2003
+  }
+}

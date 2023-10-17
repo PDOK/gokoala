@@ -7,7 +7,8 @@
 _Cloud Native OGC APIs server, written in Go._ 
 
 [![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml)
-[![Lint](https://github.com/PDOK/gokoala/actions/workflows/lint.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint.yml)
+[![Lint (go)](https://github.com/PDOK/gokoala/blob/master/.github/workflows/lint-go.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint-go.yml)
+[![Lint (ts)](https://github.com/PDOK/gokoala/blob/master/.github/workflows/lint-ts.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint-ts.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/PDOK/gokoala)](https://goreportcard.com/report/github.com/PDOK/gokoala)
 [![GitHub
 license](https://img.shields.io/github/license/PDOK/gokoala)](https://github.com/PDOK/gokoala/blob/master/LICENSE)
@@ -77,7 +78,7 @@ Example (config-file is mandatory):
 docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml
 ```
 
-Now open <http://localhost:8080>
+Now open <http://localhost:8080>. See [examples](examples) for more details.
 
 ### Configuration file
 
@@ -96,7 +97,7 @@ ogcApi:
 ### OpenAPI spec
 
 GoKoala ships with OGC OpenAPI support out of the box, see [OpenAPI
-specs](assets/openapi-specs/README.md) for details. You can overwrite or extend
+specs](engine/templates/openapi) for details. You can overwrite or extend
 the defaults by providing your own spec using the `openapi-file` CLI flag.
 
 ### Observability
@@ -128,6 +129,7 @@ A similar flow can be used to profile memory issues.
 Design principles:
 
 - Performance and scalability are key!
+- Be opinionated when you can, only make stuff configurable when you must.
 - The `ogc` [package](ogc/README.md) contains logic per specific OGC API
   building block.
 - The `engine` package should contain general logic. `ogc` may reference
@@ -139,6 +141,7 @@ Design principles:
   of during request handling.
 - Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
+- Document your changes to [OGC OpenAPI example specs](engine/templates/openapi/README.md).
 
 ### Linting
 

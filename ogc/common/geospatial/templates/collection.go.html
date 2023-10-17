@@ -52,17 +52,16 @@
                     <li class="list-group-item">
                         <h5 class="card-title">Features</h5>
                         <ul>
-                            <!-- TODO: Add translations once reviewed -->
-                            <li>Blader door de <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features</a></li>
-                            <li>{{ i18n "GoTo" }} Features als <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a> in WGS84</li>
-                            <li>{{ i18n "GoTo" }} Features als <a href="#" onclick="alert('TODO')">JSON-FG</a> in WGS84</li>
-                            <li>{{ i18n "GoTo" }} Features als <a href="#" onclick="alert('TODO')">JSON-FG</a> in RD</li>
-                            <li>{{ i18n "GoTo" }} Features als <a href="#" onclick="alert('TODO')">JSON-FG</a> in ETRS89</li>
-                            <li>Download als <a href="#" onclick="alert('TODO')">GeoPackage</a></li>
+                            <li>{{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features</a></li>
+                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a> in WGS84</li>
+                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="#" onclick="alert('TODO')">JSON-FG</a> in WGS84</li>
+                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="#" onclick="alert('TODO')">JSON-FG</a> in RD</li>
+                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="#" onclick="alert('TODO')">JSON-FG</a> in ETRS89</li>
+                            <li>Download {{ i18n "As" }} <a href="#" onclick="alert('TODO')">GeoPackage</a></li>
                         </ul>
                         <br/>
                         <div class="alert alert-primary" role="alert">
-                            Uitleg over welke JSON, wanneer kies je voor GeoJSON en wanneer voor JSON-FG. Verschil tussen projecties, etc.
+                            {{ i18n "FeaturesExplanation" }}
                         </div>
                     </li>
 

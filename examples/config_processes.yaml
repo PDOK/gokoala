@@ -12,5 +12,5 @@ baseUrl: http://localhost:8081
 ogcApi:
   processes:
     processesServer: http://localhost:8084/ogcapi
-    supportsCallback: FALSE
-    supportsDismiss: TRUE
+    supportsCallback: false
+    supportsDismiss: true

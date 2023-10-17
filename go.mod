@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.3.2
+	github.com/PDOK/go-cloud-sqlite-vfs v0.2.4
 	github.com/brianvoe/gofakeit/v6 v6.23.2
 	github.com/elnormous/contenttype v1.0.4
 	github.com/getkin/kin-openapi v0.116.0
@@ -12,6 +13,8 @@ require (
 	github.com/go-spatial/geom v0.0.0-20220918193402-3cd2f5a9a082
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
+	github.com/jmoiron/sqlx v1.3.5
+	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/sqids/sqids-go v0.4.1
 	github.com/stretchr/testify v1.8.2
@@ -24,6 +27,7 @@ require (
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gdey/errors v0.0.0-20190426172550-8ebd5bc891fb // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

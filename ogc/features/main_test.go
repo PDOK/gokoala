@@ -202,16 +202,16 @@ func TestFeatures_Feature(t *testing.T) {
 		want   want
 	}{
 		{
-			name: "Request GeoJSON for feature 19058835",
+			name: "Request GeoJSON for feature 19",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
-				featureID:    "19058835",
+				featureID:    "19",
 				format:       "json",
 			},
 			want: want{
-				body:       "ogc/features/testdata/expected_feature_19058835.json",
+				body:       "ogc/features/testdata/expected_feature_19.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -244,16 +244,16 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 		},
 		{
-			name: "Request HTML for feature 19058835",
+			name: "Request HTML for feature 19",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
-				featureID:    "19058835",
+				featureID:    "19",
 				format:       "html",
 			},
 			want: want{
-				body:       "ogc/features/testdata/expected_feature_19058835.html",
+				body:       "ogc/features/testdata/expected_feature_19.html",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -302,7 +302,10 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		engine.SafeWrite(w.Write, []byte(r.URL.String()))
 	}))
-	ts.Listener.Close()
+	err = ts.Listener.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 	ts.Listener = l
 	ts.Start()
 	return rr, ts
