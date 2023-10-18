@@ -52,4 +52,4 @@ services:
     image: alpine/curl
     depends_on:
       - gokoala
-    command: "-fsSL http://gokoala:8080/collections/addresses/items?f=json&limit=2"
+    command: "-fsSL http://gokoala:8080/collections/dutch-addresses/items?f=json&limit=2"

@@ -51,12 +51,12 @@ type featureTable struct {
 type GeoPackage struct {
 	backend geoPackageBackend
 
-	fidColumn        string
-	featureTableByID map[string]*featureTable
-	queryTimeout     time.Duration
+	fidColumn                  string
+	featureTableByCollectionID map[string]*featureTable
+	queryTimeout               time.Duration
 }
 
-func NewGeoPackage(gpkgConfig engine.GeoPackage) *GeoPackage {
+func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.GeoPackage) *GeoPackage {
 	g := &GeoPackage{}
 	switch {
 	case gpkgConfig.Local != nil:
@@ -71,11 +71,11 @@ func NewGeoPackage(gpkgConfig engine.GeoPackage) *GeoPackage {
 		log.Fatal("unknown geopackage config encountered")
 	}
 
-	featureTables, err := readGpkgContents(g.backend.getDB())
+	featureTables, err := readGpkgContents(collections, g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.featureTableByID = featureTables
+	g.featureTableByCollectionID = featureTables
 
 	return g
 }
@@ -85,16 +85,16 @@ func (g *GeoPackage) Close() {
 }
 
 func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params datasources.QueryParams) (*domain.FeatureCollection, domain.Cursor, error) {
-	featureTable, ok := g.featureTableByID[collection]
+	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
 		return nil, domain.Cursor{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByID))
+			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByCollectionID))
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query, queryArgs := g.makeFeaturesQuery(featureTable, params)
+	query, queryArgs := g.makeFeaturesQuery(table, params)
 	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
 	if err != nil {
 		return nil, domain.Cursor{}, err
@@ -108,7 +108,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params 
 	defer rows.Close()
 
 	result := domain.FeatureCollection{}
-	result.Features, err = domain.MapRowsToFeatures(rows, g.fidColumn, featureTable.GeometryColumnName, readGpkgGeometry)
+	result.Features, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, domain.Cursor{}, err
 	}
@@ -120,16 +120,16 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params 
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
-	gpkgContent, ok := g.featureTableByID[collection]
+	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByID))
+			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByCollectionID))
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query := fmt.Sprintf("select * from %s f where f.%s = ? limit 1", gpkgContent.TableName, g.fidColumn)
+	query := fmt.Sprintf("select * from %s f where f.%s = ? limit 1", table.TableName, g.fidColumn)
 	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, err := domain.MapRowsToFeatures(rows, g.fidColumn, gpkgContent.GeometryColumnName, readGpkgGeometry)
+	features, err := domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, err
 	}
@@ -152,17 +152,21 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], nil
 }
 
-func (g *GeoPackage) makeFeaturesQuery(ft *featureTable, params datasources.QueryParams) (string, []any) {
+func (g *GeoPackage) makeFeaturesQuery(table *featureTable, params datasources.QueryParams) (string, []any) {
 	if params.Bbox != nil {
 		// TODO create bbox query
 		bboxQuery := ""
 		return bboxQuery, []any{params.Cursor, params.Limit, params.Bbox}
 	}
-	defaultQuery := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", ft.TableName, g.fidColumn, g.fidColumn)
+	defaultQuery := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", table.TableName, g.fidColumn, g.fidColumn)
 	return defaultQuery, []any{params.Cursor, params.Limit}
 }
 
-func readGpkgContents(db *sqlx.DB) (map[string]*featureTable, error) {
+// Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
+// collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
+// 'identifier' column. Also in case there's no exact match between 'collection ID' and 'identifier' we use
+// the explicitly configured 'datasource ID'
+func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
 	rows, err := db.Queryx(queryGpkgContent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", queryGpkgContent, err)
@@ -178,7 +182,20 @@ func readGpkgContents(db *sqlx.DB) (map[string]*featureTable, error) {
 		if row.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
-		result[row.Identifier] = &row
+
+		if len(collections) == 0 {
+			result[row.Identifier] = &row
+		} else {
+			for _, collection := range collections {
+				if row.Identifier == collection.ID {
+					result[collection.ID] = &row
+					break
+				} else if collection.Features.DatasourceID != nil && row.Identifier == *collection.Features.DatasourceID {
+					result[collection.ID] = &row
+					break
+				}
+			}
+		}
 	}
 
 	if err := rows.Err(); err != nil {

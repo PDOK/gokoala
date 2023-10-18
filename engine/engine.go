@@ -38,9 +38,7 @@ type Engine struct {
 
 // NewEngine builds a new Engine
 func NewEngine(configFile string, openAPIFile string) *Engine {
-	config := readConfigFile(configFile)
-
-	return NewEngineWithConfig(config, openAPIFile)
+	return NewEngineWithConfig(readConfigFile(configFile), openAPIFile)
 }
 
 // NewEngineWithConfig builds a new Engine
@@ -87,7 +85,6 @@ func (e *Engine) startServer(name string, address string, shutdownDelay int, rou
 
 		ReadTimeout:       15 * time.Second,
 		ReadHeaderTimeout: 15 * time.Second,
-		WriteTimeout:      30 * time.Second,
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
