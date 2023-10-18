@@ -53,7 +53,7 @@ func TestNewGeoPackage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(tt.args.config).featureTableByID), "NewGeoPackage(%v)", tt.args.config)
+			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(nil, tt.args.config).featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
 		})
 	}
 }
@@ -196,10 +196,10 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoPackage{
-				backend:          tt.fields.backend,
-				fidColumn:        tt.fields.fidColumn,
-				featureTableByID: tt.fields.featureTableByID,
-				queryTimeout:     tt.fields.queryTimeout,
+				backend:                    tt.fields.backend,
+				fidColumn:                  tt.fields.fidColumn,
+				featureTableByCollectionID: tt.fields.featureTableByID,
+				queryTimeout:               tt.fields.queryTimeout,
 			}
 			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams)
 			if err != nil {
@@ -300,10 +300,10 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoPackage{
-				backend:          tt.fields.backend,
-				fidColumn:        tt.fields.fidColumn,
-				featureTableByID: tt.fields.featureTableByID,
-				queryTimeout:     tt.fields.queryTimeout,
+				backend:                    tt.fields.backend,
+				fidColumn:                  tt.fields.fidColumn,
+				featureTableByCollectionID: tt.fields.featureTableByID,
+				queryTimeout:               tt.fields.queryTimeout,
 			}
 			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID)
 			if err != nil {

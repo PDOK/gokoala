@@ -45,9 +45,10 @@ ogcApi:
           fid: fid
           queryTimeout: 5s
     collections:
-      - id: addresses
+      - id: dutch-addresses
+        datasourceId: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
-          title: Adressen
+          title: Dutch Addresses
           description: These are example addresses
           keywords:
             - Building

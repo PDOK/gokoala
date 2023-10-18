@@ -209,7 +209,8 @@ type CollectionEntryTiles struct {
 }
 
 type CollectionEntryFeatures struct {
-	// placeholder
+	// Optional way to map a collection ID to the underlying datasource (e.g. table in database).
+	DatasourceID *string `yaml:"datasourceId"`
 }
 
 type CollectionEntryMaps struct {
