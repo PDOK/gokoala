@@ -153,7 +153,7 @@ func TestThreeDimensionalGeoVolume_CollectionContent(t *testing.T) {
 
 			newEngine := engine.NewEngine(tt.fields.configFile, "")
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine, chi.NewRouter())
-			handler := threeDimensionalGeoVolume.CollectionContent()
+			handler := threeDimensionalGeoVolume.CollectionContent("tileset.json")
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
@@ -221,7 +221,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		engine.SafeWrite(w.Write, []byte(r.URL.String()))
 	}))
-	ts.Listener.Close()
+	defer ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
 	return rr, ts

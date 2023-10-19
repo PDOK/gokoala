@@ -246,7 +246,7 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 	modifyResponse := func(proxyRes *http.Response) error {
 		if prefer204 {
 			// OGC spec: If the tile has no content due to lack of data in the area, but is within the data
-			// resource it's tile matrix sets and tile matrix sets limits, the HTTP response will use the status
+			// resource its tile matrix sets and tile matrix sets limits, the HTTP response will use the status
 			// code either 204 (indicating an empty tile with no content) or a 200
 			if proxyRes.StatusCode == http.StatusNotFound {
 				proxyRes.StatusCode = http.StatusNoContent

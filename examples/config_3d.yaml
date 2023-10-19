@@ -30,5 +30,9 @@ ogcApi:
         tileServerPath: "NewYork/3DTiles"
         # optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb"
         uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+
         # optional URI template for subtrees, only required when "implicit tiling" extension is used
         # uriTemplateImplicitTilingSubtree: ""
+
+        # URI template for digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM
+        # uriTemplateDTM: ""

@@ -60,12 +60,21 @@
         }
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
-          ,{
-            "rel" : "items",
-            "type" : "application/json+3dtiles",
-            "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
-            "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
-          }
+            {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
+            ,{
+              "rel" : "items",
+              "type" : "application/json",
+              "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/quantized-mesh?f=json"
+            }
+            {{ else }}
+            ,{
+              "rel" : "items",
+              "type" : "application/json+3dtiles",
+              "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
+            }
+            {{end}}
           {{end}}
         {{end}}
         {{ if and $cfg.OgcAPI.Tiles $cfg.OgcAPI.Tiles.Collections }}
@@ -116,6 +125,15 @@
       "content" : [
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
+            {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
+            {
+              "rel" : "original",
+              "type" : "application/json",
+              "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json",
+              "collectionType": "3d-container"
+            }
+            {{else}}
             {
               "rel" : "original",
               "type" : "application/json+3dtiles",
@@ -123,6 +141,7 @@
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json",
               "collectionType": "3d-container"
             }
+            {{end}}
           {{end}}
         {{end}}
       ]

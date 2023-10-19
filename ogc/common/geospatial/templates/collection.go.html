@@ -27,7 +27,11 @@
                     <li class="list-group-item">
                         <h5 class="card-title">3D GeoVolumes</h5>
                         <ul>
-                            <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles">3D Tiles</a></li>
+                            {{ if and .Params.GeoVolumes .Params.GeoVolumes.HasDTM }}
+                                <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/quantized-mesh">Quantized Mesh DTM</a></li>
+                            {{ else }}
+                                <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles">3D Tiles</a></li>
+                            {{ end }}
                             {{ if and .Params.GeoVolumes .Params.GeoVolumes.URL3DViewer }}
                             <li>{{ i18n "ViewIn" }} <a href="{{ .Params.GeoVolumes.URL3DViewer }}" target="_blank">3D viewer</a></li>
                             {{ end }}

@@ -36,13 +36,23 @@
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}?f=html"
     }
     {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-    ,
-    {
-      "rel" : "items",
-      "type" : "application/json+3dtiles",
-      "title" : "Tileset definition of collection {{ .Params.ID }} according to the OGC 3D Tiles specification",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles?f=json"
-    }
+      {{ if and .Params.GeoVolumes .Params.GeoVolumes.HasDTM }}
+      ,
+      {
+        "rel" : "items",
+        "type" : "application/json",
+        "title" : "Digital Terrain Model '{{ .Params.ID }}' in Quantized Mesh format",
+        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/quantized-mesh?f=json"
+      }
+      {{ else }}
+      ,
+      {
+        "rel" : "items",
+        "type" : "application/json+3dtiles",
+        "title" : "Tileset definition of collection {{ .Params.ID }} according to the OGC 3D Tiles specification",
+        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles?f=json"
+      }
+      {{ end }}
     {{ end }}
     {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
     ,
