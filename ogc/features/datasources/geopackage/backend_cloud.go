@@ -24,7 +24,7 @@ type cloudGeoPackage struct {
 }
 
 func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) geoPackageBackend {
-	log.Printf("connecting to Cloud-Backed GeoPackage: %s\n", gpkg.Connection)
+	log.Printf("connecting to Cloud-Backed GeoPackage on '%s' in container '%s'\n", gpkg.Connection, gpkg.Container)
 	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth, gpkg.Container, getCacheDir(gpkg))
 	if err != nil {
 		log.Fatalf("failed to connect with Cloud-Backed GeoPackage: %v", err)

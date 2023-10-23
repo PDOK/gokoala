@@ -12,16 +12,17 @@ const (
 	formatParam   = "f"
 	languageParam = "lang"
 
-	MediaTypeJSON        = "application/json"
-	MediaTypeHTML        = "text/html"
-	MediaTypeTileJSON    = "application/vnd.mapbox.tile+json"
-	MediaTypeMVT         = "application/vnd.mapbox-vector-tile"
-	MediaTypeMapboxStyle = "application/vnd.mapbox.style+json"
-	MediaTypeCustomStyle = "application/vnd.custom.style+json"
-	MediaTypeSLD         = "application/vnd.ogc.sld+xml;version=1.0"
-	MediaTypeOpenAPI     = "application/vnd.oai.openapi+json;version=3.0"
-	MediaTypeGeoJSON     = "application/geo+json"
-	MediaTypeJSONFG      = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
+	MediaTypeJSON          = "application/json"
+	MediaTypeHTML          = "text/html"
+	MediaTypeTileJSON      = "application/vnd.mapbox.tile+json"
+	MediaTypeMVT           = "application/vnd.mapbox-vector-tile"
+	MediaTypeMapboxStyle   = "application/vnd.mapbox.style+json"
+	MediaTypeCustomStyle   = "application/vnd.custom.style+json"
+	MediaTypeSLD           = "application/vnd.ogc.sld+xml;version=1.0"
+	MediaTypeOpenAPI       = "application/vnd.oai.openapi+json;version=3.0"
+	MediaTypeGeoJSON       = "application/geo+json"
+	MediaTypeJSONFG        = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
+	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
 
 	FormatHTML        = "html"
 	FormatJSON        = "json"

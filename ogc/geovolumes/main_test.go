@@ -63,6 +63,22 @@ func TestThreeDimensionalGeoVolume_Tile(t *testing.T) {
 			},
 		},
 		{
+			name: "container_1/0/0/0/0 - DTM",
+			fields: fields{
+				configFile:       "ogc/geovolumes/testdata/config_dtm.yaml",
+				url:              "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				containerID:      "container_1",
+				tilePathPrefix:   "0",
+				tileMatrix:       "0",
+				tileRow:          "0",
+				tileColAndSuffix: "0",
+			},
+			want: want{
+				body:       "/container_1/0/0/0/0",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "container_2/1/2/3/4",
 			fields: fields{
 				configFile:       "ogc/geovolumes/testdata/config_minimal_3d.yaml",
@@ -153,7 +169,7 @@ func TestThreeDimensionalGeoVolume_CollectionContent(t *testing.T) {
 
 			newEngine := engine.NewEngine(tt.fields.configFile, "")
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine, chi.NewRouter())
-			handler := threeDimensionalGeoVolume.CollectionContent()
+			handler := threeDimensionalGeoVolume.CollectionContent("tileset.json")
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
@@ -191,6 +207,18 @@ func TestThreeDimensionalGeoVolume_ExplicitTileSet(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "404",
+			fields: fields{
+				configFile:  "ogc/geovolumes/testdata/config_minimal_3d.yaml",
+				url:         "http://localhost:8080/collections/:3dContainerId/:explicitTileSet.json",
+				containerID: "container_2",
+			},
+			want: want{
+				body:       "404 page not found\n",
+				statusCode: http.StatusNotFound,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -221,7 +249,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		engine.SafeWrite(w.Write, []byte(r.URL.String()))
 	}))
-	ts.Listener.Close()
+	defer ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
 	return rr, ts

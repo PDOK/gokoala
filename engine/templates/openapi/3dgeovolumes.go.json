@@ -13,6 +13,7 @@
   "tags" : [ ],
   "paths" : {
     {{- range $index, $type := .Config.OgcAPI.GeoVolumes.Collections -}}
+    {{ if and $type.GeoVolumes $type.GeoVolumes.URITemplate3dTiles }}
     {{- if $index -}},{{- end -}}
     "/collections/{{ $type.ID }}/3dtiles" : {
       "get" : {
@@ -41,11 +42,7 @@
         }
       }
     },
-    {{ if and $type.GeoVolumes $type.GeoVolumes.URITemplate3dTiles }}
     "/collections/{{ $type.ID }}/3dtiles/{{ $type.GeoVolumes.URITemplate3dTiles }}" : {
-    {{ else }}
-    "/collections/{{ $type.ID }}/3dtiles/tiles/{level}/{x}/{y}.glb" : {
-    {{ end }}
       "get" : {
         "tags" : [ "3D Tiles" ],
         "summary" : "retrieve a glTF tile of the feature collection '{{ $type.ID }}'",
@@ -78,6 +75,7 @@
         }
       }
     }
+    {{ end }}
     {{ if and $type.GeoVolumes $type.GeoVolumes.URITemplateImplicitTilingSubtree }}
     ,
     "/collections/{{ $type.ID }}/3dtiles/{{ $type.GeoVolumes.URITemplateImplicitTilingSubtree }}" : {
@@ -98,6 +96,44 @@
             "description" : "The operation was executed successfully.",
             "content" : {
               "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/binary"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Tile Not Found"
+          },
+          "500" : {
+            "description" : "Server Error"
+          }
+        }
+      }
+    }
+    {{ end }}
+    {{ if and $type.GeoVolumes $type.GeoVolumes.HasDTM }}
+    ,
+    "/collections/{{ $type.ID }}/quantized-mesh/{{ $type.GeoVolumes.URITemplateDTM }}" : {
+      "get" : {
+        "tags" : [ "3D Tiles" ],
+        "summary" : "retrieve digital terrain model (DTM)",
+        "description" : "Access the digital terrain model (DTM) in Quantized Mesh format.",
+        "operationId" : "{{ $type.ID }}.getDTM",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/level"
+        }, {
+          "$ref" : "#/components/parameters/x"
+        }, {
+          "$ref" : "#/components/parameters/y"
+        }, {
+          "$ref" : "#/components/parameters/v"
+        }],
+        "responses" : {
+          "200" : {
+            "description" : "The operation was executed successfully.",
+            "content" : {
+              "application/vnd.quantized-mesh" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/binary"
                 }
@@ -1633,6 +1669,15 @@
           "minimum" : 0,
           "type" : "integer",
           "format" : "int32"
+        }
+      },
+      "v" : {
+        "name" : "v",
+        "in" : "query",
+        "description" : "The version of the DTM tile.",
+        "required" : false,
+        "schema" : {
+          "type" : "string"
         }
       }
     }
