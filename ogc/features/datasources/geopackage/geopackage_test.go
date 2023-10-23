@@ -68,7 +68,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 	type args struct {
 		ctx         context.Context
 		collection  string
-		queryParams datasources.QueryParams
+		queryParams datasources.FeatureOptions
 	}
 	tests := []struct {
 		name       string
@@ -89,7 +89,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
-				queryParams: datasources.QueryParams{
+				queryParams: datasources.FeatureOptions{
 					Cursor: 0,
 					Limit:  2,
 				},
@@ -132,7 +132,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
-				queryParams: datasources.QueryParams{
+				queryParams: datasources.FeatureOptions{
 					Cursor: 3837, // see next cursor from test above
 					Limit:  3,
 				},
@@ -183,7 +183,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "vakantiehuizen", // not in gpkg
-				queryParams: datasources.QueryParams{
+				queryParams: datasources.FeatureOptions{
 					Cursor: 0,
 					Limit:  10,
 				},

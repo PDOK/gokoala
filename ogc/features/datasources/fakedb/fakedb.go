@@ -27,9 +27,9 @@ func (FakeDB) Close() {
 	// noop
 }
 
-func (fdb FakeDB) GetFeatures(_ context.Context, _ string, params datasources.QueryParams) (*domain.FeatureCollection, domain.Cursor, error) {
-	low := params.Cursor
-	high := low + int64(params.Limit)
+func (fdb FakeDB) GetFeatures(_ context.Context, _ string, options datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursor, error) {
+	low := options.Cursor
+	high := low + int64(options.Limit)
 
 	last := high > int64(len(fdb.featureCollection.Features))
 	if last {

@@ -84,7 +84,7 @@ func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params datasources.QueryParams) (*domain.FeatureCollection, domain.Cursor, error) {
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursor, error) {
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
 		return nil, domain.Cursor{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
@@ -94,7 +94,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query, queryArgs := g.makeFeaturesQuery(table, params)
+	query, queryArgs := g.makeFeaturesQuery(table, options)
 	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
 	if err != nil {
 		return nil, domain.Cursor{}, err
@@ -114,7 +114,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params 
 	}
 
 	result.NumberReturned = len(result.Features)
-	last := result.NumberReturned < params.Limit // we could make this more reliable (by querying one record more), but sufficient for now
+	last := result.NumberReturned < options.Limit // we could make this more reliable (by querying one record more), but sufficient for now
 
 	return &result, domain.NewCursor(result.Features, last), nil
 }
@@ -152,14 +152,14 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], nil
 }
 
-func (g *GeoPackage) makeFeaturesQuery(table *featureTable, params datasources.QueryParams) (string, []any) {
-	if params.Bbox != nil {
+func (g *GeoPackage) makeFeaturesQuery(table *featureTable, options datasources.FeatureOptions) (string, []any) {
+	if options.Bbox != nil {
 		// TODO create bbox query
 		bboxQuery := ""
-		return bboxQuery, []any{params.Cursor, params.Limit, params.Bbox}
+		return bboxQuery, []any{options.Cursor, options.Limit, options.Bbox}
 	}
 	defaultQuery := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", table.TableName, g.fidColumn, g.fidColumn)
-	return defaultQuery, []any{params.Cursor, params.Limit}
+	return defaultQuery, []any{options.Cursor, options.Limit}
 }
 
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
