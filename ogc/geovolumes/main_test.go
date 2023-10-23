@@ -63,6 +63,22 @@ func TestThreeDimensionalGeoVolume_Tile(t *testing.T) {
 			},
 		},
 		{
+			name: "container_1/0/0/0/0 - DTM",
+			fields: fields{
+				configFile:       "ogc/geovolumes/testdata/config_dtm.yaml",
+				url:              "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				containerID:      "container_1",
+				tilePathPrefix:   "0",
+				tileMatrix:       "0",
+				tileRow:          "0",
+				tileColAndSuffix: "0",
+			},
+			want: want{
+				body:       "/container_1/0/0/0/0",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "container_2/1/2/3/4",
 			fields: fields{
 				configFile:       "ogc/geovolumes/testdata/config_minimal_3d.yaml",
@@ -189,6 +205,18 @@ func TestThreeDimensionalGeoVolume_ExplicitTileSet(t *testing.T) {
 			want: want{
 				body:       "/container_2/tileset-5-768-896.json",
 				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "404",
+			fields: fields{
+				configFile:  "ogc/geovolumes/testdata/config_minimal_3d.yaml",
+				url:         "http://localhost:8080/collections/:3dContainerId/:explicitTileSet.json",
+				containerID: "container_2",
+			},
+			want: want{
+				body:       "404 page not found\n",
+				statusCode: http.StatusNotFound,
 			},
 		},
 	}

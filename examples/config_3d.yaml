@@ -28,7 +28,7 @@ ogcApi:
       - id: NewYork
         # optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
         tileServerPath: "NewYork/3DTiles"
-        # optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb"
+        # URI template for individual 3D tiles
         uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
 
         # optional URI template for subtrees, only required when "implicit tiling" extension is used

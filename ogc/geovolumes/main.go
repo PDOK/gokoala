@@ -38,7 +38,7 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDime
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 
-	// path '/3dtiles/' or '/quantized-mesh' is preferred but optional when requesting the actual tiles/tileset.
+	// path '/3dtiles' or '/quantized-mesh' is preferred but optional when requesting the actual tiles/tileset.
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
@@ -91,8 +91,8 @@ func (t *ThreeDimensionalGeoVolumes) Tile() http.HandlerFunc {
 		tileColAndSuffix := chi.URLParam(r, "tileColAndSuffix")
 
 		contentType := ""
-		if collection.GeoVolumes != nil && collection.GeoVolumes.URITemplateDTM != nil {
-			// DTM has a specialized mediatype, although application/octet-stream will also work
+		if collection.GeoVolumes != nil && collection.GeoVolumes.HasDTM() {
+			// DTM has a specialized mediatype, although application/octet-stream will also work with Cesium
 			contentType = engine.MediaTypeQuantizedMesh
 		}
 

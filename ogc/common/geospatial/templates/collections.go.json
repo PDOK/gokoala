@@ -60,14 +60,7 @@
         }
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
-            {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
-            ,{
-              "rel" : "items",
-              "type" : "application/json",
-              "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/quantized-mesh?f=json"
-            }
-            {{ else }}
+            {{ if and $coll.GeoVolumes $coll.GeoVolumes.Has3DTiles }}
             ,{
               "rel" : "items",
               "type" : "application/json+3dtiles",
@@ -75,6 +68,14 @@
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
             }
             {{end}}
+            {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
+            ,{
+              "rel" : "items",
+              "type" : "application/json",
+              "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/quantized-mesh?f=json"
+            }
+            {{ end }}
           {{end}}
         {{end}}
         {{ if and $cfg.OgcAPI.Tiles $cfg.OgcAPI.Tiles.Collections }}

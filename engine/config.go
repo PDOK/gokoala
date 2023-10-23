@@ -203,17 +203,21 @@ type CollectionEntry3dGeoVolumes struct {
 	// Optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
 	TileServerPath *string `yaml:"tileServerPath"`
 
-	// Optional URI template for individual 3D tiles, defaults to "tiles/{level}/{x}/{y}.glb".
-	URITemplate3dTiles *string `yaml:"uriTemplate3dTiles"`
+	// URI template for individual 3D tiles.
+	URITemplate3dTiles *string `yaml:"uriTemplate3dTiles" validate:"required_without_all=URITemplateDTM"`
 
 	// Optional URI template for subtrees, only required when "implicit tiling" extension is used.
 	URITemplateImplicitTilingSubtree *string `yaml:"uriTemplateImplicitTilingSubtree"`
 
 	// URI template for digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM.
-	URITemplateDTM *string `yaml:"uriTemplateDTM"`
+	URITemplateDTM *string `yaml:"uriTemplateDTM" validate:"required_without_all=URITemplate3dTiles"`
 
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
 	URL3DViewer *YAMLURL `yaml:"3dViewerUrl" validate:"url"`
+}
+
+func (gv *CollectionEntry3dGeoVolumes) Has3DTiles() bool {
+	return gv.URITemplate3dTiles != nil
 }
 
 func (gv *CollectionEntry3dGeoVolumes) HasDTM() bool {
