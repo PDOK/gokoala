@@ -25,6 +25,7 @@ type FeatureOptions struct {
 	// pagination
 	Cursor int64
 	Limit  int
+	Order  string // asc or desc
 
 	// multiple projections support
 	Crs string
@@ -32,4 +33,8 @@ type FeatureOptions struct {
 	// filtering by bounding box
 	Bbox    *geom.Extent
 	BboxCrs string
+
+	// filtering by CQL
+	Filter    string
+	FilterCrs string
 }

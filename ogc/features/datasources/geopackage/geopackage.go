@@ -158,8 +158,16 @@ func (g *GeoPackage) makeFeaturesQuery(table *featureTable, options datasources.
 		bboxQuery := ""
 		return bboxQuery, []any{options.Cursor, options.Limit, options.Bbox}
 	}
-	defaultQuery := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", table.TableName, g.fidColumn, g.fidColumn)
+	cursorClause := g.makeCursorClause(options.Order)
+	defaultQuery := fmt.Sprintf("select * from %s f where %s limit ?", table.TableName, cursorClause)
 	return defaultQuery, []any{options.Cursor, options.Limit}
+}
+
+func (g *GeoPackage) makeCursorClause(order string) string {
+	if order == domain.OrderDesc {
+		return fmt.Sprintf("f.%s < ? order by f.%s desc", g.fidColumn, g.fidColumn)
+	}
+	return fmt.Sprintf("f.%s > ? order by f.%s asc", g.fidColumn, g.fidColumn)
 }
 
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from

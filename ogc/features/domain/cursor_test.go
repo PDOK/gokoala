@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"log"
 	"reflect"
 	"testing"
 )
@@ -49,7 +48,6 @@ func TestNewCursor(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewCursor() = %v, want %v", got, tt.want)
 			}
-			log.Printf("prev %d, next %d", got.Prev.Decode(), got.Next.Decode())
 		})
 	}
 }

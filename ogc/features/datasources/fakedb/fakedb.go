@@ -28,16 +28,17 @@ func (FakeDB) Close() {
 }
 
 func (fdb FakeDB) GetFeatures(_ context.Context, _ string, options datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursor, error) {
-	low := options.Cursor
-	high := low + int64(options.Limit)
+	var low int64
+	var high int64
+	if options.Order == domain.OrderAsc {
+		low = options.Cursor + 1
+		high = low + int64(options.Limit)
+	} else {
+		high = options.Cursor
+		low = high - int64(options.Limit)
+	}
 
 	last := high > int64(len(fdb.featureCollection.Features))
-	if last {
-		high = int64(len(fdb.featureCollection.Features))
-	}
-	if high < 0 {
-		high = 0
-	}
 
 	page := fdb.featureCollection.Features[low:high]
 	return &domain.FeatureCollection{

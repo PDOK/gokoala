@@ -76,12 +76,13 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		options := datasources.FeatureOptions{
-			Cursor: encodedCursor.Decode(),
+		cursor, order := encodedCursor.Decode()
+		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
+			Cursor: cursor,
 			Limit:  limit,
+			Order:  order,
 			// TODO set bbox, bbox-crs, etc
-		}
-		fc, cursor, err := f.datasource.GetFeatures(r.Context(), collectionID, options)
+		})
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
@@ -93,12 +94,11 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
+		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, cursor, limit, fc)
+			f.html.features(w, r, collectionID, newCursor, limit, fc)
 		case engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, collectionID, cursor, limit, fc)
+			f.json.featuresAsGeoJSON(w, collectionID, newCursor, limit, fc)
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG()
 		default:
@@ -134,8 +134,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
+		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
 			f.html.feature(w, r, collectionID, feat)
 		case engine.FormatJSON:

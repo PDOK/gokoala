@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/go-spatial/geom"
@@ -70,6 +71,11 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 		}
 		result = append(result, feature)
 	}
+
+	// sort by ascending ID, we need sorting here since 'previous' navigation causes an inverted result set
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].ID < result[j].ID
+	})
 	return result, nil
 }
 
