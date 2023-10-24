@@ -70,7 +70,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
 export class AppComponent implements OnChanges {
   title = 'vectortile-view-component';
   map = new Map({});
-  selector = '/{z}/{y}/{x}?f=mvt';
+  xyzselector = '/{z}/{y}/{x}?f=mvt';
   private _showGrid = false;
   private _showObjectInfo = false;
   vectorTileLayer: VectorTileLayer | undefined;
@@ -153,9 +153,11 @@ export class AppComponent implements OnChanges {
         const linkurl = this.FindMatrixUrl(tile.links);
         if (linkurl) {
           matrixurl = linkurl;
+        } else {
+          console.log('tileurl :' + this.tileUrl + 'not found');
         }
         this.drawFromMatrixUrl(tile, matrixurl);
-        this.SetZoom(tile);
+        this.SetZoomLevel(tile);
         this.cdf.detectChanges();
       },
       error: msg => {
@@ -164,19 +166,11 @@ export class AppComponent implements OnChanges {
     });
   }
 
-  private SetZoom(tile: Matrix) {
+  private SetZoomLevel(tile: Matrix) {
     tile.tileMatrixSetLimits.forEach(limit => {
-      if (this.tileUrl.includes('WebMercatorQuad')) {
-        //the matrix is not correct on server?  size of vector 512px,  256px in tile grid correct?
-        if (!this.minZoom) {
-          this.minZoom = parseFloat(limit.tileMatrix) + 1;
-        }
-      }
-      if (this.zoom === -1) {
-        this.zoom = parseFloat(limit.tileMatrix);
-      }
       if (!this.minZoom) {
-        this.minZoom = parseFloat(limit.tileMatrix) + 1;
+        this.minZoom = parseFloat(limit.tileMatrix) + 0.01;
+        this.zoom = this.minZoom;
       }
       this.maxZoom = parseFloat(limit.tileMatrix) + 1;
     });
@@ -247,7 +241,6 @@ export class AppComponent implements OnChanges {
           if (feature) {
             if (this._showObjectInfo) {
               this.curFeature = feature;
-              // this.cdf.checkNoChanges()
               this.cdf.detectChanges();
             }
             this.activeFeature.emit(feature);
@@ -259,13 +252,14 @@ export class AppComponent implements OnChanges {
 
     map.getView().on('change:resolution', () => {
       const zoom = this.map.getView().getZoom();
+      console.log('zoom' + zoom);
       if (zoom) {
         this._zoom = zoom;
         this.currentZoomLevel.next(zoom);
       }
     });
 
-    this.SetZoom(tile);
+    this.SetZoomLevel(tile);
     const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']");
     this.mapWidth = this.elementRef.nativeElement.offsetWidth;
     this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75; // height = 0.75 * width creates 4:3 aspect ratio
@@ -296,8 +290,12 @@ export class AppComponent implements OnChanges {
     const layers = l.layers;
     const acenter: Coordinate = [this.centerX, this.centerY];
     this.vectorTileLayer = l.vectorTileLayer;
+
+    const contr = defaultControls({
+      zoom: this.maxZoom! - this.minZoom! > 1,
+    }).extend([new FullScreen()]);
     this.map = new Map({
-      controls: defaultControls().extend([new FullScreen()]),
+      controls: contr,
       layers: layers,
       view: new View({
         center: acenter,
@@ -340,11 +338,12 @@ export class AppComponent implements OnChanges {
 
   private setStyle(vectorTileLayer: VectorTileLayer) {
     if (this.styleUrl) {
+      const projection = vectorTileLayer.getSource()?.getProjection();
       applyStyle(vectorTileLayer, this.styleUrl)
         .then(() => {
           //overrule source url and zoom from style
           if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
-            vectorTileLayer.getSource()?.setUrl(this.tileUrl + this.selector);
+            vectorTileLayer.setSource(this.getVectorTileSource(projection!, this.tileUrl));
           }
         })
         .catch(err => console.error('error loading: ' + this.id + ' ' + this.styleUrl + ' ' + err));
@@ -386,7 +385,7 @@ export class AppComponent implements OnChanges {
       format: new MVT(),
       projection: projection,
       tileGrid: this.tileGrid,
-      url: url + this.selector,
+      url: url + this.xyzselector,
       cacheSize: 0,
     });
     source.on(['tileloadend'], e => {
