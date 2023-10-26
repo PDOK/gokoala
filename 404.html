@@ -79,7 +79,6 @@
       }
     </style>
   <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.ee42683d02a100f9.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.ee42683d02a100f9.css"></noscript></head>
-
   <body onload="load()">
     <h1>Web component "app-vectortile-view" usage samples:</h1>
 
@@ -98,85 +97,6 @@
       });
     </script>
 
-    <h1>Select vector tile </h1>
-
-    <select id="url-selector">
-      <option value="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/">administrative Units</option>
-      <option value="https://api.pdok.nl/lv/bag/ogc/v1_0/">Buildings (BAG)</option>
-      <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/">Large-scale Topography (BGT)</option>
-    </select>
-
-    <select id="projection-selector">
-      <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
-      <option value="WebMercatorQuad">WebMercatorQuad</option>
-      <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
-    </select>
-
-    <div class="showarea">
-      <div class="showbox">
-        <div id="zoomlevel"></div>
-        <div id="current-url"></div>
-
-        <div>Projection:</div>
-        <div id="thisprojection">NetherlandsRDNewQuad</div>
-        <div>Url:</div>
-        <div id="thisurl">https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/</div>
-        <div id="totalurl"></div>
-      </div>
-
-      <div class="showbox">
-        <app-vectortile-view id="vectortile" tile-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/" center-x="5.3896944" center-y="52.1562499" show-grid="true" show-object-info="true">
-        </app-vectortile-view>
-
-        <script>
-          vectortile.addEventListener('currentZoomLevel', a1 => {
-            console.log('zoomlevel: ');
-            console.log(JSON.stringify(a1.detail));
-            const zooml = document.getElementById('zoomlevel');
-            zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2);
-          });
-
-          vectortile.addEventListener('activeTileUrl', activeurl => {
-            console.log(JSON.stringify(activeurl.detail));
-
-            const cururl = document.getElementById('current-url');
-            cururl.innerHTML = 'url ' + activeurl.detail;
-          });
-
-          seturl();
-
-          document.addEventListener(
-            'input',
-            function (event) {
-              console.log(event);
-              if (event.target.id == 'projection-selector') {
-                const p = document.getElementById('thisprojection');
-                p.innerHTML = event.target.value;
-              }
-
-              if (event.target.id == 'url-selector') {
-                const u = document.getElementById('thisurl');
-                u.innerHTML = event.target.value;
-              }
-
-              seturl();
-            },
-            false
-          );
-
-          function seturl() {
-            const p = document.getElementById('thisprojection');
-            const u = document.getElementById('thisurl');
-            const view = document.getElementById('vectortile');
-            const url = u.innerHTML + 'tiles/' + p.innerHTML;
-            view.setAttribute('tile-url', url);
-            const link = document.getElementById('totalurl');
-            link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
-          }
-        </script>
-      </div>
-    </div>
-
     <h2>3. <a href="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad"> BAG WebMercato with grid </a></h2>
     <app-vectortile-view id="sample3a" class="showbox" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad" center-x="5.3896944" center-y="52.1562499" show-grid="true">
     </app-vectortile-view>
@@ -185,12 +105,11 @@
       <div id="sample4viewlink"></div>
     </h2>
 
-    <select id="sample4select" style="width: 15%">
+    <select id="sample4-select" style="width: 15%">
       <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
       <option value="WebMercatorQuad">WebMercatorQuad</option>
       <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
     </select>
-
     <app-vectortile-view id="sample4view" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/NetherlandsRDNewQuad" class="showbox" style-url="https://api.pdok.nl/lv/bag/ogc/v1_0/styles/bag_standaardvisualisatie?f=json" center-x="5.3896944" center-y="52.1562499" show-grid="true">
     </app-vectortile-view>
 
@@ -206,10 +125,8 @@
         'input',
         function (event) {
           // only operate on srs dropdown
-          if (event.target.id !== 'sample4select') return;
+          if (event.target.id !== 'sample4-select') return;
           var projection = event.target.value;
-
-          const view = document.getElementById('sample4view');
 
           view.setAttribute('tile-url', 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection);
           const link = document.getElementById('sample4viewlink');
@@ -343,5 +260,5 @@
         </app-legend-view>
       </div>
     </div>
-  <script src="runtime.076f20a594d8613d.js" type="module"></script><script src="polyfills.f83445722e06c254.js" type="module"></script><script src="main.08d12416b6c6d4c1.js" type="module"></script></body>
+  <script src="runtime.076f20a594d8613d.js" type="module"></script><script src="polyfills.f83445722e06c254.js" type="module"></script><script src="main.a6e173412e440230.js" type="module"></script></body>
 </html>
