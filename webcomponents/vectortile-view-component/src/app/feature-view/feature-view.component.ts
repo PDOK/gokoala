@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, NgIterable, OnChanges, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, Component, ElementRef, Input, NgIterable, OnChanges, OnInit } from '@angular/core'
 import { NgChanges } from '../app.component'
 
 import { Feature, Map as OLMap, Tile, VectorTile, View } from 'ol'
@@ -7,18 +7,22 @@ import { OSM, Vector as VectorSource } from 'ol/source'
 
 import { FeaturesService } from '../openapi/api/features.service'
 import { FeatureCollectionGeoJSON } from '../openapi/model/featureCollectionGeoJSON'
-import { Vector as VectorLayer } from 'ol/layer'
+import { Group, Vector as VectorLayer } from 'ol/layer'
 import GeoJSON from 'ol/format/GeoJSON'
 import { Circle, Fill, Stroke, Style } from 'ol/style'
-import { Extent, boundingExtent } from 'ol/extent'
+import { Extent, buffer } from 'ol/extent'
 import { Geometry, Point, Polygon, SimpleGeometry } from 'ol/geom'
 import { FeatureServiceService, DataUrl } from '../feature-service.service'
 import { ProjectionLike } from 'ol/proj'
+import { take } from 'rxjs/operators'
+import { FitOptions } from 'ol/View'
 
 @Component({
   selector: 'app-feature-view',
   templateUrl: './feature-view.component.html',
   styleUrls: ['./feature-view.component.css'],
+
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureViewComponent implements OnInit, OnChanges {
   @Input() itemsUrl!: string
@@ -65,14 +69,17 @@ export class FeatureViewComponent implements OnInit, OnChanges {
     console.log('projection: ' + this.projection)
 
     const aurl: DataUrl = { url: this.itemsUrl, projection: this.projection }
-    this.featureService.getFeatures(aurl).subscribe(data => {
 
-      this.loadbackground()
-      this.features = data
-      this.loadfeatures(this.features)
-    })
+    this.featureService
+      .getFeatures(aurl)
+      .pipe(take(1))
+      .subscribe(data => {
+        this.map.setLayerGroup(new Group())
+        this.loadbackground()
+        this.features = data
+        this.loadfeatures(this.features)
+      })
   }
-
 
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
     if (
@@ -81,13 +88,11 @@ export class FeatureViewComponent implements OnInit, OnChanges {
     ) {
       console.log('url: ' + changes.itemsUrl?.currentValue)
       this.init()
-
     }
   }
 
   ngOnInit() {
     this.init()
-
   }
 
   loadbackground() {
@@ -138,7 +143,11 @@ export class FeatureViewComponent implements OnInit, OnChanges {
 
   setViewExtent(extent: Extent) {
     const view = new View({ extent: extent })
-    view.fit(extent)
+    const fitOptions: FitOptions = {
+      size: this.map.getSize(),
+    }
+    view.fit(extent, fitOptions)
+
     this.map.setView(view)
   }
 }
