@@ -3,3 +3,4 @@
 .vscode/
 gokoala
 assets/vectortile-view-component/
+webcomponents/vectortile-view-component/src/app/openapi

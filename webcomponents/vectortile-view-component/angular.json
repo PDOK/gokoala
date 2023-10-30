@@ -24,6 +24,11 @@
                 "glob": "**/*",
                 "input": "src/assets/teststyles",
                 "output": "styles"
+              }, 
+              {
+                "glob": "**/*",
+                "input": "src/assets/testdata",
+                "output": "testdata"
               }
             ],
             "styles": ["node_modules/ol/ol.css", "src/styles.css"],

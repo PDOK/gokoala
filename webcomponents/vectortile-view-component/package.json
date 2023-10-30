@@ -4,12 +4,13 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run format && npm run lint && ng build --output-hashing none",
+    "build": "npm run format && npm run lint && npm run generate:api && ng build --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "deploy": "ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
     "lint": "ng lint",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write .", 
+    "generate:api": "openapi-generator-cli generate -i https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/api?f=json -g typescript-angular -o src/app/openapi"
   },
   "private": true,
   "dependencies": {
@@ -34,10 +35,11 @@
     "@angular-eslint/builder": "16.2.0",
     "@angular-eslint/eslint-plugin": "16.2.0",
     "@angular-eslint/eslint-plugin-template": "16.2.0",
-    "@angular-eslint/schematics": "16.2.0",
+    "@angular-eslint/schematics": "^16.2.0",
     "@angular-eslint/template-parser": "16.2.0",
     "@angular/cli": "~16.2.0",
     "@angular/compiler-cli": "^16.2.1",
+    "@openapitools/openapi-generator-cli": "^2.7.0",
     "@types/jasmine": "~4.3.5",
     "@types/proj4": "^2.5.2",
     "@typescript-eslint/eslint-plugin": "5.62.0",
