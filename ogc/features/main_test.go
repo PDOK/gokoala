@@ -275,7 +275,6 @@ func TestFeatures_Feature(t *testing.T) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				log.Printf(rr.Body.String())
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())

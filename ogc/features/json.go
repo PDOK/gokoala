@@ -21,7 +21,7 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 }
 
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID string,
-	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
+	cursor domain.Cursors, limit int, fc *domain.FeatureCollection) {
 
 	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, limit)
 	fcJSON, err := toJSON(&fc)
@@ -50,7 +50,7 @@ func (jf *jsonFeatures) featureAsJSONFG() {
 	// TODO: not implemented yet
 }
 
-func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursor, limit int) []domain.Link {
+func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursors, limit int) []domain.Link {
 	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", jf.engine.Config.BaseURL.String(), collectionID)
 
 	links := make([]domain.Link, 0)

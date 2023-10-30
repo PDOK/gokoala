@@ -84,10 +84,10 @@ func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursor, error) {
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursors, error) {
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
-		return nil, domain.Cursor{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+		return nil, domain.Cursors{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
 			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByCollectionID))
 	}
 
@@ -97,28 +97,28 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	query, queryArgs := g.makeFeaturesQuery(table, options)
 	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
 	if err != nil {
-		return nil, domain.Cursor{}, err
+		return nil, domain.Cursors{}, err
 	}
 	defer stmt.Close()
 
 	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, queryArgs...)
 	if err != nil {
-		return nil, domain.Cursor{}, fmt.Errorf("query '%s' failed: %w", query, err)
+		return nil, domain.Cursors{}, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
 
-	var nextPrev *domain.NextPrevID
+	var nextPrev *domain.PrevNextID
 	result := domain.FeatureCollection{}
 	result.Features, nextPrev, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
-		return nil, domain.Cursor{}, err
+		return nil, domain.Cursors{}, err
 	}
 	if nextPrev == nil {
-		return nil, domain.Cursor{}, fmt.Errorf("failed to get prev/next cursor")
+		return nil, domain.Cursors{}, fmt.Errorf("failed to get prev/next cursor")
 	}
 
 	result.NumberReturned = len(result.Features)
-	return &result, domain.NewCursor(result.Features, *nextPrev), nil
+	return &result, domain.NewCursors(*nextPrev), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
@@ -155,16 +155,16 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 }
 
 func (g *GeoPackage) makeFeaturesQuery(table *featureTable, opt datasources.FeatureOptions) (string, []any) {
-	// we don't yet support extra filters but when we do (as in the case of bbox or part3 filtering)
-	// they need to be included in the next/prev handling as well
+	// filters (bbox, part3 filters) need to be included in the next/prev handling as well
 	extraFilters := ""
 
+	// make sure to use SQL bind variables, we prefer $N style parameters for reusability and broader compatibility.
 	nextPrevCTE := fmt.Sprintf(`
-next as (select * from %[1]s where %[2]s >= %[3]d %[5]s order by %[2]s asc limit %[4]d + 1),
-prev as (select * from %[1]s where %[2]s < %[3]d %[5]s order by %[2]s desc limit %[4]d),
+next as (select * from %[1]s where %[2]s >= $1 %[3]s order by %[2]s asc limit $2 + 1),
+prev as (select * from %[1]s where %[2]s < $1 %[3]s order by %[2]s desc limit $2),
 nextprev as (select * from next union all select * from prev),
-featuretable as (select *, lag(%[2]s, %[4]d) over (order by %[2]s) as prevcursor, lead(%[2]s, %[4]d) over (order by %[2]s) as nextcursor from nextprev)
-`, table.TableName, g.fidColumn, opt.Cursor, opt.Limit, extraFilters)
+featuretable as (select *, lag(%[2]s, $2) over (order by %[2]s) as prevfid, lead(%[2]s, $2) over (order by %[2]s) as nextfid from nextprev)
+`, table.TableName, g.fidColumn, extraFilters)
 
 	if opt.Bbox != nil {
 		// TODO create bbox query
@@ -176,7 +176,7 @@ featuretable as (select *, lag(%[2]s, %[4]d) over (order by %[2]s) as prevcursor
 		filterQuery := fmt.Sprintf(`with %s <filter query here>`, nextPrevCTE)
 		return filterQuery, []any{opt.Cursor, opt.Limit, opt.Filter}
 	}
-	defaultQuery := fmt.Sprintf(`with %s select * from featuretable where %s >= ? limit ?`, nextPrevCTE, g.fidColumn)
+	defaultQuery := fmt.Sprintf(`with %s select * from featuretable where %s >= $1 limit $2`, nextPrevCTE, g.fidColumn)
 	return defaultQuery, []any{opt.Cursor, opt.Limit}
 }
 
@@ -208,8 +208,7 @@ func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (ma
 				if row.Identifier == collection.ID {
 					result[collection.ID] = &row
 					break
-				} else if collection.Features != nil && collection.Features.DatasourceID != nil &&
-					row.Identifier == *collection.Features.DatasourceID {
+				} else if hasMatchingDatasourceID(collection, row) {
 					result[collection.ID] = &row
 					break
 				}
@@ -225,6 +224,11 @@ func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (ma
 	}
 
 	return result, nil
+}
+
+func hasMatchingDatasourceID(collection engine.GeoSpatialCollection, row featureTable) bool {
+	return collection.Features != nil && collection.Features.DatasourceID != nil &&
+		row.Identifier == *collection.Features.DatasourceID
 }
 
 func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {

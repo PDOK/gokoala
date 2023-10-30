@@ -8,23 +8,23 @@ import (
 func TestNewCursor(t *testing.T) {
 	type args struct {
 		features []*Feature
-		id       NextPrevID
+		id       PrevNextID
 	}
 	var tests = []struct {
 		name string
 		args args
-		want Cursor
+		want Cursors
 	}{
 		{
 			name: "test first page",
 			args: args{
 				features: []*Feature{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}},
-				id: NextPrevID{
+				id: PrevNextID{
 					Prev: 0,
 					Next: 4,
 				},
 			},
-			want: Cursor{
+			want: Cursors{
 				Prev:    "1GpOCgaM",
 				Next:    "eVc7GU6Q",
 				HasPrev: false,
@@ -35,12 +35,12 @@ func TestNewCursor(t *testing.T) {
 			name: "test last page",
 			args: args{
 				features: []*Feature{{ID: 5}, {ID: 6}, {ID: 7}, {ID: 8}},
-				id: NextPrevID{
+				id: PrevNextID{
 					Prev: 4,
 					Next: 0,
 				},
 			},
-			want: Cursor{
+			want: Cursors{
 				Prev:    "eVc7GU6Q",
 				Next:    "1GpOCgaM",
 				HasPrev: true,
@@ -51,12 +51,12 @@ func TestNewCursor(t *testing.T) {
 			name: "test middle page",
 			args: args{
 				features: []*Feature{{ID: 3}, {ID: 4}, {ID: 5}, {ID: 6}},
-				id: NextPrevID{
+				id: PrevNextID{
 					Prev: 2,
 					Next: 7,
 				},
 			},
-			want: Cursor{
+			want: Cursors{
 				Prev:    "GDsXEuZV",
 				Next:    "7Temhips",
 				HasPrev: true,
@@ -66,9 +66,9 @@ func TestNewCursor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewCursor(tt.args.features, tt.args.id)
+			got := NewCursors(tt.args.id)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewCursor() = %v, want %v", got, tt.want)
+				t.Errorf("NewCursors() = %v, want %v", got, tt.want)
 			}
 		})
 	}

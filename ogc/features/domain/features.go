@@ -50,7 +50,7 @@ type Link struct {
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
 func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
-	geomMapper func([]byte) (geom.Geometry, error)) ([]*Feature, *NextPrevID, error) {
+	geomMapper func([]byte) (geom.Geometry, error)) ([]*Feature, *PrevNextID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -59,7 +59,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 	}
 
 	firstRow := true
-	var nextPrevID *NextPrevID
+	var nextPrevID *PrevNextID
 	for rows.Next() {
 		var values []interface{}
 		if values, err = rows.SliceScan(); err != nil {
@@ -81,9 +81,9 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 
 //nolint:cyclop,funlen
 func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []interface{},
-	fidColumn string, geomColumn string, geomMapper func([]byte) (geom.Geometry, error)) (*NextPrevID, error) {
+	fidColumn string, geomColumn string, geomMapper func([]byte) (geom.Geometry, error)) (*PrevNextID, error) {
 
-	nextPrevID := NextPrevID{}
+	nextPrevID := PrevNextID{}
 	for i, columnName := range columns {
 		columnValue := values[i]
 		if columnValue == nil {
@@ -109,12 +109,12 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 			// Skip these columns used for bounding box and zoom filtering
 			continue
 
-		case "prevcursor":
+		case "prevfid":
 			if firstRow {
 				nextPrevID.Prev = columnValue.(int64)
 			}
 
-		case "nextcursor":
+		case "nextfid":
 			if firstRow {
 				nextPrevID.Next = columnValue.(int64)
 			}

@@ -75,7 +75,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		fields     fields
 		args       args
 		wantFC     *domain.FeatureCollection
-		wantCursor domain.Cursor
+		wantCursor domain.Cursors
 		wantErr    bool
 	}{
 		{
@@ -115,7 +115,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					},
 				},
 			},
-			wantCursor: domain.Cursor{
+			wantCursor: domain.Cursors{
 				Prev: "1GpOCgaM",
 				Next: "XmmqLWc5", // 3838
 			},
@@ -166,7 +166,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					},
 				},
 			},
-			wantCursor: domain.Cursor{
+			wantCursor: domain.Cursors{
 				Prev: "1GpOCgaM",
 				Next: "wzzgqy8O",
 			},
@@ -189,7 +189,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				},
 			},
 			wantFC:     nil,
-			wantCursor: domain.Cursor{},
+			wantCursor: domain.Cursors{},
 			wantErr:    true, // should fail
 		},
 	}

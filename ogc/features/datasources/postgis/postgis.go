@@ -20,10 +20,10 @@ func (PostGIS) Close() {
 	// noop
 }
 
-func (pg PostGIS) GetFeatures(_ context.Context, _ string, _ datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursor, error) {
+func (pg PostGIS) GetFeatures(_ context.Context, _ string, _ datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursors, error) {
 	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple datastores")
 	return &domain.FeatureCollection{},
-		domain.Cursor{},
+		domain.Cursors{},
 		nil
 }
 

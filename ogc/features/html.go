@@ -38,7 +38,7 @@ type featureCollectionPage struct {
 
 	CollectionID string
 	Metadata     *engine.GeoSpatialCollectionMetadata
-	Cursor       domain.Cursor
+	Cursor       domain.Cursors
 	Limit        int
 }
 
@@ -51,7 +51,7 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
+	cursor domain.Cursors, limit int, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collectionsMetadata[collectionID]
 

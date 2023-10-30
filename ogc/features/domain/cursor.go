@@ -18,8 +18,8 @@ var (
 	})
 )
 
-// Cursor since we use cursor-based pagination as opposed to offset-based pagination
-type Cursor struct {
+// Cursors holds next and previous cursor, since we use cursor-based pagination as opposed to offset-based pagination
+type Cursors struct {
 	Prev EncodedCursor
 	Next EncodedCursor
 
@@ -27,18 +27,17 @@ type Cursor struct {
 	HasNext bool
 }
 
-type NextPrevID struct {
+// EncodedCursor is a scrambled string representation of a consecutive ordered integer cursor
+type EncodedCursor string
+
+// PrevNextID id of previous and next feature id (fid) to encode in cursor.
+type PrevNextID struct {
 	Prev int64
 	Next int64
 }
 
-func NewCursor(features []*Feature, id NextPrevID) Cursor {
-	limit := len(features)
-	if limit == 0 {
-		return Cursor{}
-	}
-
-	return Cursor{
+func NewCursors(id PrevNextID) Cursors {
+	return Cursors{
 		Prev: encodeCursor(uint64(id.Prev)),
 		Next: encodeCursor(uint64(id.Next)),
 
@@ -46,9 +45,6 @@ func NewCursor(features []*Feature, id NextPrevID) Cursor {
 		HasNext: id.Next > 0,
 	}
 }
-
-// EncodedCursor is a scrambled string representation of a consecutive ordered integer cursor
-type EncodedCursor string
 
 func encodeCursor(value uint64) EncodedCursor {
 	encodedValue, err := cursorCodec.Encode([]uint64{value})
@@ -59,7 +55,7 @@ func encodeCursor(value uint64) EncodedCursor {
 	return EncodedCursor(encodedValue)
 }
 
-// Decode turn encoded cursor string into cursor value and orderBy direction
+// Decode turn encoded cursor string into cursor value(s)
 func (c EncodedCursor) Decode() int64 {
 	value := string(c)
 	if value == "" {
