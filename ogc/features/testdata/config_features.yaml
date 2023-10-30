@@ -1,8 +1,4 @@
 ---
-collectionMetadata: &exampleMetadata
-  description: >-
-    This is a description about lorum ipsum
-
 version: 1.0.2
 title: Minimal OGC API
 abstract: This is a minimal OGC API
@@ -14,15 +10,19 @@ license:
 ogcApi:
   features:
     datasource:
-      fakedb: true
+      geopackage:
+        local:
+          file: ./ogc/features/datasources/geopackage/testdata/addresses.gpkg
+          fid: feature_id
+          queryTimeout: 15m # pretty high to allow debugging
     collections:
       - id: foo
+        datasourceId: ligplaatsen
         metadata:
-          # inherit common metadata (to tidy example)
-          <<: *exampleMetadata
           title: Foooo
       - id: bar
+        datasourceId: ligplaatsen
         metadata:
-          <<: *exampleMetadata
           title: Barrr
+          datasourceId: ligplaatsen
       - id: baz

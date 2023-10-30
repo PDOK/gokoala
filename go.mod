@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/PDOK/go-cloud-sqlite-vfs v0.2.4
-	github.com/brianvoe/gofakeit/v6 v6.23.2
 	github.com/elnormous/contenttype v1.0.4
 	github.com/getkin/kin-openapi v0.116.0
 	github.com/go-chi/chi/v5 v5.0.8

@@ -10,8 +10,8 @@ import (
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
-	"github.com/PDOK/gokoala/ogc/features/datasources/fakedb"
 	"github.com/PDOK/gokoala/ogc/features/datasources/geopackage"
+	"github.com/PDOK/gokoala/ogc/features/datasources/postgis"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
@@ -35,12 +35,12 @@ type Features struct {
 
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	var datasource datasources.Datasource
-	if e.Config.OgcAPI.Features.Datasource.FakeDB {
-		datasource = fakedb.NewFakeDB()
-	} else if e.Config.OgcAPI.Features.Datasource.GeoPackage != nil {
+	if e.Config.OgcAPI.Features.Datasource.GeoPackage != nil {
 		datasource = geopackage.NewGeoPackage(
 			e.Config.OgcAPI.Features.Collections,
 			*e.Config.OgcAPI.Features.Datasource.GeoPackage)
+	} else if e.Config.OgcAPI.Features.Datasource.PostGIS != nil {
+		datasource = postgis.NewPostGIS()
 	}
 	e.RegisterShutdownHook(datasource.Close)
 
@@ -76,11 +76,9 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		cursor, order := encodedCursor.Decode()
 		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
-			Cursor: cursor,
+			Cursor: encodedCursor.Decode(),
 			Limit:  limit,
-			Order:  order,
 			// TODO set bbox, bbox-crs, etc
 		})
 		if err != nil {

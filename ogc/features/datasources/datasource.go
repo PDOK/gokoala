@@ -25,7 +25,6 @@ type FeatureOptions struct {
 	// pagination
 	Cursor int64
 	Limit  int
-	Order  string // asc or desc
 
 	// multiple projections support
 	Crs string

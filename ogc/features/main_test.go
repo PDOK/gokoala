@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/engine"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -151,8 +150,6 @@ func TestFeatures_CollectionContent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gofakeit.Seed(1) // Uses consistent fake data.
-
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
 			if err != nil {
 				log.Fatal(err)
@@ -202,16 +199,16 @@ func TestFeatures_Feature(t *testing.T) {
 		want   want
 	}{
 		{
-			name: "Request GeoJSON for feature 19",
+			name: "Request GeoJSON for feature 4030",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
-				featureID:    "19",
+				featureID:    "4030",
 				format:       "json",
 			},
 			want: want{
-				body:       "ogc/features/testdata/expected_feature_19.json",
+				body:       "ogc/features/testdata/expected_feature_4030.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -244,24 +241,22 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 		},
 		{
-			name: "Request HTML for feature 19",
+			name: "Request HTML for feature 4030",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
-				featureID:    "19",
+				featureID:    "4030",
 				format:       "html",
 			},
 			want: want{
-				body:       "ogc/features/testdata/expected_feature_19.html",
+				body:       "ogc/features/testdata/expected_feature_4030.html",
 				statusCode: http.StatusOK,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gofakeit.Seed(1) // Uses consistent fake data.
-
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
 			if err != nil {
 				log.Fatal(err)
@@ -280,6 +275,7 @@ func TestFeatures_Feature(t *testing.T) {
 				if err != nil {
 					log.Fatal(err)
 				}
+				log.Printf(rr.Body.String())
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())

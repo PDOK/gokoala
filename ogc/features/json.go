@@ -66,7 +66,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 		Type:  engine.MediaTypeHTML,
 		Href:  featuresBaseURL + "?f=html",
 	})
-	if !cursor.IsLast {
+	if cursor.HasNext {
 		links = append(links, domain.Link{
 			Rel:   "next",
 			Title: "Next page",
@@ -74,7 +74,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 			Href:  fmt.Sprintf("%s?f=json&cursor=%s&limit=%d", featuresBaseURL, cursor.Next, limit),
 		})
 	}
-	if !cursor.IsFirst {
+	if cursor.HasPrev {
 		links = append(links, domain.Link{
 			Rel:   "prev",
 			Title: "Previous page",

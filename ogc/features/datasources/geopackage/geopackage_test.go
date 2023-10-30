@@ -84,7 +84,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				backend:          newAddressesGeoPackage(),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
-				queryTimeout:     5 * time.Second,
+				queryTimeout:     60 * time.Second,
 			},
 			args: args{
 				ctx:        context.Background(),
@@ -116,8 +116,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				},
 			},
 			wantCursor: domain.Cursor{
-				Prev: "spDyEwb4",
-				Next: "trrEb5db", // 3837
+				Prev: "1GpOCgaM",
+				Next: "XmmqLWc5", // 3838
 			},
 			wantErr: false,
 		},
@@ -133,7 +133,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeatureOptions{
-					Cursor: 3837, // see next cursor from test above
+					Cursor: 3838, // see next cursor from test above
 					Limit:  3,
 				},
 			},
@@ -167,8 +167,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				},
 			},
 			wantCursor: domain.Cursor{
-				Prev: "LZZS4c3w",
-				Next: "CNNniQpu",
+				Prev: "1GpOCgaM",
+				Next: "wzzgqy8O",
 			},
 			wantErr: false,
 		},

@@ -107,16 +107,18 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	}
 	defer rows.Close()
 
+	var nextPrev *domain.NextPrevID
 	result := domain.FeatureCollection{}
-	result.Features, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	result.Features, nextPrev, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, domain.Cursor{}, err
 	}
+	if nextPrev == nil {
+		return nil, domain.Cursor{}, fmt.Errorf("failed to get prev/next cursor")
+	}
 
 	result.NumberReturned = len(result.Features)
-	last := result.NumberReturned < options.Limit // we could make this more reliable (by querying one record more), but sufficient for now
-
-	return &result, domain.NewCursor(result.Features, last), nil
+	return &result, domain.NewCursor(result.Features, *nextPrev), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
@@ -142,7 +144,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, err := domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, err
 	}
@@ -152,22 +154,30 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], nil
 }
 
-func (g *GeoPackage) makeFeaturesQuery(table *featureTable, options datasources.FeatureOptions) (string, []any) {
-	if options.Bbox != nil {
-		// TODO create bbox query
-		bboxQuery := ""
-		return bboxQuery, []any{options.Cursor, options.Limit, options.Bbox}
-	}
-	cursorClause := g.makeCursorClause(options.Order)
-	defaultQuery := fmt.Sprintf("select * from %s f where %s limit ?", table.TableName, cursorClause)
-	return defaultQuery, []any{options.Cursor, options.Limit}
-}
+func (g *GeoPackage) makeFeaturesQuery(table *featureTable, opt datasources.FeatureOptions) (string, []any) {
+	// we don't yet support extra filters but when we do (as in the case of bbox or part3 filtering)
+	// they need to be included in the next/prev handling as well
+	extraFilters := ""
 
-func (g *GeoPackage) makeCursorClause(order string) string {
-	if order == domain.OrderDesc {
-		return fmt.Sprintf("f.%s < ? order by f.%s desc", g.fidColumn, g.fidColumn)
+	nextPrevCTE := fmt.Sprintf(`
+next as (select * from %[1]s where %[2]s >= %[3]d %[5]s order by %[2]s asc limit %[4]d + 1),
+prev as (select * from %[1]s where %[2]s < %[3]d %[5]s order by %[2]s desc limit %[4]d),
+nextprev as (select * from next union all select * from prev),
+featuretable as (select *, lag(%[2]s, %[4]d) over (order by %[2]s) as prevcursor, lead(%[2]s, %[4]d) over (order by %[2]s) as nextcursor from nextprev)
+`, table.TableName, g.fidColumn, opt.Cursor, opt.Limit, extraFilters)
+
+	if opt.Bbox != nil {
+		// TODO create bbox query
+		bboxQuery := fmt.Sprintf(`with %s <bbox query here>`, nextPrevCTE)
+		return bboxQuery, []any{opt.Cursor, opt.Limit, opt.Bbox}
 	}
-	return fmt.Sprintf("f.%s > ? order by f.%s asc", g.fidColumn, g.fidColumn)
+	if opt.Filter != "" {
+		// TODO create part3 filter query
+		filterQuery := fmt.Sprintf(`with %s <filter query here>`, nextPrevCTE)
+		return filterQuery, []any{opt.Cursor, opt.Limit, opt.Filter}
+	}
+	defaultQuery := fmt.Sprintf(`with %s select * from featuretable where %s >= ? limit ?`, nextPrevCTE, g.fidColumn)
+	return defaultQuery, []any{opt.Cursor, opt.Limit}
 }
 
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
@@ -198,7 +208,8 @@ func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (ma
 				if row.Identifier == collection.ID {
 					result[collection.ID] = &row
 					break
-				} else if collection.Features.DatasourceID != nil && row.Identifier == *collection.Features.DatasourceID {
+				} else if collection.Features != nil && collection.Features.DatasourceID != nil &&
+					row.Identifier == *collection.Features.DatasourceID {
 					result[collection.ID] = &row
 					break
 				}

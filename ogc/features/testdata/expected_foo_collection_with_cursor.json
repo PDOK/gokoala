@@ -16,52 +16,58 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=9GxZGfBr&limit=2"
-    },
-    {
-      "rel": "prev",
-      "title": "Previous page",
-      "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=rV7TnxOd&limit=2"
+      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=XmmqLWc5&limit=2"
     }
   ],
   "numberReturned": 2,
   "type": "FeatureCollection",
   "features": [
     {
-      "id": 9,
+      "id": 3542,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -94.92211,
-          69.74055
+          120919.942,
+          489320.199
         ]
       },
       "properties": {
-        "city": "Irving",
-        "floorsize": 46,
-        "purpose": "Motivation",
-        "streetname": "886 Shoremouth",
-        "year": 1933
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 14,
+        "nummer_id": "0363200000454013",
+        "postcode": "1013CR",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000454013",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Van Diemenkade",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 10,
+      "id": 3837,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          174.767608,
-          26.853914
+          121108.424,
+          488930.925
         ]
       },
       "properties": {
-        "city": "Orlando",
-        "floorsize": 129,
-        "purpose": "Growth",
-        "streetname": "10094 Port Freewayfort",
-        "year": 1947
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 9,
+        "nummer_id": "0363200000398886",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398886",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     }
   ]
