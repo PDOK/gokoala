@@ -31,12 +31,13 @@
     <input onclick="showMap()" type="button" value="Show" />
     <div>show map for:</div>
     <a id="showurl">placeholdertext</a>
-    <!--app-feature-view id="featuresample" items-url=""></app-feature-view-->
+    <app-feature-view id="featuresample" items-url=""></app-feature-view>
 
     <app-feature-view
-      id="featuresample"
+      id="wegdelensample"
       items-url="https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?f=json"
-      projection="EPSG:28992">
+      projection="EPSG:28992"
+      background-map="BRT">
     </app-feature-view>
   </body>
   <script>

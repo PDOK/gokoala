@@ -1,32 +1,33 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, NgIterable, OnChanges, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, OnInit } from '@angular/core'
 import { NgChanges } from '../app.component'
-
-import { Feature, Map as OLMap, Tile, VectorTile, View } from 'ol'
+import { Feature, Map as OLMap, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
-import { OSM, Vector as VectorSource } from 'ol/source'
-
+import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
+import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { FeaturesService } from '../openapi/api/features.service'
 import { FeatureCollectionGeoJSON } from '../openapi/model/featureCollectionGeoJSON'
-import { Group, Vector as VectorLayer } from 'ol/layer'
-import GeoJSON from 'ol/format/GeoJSON'
+import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
 import { Circle, Fill, Stroke, Style } from 'ol/style'
-import { Extent, buffer } from 'ol/extent'
-import { Geometry, Point, Polygon, SimpleGeometry } from 'ol/geom'
+import { Extent, getTopLeft } from 'ol/extent'
+import { Geometry } from 'ol/geom'
 import { FeatureServiceService, DataUrl } from '../feature-service.service'
-import { ProjectionLike } from 'ol/proj'
+import { Projection, ProjectionLike } from 'ol/proj'
 import { take } from 'rxjs/operators'
 import { FitOptions } from 'ol/View'
+export function exhaustiveGuard(_value: never): never {
+  throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
+}
 
 @Component({
   selector: 'app-feature-view',
   templateUrl: './feature-view.component.html',
   styleUrls: ['./feature-view.component.css'],
-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureViewComponent implements OnInit, OnChanges {
   @Input() itemsUrl!: string
   @Input() projection: ProjectionLike = 'EPSG:3857'
+  @Input() backgroundMap: 'BRT' | 'OSM' = 'OSM'
   mapHeight = 400
   mapWidth = 600
   map: OLMap = this.getMap()
@@ -35,14 +36,8 @@ export class FeatureViewComponent implements OnInit, OnChanges {
 
   constructor(
     private el: ElementRef,
-    private featureService: FeatureServiceService,
-    private openApifeaturesService: FeaturesService
-  ) {
-    //this.OpenApifeaturesService.wegdelenGetFeatures().subscribe(data => {
-    //  this.featureCollectionGeoJSON = data
-    //  this.loadfeatures()
-    // })
-  }
+    private featureService: FeatureServiceService
+  ) {}
 
   private getMap(): OLMap {
     return new OLMap({
@@ -60,24 +55,20 @@ export class FeatureViewComponent implements OnInit, OnChanges {
     console.log('mapheight---' + this.mapHeight)
     console.log('mapwidth---' + this.mapWidth)
     const mapdiv: HTMLElement = this.el.nativeElement.querySelector("[id='map']")
-    // mapdiv.style.height= "100%" //this.mapHeight.toString()
-    // mapdiv.style.width= "100%" //this.mapWidth.toString()
     console.log(mapdiv)
     this.map.setTarget(mapdiv)
-
     console.log('url: ' + this.itemsUrl)
     console.log('projection: ' + this.projection)
-
     const aurl: DataUrl = { url: this.itemsUrl, projection: this.projection }
-
     this.featureService
       .getFeatures(aurl)
       .pipe(take(1))
       .subscribe(data => {
         this.map.setLayerGroup(new Group())
-        this.loadbackground()
+
         this.features = data
-        this.loadfeatures(this.features)
+        const ext = this.loadfeatures(this.features)
+        this.loadbackground()
       })
   }
 
@@ -96,10 +87,24 @@ export class FeatureViewComponent implements OnInit, OnChanges {
   }
 
   loadbackground() {
-    const backgroundLayer = new TileLayer({
-      source: new OSM(),
-    })
-    this.map.addLayer(backgroundLayer)
+    switch (this.backgroundMap) {
+      case 'OSM': {
+        const osm = new TileLayer({
+          source: new OSM(),
+        })
+        this.map.addLayer(osm)
+        return
+      }
+      case 'BRT': {
+        this.map.addLayer(this.brtLayer())
+        return
+      }
+
+      default: {
+        exhaustiveGuard(this.backgroundMap)
+        return
+      }
+    }
   }
 
   loadfeatures(features: Feature<Geometry>[]) {
@@ -115,8 +120,10 @@ export class FeatureViewComponent implements OnInit, OnChanges {
         zIndex: 10,
       })
     )
+    const ext = vsource.getExtent()
 
-    this.setViewExtent(vsource.getExtent())
+    this.setViewExtent(ext)
+    return ext
   }
 
   getstyle() {
@@ -147,11 +154,35 @@ export class FeatureViewComponent implements OnInit, OnChanges {
       size: this.map.getSize(),
     }
     view.fit(extent, fitOptions)
-
     this.map.setView(view)
   }
-}
 
-export function createFeatureViewComponent(el: ElementRef, featureService: FeatureServiceService, openApifeaturesService: FeaturesService) {
-  return new FeatureViewComponent(el, featureService, openApifeaturesService)
+  brtLayer() {
+    const projectionExtent = [-285401.92, 22598.08, 595401.9199999999, 903401.9199999999]
+    const projection = new Projection({ code: 'EPSG:28992', units: 'm', extent: projectionExtent })
+    const resolutions = [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76, 26.88, 13.44, 6.72, 3.36, 1.68, 0.84, 0.42, 0.21]
+    //const size = ol.extent.getWidth(projectionExtent) / 256
+
+    const matrixIds = []
+    for (let i = 0; i < resolutions.length; ++i) {
+      matrixIds[i] = 'EPSG:28992:' + i
+    }
+    return new Tile({
+      source: new WMTSSource({
+        attributions: 'Kaartgegevens: &copy; <a href="https://www.kadaster.nl">Kadaster</a>',
+        url: 'https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0?',
+        layer: 'grijs',
+        matrixSet: 'EPSG:28992',
+        format: 'image/png',
+        projection: projection,
+        tileGrid: new WMTSTileGrid({
+          origin: getTopLeft(projectionExtent),
+          resolutions: resolutions,
+          matrixIds: matrixIds,
+        }),
+        style: 'default',
+        wrapX: false,
+      }),
+    })
+  }
 }
