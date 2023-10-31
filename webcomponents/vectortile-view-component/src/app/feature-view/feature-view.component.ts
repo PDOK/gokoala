@@ -1,19 +1,23 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core'
 import { NgChanges } from '../app.component'
 import { Feature, Map as OLMap, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
-import { FeaturesService } from '../openapi/api/features.service'
 import { FeatureCollectionGeoJSON } from '../openapi/model/featureCollectionGeoJSON'
 import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
 import { Circle, Fill, Stroke, Style } from 'ol/style'
 import { Extent, getTopLeft } from 'ol/extent'
-import { Geometry } from 'ol/geom'
+import { Geometry, Point, Polygon } from 'ol/geom'
 import { FeatureServiceService, DataUrl } from '../feature-service.service'
 import { Projection, ProjectionLike } from 'ol/proj'
 import { take } from 'rxjs/operators'
 import { FitOptions } from 'ol/View'
+import { DragBox } from 'ol/interaction'
+import { platformModifierKeyOnly, shiftKeyOnly } from 'ol/events/condition'
+import { DragBoxEvent } from 'ol/interaction/DragBox'
+import { WKT } from 'ol/format'
+import { fromExtent } from 'ol/geom/Polygon'
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
@@ -28,11 +32,13 @@ export class FeatureViewComponent implements OnInit, OnChanges {
   @Input() itemsUrl!: string
   @Input() projection: ProjectionLike = 'EPSG:3857'
   @Input() backgroundMap: 'BRT' | 'OSM' = 'OSM'
+  @Output() box = new EventEmitter<string>()
   mapHeight = 400
   mapWidth = 600
   map: OLMap = this.getMap()
   featureCollectionGeoJSON!: FeatureCollectionGeoJSON
   features: Feature<Geometry>[] = []
+  boxLayer!: VectorLayer<VectorSource<Geometry>>
 
   constructor(
     private el: ElementRef,
@@ -69,6 +75,7 @@ export class FeatureViewComponent implements OnInit, OnChanges {
         this.features = data
         const ext = this.loadfeatures(this.features)
         this.loadbackground()
+        this.adddragbox()
       })
   }
 
@@ -149,11 +156,13 @@ export class FeatureViewComponent implements OnInit, OnChanges {
   }
 
   setViewExtent(extent: Extent) {
-    const view = new View({ extent: extent })
+    const view = new View({})
     const fitOptions: FitOptions = {
       size: this.map.getSize(),
     }
-    view.fit(extent, fitOptions)
+    const geom = fromExtent(extent)
+    geom.scale(1.05)
+    view.fit(geom, fitOptions)
     this.map.setView(view)
   }
 
@@ -183,6 +192,43 @@ export class FeatureViewComponent implements OnInit, OnChanges {
         style: 'default',
         wrapX: false,
       }),
+    })
+  }
+
+  adddragbox() {
+    const dragBox = new DragBox({
+      condition: platformModifierKeyOnly, //shiftKeyOnly,
+    })
+    this.map.addInteraction(dragBox)
+    dragBox.on('boxstart', (evt: DragBoxEvent) => {
+      if (this.boxLayer) {
+        this.map.removeLayer(this.boxLayer)
+        this.box.emit('')
+      }
+    })
+
+    dragBox.on('boxend', (evt: DragBoxEvent) => {
+      const bboxGeometry = dragBox.getGeometry()
+      const bbox = new Feature({
+        geometry: bboxGeometry,
+        name: 'bbox',
+      })
+      console.log(evt)
+      const bboxsource = new VectorSource({})
+      bboxsource.addFeature(bbox)
+      const format = new WKT()
+      this.box.emit(format.writeFeature(bbox))
+      const bboxStyle = new Style({
+        stroke: new Stroke({
+          color: 'blue',
+          width: 3,
+        }),
+        fill: new Fill({
+          color: 'rgba(0, 0, 255, 0.06)',
+        }),
+      })
+      this.boxLayer = new VectorLayer({ source: bboxsource, style: bboxStyle })
+      this.map.addLayer(this.boxLayer)
     })
   }
 }
