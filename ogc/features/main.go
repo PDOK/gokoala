@@ -1,10 +1,15 @@
 package features
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"log"
 	"net/http"
+	"net/url"
+	"slices"
+	"sort"
 	"strconv"
 
 	"github.com/PDOK/gokoala/engine"
@@ -76,8 +81,9 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
+		filtersHash := f.hashQueryParams(r.URL.Query(), []string{"f", "cursor"})
 		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
-			Cursor: encodedCursor.Decode(),
+			Cursor: encodedCursor.Decode(filtersHash),
 			Limit:  limit,
 			// TODO set bbox, bbox-crs, etc
 		})
@@ -103,6 +109,34 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			http.NotFound(w, r)
 		}
 	}
+}
+
+func (f *Features) hashQueryParams(queryParams url.Values, exceptParams []string) []byte {
+	initialSize := len(queryParams)
+	var valuesToHash bytes.Buffer
+	sortedQueryParams := make([]string, 0, initialSize)
+	for k := range queryParams {
+		sortedQueryParams = append(sortedQueryParams, k)
+	}
+	sort.Strings(sortedQueryParams) // sort keys
+OUTER:
+	for _, k := range sortedQueryParams {
+		for _, except := range exceptParams {
+			if k == except {
+				continue OUTER
+			}
+		}
+		paramValues := queryParams[k]
+		if paramValues != nil {
+			slices.Sort(paramValues) // sort values belonging to key
+		}
+		for _, s := range paramValues {
+			valuesToHash.WriteString(s)
+		}
+	}
+	hasher := fnv.New32a()
+	hasher.Write(valuesToHash.Bytes())
+	return hasher.Sum(nil)
 }
 
 // Feature serves a single Feature

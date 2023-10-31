@@ -23,7 +23,7 @@ type Datasource interface {
 // FeatureOptions to select a certain set of Features
 type FeatureOptions struct {
 	// pagination
-	Cursor int64
+	Cursor domain.DecodedCursor
 	Limit  int
 
 	// multiple projections support
