@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/engine/util"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom"
@@ -88,7 +89,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
 		return nil, domain.Cursors{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByCollectionID))
+			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
@@ -125,7 +126,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByCollectionID))
+			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations

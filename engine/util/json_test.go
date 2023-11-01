@@ -1,4 +1,4 @@
-package engine
+package util
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 
 func TestJSONMerge_identical_json_input_should_not_result_differences(t *testing.T) {
 	// given
-	file, err := filepath.Abs("engine/testdata/ogcapi-tiles-1.bundled.json")
+	file, err := filepath.Abs("../testdata/ogcapi-tiles-1.bundled.json")
 	if err != nil {
 		t.Fatalf("can't locate testdata %v", err)
 	}
@@ -30,7 +30,7 @@ func TestJSONMerge_identical_json_input_should_not_result_differences(t *testing
 	}
 
 	// when
-	actual, err := mergeJSON(fileContent, fileContent)
+	actual, err := MergeJSON(fileContent, fileContent)
 	if err != nil {
 		t.Fatalf("JSON merge failed %v", err)
 	}

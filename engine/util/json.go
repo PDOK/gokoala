@@ -1,4 +1,4 @@
-package engine
+package util
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func prettyPrintJSON(content []byte, name string) []byte {
+func PrettyPrintJSON(content []byte, name string) []byte {
 	var pretty bytes.Buffer
 	if err := json.Indent(&pretty, content, "", " "); err != nil {
 		log.Print(string(content))
@@ -15,14 +15,14 @@ func prettyPrintJSON(content []byte, name string) []byte {
 	return pretty.Bytes()
 }
 
-// mergeJSON merges the two JSON byte slices containing x1 and x2,
+// MergeJSON merges the two JSON byte slices containing x1 and x2,
 // preferring x1 over x2 except where x1 and x2 are
 // JSON objects, in which case the keys from both objects
 // are included and their values merged recursively.
 //
 // It returns an error if x1 or x2 cannot be JSON-unmarshalled,
 // or the merged JSON is invalid.
-func mergeJSON(x1, x2 []byte) ([]byte, error) {
+func MergeJSON(x1, x2 []byte) ([]byte, error) {
 	var j1 interface{}
 	err := json.Unmarshal(x1, &j1)
 	if err != nil {
