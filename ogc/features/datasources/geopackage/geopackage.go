@@ -107,7 +107,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	}
 	defer rows.Close()
 
-	var nextPrev *domain.PrevNextID
+	var nextPrev *domain.PrevNextFID
 	result := domain.FeatureCollection{}
 	result.Features, nextPrev, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
@@ -118,7 +118,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	}
 
 	result.NumberReturned = len(result.Features)
-	return &result, domain.NewCursors(*nextPrev, options.Cursor.FiltersHash), nil
+	return &result, domain.NewCursors(*nextPrev, options.Cursor.FiltersChecksum), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
@@ -169,15 +169,15 @@ featuretable as (select *, lag(%[2]s, $2) over (order by %[2]s) as prevfid, lead
 	if opt.Bbox != nil {
 		// TODO create bbox query
 		bboxQuery := fmt.Sprintf(`with %s <bbox query here>`, nextPrevCTE)
-		return bboxQuery, []any{opt.Cursor.ID, opt.Limit, opt.Bbox}
+		return bboxQuery, []any{opt.Cursor.FID, opt.Limit, opt.Bbox}
 	}
 	if opt.Filter != "" {
 		// TODO create part3 filter query
 		filterQuery := fmt.Sprintf(`with %s <filter query here>`, nextPrevCTE)
-		return filterQuery, []any{opt.Cursor.ID, opt.Limit, opt.Filter}
+		return filterQuery, []any{opt.Cursor.FID, opt.Limit, opt.Filter}
 	}
 	defaultQuery := fmt.Sprintf(`with %s select * from featuretable where %s >= $1 limit $2`, nextPrevCTE, g.fidColumn)
-	return defaultQuery, []any{opt.Cursor.ID, opt.Limit}
+	return defaultQuery, []any{opt.Cursor.FID, opt.Limit}
 }
 
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from

@@ -21,9 +21,9 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 }
 
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID string,
-	cursor domain.Cursors, limit int, fc *domain.FeatureCollection) {
+	cursor domain.Cursors, filters string, fc *domain.FeatureCollection) {
 
-	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, limit)
+	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, filters)
 	fcJSON, err := toJSON(&fc)
 	if err != nil {
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
@@ -50,7 +50,7 @@ func (jf *jsonFeatures) featureAsJSONFG() {
 	// TODO: not implemented yet
 }
 
-func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursors, limit int) []domain.Link {
+func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursors, filters string) []domain.Link {
 	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", jf.engine.Config.BaseURL.String(), collectionID)
 
 	links := make([]domain.Link, 0)
@@ -71,7 +71,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 			Rel:   "next",
 			Title: "Next page",
 			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%s&limit=%d", featuresBaseURL, cursor.Next, limit),
+			Href:  fmt.Sprintf("%s?f=json&cursor=%s&%s", featuresBaseURL, cursor.Next, filters),
 		})
 	}
 	if cursor.HasPrev {
@@ -79,7 +79,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 			Rel:   "prev",
 			Title: "Previous page",
 			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%s&limit=%d", featuresBaseURL, cursor.Prev, limit),
+			Href:  fmt.Sprintf("%s?f=json&cursor=%s&%s", featuresBaseURL, cursor.Prev, filters),
 		})
 	}
 	return links

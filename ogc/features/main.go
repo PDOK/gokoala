@@ -81,9 +81,9 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		filtersHash := f.hashQueryParams(r.URL.Query(), []string{"f", "cursor"})
+		filtersChecksum := f.hashQueryParams(r.URL.Query(), []string{"f", "cursor"})
 		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
-			Cursor: encodedCursor.Decode(filtersHash),
+			Cursor: encodedCursor.Decode(filtersChecksum),
 			Limit:  limit,
 			// TODO set bbox, bbox-crs, etc
 		})
@@ -102,7 +102,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 		case engine.FormatHTML:
 			f.html.features(w, r, collectionID, newCursor, limit, fc)
 		case engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, collectionID, newCursor, limit, fc)
+			f.json.featuresAsGeoJSON(w, collectionID, newCursor, getFilterParams(r), fc)
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG()
 		default:
@@ -112,9 +112,8 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 }
 
 func (f *Features) hashQueryParams(queryParams url.Values, exceptParams []string) []byte {
-	initialSize := len(queryParams)
 	var valuesToHash bytes.Buffer
-	sortedQueryParams := make([]string, 0, initialSize)
+	sortedQueryParams := make([]string, 0, len(queryParams))
 	for k := range queryParams {
 		sortedQueryParams = append(sortedQueryParams, k)
 	}
@@ -134,9 +133,13 @@ OUTER:
 			valuesToHash.WriteString(s)
 		}
 	}
-	hasher := fnv.New32a()
-	hasher.Write(valuesToHash.Bytes())
-	return hasher.Sum(nil)
+	bytesToHash := valuesToHash.Bytes()
+	if len(bytesToHash) > 0 {
+		hasher := fnv.New32a()
+		hasher.Write(bytesToHash)
+		return hasher.Sum(nil)
+	}
+	return []byte{}
 }
 
 // Feature serves a single Feature
@@ -229,4 +232,11 @@ func (f *Features) validateNoUnknownFeatureQueryParams(r *http.Request) error {
 		return fmt.Errorf("unknown query parameter(s) found: %v", copyQueryString.Encode())
 	}
 	return nil
+}
+
+func getFilterParams(r *http.Request) string {
+	copyQueryString := r.URL.Query()
+	copyQueryString.Del("f")
+	copyQueryString.Del("cursor")
+	return copyQueryString.Encode()
 }

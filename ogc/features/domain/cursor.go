@@ -19,72 +19,78 @@ type Cursors struct {
 	HasNext bool
 }
 
-// EncodedCursor is a scrambled string representation of:
-// - a consecutive ordered integer feature ID
-// - a hash of the filters (limit, bbox, CQL filters, etc) used when querying features
+// EncodedCursor is a scrambled string representation of the fields defined in DecodedCursor
 type EncodedCursor string
 
 // DecodedCursor the cursor values after decoding EncodedCursor
 type DecodedCursor struct {
-	ID          int64
-	FiltersHash []byte
+	FID             int64
+	FiltersChecksum []byte
 }
 
-// PrevNextID id of previous and next feature id (fid) to encode in cursor.
-type PrevNextID struct {
+// PrevNextFID previous and next feature id (fid) to encode in cursor.
+type PrevNextFID struct {
 	Prev int64
 	Next int64
 }
 
 // NewCursors create Cursors based on the prev/next feature ids from the datasource
 // and the provided filters (captured in a hash).
-func NewCursors(id PrevNextID, filtersHash []byte) Cursors {
+func NewCursors(fid PrevNextFID, filtersChecksum []byte) Cursors {
 	return Cursors{
-		Prev: encodeCursor(id.Prev, filtersHash),
-		Next: encodeCursor(id.Next, filtersHash),
+		Prev: encodeCursor(fid.Prev, filtersChecksum),
+		Next: encodeCursor(fid.Next, filtersChecksum),
 
-		HasPrev: id.Prev > 0,
-		HasNext: id.Next > 0,
+		HasPrev: fid.Prev > 0,
+		HasNext: fid.Next > 0,
 	}
 }
 
-func encodeCursor(id int64, filtersHash []byte) EncodedCursor {
-	// format of the cursor: <id>|<hash>
-	cursorToEncode := append([]byte{byte(id), byte(separator)}, filtersHash...)
+func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
+	fidAsBytes := big.NewInt(fid).Bytes()
 
-	encoded := base64.URLEncoding.EncodeToString(cursorToEncode)
-	return EncodedCursor(encoded)
+	// format of the cursor: <fid><separator><hash>
+	cursor := append(fidAsBytes, byte(separator))
+	cursor = append(cursor, filtersChecksum...)
+
+	return EncodedCursor(base64.URLEncoding.EncodeToString(cursor))
 }
 
-// Decode turn encoded cursor string into DecodedCursor and
-// verify the 'filtersHash' hasn't changed
-func (c EncodedCursor) Decode(filtersHash []byte) DecodedCursor {
+// Decode turns encoded cursor into DecodedCursor and verifies
+// the that the checksum of the filter query params hasn't changed
+func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 	value := string(c)
 	if value == "" {
-		return DecodedCursor{0, filtersHash}
+		return DecodedCursor{0, filtersChecksum}
 	}
+
 	decoded, err := base64.URLEncoding.DecodeString(value)
 	if err != nil || len(decoded) == 0 {
 		log.Printf("decoding cursor value '%v' failed, defaulting to first page", decoded)
-		return DecodedCursor{0, filtersHash}
+		return DecodedCursor{0, filtersChecksum}
 	}
-	parts := bytes.Split(decoded, []byte{separator})
+
+	decodedParts := bytes.Split(decoded, []byte{separator})
 	if len(decoded) < 1 {
-		return DecodedCursor{0, filtersHash}
+		return DecodedCursor{0, filtersChecksum}
 	}
-	cursor := big.NewInt(0).SetBytes(parts[0]).Int64()
+
+	// feature fid
+	fid := big.NewInt(0).SetBytes(decodedParts[0]).Int64()
 	if err != nil {
-		log.Printf("cursor %s doesn't contain numeric value, defaulting to first page", parts[0])
-		return DecodedCursor{0, filtersHash}
+		log.Printf("cursor %s doesn't contain numeric value, defaulting to first page", decodedParts[0])
+		return DecodedCursor{0, filtersChecksum}
 	}
-	if cursor < 0 {
-		cursor = 0
-	}
-
-	if len(parts) > 1 && bytes.Compare(parts[1], filtersHash) != 0 {
-		log.Printf("filters (query params) changed during pagination, resetting to first page")
-		return DecodedCursor{0, filtersHash}
+	if fid < 0 {
+		log.Printf("negative feature ID detected: %d, defaulting to first page", fid)
+		fid = 0
 	}
 
-	return DecodedCursor{cursor, filtersHash}
+	// checksum
+	if len(decodedParts) > 1 && bytes.Compare(decodedParts[1], filtersChecksum) != 0 {
+		log.Printf("filters in query params have changed during pagination, resetting to first page")
+		return DecodedCursor{0, filtersChecksum}
+	}
+
+	return DecodedCursor{fid, filtersChecksum}
 }
