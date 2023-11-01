@@ -90,7 +90,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeatureOptions{
-					Cursor: 0,
+					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
 					Limit:  2,
 				},
 			},
@@ -116,8 +116,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				},
 			},
 			wantCursor: domain.Cursors{
-				Prev: "1GpOCgaM",
-				Next: "XmmqLWc5", // 3838
+				Prev: "fA==",
+				Next: "Dv58", // 3838
 			},
 			wantErr: false,
 		},
@@ -133,8 +133,11 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeatureOptions{
-					Cursor: 3838, // see next cursor from test above
-					Limit:  3,
+					Cursor: domain.DecodedCursor{
+						FID:             3838, // see next cursor from test above
+						FiltersChecksum: []byte{},
+					},
+					Limit: 3,
 				},
 			},
 			wantFC: &domain.FeatureCollection{
@@ -167,8 +170,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				},
 			},
 			wantCursor: domain.Cursors{
-				Prev: "1GpOCgaM",
-				Next: "wzzgqy8O",
+				Prev: "fA==",
+				Next: "DwF8",
 			},
 			wantErr: false,
 		},
@@ -184,7 +187,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				ctx:        context.Background(),
 				collection: "vakantiehuizen", // not in gpkg
 				queryParams: datasources.FeatureOptions{
-					Cursor: 0,
+					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
 					Limit:  10,
 				},
 			},

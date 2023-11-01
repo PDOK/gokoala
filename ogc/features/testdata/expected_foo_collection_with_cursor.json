@@ -16,54 +16,60 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=XmmqLWc5&limit=2"
+      "href": "http://localhost:8080/collections/foo/items?cursor=DwB8Nwyr1Q%3D%3D&f=json&limit=2"
+    },
+    {
+      "rel": "prev",
+      "title": "Previous page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?cursor=DdZ8Nwyr1Q%3D%3D&f=json&limit=2"
     }
   ],
   "numberReturned": 2,
   "type": "FeatureCollection",
   "features": [
     {
-      "id": 3542,
+      "id": 3838,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120919.942,
-          489320.199
+          121083.154,
+          488930.565
         ]
       },
       "properties": {
         "datum_doc": "1900-01-01",
         "datum_strt": "1900-01-01",
         "document": "GV00000402",
-        "huisnummer": 14,
-        "nummer_id": "0363200000454013",
-        "postcode": "1013CR",
-        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000454013",
+        "huisnummer": 11,
+        "nummer_id": "0363200000398887",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398887",
         "status": "Naamgeving uitgegeven",
-        "straatnaam": "Van Diemenkade",
+        "straatnaam": "Realengracht",
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 3837,
+      "id": 3839,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          121108.424,
-          488930.925
+          121083.452,
+          488925.652
         ]
       },
       "properties": {
         "datum_doc": "1900-01-01",
         "datum_strt": "1900-01-01",
         "document": "GV00000402",
-        "huisnummer": 9,
-        "nummer_id": "0363200000398886",
+        "huisnummer": 15,
+        "nummer_id": "0363200000398888",
         "postcode": "1013KW",
-        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398886",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398888",
         "status": "Naamgeving uitgegeven",
         "straatnaam": "Realengracht",
         "type": "Ligplaats",

@@ -73,7 +73,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features.yaml",
-				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=iUMnUmcz&limit=2",
+				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv58Nwyr1Q%3D%3D&limit=2",
 				collectionID: "foo",
 				format:       "json",
 			},
@@ -168,6 +168,8 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				if err != nil {
 					log.Fatal(err)
 				}
+
+				log.Print(rr.Body.String()) // to ease debugging
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
@@ -275,6 +277,8 @@ func TestFeatures_Feature(t *testing.T) {
 				if err != nil {
 					log.Fatal(err)
 				}
+
+				log.Print(rr.Body.String()) // to ease debugging
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
