@@ -3,6 +3,7 @@ package styles
 import (
 	"log"
 	"net/http"
+	"slices"
 
 	"github.com/PDOK/gokoala/engine"
 
@@ -107,7 +108,7 @@ func (s *Styles) Style() http.HandlerFunc {
 			key = engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"style.go.html", styleID, s.engine.CN.NegotiateLanguage(w, r))
 		} else {
 			var instanceName string
-			if engine.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
+			if slices.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
 				instanceName = styleID + "." + styleFormat
 			} else {
 				styleFormat = "mapbox"
