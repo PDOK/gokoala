@@ -6,6 +6,7 @@
     {{- /* generic function to update query string parameters */ -}}
     function updateQueryString(name, value) {
         const url = new URL(window.location.href);
+        url.searchParams.delete('cursor'); // when filters change, we can't continue pagination.
         url.searchParams.set(name, value);
         window.location.href = url.toString();
     }
@@ -41,13 +42,13 @@
         <nav aria-label="Page navigation">
             <ul class="pagination">
                 <li>
-                    <a class="page-link {{if .Params.Cursor.IsFirst }}disabled{{end}}" href="{{ $baseUrl }}/collections/{{ .Params.CollectionID }}/items?cursor={{ .Params.Cursor.Prev }}&limit={{ .Params.Limit }}" aria-label="{{ i18n "Prev" }}">
+                    <a class="page-link {{if not .Params.Cursor.HasPrev }}disabled{{end}}" href="{{ .Params.PrevLink }}" aria-label="{{ i18n "Prev" }}">
                         <span aria-hidden="true">&laquo;</span>
                         {{ i18n "Prev" }}
                     </a>
                 </li>
                 <li>
-                    <a class="page-link {{if .Params.Cursor.IsLast }}disabled{{end}}" href="{{ $baseUrl }}/collections/{{ .Params.CollectionID }}/items?cursor={{ .Params.Cursor.Next }}&limit={{ .Params.Limit }}" aria-label="{{ i18n "Next" }}">
+                    <a class="page-link {{if not .Params.Cursor.HasNext }}disabled{{end}}" href="{{ .Params.NextLink }}" aria-label="{{ i18n "Next" }}">
                         {{ i18n "Next" }}
                         <span aria-hidden="true">&raquo;</span>
                     </a>

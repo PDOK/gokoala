@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/engine/util"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom"
@@ -84,46 +85,48 @@ func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, params datasources.QueryParams) (*domain.FeatureCollection, domain.Cursor, error) {
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursors, error) {
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
-		return nil, domain.Cursor{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByCollectionID))
+		return nil, domain.Cursors{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query, queryArgs := g.makeFeaturesQuery(table, params)
+	query, queryArgs := g.makeFeaturesQuery(table, options)
 	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
 	if err != nil {
-		return nil, domain.Cursor{}, err
+		return nil, domain.Cursors{}, err
 	}
 	defer stmt.Close()
 
 	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, queryArgs...)
 	if err != nil {
-		return nil, domain.Cursor{}, fmt.Errorf("query '%s' failed: %w", query, err)
+		return nil, domain.Cursors{}, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
 
+	var nextPrev *domain.PrevNextFID
 	result := domain.FeatureCollection{}
-	result.Features, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	result.Features, nextPrev, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
-		return nil, domain.Cursor{}, err
+		return nil, domain.Cursors{}, err
+	}
+	if nextPrev == nil {
+		return nil, domain.Cursors{}, fmt.Errorf("failed to get prev/next cursor")
 	}
 
 	result.NumberReturned = len(result.Features)
-	last := result.NumberReturned < params.Limit // we could make this more reliable (by querying one record more), but sufficient for now
-
-	return &result, domain.NewCursor(result.Features, last), nil
+	return &result, domain.NewCursors(*nextPrev, options.Cursor.FiltersChecksum), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, engine.Keys(g.featureTableByCollectionID))
+			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
@@ -142,7 +145,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, err := domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, err
 	}
@@ -152,14 +155,30 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], nil
 }
 
-func (g *GeoPackage) makeFeaturesQuery(table *featureTable, params datasources.QueryParams) (string, []any) {
-	if params.Bbox != nil {
+func (g *GeoPackage) makeFeaturesQuery(table *featureTable, opt datasources.FeatureOptions) (string, []any) {
+	// filters (bbox, part3 filters) need to be included in the next/prev handling as well
+	extraFilters := ""
+
+	// make sure to use SQL bind variables, we prefer $N style parameters for reusability and broader compatibility.
+	nextPrevCTE := fmt.Sprintf(`
+next as (select * from %[1]s where %[2]s >= $1 %[3]s order by %[2]s asc limit $2 + 1),
+prev as (select * from %[1]s where %[2]s < $1 %[3]s order by %[2]s desc limit $2),
+nextprev as (select * from next union all select * from prev),
+featuretable as (select *, lag(%[2]s, $2) over (order by %[2]s) as prevfid, lead(%[2]s, $2) over (order by %[2]s) as nextfid from nextprev)
+`, table.TableName, g.fidColumn, extraFilters)
+
+	if opt.Bbox != nil {
 		// TODO create bbox query
-		bboxQuery := ""
-		return bboxQuery, []any{params.Cursor, params.Limit, params.Bbox}
+		bboxQuery := fmt.Sprintf(`with %s <bbox query here>`, nextPrevCTE)
+		return bboxQuery, []any{opt.Cursor.FID, opt.Limit, opt.Bbox}
 	}
-	defaultQuery := fmt.Sprintf("select * from %s f where f.%s > ? order by f.%s limit ?", table.TableName, g.fidColumn, g.fidColumn)
-	return defaultQuery, []any{params.Cursor, params.Limit}
+	if opt.Filter != "" {
+		// TODO create part3 filter query
+		filterQuery := fmt.Sprintf(`with %s <filter query here>`, nextPrevCTE)
+		return filterQuery, []any{opt.Cursor.FID, opt.Limit, opt.Filter}
+	}
+	defaultQuery := fmt.Sprintf(`with %s select * from featuretable where %s >= $1 limit $2`, nextPrevCTE, g.fidColumn)
+	return defaultQuery, []any{opt.Cursor.FID, opt.Limit}
 }
 
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
@@ -190,7 +209,7 @@ func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (ma
 				if row.Identifier == collection.ID {
 					result[collection.ID] = &row
 					break
-				} else if collection.Features.DatasourceID != nil && row.Identifier == *collection.Features.DatasourceID {
+				} else if hasMatchingDatasourceID(collection, row) {
 					result[collection.ID] = &row
 					break
 				}
@@ -206,6 +225,11 @@ func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (ma
 	}
 
 	return result, nil
+}
+
+func hasMatchingDatasourceID(collection engine.GeoSpatialCollection, row featureTable) bool {
+	return collection.Features != nil && collection.Features.DatasourceID != nil &&
+		row.Identifier == *collection.Features.DatasourceID
 }
 
 func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {

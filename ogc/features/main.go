@@ -10,8 +10,8 @@ import (
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
-	"github.com/PDOK/gokoala/ogc/features/datasources/fakedb"
 	"github.com/PDOK/gokoala/ogc/features/datasources/geopackage"
+	"github.com/PDOK/gokoala/ogc/features/datasources/postgis"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
@@ -34,13 +34,13 @@ type Features struct {
 }
 
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
+	cfg := e.Config.OgcAPI.Features
+
 	var datasource datasources.Datasource
-	if e.Config.OgcAPI.Features.Datasource.FakeDB {
-		datasource = fakedb.NewFakeDB()
-	} else if e.Config.OgcAPI.Features.Datasource.GeoPackage != nil {
-		datasource = geopackage.NewGeoPackage(
-			e.Config.OgcAPI.Features.Collections,
-			*e.Config.OgcAPI.Features.Datasource.GeoPackage)
+	if cfg.Datasource.GeoPackage != nil {
+		datasource = geopackage.NewGeoPackage(cfg.Collections, *cfg.Datasource.GeoPackage)
+	} else if cfg.Datasource.PostGIS != nil {
+		datasource = postgis.NewPostGIS()
 	}
 	e.RegisterShutdownHook(datasource.Close)
 
@@ -61,13 +61,14 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
-		encodedCursor := domain.EncodedCursor(r.URL.Query().Get("cursor"))
+		encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
 		limit, err := getLimit(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if err = f.validateNoUnknownFeatureCollectionQueryParams(r); err != nil {
+		url := featureCollectionURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
+		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -76,12 +77,11 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		params := datasources.QueryParams{
-			Cursor: encodedCursor.Decode(),
+		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
+			Cursor: encodedCursor.Decode(url.checksum()),
 			Limit:  limit,
 			// TODO set bbox, bbox-crs, etc
-		}
-		fc, cursor, err := f.datasource.GetFeatures(r.Context(), collectionID, params)
+		})
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
@@ -93,12 +93,11 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
+		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, cursor, limit, fc)
+			f.html.features(w, r, collectionID, newCursor, url, limit, fc)
 		case engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, collectionID, cursor, limit, fc)
+			f.json.featuresAsGeoJSON(w, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG()
 		default:
@@ -116,7 +115,8 @@ func (f *Features) Feature() http.HandlerFunc {
 			http.Error(w, "feature ID must be a number", http.StatusBadRequest)
 			return
 		}
-		if err = f.validateNoUnknownFeatureQueryParams(r); err != nil {
+		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
+		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -134,12 +134,11 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
+		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
 			f.html.feature(w, r, collectionID, feat)
 		case engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, collectionID, feat)
+			f.json.featureAsGeoJSON(w, collectionID, feat, url)
 		case engine.FormatJSONFG:
 			f.json.featureAsJSONFG()
 		default:
@@ -159,8 +158,8 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 func getLimit(r *http.Request) (int, error) {
 	limit := defaultLimit
 	var err error
-	if r.URL.Query().Get("limit") != "" {
-		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
+	if r.URL.Query().Get(limitParam) != "" {
+		limit, err = strconv.Atoi(r.URL.Query().Get(limitParam))
 		if err != nil {
 			err = errors.New("limit query parameter must be a number")
 		}
@@ -169,33 +168,4 @@ func getLimit(r *http.Request) (int, error) {
 		err = errors.New("limit can't be negative")
 	}
 	return limit, err
-}
-
-// validateNoUnknownFeatureCollectionQueryParams implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
-func (f *Features) validateNoUnknownFeatureCollectionQueryParams(r *http.Request) error {
-	copyQueryString := r.URL.Query()
-	copyQueryString.Del("f")
-	copyQueryString.Del("limit")
-	copyQueryString.Del("cursor")
-	copyQueryString.Del("datetime")
-	copyQueryString.Del("crs")
-	copyQueryString.Del("bbox")
-	copyQueryString.Del("bbox-crs")
-	copyQueryString.Del("filter")
-	copyQueryString.Del("filter-crs")
-	if len(copyQueryString) > 0 {
-		return fmt.Errorf("unknown query parameter(s) found: %v", copyQueryString.Encode())
-	}
-	return nil
-}
-
-// validateNoUnknownFeatureQueryParams implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
-func (f *Features) validateNoUnknownFeatureQueryParams(r *http.Request) error {
-	copyQueryString := r.URL.Query()
-	copyQueryString.Del("f")
-	copyQueryString.Del("crs")
-	if len(copyQueryString) > 0 {
-		return fmt.Errorf("unknown query parameter(s) found: %v", copyQueryString.Encode())
-	}
-	return nil
 }

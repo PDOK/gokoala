@@ -16,190 +16,250 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=iUMnUmcz&limit=10"
+      "href": "http://localhost:8080/collections/foo/items?cursor=D798&f=json"
     }
   ],
   "numberReturned": 10,
   "type": "FeatureCollection",
   "features": [
     {
-      "id": 0,
+      "id": 3542,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.852725,
-          -50.660451
+          120919.942,
+          489320.199
         ]
       },
       "properties": {
-        "city": "Philadelphia",
-        "floorsize": 16,
-        "purpose": "Luxury",
-        "streetname": "79185 Lake Crossingtown",
-        "year": 1920
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 14,
+        "nummer_id": "0363200000454013",
+        "postcode": "1013CR",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000454013",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Van Diemenkade",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 1,
+      "id": 3837,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -79.737257,
-          7.948003
+          121108.424,
+          488930.925
         ]
       },
       "properties": {
-        "city": "Atlanta",
-        "floorsize": 208,
-        "purpose": "Revolution",
-        "streetname": "7805 North Curvefurt",
-        "year": 1988
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 9,
+        "nummer_id": "0363200000398886",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398886",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 2,
+      "id": 3838,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          142.917104,
-          -12.895726
+          121083.154,
+          488930.565
         ]
       },
       "properties": {
-        "city": "Hialeah",
-        "floorsize": 118,
-        "purpose": "Honesty",
-        "streetname": "3719 North Spurshire",
-        "year": 1979
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 11,
+        "nummer_id": "0363200000398887",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398887",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 3,
+      "id": 3839,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          61.047107,
-          -74.606309
+          121083.452,
+          488925.652
         ]
       },
       "properties": {
-        "city": "Lubbock",
-        "floorsize": 277,
-        "purpose": "Honesty",
-        "streetname": "28747 Centerside",
-        "year": 1991
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 15,
+        "nummer_id": "0363200000398888",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398888",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 4,
+      "id": 3840,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -178.976506,
-          -89.657299
+          121056.41,
+          488927.015
         ]
       },
       "properties": {
-        "city": "Corpus Christi",
-        "floorsize": 65,
-        "purpose": "Freedom",
-        "streetname": "32358 Port Hillston",
-        "year": 1925
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 17,
+        "nummer_id": "0363200000398889",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398889",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 5,
+      "id": 3841,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -125.652944,
-          45.569029
+          121003.962,
+          488921.486
         ]
       },
       "properties": {
-        "city": "Pittsburgh",
-        "floorsize": 96,
-        "purpose": "Endurance",
-        "streetname": "62196 Trackshire",
-        "year": 2023
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 21,
+        "nummer_id": "0363200000398890",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398890",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 6,
+      "id": 3842,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          86.337281,
-          -55.794103
+          120980.398,
+          488919.715
         ]
       },
       "properties": {
-        "city": "Tucson",
-        "floorsize": 226,
-        "purpose": "Knowledge",
-        "streetname": "2690 North Coveburgh",
-        "year": 2012
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 23,
+        "nummer_id": "0363200000398891",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398891",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 7,
+      "id": 4028,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -47.119785,
-          -72.354443
+          121059.201,
+          488881.837
         ]
       },
       "properties": {
-        "city": "Columbus",
-        "floorsize": 245,
-        "purpose": "Pride",
-        "streetname": "28386 Pinestown",
-        "year": 1940
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 281,
+        "nummer_id": "0363200000428646",
+        "postcode": "1013LH",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000428646",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Bickersgracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 8,
+      "id": 4029,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -103.478059,
-          85.298737
+          121076.796,
+          488892.913
         ]
       },
       "properties": {
-        "city": "Louisville/Jefferson",
-        "floorsize": 244,
-        "purpose": "Taste",
-        "streetname": "1529 West Stationhaven",
-        "year": 1931
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 283,
+        "nummer_id": "0363200000428647",
+        "postcode": "1013LH",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000428647",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Bickersgracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 9,
+      "id": 4030,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -94.92211,
-          69.74055
+          121100.455,
+          488900.976
         ]
       },
       "properties": {
-        "city": "Irving",
-        "floorsize": 46,
-        "purpose": "Motivation",
-        "streetname": "886 Shoremouth",
-        "year": 1933
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 285,
+        "nummer_id": "0363200000428648",
+        "postcode": "1013LH",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000428648",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Bickersgracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     }
   ]

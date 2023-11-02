@@ -15,6 +15,7 @@ import (
 	"strings"
 	texttemplate "text/template"
 
+	"github.com/PDOK/gokoala/engine/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
@@ -80,7 +81,7 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 	return &OpenAPI{
 		config:   config,
 		spec:     resultSpec,
-		SpecJSON: prettyPrintJSON(resultSpecJSON, ""),
+		SpecJSON: util.PrettyPrintJSON(resultSpecJSON, ""),
 		router:   newOpenAPIRouter(resultSpec),
 	}
 }
@@ -140,7 +141,7 @@ func mergeSpecs(ctx context.Context, config *Config, files []string) (*openapi3.
 			mergedJSON = specJSON
 		} else {
 			var err error
-			mergedJSON, err = mergeJSON(resultSpecJSON, specJSON)
+			mergedJSON, err = util.MergeJSON(resultSpecJSON, specJSON)
 			if err != nil {
 				log.Print(string(mergedJSON))
 				log.Fatalf("failed to merge openapi specs: %v", err)

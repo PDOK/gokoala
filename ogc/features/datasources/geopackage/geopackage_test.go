@@ -68,14 +68,14 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 	type args struct {
 		ctx         context.Context
 		collection  string
-		queryParams datasources.QueryParams
+		queryParams datasources.FeatureOptions
 	}
 	tests := []struct {
 		name       string
 		fields     fields
 		args       args
 		wantFC     *domain.FeatureCollection
-		wantCursor domain.Cursor
+		wantCursor domain.Cursors
 		wantErr    bool
 	}{
 		{
@@ -84,13 +84,13 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				backend:          newAddressesGeoPackage(),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
-				queryTimeout:     5 * time.Second,
+				queryTimeout:     60 * time.Second,
 			},
 			args: args{
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
-				queryParams: datasources.QueryParams{
-					Cursor: 0,
+				queryParams: datasources.FeatureOptions{
+					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
 					Limit:  2,
 				},
 			},
@@ -115,9 +115,9 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					},
 				},
 			},
-			wantCursor: domain.Cursor{
-				Prev: "spDyEwb4",
-				Next: "trrEb5db", // 3837
+			wantCursor: domain.Cursors{
+				Prev: "fA==",
+				Next: "Dv58", // 3838
 			},
 			wantErr: false,
 		},
@@ -132,9 +132,12 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
-				queryParams: datasources.QueryParams{
-					Cursor: 3837, // see next cursor from test above
-					Limit:  3,
+				queryParams: datasources.FeatureOptions{
+					Cursor: domain.DecodedCursor{
+						FID:             3838, // see next cursor from test above
+						FiltersChecksum: []byte{},
+					},
+					Limit: 3,
 				},
 			},
 			wantFC: &domain.FeatureCollection{
@@ -166,9 +169,9 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					},
 				},
 			},
-			wantCursor: domain.Cursor{
-				Prev: "LZZS4c3w",
-				Next: "CNNniQpu",
+			wantCursor: domain.Cursors{
+				Prev: "fA==",
+				Next: "DwF8",
 			},
 			wantErr: false,
 		},
@@ -183,13 +186,13 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "vakantiehuizen", // not in gpkg
-				queryParams: datasources.QueryParams{
-					Cursor: 0,
+				queryParams: datasources.FeatureOptions{
+					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
 					Limit:  10,
 				},
 			},
 			wantFC:     nil,
-			wantCursor: domain.Cursor{},
+			wantCursor: domain.Cursors{},
 			wantErr:    true, // should fail
 		},
 	}

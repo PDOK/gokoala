@@ -3,7 +3,6 @@ package features
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
@@ -21,9 +20,9 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 }
 
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID string,
-	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
+	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
 
-	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, limit)
+	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, featuresURL)
 	fcJSON, err := toJSON(&fc)
 	if err != nil {
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
@@ -32,8 +31,8 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID st
 	engine.SafeWrite(w.Write, fcJSON)
 }
 
-func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, collectionID string, feat *domain.Feature) {
-	feat.Links = jf.createFeatureLinks(collectionID, feat.ID)
+func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, collectionID string, feat *domain.Feature, url featureURL) {
+	feat.Links = jf.createFeatureLinks(url, collectionID, feat.ID)
 	featJSON, err := toJSON(feat)
 	if err != nil {
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
@@ -50,62 +49,58 @@ func (jf *jsonFeatures) featureAsJSONFG() {
 	// TODO: not implemented yet
 }
 
-func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursor, limit int) []domain.Link {
-	featuresBaseURL := fmt.Sprintf("%s/collections/%s/items", jf.engine.Config.BaseURL.String(), collectionID)
-
+func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursors, featuresURL featureCollectionURL) []domain.Link {
 	links := make([]domain.Link, 0)
 	links = append(links, domain.Link{
 		Rel:   "self",
 		Title: "This document as GeoJSON",
 		Type:  engine.MediaTypeGeoJSON,
-		Href:  featuresBaseURL + "?f=json",
+		Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
 	})
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as HTML",
 		Type:  engine.MediaTypeHTML,
-		Href:  featuresBaseURL + "?f=html",
+		Href:  featuresURL.toSelfURL(collectionID, engine.FormatHTML),
 	})
-	if !cursor.IsLast {
+	if cursor.HasNext {
 		links = append(links, domain.Link{
 			Rel:   "next",
 			Title: "Next page",
 			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%s&limit=%d", featuresBaseURL, cursor.Next, limit),
+			Href:  featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatJSON),
 		})
 	}
-	if !cursor.IsFirst {
+	if cursor.HasPrev {
 		links = append(links, domain.Link{
 			Rel:   "prev",
 			Title: "Previous page",
 			Type:  engine.MediaTypeGeoJSON,
-			Href:  fmt.Sprintf("%s?f=json&cursor=%s&limit=%d", featuresBaseURL, cursor.Prev, limit),
+			Href:  featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatJSON),
 		})
 	}
 	return links
 }
 
-func (jf *jsonFeatures) createFeatureLinks(collectionID string, featureID int64) []domain.Link {
-	featureBaseURL := fmt.Sprintf("%s/collections/%s/items/%d", jf.engine.Config.BaseURL.String(), collectionID, featureID)
-
+func (jf *jsonFeatures) createFeatureLinks(url featureURL, collectionID string, featureID int64) []domain.Link {
 	links := make([]domain.Link, 0)
 	links = append(links, domain.Link{
 		Rel:   "self",
 		Title: "This document as GeoJSON",
 		Type:  engine.MediaTypeGeoJSON,
-		Href:  featureBaseURL + "?f=json",
+		Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSON),
 	})
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as HTML",
 		Type:  engine.MediaTypeHTML,
-		Href:  featureBaseURL + "?f=html",
+		Href:  url.toSelfURL(collectionID, featureID, engine.FormatHTML),
 	})
 	links = append(links, domain.Link{
 		Rel:   "collection",
 		Title: "The collection to which this feature belongs",
 		Type:  engine.MediaTypeJSON,
-		Href:  fmt.Sprintf("%s/collections/%s?f=json", jf.engine.Config.BaseURL.String(), collectionID),
+		Href:  url.toCollectionURL(collectionID, engine.FormatJSON),
 	})
 	return links
 }

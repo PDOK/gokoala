@@ -14,6 +14,7 @@ import (
 	"strings"
 	texttemplate "text/template"
 
+	"github.com/PDOK/gokoala/engine/util"
 	sprig "github.com/go-task/slim-sprig"
 	gomarkdown "github.com/gomarkdown/markdown"
 	gomarkdownhtml "github.com/gomarkdown/markdown/html"
@@ -212,7 +213,7 @@ func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params 
 	var result = rendered.Bytes()
 	if strings.Contains(key.Format, FormatJSON) {
 		// pretty print all JSON (or derivatives like TileJSON)
-		result = prettyPrintJSON(result, key.Name)
+		result = util.PrettyPrintJSON(result, key.Name)
 	}
 	return result
 }

@@ -3,6 +3,7 @@ package styles
 import (
 	"log"
 	"net/http"
+	"slices"
 
 	"github.com/PDOK/gokoala/engine"
 
@@ -12,6 +13,7 @@ import (
 const (
 	templatesDir = "ogc/styles/templates/"
 	stylesPath   = "/styles"
+	stylesCrumb  = "/styles"
 )
 
 type Styles struct {
@@ -45,11 +47,11 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
 			{
 				Name: style.Title,
-				Path: "styles/" + style.ID,
+				Path: stylesCrumb + style.ID,
 			},
 			{
 				Name: "Metadata",
-				Path: "styles/" + style.ID + "/metadata",
+				Path: stylesCrumb + style.ID + "/metadata",
 			},
 		}...)
 		e.RenderTemplatesWithParams(style,
@@ -70,7 +72,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 			styleBreadCrumbs = append(styleBreadCrumbs, []engine.Breadcrumb{
 				{
 					Name: style.Title,
-					Path: "styles/" + style.ID,
+					Path: stylesCrumb + style.ID,
 				},
 			}...)
 			e.RenderTemplatesWithParams(style,
@@ -107,7 +109,7 @@ func (s *Styles) Style() http.HandlerFunc {
 			key = engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"style.go.html", styleID, s.engine.CN.NegotiateLanguage(w, r))
 		} else {
 			var instanceName string
-			if engine.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
+			if slices.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
 				instanceName = styleID + "." + styleFormat
 			} else {
 				styleFormat = "mapbox"

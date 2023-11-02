@@ -9,7 +9,7 @@ RUN npm install
 RUN npm run build
 
 ####### Go build
-FROM ${REGISTRY}/golang:1.20-bookworm AS build-env
+FROM ${REGISTRY}/golang:1.21-bookworm AS build-env
 WORKDIR /go/src/service
 ADD . /go/src/service
 
