@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	formatParam   = "f"
+	FormatParam   = "f"
 	languageParam = "lang"
 
 	MediaTypeJSON          = "application/json"
@@ -127,11 +127,11 @@ func (cn *ContentNegotiation) formatToMediaType(format string) string {
 func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string {
 	var requestedFormat = ""
 	queryParams := req.URL.Query()
-	if queryParams.Get(formatParam) != "" {
-		requestedFormat = queryParams.Get(formatParam)
+	if queryParams.Get(FormatParam) != "" {
+		requestedFormat = queryParams.Get(FormatParam)
 
 		// remove ?f= parameter, to prepare for rewrite
-		queryParams.Del(formatParam)
+		queryParams.Del(FormatParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}
 	return requestedFormat

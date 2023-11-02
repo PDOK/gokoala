@@ -317,7 +317,7 @@ func createRequest(url string, collectionID string, featureID string, format str
 	rctx.URLParams.Add("featureId", featureID)
 
 	queryString := req.URL.Query()
-	queryString.Add("f", format)
+	queryString.Add(engine.FormatParam, format)
 	req.URL.RawQuery = queryString.Encode()
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))

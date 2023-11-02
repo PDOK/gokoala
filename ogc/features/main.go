@@ -61,7 +61,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
-		encodedCursor := domain.EncodedCursor(r.URL.Query().Get("cursor"))
+		encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
 		limit, err := getLimit(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -158,8 +158,8 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 func getLimit(r *http.Request) (int, error) {
 	limit := defaultLimit
 	var err error
-	if r.URL.Query().Get("limit") != "" {
-		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
+	if r.URL.Query().Get(limitParam) != "" {
+		limit, err = strconv.Atoi(r.URL.Query().Get(limitParam))
 		if err != nil {
 			err = errors.New("limit query parameter must be a number")
 		}

@@ -9,11 +9,18 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 )
 
+const (
+	cursorParam = "cursor"
+	limitParam  = "limit"
+	crsParam    = "crs"
+)
+
 var (
-	checksumExcludedParams = []string{"f", "cursor"} // don't include these in checksum
+	checksumExcludedParams = []string{engine.FormatParam, cursorParam} // don't include these in checksum
 )
 
 type URL interface {
@@ -64,7 +71,7 @@ OUTER:
 
 func (fc featureCollectionURL) toSelfURL(collectionID string, format string) string {
 	newParams := url.Values{}
-	newParams.Set("f", format)
+	newParams.Set(engine.FormatParam, format)
 
 	result := fc.baseURL.JoinPath("collections", collectionID, "items")
 	result.RawQuery = newParams.Encode()
@@ -73,8 +80,8 @@ func (fc featureCollectionURL) toSelfURL(collectionID string, format string) str
 
 func (fc featureCollectionURL) toPrevNextURL(collectionID string, cursor domain.EncodedCursor, format string) string {
 	copyParams := clone(fc.params)
-	copyParams.Set("f", format)
-	copyParams.Set("cursor", cursor.String())
+	copyParams.Set(engine.FormatParam, format)
+	copyParams.Set(cursorParam, cursor.String())
 
 	result := fc.baseURL.JoinPath("collections", collectionID, "items")
 	result.RawQuery = copyParams.Encode()
@@ -84,11 +91,11 @@ func (fc featureCollectionURL) toPrevNextURL(collectionID string, cursor domain.
 // implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
 func (fc featureCollectionURL) validateNoUnknownParams() error {
 	copyParams := clone(fc.params)
-	copyParams.Del("f")
-	copyParams.Del("limit")
-	copyParams.Del("cursor")
+	copyParams.Del(engine.FormatParam)
+	copyParams.Del(limitParam)
+	copyParams.Del(cursorParam)
+	copyParams.Del(crsParam)
 	copyParams.Del("datetime")
-	copyParams.Del("crs")
 	copyParams.Del("bbox")
 	copyParams.Del("bbox-crs")
 	copyParams.Del("filter")
@@ -107,7 +114,7 @@ type featureURL struct {
 
 func (f featureURL) toSelfURL(collectionID string, featureID int64, format string) string {
 	newParams := url.Values{}
-	newParams.Set("f", format)
+	newParams.Set(engine.FormatParam, format)
 
 	result := f.baseURL.JoinPath("collections", collectionID, "items", strconv.FormatInt(featureID, 10))
 	result.RawQuery = newParams.Encode()
@@ -116,7 +123,7 @@ func (f featureURL) toSelfURL(collectionID string, featureID int64, format strin
 
 func (f featureURL) toCollectionURL(collectionID string, format string) string {
 	newParams := url.Values{}
-	newParams.Set("f", format)
+	newParams.Set(engine.FormatParam, format)
 
 	result := f.baseURL.JoinPath("collections", collectionID)
 	result.RawQuery = newParams.Encode()
@@ -126,8 +133,8 @@ func (f featureURL) toCollectionURL(collectionID string, format string) string {
 // implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
 func (f featureURL) validateNoUnknownParams() error {
 	copyParams := clone(f.params)
-	copyParams.Del("f")
-	copyParams.Del("crs")
+	copyParams.Del(engine.FormatParam)
+	copyParams.Del(crsParam)
 	if len(copyParams) > 0 {
 		return fmt.Errorf("unknown query parameter(s) found: %v", copyParams.Encode())
 	}

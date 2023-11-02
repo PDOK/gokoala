@@ -13,6 +13,7 @@ import (
 const (
 	templatesDir = "ogc/styles/templates/"
 	stylesPath   = "/styles"
+	stylesCrumb  = "/styles"
 )
 
 type Styles struct {
@@ -46,11 +47,11 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
 			{
 				Name: style.Title,
-				Path: "styles/" + style.ID,
+				Path: stylesCrumb + style.ID,
 			},
 			{
 				Name: "Metadata",
-				Path: "styles/" + style.ID + "/metadata",
+				Path: stylesCrumb + style.ID + "/metadata",
 			},
 		}...)
 		e.RenderTemplatesWithParams(style,
@@ -71,7 +72,7 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 			styleBreadCrumbs = append(styleBreadCrumbs, []engine.Breadcrumb{
 				{
 					Name: style.Title,
-					Path: "styles/" + style.ID,
+					Path: stylesCrumb + style.ID,
 				},
 			}...)
 			e.RenderTemplatesWithParams(style,

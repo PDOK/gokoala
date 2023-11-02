@@ -8,6 +8,10 @@ import (
 	"github.com/PDOK/gokoala/ogc/features/domain"
 )
 
+const (
+	collectionsCrumb = "collections/"
+)
+
 var (
 	collectionsBreadcrumb = []engine.Breadcrumb{
 		{
@@ -61,11 +65,11 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
 			Name: getCollectionTitle(collectionID, collectionMetadata),
-			Path: "collections/" + collectionID,
+			Path: collectionsCrumb + collectionID,
 		},
 		{
 			Name: "Items",
-			Path: "collections/" + collectionID + "/items",
+			Path: collectionsCrumb + collectionID + "/items",
 		},
 	}...)
 
@@ -90,15 +94,15 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
 			Name: getCollectionTitle(collectionID, collectionMetadata),
-			Path: "collections/" + collectionID,
+			Path: collectionsCrumb + collectionID,
 		},
 		{
 			Name: "Items",
-			Path: "collections/" + collectionID + "/items",
+			Path: collectionsCrumb + collectionID + "/items",
 		},
 		{
 			Name: strconv.FormatInt(feat.ID, 10),
-			Path: "collections/" + collectionID + "/items/" + strconv.FormatInt(feat.ID, 10),
+			Path: collectionsCrumb + collectionID + "/items/" + strconv.FormatInt(feat.ID, 10),
 		},
 	}...)
 
