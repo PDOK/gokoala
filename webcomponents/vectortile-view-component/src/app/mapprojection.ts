@@ -50,10 +50,10 @@ export class MapProjection {
 
     if (this._tileUrl.includes(NetherlandsRDNewQuadDefault)) {
       return rDprojection;
-    } else {
-      if (this._tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
-        return ETRS89projection;
-      } else return mercator;
     }
+    if (this._tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
+      return ETRS89projection;
+    }
+    return mercator;
   }
 }
