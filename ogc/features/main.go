@@ -18,7 +18,6 @@ import (
 
 const (
 	templatesDir = "ogc/features/templates/"
-	defaultLimit = 10
 )
 
 var (
@@ -62,7 +61,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 		encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
-		limit, err := getLimit(r)
+		limit, err := f.getLimit(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -155,13 +154,17 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 	return result
 }
 
-func getLimit(r *http.Request) (int, error) {
-	limit := defaultLimit
+func (f *Features) getLimit(r *http.Request) (int, error) {
+	limit := f.engine.Config.OgcAPI.Features.Limit.Default
 	var err error
 	if r.URL.Query().Get(limitParam) != "" {
 		limit, err = strconv.Atoi(r.URL.Query().Get(limitParam))
 		if err != nil {
 			err = errors.New("limit query parameter must be a number")
+		}
+		// OpenAPI validation already guards against exceeding max limit, this is just a defense in-depth measure.
+		if limit > f.engine.Config.OgcAPI.Features.Limit.Max {
+			limit = f.engine.Config.OgcAPI.Features.Limit.Max
 		}
 	}
 	if limit < 0 {

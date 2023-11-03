@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/text/language"
 	"gopkg.in/yaml.v3"
@@ -40,11 +41,15 @@ func readConfigFile(configFile string) *Config {
 }
 
 func setDefaults(config *Config) {
+	// process 'default' tags
+	if err := defaults.Set(config); err != nil {
+		log.Fatalf("failed to set default configuration: %v", err)
+	}
+
 	config.CookieMaxAge = cookieMaxAge
 
 	if len(config.AvailableLanguages) == 0 {
-		// default to Dutch only
-		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch)
+		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch) // default to Dutch only
 	}
 }
 
@@ -258,6 +263,7 @@ type OgcAPIStyles struct {
 }
 
 type OgcAPIFeatures struct {
+	Limit       Limit                 `yaml:"limit"`
 	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
 	Datasource  Datasource            `yaml:"datasource" validate:"required"`
 }
@@ -270,6 +276,11 @@ type OgcAPIProcesses struct {
 	SupportsDismiss  bool    `yaml:"supportsDismiss"`
 	SupportsCallback bool    `yaml:"supportsCallback"`
 	ProcessesServer  YAMLURL `yaml:"processesServer" validate:"url"`
+}
+
+type Limit struct {
+	Default int `yaml:"default" validate:"gt=1" default:"10"`
+	Max     int `yaml:"max" validate:"gt=1" default:"1000"`
 }
 
 type Datasource struct {
