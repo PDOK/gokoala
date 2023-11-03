@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	neturl "net/url"
 	"strconv"
+	"strings"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
@@ -14,6 +16,7 @@ import (
 	"github.com/PDOK/gokoala/ogc/features/datasources/postgis"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-spatial/geom"
 )
 
 const (
@@ -59,9 +62,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 // CollectionContent serve a FeatureCollection with the given collectionId
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		collectionID := chi.URLParam(r, "collectionId")
-		encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
-		limit, err := f.getLimit(r)
+		collectionID, encodedCursor, limit, bbox, err := f.parseFeatureCollectionParams(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -79,7 +80,8 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
 			Cursor: encodedCursor.Decode(url.checksum()),
 			Limit:  limit,
-			// TODO set bbox, bbox-crs, etc
+			Bbox:   bbox,
+			// TODO set crs, bbox-crs, etc
 		})
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
@@ -154,13 +156,22 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 	return result
 }
 
-func (f *Features) getLimit(r *http.Request) (int, error) {
+func (f *Features) parseFeatureCollectionParams(r *http.Request) (string, domain.EncodedCursor, int, *geom.Extent, error) {
+	collectionID := chi.URLParam(r, "collectionId")
+	encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
+	limit, limitErr := f.parseLimit(r.URL.Query())
+	bbox, bboxErr := f.parseBbox(r.URL.Query())
+	dateTimeErr := f.parseDateTime(r.URL.Query())
+	return collectionID, encodedCursor, limit, bbox, errors.Join(limitErr, bboxErr, dateTimeErr)
+}
+
+func (f *Features) parseLimit(params neturl.Values) (int, error) {
 	limit := f.engine.Config.OgcAPI.Features.Limit.Default
 	var err error
-	if r.URL.Query().Get(limitParam) != "" {
-		limit, err = strconv.Atoi(r.URL.Query().Get(limitParam))
+	if params.Get(limitParam) != "" {
+		limit, err = strconv.Atoi(params.Get(limitParam))
 		if err != nil {
-			err = errors.New("limit query parameter must be a number")
+			err = fmt.Errorf("limit must be numeric")
 		}
 		// OpenAPI validation already guards against exceeding max limit, this is just a defense in-depth measure.
 		if limit > f.engine.Config.OgcAPI.Features.Limit.Max {
@@ -168,7 +179,35 @@ func (f *Features) getLimit(r *http.Request) (int, error) {
 		}
 	}
 	if limit < 0 {
-		err = errors.New("limit can't be negative")
+		err = fmt.Errorf("limit can't be negative")
 	}
 	return limit, err
+}
+
+func (f *Features) parseBbox(params neturl.Values) (*geom.Extent, error) {
+	if params.Get(bboxParam) == "" {
+		return nil, nil //nolint:nilnil
+	}
+	bboxValues := strings.Split(params.Get(bboxParam), ",")
+	if len(bboxValues) != 4 {
+		return nil, fmt.Errorf("bbox should contain exactly 4 values " +
+			"seperated by commas: minx,miny,maxx,maxy")
+	}
+
+	var err error
+	var extent geom.Extent
+	for i, v := range bboxValues {
+		extent[i], err = strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
+		}
+	}
+	return &extent, nil
+}
+
+func (f *Features) parseDateTime(params neturl.Values) error {
+	if params.Get(dateTimeParam) != "" {
+		return fmt.Errorf("datetime param is currently not supported")
+	}
+	return nil
 }

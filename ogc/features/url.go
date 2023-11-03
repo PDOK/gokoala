@@ -14,9 +14,11 @@ import (
 )
 
 const (
-	cursorParam = "cursor"
-	limitParam  = "limit"
-	crsParam    = "crs"
+	cursorParam   = "cursor"
+	limitParam    = "limit"
+	crsParam      = "crs"
+	bboxParam     = "bbox"
+	dateTimeParam = "datetime"
 )
 
 var (
@@ -95,8 +97,8 @@ func (fc featureCollectionURL) validateNoUnknownParams() error {
 	copyParams.Del(limitParam)
 	copyParams.Del(cursorParam)
 	copyParams.Del(crsParam)
-	copyParams.Del("datetime")
-	copyParams.Del("bbox")
+	copyParams.Del(dateTimeParam)
+	copyParams.Del(bboxParam)
 	copyParams.Del("bbox-crs")
 	copyParams.Del("filter")
 	copyParams.Del("filter-crs")
