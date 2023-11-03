@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core'
 import { NgChanges } from '../app.component'
-import { Feature, Map as OLMap, View } from 'ol'
+import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { FeatureCollectionGeoJSON } from '../openapi/model/featureCollectionGeoJSON'
 import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
 import { Circle, Fill, Stroke, Style } from 'ol/style'
-import { Extent, getTopLeft } from 'ol/extent'
+import { Extent, getCenter, getTopLeft } from 'ol/extent'
 import { Geometry, Point, Polygon } from 'ol/geom'
 import { FeatureServiceService, DataUrl } from '../feature-service.service'
 import { Projection, ProjectionLike } from 'ol/proj'
@@ -18,6 +18,8 @@ import { platformModifierKeyOnly, shiftKeyOnly } from 'ol/events/condition'
 import { DragBoxEvent } from 'ol/interaction/DragBox'
 import { WKT } from 'ol/format'
 import { fromExtent } from 'ol/geom/Polygon'
+import { FeatureLike } from 'ol/Feature'
+import { PanIntoViewOptions } from 'ol/Overlay'
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
@@ -33,6 +35,7 @@ export class FeatureViewComponent implements OnInit, OnChanges {
   @Input() projection: ProjectionLike = 'EPSG:3857'
   @Input() backgroundMap: 'BRT' | 'OSM' = 'OSM'
   @Output() box = new EventEmitter<string>()
+  @Output() activeFeature = new EventEmitter<FeatureLike>()
   mapHeight = 400
   mapWidth = 600
   map: OLMap = this.getMap()
@@ -76,6 +79,7 @@ export class FeatureViewComponent implements OnInit, OnChanges {
         const ext = this.loadfeatures(this.features)
         this.loadbackground()
         this.adddragbox()
+        this.addFeatureEmit()
       })
   }
 
@@ -128,8 +132,12 @@ export class FeatureViewComponent implements OnInit, OnChanges {
       })
     )
     const ext = vsource.getExtent()
+    if (features.length < 3) {
+      this.setViewExtent(ext, 10)
+    } else {
+      this.setViewExtent(ext, 1.05)
+    }
 
-    this.setViewExtent(ext)
     return ext
   }
 
@@ -155,13 +163,13 @@ export class FeatureViewComponent implements OnInit, OnChanges {
     return styles
   }
 
-  setViewExtent(extent: Extent) {
+  setViewExtent(extent: Extent, scale: number) {
     const view = new View({})
     const fitOptions: FitOptions = {
       size: this.map.getSize(),
     }
     const geom = fromExtent(extent)
-    geom.scale(1.05)
+    geom.scale(scale)
     view.fit(geom, fitOptions)
     this.map.setView(view)
   }
@@ -192,6 +200,49 @@ export class FeatureViewComponent implements OnInit, OnChanges {
         style: 'default',
         wrapX: false,
       }),
+    })
+  }
+
+  addFeatureEmit() {
+    const tooltipContainer = this.el.nativeElement.querySelector("[id='tooltip']")
+    tooltipContainer.style.visibility = 'hidden'
+    const tooltipContent = this.el.nativeElement.querySelector("[id='tooltip-content']")
+    const tooltip = new Overlay({
+      element: tooltipContainer,
+      autoPan: {
+        duration: 250,
+      } as PanIntoViewOptions,
+    })
+
+    this.map.addOverlay(tooltip)
+
+    this.map.on('pointermove', (evt: MapBrowserEvent<any>) => {
+      this.map.forEachFeatureAtPixel(
+        evt.pixel,
+        (feature: FeatureLike) => {
+          if (feature) {
+            const featureid = feature.getId()
+            if (featureid) {
+              const currentUrl = new URL(this.itemsUrl)
+              tooltipContent.innerHTML =
+                '<a href="' +
+                currentUrl.protocol +
+                '//' +
+                currentUrl.host +
+                currentUrl.pathname +
+                '/' +
+                featureid +
+                '">' +
+                featureid +
+                '</a>'
+            }
+            tooltip.setPosition(getCenter(feature.getGeometry()!.getExtent()))
+            tooltipContainer.style.visibility = 'visible'
+            this.activeFeature.emit(feature)
+          }
+        },
+        { hitTolerance: 3 }
+      )
     })
   }
 
