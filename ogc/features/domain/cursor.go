@@ -49,10 +49,10 @@ func NewCursors(fid PrevNextFID, filtersChecksum []byte) Cursors {
 func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 	fidAsBytes := big.NewInt(fid).Bytes()
 
-	// format of the cursor: <fid><separator><hash>
+	// format of the cursor: <fid><separator><checksum>
 	cursor := fidAsBytes
 	cursor = append(cursor, byte(separator))
-	cursor = append(cursor, filtersChecksum...)
+	cursor = append(cursor, filtersChecksum...) // could contain any byte, so always keep this as the last element
 
 	return EncodedCursor(base64.URLEncoding.EncodeToString(cursor))
 }
@@ -71,24 +71,21 @@ func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 		return DecodedCursor{0, filtersChecksum}
 	}
 
-	decodedParts := bytes.Split(decoded, []byte{separator})
-	if len(decoded) < 1 {
+	decodedFid, decodedChecksum, found := bytes.Cut(decoded, []byte{separator})
+	if !found {
+		log.Printf("cursor '%v' doesn't contain expected separator %c", decoded, separator)
 		return DecodedCursor{0, filtersChecksum}
 	}
 
 	// feature id
-	fid := big.NewInt(0).SetBytes(decodedParts[0]).Int64()
-	if err != nil {
-		log.Printf("cursor %s doesn't contain numeric value, defaulting to first page", decodedParts[0])
-		return DecodedCursor{0, filtersChecksum}
-	}
+	fid := big.NewInt(0).SetBytes(decodedFid).Int64()
 	if fid < 0 {
 		log.Printf("negative feature ID detected: %d, defaulting to first page", fid)
 		fid = 0
 	}
 
 	// checksum
-	if len(decodedParts) > 1 && !bytes.Equal(decodedParts[1], filtersChecksum) {
+	if !bytes.Equal(decodedChecksum, filtersChecksum) {
 		log.Printf("filters in query params have changed during pagination, resetting to first page")
 		return DecodedCursor{0, filtersChecksum}
 	}
