@@ -59,7 +59,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 	}
 
 	firstRow := true
-	var nextPrevID *PrevNextFID
+	var prevNextID *PrevNextFID
 	for rows.Next() {
 		var values []interface{}
 		if values, err = rows.SliceScan(); err != nil {
@@ -71,19 +71,19 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
-			nextPrevID = np
+			prevNextID = np
 			firstRow = false
 		}
 		result = append(result, feature)
 	}
-	return result, nextPrevID, nil
+	return result, prevNextID, nil
 }
 
 //nolint:cyclop,funlen
 func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []interface{},
 	fidColumn string, geomColumn string, geomMapper func([]byte) (geom.Geometry, error)) (*PrevNextFID, error) {
 
-	nextPrevID := PrevNextFID{}
+	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
 		columnValue := values[i]
 		if columnValue == nil {
@@ -112,13 +112,13 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 		case "prevfid":
 			// Only the first row in the result set contains the previous feature id
 			if firstRow {
-				nextPrevID.Prev = columnValue.(int64)
+				prevNextID.Prev = columnValue.(int64)
 			}
 
 		case "nextfid":
 			// Only the first row in the result set contains the next feature id
 			if firstRow {
-				nextPrevID.Next = columnValue.(int64)
+				prevNextID.Next = columnValue.(int64)
 			}
 
 		default:
@@ -143,5 +143,5 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 			}
 		}
 	}
-	return &nextPrevID, nil
+	return &prevNextID, nil
 }
