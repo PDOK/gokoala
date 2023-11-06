@@ -8,7 +8,7 @@ import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
 
 @NgModule({
-  declarations: [FeatureViewComponent],
+  declarations: [],
   providers: [],
   bootstrap: [],
   imports: [BrowserModule, HttpClientModule, AppComponent],
