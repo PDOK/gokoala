@@ -1,25 +1,23 @@
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core'
-import { NgChanges } from '../app.component'
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
-import TileLayer from 'ol/layer/Tile'
-import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
-import WMTSTileGrid from 'ol/tilegrid/WMTS'
-import { FeatureCollectionGeoJSON } from '../openapi/model/featureCollectionGeoJSON'
-import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
-import { Circle, Fill, Stroke, Style } from 'ol/style'
-import { Extent, getBottomLeft, getCenter, getTopLeft, getTopRight } from 'ol/extent'
-import { Geometry, Point, Polygon } from 'ol/geom'
-import { FeatureServiceService, DataUrl } from '../feature-service.service'
-import { Projection, ProjectionLike } from 'ol/proj'
-import { take } from 'rxjs/operators'
-import { FitOptions } from 'ol/View'
-import { DragBox } from 'ol/interaction'
-import { platformModifierKeyOnly, shiftKeyOnly } from 'ol/events/condition'
-import { DragBoxEvent } from 'ol/interaction/DragBox'
-import { WKT } from 'ol/format'
-import { fromExtent } from 'ol/geom/Polygon'
 import { FeatureLike } from 'ol/Feature'
 import { PanIntoViewOptions } from 'ol/Overlay'
+import { FitOptions } from 'ol/View'
+import { platformModifierKeyOnly } from 'ol/events/condition'
+import { Extent, getCenter, getTopLeft } from 'ol/extent'
+import { Geometry } from 'ol/geom'
+import { fromExtent } from 'ol/geom/Polygon'
+import { DragBox } from 'ol/interaction'
+import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
+import TileLayer from 'ol/layer/Tile'
+import { Projection, ProjectionLike } from 'ol/proj'
+import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
+import { Circle, Fill, Stroke, Style } from 'ol/style'
+import WMTSTileGrid from 'ol/tilegrid/WMTS'
+import { take } from 'rxjs/operators'
+import { NgChanges } from '../app.component'
+import { DataUrl, FeatureServiceService } from '../feature-service.service'
+import { FeatureCollectionGeoJSON } from '../openapi/model/featureCollectionGeoJSON'
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
@@ -29,6 +27,7 @@ export function exhaustiveGuard(_value: never): never {
   templateUrl: './feature-view.component.html',
   styleUrls: ['./feature-view.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
 })
 export class FeatureViewComponent implements OnChanges {
   @Input() itemsUrl!: string
@@ -63,7 +62,7 @@ export class FeatureViewComponent implements OnChanges {
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     console.log('mapheight---' + this.mapHeight)
     console.log('mapwidth---' + this.mapWidth)
-    const mapdiv: HTMLElement = this.el.nativeElement.querySelector("[id='map']")
+    const mapdiv: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
     console.log(mapdiv)
     this.map.setTarget(mapdiv)
     console.log('url: ' + this.itemsUrl)
@@ -77,7 +76,7 @@ export class FeatureViewComponent implements OnChanges {
         this.map.setLayerGroup(new Group())
 
         this.features = data
-        const ext = this.loadfeatures(this.features)
+        this.loadfeatures(this.features)
         this.loadbackground()
         this.adddragbox()
         this.addFeatureEmit()
@@ -174,7 +173,11 @@ export class FeatureViewComponent implements OnChanges {
 
   brtLayer() {
     const projectionExtent = [-285401.92, 22598.08, 595401.9199999999, 903401.9199999999]
-    const projection = new Projection({ code: 'EPSG:28992', units: 'm', extent: projectionExtent })
+    const projection = new Projection({
+      code: 'EPSG:28992',
+      units: 'm',
+      extent: projectionExtent,
+    })
     const resolutions = [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76, 26.88, 13.44, 6.72, 3.36, 1.68, 0.84, 0.42, 0.21]
     //const size = ol.extent.getWidth(projectionExtent) / 256
 
@@ -214,7 +217,7 @@ export class FeatureViewComponent implements OnChanges {
 
     this.map.addOverlay(tooltip)
 
-    this.map.on('pointermove', (evt: MapBrowserEvent<any>) => {
+    this.map.on('pointermove', (evt: MapBrowserEvent<UIEvent>) => {
       this.map.forEachFeatureAtPixel(
         evt.pixel,
         (feature: FeatureLike) => {
@@ -233,10 +236,13 @@ export class FeatureViewComponent implements OnChanges {
                 '">' +
                 featureid +
                 '</a>'
+              const f = feature.getGeometry()
+              if (f) {
+                tooltip.setPosition(getCenter(f.getExtent()))
+                tooltipContainer.style.visibility = 'visible'
+              }
+              this.activeFeature.emit(feature)
             }
-            tooltip.setPosition(getCenter(feature.getGeometry()!.getExtent()))
-            tooltipContainer.style.visibility = 'visible'
-            this.activeFeature.emit(feature)
           }
         },
         { hitTolerance: 3 }
@@ -249,14 +255,14 @@ export class FeatureViewComponent implements OnChanges {
       condition: platformModifierKeyOnly, //shiftKeyOnly,
     })
     this.map.addInteraction(dragBox)
-    dragBox.on('boxstart', (evt: DragBoxEvent) => {
+    dragBox.on('boxstart', () => {
       if (this.boxLayer) {
         this.map.removeLayer(this.boxLayer)
         this.box.emit('')
       }
     })
 
-    dragBox.on('boxend', (evt: DragBoxEvent) => {
+    dragBox.on('boxend', () => {
       const bboxGeometry = dragBox.getGeometry()
 
       const bbox = new Feature({
