@@ -20,11 +20,12 @@
     <label for="endpoints">or choose sample url:</label>
 
     <select name="endpoints" id="endpoints" onclick="fillDefault()">
-      <option value="http://localhost:4200/testdata/airports.json">Airports</option>
-      <option value="http://localhost:4200/testdata/wegdelen.geojson">Wegdelen BGT</option>
       <option
         value="https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&limit=50">
         Adressen inVlaanderen
+      </option>
+      <option value="https://ri.ldproxy.net/vineyards/collections/vineyards/items?bbox=6.3021%2C49.0087%2C8.4179%2C50.6139">
+        LDProxy Vineyards
       </option>
     </select>
 
@@ -34,7 +35,9 @@
     <div>Use Ctrl+Drag (Command+Drag on Mac) to draw a boundingbox to select. Ctrl-Click to remove the box</div>
     <div id="bbox"></div>
 
-    <app-feature-view id="featuresample" items-url=""></app-feature-view>
+    <app-feature-view
+      id="featuresample"
+      items-url="https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&limit=50"></app-feature-view>
 
     <app-feature-view
       id="wegdelensample"
@@ -46,36 +49,41 @@
   <script>
     function load() {
       const showurl =
-        'https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&limit=50'
-      const showprojection = 'EPSG:3857' // 'EPSG:28992'
-      itemurl.value = showurl
-      itemurl.title = showurl
-      itemprojection.value = showprojection
-      itemprojection.title = showprojection
+        'https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&limit=50';
+      const showprojection = 'EPSG:3857';
+      itemurl.value = showurl;
+      itemurl.title = showurl;
+      itemprojection.value = showprojection;
+      itemprojection.title = showprojection;
 
       featuresample.addEventListener('box', selectbox => {
-        console.log('box')
-        console.log(JSON.stringify(selectbox.detail))
-        bbox.innerHTML = selectbox.detail
+        console.log('box');
+        console.log(JSON.stringify(selectbox.detail));
+        bbox.innerHTML = selectbox.detail;
+        const url = new URL(itemurl.value);
+        url.searchParams.set('bbox', selectbox.detail);
+        itemurl.value = url;
+        itemurl.title = url;
+        showMap();
       });
 
-      showMap()
+      showMap();
     }
     function showMap() {
-      const url = itemurl.value
-      const p = itemprojection.value
-      showurl.innerHTML = url + '     using (projection ' + p + ')'
-      showurl.href = url
+      const url = itemurl.value;
+      const p = itemprojection.value;
+      showurl.innerHTML = url + '     using (projection ' + p + ')';
+      showurl.href = url;
 
-      const map = document.getElementById('featuresample')
-      map.setAttribute('items-url', url)
-      map.setAttribute('projection', p)
+      const map = document.getElementById('featuresample');
+      map.setAttribute('items-url', url);
+      map.setAttribute('projection', p);
     }
     function fillDefault() {
-      const defaulturl = document.getElementById('endpoints').value
-      itemurl.value = defaulturl
-      itemurl.title = defaulturl
-      showMap()
+      const defaulturl = document.getElementById('endpoints').value;
+      itemurl.value = defaulturl;
+      itemurl.title = defaulturl;
+      showMap();
     }
   </script>
 </html>

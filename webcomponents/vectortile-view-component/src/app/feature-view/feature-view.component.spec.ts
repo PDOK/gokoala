@@ -8,7 +8,7 @@ describe('FeatureViewComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [FeatureViewComponent]
+      declarations: [FeatureViewComponent],
     });
     fixture = TestBed.createComponent(FeatureViewComponent);
     component = fixture.componentInstance;

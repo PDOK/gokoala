@@ -8,9 +8,7 @@ import { LegendViewComponent } from './legend-view/legend-view.component';
 import { FeatureViewComponent } from './feature-view/feature-view.component';
 
 @NgModule({
-  declarations: [
-    FeatureViewComponent
-  ],
+  declarations: [FeatureViewComponent],
   providers: [],
   bootstrap: [],
   imports: [BrowserModule, HttpClientModule, AppComponent],
@@ -24,15 +22,12 @@ export class AppModule {
       injector,
     });
     customElements.define('app-objectinfo-view', webObjectInfo);
-    
+
     const webLegend = createCustomElement(LegendViewComponent, { injector });
     customElements.define('app-legend-view', webLegend);
 
-  
     const featureView = createCustomElement(FeatureViewComponent, { injector });
     customElements.define('app-feature-view', featureView);
-
-
   }
 
   // eslint-disable-next-line
