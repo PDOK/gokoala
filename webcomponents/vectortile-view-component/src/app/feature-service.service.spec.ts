@@ -1,16 +1,16 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing'
 
-import { FeatureServiceService } from './feature-service.service';
+import { FeatureServiceService } from './feature-service.service'
 
 describe('FeatureServiceService', () => {
-  let service: FeatureServiceService;
+  let service: FeatureServiceService
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(FeatureServiceService);
-  });
+    TestBed.configureTestingModule({})
+    service = TestBed.inject(FeatureServiceService)
+  })
 
   it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-});
+    expect(service).toBeTruthy()
+  })
+})

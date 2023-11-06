@@ -34,38 +34,38 @@
 
     <script>
       adminunit.addEventListener('currentZoomLevel', a1 => {
-        console.log('zoomlevel sample1: ');
-        console.log(JSON.stringify(a1.detail));
-        const zooml = document.getElementById('zoomlevel');
-        zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2);
-      });
+        console.log('zoomlevel sample1: ')
+        console.log(JSON.stringify(a1.detail))
+        const zooml = document.getElementById('zoomlevel')
+        zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2)
+      })
 
       adminunit.addEventListener('activeTileUrl', activeurl => {
-        console.log(JSON.stringify(activeurl.detail));
+        console.log(JSON.stringify(activeurl.detail))
 
-        const cururl = document.getElementById('current-url');
-        cururl.innerHTML = 'url ' + activeurl.detail;
-      });
+        const cururl = document.getElementById('current-url')
+        cururl.innerHTML = 'url ' + activeurl.detail
+      })
 
-      seturl('NetherlandsRDNewQuad');
+      seturl('NetherlandsRDNewQuad')
 
       document.addEventListener(
         'input',
         function (event) {
           // only operate on srs dropdown
-          if (event.target.id !== 'admin-selector') return;
-          var projection = event.target.value;
-          seturl(projection);
+          if (event.target.id !== 'admin-selector') return
+          var projection = event.target.value
+          seturl(projection)
         },
         false
-      );
+      )
 
       function seturl(projection) {
-        const view = document.getElementById('adminunit');
-        const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' + projection;
-        view.setAttribute('tile-url', url);
-        const link = document.getElementById('sample1viewlink');
-        link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
+        const view = document.getElementById('adminunit')
+        const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' + projection
+        view.setAttribute('tile-url', url)
+        const link = document.getElementById('sample1viewlink')
+        link.innerHTML = "<a href='" + url + "'> " + url + '</a>'
       }
     </script>
   </body>

@@ -110,9 +110,9 @@
 
     <script>
       sample2.addEventListener('currentZoomLevel', a1 => {
-        console.log('zoomlevel sample2: ');
-        console.log(JSON.stringify(a1.detail));
-      });
+        console.log('zoomlevel sample2: ')
+        console.log(JSON.stringify(a1.detail))
+      })
     </script>
 
     <H2>Select vector tile </H2>
@@ -153,48 +153,48 @@
 
         <script>
           vectortile.addEventListener('currentZoomLevel', a1 => {
-            console.log('zoomlevel: ');
-            console.log(JSON.stringify(a1.detail));
-            const zooml = document.getElementById('zoomlevel');
-            zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2);
-          });
+            console.log('zoomlevel: ')
+            console.log(JSON.stringify(a1.detail))
+            const zooml = document.getElementById('zoomlevel')
+            zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2)
+          })
 
           vectortile.addEventListener('activeTileUrl', activeurl => {
-            console.log(JSON.stringify(activeurl.detail));
+            console.log(JSON.stringify(activeurl.detail))
 
-            const cururl = document.getElementById('current-url');
-            cururl.innerHTML = 'url ' + activeurl.detail;
-          });
+            const cururl = document.getElementById('current-url')
+            cururl.innerHTML = 'url ' + activeurl.detail
+          })
 
-          seturl();
+          seturl()
 
           document.addEventListener(
             'input',
             function (event) {
-              console.log(event);
+              console.log(event)
               if (event.target.id == 'projection-selector') {
-                const p = document.getElementById('thisprojection');
-                p.innerHTML = event.target.value;
+                const p = document.getElementById('thisprojection')
+                p.innerHTML = event.target.value
               }
 
               if (event.target.id == 'url-selector') {
-                const u = document.getElementById('thisurl');
-                u.innerHTML = event.target.value;
+                const u = document.getElementById('thisurl')
+                u.innerHTML = event.target.value
               }
 
-              seturl();
+              seturl()
             },
             false
-          );
+          )
 
           function seturl() {
-            const p = document.getElementById('thisprojection');
-            const u = document.getElementById('thisurl');
-            const view = document.getElementById('vectortile');
-            const url = u.innerHTML + 'tiles/' + p.innerHTML;
-            view.setAttribute('tile-url', url);
-            const link = document.getElementById('totalurl');
-            link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
+            const p = document.getElementById('thisprojection')
+            const u = document.getElementById('thisurl')
+            const view = document.getElementById('vectortile')
+            const url = u.innerHTML + 'tiles/' + p.innerHTML
+            view.setAttribute('tile-url', url)
+            const link = document.getElementById('totalurl')
+            link.innerHTML = "<a href='" + url + "'> " + url + '</a>'
           }
         </script>
       </div>
@@ -243,26 +243,26 @@
     </app-vectortile-view>
     <script>
       sample4view.addEventListener('currentZoomLevel', a => {
-        console.log('zoomlevels sample4view');
-        console.log(JSON.stringify(a.detail));
-      });
+        console.log('zoomlevels sample4view')
+        console.log(JSON.stringify(a.detail))
+      })
       document.addEventListener(
         'input',
         function (event) {
           // only operate on srs dropdown
-          if (event.target.id !== 'sample4select') return;
-          var projection = event.target.value;
+          if (event.target.id !== 'sample4select') return
+          var projection = event.target.value
 
-          const view = document.getElementById('sample4view');
+          const view = document.getElementById('sample4view')
 
-          view.setAttribute('tile-url', 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection);
-          const link = document.getElementById('sample4viewlink');
-          const url = 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection;
-          link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
+          view.setAttribute('tile-url', 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection)
+          const link = document.getElementById('sample4viewlink')
+          const url = 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection
+          link.innerHTML = "<a href='" + url + "'> " + url + '</a>'
           //link.setAttribute('href'+  'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection)
         },
         false
-      );
+      )
     </script>
 
     <H2>5. BAG EU grid with style </H2>
@@ -297,17 +297,17 @@
     <script type="text/javascript">
       function load() {
         selectsample.addEventListener('activeFeature', e => {
-          console.log('activeFeature');
-          console.log(JSON.stringify(e.detail));
-          objectinfooutside.feature = e.detail;
-        });
+          console.log('activeFeature')
+          console.log(JSON.stringify(e.detail))
+          objectinfooutside.feature = e.detail
+        })
       }
 
       function changeStyle() {
-        var optionValue = document.getElementById('sample8').value;
-        document.getElementById('output').innerHTML = optionValue;
-        selectsample.setAttribute('style-url', optionValue);
-        selectlegendsample.setAttribute('style-url', optionValue);
+        var optionValue = document.getElementById('sample8').value
+        document.getElementById('output').innerHTML = optionValue
+        selectsample.setAttribute('style-url', optionValue)
+        selectlegendsample.setAttribute('style-url', optionValue)
       }
     </script>
 

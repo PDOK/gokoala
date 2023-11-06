@@ -1,11 +1,11 @@
-import { Component, Input, ViewEncapsulation } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import RenderFeature from 'ol/render/Feature';
+import { Component, Input, ViewEncapsulation } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import RenderFeature from 'ol/render/Feature'
 
 type proprow = {
-  title: string;
-  value: string;
-};
+  title: string
+  value: string
+}
 
 @Component({
   selector: 'app-object-info',
@@ -16,22 +16,22 @@ type proprow = {
   styleUrls: ['./object-info.component.css'],
 })
 export class ObjectInfoComponent {
-  @Input() feature!: RenderFeature;
+  @Input() feature!: RenderFeature
 
   public getFeatureProperties(): proprow[] {
-    const proptable: proprow[] = [];
+    const proptable: proprow[] = []
     if (this.feature) {
-      const prop = this.feature.getProperties();
+      const prop = this.feature.getProperties()
 
       for (const val in prop) {
         if (val !== 'mapbox-layer') {
-          const p: proprow = { title: val, value: prop[val] };
-          proptable.push(p);
+          const p: proprow = { title: val, value: prop[val] }
+          proptable.push(p)
         }
       }
-      return proptable;
+      return proptable
     } else {
-      return [];
+      return []
     }
   }
 }
