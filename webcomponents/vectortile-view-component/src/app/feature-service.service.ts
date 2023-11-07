@@ -1,12 +1,14 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http'
+import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { map, Observable } from 'rxjs'
 
 import { Feature } from 'ol'
 import GeoJSON from 'ol/format/GeoJSON'
 import { Geometry } from 'ol/geom'
-import { FeatureCollectionGeoJSON } from './openapi/model/models'
+
 import { ProjectionLike } from 'ol/proj'
+import { FeatureCollectionGeoJSON } from './openapi/model/featureCollectionGeoJSON'
+
 export type DataUrl = {
   url: string
   projection: ProjectionLike

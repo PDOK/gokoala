@@ -1,6 +1,6 @@
 {
   "root": true,
-  "ignorePatterns": ["projects/**/*"],
+  "ignorePatterns": ["src/app/openapi/**/*"],
   "overrides": [
     {
       "files": ["*.ts"],
@@ -33,16 +33,21 @@
     },
     {
       "files": ["*.html"],
+      "plugins": ["prettier"],
       "extends": [
+        "prettier",
         "plugin:@angular-eslint/template/recommended",
         "plugin:@angular-eslint/template/accessibility",
         "plugin:prettier/recommended"
       ],
+
       "rules": {
         "prettier/prettier": [
           "error",
           {
-            "parser": "angular"
+            "parser": "angular",
+            "singleQuote": true,
+            "semi": false
           }
         ]
       }

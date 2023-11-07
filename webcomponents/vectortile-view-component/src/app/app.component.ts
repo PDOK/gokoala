@@ -292,6 +292,7 @@ export class AppComponent implements OnChanges {
     this.vectorTileLayer = l.vectorTileLayer
 
     const contr = defaultControls({
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       zoom: this.maxZoom! - this.minZoom! > 1,
     }).extend([new FullScreen()])
     this.map = new Map({
@@ -343,6 +344,7 @@ export class AppComponent implements OnChanges {
         .then(() => {
           //overrule source url and zoom from style
           if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             vectorTileLayer.setSource(this.getVectorTileSource(projection!, this.tileUrl))
           }
         })
