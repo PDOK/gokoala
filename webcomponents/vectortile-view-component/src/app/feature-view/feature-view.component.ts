@@ -56,25 +56,16 @@ export class FeatureViewComponent implements OnChanges {
   }
 
   private init() {
-    console.log('height---' + this.el.nativeElement.offsetHeight)
-    console.log('width---' + this.el.nativeElement.offsetWidth)
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
-    console.log('mapheight---' + this.mapHeight)
-    console.log('mapwidth---' + this.mapWidth)
     const mapdiv: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
-    console.log(mapdiv)
     this.map.setTarget(mapdiv)
-    console.log('url: ' + this.itemsUrl)
-    console.log('projection: ' + this.projection)
     const aurl: DataUrl = { url: this.itemsUrl, projection: this.projection }
-
     this.featureService
       .getFeatures(aurl)
       .pipe(take(1))
       .subscribe(data => {
         this.map.setLayerGroup(new Group())
-
         this.features = data
         this.loadfeatures(this.features)
         this.loadbackground()
