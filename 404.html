@@ -1,291 +1,86 @@
 <!doctype html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <html lang="en" data-critters-container>
-  <head>
+  <head><base href="https://pdok.github.io/gokoala/">
     <meta charset="utf-8">
-    <title>vectortile-viewComponent</title>
-    <base href="https://pdok.github.io/gokoala/">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <title>OGC API map component samples</title>
     <style>
-      body {
-        background-color: rgb(194, 209, 211);
-        display: flex;
-        flex-direction: column;
-      }
-
-      h1 {
-        color: blue;
-      }
-
-      h2 {
-        color: blue;
-        flex-grow: 1;
-      }
-
-      app-legend-view {
-        background-color: whitesmoke;
-        width: 30%;
-        border: white;
-        border-style: solid;
-        margin-left: 3em;
-        border-radius: 1em;
-        box-shadow: 20px 20px rgba(0, 0, 0, 0.15);
-        transition: all 0.4s ease;
-        font-weight: bold;
-        font-size: x-large;
-      }
-
-      app-vectortile-view {
-        flex-grow: 1;
-        padding: 5px;
-        margin: 5px;
-      }
-
-      .largebox {
-        width: 95vw;
-        height: 95vh;
-        margin: 2em;
-        font-family: 'Gill Sans', sans-serif;
-        background-color: whitesmoke;
-        border: black;
-        border-style: solid;
-      }
-
-      .extralargebox {
-        width: 50vw;
-        height: 200vh;
-        font-family: cursive;
-        margin: 2em;
-        background-color: white;
-      }
-
-      .showarea {
-        display: flex;
-        flex-direction: row;
-      }
-
-      .showbox {
-        width: 40vw;
-        padding: 0;
-        flex-grow: 1;
-      }
-
-      .showboxsmall {
-        width: 10%;
-        height: 10%;
-        max-width: 10%;
-        max-height: 10%;
-        flex-grow: 1;
+      #itemurl {
+        width: 60vw;
+        padding: 2px;
       }
     </style>
   <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.ee42683d02a100f9.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.ee42683d02a100f9.css"></noscript></head>
 
   <body onload="load()">
-    <h1>Web component "app-vectortile-view" usage samples:</h1>
+    <h2> OGC API BBOX sample</h2>
+    <label for="itemurl">Item Url:</label>
+    <input type="url" id="itemurl" name="itemurl" title><br><br>
+    <label for="itemprojection">projection:</label>
+    <input type="string" id="itemprojection" name="itemprojection" title><br><br>
+    <label for="endpoints">or choose sample url:</label>
 
-    <h2>1. World map NaturalEarth with grid</h2>
-    <app-vectortile-view id="sample1a" class="showbox" tile-url="https://maps.gnosis.earth/ogcapi/collections/NaturalEarth:cultural:ne_10m_admin_0_countries/tiles/WebMercatorQuad" style-url center-x="5.3896944" center-y="52.1562499" show-grid show-object-info>
-    </app-vectortile-view>
-
-    <h2>2. LD proxy <a href="https://demo.ldproxy.net/daraa/">Dalaraa</a> </h2>
-    <app-vectortile-view id="sample2" tile-url="https://demo.ldproxy.net/daraa/tiles/WebMercatorQuad" class="showbox" style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs" zoom="13" center-x="36.1033" center-y="32.6264" show-grid show-object-info>
-    </app-vectortile-view>
-
-    <script>
-      sample2.addEventListener('currentZoomLevel', a1 => {
-        console.log('zoomlevel sample2: ');
-        console.log(JSON.stringify(a1.detail));
-      });
-    </script>
-
-    <h1>Select vector tile </h1>
-
-    <select id="url-selector">
-      <option value="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/">administrative Units</option>
-      <option value="https://api.pdok.nl/lv/bag/ogc/v1_0/">Buildings (BAG)</option>
-      <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/">Large-scale Topography (BGT)</option>
+    <select name="endpoints" id="endpoints" onclick="fillDefault()">
+      <option value="https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&amp;limit=50">
+        Adressen inVlaanderen
+      </option>
+      <option value="https://ri.ldproxy.net/vineyards/collections/vineyards/items?bbox=6.3021%2C49.0087%2C8.4179%2C50.6139">
+        LDProxy Vineyards
+      </option>
     </select>
 
-    <select id="projection-selector">
-      <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
-      <option value="WebMercatorQuad">WebMercatorQuad</option>
-      <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
-    </select>
+    <input onclick="showMap()" type="button" value="Show">
 
-    <div class="showarea">
-      <div class="showbox">
-        <div id="zoomlevel"></div>
-        <div id="current-url"></div>
+    <div>show map for:</div>
+    <a id="showurl">placeholdertext</a>
+    <div>Use Ctrl+Drag (Command+Drag on Mac) to draw a boundingbox to select. Ctrl-Click to remove the box</div>
+    <div id="bbox"></div>
 
-        <div>Projection:</div>
-        <div id="thisprojection">NetherlandsRDNewQuad</div>
-        <div>Url:</div>
-        <div id="thisurl">https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/</div>
-        <div id="totalurl"></div>
-      </div>
+    <app-feature-view id="featuresample" items-url="https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&amp;limit=50"></app-feature-view>
 
-      <div class="showbox">
-        <app-vectortile-view id="vectortile" tile-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/" center-x="5.3896944" center-y="52.1562499" show-grid="true" show-object-info="true">
-        </app-vectortile-view>
+    <h2> OGC API BGT Road parts</h2>
 
-        <script>
-          vectortile.addEventListener('currentZoomLevel', a1 => {
-            console.log('zoomlevel: ');
-            console.log(JSON.stringify(a1.detail));
-            const zooml = document.getElementById('zoomlevel');
-            zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2);
-          });
+    <app-feature-view id="wegdelensample" items-url="https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?f=json&amp;limit=500" projection="EPSG:28992" background-map="BRT">
+    </app-feature-view>
+  <script src="runtime.076f20a594d8613d.js" type="module"></script><script src="polyfills.f83445722e06c254.js" type="module"></script><script src="main.5eec0c8d71fc7150.js" type="module"></script></body>
+  <script>
+    function load() {
+      const showurl =
+        'https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&limit=50'
+      const showprojection = 'EPSG:3857'
+      itemurl.value = showurl
+      itemurl.title = showurl
+      itemprojection.value = showprojection
+      itemprojection.title = showprojection
 
-          vectortile.addEventListener('activeTileUrl', activeurl => {
-            console.log(JSON.stringify(activeurl.detail));
+      featuresample.addEventListener('box', selectbox => {
+        console.log('box')
+        console.log(JSON.stringify(selectbox.detail))
+        bbox.innerHTML = selectbox.detail
+        const url = new URL(itemurl.value)
+        url.searchParams.set('bbox', selectbox.detail)
+        itemurl.value = url
+        itemurl.title = url
+        showMap()
+      })
 
-            const cururl = document.getElementById('current-url');
-            cururl.innerHTML = 'url ' + activeurl.detail;
-          });
+      showMap()
+    }
+    function showMap() {
+      const url = itemurl.value
+      const p = itemprojection.value
+      showurl.innerHTML = url + '     using (projection ' + p + ')'
+      showurl.href = url
 
-          seturl();
-
-          document.addEventListener(
-            'input',
-            function (event) {
-              console.log(event);
-              if (event.target.id == 'projection-selector') {
-                const p = document.getElementById('thisprojection');
-                p.innerHTML = event.target.value;
-              }
-
-              if (event.target.id == 'url-selector') {
-                const u = document.getElementById('thisurl');
-                u.innerHTML = event.target.value;
-              }
-
-              seturl();
-            },
-            false
-          );
-
-          function seturl() {
-            const p = document.getElementById('thisprojection');
-            const u = document.getElementById('thisurl');
-            const view = document.getElementById('vectortile');
-            const url = u.innerHTML + 'tiles/' + p.innerHTML;
-            view.setAttribute('tile-url', url);
-            const link = document.getElementById('totalurl');
-            link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
-          }
-        </script>
-      </div>
-    </div>
-
-    <h2>3. <a href="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad"> BAG WebMercato with grid </a></h2>
-    <app-vectortile-view id="sample3a" class="showbox" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad" center-x="5.3896944" center-y="52.1562499" show-grid="true">
-    </app-vectortile-view>
-
-    <h2>4. BAG with grid and selectable TileMatrixSet
-      <div id="sample4viewlink"></div>
-    </h2>
-
-    <select id="sample4select" style="width: 15%">
-      <option value="NetherlandsRDNewQuad">NetherlandsRDNewQuad</option>
-      <option value="WebMercatorQuad">WebMercatorQuad</option>
-      <option value="EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</option>
-    </select>
-
-    <app-vectortile-view id="sample4view" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/NetherlandsRDNewQuad" class="showbox" style-url="https://api.pdok.nl/lv/bag/ogc/v1_0/styles/bag_standaardvisualisatie?f=json" center-x="5.3896944" center-y="52.1562499" show-grid="true">
-    </app-vectortile-view>
-
-    <h2>4. BAG WebMercato with style</h2>
-    <app-vectortile-view id="sample4" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/WebMercatorQuad" class="showbox" style-url="https://api.pdok.nl/lv/bag/ogc/v1_0/styles/bag_standaardvisualisatie?f=json" center-x="5.3896944" center-y="52.1562499" show-grid>
-    </app-vectortile-view>
-    <script>
-      sample4view.addEventListener('currentZoomLevel', a => {
-        console.log('zoomlevels sample4view');
-        console.log(JSON.stringify(a.detail));
-      });
-      document.addEventListener(
-        'input',
-        function (event) {
-          // only operate on srs dropdown
-          if (event.target.id !== 'sample4select') return;
-          var projection = event.target.value;
-
-          const view = document.getElementById('sample4view');
-
-          view.setAttribute('tile-url', 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection);
-          const link = document.getElementById('sample4viewlink');
-          const url = 'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection;
-          link.innerHTML = "<a href='" + url + "'> " + url + '</a>';
-          //link.setAttribute('href'+  'https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/' + projection)
-        },
-        false
-      );
-    </script>
-
-    <h2>5. BAG EU grid with style </h2>
-    <app-vectortile-view id="sample5" tile-url="https://api.pdok.nl/lv/bag/ogc/v1_0/tiles/EuropeanETRS89_LAEAQuad" class="showbox" style-url="https://api.pdok.nl/lv/bag/ogc/v1_0/styles/bag_standaardvisualisatie?f=json" center-x="5.3896944" center-y="52.1562499" show-grid show-object-info></app-vectortile-view>
-
-
-    <h2>Admin unit legend</h2>
-    <app-legend-view id="legendadminunit" style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/styles/bestuurlijkegebieden_standaardvisualisatie?f=json">
-    </app-legend-view>
-
-    <h2>9. BAG legend sample1 from OGC api test</h2>
-    <app-legend-view id="legendview1" style-url="https://api.pdok.nl/lv/bag/ogc/v1_0/styles/bag_standaardvisualisatie?f=json">
-    </app-legend-view>
-
-    <h2>10 legend sample</h2>
-    <app-legend-view id="legendview2" style-url="https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs"> </app-legend-view>
-
-    <h2>11 legend sample</h2>
-    <app-legend-view id="legendview3" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=mapbox"></app-legend-view>
-    <script type="text/javascript">
-      function load() {
-        selectsample.addEventListener('activeFeature', e => {
-          console.log('activeFeature');
-          console.log(JSON.stringify(e.detail));
-          objectinfooutside.feature = e.detail;
-        });
-      }
-
-      function changeStyle() {
-        var optionValue = document.getElementById('sample8').value;
-        document.getElementById('output').innerHTML = optionValue;
-        selectsample.setAttribute('style-url', optionValue);
-        selectlegendsample.setAttribute('style-url', optionValue);
-      }
-    </script>
-
-    <h2>12 legend sample</h2>
-    <app-legend-view class="largebox" id="legendview4" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_standaardvisualisatie?f=mapbox" title-items="type,plus_type,functie,fysiek_voorkomen">
-    </app-legend-view>
-
-    <h2>13 legend sample</h2>
-
-    <app-legend-view class="extralargebox" id="legendview5" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_standaardvisualisatie?f=mapbox" title-items="type,plus_type,functie,fysiek_voorkomen">
-    </app-legend-view>
-
-    <h2>8. BGT mapbox style switch sample</h2>
-    <div class="showarea">
-      <div class="showbox">
-        <label for="style">Choose a style:</label>
-        <select title="select style" name="styles" id="sample8" oninput="changeStyle()">
-          <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=mapbox">Background</option>
-          <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_standaardvisualisatie?f=mapbox">Standard</option>
-        </select>
-        <app-vectortile-view id="selectsample" zoom="13" center-x="5.3896944" center-y="52.1562499" show-grid tile-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/NetherlandsRDNewQuad" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=json">
-        </app-vectortile-view>
-        <p>Style: <span id="output"></span></p>
-      </div>
-
-      <div class="showbox">
-        BGT ObjectInfo on click outside map :
-        <div style="border: 1px solid; box-shadow: 5px 10px blue">
-          <app-objectinfo-view id="objectinfooutside"> </app-objectinfo-view>
-        </div>
-
-        <app-legend-view id="selectlegendsample" style-url="https://api.pdok.nl/lv/bgt/ogc/v1_0/styles/bgt_achtergrondvisualisatie?f=json" title-items="type,plus_type,functie,fysiek_voorkomen">
-        </app-legend-view>
-      </div>
-    </div>
-  <script src="runtime.076f20a594d8613d.js" type="module"></script><script src="polyfills.f83445722e06c254.js" type="module"></script><script src="main.08d12416b6c6d4c1.js" type="module"></script></body>
+      const map = document.getElementById('featuresample')
+      map.setAttribute('items-url', url)
+      map.setAttribute('projection', p)
+    }
+    function fillDefault() {
+      const defaulturl = document.getElementById('endpoints').value
+      itemurl.value = defaulturl
+      itemurl.title = defaulturl
+      showMap()
+    }
+  </script>
 </html>
