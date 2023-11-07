@@ -10,7 +10,8 @@
     "deploy": "npm run generate:api && npm run format && npm run lint  && ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
     "lint": "ng lint",
     "format": "npx prettier --write .",
-    "generate:api": "openapi-generator-cli generate -i https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/api?f=json -g typescript-angular -o src/app/openapi",
+    "generate:api2": "openapi-generator-cli generate -i https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/api?f=json -g typescript-angular -o src/app/openapi",
+    "generate:api": "openapi --input 'https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/api?f=json' --output src/app/openapi --client angular",
     "upgrade": "ng update @angular/cli @angular/core"
   },
   "private": true,
@@ -49,6 +50,7 @@
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "openapi-typescript-codegen": "^0.25.0",
     "prettier": "^3.0.3",
     "prettier-eslint": "^15.0.1",
     "typescript": "~5.1.6"
