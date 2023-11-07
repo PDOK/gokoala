@@ -7,7 +7,7 @@ import GeoJSON from 'ol/format/GeoJSON'
 import { Geometry } from 'ol/geom'
 
 import { ProjectionLike } from 'ol/proj'
-import { FeatureCollectionGeoJSON } from './openapi/model/featureCollectionGeoJSON'
+import { featureCollectionGeoJSON } from './openapi/models/featureCollectionGeoJSON'
 
 export type DataUrl = {
   url: string
@@ -22,7 +22,7 @@ export class FeatureServiceService {
 
   getFeatures(url: DataUrl): Observable<Feature<Geometry>[]> {
     console.log(url)
-    return this.http.get<FeatureCollectionGeoJSON>(url.url).pipe(
+    return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
       map(data => {
         return new GeoJSON().readFeatures(data, { featureProjection: url.projection })
       })

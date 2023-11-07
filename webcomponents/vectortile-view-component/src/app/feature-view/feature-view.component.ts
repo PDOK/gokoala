@@ -17,7 +17,8 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { NgChanges } from '../app.component'
 import { DataUrl, FeatureServiceService } from '../feature-service.service'
-import { FeatureCollectionGeoJSON } from '../openapi/model/featureCollectionGeoJSON'
+import { featureCollectionGeoJSON } from '../openapi/models/featureCollectionGeoJSON'
+
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
@@ -38,7 +39,7 @@ export class FeatureViewComponent implements OnChanges {
   mapHeight = 400
   mapWidth = 600
   map: OLMap = this.getMap()
-  featureCollectionGeoJSON!: FeatureCollectionGeoJSON
+  featureCollectionGeoJSON!: featureCollectionGeoJSON
   features: Feature<Geometry>[] = []
   boxLayer!: VectorLayer<VectorSource<Geometry>>
 
