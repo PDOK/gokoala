@@ -31,7 +31,7 @@ type FeatureOptions struct {
 
 	// filtering by bounding box
 	Bbox    *geom.Extent
-	BboxCrs string
+	BboxCrs int
 
 	// filtering by CQL
 	Filter    string

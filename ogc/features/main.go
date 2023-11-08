@@ -62,7 +62,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 // CollectionContent serve a FeatureCollection with the given collectionId
 func (f *Features) CollectionContent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		collectionID, encodedCursor, limit, bbox, err := f.parseFeatureCollectionParams(r)
+		collectionID, encodedCursor, limit, bbox, err := f.parseFeatureCollectionRequest(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -73,23 +73,28 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			return
 		}
 		if _, ok := collectionsMetadata[collectionID]; !ok {
+			log.Printf("collection %s doesn't exist in this features service", collectionID)
 			http.NotFound(w, r)
 			return
 		}
 
 		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
-			Cursor: encodedCursor.Decode(url.checksum()),
-			Limit:  limit,
-			Bbox:   bbox,
-			// TODO set crs, bbox-crs, etc
+			Cursor:  encodedCursor.Decode(url.checksum()),
+			Limit:   limit,
+			Bbox:    bbox,
+			BboxCrs: 28992, // TODO turn bbox-crs param (which contains an URI) to an EPSG code.
+			// TODO set crs, etc
 		})
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
 			log.Printf("%s, error: %v\n", msg, err)
 			http.Error(w, msg, http.StatusInternalServerError)
+			return
 		}
 		if fc == nil {
+			log.Printf("no results found for collection '%s' with params: %s",
+				collectionID, r.URL.Query().Encode())
 			http.NotFound(w, r)
 			return
 		}
@@ -103,6 +108,7 @@ func (f *Features) CollectionContent() http.HandlerFunc {
 			f.json.featuresAsJSONFG()
 		default:
 			http.NotFound(w, r)
+			return
 		}
 	}
 }
@@ -131,6 +137,8 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 		if feat == nil {
+			log.Printf("no result found for collection '%s' and feature id: %d",
+				collectionID, featureID)
 			http.NotFound(w, r)
 			return
 		}
@@ -144,6 +152,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			f.json.featureAsJSONFG()
 		default:
 			http.NotFound(w, r)
+			return
 		}
 	}
 }
@@ -156,7 +165,7 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 	return result
 }
 
-func (f *Features) parseFeatureCollectionParams(r *http.Request) (string, domain.EncodedCursor, int, *geom.Extent, error) {
+func (f *Features) parseFeatureCollectionRequest(r *http.Request) (string, domain.EncodedCursor, int, *geom.Extent, error) {
 	collectionID := chi.URLParam(r, "collectionId")
 	encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
 	limit, limitErr := f.parseLimit(r.URL.Query())
