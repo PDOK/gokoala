@@ -276,7 +276,7 @@ func readDriverMetadata(db *sqlx.DB) (string, error) {
 	}
 
 	var gpkgVersion pragma
-	err = db.QueryRowx(`pragma user_version`).StructScan(&gpkgVersion)
+	_ = db.QueryRowx(`pragma user_version`).StructScan(&gpkgVersion)
 	if gpkgVersion.UserVersion == "" {
 		gpkgVersion.UserVersion = "unknown"
 	}

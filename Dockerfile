@@ -17,10 +17,10 @@ ADD . /go/src/service
 ENV CGO_ENABLED=1
 ENV GOOS=linux
 
-# install cloud-backed sqlite compile-time dependencies
+# install sqlite-related compile-time dependencies
 RUN set -eux && \
     apt-get update && \
-    apt-get install -y libcurl4-openssl-dev libssl-dev && \
+    apt-get install -y libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite && \
     rm -rf /var/lib/apt/lists/*
 
 RUN go mod download all
@@ -36,10 +36,10 @@ RUN find . -type f -name "*.go" -delete && find . -type d -name "testdata" -prun
 ####### Final image (use debian tag since we rely on C-libs)
 FROM ${REGISTRY}/debian:bookworm-slim
 
-# install cloud-backed sqlite runtime dependencies
+# install sqlite-related runtime dependencies
 RUN set -eux && \
     apt-get update && \
-    apt-get install -y libcurl4 openssl && \
+    apt-get install -y libcurl4 openssl libsqlite3-mod-spatialite && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080
@@ -62,9 +62,6 @@ COPY --from=build-component /usr/src/app/dist/vectortile-view-component/3rdparty
 
 COPY --from=build-env /go/src/service/engine/ /engine/
 COPY --from=build-env /go/src/service/ogc/ /ogc/
-
-COPY --from=build-env /usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # run as non-root
 USER 1001
