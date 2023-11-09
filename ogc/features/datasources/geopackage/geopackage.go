@@ -89,6 +89,12 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 		log.Fatal("unknown geopackage config encountered")
 	}
 
+	metadata, err := readDriverMetadata(g.backend.getDB())
+	if err != nil {
+		log.Fatalf("failed to connect with geopackage: %v", err)
+	}
+	log.Println(metadata)
+
 	featureTables, err := readGpkgContents(collections, g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
@@ -249,6 +255,34 @@ func (g *GeoPackage) makeFiltersQuery(opt datasources.FeatureOptions) (string, [
 	// TODO create part3/CQL filter query
 	filterQuery := `with <filter query here>`
 	return filterQuery, []any{opt.Cursor.FID, opt.Limit, opt.Filter}
+}
+
+func readDriverMetadata(db *sqlx.DB) (string, error) {
+	type pragma struct {
+		UserVersion string `db:"user_version"`
+	}
+	type metadata struct {
+		Sqlite     string `db:"sqlite"`
+		Spatialite string `db:"spatialite"`
+		Arch       string `db:"arch"`
+	}
+
+	var m metadata
+	err := db.QueryRowx(`select sqlite_version() as sqlite, 
+       spatialite_version() as spatialite,  
+       spatialite_target_cpu() as arch`).StructScan(&m)
+	if err != nil {
+		return "", err
+	}
+
+	var gpkgVersion pragma
+	err = db.QueryRowx(`pragma user_version`).StructScan(&gpkgVersion)
+	if gpkgVersion.UserVersion == "" {
+		gpkgVersion.UserVersion = "unknown"
+	}
+
+	return fmt.Sprintf("geopackage version: %s, sqlite version: %s, spatialite version: %s on %s",
+		gpkgVersion.UserVersion, m.Sqlite, m.Spatialite, m.Arch), nil
 }
 
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
