@@ -90,5 +90,5 @@ type CollectionSupport interface {
 	// - OGC API Maps could have: /collections/{collectionId}/maps
 	// - OGC API 3d GeoVolumes could have: /collections/{collectionId}/3dtiles
 	// etc.
-	CollectionContent() http.HandlerFunc
+	CollectionContent(args ...any) http.HandlerFunc
 }

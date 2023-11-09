@@ -60,7 +60,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 }
 
 // CollectionContent serve a FeatureCollection with the given collectionId
-func (f *Features) CollectionContent() http.HandlerFunc {
+func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID, encodedCursor, limit, bbox, err := f.parseFeatureCollectionRequest(r)
 		if err != nil {
@@ -125,6 +125,11 @@ func (f *Features) Feature() http.HandlerFunc {
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if _, ok := collectionsMetadata[collectionID]; !ok {
+			log.Printf("collection %s doesn't exist in this features service", collectionID)
+			http.NotFound(w, r)
 			return
 		}
 

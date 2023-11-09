@@ -169,7 +169,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 	}
 }
 
-func (t *Tiles) CollectionContent() http.HandlerFunc {
+func (t *Tiles) CollectionContent(_ ...any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 

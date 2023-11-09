@@ -15,6 +15,7 @@ import (
 	"github.com/go-spatial/geom/encoding/gpkg"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
+	"github.com/qustavo/sqlhooks/v2"
 
 	_ "github.com/mattn/go-sqlite3" // import for side effect (= sqlite3 driver) only
 )
@@ -34,12 +35,15 @@ const (
 
 // Load sqlite extensions once.
 //
-// Extensions are expected in /usr/lib. On Linux you can alternatively point LD_LIBRARY_PATH to
+// Extensions are expected in /usr/lib. On Linux you could alternatively point LD_LIBRARY_PATH to
 // another directory holding the extensions. On Darwin DYLD_LIBRARY_PATH is used for the same purpose.
 func init() {
-	sql.Register(sqliteDriverName, &sqlite3.SQLiteDriver{Extensions: []string{
-		"mod_spatialite",
-	}})
+	driver := &sqlite3.SQLiteDriver{
+		Extensions: []string{
+			"mod_spatialite",
+		},
+	}
+	sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, &datasources.SQLLog{}))
 }
 
 type geoPackageBackend interface {
@@ -111,18 +115,17 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	defer cancel()
 
 	query, queryArgs := g.makeFeaturesQuery(table, options)
-	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
+	stmt, err := g.backend.getDB().PreparexContext(queryCtx, query)
 	if err != nil {
-		return nil, domain.Cursors{}, err
+		return nil, domain.Cursors{}, fmt.Errorf("failed to prepare query '%s' error: %w",
+			datasources.ReplaceBindVars(query, queryArgs), err)
 	}
 	defer stmt.Close()
 
-	log.Println(query)     // TODO
-	log.Println(queryArgs) // TODO
-
-	rows, err := g.backend.getDB().QueryxContext(queryCtx, query, queryArgs...)
+	rows, err := stmt.QueryxContext(queryCtx, queryArgs...)
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("query '%s' failed: %w", query, err)
+		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w",
+			datasources.ReplaceBindVars(query, queryArgs), err)
 	}
 	defer rows.Close()
 
@@ -150,8 +153,8 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query := fmt.Sprintf("select * from %s f where f.%s = ? limit 1", table.TableName, g.fidColumn)
-	stmt, err := g.backend.getDB().PreparexContext(ctx, query)
+	query := fmt.Sprintf("select * from %s f where f.%s = $1 limit 1", table.TableName, g.fidColumn)
+	stmt, err := g.backend.getDB().PreparexContext(queryCtx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -205,31 +208,31 @@ with const as (select iif(count(id) < %[3]d, 'small', 'big') as bbox_size
                      where minx <= $3 and maxx >= $4 and miny <= $5 and maxy >= $6
                      limit %[3]d)),
      next_bbox_rtree as (select f.*
-						 from %[1]s f inner join rtree_%[1]s_geom rf on f.%[2]s = rf.id
-						 where rf.minx <= $3 and rf.maxx >= $4 and rf.miny <= $5 and rf.maxy >= $6
-						   and st_intersects(geomfromtext("polygon (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
-						   and f.%[2]s >= $1 
-						 order by f.%[2]s asc 
-						 limit (select iif(bbox_size == 'small', $2 + 1, 0) from const)),
+                         from %[1]s f inner join rtree_%[1]s_geom rf on f.%[2]s = rf.id
+                         where rf.minx <= $3 and rf.maxx >= $4 and rf.miny <= $5 and rf.maxy >= $6
+                           and st_intersects(geomfromtext("POLYGON (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
+                           and f.%[2]s >= $1 
+                         order by f.%[2]s asc 
+                         limit (select iif(bbox_size == 'small', $2 + 1, 0) from const)),
      next_bbox_btree as (select f.*
                          from %[1]s f indexed by %[1]s_spatial_idx
                          where f.minx <= $3 and f.maxx >= $4 and f.miny <= $5 and f.maxy >= $6
-                           and st_intersects(geomfromtext("polygon (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
+                           and st_intersects(geomfromtext("POLYGON (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
                            and f.%[2]s >= $1 
-					     order by f.%[2]s asc 
+                         order by f.%[2]s asc 
                          limit (select iif(bbox_size == 'big', $2 + 1, 0) from const)),
      next as (select * from next_bbox_rtree union all select * from next_bbox_btree),
      prev_bbox_rtree as (select f.*
                          from %[1]s f inner join rtree_%[1]s_geom rf on f.%[2]s = rf.id
                          where rf.minx <= $3 and rf.maxx >= $4 and rf.miny <= $5 and rf.maxy >= $6
-                           and st_intersects(geomfromtext("polygon (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
+                           and st_intersects(geomfromtext("POLYGON (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
                            and f.%[2]s < $1 
                          order by f.%[2]s desc 
                          limit (select iif(bbox_size == 'small', $2, 0) from const)),
      prev_bbox_btree as (select f.*
                          from %[1]s f indexed by %[1]s_spatial_idx
                          where f.minx <= $3 and f.maxx >= $4 and f.miny <= $5 and f.maxy >= $6
-                           and st_intersects(geomfromtext("polygon (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
+                           and st_intersects(geomfromtext("POLYGON (($4 $6,$3 $6,$3 $5,$4 $5,$4 $6))", $7), castautomagic(f.geom)) = 1
                            and f.%[2]s < $1 
                          order by f.%[2]s desc 
                          limit (select iif(bbox_size == 'big', $2, 0) from const)),
