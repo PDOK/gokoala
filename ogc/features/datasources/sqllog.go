@@ -23,19 +23,19 @@ func (s *SQLLog) Before(ctx context.Context, _ string, _ ...interface{}) (contex
 
 // After callback once execution of the given SQL query is done
 func (s *SQLLog) After(ctx context.Context, query string, args ...interface{}) (context.Context, error) {
-	if os.Getenv("LOG_SQL") != "" {
-		query = ReplaceBindVars(query, args)
+	if os.Getenv("LOG_SQL") == "true" {
+		query = replaceBindVars(query, args)
 		start := ctx.Value(sqlContextKey).(time.Time)
 
-		log.Printf("SQL:\n%s\nSQL query took: %s\n", query, time.Since(start))
+		log.Printf("\n--- SQL:\n%s\n--- SQL query took: %s\n", query, time.Since(start))
 	}
 	return ctx, nil
 }
 
-// ReplaceBindVars replaces $1, $2, $3, etc bind vars in order to log a complete query
-func ReplaceBindVars(query string, args []interface{}) string {
-	for i, arg := range args {
-		query = strings.ReplaceAll(query, fmt.Sprintf("$%d", i+1), fmt.Sprintf("%v", arg))
+// replaces '?' bind vars in order to log a complete query
+func replaceBindVars(query string, args []interface{}) string {
+	for _, arg := range args {
+		query = strings.Replace(query, "?", fmt.Sprintf("%v", arg), 1)
 	}
 	return query
 }

@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	collectionsMetadata map[string]*engine.GeoSpatialCollectionMetadata
+	collections map[string]*engine.GeoSpatialCollectionMetadata
 )
 
 type Features struct {
@@ -52,7 +52,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 		html:       newHTMLFeatures(e),
 		json:       newJSONFeatures(e),
 	}
-	collectionsMetadata = f.cacheCollectionsMetadata()
+	collections = f.cacheCollectionsMetadata()
 
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.CollectionContent())
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
@@ -72,7 +72,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if _, ok := collectionsMetadata[collectionID]; !ok {
+		if _, ok := collections[collectionID]; !ok {
 			log.Printf("collection %s doesn't exist in this features service", collectionID)
 			http.NotFound(w, r)
 			return
@@ -82,8 +82,8 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			Cursor:  encodedCursor.Decode(url.checksum()),
 			Limit:   limit,
 			Bbox:    bbox,
-			BboxCrs: 28992, // TODO turn bbox-crs param (which contains an URI) to an EPSG code.
-			// TODO set crs, etc
+			BboxCrs: 28992, // TODO make dynamic.
+			// TODO set crs, filters, etc
 		})
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
@@ -127,7 +127,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if _, ok := collectionsMetadata[collectionID]; !ok {
+		if _, ok := collections[collectionID]; !ok {
 			log.Printf("collection %s doesn't exist in this features service", collectionID)
 			http.NotFound(w, r)
 			return
@@ -176,7 +176,8 @@ func (f *Features) parseFeatureCollectionRequest(r *http.Request) (string, domai
 	limit, limitErr := f.parseLimit(r.URL.Query())
 	bbox, bboxErr := f.parseBbox(r.URL.Query())
 	dateTimeErr := f.parseDateTime(r.URL.Query())
-	return collectionID, encodedCursor, limit, bbox, errors.Join(limitErr, bboxErr, dateTimeErr)
+	filterErr := f.parseFilter(r.URL.Query())
+	return collectionID, encodedCursor, limit, bbox, errors.Join(limitErr, bboxErr, dateTimeErr, filterErr)
 }
 
 func (f *Features) parseLimit(params neturl.Values) (int, error) {
@@ -205,7 +206,7 @@ func (f *Features) parseBbox(params neturl.Values) (*geom.Extent, error) {
 	bboxValues := strings.Split(params.Get(bboxParam), ",")
 	if len(bboxValues) != 4 {
 		return nil, fmt.Errorf("bbox should contain exactly 4 values " +
-			"seperated by commas: minx,miny,maxx,maxy")
+			"separated by commas: minx,miny,maxx,maxy")
 	}
 
 	var err error
@@ -222,6 +223,16 @@ func (f *Features) parseBbox(params neturl.Values) (*geom.Extent, error) {
 func (f *Features) parseDateTime(params neturl.Values) error {
 	if params.Get(dateTimeParam) != "" {
 		return fmt.Errorf("datetime param is currently not supported")
+	}
+	return nil
+}
+
+func (f *Features) parseFilter(params neturl.Values) error {
+	if params.Get(filterParam) != "" {
+		return fmt.Errorf("CQL filter param is currently not supported")
+	}
+	if params.Get(filterCrsParam) != "" {
+		return fmt.Errorf("CQL filter-crs param is currently not supported")
 	}
 	return nil
 }

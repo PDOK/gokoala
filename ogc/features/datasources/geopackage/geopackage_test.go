@@ -44,6 +44,9 @@ func TestNewGeoPackage(t *testing.T) {
 			args: args{
 				engine.GeoPackage{
 					Local: &engine.GeoPackageLocal{
+						GeoPackageCommon: engine.GeoPackageCommon{
+							Fid: "feature_id",
+						},
 						File: pwd + "/testdata/addresses.gpkg",
 					},
 				},
