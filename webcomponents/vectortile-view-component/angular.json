@@ -65,10 +65,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "vectortile-view-component:build:production"
+              "buildTarget": "vectortile-view-component:build:production"
             },
             "development": {
-              "browserTarget": "vectortile-view-component:build:development"
+              "buildTarget": "vectortile-view-component:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -76,7 +76,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "vectortile-view-component:build"
+            "buildTarget": "vectortile-view-component:build"
           }
         },
         "test": {
