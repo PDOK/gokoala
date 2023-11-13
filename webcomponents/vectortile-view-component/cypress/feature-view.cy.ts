@@ -1,4 +1,5 @@
 import { HttpClientModule } from '@angular/common/http'
+import { createOutputSpy } from 'cypress/angular'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
 
 beforeEach(() => {
@@ -13,6 +14,7 @@ describe('feature-view.cy.ts', () => {
       autoSpyOutputs: true,
       componentProperties: {
         itemsUrl: 'https://test',
+        box: createOutputSpy('boxSpy'),
       },
     }).then(comp1 => {
       console.log(comp1)
@@ -42,12 +44,14 @@ describe('feature-view.cy.ts', () => {
         isPrimary: true,
         ctrlKey: true,
       })
-      //  cy.wait(1000)
+      cy.wait(1000)
       cy.get('.ol-viewport').trigger('pointermove', { x: 100, y: 100, ctrlKey: true })
       //   cy.wait(1000)
       cy.get('.ol-viewport').trigger('pointermove', { x: 200, y: 200, ctrlKey: true })
       //  cy.wait(1000)
       cy.get('.ol-viewport').trigger('pointerup', { eventConstructor: 'MouseEvent', force: true, ctrlKey: true })
+
+      cy.get('@boxSpy').should('have.been.called')
     })
   })
 })

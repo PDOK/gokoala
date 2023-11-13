@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { PanIntoViewOptions } from 'ol/Overlay'
@@ -30,7 +30,7 @@ export function exhaustiveGuard(_value: never): never {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
-export class FeatureViewComponent implements OnChanges {
+export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() itemsUrl!: string
   @Input() projection: ProjectionLike = 'EPSG:3857'
   @Input() backgroundMap: 'BRT' | 'OSM' = 'OSM'
@@ -71,8 +71,11 @@ export class FeatureViewComponent implements OnChanges {
         this.loadfeatures(this.features)
         this.loadbackground()
         this.adddragbox()
-        this.addFeatureEmit()
       })
+  }
+
+  ngAfterViewInit() {
+    this.addFeatureEmit()
   }
 
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
