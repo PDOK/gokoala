@@ -3,6 +3,7 @@
 }
 
 .maptooltip {
+  visibility: hidden;
   font-weight: bold;
   margin: 1px;
   text-decoration: none;
