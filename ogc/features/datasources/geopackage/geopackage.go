@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -29,12 +31,12 @@ const (
 
 // Load sqlite extensions once.
 //
-// Extensions are expected in /usr/lib. On Linux you could alternatively point LD_LIBRARY_PATH to
-// another directory holding the extensions. On Darwin DYLD_LIBRARY_PATH is used for the same purpose.
+// Extensions are by default expected in /usr/lib. For spatialite you can
+// alternatively/optionally set SPATIALITE_LIBRARY_PATH.
 func init() {
 	driver := &sqlite3.SQLiteDriver{
 		Extensions: []string{
-			"mod_spatialite",
+			path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite"),
 		},
 	}
 	sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, &datasources.SQLLog{}))
