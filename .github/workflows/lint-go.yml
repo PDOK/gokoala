@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: setup cgo dependencies
-        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev
+        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite
 
       - uses: actions/setup-go@v4
         with:

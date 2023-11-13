@@ -49,7 +49,8 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDime
 
 // CollectionContent reverse proxy to tileserver for tileset.json OGC 3D Tiles manifest (separate
 // spec from OGC 3D GeoVolumes) or the equivalent manifest (layer.json) for a quantized mesh
-func (t *ThreeDimensionalGeoVolumes) CollectionContent(fileName string) http.HandlerFunc {
+func (t *ThreeDimensionalGeoVolumes) CollectionContent(args ...any) http.HandlerFunc {
+	fileName := args[0].(string)
 	if !strings.HasSuffix(fileName, ".json") {
 		log.Fatalf("manifest should be a JSON file")
 	}

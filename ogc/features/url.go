@@ -14,9 +14,14 @@ import (
 )
 
 const (
-	cursorParam = "cursor"
-	limitParam  = "limit"
-	crsParam    = "crs"
+	cursorParam    = "cursor"
+	limitParam     = "limit"
+	crsParam       = "crs"
+	dateTimeParam  = "datetime"
+	bboxParam      = "bbox"
+	bboxCrsParam   = "bbox-crs"
+	filterParam    = "filter"
+	filterCrsParam = "filter-crs"
 )
 
 var (
@@ -95,11 +100,11 @@ func (fc featureCollectionURL) validateNoUnknownParams() error {
 	copyParams.Del(limitParam)
 	copyParams.Del(cursorParam)
 	copyParams.Del(crsParam)
-	copyParams.Del("datetime")
-	copyParams.Del("bbox")
-	copyParams.Del("bbox-crs")
-	copyParams.Del("filter")
-	copyParams.Del("filter-crs")
+	copyParams.Del(dateTimeParam)
+	copyParams.Del(bboxParam)
+	copyParams.Del(bboxCrsParam)
+	copyParams.Del(filterParam)
+	copyParams.Del(filterCrsParam)
 	if len(copyParams) > 0 {
 		return fmt.Errorf("unknown query parameter(s) found: %v", copyParams.Encode())
 	}

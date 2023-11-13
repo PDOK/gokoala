@@ -340,7 +340,7 @@ func TestTile_Tileset(t *testing.T) {
 				tileMatrixSetID: "Invalid",
 			},
 			want: want{
-				bodyContains: "invalid request, doesn't conform to openapi spec parameter \"tileMatrixSetId\" in path has an error: value is not one of the allowed values",
+				bodyContains: "request doesn't conform to OpenAPI spec: parameter \"tileMatrixSetId\" in path has an error: value is not one of the allowed values",
 				statusCode:   http.StatusBadRequest,
 			},
 		},
@@ -424,7 +424,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 				tileMatrixSetID: "Invalid",
 			},
 			want: want{
-				bodyContains: "invalid request, doesn't conform to openapi spec parameter \"tileMatrixSetId\" in path has an error: value is not one of the allowed values",
+				bodyContains: "request doesn't conform to OpenAPI spec: parameter \"tileMatrixSetId\" in path has an error: value is not one of the allowed values",
 				statusCode:   http.StatusBadRequest,
 			},
 		},

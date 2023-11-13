@@ -124,6 +124,10 @@ through a tunnel/port-forward. The debug server exposes `/debug` for use by
 
 A similar flow can be used to profile memory issues.
 
+#### SQL query logging
+
+Set `LOG_SQL=true` to enable query logging stdout for debug purposes. Only applies to OGC API Features.
+
 ## Develop
 
 Design principles:

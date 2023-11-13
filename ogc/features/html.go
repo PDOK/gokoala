@@ -59,7 +59,7 @@ type featurePage struct {
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, fc *domain.FeatureCollection) {
 
-	collectionMetadata := collectionsMetadata[collectionID]
+	collectionMetadata := collections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
@@ -88,7 +88,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string, feat *domain.Feature) {
-	collectionMetadata := collectionsMetadata[collectionID]
+	collectionMetadata := collections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
