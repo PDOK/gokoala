@@ -29,5 +29,5 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          build: npm run test
-          project: ./webcomponents/vectortile-view-component
+          component: true
+          working-directory: ./webcomponents/vectortile-view-component
