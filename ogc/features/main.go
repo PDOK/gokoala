@@ -62,7 +62,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 // CollectionContent serve a FeatureCollection with the given collectionId
 func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		collectionID, encodedCursor, limit, bbox, err := f.parseFeatureCollectionRequest(r)
+		collectionID, encodedCursor, limit, bbox, bboxCrs, err := f.parseFeatureCollectionRequest(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -82,7 +82,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			Cursor:  encodedCursor.Decode(url.checksum()),
 			Limit:   limit,
 			Bbox:    bbox,
-			BboxCrs: 28992, // TODO make dynamic.
+			BboxCrs: bboxCrs,
 			// TODO set crs, filters, etc
 		})
 		if err != nil {
@@ -169,14 +169,14 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 	return result
 }
 
-func (f *Features) parseFeatureCollectionRequest(r *http.Request) (string, domain.EncodedCursor, int, *geom.Extent, error) {
+func (f *Features) parseFeatureCollectionRequest(r *http.Request) (string, domain.EncodedCursor, int, *geom.Extent, int, error) {
 	collectionID := chi.URLParam(r, "collectionId")
 	encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
 	limit, limitErr := f.parseLimit(r.URL.Query())
-	bbox, bboxErr := f.parseBbox(r.URL.Query())
+	bbox, bboxCrs, bboxErr := f.parseBbox(r.URL.Query())
 	dateTimeErr := f.parseDateTime(r.URL.Query())
 	filterErr := f.parseFilter(r.URL.Query())
-	return collectionID, encodedCursor, limit, bbox, errors.Join(limitErr, bboxErr, dateTimeErr, filterErr)
+	return collectionID, encodedCursor, limit, bbox, bboxCrs, errors.Join(limitErr, bboxErr, dateTimeErr, filterErr)
 }
 
 func (f *Features) parseLimit(params neturl.Values) (int, error) {
@@ -198,25 +198,40 @@ func (f *Features) parseLimit(params neturl.Values) (int, error) {
 	return limit, err
 }
 
-func (f *Features) parseBbox(params neturl.Values) (*geom.Extent, error) {
+func (f *Features) parseBbox(params neturl.Values) (*geom.Extent, int, error) {
+	var err error
+
+	// TODO Make more robust, once we fully implement multiple CRS support (e.g. also handle CRS84 code)
+	bboxCrs := 4326
+	if params.Get(bboxCrsParam) != "" {
+		lastIndex := strings.LastIndex(params.Get(bboxCrsParam), "/")
+		if lastIndex != -1 {
+			crs := params.Get(bboxCrsParam)[lastIndex+1:]
+			bboxCrs, err = strconv.Atoi(crs)
+			if err != nil {
+				return nil, bboxCrs, fmt.Errorf("CRS code should be a numeric value, received: %s", crs)
+			}
+		}
+	}
+
 	if params.Get(bboxParam) == "" {
-		return nil, nil //nolint:nilnil
+		return nil, bboxCrs, nil
 	}
 	bboxValues := strings.Split(params.Get(bboxParam), ",")
 	if len(bboxValues) != 4 {
-		return nil, fmt.Errorf("bbox should contain exactly 4 values " +
+		return nil, bboxCrs, fmt.Errorf("bbox should contain exactly 4 values " +
 			"separated by commas: minx,miny,maxx,maxy")
 	}
 
-	var err error
 	var extent geom.Extent
 	for i, v := range bboxValues {
 		extent[i], err = strconv.ParseFloat(v, 64)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
+			return nil, bboxCrs, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
 		}
 	}
-	return &extent, nil
+
+	return &extent, bboxCrs, nil
 }
 
 func (f *Features) parseDateTime(params neturl.Values) error {
