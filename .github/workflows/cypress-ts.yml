@@ -5,6 +5,9 @@ on:
       - master
   pull_request:
 
+defaults:
+  run:
+    working-directory: ./webcomponents/vectortile-view-component
 jobs:
   cypres-ts:
     runs-on: ubuntu-latest
