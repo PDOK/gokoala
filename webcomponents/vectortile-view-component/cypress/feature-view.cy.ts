@@ -1,57 +1,58 @@
 import { HttpClientModule } from '@angular/common/http'
 import { createOutputSpy } from 'cypress/angular'
+import { Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
+
+const getTestTitle = (test: Mocha.Suite = (Cypress as any).mocha.getRunner().suite.ctx.test): string =>
+  test.parent?.title ? `${getTestTitle(test.parent)} -- ${test.title}` : test.title
 
 beforeEach(() => {
   cy.intercept('GET', 'https://test*', { fixture: 'amsterdam.json' }).as('geo')
-  cy.intercept('https://tile.openstreetmap.org/19/269273/172300.png', { fixture: '172300.png' }).as('background')
+  cy.intercept('GET', 'https://tile.openstreetmap.org/19/269273/172300.png', { fixture: '172300.png' }).as('background')
+  cy.mount(FeatureViewComponent, {
+    imports: [HttpClientModule],
+    componentProperties: {
+      itemsUrl: 'https://test',
+      box: createOutputSpy('boxSpy'),
+      backgroundMap: 'OSM',
+    },
+  }).then(comp1 => {
+    console.log(comp1)
+    const map = comp1.component.map as OLMap
+    map.addEventListener('loadend', cy.stub().as('MapLoaded'))
+    const viewport = map.getViewport()
+    const position = viewport.getBoundingClientRect()
+    cy.log(`left: ${position.left}, top: ${position.top}, width: ${position.width}, height: ${position.height}`)
+  })
+  cy.get('@MapLoaded').should('have.been.calledOnce')
+  cy.wait('@geo')
 })
 
 describe('feature-view.cy.ts', () => {
   it('It shows Point from url', () => {
-    cy.mount(FeatureViewComponent, {
-      imports: [HttpClientModule],
-      autoSpyOutputs: true,
-      componentProperties: {
-        itemsUrl: 'https://test',
-        box: createOutputSpy('boxSpy'),
-      },
-    }).then(comp1 => {
-      console.log(comp1)
-    })
+    cy.wait('@background')
+    cy.screenshot(getTestTitle() + 'amsterdam')
+    cy.get('.ol-zoom-out').click()
   })
 
   it('It can draw and emit boundingbox', () => {
-    cy.mount(FeatureViewComponent, {
-      imports: [HttpClientModule],
-      autoSpyOutputs: true,
-      componentProperties: {
-        itemsUrl: 'https://test',
-      },
-    }).then(comp => {
-      console.log(comp)
-      cy.wait('@geo')
-      cy.wait('@background')
-      const viewport = comp.component.map.getViewport()
-      const position = viewport.getBoundingClientRect()
-      cy.log(`left: ${position.left}, top: ${position.top}, width: ${position.width}, height: ${position.height}`)
-      //     cy.get('canvas').click()
-      cy.get('.ol-viewport').trigger('pointerdown', {
-        eventConstructor: 'MouseEvent',
-        x: 100,
-        y: 100,
-        force: true,
-        isPrimary: true,
-        ctrlKey: true,
-      })
-      cy.wait(1000)
-      cy.get('.ol-viewport').trigger('pointermove', { x: 100, y: 100, ctrlKey: true })
-      //   cy.wait(1000)
-      cy.get('.ol-viewport').trigger('pointermove', { x: 200, y: 200, ctrlKey: true })
-      //  cy.wait(1000)
-      cy.get('.ol-viewport').trigger('pointerup', { eventConstructor: 'MouseEvent', force: true, ctrlKey: true })
-
-      cy.get('@boxSpy').should('have.been.called')
+    cy.get('.ol-viewport').trigger('pointerdown', {
+      eventConstructor: 'MouseEvent',
+      x: 100,
+      y: 100,
+      force: true,
+      isPrimary: true,
+      ctrlKey: true,
     })
+
+    cy.get('.ol-viewport').trigger('pointermove', { x: 100, y: 100, ctrlKey: true })
+    //   cy.wait(1000)
+    cy.get('.ol-viewport').trigger('pointermove', { x: 200, y: 200, ctrlKey: true })
+    //  cy.wait(1000)
+    cy.screenshot(getTestTitle() + 'amsterdam')
+    cy.get('.ol-viewport').trigger('pointerup', { eventConstructor: 'MouseEvent', force: true, ctrlKey: true })
+
+    cy.get('@boxSpy').should('have.been.called')
+    cy.get('@MapLoaded').should('have.been.calledOnce')
   })
 })

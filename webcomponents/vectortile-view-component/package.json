@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run generate:api && npm run format && npm run lint  &&  ng build --output-hashing none",
+    "build": "npm run generate:api && npm run format && npm run lint  && npm run test &&  ng build --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress run --component",
     "deploy": "npm run generate:api && npm run format && npm run lint  && ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
