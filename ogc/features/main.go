@@ -139,7 +139,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		case engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
-			f.json.featuresAsJSONFG()
+			f.json.featuresAsJSONFG(w, collectionID, newCursor, url, fc)
 		default:
 			http.NotFound(w, r)
 			return

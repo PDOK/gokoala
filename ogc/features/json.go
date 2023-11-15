@@ -43,8 +43,28 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeGeoJSON, featJSON)
 }
 
-func (jf *jsonFeatures) featuresAsJSONFG() {
-	// TODO: not implemented yet
+func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, collectionID string,
+	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
+
+	// TODO: make more robust, quick geojson-to-jsonfg conversion
+	fgFC := domain.JSONFGFeatureCollection{}
+	for _, f := range fc.Features {
+		fgF := domain.JSONFGFeature{
+			ID:         f.ID,
+			Links:      f.Links,
+			Place:      f.Geometry,
+			Properties: f.Properties,
+		}
+		fgFC.Features = append(fgFC.Features, &fgF)
+	}
+
+	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, featuresURL)
+	fcJSON, err := toJSON(&fgFC)
+	if err != nil {
+		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
+		return
+	}
+	engine.SafeWrite(w.Write, fcJSON)
 }
 
 func (jf *jsonFeatures) featureAsJSONFG() {

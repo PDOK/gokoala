@@ -111,6 +111,12 @@
             },
             {
               "rel" : "items",
+              "type" : "application/vnd.ogc.fg+json",
+              "title" : "The JSON-FG representation of the {{ $coll.ID }} features served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=jsonfg"
+            },
+            {
+              "rel" : "items",
               "type" : "text/html",
               "title" : "The HTML representation of the {{ $coll.ID }} features served from this endpoint",
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
