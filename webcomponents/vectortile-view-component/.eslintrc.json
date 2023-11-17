@@ -1,6 +1,5 @@
 {
   "root": true,
-  "ignorePatterns": ["src/app/openapi/**/*"],
   "overrides": [
     {
       "files": ["*.ts"],

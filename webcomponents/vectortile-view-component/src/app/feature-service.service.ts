@@ -7,7 +7,7 @@ import GeoJSON from 'ol/format/GeoJSON'
 import { Geometry } from 'ol/geom'
 
 import { ProjectionLike } from 'ol/proj'
-//import { featureCollectionGeoJSON } from './openapi/models/featureCollectionGeoJSON'
+
 export type link = {
   /**
    * Supplies the URI to a remote resource (or resource fragment).

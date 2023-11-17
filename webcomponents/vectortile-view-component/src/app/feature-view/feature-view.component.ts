@@ -16,8 +16,7 @@ import { Circle, Fill, Stroke, Style } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { NgChanges } from '../app.component'
-import { DataUrl, FeatureServiceService } from '../feature-service.service'
-import { featureCollectionGeoJSON } from '../openapi/models/featureCollectionGeoJSON'
+import { DataUrl, FeatureServiceService, featureCollectionGeoJSON } from '../feature-service.service'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
