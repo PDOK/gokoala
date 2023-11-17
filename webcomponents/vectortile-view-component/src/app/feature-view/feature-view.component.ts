@@ -269,9 +269,17 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       const bboxsource = new VectorSource({})
       bboxsource.addFeature(bbox)
       // The map use WebMercator/RD as the projection, so the bounding box need to be projected from  EPSG:3857 to EPSG:4326
-      const box84 = bboxGeometry.transform(this.projection, 'EPSG:4326').getExtent()
-      const extString = box84.join(',')
-      this.box.emit(extString)
+      // in other cases the map projection is same as data projection.
+      if (this.projection === 'EPSG:3857') {
+        const box84 = bboxGeometry.transform(this.projection, 'EPSG:4326').getExtent()
+        const extString = box84.join(',')
+        this.box.emit(extString)
+      } else {
+        const box = bboxGeometry.getExtent()
+        const extString = box.join(',')
+        this.box.emit(extString)
+      }
+
       const bboxStyle = new Style({
         stroke: new Stroke({
           color: 'blue',

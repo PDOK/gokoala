@@ -28,6 +28,7 @@
       <option value="https://ri.ldproxy.net/vineyards/collections/vineyards/items?bbox=6.3021%2C49.0087%2C8.4179%2C50.6139">
         LDProxy Vineyards
       </option>
+      <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items">BGT wegdelen</option>
     </select>
 
     <input onclick="showMap()" type="button" value="Show" />
@@ -69,6 +70,17 @@
         itemurl.value = url
         itemurl.title = url
         showMap()
+      })
+
+      wegdelensample.addEventListener('box', selectbox => {
+        console.log('rdbox')
+        console.log(JSON.stringify(selectbox.detail))
+        bbox.innerHTML = selectbox.detail
+        const url = new URL(itemurl.value)
+        //url.searchParams.set('bbox', selectbox.detail)
+       // itemurl.value = url
+        //itemurl.title = url
+       // showMap()
       })
 
       showMap()
