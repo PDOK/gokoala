@@ -7,6 +7,7 @@ const getTestTitle = (test: Mocha.Suite = (Cypress as any).mocha.getRunner().sui
   test.parent?.title ? `${getTestTitle(test.parent)} -- ${test.title}` : test.title
 
 beforeEach(() => {
+  cy.viewport(550, 750)
   cy.intercept('GET', 'https://test*', { fixture: 'amsterdam.json' }).as('geo')
   cy.intercept('GET', 'https://tile.openstreetmap.org/19/269273/172300.png', { fixture: '172300.png' }).as('background')
   cy.mount(FeatureViewComponent, {
@@ -52,7 +53,10 @@ describe('feature-view.cy.ts', () => {
     cy.screenshot(getTestTitle() + 'amsterdam')
     cy.get('.ol-viewport').trigger('pointerup', { eventConstructor: 'MouseEvent', force: true, ctrlKey: true })
 
-    cy.get('@boxSpy').should('have.been.called')
+    cy.get('@boxSpy')
+      .should('have.been.calledOnce')
+      .should('have.been.calledWith', '4.89516718294036,52.37021597417751,4.895167706985226,52.37021629414647')
+
     cy.get('@MapLoaded').should('have.been.calledOnce')
   })
 })

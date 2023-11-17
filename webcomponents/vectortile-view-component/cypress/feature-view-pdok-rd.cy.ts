@@ -7,6 +7,7 @@ const getTestTitle = (test: Mocha.Suite = (Cypress as any).mocha.getRunner().sui
   test.parent?.title ? `${getTestTitle(test.parent)} -- ${test.title}` : test.title
 
 beforeEach(() => {
+  cy.viewport(550, 750)
   cy.intercept('GET', 'https://api.pdok.nl/*', { fixture: 'pdokwegdelen.json' }).as('geo')
   cy.intercept('GET', '*grijs*', { fixture: 'backgroundstub.png' }).as('background')
   cy.mount(FeatureViewComponent, {
@@ -48,7 +49,7 @@ describe('feature-view.cy.ts works for RD', () => {
 
     cy.get('@boxSpy')
       .should('have.been.calledOnce')
-      .should('have.been.calledWith', '158733.95734529808,373369.3879571492,159807.45196559615,374444.4679655064')
+      .should('have.been.calledWith', '158630.1373691982,373577.4538369284,159599.81201339638,374547.1580840892')
 
     cy.get('@MapLoaded').should('have.been.calledOnce')
   })
