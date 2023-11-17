@@ -33,3 +33,4 @@ jobs:
         with:
           component: true
           working-directory: ./webcomponents/vectortile-view-component
+          browser: chrome 
