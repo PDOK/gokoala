@@ -68,9 +68,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       .subscribe(data => {
         this.map.setLayerGroup(new Group())
         this.features = data
-        this.loadfeatures(this.features)
-        this.loadbackground()
-        this.adddragbox()
+        this.loadFeatures(this.features)
+        this.loadBackground()
+        this.addDragbox()
       })
   }
 
@@ -89,7 +89,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  loadbackground() {
+  loadBackground() {
     switch (this.backgroundMap) {
       case 'OSM': {
         const osm = new TileLayer({
@@ -110,7 +110,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  loadfeatures(features: Feature<Geometry>[]) {
+  loadFeatures(features: Feature<Geometry>[]) {
     const vsource = new VectorSource({
       //features: new GeoJSON().readFeatures(this.featureCollectionGeoJSON, { featureProjection: this.projection  }),
       features: features,
@@ -119,7 +119,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.map.addLayer(
       new VectorLayer({
         source: vsource,
-        style: this.getstyle(),
+        style: this.getStyle(),
         zIndex: 10,
       })
     )
@@ -133,7 +133,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     return ext
   }
 
-  getstyle() {
+  getStyle() {
     const fill = new Fill({
       color: 'rgba(0,0,255)',
     })
@@ -245,7 +245,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     })
   }
 
-  adddragbox() {
+  addDragbox() {
     const dragBox = new DragBox({
       condition: platformModifierKeyOnly, //shiftKeyOnly,
     })

@@ -3,6 +3,7 @@ import { createOutputSpy } from 'cypress/angular'
 import { Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getTestTitle = (test: Mocha.Suite = (Cypress as any).mocha.getRunner().suite.ctx.test): string =>
   test.parent?.title ? `${getTestTitle(test.parent)} -- ${test.title}` : test.title
 
