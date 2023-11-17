@@ -26,8 +26,6 @@ jobs:
           cache-dependency-path: "./webcomponents/vectortile-view-component/package-lock.json"
       - name: Install
         run: npm ci
-      - name: gensources
-        run: npm run generate:api
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
