@@ -26,7 +26,7 @@ func NewMaps(e *engine.Engine, router *chi.Mux) *Maps {
 	return maps
 }
 
-func (t *Maps) CollectionContent() http.HandlerFunc {
+func (t *Maps) CollectionContent(_ ...any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 

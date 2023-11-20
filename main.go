@@ -15,7 +15,6 @@ import (
 	"github.com/PDOK/gokoala/ogc/processes"
 	"github.com/PDOK/gokoala/ogc/styles"
 	"github.com/PDOK/gokoala/ogc/tiles"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/urfave/cli/v2"

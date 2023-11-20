@@ -12,10 +12,12 @@ import (
 )
 
 const (
-	templatesDir       = "ogc/tiles/templates/"
-	tilesPath          = "/tiles"
-	tileMatrixSetsPath = "/tileMatrixSets"
-	defaultTilesTmpl   = "{tms}/{z}/{x}/{y}." + engine.FormatMVT
+	templatesDir            = "ogc/tiles/templates/"
+	tilesPath               = "/tiles"
+	tilesLocalPath          = "tiles/"
+	tileMatrixSetsPath      = "/tileMatrixSets"
+	tileMatrixSetsLocalPath = "tileMatrixSets/"
+	defaultTilesTmpl        = "{tms}/{z}/{x}/{y}." + engine.FormatMVT
 )
 
 type Tiles struct {
@@ -73,30 +75,30 @@ func renderTemplatesForSrs(e *engine.Engine, srs string, tilesBreadcrumbs []engi
 	tilesSrsBreadcrumbs = append(tilesSrsBreadcrumbs, []engine.Breadcrumb{
 		{
 			Name: srs,
-			Path: "tiles/" + srs,
+			Path: tilesLocalPath + srs,
 		},
 	}...)
 	tileMatrixSetsSrsBreadcrumbs := tileMatrixSetsBreadcrumbs
 	tileMatrixSetsSrsBreadcrumbs = append(tileMatrixSetsSrsBreadcrumbs, []engine.Breadcrumb{
 		{
 			Name: srs,
-			Path: "tileMatrixSets/" + srs,
+			Path: tileMatrixSetsLocalPath + srs,
 		},
 	}...)
 
 	e.RenderTemplates(tileMatrixSetsPath+"/"+srs,
 		tileMatrixSetsSrsBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+"tileMatrixSets/"+srs+".go.json"),
-		engine.NewTemplateKey(templatesDir+"tileMatrixSets/"+srs+".go.html"))
+		engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+srs+".go.json"),
+		engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+srs+".go.html"))
 
 	e.RenderTemplates(tilesPath+"/"+srs,
 		tilesSrsBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.json"),
-		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.html"))
+		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.json"),
+		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.html"))
 
 	e.RenderTemplates(tilesPath+"/"+srs,
 		tilesSrsBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+"tiles/"+srs+".go.tilejson"))
+		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.tilejson"))
 }
 
 func (t *Tiles) TileMatrixSets() http.HandlerFunc {
@@ -109,7 +111,7 @@ func (t *Tiles) TileMatrixSets() http.HandlerFunc {
 func (t *Tiles) TileMatrixSet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets/"+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+tileMatrixSetsLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }
@@ -124,7 +126,7 @@ func (t *Tiles) TilesetsList() http.HandlerFunc {
 func (t *Tiles) Tileset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tiles/"+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
+		key := engine.NewTemplateKeyWithLanguage(templatesDir+tilesLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
 		t.engine.ServePage(w, r, key)
 	}
 }
@@ -167,7 +169,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 	}
 }
 
-func (t *Tiles) CollectionContent() http.HandlerFunc {
+func (t *Tiles) CollectionContent(_ ...any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 

@@ -8,6 +8,10 @@ import (
 	"github.com/PDOK/gokoala/ogc/features/domain"
 )
 
+const (
+	collectionsCrumb = "collections/"
+)
+
 var (
 	collectionsBreadcrumb = []engine.Breadcrumb{
 		{
@@ -38,7 +42,9 @@ type featureCollectionPage struct {
 
 	CollectionID string
 	Metadata     *engine.GeoSpatialCollectionMetadata
-	Cursor       domain.Cursor
+	Cursor       domain.Cursors
+	PrevLink     string
+	NextLink     string
 	Limit        int
 }
 
@@ -51,19 +57,19 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursor, limit int, fc *domain.FeatureCollection) {
+	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, fc *domain.FeatureCollection) {
 
-	collectionMetadata := collectionsMetadata[collectionID]
+	collectionMetadata := collections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
 			Name: getCollectionTitle(collectionID, collectionMetadata),
-			Path: "collections/" + collectionID,
+			Path: collectionsCrumb + collectionID,
 		},
 		{
 			Name: "Items",
-			Path: "collections/" + collectionID + "/items",
+			Path: collectionsCrumb + collectionID + "/items",
 		},
 	}...)
 
@@ -72,6 +78,8 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		collectionID,
 		collectionMetadata,
 		cursor,
+		featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatHTML),
+		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
 		limit,
 	}
 
@@ -80,21 +88,21 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string, feat *domain.Feature) {
-	collectionMetadata := collectionsMetadata[collectionID]
+	collectionMetadata := collections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
 			Name: getCollectionTitle(collectionID, collectionMetadata),
-			Path: "collections/" + collectionID,
+			Path: collectionsCrumb + collectionID,
 		},
 		{
 			Name: "Items",
-			Path: "collections/" + collectionID + "/items",
+			Path: collectionsCrumb + collectionID + "/items",
 		},
 		{
 			Name: strconv.FormatInt(feat.ID, 10),
-			Path: "collections/" + collectionID + "/items/" + strconv.FormatInt(feat.ID, 10),
+			Path: collectionsCrumb + collectionID + "/items/" + strconv.FormatInt(feat.ID, 10),
 		},
 	}...)
 

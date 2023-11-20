@@ -15,6 +15,7 @@ import (
 	"strings"
 	texttemplate "text/template"
 
+	"github.com/PDOK/gokoala/engine/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
@@ -80,7 +81,7 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 	return &OpenAPI{
 		config:   config,
 		spec:     resultSpec,
-		SpecJSON: prettyPrintJSON(resultSpecJSON, ""),
+		SpecJSON: util.PrettyPrintJSON(resultSpecJSON, ""),
 		router:   newOpenAPIRouter(resultSpec),
 	}
 }
@@ -140,10 +141,10 @@ func mergeSpecs(ctx context.Context, config *Config, files []string) (*openapi3.
 			mergedJSON = specJSON
 		} else {
 			var err error
-			mergedJSON, err = mergeJSON(resultSpecJSON, specJSON)
+			mergedJSON, err = util.MergeJSON(resultSpecJSON, specJSON)
 			if err != nil {
 				log.Print(string(mergedJSON))
-				log.Fatalf("failed to merge openapi specs: %v", err)
+				log.Fatalf("failed to merge OpenAPI specs: %v", err)
 			}
 		}
 		resultSpecJSON = mergedJSON
@@ -156,7 +157,7 @@ func loadSpec(loader *openapi3.Loader, mergedJSON []byte, fileName ...string) *o
 	resultSpec, err := loader.LoadFromData(mergedJSON)
 	if err != nil {
 		log.Print(string(mergedJSON))
-		log.Fatalf("failed to load merged openapi spec %s, due to %v", fileName, err)
+		log.Fatalf("failed to load merged OpenAPI spec %s, due to %v", fileName, err)
 	}
 	return resultSpec
 }
@@ -166,14 +167,14 @@ func validateSpec(ctx context.Context, finalSpec *openapi3.T, finalSpecRaw []byt
 	err := finalSpec.Validate(ctx, openapi3.DisableExamplesValidation())
 	if err != nil {
 		log.Print(string(finalSpecRaw))
-		log.Fatalf("invalid openapi spec: %v", err)
+		log.Fatalf("invalid OpenAPI spec: %v", err)
 	}
 }
 
 func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 	openAPIRouter, err := gorillamux.NewRouter(doc)
 	if err != nil {
-		log.Fatalf("failed to setup openapi router: %v", err)
+		log.Fatalf("failed to setup OpenAPI router: %v", err)
 	}
 	return openAPIRouter
 }
@@ -194,7 +195,7 @@ func (o *OpenAPI) validateRequest(r *http.Request) error {
 	if requestValidationInput != nil {
 		err := openapi3filter.ValidateRequest(context.Background(), requestValidationInput)
 		if err != nil {
-			return fmt.Errorf("invalid request, doesn't conform to openapi spec %w", err)
+			return fmt.Errorf("request doesn't conform to OpenAPI spec: %w", err)
 		}
 	}
 	return nil
@@ -214,7 +215,7 @@ func (o *OpenAPI) validateResponse(contentType string, body []byte, r *http.Requ
 		responseValidationInput.SetBodyBytes(body)
 		err := openapi3filter.ValidateResponse(context.Background(), responseValidationInput)
 		if err != nil {
-			return fmt.Errorf("response doesn't conform to openapi spec: %w", err)
+			return fmt.Errorf("response doesn't conform to OpenAPI spec: %w", err)
 		}
 	}
 	return nil
@@ -223,7 +224,7 @@ func (o *OpenAPI) validateResponse(contentType string, body []byte, r *http.Requ
 func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.RequestValidationInput, error) {
 	route, pathParams, err := o.router.FindRoute(r)
 	if err != nil {
-		log.Printf("route not found in openapi spec for url %s (host: %s), "+
+		log.Printf("route not found in OpenAPI spec for url %s (host: %s), "+
 			"skipping OpenAPI validation", r.URL, r.Host)
 		return nil, err
 	}

@@ -1,4 +1,5 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{{ $cfg := .Config }}
 {
   "openapi": "3.0.2",
   "info": {
@@ -28,10 +29,10 @@
             "style": "form",
             "explode": false,
             "schema": {
-              "maximum": 1000,
+              "maximum": {{ $cfg.OgcAPI.Features.Limit.Max }},
               "minimum": 1,
               "type": "integer",
-              "default": 10
+              "default": {{ $cfg.OgcAPI.Features.Limit.Default }}
             }
           },
           {
@@ -1177,10 +1178,10 @@
         "style": "form",
         "explode": false,
         "schema": {
-          "maximum": 1000,
+          "maximum": {{ $cfg.OgcAPI.Features.Limit.Max }},
           "minimum": 1,
           "type": "integer",
-          "default": 10
+          "default": {{ $cfg.OgcAPI.Features.Limit.Default }}
         }
       },
       "cursor": {

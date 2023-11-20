@@ -16,46 +16,58 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json&cursor=KXzJBocg&limit=2"
+      "href": "http://localhost:8080/collections/foo/items?cursor=Dv58Nwyr1Q%3D%3D&f=json&limit=2"
     }
   ],
   "numberReturned": 2,
   "type": "FeatureCollection",
   "features": [
     {
-      "id": 0,
+      "id": 3542,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -106.852725,
-          -50.660451
+          120919.942,
+          489320.199
         ]
       },
       "properties": {
-        "city": "Philadelphia",
-        "floorsize": 16,
-        "purpose": "Luxury",
-        "streetname": "79185 Lake Crossingtown",
-        "year": 1920
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 14,
+        "nummer_id": "0363200000454013",
+        "postcode": "1013CR",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000454013",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Van Diemenkade",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     },
     {
-      "id": 1,
+      "id": 3837,
       "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -79.737257,
-          7.948003
+          121108.424,
+          488930.925
         ]
       },
       "properties": {
-        "city": "Atlanta",
-        "floorsize": 208,
-        "purpose": "Revolution",
-        "streetname": "7805 North Curvefurt",
-        "year": 1988
+        "datum_doc": "1900-01-01",
+        "datum_strt": "1900-01-01",
+        "document": "GV00000402",
+        "huisnummer": 9,
+        "nummer_id": "0363200000398886",
+        "postcode": "1013KW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398886",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Realengracht",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
       }
     }
   ]

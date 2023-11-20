@@ -35,6 +35,7 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDime
 
 	// DTM/Quantized Mesh
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh", geoVolumes.CollectionContent("layer.json"))
+	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 
@@ -46,9 +47,10 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDime
 	return geoVolumes
 }
 
-// CollectionContent reverse proxy to tileserver for tileset.json  OGC 3D Tiles manifest, separate
+// CollectionContent reverse proxy to tileserver for tileset.json OGC 3D Tiles manifest (separate
 // spec from OGC 3D GeoVolumes) or the equivalent manifest (layer.json) for a quantized mesh
-func (t *ThreeDimensionalGeoVolumes) CollectionContent(fileName string) http.HandlerFunc {
+func (t *ThreeDimensionalGeoVolumes) CollectionContent(args ...any) http.HandlerFunc {
+	fileName := args[0].(string)
 	if !strings.HasSuffix(fileName, ".json") {
 		log.Fatalf("manifest should be a JSON file")
 	}
@@ -57,8 +59,8 @@ func (t *ThreeDimensionalGeoVolumes) CollectionContent(fileName string) http.Han
 	}
 }
 
-// ExplicitTileset reverse proxy to tileserver for a specific JSON tileset (the latter contains
-// data from OGC 3D Tiles, separate spec from OGC 3D GeoVolumes)
+// ExplicitTileset reverse proxy to tileserver for specific tileset.json OGC 3D Tiles manifest (separate
+// spec from OGC 3D GeoVolumes) or the equivalent manifest (layer.json) for a quantized mesh
 func (t *ThreeDimensionalGeoVolumes) ExplicitTileset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileSetName := chi.URLParam(r, "explicitTileSet")

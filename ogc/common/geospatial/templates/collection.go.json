@@ -19,7 +19,9 @@
       "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}"
     }
   },
-  {{/* "crs" : [], */}}
+  "crs" : [
+    "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}"
+  ],
   {{/* "storageCrs" : "", */}}
   {{ end }}
   "links" : [
@@ -98,13 +100,23 @@
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   ,
   "content" : [
-    {
-      "rel" : "original",
-      "type" : "application/json+3dtiles",
-      "title" : "Tileset definition of collection {{ .Params.ID }} according to the OGC 3D Tiles specification",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles?f=json",
-      "collectionType": "3d-container"
-    }
+      {{ if and .Params.GeoVolumes .Params.GeoVolumes.Has3DTiles }}
+      {
+        "rel" : "original",
+        "type" : "application/json+3dtiles",
+        "title" : "Tileset definition of collection {{ .Params.ID }} according to the OGC 3D Tiles specification",
+        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles?f=json",
+        "collectionType": "3d-container"
+      }
+      {{ else if and .Params.GeoVolumes .Params.GeoVolumes.HasDTM }}
+      {
+        "rel" : "original",
+        "type" : "application/json",
+        "title" : "Digital Terrain Model '{{ .Params.ID }}' in Quantized Mesh format",
+        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/quantized-mesh?f=json",
+        "collectionType": "3d-container"
+      }
+      {{ end }}
   ]
   {{ end }}
 }
