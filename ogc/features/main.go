@@ -11,7 +11,7 @@ import (
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
-	"github.com/PDOK/gokoala/ogc/features/datasources"
+	ds "github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/datasources/geopackage"
 	"github.com/PDOK/gokoala/ogc/features/datasources/postgis"
 	"github.com/PDOK/gokoala/ogc/features/domain"
@@ -21,36 +21,34 @@ import (
 
 const (
 	templatesDir = "ogc/features/templates/"
+	wgs84SRID    = 4326
+	wgs84CodeOGC = "CRS84"
+	crsURLPrefix = "http://www.opengis.net/def/crs/"
 )
+
+type DataSourceKey struct {
+	srid         int
+	collectionID string
+}
 
 var (
 	collections map[string]*engine.GeoSpatialCollectionMetadata
 )
 
 type Features struct {
-	engine     *engine.Engine
-	datasource datasources.Datasource
+	engine      *engine.Engine
+	datasources map[DataSourceKey]ds.Datasource
 
 	html *htmlFeatures
 	json *jsonFeatures
 }
 
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
-	cfg := e.Config.OgcAPI.Features
-
-	var datasource datasources.Datasource
-	if cfg.Datasource.GeoPackage != nil {
-		datasource = geopackage.NewGeoPackage(cfg.Collections, *cfg.Datasource.GeoPackage)
-	} else if cfg.Datasource.PostGIS != nil {
-		datasource = postgis.NewPostGIS()
-	}
-	e.RegisterShutdownHook(datasource.Close)
-
 	f := &Features{
-		engine:     e,
-		datasource: datasource,
-		html:       newHTMLFeatures(e),
-		json:       newJSONFeatures(e),
+		engine:      e,
+		datasources: configureDatasources(e),
+		html:        newHTMLFeatures(e),
+		json:        newJSONFeatures(e),
 	}
 	collections = f.cacheCollectionsMetadata()
 
@@ -62,7 +60,7 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 // CollectionContent serve a FeatureCollection with the given collectionId
 func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		collectionID, encodedCursor, limit, bbox, bboxCrs, err := f.parseFeatureCollectionRequest(r)
+		collectionID, encodedCursor, limit, crs, bbox, bboxCrs, err := f.parseFeatureCollectionRequest(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -78,12 +76,14 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			return
 		}
 
-		fc, newCursor, err := f.datasource.GetFeatures(r.Context(), collectionID, datasources.FeatureOptions{
+		datasource := f.datasources[DataSourceKey{srid: crs, collectionID: collectionID}]
+		fc, newCursor, err := datasource.GetFeatures(r.Context(), collectionID, ds.FeatureOptions{
 			Cursor:  encodedCursor.Decode(url.checksum()),
 			Limit:   limit,
+			Crs:     crs,
 			Bbox:    bbox,
 			BboxCrs: bboxCrs,
-			// TODO set crs, filters, etc
+			// Add filter, filter-crs, etc
 		})
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
@@ -121,6 +121,11 @@ func (f *Features) Feature() http.HandlerFunc {
 			http.Error(w, "feature ID must be a number", http.StatusBadRequest)
 			return
 		}
+		crs, err := f.parseSRID(r.URL.Query(), crsParam)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -132,7 +137,8 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 
-		feat, err := f.datasource.GetFeature(r.Context(), collectionID, int64(featureID))
+		datasource := f.datasources[DataSourceKey{srid: crs, collectionID: collectionID}]
+		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)
@@ -169,14 +175,17 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 	return result
 }
 
-func (f *Features) parseFeatureCollectionRequest(r *http.Request) (string, domain.EncodedCursor, int, *geom.Extent, int, error) {
+func (f *Features) parseFeatureCollectionRequest(r *http.Request) (string, domain.EncodedCursor, int, int, *geom.Extent, int, error) {
 	collectionID := chi.URLParam(r, "collectionId")
 	encodedCursor := domain.EncodedCursor(r.URL.Query().Get(cursorParam))
 	limit, limitErr := f.parseLimit(r.URL.Query())
+	crs, crsErr := f.parseSRID(r.URL.Query(), crsParam)
 	bbox, bboxCrs, bboxErr := f.parseBbox(r.URL.Query())
 	dateTimeErr := f.parseDateTime(r.URL.Query())
 	filterErr := f.parseFilter(r.URL.Query())
-	return collectionID, encodedCursor, limit, bbox, bboxCrs, errors.Join(limitErr, bboxErr, dateTimeErr, filterErr)
+
+	err := errors.Join(limitErr, crsErr, bboxErr, dateTimeErr, filterErr)
+	return collectionID, encodedCursor, limit, crs, bbox, bboxCrs, err
 }
 
 func (f *Features) parseLimit(params neturl.Values) (int, error) {
@@ -199,19 +208,9 @@ func (f *Features) parseLimit(params neturl.Values) (int, error) {
 }
 
 func (f *Features) parseBbox(params neturl.Values) (*geom.Extent, int, error) {
-	var err error
-
-	// TODO Make more robust, once we fully implement multiple CRS support (e.g. also handle CRS84 code)
-	bboxCrs := 4326
-	if params.Get(bboxCrsParam) != "" {
-		lastIndex := strings.LastIndex(params.Get(bboxCrsParam), "/")
-		if lastIndex != -1 {
-			crs := params.Get(bboxCrsParam)[lastIndex+1:]
-			bboxCrs, err = strconv.Atoi(crs)
-			if err != nil {
-				return nil, bboxCrs, fmt.Errorf("CRS code should be a numeric value, received: %s", crs)
-			}
-		}
+	bboxCrs, err := f.parseSRID(params, bboxCrsParam)
+	if err != nil {
+		return nil, -1, err
 	}
 
 	if params.Get(bboxParam) == "" {
@@ -234,6 +233,31 @@ func (f *Features) parseBbox(params neturl.Values) (*geom.Extent, int, error) {
 	return &extent, bboxCrs, nil
 }
 
+func (f *Features) parseSRID(params neturl.Values, paramName string) (int, error) {
+	srid := wgs84SRID
+	param := params.Get(paramName)
+	if param == "" {
+		return srid, nil
+	}
+	param = strings.TrimSpace(param)
+	if !strings.HasPrefix(param, crsURLPrefix) {
+		return srid, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURLPrefix, param)
+	}
+	lastIndex := strings.LastIndex(param, "/")
+	if lastIndex != -1 {
+		crsCode := param[lastIndex+1:]
+		if crsCode == wgs84CodeOGC {
+			return srid, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
+		}
+		var err error
+		srid, err = strconv.Atoi(crsCode)
+		if err != nil {
+			return 0, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
+		}
+	}
+	return srid, nil
+}
+
 func (f *Features) parseDateTime(params neturl.Values) error {
 	if params.Get(dateTimeParam) != "" {
 		return fmt.Errorf("datetime param is currently not supported")
@@ -249,4 +273,68 @@ func (f *Features) parseFilter(params neturl.Values) error {
 		return fmt.Errorf("CQL filter-crs param is currently not supported")
 	}
 	return nil
+}
+
+func epsgToSrid(srs string) (int, error) {
+	srsCode, found := strings.CutPrefix(srs, "EPSG:")
+	if !found {
+		return -1, fmt.Errorf("expected configured SRS to start with EPSG, got %s", srs)
+	}
+	srid, err := strconv.Atoi(srsCode)
+	if err != nil {
+		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
+	}
+	return srid, nil
+}
+
+func configureDatasources(e *engine.Engine) map[DataSourceKey]ds.Datasource {
+	cfg := e.Config.OgcAPI.Features
+	result := make(map[DataSourceKey]ds.Datasource, len(cfg.Collections))
+
+	if cfg.Datasources != nil {
+		defaultDS := newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
+		for _, coll := range cfg.Collections {
+			result[DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
+		}
+
+		for _, additional := range cfg.Datasources.Additional {
+			additionalDS := newDatasource(e, cfg.Collections, additional.Datasource)
+			for _, coll := range cfg.Collections {
+				srid, err := epsgToSrid(additional.Srs)
+				if err != nil {
+					log.Fatal(err)
+				}
+				result[DataSourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
+			}
+		}
+	} else {
+		for _, coll := range cfg.Collections {
+			defaultDS := newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
+			result[DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
+
+			for _, additional := range coll.Features.Datasources.Additional {
+				additionalDS := newDatasource(e, cfg.Collections, additional.Datasource)
+				srid, err := epsgToSrid(additional.Srs)
+				if err != nil {
+					log.Fatal(err)
+				}
+				result[DataSourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
+			}
+		}
+	}
+	if len(result) == 0 {
+		log.Fatal("no datasource(s) configured for OGC API Features, check config")
+	}
+	return result
+}
+
+func newDatasource(e *engine.Engine, coll engine.GeoSpatialCollections, dsConfig engine.Datasource) ds.Datasource {
+	var datasource ds.Datasource
+	if dsConfig.GeoPackage != nil {
+		datasource = geopackage.NewGeoPackage(coll, *dsConfig.GeoPackage)
+	} else if dsConfig.PostGIS != nil {
+		datasource = postgis.NewPostGIS()
+	}
+	e.RegisterShutdownHook(datasource.Close)
+	return datasource
 }

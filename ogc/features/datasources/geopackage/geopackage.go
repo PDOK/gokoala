@@ -321,7 +321,7 @@ order by name asc`, expectedIndexName)
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'identifier' column. Also in case there's no exact match between 'collection ID' and 'identifier' we use
-// the explicitly configured 'datasource ID'
+// the explicitly configured table name.
 func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
 	query := `
 select
@@ -356,7 +356,7 @@ where
 				if row.Identifier == collection.ID {
 					result[collection.ID] = &row
 					break
-				} else if hasMatchingDatasourceID(collection, row) {
+				} else if hasMatchingTableName(collection, row) {
 					result[collection.ID] = &row
 					break
 				}
@@ -374,9 +374,9 @@ where
 	return result, nil
 }
 
-func hasMatchingDatasourceID(collection engine.GeoSpatialCollection, row featureTable) bool {
-	return collection.Features != nil && collection.Features.DatasourceID != nil &&
-		row.Identifier == *collection.Features.DatasourceID
+func hasMatchingTableName(collection engine.GeoSpatialCollection, row featureTable) bool {
+	return collection.Features != nil && collection.Features.TableName != nil &&
+		row.Identifier == *collection.Features.TableName
 }
 
 func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {

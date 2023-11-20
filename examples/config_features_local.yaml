@@ -38,15 +38,16 @@ availableLanguages:
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   features:
-    datasource:
-      geopackage:
-        local:
-          file: ./examples/resources/addresses.gpkg
-          fid: fid
-          queryTimeout: 5s
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./examples/resources/addresses.gpkg
+            fid: fid
+            queryTimeout: 5s
     collections:
       - id: dutch-addresses
-        datasourceId: addresses  # name of the feature table (optional), when omitted collection ID is used.
+        tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           title: Dutch Addresses
           description: These are example addresses

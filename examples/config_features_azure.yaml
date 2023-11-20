@@ -38,19 +38,20 @@ availableLanguages:
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   features:
-    datasource:
-      geopackage:
-        cloud:
-          # connect to Azurite docker container (docker run -p 10000:10000 mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0)
-          connection: azure?emulator=azurite:10000
-          user: devstoreaccount1
-          auth: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-          container: example
-          file: addresses.gpkg
-          fid: fid
+    datasources:
+      defaultWGS84:
+        geopackage:
+          cloud:
+            # connect to Azurite docker container (docker run -p 10000:10000 mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0)
+            connection: azure?emulator=azurite:10000
+            user: devstoreaccount1
+            auth: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+            container: example
+            file: addresses.gpkg
+            fid: fid
     collections:
       - id: dutch-addresses
-        datasourceId: addresses  # name of the feature table (optional), when omitted collection ID is used.
+        tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           title: Dutch Addresses
           description: These are example addresses
