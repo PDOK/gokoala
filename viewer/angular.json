@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "vectortile-view-component": {
+    "view-component": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/vectortile-view-component",
+            "outputPath": "dist/view-component",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -59,10 +59,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "vectortile-view-component:build:production"
+              "buildTarget": "view-component:build:production"
             },
             "development": {
-              "buildTarget": "vectortile-view-component:build:development"
+              "buildTarget": "view-component:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -70,7 +70,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "vectortile-view-component:build"
+            "buildTarget": "view-component:build"
           }
         },
         "test": {

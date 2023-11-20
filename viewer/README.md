@@ -11,10 +11,10 @@ Embed the webcomponent 'app-vectortile-view' in your web application
 - load styles and javascript in your html
 
   ```html
-  <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css" />
-  <script type="text/javascript" src="vectortile-view-component/main.js"></script>
-  <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
-  <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+  <link rel="stylesheet" type="text/css" href="view-component/styles.css" />
+  <script type="text/javascript" src="view-component/main.js"></script>
+  <script type="text/javascript" src="view-component/polyfills.js"></script>
+  <script type="text/javascript" src="view-component/runtime.js"></script>
 
   <app-vectortile-view
     style="width: 800px; height: 600px;"
@@ -28,10 +28,10 @@ Embed the webcomponent 'app-vectortile-view' in your web application
 ## Embedding a vectortile legend
 
 ```html
-<link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css" />
-<script type="text/javascript" src="vectortile-view-component/main.js"></script>
-<script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
-<script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+<link rel="stylesheet" type="text/css" href="view-component/styles.css" />
+<script type="text/javascript" src="view-component/main.js"></script>
+<script type="text/javascript" src="view-component/polyfills.js"></script>
+<script type="text/javascript" src="view-component/runtime.js"></script>
 
 <app-legend-view
   id="legendadminunit"

@@ -2,7 +2,7 @@
 *.iml
 .vscode/
 gokoala
-assets/vectortile-view-component/
+assets/view-component/
 viewer/.nx
 viewer/cypress/screenshots
 viewer/.angular

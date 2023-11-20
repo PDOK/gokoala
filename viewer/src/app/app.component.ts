@@ -1,3 +1,4 @@
+import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -9,33 +10,32 @@ import {
   OnChanges,
   Output,
 } from '@angular/core'
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
-import { Subject } from 'rxjs'
-import { ObjectInfoComponent } from './object-info/object-info.component'
-import VectorTileSource from 'ol/source/VectorTile.js'
-import TileDebug from 'ol/source/TileDebug.js'
 import Map from 'ol/Map'
+import TileDebug from 'ol/source/TileDebug.js'
+import VectorTileSource from 'ol/source/VectorTile.js'
 import View from 'ol/View'
+import { Subject } from 'rxjs'
 import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from './mapprojection'
+import { ObjectInfoComponent } from './object-info/object-info.component'
 
-import { defaults as defaultControls, FullScreen } from 'ol/control.js'
+import { CommonModule } from '@angular/common'
+import { MapBrowserEvent, VectorTile } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
+import Collection from 'ol/Collection'
+import { defaults as defaultControls, FullScreen } from 'ol/control.js'
+import { Coordinate } from 'ol/coordinate'
+import { getTopLeft, getWidth } from 'ol/extent'
+import { FeatureLike } from 'ol/Feature'
+import { MVT } from 'ol/format'
+import BaseLayer from 'ol/layer/Base'
+import LayerGroup from 'ol/layer/Group'
+import TileLayer from 'ol/layer/Tile'
+import VectorTileLayer from 'ol/layer/VectorTile'
+import { useGeographic } from 'ol/proj'
 import Projection from 'ol/proj/Projection'
 import { Fill, Stroke, Style } from 'ol/style'
-import { MVT } from 'ol/format'
-import VectorTileLayer from 'ol/layer/VectorTile'
-import { getTopLeft, getWidth } from 'ol/extent'
 import TileGrid from 'ol/tilegrid/TileGrid'
-import { useGeographic } from 'ol/proj'
-import { Coordinate } from 'ol/coordinate'
-import TileLayer from 'ol/layer/Tile'
-import BaseLayer from 'ol/layer/Base'
-import Collection from 'ol/Collection'
-import LayerGroup from 'ol/layer/Group'
-import { FeatureLike } from 'ol/Feature'
-import { CommonModule } from '@angular/common'
 import { Link, Matrix, MatrixsetService } from './matrixset.service'
-import { MapBrowserEvent, VectorTile } from 'ol'
 
 export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
   [Key in keyof Props]: {
@@ -68,7 +68,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   ],
 })
 export class AppComponent implements OnChanges {
-  title = 'vectortile-view-component'
+  title = 'view-component'
   map = new Map({})
   xyzselector = '/{z}/{y}/{x}?f=mvt'
   private _showGrid = false
