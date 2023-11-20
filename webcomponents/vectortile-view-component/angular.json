@@ -18,19 +18,7 @@
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "assets": [
-              "src/favicon.ico",
-              {
-                "glob": "**/*",
-                "input": "src/assets/teststyles",
-                "output": "styles"
-              },
-              {
-                "glob": "**/*",
-                "input": "src/assets/testdata",
-                "output": "testdata"
-              }
-            ],
+            "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["node_modules/ol/ol.css", "src/styles.css"],
             "scripts": []
           },
