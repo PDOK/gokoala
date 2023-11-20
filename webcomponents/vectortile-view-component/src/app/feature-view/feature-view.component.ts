@@ -17,6 +17,7 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { NgChanges } from '../app.component'
 import { DataUrl, FeatureServiceService, featureCollectionGeoJSON } from '../feature-service.service'
+import { environment } from 'src/environments/environment'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
@@ -182,7 +183,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     return new Tile({
       source: new WMTSSource({
         attributions: 'Kaartgegevens: &copy; <a href="https://www.kadaster.nl">Kadaster</a>',
-        url: 'https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0?',
+        url: environment.bgtBackgroundUrl,
         layer: 'grijs',
         matrixSet: 'EPSG:28992',
         format: 'image/png',
