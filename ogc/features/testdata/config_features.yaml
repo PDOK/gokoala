@@ -10,7 +10,7 @@ license:
 ogcApi:
   features:
     datasources:
-      default:
+      defaultWGS84:
         geopackage:
           local:
             file: ./ogc/features/datasources/geopackage/testdata/addresses.gpkg

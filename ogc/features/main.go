@@ -309,7 +309,7 @@ func configureDatasources(e *engine.Engine) map[DataSourceKey]ds.Datasource {
 		}
 	} else {
 		for _, coll := range cfg.Collections {
-			defaultDS := newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
+			defaultDS := newDatasource(e, cfg.Collections, coll.Features.Datasources.DefaultWGS84)
 			result[DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
 
 			for _, additional := range coll.Features.Datasources.Additional {

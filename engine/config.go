@@ -267,7 +267,7 @@ type OgcAPIStyles struct {
 
 type OgcAPIFeatures struct {
 	Limit       Limit                 `yaml:"limit"`
-	Datasources *Datasources          `yaml:"datasources" validate:"dive"`
+	Datasources *Datasources          `yaml:"datasources"`
 	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
 }
 
