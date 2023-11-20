@@ -3,7 +3,7 @@ ARG REGISTRY="docker.io"
 ####### Node.js build
 FROM ${REGISTRY}/node:lts-alpine3.17 AS build-component
 RUN mkdir -p /usr/src/app
-COPY ./webcomponents/vectortile-view-component /usr/src/app
+COPY ./viewer /usr/src/app
 WORKDIR /usr/src/app
 RUN npm install
 RUN npm run build

@@ -8,11 +8,10 @@ on:
 
 defaults:
   run:
-    working-directory: ./webcomponents/vectortile-view-component
+    working-directory: ./viewer
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -26,10 +25,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: './webcomponents/vectortile-view-component/package-lock.json'
+          cache: "npm"
+          cache-dependency-path: "./viewer/package-lock.json"
       - run: npm ci
       - name: Deploy
         run: npm run deploy
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

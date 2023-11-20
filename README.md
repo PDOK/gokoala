@@ -4,7 +4,7 @@
 
 # GoKoala
 
-_Cloud Native OGC APIs server, written in Go._ 
+_Cloud Native OGC APIs server, written in Go._
 
 [![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml)
 [![Lint (go)](https://github.com/PDOK/gokoala/actions/workflows/lint-go.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint-go.yml)
@@ -17,10 +17,10 @@ Pulls](https://img.shields.io/docker/pulls/pdok/gokoala.svg)](https://hub.docker
 
 ## Description
 
-This server implements modern OGC APIs such as Common, Tiles, Styles. The goal of 
-this server is to keep a narrow focus and not implement every aspect of 
-these APIs, for complex logic this application will delegate to other implementations. 
-For example vector tiles hosting is delegated to a vector tile engine or object storage, 
+This server implements modern OGC APIs such as Common, Tiles, Styles. The goal of
+this server is to keep a narrow focus and not implement every aspect of
+these APIs, for complex logic this application will delegate to other implementations.
+For example vector tiles hosting is delegated to a vector tile engine or object storage,
 raster map hosting may be delegated to a WMS server, etc.
 
 This application is deliberately not multi-tenant, it exposes an OGC API for
@@ -37,9 +37,9 @@ _one_ dataset.
   TileJSON metadata. Act as a proxy in front of a vector tiles engine of your
   choosing. Currently 3 projections (RD, ETRS89 and WebMercator) are supported.
 - [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML and JSON representation of supported styles.
-- [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy 
+- [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server of your choosing.
-- [OGC API Processes](https://ogcapi.ogc.org/processes/) act as a passthrough proxy to an OGC API Processes 
+- [OGC API Processes](https://ogcapi.ogc.org/processes/) act as a passthrough proxy to an OGC API Processes
   implementation of your choosing, but enables the use of OGC API Common functionality.
 - [OGC API Features](https://ogcapi.ogc.org/features/) _in development_.
 
@@ -115,11 +115,11 @@ through a tunnel/port-forward. The debug server exposes `/debug` for use by
 [pprof](https://go.dev/blog/pprof). For example with `--debug-port 9001`:
 
 - Create a tunnel to the debug server e.g. in k8s: `kubectl port-forward
-  gokoala-75f59d57f4-4nd6q 9001:9001`
+gokoala-75f59d57f4-4nd6q 9001:9001`
 - Create CPU profile: `go tool pprof
-  http://localhost:9001/debug/pprof/profile?seconds=20`
+http://localhost:9001/debug/pprof/profile?seconds=20`
 - Start pprof visualization `go tool pprof -http=":8000" pprofbin <path to pb.gz
-  file>`
+file>`
 - Open <http://localhost:8000> to explore CPU flamegraphs and such.
 
 A similar flow can be used to profile memory issues.
@@ -152,11 +152,11 @@ Design principles:
 Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
 from the root.
 
-### Webcomponents
+### Viewer Web Component
 
-GoKoala includes a [vector tile viewer](webcomponents/vectortile-view-component) which is available 
-as a Web Component for embedding in HTML pages. To use the vector tile viewer locally when running 
-GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will build the viewer and add 
+GoKoala includes a [viewer](viewer) which is available
+as a Web Component for embedding in HTML pages. To use the vector tile viewer locally when running
+GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will build the viewer and add
 it to the GoKoala assets.
 
 Note this is only required for local development. When running GoKoala as a container this is
@@ -192,12 +192,12 @@ Also:
 
 ### OGC compliance validation
 
-Use the OGC [TEAM Engine](https://cite.opengeospatial.org/teamengine/) to validate 
+Use the OGC [TEAM Engine](https://cite.opengeospatial.org/teamengine/) to validate
 compliance when available. In the case of OGC API Features follow these steps:
 
 - Run `docker run -p 8081:8080 ogccite/ets-ogcapi-features10`
 - Open http://localhost:8081/teamengine/
-- Start GoKoala. 
+- Start GoKoala.
   - When running Docker in a VM (like on macOS) make sure to start GoKoala with base url: http://host.docker.internal:8080.
 - Start a new test session in the TEAM Engine against http://localhost:8080 (or http://host.docker.internal:8080).
   - More details in the [features conformance test suite](https://opengeospatial.github.io/ets-ogcapi-features10/).

@@ -3,6 +3,8 @@
 .vscode/
 gokoala
 assets/vectortile-view-component/
-webcomponents/vectortile-view-component/src/app/openapi
-webcomponents/vectortile-view-component/.nx
-webcomponents/vectortile-view-component/cypress/screenshots
+viewer/.nx
+viewer/cypress/screenshots
+viewer/.angular
+viewer/dist
+viewer/node_modules
