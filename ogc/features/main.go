@@ -276,10 +276,52 @@ func (f *Features) parseFilter(params neturl.Values) error {
 }
 
 func configureDatasources(e *engine.Engine) map[DataSourceKey]ds.Datasource {
-	cfg := e.Config.OgcAPI.Features
-	result := make(map[DataSourceKey]ds.Datasource, len(cfg.Collections))
+	result := make(map[DataSourceKey]ds.Datasource, len(e.Config.OgcAPI.Features.Collections))
 
 	// configure collection specific datasources first
+	configureCollectionDatasources(e, result)
+	// now configure top-level datasources, for the whole dataset. But only when
+	// there's no collection specific datasource already configured
+	configureTopLevelDatasources(e, result)
+
+	if len(result) == 0 {
+		log.Fatal("no datasource(s) configured for OGC API Features, check config")
+	}
+	return result
+}
+
+func configureTopLevelDatasources(e *engine.Engine, result map[DataSourceKey]ds.Datasource) {
+	cfg := e.Config.OgcAPI.Features
+	if cfg.Datasources == nil {
+		return
+	}
+	var defaultDS ds.Datasource
+	for _, coll := range cfg.Collections {
+		key := DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}
+		if result[key] == nil {
+			if defaultDS == nil {
+				defaultDS = newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
+			}
+			result[key] = defaultDS
+		}
+	}
+
+	for _, additional := range cfg.Datasources.Additional {
+		for _, coll := range cfg.Collections {
+			srid, err := epsgToSrid(additional.Srs)
+			if err != nil {
+				log.Fatal(err)
+			}
+			key := DataSourceKey{srid: srid, collectionID: coll.ID}
+			if result[key] == nil {
+				result[key] = newDatasource(e, cfg.Collections, additional.Datasource)
+			}
+		}
+	}
+}
+
+func configureCollectionDatasources(e *engine.Engine, result map[DataSourceKey]ds.Datasource) {
+	cfg := e.Config.OgcAPI.Features
 	for _, coll := range cfg.Collections {
 		if coll.Features == nil || coll.Features.Datasources == nil {
 			continue
@@ -296,39 +338,6 @@ func configureDatasources(e *engine.Engine) map[DataSourceKey]ds.Datasource {
 			result[DataSourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
 		}
 	}
-
-	// now configure top-level datasources, for the whole dataset. But only when
-	// there's no collection specific datasource already configured
-	if cfg.Datasources != nil {
-		var defaultDS ds.Datasource
-		for _, coll := range cfg.Collections {
-			key := DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}
-			if result[key] == nil {
-				if defaultDS == nil {
-					defaultDS = newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
-				}
-				result[key] = defaultDS
-			}
-		}
-
-		for _, additional := range cfg.Datasources.Additional {
-			for _, coll := range cfg.Collections {
-				srid, err := epsgToSrid(additional.Srs)
-				if err != nil {
-					log.Fatal(err)
-				}
-				key := DataSourceKey{srid: srid, collectionID: coll.ID}
-				if result[key] == nil {
-					result[key] = newDatasource(e, cfg.Collections, additional.Datasource)
-				}
-			}
-		}
-	}
-
-	if len(result) == 0 {
-		log.Fatal("no datasource(s) configured for OGC API Features, check config")
-	}
-	return result
 }
 
 func newDatasource(e *engine.Engine, coll engine.GeoSpatialCollections, dsConfig engine.Datasource) ds.Datasource {
