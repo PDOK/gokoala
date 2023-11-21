@@ -15,9 +15,9 @@ import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
+import { environment } from 'src/environments/environment'
 import { NgChanges } from '../app.component'
 import { DataUrl, FeatureServiceService, featureCollectionGeoJSON } from '../feature-service.service'
-import { environment } from 'src/environments/environment'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
@@ -219,7 +219,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
           if (feature) {
             const featureid = feature.getId()
             if (featureid) {
-              const currentUrl = new URL(this.itemsUrl)
+              const items = 'items'
+              const itemsurl = this.itemsUrl.toLowerCase()
+              const currentUrl = new URL(itemsurl.substring(0, itemsurl.indexOf(items) + items.length))
               tooltipContent.innerHTML =
                 '<a href="' +
                 currentUrl.protocol +
