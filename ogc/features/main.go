@@ -26,14 +26,14 @@ const (
 	crsURLPrefix = "http://www.opengis.net/def/crs/"
 )
 
+var (
+	collections map[string]*engine.GeoSpatialCollectionMetadata
+)
+
 type DataSourceKey struct {
 	srid         int
 	collectionID string
 }
-
-var (
-	collections map[string]*engine.GeoSpatialCollectionMetadata
-)
 
 type Features struct {
 	engine      *engine.Engine

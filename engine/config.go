@@ -272,23 +272,12 @@ type OgcAPIFeatures struct {
 	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
 }
 
-func (oaf OgcAPIFeatures) AdditionalDatasourcesSRS() []string {
-	uniqueSRSs := make(map[string]struct{}, len(oaf.Collections))
-	for _, a := range oaf.Datasources.Additional {
-		uniqueSRSs[a.Srs] = struct{}{}
-	}
-	for _, coll := range oaf.Collections {
-		for _, a := range coll.Features.Datasources.Additional {
-			uniqueSRSs[a.Srs] = struct{}{}
-		}
-	}
-	return util.Keys(uniqueSRSs)
-}
-
 func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string {
 	uniqueSRSs := make(map[string]struct{})
-	for _, a := range oaf.Datasources.Additional {
-		uniqueSRSs[a.Srs] = struct{}{}
+	if oaf.Datasources != nil {
+		for _, a := range oaf.Datasources.Additional {
+			uniqueSRSs[a.Srs] = struct{}{}
+		}
 	}
 	for _, coll := range oaf.Collections {
 		if coll.ID == collectionID && coll.Features.Datasources != nil {
