@@ -275,53 +275,56 @@ func (f *Features) parseFilter(params neturl.Values) error {
 	return nil
 }
 
-func epsgToSrid(srs string) (int, error) {
-	srsCode, found := strings.CutPrefix(srs, "EPSG:")
-	if !found {
-		return -1, fmt.Errorf("expected configured SRS to start with EPSG, got %s", srs)
-	}
-	srid, err := strconv.Atoi(srsCode)
-	if err != nil {
-		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
-	}
-	return srid, nil
-}
-
 func configureDatasources(e *engine.Engine) map[DataSourceKey]ds.Datasource {
 	cfg := e.Config.OgcAPI.Features
 	result := make(map[DataSourceKey]ds.Datasource, len(cfg.Collections))
 
+	// configure collection specific datasources first
+	for _, coll := range cfg.Collections {
+		if coll.Features == nil || coll.Features.Datasources == nil {
+			continue
+		}
+		defaultDS := newDatasource(e, cfg.Collections, coll.Features.Datasources.DefaultWGS84)
+		result[DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
+
+		for _, additional := range coll.Features.Datasources.Additional {
+			srid, err := epsgToSrid(additional.Srs)
+			if err != nil {
+				log.Fatal(err)
+			}
+			additionalDS := newDatasource(e, cfg.Collections, additional.Datasource)
+			result[DataSourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
+		}
+	}
+
+	// now configure top-level datasources, for the whole dataset. But only when
+	// there's no collection specific datasource already configured
 	if cfg.Datasources != nil {
-		defaultDS := newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
+		var defaultDS ds.Datasource
 		for _, coll := range cfg.Collections {
-			result[DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
+			key := DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				if defaultDS == nil {
+					defaultDS = newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
+				}
+				result[key] = defaultDS
+			}
 		}
 
 		for _, additional := range cfg.Datasources.Additional {
-			additionalDS := newDatasource(e, cfg.Collections, additional.Datasource)
 			for _, coll := range cfg.Collections {
 				srid, err := epsgToSrid(additional.Srs)
 				if err != nil {
 					log.Fatal(err)
 				}
-				result[DataSourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
-			}
-		}
-	} else {
-		for _, coll := range cfg.Collections {
-			defaultDS := newDatasource(e, cfg.Collections, coll.Features.Datasources.DefaultWGS84)
-			result[DataSourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
-
-			for _, additional := range coll.Features.Datasources.Additional {
-				additionalDS := newDatasource(e, cfg.Collections, additional.Datasource)
-				srid, err := epsgToSrid(additional.Srs)
-				if err != nil {
-					log.Fatal(err)
+				key := DataSourceKey{srid: srid, collectionID: coll.ID}
+				if result[key] == nil {
+					result[key] = newDatasource(e, cfg.Collections, additional.Datasource)
 				}
-				result[DataSourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
 			}
 		}
 	}
+
 	if len(result) == 0 {
 		log.Fatal("no datasource(s) configured for OGC API Features, check config")
 	}
@@ -337,4 +340,17 @@ func newDatasource(e *engine.Engine, coll engine.GeoSpatialCollections, dsConfig
 	}
 	e.RegisterShutdownHook(datasource.Close)
 	return datasource
+}
+
+func epsgToSrid(srs string) (int, error) {
+	prefix := "EPSG:"
+	srsCode, found := strings.CutPrefix(srs, prefix)
+	if !found {
+		return -1, fmt.Errorf("expected configured SRS to start with '%s', got %s", prefix, srs)
+	}
+	srid, err := strconv.Atoi(srsCode)
+	if err != nil {
+		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
+	}
+	return srid, nil
 }
