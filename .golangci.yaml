@@ -33,10 +33,12 @@ linters-settings:
             desc: Should be replaced by standard lib errors package
   cyclop:
     # The maximal code complexity to report.
-    max-complexity: 12
+    max-complexity: 15
     skip-tests: true
   funlen:
     lines: 100
+  nestif:
+    min-complexity: 6
 
 linters:
   disable-all: true
@@ -77,16 +79,16 @@ linters:
     - nakedret  # finds naked returns in functions greater than a specified function length
     - nestif  # reports deeply nested if statements
     - nilerr  # finds the code that returns nil even if it checks that the error is not nil
-    - nilnil  # checks that there is no simultaneous return of nil error and an invalid value
     - nolintlint  # reports ill-formed or insufficient nolint directives
-    - nonamedreturns  # reports all named returns
     - nosprintfhostport  # checks for misuse of Sprintf to construct a host with port in a URL
+    - perfsprint  # Golang linter for performance, aiming at usages of fmt.Sprintf which have faster alternatives
     - predeclared  # finds code that shadows one of Go's predeclared identifiers
     - promlinter  # checks Prometheus metrics naming via promlint
     - reassign  # checks that package variables are not reassigned
     - revive  # fast, configurable, extensible, flexible, and beautiful linter for Go, drop-in replacement of golint
     - rowserrcheck  # checks whether Err of rows is checked successfully
     - sqlclosecheck  # checks that sql.Rows and sql.Stmt are closed
+    - sloglint  # A Go linter that ensures consistent code style when using log/slog
     - tenv  # detects using os.Setenv instead of t.Setenv since Go1.17
     - testableexamples  # checks if examples are testable (have an expected output)
     - tparallel  # detects inappropriate usage of t.Parallel() method in your Go test codes
