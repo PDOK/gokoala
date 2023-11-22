@@ -2,15 +2,18 @@ package features
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"net/url"
 	"slices"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
+	"github.com/go-spatial/geom"
 )
 
 const (
@@ -36,6 +39,21 @@ type URL interface {
 type featureCollectionURL struct {
 	baseURL url.URL
 	params  url.Values
+	limit   engine.Limit
+}
+
+func (fc featureCollectionURL) parseParams() (encodedCursor domain.EncodedCursor, limit int,
+	crs int, bbox *geom.Extent, bboxCrs int, err error) {
+
+	encodedCursor = domain.EncodedCursor(fc.params.Get(cursorParam))
+	limit, limitErr := parseLimit(fc.params, fc.limit)
+	crs, crsErr := parseSRID(fc.params, crsParam)
+	bbox, bboxCrs, bboxErr := parseBbox(fc.params)
+	dateTimeErr := parseDateTime(fc.params)
+	filterErr := parseFilter(fc.params)
+
+	err = errors.Join(limitErr, crsErr, bboxErr, dateTimeErr, filterErr)
+	return encodedCursor, limit, crs, bbox, bboxCrs, err
 }
 
 // Calculate checksum over the query parameters that have a "filtering effect" on
@@ -117,6 +135,10 @@ type featureURL struct {
 	params  url.Values
 }
 
+func (f featureURL) parseParams() (crs int, err error) {
+	return parseSRID(f.params, crsParam)
+}
+
 func (f featureURL) toSelfURL(collectionID string, featureID int64, format string) string {
 	newParams := url.Values{}
 	newParams.Set(engine.FormatParam, format)
@@ -152,4 +174,91 @@ func clone(params url.Values) url.Values {
 		copyParams[k] = v
 	}
 	return copyParams
+}
+
+func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
+	limit := limitCfg.Default
+	var err error
+	if params.Get(limitParam) != "" {
+		limit, err = strconv.Atoi(params.Get(limitParam))
+		if err != nil {
+			err = fmt.Errorf("limit must be numeric")
+		}
+		// OpenAPI validation already guards against exceeding max limit, this is just a defense in-depth measure.
+		if limit > limitCfg.Max {
+			limit = limitCfg.Max
+		}
+	}
+	if limit < 0 {
+		err = fmt.Errorf("limit can't be negative")
+	}
+	return limit, err
+}
+
+func parseBbox(params url.Values) (*geom.Extent, int, error) {
+	bboxCrs, err := parseSRID(params, bboxCrsParam)
+	if err != nil {
+		return nil, -1, err
+	}
+
+	if params.Get(bboxParam) == "" {
+		return nil, bboxCrs, nil
+	}
+	bboxValues := strings.Split(params.Get(bboxParam), ",")
+	if len(bboxValues) != 4 {
+		return nil, bboxCrs, fmt.Errorf("bbox should contain exactly 4 values " +
+			"separated by commas: minx,miny,maxx,maxy")
+	}
+
+	var extent geom.Extent
+	for i, v := range bboxValues {
+		extent[i], err = strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, bboxCrs, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
+		}
+	}
+
+	return &extent, bboxCrs, nil
+}
+
+func parseSRID(params url.Values, paramName string) (int, error) {
+	srid := wgs84SRID
+	param := params.Get(paramName)
+	if param == "" {
+		return srid, nil
+	}
+	param = strings.TrimSpace(param)
+	if !strings.HasPrefix(param, crsURLPrefix) {
+		return srid, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURLPrefix, param)
+	}
+	lastIndex := strings.LastIndex(param, "/")
+	if lastIndex != -1 {
+		crsCode := param[lastIndex+1:]
+		if crsCode == wgs84CodeOGC {
+			return srid, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
+		}
+		var err error
+		srid, err = strconv.Atoi(crsCode)
+		if err != nil {
+			return 0, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
+		}
+	}
+	return srid, nil
+}
+
+func parseDateTime(params url.Values) error {
+	if params.Get(dateTimeParam) != "" {
+		return fmt.Errorf("datetime param is currently not supported")
+	}
+	return nil
+}
+
+func parseFilter(params url.Values) error {
+	if params.Get(filterParam) != "" {
+		return fmt.Errorf("CQL filter param is currently not supported")
+	}
+	if params.Get(filterCrsParam) != "" {
+		return fmt.Errorf("CQL filter-crs param is currently not supported")
+	}
+	return nil
 }

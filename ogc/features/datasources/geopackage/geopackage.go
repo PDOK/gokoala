@@ -174,7 +174,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		return nil, err
 	}
 	if len(features) != 1 {
-		return nil, nil //nolint:nilnil
+		return nil, nil
 	}
 	return features[0], nil
 }
