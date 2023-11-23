@@ -39,9 +39,9 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			},
 			wantEncodedCursor: "",
 			wantLimit:         10,
-			wantCrs:           4326,
+			wantCrs:           100000,
 			wantBbox:          nil,
-			wantBboxCrs:       4326,
+			wantBboxCrs:       100000,
 			wantErr:           success(),
 		},
 		{

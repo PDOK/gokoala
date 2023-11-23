@@ -17,7 +17,7 @@ import (
 
 const (
 	templatesDir = "ogc/features/templates/"
-	wgs84SRID    = 4326
+	wgs84SRID    = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time we may need to read this value dynamically from the geopackage.
 	wgs84CodeOGC = "CRS84"
 	crsURLPrefix = "http://www.opengis.net/def/crs/"
 )

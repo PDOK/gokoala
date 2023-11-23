@@ -239,7 +239,7 @@ type CollectionEntryFeatures struct {
 	TableName *string `yaml:"tableName"`
 
 	// Optional collection specific datasources. Mutually exclusive with top-level defined datasources.
-	Datasources *Datasources `yaml:"datasources" validate:"dive"`
+	Datasources *Datasources `yaml:"datasources"`
 }
 
 type CollectionEntryMaps struct {
