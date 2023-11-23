@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -12,6 +13,8 @@ import (
 type contextKey int
 
 const sqlContextKey contextKey = iota
+
+var logSQL, _ = strconv.ParseBool(os.Getenv("LOG_SQL"))
 
 // SQLLog query logging for debugging purposes
 type SQLLog struct{}
@@ -23,7 +26,7 @@ func (s *SQLLog) Before(ctx context.Context, _ string, _ ...interface{}) (contex
 
 // After callback once execution of the given SQL query is done
 func (s *SQLLog) After(ctx context.Context, query string, args ...interface{}) (context.Context, error) {
-	if os.Getenv("LOG_SQL") == "true" {
+	if logSQL {
 		query = replaceBindVars(query, args)
 		start := ctx.Value(sqlContextKey).(time.Time)
 

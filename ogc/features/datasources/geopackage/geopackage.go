@@ -132,13 +132,13 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	}
 	defer rows.Close()
 
-	var nextPrev *domain.PrevNextFID
+	var prevNext *domain.PrevNextFID
 	result := domain.FeatureCollection{}
-	result.Features, nextPrev, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	result.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
-	if nextPrev == nil {
+	if prevNext == nil {
 		return nil, domain.Cursors{}, nil
 	}
 
