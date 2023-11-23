@@ -143,7 +143,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	}
 
 	result.NumberReturned = len(result.Features)
-	return &result, domain.NewCursors(*nextPrev, options.Cursor.FiltersChecksum), nil
+	return &result, domain.NewCursors(*prevNext, options.Cursor.FiltersChecksum), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
