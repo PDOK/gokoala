@@ -34,11 +34,8 @@ const (
 // Extensions are by default expected in /usr/lib. For spatialite you can
 // alternatively/optionally set SPATIALITE_LIBRARY_PATH.
 func init() {
-	driver := &sqlite3.SQLiteDriver{
-		Extensions: []string{
-			path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite"),
-		},
-	}
+	spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
+	driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
 	sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, &datasources.SQLLog{}))
 }
 
@@ -135,18 +132,18 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 	}
 	defer rows.Close()
 
-	var nextPrev *domain.PrevNextFID
+	var prevNext *domain.PrevNextFID
 	result := domain.FeatureCollection{}
-	result.Features, nextPrev, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	result.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
-	if nextPrev == nil {
+	if prevNext == nil {
 		return nil, domain.Cursors{}, nil
 	}
 
 	result.NumberReturned = len(result.Features)
-	return &result, domain.NewCursors(*nextPrev, options.Cursor.FiltersChecksum), nil
+	return &result, domain.NewCursors(*prevNext, options.Cursor.FiltersChecksum), nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
@@ -177,7 +174,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		return nil, err
 	}
 	if len(features) != 1 {
-		return nil, nil //nolint:nilnil
+		return nil, nil
 	}
 	return features[0], nil
 }
@@ -321,7 +318,7 @@ order by name asc`, expectedIndexName)
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'identifier' column. Also in case there's no exact match between 'collection ID' and 'identifier' we use
-// the explicitly configured 'datasource ID'
+// the explicitly configured table name.
 func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
 	query := `
 select
@@ -356,7 +353,7 @@ where
 				if row.Identifier == collection.ID {
 					result[collection.ID] = &row
 					break
-				} else if hasMatchingDatasourceID(collection, row) {
+				} else if hasMatchingTableName(collection, row) {
 					result[collection.ID] = &row
 					break
 				}
@@ -374,9 +371,9 @@ where
 	return result, nil
 }
 
-func hasMatchingDatasourceID(collection engine.GeoSpatialCollection, row featureTable) bool {
-	return collection.Features != nil && collection.Features.DatasourceID != nil &&
-		row.Identifier == *collection.Features.DatasourceID
+func hasMatchingTableName(collection engine.GeoSpatialCollection, row featureTable) bool {
+	return collection.Features != nil && collection.Features.TableName != nil &&
+		row.Identifier == *collection.Features.TableName
 }
 
 func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {

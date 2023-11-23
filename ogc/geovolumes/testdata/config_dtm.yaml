@@ -9,7 +9,7 @@ license:
   url: https://www.tldrlegal.com/license/mit-license
 ogcApi:
   3dgeovolumes:
-    tileServer: http://localhost:9090
+    tileServer: http://localhost:9091
     collections:
       - id: container_1  # DTM and 3D tiles in same collection
         uriTemplate3dTiles: "tiles/{level}/{x}/{y}.glb"

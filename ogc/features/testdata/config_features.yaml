@@ -9,20 +9,21 @@ license:
   url: https://www.tldrlegal.com/license/mit-license
 ogcApi:
   features:
-    datasource:
-      geopackage:
-        local:
-          file: ./ogc/features/datasources/geopackage/testdata/addresses.gpkg
-          fid: feature_id
-          queryTimeout: 15m # pretty high to allow debugging
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./ogc/features/datasources/geopackage/testdata/addresses.gpkg
+            fid: feature_id
+            queryTimeout: 15m # pretty high to allow debugging
     collections:
       - id: foo
-        datasourceId: ligplaatsen
+        tableName: ligplaatsen
         metadata:
           title: Foooo
       - id: bar
-        datasourceId: ligplaatsen
+        tableName: ligplaatsen
         metadata:
           title: Barrr
-          datasourceId: ligplaatsen
+          tableName: ligplaatsen
       - id: baz

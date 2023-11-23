@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PDOK/gokoala/engine/util"
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/text/language"
@@ -234,8 +235,11 @@ type CollectionEntryTiles struct {
 }
 
 type CollectionEntryFeatures struct {
-	// Optional way to map a collection ID to the underlying datasource (e.g. table in database).
-	DatasourceID *string `yaml:"datasourceId"`
+	// Optional way to explicitly map a collection ID to the underlying table in the datasource.
+	TableName *string `yaml:"tableName"`
+
+	// Optional collection specific datasources. Mutually exclusive with top-level defined datasources.
+	Datasources *Datasources `yaml:"datasources"`
 }
 
 type CollectionEntryMaps struct {
@@ -264,8 +268,26 @@ type OgcAPIStyles struct {
 
 type OgcAPIFeatures struct {
 	Limit       Limit                 `yaml:"limit"`
+	Datasources *Datasources          `yaml:"datasources"`
 	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
-	Datasource  Datasource            `yaml:"datasource" validate:"required"`
+}
+
+func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string {
+	uniqueSRSs := make(map[string]struct{})
+	if oaf.Datasources != nil {
+		for _, a := range oaf.Datasources.Additional {
+			uniqueSRSs[a.Srs] = struct{}{}
+		}
+	}
+	for _, coll := range oaf.Collections {
+		if coll.ID == collectionID && coll.Features.Datasources != nil {
+			for _, a := range coll.Features.Datasources.Additional {
+				uniqueSRSs[a.Srs] = struct{}{}
+			}
+			break
+		}
+	}
+	return util.Keys(uniqueSRSs)
 }
 
 type OgcAPIMaps struct {
@@ -283,10 +305,20 @@ type Limit struct {
 	Max     int `yaml:"max" validate:"gt=1" default:"1000"`
 }
 
+type Datasources struct {
+	DefaultWGS84 Datasource             `yaml:"defaultWGS84" validate:"required"`
+	Additional   []AdditionalDatasource `yaml:"additional" validate:"dive"`
+}
+
 type Datasource struct {
 	GeoPackage *GeoPackage `yaml:"geopackage" validate:"required_without_all=PostGIS"`
 	PostGIS    *PostGIS    `yaml:"postgis" validate:"required_without_all=GeoPackage"`
 	// Add more datasources here such as Mongo, Elastic, etc
+}
+
+type AdditionalDatasource struct {
+	Srs        string `yaml:"srs" validate:"required,startswith=EPSG:"`
+	Datasource `yaml:",inline"`
 }
 
 type PostGIS struct {
@@ -358,10 +390,6 @@ type ZoomLevelRange struct {
 	End   int `yaml:"end" validate:"required,gtefield=Start"`
 }
 
-type YAMLURL struct {
-	*url.URL
-}
-
 type Extent struct {
 	Srs  string   `yaml:"srs" validate:"required,startswith=EPSG:"`
 	Bbox []string `yaml:"bbox"`
@@ -418,6 +446,10 @@ type Link struct {
 
 type PropertiesSchema struct {
 	// placeholder
+}
+
+type YAMLURL struct {
+	*url.URL
 }
 
 // UnmarshalYAML parses a string to URL and also removes trailing slash if present,

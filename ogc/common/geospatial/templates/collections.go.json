@@ -42,8 +42,15 @@
           "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}"
         }
       }
-      {{/* "crs" : [], */}}
-      {{/* "storageCrs" : "", */}}
+      {{ end }}
+      {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
+      ,"crs" : [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        {{ range $index, $srs := $cfg.OgcAPI.Features.ProjectionsForCollection $coll.ID }}
+        ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
+        {{ end }}
+      ]
+      ,"storageCrs" : "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
       {{ end }}
       ,"links" : [
         {

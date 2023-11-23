@@ -39,7 +39,7 @@ FROM ${REGISTRY}/debian:bookworm-slim
 # install sqlite-related runtime dependencies
 RUN set -eux && \
     apt-get update && \
-    apt-get install -y libcurl4 openssl libsqlite3-mod-spatialite && \
+    apt-get install -y libcurl4 curl openssl libsqlite3-mod-spatialite && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080

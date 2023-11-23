@@ -1,4 +1,4 @@
-//go:build cgo && !darwin
+//go:build cgo && !darwin && !windows
 
 package geopackage
 
@@ -24,16 +24,19 @@ type cloudGeoPackage struct {
 }
 
 func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) geoPackageBackend {
-	log.Printf("connecting to Cloud-Backed GeoPackage on '%s' in container '%s'\n", gpkg.Connection, gpkg.Container)
+	msg := fmt.Sprintf("Cloud-Backed GeoPackage '%s' in container '%s' on '%s'",
+		gpkg.File, gpkg.Container, gpkg.Connection)
+
+	log.Printf("connecting to %s\n", msg)
 	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth, gpkg.Container, getCacheDir(gpkg))
 	if err != nil {
-		log.Fatalf("failed to connect with Cloud-Backed GeoPackage: %v", err)
+		log.Fatalf("failed to connect with %s, error: %v", msg, err)
 	}
-	log.Printf("connected to Cloud-Backed GeoPackage: %s\n", gpkg.Connection)
+	log.Printf("connected to %s\n", msg)
 
 	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("/%s/%s?vfs=%s", gpkg.Container, gpkg.File, vfsName))
 	if err != nil {
-		log.Fatalf("failed to open Cloud-Backed GeoPackage: %v", err)
+		log.Fatalf("failed to open %s, error: %v", msg, err)
 	}
 
 	return &cloudGeoPackage{db, &vfs}

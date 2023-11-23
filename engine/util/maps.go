@@ -9,3 +9,11 @@ func Keys[M ~map[K]V, K comparable, V any](m M) []K {
 	}
 	return r
 }
+
+func ReverseMap(input map[string]string) map[string]string {
+	output := make(map[string]string)
+	for k, v := range input {
+		output[v] = k
+	}
+	return output
+}

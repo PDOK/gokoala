@@ -29,5 +29,5 @@ func (pg PostGIS) GetFeatures(_ context.Context, _ string, _ datasources.Feature
 
 func (pg PostGIS) GetFeature(_ context.Context, _ string, _ int64) (*domain.Feature, error) {
 	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple datastores")
-	return nil, nil //nolint:nilnil
+	return nil, nil
 }

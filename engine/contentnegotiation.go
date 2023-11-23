@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/PDOK/gokoala/engine/util"
 	"github.com/elnormous/contenttype"
 	"golang.org/x/text/language"
 )
@@ -67,7 +68,7 @@ func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiatio
 		MediaTypeSLD:         FormatSLD,
 	}
 
-	mediaTypesByFormat := reverseMap(formatsByMediaType)
+	mediaTypesByFormat := util.ReverseMap(formatsByMediaType)
 
 	return &ContentNegotiation{
 		availableMediaTypes: availableMediaTypes,
@@ -213,12 +214,4 @@ func (cn *ContentNegotiation) getLanguageFromHeader(req *http.Request) language.
 		requestedLanguage = cn.availableLanguages[langIndex]
 	}
 	return requestedLanguage
-}
-
-func reverseMap(input map[string]string) map[string]string {
-	output := make(map[string]string)
-	for k, v := range input {
-		output[v] = k
-	}
-	return output
 }

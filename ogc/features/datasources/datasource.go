@@ -27,7 +27,7 @@ type FeatureOptions struct {
 	Limit  int
 
 	// multiple projections support
-	Crs string
+	Crs int
 
 	// filtering by bounding box
 	Bbox    *geom.Extent
