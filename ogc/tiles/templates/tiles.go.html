@@ -95,10 +95,10 @@
           </tr>
         </tbody>
       </table>
-      <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
-      <script type="text/javascript" src="vectortile-view-component/main.js"></script>
-      <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
-      <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+      <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+      <script type="text/javascript" src="view-component/main.js"></script>
+      <script type="text/javascript" src="view-component/polyfills.js"></script>
+      <script type="text/javascript" src="view-component/runtime.js"></script>
       <app-vectortile-view id="vectortileviewer" class="vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}

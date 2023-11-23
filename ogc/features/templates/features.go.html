@@ -10,6 +10,7 @@
         url.searchParams.set(name, value);
         window.location.href = url.toString();
     }
+   
 </script>
 
 <hgroup>
@@ -33,9 +34,21 @@
             </div>
         </div>
     </div>
+ 
 
-    <div class="col-4" style="background-color: lightblue">
-        TODO: Display map with features here
+    <div class="col-4" >       
+        <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+        <script type="text/javascript" src="view-component/main.js"></script>
+        <script type="text/javascript" src="view-component/polyfills.js"></script>
+        <script type="text/javascript" src="view-component/runtime.js"></script>
+        <app-feature-view id="featuresmap">
+       </app-feature-view>
+       <script>
+            const jsonurl = new URL(window.location.href)
+            jsonurl.searchParams.set('f','json'); 
+            const map = document.getElementById('featuresmap'); 
+            map.setAttribute('items-url', jsonurl );        
+        </script>
     </div>
 
     <div class="col-8">

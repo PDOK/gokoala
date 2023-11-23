@@ -3,7 +3,7 @@ ARG REGISTRY="docker.io"
 ####### Node.js build
 FROM ${REGISTRY}/node:lts-alpine3.17 AS build-component
 RUN mkdir -p /usr/src/app
-COPY ./webcomponents/vectortile-view-component /usr/src/app
+COPY ./viewer /usr/src/app
 WORKDIR /usr/src/app
 RUN npm install
 RUN npm run build
@@ -53,12 +53,12 @@ COPY --from=build-env /gokoala /
 
 # include assets/templates/etc (be specific here to only include required dirs)
 COPY --from=build-env /go/src/service/assets/ /assets/
-# include vectortile-view-component webcomponent as asset
-COPY --from=build-component /usr/src/app/dist/vectortile-view-component/styles.css  /assets/vectortile-view-component/styles.css
-COPY --from=build-component /usr/src/app/dist/vectortile-view-component/main.js  /assets/vectortile-view-component/main.js
-COPY --from=build-component /usr/src/app/dist/vectortile-view-component/polyfills.js  /assets/vectortile-view-component/polyfills.js
-COPY --from=build-component /usr/src/app/dist/vectortile-view-component/runtime.js  /assets/vectortile-view-component/runtime.js
-COPY --from=build-component /usr/src/app/dist/vectortile-view-component/3rdpartylicenses.txt /assets/vectortile-view-component/3rdpartylicenses.txt
+# include view-component webcomponent as asset
+COPY --from=build-component /usr/src/app/dist/view-component/styles.css  /assets/view-component/styles.css
+COPY --from=build-component /usr/src/app/dist/view-component/main.js  /assets/view-component/main.js
+COPY --from=build-component /usr/src/app/dist/view-component/polyfills.js  /assets/view-component/polyfills.js
+COPY --from=build-component /usr/src/app/dist/view-component/runtime.js  /assets/view-component/runtime.js
+COPY --from=build-component /usr/src/app/dist/view-component/3rdpartylicenses.txt /assets/view-component/3rdpartylicenses.txt
 
 COPY --from=build-env /go/src/service/engine/ /engine/
 COPY --from=build-env /go/src/service/ogc/ /ogc/

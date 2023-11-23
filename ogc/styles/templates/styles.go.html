@@ -63,10 +63,10 @@
     </div>
     <div class="col-md-6">
       {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
-      <link rel="stylesheet" type="text/css" href="vectortile-view-component/styles.css">
-      <script type="text/javascript" src="vectortile-view-component/main.js"></script>
-      <script type="text/javascript" src="vectortile-view-component/polyfills.js"></script>
-      <script type="text/javascript" src="vectortile-view-component/runtime.js"></script>
+      <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+      <script type="text/javascript" src="view-component/main.js"></script>
+      <script type="text/javascript" src="view-component/polyfills.js"></script>
+      <script type="text/javascript" src="view-component/runtime.js"></script>
       <p>{{ i18n "StylingExample" }}:</p>
       <app-vectortile-view id="styles-vectortile-view" class="vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
