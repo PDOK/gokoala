@@ -20,7 +20,7 @@ const (
 	cookieMaxAge = 60 * 60 * 24
 )
 
-func readConfigFile(configFile string) *Config {
+func NewConfig(configFile string) *Config {
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {
 		log.Fatalf("failed to read config file %v", err)
@@ -35,6 +35,10 @@ func readConfigFile(configFile string) *Config {
 		log.Fatalf("failed to unmarshal config file %v", err)
 	}
 
+	return NewConfigFromStruct(config)
+}
+
+func NewConfigFromStruct(config *Config) *Config {
 	setDefaults(config)
 	validate(config)
 	return config
@@ -59,7 +63,7 @@ func validate(config *Config) {
 	if err != nil {
 		var ive *validator.InvalidValidationError
 		if ok := errors.Is(err, ive); ok {
-			log.Fatalf("failed to validate config file: %v", err)
+			log.Fatalf("failed to validate config: %v", err)
 		}
 		var errMessages []string
 		var valErrs validator.ValidationErrors
@@ -68,7 +72,7 @@ func validate(config *Config) {
 				errMessages = append(errMessages, valErr.Error()+"\n")
 			}
 		}
-		log.Fatalf("invalid config file provided:\n %v", errMessages)
+		log.Fatalf("invalid config provided:\n %v", errMessages)
 	}
 }
 
