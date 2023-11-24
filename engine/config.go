@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	cookieMaxAge        = 60 * 60 * 24
-	defaultQueryTimeout = 10 * time.Second
+	cookieMaxAge = 60 * 60 * 24
 )
 
 func readConfigFile(configFile string) *Config {
@@ -333,17 +332,10 @@ type GeoPackage struct {
 // GeoPackageCommon shared config between local and cloud GeoPackage
 type GeoPackageCommon struct {
 	// feature id column name
-	Fid string `yaml:"fid" validate:"required"`
+	Fid string `yaml:"fid" validate:"required" default:"fid"`
 
-	// optional timeout after which queries are canceled (default is 10s, see constant)
-	QueryTimeout *time.Duration `yaml:"queryTimeout"`
-}
-
-func (gc *GeoPackageCommon) GetQueryTimeout() time.Duration {
-	if gc.QueryTimeout != nil {
-		return *gc.QueryTimeout
-	}
-	return defaultQueryTimeout
+	// optional timeout after which queries are canceled
+	QueryTimeout time.Duration `yaml:"queryTimeout" default:"15s"`
 }
 
 // GeoPackageLocal settings to read a GeoPackage from local disk

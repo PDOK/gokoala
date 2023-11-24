@@ -73,11 +73,11 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
 		g.fidColumn = gpkgConfig.Local.Fid
-		g.queryTimeout = gpkgConfig.Local.GetQueryTimeout()
+		g.queryTimeout = gpkgConfig.Local.QueryTimeout
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
 		g.fidColumn = gpkgConfig.Cloud.Fid
-		g.queryTimeout = gpkgConfig.Cloud.GetQueryTimeout()
+		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout
 	default:
 		log.Fatal("unknown geopackage config encountered")
 	}
