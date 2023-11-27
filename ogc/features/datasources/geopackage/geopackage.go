@@ -105,10 +105,10 @@ func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options datasources.FeatureOptions) (*domain.FeatureCollection, domain.Cursors, error) {
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options datasources.FeaturesOptions) (*datasources.FeaturesResult, error) {
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
-		return nil, domain.Cursors{}, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
 			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
 	}
 
@@ -117,33 +117,97 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options
 
 	query, queryArgs, err := g.makeFeaturesQuery(table, options)
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to make features query, error: %w", err)
+		return nil, fmt.Errorf("failed to make features query, error: %w", err)
 	}
 
 	stmt, err := g.backend.getDB().PrepareNamedContext(queryCtx, query)
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to prepare query '%s' error: %w", query, err)
+		return nil, fmt.Errorf("failed to prepare query '%s' error: %w", query, err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryxContext(queryCtx, queryArgs)
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
+		return nil, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
 
-	var prevNext *domain.PrevNextFID
-	result := domain.FeatureCollection{}
-	result.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
-	if err != nil {
-		return nil, domain.Cursors{}, err
+	if options.SelectOnlyFeatureIDs() {
+		var prevNext domain.PrevNextFID
+		fids := make([]int64, options.Limit)
+		firstRow := true
+		for rows.Next() {
+			var record struct {
+				Fid  int64         `db:"fid"`
+				Prev sql.NullInt64 `db:"prevfid"`
+				Next sql.NullInt64 `db:"nextfid"`
+			}
+			if firstRow {
+				if err = rows.StructScan(&record); err != nil {
+					return nil, err
+				}
+				prevNext = domain.PrevNextFID{Prev: record.Prev.Int64, Next: record.Next.Int64}
+				firstRow = false
+			} else {
+				if err = rows.StructScan(&record); err != nil {
+					return nil, err
+				}
+			}
+			fids = append(fids, record.Fid)
+		}
+		return &datasources.FeaturesResult{
+			FeatureIDs: fids,
+			Cursors:    domain.NewCursors(prevNext, options.Cursor.FiltersChecksum),
+		}, nil
+	} else {
+		var prevNext *domain.PrevNextFID
+		fc := domain.FeatureCollection{}
+		fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+		if err != nil {
+			return nil, err
+		}
+		if prevNext == nil {
+			return nil, nil
+		}
+		fc.NumberReturned = len(fc.Features)
+		return &datasources.FeaturesResult{
+			Collection: &fc,
+			Cursors:    domain.NewCursors(*prevNext, options.Cursor.FiltersChecksum),
+		}, nil
 	}
-	if prevNext == nil {
-		return nil, domain.Cursors{}, nil
+}
+
+func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64) (*domain.FeatureCollection, error) {
+	table, ok := g.featureTableByCollectionID[collection]
+	if !ok {
+		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
 	}
 
-	result.NumberReturned = len(result.Features)
-	return &result, domain.NewCursors(*prevNext, options.Cursor.FiltersChecksum), nil
+	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
+	defer cancel()
+
+	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select * from %s where %s in (:fids)", table.TableName, g.fidColumn), map[string]interface{}{"fids": featureIDs})
+	if err != nil {
+		return nil, fmt.Errorf("failed to make features query, error: %w", err)
+	}
+	query, queryArgs, err = sqlx.In(query, queryArgs...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make features query, error: %w", err)
+	}
+	rows, err := g.backend.getDB().QueryxContext(queryCtx, g.backend.getDB().Rebind(query), queryArgs...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
+	}
+	defer rows.Close()
+
+	fc := domain.FeatureCollection{}
+	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	if err != nil {
+		return nil, err
+	}
+	fc.NumberReturned = len(fc.Features)
+	return &fc, nil
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
@@ -181,14 +245,14 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
-func (g *GeoPackage) makeFeaturesQuery(table *featureTable, opt datasources.FeatureOptions) (string, map[string]any, error) {
+func (g *GeoPackage) makeFeaturesQuery(table *featureTable, opt datasources.FeaturesOptions) (string, map[string]any, error) {
 	if opt.Bbox != nil {
 		return g.makeBboxQuery(table, opt)
 	}
 	return g.makeDefaultQuery(table, opt)
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *featureTable, opt datasources.FeatureOptions) (string, map[string]any, error) {
+func (g *GeoPackage) makeDefaultQuery(table *featureTable, opt datasources.FeaturesOptions) (string, map[string]any, error) {
 	defaultQuery := fmt.Sprintf(`
 with 
     next as (select * from %[1]s where %[2]s >= :fid order by %[2]s asc limit :limit + 1),
@@ -204,7 +268,12 @@ select * from nextprevfeat where %[2]s >= :fid limit :limit
 	}, nil
 }
 
-func (g *GeoPackage) makeBboxQuery(table *featureTable, opt datasources.FeatureOptions) (string, map[string]any, error) {
+func (g *GeoPackage) makeBboxQuery(table *featureTable, opt datasources.FeaturesOptions) (string, map[string]any, error) {
+	selectClause := "*"
+	if opt.SelectOnlyFeatureIDs() {
+		selectClause = fmt.Sprintf("%s, prevfid, nextfid", g.fidColumn)
+	}
+
 	bboxQuery := fmt.Sprintf(`
 with 
      given_bbox as (select geomfromtext(:bboxWkt, :bboxCrs)),
@@ -244,8 +313,8 @@ with
      prev as (select * from prev_bbox_rtree union all select * from prev_bbox_btree),
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
-select * from nextprevfeat where %[2]s >= :fid limit :limit
-`, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName)
+select %[5]s from nextprevfeat where %[2]s >= :fid limit :limit
+`, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName, selectClause)
 
 	bboxAsWKT, err := wkt.EncodeString(opt.Bbox)
 	if err != nil {

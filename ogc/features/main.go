@@ -76,8 +76,8 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			return
 		}
 
-		datasource := f.datasources[DatasourceKey{srid: crs, collectionID: collectionID}]
-		fc, newCursor, err := datasource.GetFeatures(r.Context(), collectionID, ds.FeatureOptions{
+		datasource := f.datasources[DatasourceKey{srid: bboxCrs, collectionID: collectionID}]
+		result, err := datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesOptions{
 			Cursor:  encodedCursor.Decode(url.checksum()),
 			Limit:   limit,
 			Crs:     crs,
@@ -92,7 +92,18 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
-		if fc == nil {
+		if result != nil && len(result.FeatureIDs) > 0 {
+			datasource = f.datasources[DatasourceKey{srid: crs, collectionID: collectionID}]
+			result.Collection, err = datasource.GetFeaturesByID(r.Context(), collectionID, result.FeatureIDs)
+			if err != nil {
+				// log error, but sent generic message to client to prevent possible information leakage from datasource
+				msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
+				log.Printf("%s, error: %v\n", msg, err)
+				http.Error(w, msg, http.StatusInternalServerError)
+				return
+			}
+		}
+		if result == nil || result.Collection == nil {
 			log.Printf("no results found for collection '%s' with params: %s",
 				collectionID, r.URL.Query().Encode())
 			return // still 200 OK
@@ -100,9 +111,9 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 
 		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, fc)
+			f.html.features(w, r, collectionID, result.Cursors, url, limit, result.Collection)
 		case engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, collectionID, newCursor, url, fc)
+			f.json.featuresAsGeoJSON(w, collectionID, result.Cursors, url, result.Collection)
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG()
 		default:
