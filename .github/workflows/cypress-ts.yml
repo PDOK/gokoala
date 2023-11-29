@@ -1,4 +1,5 @@
-name: Run Cypress Tests on viewer web components
+---
+name: cypress-ts
 on:
   push:
     branches:

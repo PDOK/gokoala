@@ -62,7 +62,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		collectionID := chi.URLParam(r, "collectionId")
 
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
-		encodedCursor, limit, inputCrs, outputCrs, bbox, err := url.parseParams()
+		encodedCursor, limit, inputSRID, outputSRID, bbox, err := url.parseParams()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -79,16 +79,16 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
-		if inputCrs <= 0 || inputCrs == outputCrs {
+		if sameSRID(inputSRID, outputSRID) {
 			// fast path
-			datasource := f.datasources[DatasourceKey{srid: outputCrs.GetOrDefault(), collectionID: collectionID}]
+			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:  encodedCursor.Decode(url.checksum()),
-				Limit:   limit,
-				Crs:     outputCrs.GetOrDefault(),
-				Bbox:    bbox,
-				BboxCrs: inputCrs.GetOrDefault(),
-				// Add filter, filter-crs, etc
+				Cursor:     encodedCursor.Decode(url.checksum()),
+				Limit:      limit,
+				InputSRID:  inputSRID.GetOrDefault(),
+				OutputSRID: outputSRID.GetOrDefault(),
+				Bbox:       bbox,
+				// Add filter, filter-lang
 			})
 			if err != nil {
 				handleFeatureCollectionError(w, collectionID, err)
@@ -97,20 +97,20 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		} else {
 			// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
 			var fids []int64
-			datasource := f.datasources[DatasourceKey{srid: inputCrs.GetOrDefault(), collectionID: collectionID}]
+			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:  encodedCursor.Decode(url.checksum()),
-				Limit:   limit,
-				Crs:     outputCrs.GetOrDefault(),
-				Bbox:    bbox,
-				BboxCrs: inputCrs.GetOrDefault(),
-				// Add filter, filter-crs, etc
+				Cursor:     encodedCursor.Decode(url.checksum()),
+				Limit:      limit,
+				InputSRID:  inputSRID.GetOrDefault(),
+				OutputSRID: outputSRID.GetOrDefault(),
+				Bbox:       bbox,
+				// Add filter, filter-lang
 			})
 			if err != nil {
 				handleFeatureCollectionError(w, collectionID, err)
 				return
 			}
-			datasource = f.datasources[DatasourceKey{srid: outputCrs.GetOrDefault(), collectionID: collectionID}]
+			datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
 			if err != nil {
 				handleFeatureCollectionError(w, collectionID, err)
@@ -148,7 +148,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		crs, err := url.parseParams()
+		outputSRID, err := url.parseParams()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -163,7 +163,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 
-		datasource := f.datasources[DatasourceKey{srid: crs.GetOrDefault(), collectionID: collectionID}]
+		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
@@ -288,6 +288,10 @@ func epsgToSrid(srs string) (int, error) {
 		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
 	}
 	return srid, nil
+}
+
+func sameSRID(inputSRID SRID, outputSRID SRID) bool {
+	return inputSRID <= undefinedSRID || inputSRID == outputSRID
 }
 
 func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {

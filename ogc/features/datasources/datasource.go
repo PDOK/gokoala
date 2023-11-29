@@ -33,13 +33,13 @@ type FeaturesCriteria struct {
 	Limit  int
 
 	// multiple projections support
-	Crs int
+	InputSRID  int // derived from bbox or filter param when available, or WGS84 as default
+	OutputSRID int // derived from crs param when available, or WGS84 as default
 
 	// filtering by bounding box
-	Bbox    *geom.Extent
-	BboxCrs int
+	Bbox *geom.Extent
 
 	// filtering by CQL
-	Filter    string
-	FilterCrs string
+	Filter     string
+	FilterLang string
 }

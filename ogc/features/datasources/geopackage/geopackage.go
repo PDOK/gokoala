@@ -279,7 +279,7 @@ func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria 
 
 	bboxQuery := fmt.Sprintf(`
 with 
-     given_bbox as (select geomfromtext(:bboxWkt, :bboxCrs)),
+     given_bbox as (select geomfromtext(:bboxWkt, :bboxSrid)),
      bbox_size as (select iif(count(id) < %[3]d, 'small', 'big') as bbox_size
                      from (select id from rtree_%[1]s_%[4]s
                            where minx <= :maxx and maxx >= :minx and miny <= :maxy and maxy >= :miny
@@ -324,14 +324,14 @@ select %[5]s from nextprevfeat where %[2]s >= :fid limit :limit
 		return "", nil, err
 	}
 	return bboxQuery, map[string]any{
-		"fid":     criteria.Cursor.FID,
-		"limit":   criteria.Limit,
-		"bboxWkt": bboxAsWKT,
-		"maxx":    criteria.Bbox.MaxX(),
-		"minx":    criteria.Bbox.MinX(),
-		"maxy":    criteria.Bbox.MaxY(),
-		"miny":    criteria.Bbox.MinY(),
-		"bboxCrs": criteria.BboxCrs}, nil
+		"fid":      criteria.Cursor.FID,
+		"limit":    criteria.Limit,
+		"bboxWkt":  bboxAsWKT,
+		"maxx":     criteria.Bbox.MaxX(),
+		"minx":     criteria.Bbox.MinX(),
+		"maxy":     criteria.Bbox.MaxY(),
+		"miny":     criteria.Bbox.MinY(),
+		"bboxSrid": criteria.InputSRID}, nil
 }
 
 // Read metadata about gpkg and sqlite driver

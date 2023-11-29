@@ -25,6 +25,7 @@ const (
 	bboxCrsParam   = "bbox-crs"
 	filterParam    = "filter"
 	filterCrsParam = "filter-crs"
+	undefinedSRID  = 0
 )
 
 var (
@@ -57,14 +58,14 @@ func (fc featureCollectionURL) parseParams() (encodedCursor domain.EncodedCursor
 
 	encodedCursor = domain.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := parseLimit(fc.params, fc.limit)
-	outputSRID, crsErr := parseSRID(fc.params, crsParam)
+	outputSRID, outputSRIDErr := parseSRID(fc.params, crsParam)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
 	dateTimeErr := parseDateTime(fc.params)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 
-	inputSRID, inputSRIDErr := consolidateInputSRIDs(bboxSRID, filterSRID)
+	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
-	err = errors.Join(limitErr, crsErr, bboxErr, dateTimeErr, filterErr, inputSRIDErr)
+	err = errors.Join(limitErr, outputSRIDErr, bboxErr, dateTimeErr, filterErr, inputSRIDErr)
 	return
 }
 
@@ -147,7 +148,7 @@ type featureURL struct {
 	params  url.Values
 }
 
-func (f featureURL) parseParams() (crs SRID, err error) {
+func (f featureURL) parseParams() (srid SRID, err error) {
 	return parseSRID(f.params, crsParam)
 }
 
@@ -188,15 +189,15 @@ func clone(params url.Values) url.Values {
 	return copyParams
 }
 
-func consolidateInputSRIDs(bboxCrs SRID, filterCrs SRID) (inputCrs SRID, err error) {
-	if bboxCrs != 0 && filterCrs != 0 && bboxCrs != filterCrs {
+func consolidateSRIDs(bboxSRID SRID, filterSRID SRID) (inputSRID SRID, err error) {
+	if bboxSRID != undefinedSRID && filterSRID != undefinedSRID && bboxSRID != filterSRID {
 		return 0, errors.New("bbox-crs and filter-crs need to be equal. " +
 			"Can't use more than one CRS as input, but input and output CRS may differ")
 	}
-	if bboxCrs != 0 || filterCrs != 0 {
-		inputCrs = bboxCrs
+	if bboxSRID != undefinedSRID || filterSRID != undefinedSRID {
+		inputSRID = bboxSRID // or filterCrs, both the same
 	}
-	return inputCrs, err
+	return inputSRID, err
 }
 
 func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
@@ -219,17 +220,17 @@ func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
 }
 
 func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
-	bboxCrs, err := parseSRID(params, bboxCrsParam)
+	bboxSRID, err := parseSRID(params, bboxCrsParam)
 	if err != nil {
-		return nil, 0, err
+		return nil, undefinedSRID, err
 	}
 
 	if params.Get(bboxParam) == "" {
-		return nil, 0, nil
+		return nil, undefinedSRID, nil
 	}
 	bboxValues := strings.Split(params.Get(bboxParam), ",")
 	if len(bboxValues) != 4 {
-		return nil, bboxCrs, fmt.Errorf("bbox should contain exactly 4 values " +
+		return nil, bboxSRID, fmt.Errorf("bbox should contain exactly 4 values " +
 			"separated by commas: minx,miny,maxx,maxy")
 	}
 
@@ -237,21 +238,21 @@ func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
 	for i, v := range bboxValues {
 		extent[i], err = strconv.ParseFloat(v, 64)
 		if err != nil {
-			return nil, bboxCrs, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
+			return nil, bboxSRID, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
 		}
 	}
 
-	return &extent, bboxCrs, nil
+	return &extent, bboxSRID, nil
 }
 
 func parseSRID(params url.Values, paramName string) (SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
-		return 0, nil
+		return undefinedSRID, nil
 	}
 	param = strings.TrimSpace(param)
 	if !strings.HasPrefix(param, crsURLPrefix) {
-		return 0, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURLPrefix, param)
+		return undefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURLPrefix, param)
 	}
 	var srid SRID
 	lastIndex := strings.LastIndex(param, "/")
@@ -276,12 +277,12 @@ func parseDateTime(params url.Values) error {
 	return nil
 }
 
-func parseFilter(params url.Values) (filter string, filterCrs SRID, err error) {
+func parseFilter(params url.Values) (filter string, filterSRID SRID, err error) {
 	filter = params.Get(filterParam)
-	filterCrs, _ = parseSRID(params, filterCrsParam)
+	filterSRID, _ = parseSRID(params, filterCrsParam)
 
 	if filter != "" {
-		return filter, filterCrs, fmt.Errorf("CQL filter param is currently not supported")
+		return filter, filterSRID, fmt.Errorf("CQL filter param is currently not supported")
 	}
-	return filter, filterCrs, nil
+	return filter, filterSRID, nil
 }
