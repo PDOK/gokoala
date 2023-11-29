@@ -42,18 +42,30 @@ type featureCollectionURL struct {
 	limit   engine.Limit
 }
 
+type SRID int
+
+func (s SRID) GetOrDefault() int {
+	val := int(s)
+	if val <= 0 {
+		return wgs84SRID
+	}
+	return val
+}
+
 func (fc featureCollectionURL) parseParams() (encodedCursor domain.EncodedCursor, limit int,
-	crs int, bbox *geom.Extent, bboxCrs int, err error) {
+	inputSRID SRID, outputSRID SRID, bbox *geom.Extent, err error) {
 
 	encodedCursor = domain.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := parseLimit(fc.params, fc.limit)
-	crs, crsErr := parseSRID(fc.params, crsParam)
-	bbox, bboxCrs, bboxErr := parseBbox(fc.params)
+	outputSRID, crsErr := parseSRID(fc.params, crsParam)
+	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
 	dateTimeErr := parseDateTime(fc.params)
-	filterErr := parseFilter(fc.params)
+	_, filterSRID, filterErr := parseFilter(fc.params)
 
-	err = errors.Join(limitErr, crsErr, bboxErr, dateTimeErr, filterErr)
-	return encodedCursor, limit, crs, bbox, bboxCrs, err
+	inputSRID, inputSRIDErr := consolidateInputSRIDs(bboxSRID, filterSRID)
+
+	err = errors.Join(limitErr, crsErr, bboxErr, dateTimeErr, filterErr, inputSRIDErr)
+	return
 }
 
 // Calculate checksum over the query parameters that have a "filtering effect" on
@@ -135,7 +147,7 @@ type featureURL struct {
 	params  url.Values
 }
 
-func (f featureURL) parseParams() (crs int, err error) {
+func (f featureURL) parseParams() (crs SRID, err error) {
 	return parseSRID(f.params, crsParam)
 }
 
@@ -176,6 +188,17 @@ func clone(params url.Values) url.Values {
 	return copyParams
 }
 
+func consolidateInputSRIDs(bboxCrs SRID, filterCrs SRID) (inputCrs SRID, err error) {
+	if bboxCrs != 0 && filterCrs != 0 && bboxCrs != filterCrs {
+		return 0, errors.New("bbox-crs and filter-crs need to be equal. " +
+			"Can't use more than one CRS as input, but input and output CRS may differ")
+	}
+	if bboxCrs != 0 || filterCrs != 0 {
+		inputCrs = bboxCrs
+	}
+	return inputCrs, err
+}
+
 func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
 	limit := limitCfg.Default
 	var err error
@@ -195,14 +218,14 @@ func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
 	return limit, err
 }
 
-func parseBbox(params url.Values) (*geom.Extent, int, error) {
+func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
 	bboxCrs, err := parseSRID(params, bboxCrsParam)
 	if err != nil {
-		return nil, -1, err
+		return nil, 0, err
 	}
 
 	if params.Get(bboxParam) == "" {
-		return nil, bboxCrs, nil
+		return nil, 0, nil
 	}
 	bboxValues := strings.Split(params.Get(bboxParam), ",")
 	if len(bboxValues) != 4 {
@@ -221,27 +244,27 @@ func parseBbox(params url.Values) (*geom.Extent, int, error) {
 	return &extent, bboxCrs, nil
 }
 
-func parseSRID(params url.Values, paramName string) (int, error) {
-	srid := wgs84SRID
+func parseSRID(params url.Values, paramName string) (SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
-		return srid, nil
+		return 0, nil
 	}
 	param = strings.TrimSpace(param)
 	if !strings.HasPrefix(param, crsURLPrefix) {
-		return srid, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURLPrefix, param)
+		return 0, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURLPrefix, param)
 	}
+	var srid SRID
 	lastIndex := strings.LastIndex(param, "/")
 	if lastIndex != -1 {
 		crsCode := param[lastIndex+1:]
 		if crsCode == wgs84CodeOGC {
-			return srid, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
+			return wgs84SRID, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
 		}
-		var err error
-		srid, err = strconv.Atoi(crsCode)
+		val, err := strconv.Atoi(crsCode)
 		if err != nil {
 			return 0, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
 		}
+		srid = SRID(val)
 	}
 	return srid, nil
 }
@@ -253,12 +276,12 @@ func parseDateTime(params url.Values) error {
 	return nil
 }
 
-func parseFilter(params url.Values) error {
-	if params.Get(filterParam) != "" {
-		return fmt.Errorf("CQL filter param is currently not supported")
+func parseFilter(params url.Values) (filter string, filterCrs SRID, err error) {
+	filter = params.Get(filterParam)
+	filterCrs, _ = parseSRID(params, filterCrsParam)
+
+	if filter != "" {
+		return filter, filterCrs, fmt.Errorf("CQL filter param is currently not supported")
 	}
-	if params.Get(filterCrsParam) != "" {
-		return fmt.Errorf("CQL filter-crs param is currently not supported")
-	}
-	return nil
+	return filter, filterCrs, nil
 }

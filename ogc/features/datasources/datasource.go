@@ -7,24 +7,27 @@ import (
 	"github.com/go-spatial/geom"
 )
 
-// Datasource holding all the features for a single dataset
+// Datasource holds all Features for a single object type in a specific projection
 type Datasource interface {
 
-	// GetFeatures returns a FeatureCollection from the underlying datasource and Cursors for pagination
-	GetFeatures(ctx context.Context, collection string, options FeaturesOptions) (*FeaturesResult, error)
+	// GetFeatureIDs returns all Feature IDs matching the given criteria and Cursors for pagination. To be used in concert with GetFeaturesByID
+	GetFeatureIDs(ctx context.Context, collection string, criteria FeaturesCriteria) ([]int64, domain.Cursors, error)
 
-	// GetFeatures returns a FeatureCollection from the underlying datasource and Cursors for pagination
+	// GetFeaturesByID returns a collection of Features with the given IDs. To be used in concert with GetFeatureIDs
 	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64) (*domain.FeatureCollection, error)
 
-	// GetFeature returns a specific Feature from the FeatureCollection of the underlying datasource
+	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
+	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria) (*domain.FeatureCollection, domain.Cursors, error)
+
+	// GetFeature returns a specific Feature
 	GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error)
 
 	// Close closes (connections to) the datasource gracefully
 	Close()
 }
 
-// FeaturesOptions to select a certain set of Features
-type FeaturesOptions struct {
+// FeaturesCriteria to select a certain set of Features
+type FeaturesCriteria struct {
 	// pagination
 	Cursor domain.DecodedCursor
 	Limit  int
@@ -39,14 +42,4 @@ type FeaturesOptions struct {
 	// filtering by CQL
 	Filter    string
 	FilterCrs string
-}
-
-func (fo *FeaturesOptions) SelectOnlyFeatureIDs() bool {
-	return fo.BboxCrs != fo.Crs
-}
-
-type FeaturesResult struct {
-	Collection *domain.FeatureCollection
-	Cursors    domain.Cursors
-	FeatureIDs []int64
 }

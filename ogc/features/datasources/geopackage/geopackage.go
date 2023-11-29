@@ -105,96 +105,61 @@ func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, options datasources.FeaturesOptions) (*datasources.FeaturesResult, error) {
-	table, ok := g.featureTableByCollectionID[collection]
-	if !ok {
-		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
+func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, criteria datasources.FeaturesCriteria) ([]int64, domain.Cursors, error) {
+	table, err := g.getFeatureTable(collection)
+	if err != nil {
+		return nil, domain.Cursors{}, err
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query, queryArgs, err := g.makeFeaturesQuery(table, options)
+	query, queryArgs, err := g.makeFeaturesQuery(table, true, criteria)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make features query, error: %w", err)
+		return nil, domain.Cursors{}, fmt.Errorf("failed to make features query, error: %w", err)
 	}
 
 	stmt, err := g.backend.getDB().PrepareNamedContext(queryCtx, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to prepare query '%s' error: %w", query, err)
+		return nil, domain.Cursors{}, fmt.Errorf("failed to prepare query '%s' error: %w", query, err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryxContext(queryCtx, queryArgs)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
+		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
 
-	if options.SelectOnlyFeatureIDs() {
-		var prevNext domain.PrevNextFID
-		fids := make([]int64, options.Limit)
-		firstRow := true
-		for rows.Next() {
-			var record struct {
-				Fid  int64         `db:"fid"`
-				Prev sql.NullInt64 `db:"prevfid"`
-				Next sql.NullInt64 `db:"nextfid"`
-			}
-			if firstRow {
-				if err = rows.StructScan(&record); err != nil {
-					return nil, err
-				}
-				prevNext = domain.PrevNextFID{Prev: record.Prev.Int64, Next: record.Next.Int64}
-				firstRow = false
-			} else {
-				if err = rows.StructScan(&record); err != nil {
-					return nil, err
-				}
-			}
-			fids = append(fids, record.Fid)
-		}
-		return &datasources.FeaturesResult{
-			FeatureIDs: fids,
-			Cursors:    domain.NewCursors(prevNext, options.Cursor.FiltersChecksum),
-		}, nil
-	} else {
-		var prevNext *domain.PrevNextFID
-		fc := domain.FeatureCollection{}
-		fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
-		if err != nil {
-			return nil, err
-		}
-		if prevNext == nil {
-			return nil, nil
-		}
-		fc.NumberReturned = len(fc.Features)
-		return &datasources.FeaturesResult{
-			Collection: &fc,
-			Cursors:    domain.NewCursors(*prevNext, options.Cursor.FiltersChecksum),
-		}, nil
+	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(rows)
+	if err != nil {
+		return nil, domain.Cursors{}, err
 	}
+	if prevNext == nil {
+		return nil, domain.Cursors{}, nil
+	}
+	return featureIDs, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), nil
 }
 
 func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64) (*domain.FeatureCollection, error) {
-	table, ok := g.featureTableByCollectionID[collection]
-	if !ok {
-		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
+	table, err := g.getFeatureTable(collection)
+	if err != nil {
+		return nil, err
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select * from %s where %s in (:fids)", table.TableName, g.fidColumn), map[string]interface{}{"fids": featureIDs})
+	fids := map[string]interface{}{"fids": featureIDs}
+	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select * from %s where %s in (:fids)", table.TableName, g.fidColumn), fids)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make features query, error: %w", err)
 	}
 	query, queryArgs, err = sqlx.In(query, queryArgs...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make features query, error: %w", err)
+		return nil, fmt.Errorf("failed to make IN-clause, error: %w", err)
 	}
+
 	rows, err := g.backend.getDB().QueryxContext(queryCtx, g.backend.getDB().Rebind(query), queryArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
@@ -210,11 +175,49 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	return &fc, nil
 }
 
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria) (*domain.FeatureCollection, domain.Cursors, error) {
+	table, err := g.getFeatureTable(collection)
+	if err != nil {
+		return nil, domain.Cursors{}, err
+	}
+
+	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
+	defer cancel()
+
+	query, queryArgs, err := g.makeFeaturesQuery(table, false, criteria)
+	if err != nil {
+		return nil, domain.Cursors{}, fmt.Errorf("failed to make features query, error: %w", err)
+	}
+
+	stmt, err := g.backend.getDB().PrepareNamedContext(queryCtx, query)
+	if err != nil {
+		return nil, domain.Cursors{}, fmt.Errorf("failed to prepare query '%s' error: %w", query, err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryxContext(queryCtx, queryArgs)
+	if err != nil {
+		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
+	}
+	defer rows.Close()
+
+	var prevNext *domain.PrevNextFID
+	fc := domain.FeatureCollection{}
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	if err != nil {
+		return nil, domain.Cursors{}, err
+	}
+	if prevNext == nil {
+		return nil, domain.Cursors{}, nil
+	}
+	fc.NumberReturned = len(fc.Features)
+	return &fc, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), nil
+}
+
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
-	table, ok := g.featureTableByCollectionID[collection]
-	if !ok {
-		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
+	table, err := g.getFeatureTable(collection)
+	if err != nil {
+		return nil, err
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
@@ -245,14 +248,14 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
-func (g *GeoPackage) makeFeaturesQuery(table *featureTable, opt datasources.FeaturesOptions) (string, map[string]any, error) {
-	if opt.Bbox != nil {
-		return g.makeBboxQuery(table, opt)
+func (g *GeoPackage) makeFeaturesQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+	if criteria.Bbox != nil {
+		return g.makeBboxQuery(table, onlyFIDs, criteria)
 	}
-	return g.makeDefaultQuery(table, opt)
+	return g.makeDefaultQuery(table, criteria)
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *featureTable, opt datasources.FeaturesOptions) (string, map[string]any, error) {
+func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	defaultQuery := fmt.Sprintf(`
 with 
     next as (select * from %[1]s where %[2]s >= :fid order by %[2]s asc limit :limit + 1),
@@ -263,14 +266,14 @@ select * from nextprevfeat where %[2]s >= :fid limit :limit
 `, table.TableName, g.fidColumn)
 
 	return defaultQuery, map[string]any{
-		"fid":   opt.Cursor.FID,
-		"limit": opt.Limit,
+		"fid":   criteria.Cursor.FID,
+		"limit": criteria.Limit,
 	}, nil
 }
 
-func (g *GeoPackage) makeBboxQuery(table *featureTable, opt datasources.FeaturesOptions) (string, map[string]any, error) {
+func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	selectClause := "*"
-	if opt.SelectOnlyFeatureIDs() {
+	if onlyFIDs {
 		selectClause = fmt.Sprintf("%s, prevfid, nextfid", g.fidColumn)
 	}
 
@@ -316,19 +319,19 @@ with
 select %[5]s from nextprevfeat where %[2]s >= :fid limit :limit
 `, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName, selectClause)
 
-	bboxAsWKT, err := wkt.EncodeString(opt.Bbox)
+	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {
 		return "", nil, err
 	}
 	return bboxQuery, map[string]any{
-		"fid":     opt.Cursor.FID,
-		"limit":   opt.Limit,
+		"fid":     criteria.Cursor.FID,
+		"limit":   criteria.Limit,
 		"bboxWkt": bboxAsWKT,
-		"maxx":    opt.Bbox.MaxX(),
-		"minx":    opt.Bbox.MinX(),
-		"maxy":    opt.Bbox.MaxY(),
-		"miny":    opt.Bbox.MinY(),
-		"bboxCrs": opt.BboxCrs}, nil
+		"maxx":    criteria.Bbox.MaxX(),
+		"minx":    criteria.Bbox.MinX(),
+		"maxy":    criteria.Bbox.MaxY(),
+		"miny":    criteria.Bbox.MinY(),
+		"bboxCrs": criteria.BboxCrs}, nil
 }
 
 // Read metadata about gpkg and sqlite driver
@@ -382,6 +385,15 @@ order by name asc`, expectedIndexName)
 				expectedIndexName, expectedIndexColumns, collection.TableName, actualIndexColumns)
 		}
 	}
+}
+
+func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
+	table, ok := g.featureTableByCollectionID[collection]
+	if !ok {
+		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
+	}
+	return table, nil
 }
 
 // Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
