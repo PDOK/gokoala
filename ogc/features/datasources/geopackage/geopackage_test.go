@@ -26,7 +26,7 @@ func newAddressesGeoPackage() geoPackageBackend {
 		GeoPackageCommon: engine.GeoPackageCommon{
 			Fid: "feature_id",
 		},
-		File: pwd + "/testdata/addresses.gpkg",
+		File: pwd + "/testdata/bag.gpkg",
 	})
 }
 
@@ -47,7 +47,7 @@ func TestNewGeoPackage(t *testing.T) {
 						GeoPackageCommon: engine.GeoPackageCommon{
 							Fid: "feature_id",
 						},
-						File: pwd + "/testdata/addresses.gpkg",
+						File: pwd + "/testdata/bag.gpkg",
 					},
 				},
 			},

@@ -46,7 +46,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request GeoJSON for 'foo' collection using default limit",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
 				collectionID: "foo",
 				format:       "json",
@@ -59,7 +59,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request GeoJSON for 'foo' collection using limit of 2",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
 				collectionID: "foo",
 				format:       "json",
@@ -72,7 +72,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv58Nwyr1Q%3D%3D&limit=2",
 				collectionID: "foo",
 				format:       "json",
@@ -85,7 +85,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request non existing feature collection",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?cursor=9&limit=2",
 				collectionID: "doesnotexist",
 				format:       "json",
@@ -98,7 +98,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request with unknown query params",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?foo=bar",
 				collectionID: "foo",
 				format:       "json",
@@ -111,7 +111,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request with invalid limit",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=notanumber",
 				collectionID: "foo",
 				format:       "json",
@@ -124,7 +124,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request with negative limit",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=-200",
 				collectionID: "foo",
 				format:       "json",
@@ -137,13 +137,79 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		{
 			name: "Request HTML for 'foo' collection using limit of 1",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
 				collectionID: "foo",
 				format:       "html",
 			},
 			want: want{
 				body:       "ogc/features/testdata/expected_foo_collection_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in WGS84 explicitly",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&limit=2",
+				collectionID: "dutch-addresses",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in WGS84 and bbox in WGS94",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in RD and bbox in WGS94",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_wgs84_output_rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		// FIXME
+		//{
+		//	name: "Request output in WGS84 and bbox in RD",
+		//	fields: fields{
+		//		configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+		//		url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69660833600210026%2C566718.72799644258338958%2C120396.3006909582472872%2C566734.62552235752809793&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
+		//		collectionID: "dutch-addresses",
+		//		format:       "json",
+		//	},
+		//	want: want{
+		//		body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd.json",
+		//		statusCode: http.StatusOK,
+		//	},
+		//},
+		{
+			name: "Request output in RD and bbox in RD",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "view-source:http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69660833600210026%2C566718.72799644258338958%2C120396.3006909582472872%2C566734.62552235752809793&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd_output_also_rd.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -203,7 +269,7 @@ func TestFeatures_Feature(t *testing.T) {
 		{
 			name: "Request GeoJSON for feature 4030",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -217,7 +283,7 @@ func TestFeatures_Feature(t *testing.T) {
 		{
 			name: "Request non existing feature",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "9999999999",
@@ -231,7 +297,7 @@ func TestFeatures_Feature(t *testing.T) {
 		{
 			name: "Request with unknown query params",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?foo=bar",
 				collectionID: "foo",
 				featureID:    "19058835",
@@ -245,7 +311,7 @@ func TestFeatures_Feature(t *testing.T) {
 		{
 			name: "Request HTML for feature 4030",
 			fields: fields{
-				configFile:   "ogc/features/testdata/config_features.yaml",
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
