@@ -23,7 +23,7 @@ and provide the mentioned config file.
 For the Azure example we use a local Azurite emulator which contains the cloud-backed `addresses.gpkg`:
 - Run `docker-compose -f docker-compose-features-azure.yaml up`
 - Open http://localhost:8080 to explore the landing page
-- Call http://localhost:8080/collections/addresses/items and notice in the Azurite log that features are streamed from blob storage
+- Call http://localhost:8080/collections/dutch-addresses/items and notice in the Azurite log that features are streamed from blob storage
 
 ## OGC API 3D GeoVolumes example
 

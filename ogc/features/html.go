@@ -52,8 +52,9 @@ type featureCollectionPage struct {
 type featurePage struct {
 	domain.Feature
 
-	FeatureID int64
-	Metadata  *engine.GeoSpatialCollectionMetadata
+	CollectionID string
+	FeatureID    int64
+	Metadata     *engine.GeoSpatialCollectionMetadata
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -107,7 +108,9 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	}...)
 
 	pageContent := &featurePage{
+
 		*feat,
+		collectionID,
 		feat.ID,
 		collectionMetadata,
 	}
