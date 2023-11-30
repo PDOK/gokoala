@@ -9,12 +9,12 @@ const getTestTitle = (test: Mocha.Suite = (Cypress as any).mocha.getRunner().sui
 
 beforeEach(() => {
   cy.viewport(550, 750)
-  cy.intercept('GET', 'https://api.pdok.nl/*', { fixture: 'pdokwegdelen.json' }).as('geo')
+  cy.intercept('GET', 'https://api.pdok.nl/items', { fixture: 'pdokwegdelen.json' }).as('geo')
   cy.intercept('GET', '*grijs*', { fixture: 'backgroundstub.png' }).as('background')
   cy.mount(FeatureViewComponent, {
     imports: [HttpClientModule],
     componentProperties: {
-      itemsUrl: 'https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items',
+      itemsUrl: 'https://api.pdok.nl/items',
       box: createOutputSpy('boxSpy'),
       projection: 'EPSG:28992',
       backgroundMap: 'BRT',
@@ -27,6 +27,8 @@ beforeEach(() => {
     const position = viewport.getBoundingClientRect()
     cy.log(`left: ${position.left}, top: ${position.top}, width: ${position.width}, height: ${position.height}`)
   })
+  cy.wait('@geo')
+  cy.wait('@background')
   cy.get('@MapLoaded').should('have.been.calledOnce')
 })
 
