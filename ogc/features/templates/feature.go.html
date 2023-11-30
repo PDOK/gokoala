@@ -19,7 +19,7 @@
         .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h2>
 </hgroup>
 
-<section class="row row-cols-4 g-4 py-3">
+<section class="row row-cols-4 g-4 py-3" id="body" hidden="hidden">
 
     <div class="col-8">
         <table class="table table-borderless table-sm w-auto">
@@ -60,7 +60,7 @@
         </table>
     </div>
 
-    <div class="col-4">
+    <div class="col-4" >
         <table>
             <tr>
                 <td class="w-auto px-2">
@@ -70,7 +70,6 @@
             <tr>
                 <td class="w-auto px-2">
                     <code id="field-url-example"></code>
-                    <!--                    <code id="field-url-example"><script type="text/javascript">document.write(location.href);</script></code>-->
                 </td>
             </tr>
         </table>
@@ -79,36 +78,25 @@
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="BRT">
+        <app-feature-view id="viewer" background-map="BRT" projection="EPSG:28992">
         </app-feature-view>
-        <script>
+        <script type="module">
             let url = new URL(window.location.href)
             url.searchParams.set('f','json');
-            let crs = url.searchParams.get('crs');
             let viewer = document.getElementById('viewer');
             viewer.setAttribute('items-url', url );
-            viewer.setAttribute('projection', crs)
 
+            document.getElementById("field-url-example").innerHTML = url
+            if (new URLSearchParams(window.location.search).get('crs') !== null) {
+                let crs = url.searchParams.get('crs');
+                document.getElementById('srs-select').value = crs;
+                viewer.setAttribute('projection', crs)
+            }
 
-            viewer.addEventListener('box', selectbox => {
-                console.log('box')
-                console.log(JSON.stringify(selectbox.detail))
-                document.getElementById('bbox').value = selectbox.detail
-                updateQueryString("bbox", selectbox.detail)
-            })
+            document.getElementById("body").hidden = ""
+
         </script>
-      </div>
-
-
-
-    <script>
-        if (new URLSearchParams(window.location.search).get('crs') !== null) {
-            document.getElementById('srs-select').value = new URLSearchParams(window.location.search).get('crs');
-
-        }
-        document.getElementById("field-url-example").innerHTML = window.location.href
-    </script>
-
+    </div>
 
 </section>
 {{end}}
