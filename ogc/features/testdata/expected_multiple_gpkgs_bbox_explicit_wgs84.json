@@ -16,7 +16,7 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=c3x7VUrr&f=json&limit=10"
+      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FOGC%2F1.3%2FCRS84&cursor=c3yUrNE5&f=json&limit=10"
     }
   ],
   "numberReturned": 10,
@@ -28,8 +28,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          4.873270473933632,
+          53.083485031473046
         ]
       },
       "properties": {
@@ -76,8 +76,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          4.873270473933632,
+          53.083485031473046
         ]
       },
       "properties": {
@@ -124,8 +124,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          4.873270473933632,
+          53.083485031473046
         ]
       },
       "properties": {
@@ -172,8 +172,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          4.873270473933632,
+          53.083485031473046
         ]
       },
       "properties": {
@@ -220,8 +220,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120667.70819241501,
-          566390.1111711524
+          4.874830644139003,
+          53.08324603567521
         ]
       },
       "properties": {
@@ -268,8 +268,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120663.9691923563,
-          566395.2931711634
+          4.874774295872454,
+          53.08329236052834
         ]
       },
       "properties": {
@@ -316,8 +316,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120663.9691923563,
-          566395.2931711634
+          4.874774295872454,
+          53.08329236052834
         ]
       },
       "properties": {
@@ -364,8 +364,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120575.39619156896,
-          566418.8441707834
+          4.873449975425456,
+          53.08349831911132
         ]
       },
       "properties": {
@@ -412,8 +412,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120586.81619161018,
-          566425.7631709053
+          4.873619667026849,
+          53.08356122152964
         ]
       },
       "properties": {
@@ -461,8 +461,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120632.16219196285,
-          566422.0191711548
+          4.874296788478395,
+          53.08353047893742
         ]
       },
       "properties": {

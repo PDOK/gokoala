@@ -161,7 +161,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in WGS84 and bbox in WGS94",
+			name: "Request output in default (WGS84) and bbox in default (WGS84)",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=json&limit=10",
@@ -174,7 +174,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in RD and bbox in WGS94",
+			name: "Request output in RD and bbox in default (WGS94)",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
@@ -186,20 +186,19 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
-		// FIXME
-		//{
-		//	name: "Request output in WGS84 and bbox in RD",
-		//	fields: fields{
-		//		configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-		//		url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69660833600210026%2C566718.72799644258338958%2C120396.3006909582472872%2C566734.62552235752809793&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
-		//		collectionID: "dutch-addresses",
-		//		format:       "json",
-		//	},
-		//	want: want{
-		//		body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd.json",
-		//		statusCode: http.StatusOK,
-		//	},
-		//},
+		{
+			name: "Request output in default (WGS84) and bbox in RD",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69660833600210026%2C566718.72799644258338958%2C120396.3006909582472872%2C566734.62552235752809793&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
 		{
 			name: "Request output in RD and bbox in RD",
 			fields: fields{
@@ -210,6 +209,19 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 			want: want{
 				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd_output_also_rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in default (WGS84) and bbox explicitly in WGS94",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_explicit_wgs84.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -319,6 +331,34 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 			want: want{
 				body:       "ogc/features/testdata/expected_feature_4030.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in WGS84 explicitly",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+				collectionID: "dutch-addresses",
+				featureID:    "10",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_feature_10_wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in RD",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				collectionID: "dutch-addresses",
+				featureID:    "10",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_feature_10_rd.json",
 				statusCode: http.StatusOK,
 			},
 		},

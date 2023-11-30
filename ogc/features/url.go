@@ -53,6 +53,12 @@ func (s SRID) GetOrDefault() int {
 	return val
 }
 
+func (s SRID) IsSameAs(other SRID) bool {
+	return int(s) == int(other) ||
+		(int(s) == undefinedSRID && int(other) == wgs84SRID) ||
+		(int(s) == wgs84SRID && int(other) == undefinedSRID)
+}
+
 func (fc featureCollectionURL) parseParams() (encodedCursor domain.EncodedCursor, limit int,
 	inputSRID SRID, outputSRID SRID, bbox *geom.Extent, err error) {
 

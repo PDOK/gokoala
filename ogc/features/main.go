@@ -79,7 +79,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
-		if sameSRID(inputSRID, outputSRID) {
+		if inputSRID.IsSameAs(outputSRID) {
 			// fast path
 			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
@@ -120,7 +120,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		if fc == nil {
 			log.Printf("no results found for collection '%s' with params: %s",
 				collectionID, r.URL.Query().Encode())
-			return // still 200 OK
+			fc = &domain.FeatureCollection{}
 		}
 
 		switch f.engine.CN.NegotiateFormat(r) {
@@ -288,10 +288,6 @@ func epsgToSrid(srs string) (int, error) {
 		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
 	}
 	return srid, nil
-}
-
-func sameSRID(inputSRID SRID, outputSRID SRID) bool {
-	return inputSRID <= undefinedSRID || inputSRID == outputSRID
 }
 
 func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
