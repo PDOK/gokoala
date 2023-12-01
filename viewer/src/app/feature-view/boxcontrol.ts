@@ -39,7 +39,7 @@ export class boxControl extends Control {
 
     button.addEventListener('click', this.addBox.bind(this, this), false)
   }
-  addBox(control: boxControl) {
+  addBox() {
     const draw = new Draw({
       source: new VectorSource({}),
       type: 'Circle',
