@@ -3,7 +3,7 @@
 
   .boxcontrol {
     top: 65px;
-    left: .5em;
+    left: 0.5em;
 
     .innersvg {
       padding: 3px;
@@ -14,8 +14,6 @@
     top: 80px;
   }
 }
-
-
 
 .maptooltip {
   visibility: hidden;
