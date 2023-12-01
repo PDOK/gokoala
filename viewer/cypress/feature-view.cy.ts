@@ -37,27 +37,17 @@ describe('feature-view.cy.ts', () => {
     cy.get('.ol-zoom-out').click()
   })
 
-  /* to do new interaction it('It can draw and emit boundingbox', () => {
-    cy.get('.ol-viewport').trigger('pointerdown', {
-      eventConstructor: 'MouseEvent',
-      x: 100,
-      y: 100,
-      force: true,
-      isPrimary: true,
-      ctrlKey: true,
-    })
+  it('It can draw and emit boundingbox', () => {
+    cy.get('.innersvg').click()
 
-    cy.get('.ol-viewport').trigger('pointermove', { x: 100, y: 100, ctrlKey: true })
-    //   cy.wait(1000)
-    cy.get('.ol-viewport').trigger('pointermove', { x: 200, y: 200, ctrlKey: true })
-    //  cy.wait(1000)
+    cy.get('.ol-viewport').click(100, 100).click(200, 200)
+
     cy.screenshot(getTestTitle() + 'amsterdam')
-    cy.get('.ol-viewport').trigger('pointerup', { eventConstructor: 'MouseEvent', force: true, ctrlKey: true })
 
-    cy.get('@boxSpy').should('have.been.calledOnce')
-    //.should('have.been.calledWith', '4.89516718294036,52.37021597417751,4.895167706985226,52.37021629414647')
+    cy.get('@boxSpy')
+      .should('have.been.calledOnce')
+      .should('have.been.calledWith', '4.89516718294036,52.37021597417751,4.895167706985226,52.37021629414647')
 
     cy.get('@MapLoaded').should('have.been.calledOnce')
   })
-  */
 })
