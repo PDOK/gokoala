@@ -85,7 +85,7 @@ func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CommonCore) apiAsJSON(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", engine.MediaTypeOpenAPI)
+	w.Header().Set(engine.HeaderContentType, engine.MediaTypeOpenAPI)
 	engine.SafeWrite(w.Write, c.engine.OpenAPI.SpecJSON)
 }
 

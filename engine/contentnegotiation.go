@@ -203,8 +203,8 @@ func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.
 
 func (cn *ContentNegotiation) getLanguageFromHeader(req *http.Request) language.Tag {
 	var requestedLanguage = language.Und
-	if req.Header.Get("Accept-Language") != "" {
-		accepted, _, err := language.ParseAcceptLanguage(req.Header.Get("Accept-Language"))
+	if req.Header.Get(HeaderAcceptLanguage) != "" {
+		accepted, _, err := language.ParseAcceptLanguage(req.Header.Get(HeaderAcceptLanguage))
 		if err != nil {
 			log.Printf("Failed to parse Accept-Language header: %v. Continuing\n", err)
 			return requestedLanguage

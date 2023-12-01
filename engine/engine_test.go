@@ -43,6 +43,6 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 
 	// then
 	assert.Equal(t, http.StatusOK, recorder.Code)
-	assert.Equal(t, "application/json", recorder.Header().Get("Content-Type"))
+	assert.Equal(t, "application/json", recorder.Header().Get(HeaderContentType))
 	assert.Contains(t, recorder.Body.String(), "This is a minimal OGC API, offering only OGC API Common")
 }

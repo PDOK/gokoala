@@ -79,7 +79,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Add("Content-Crs", contentCrs)
+		w.Header().Add(engine.HeaderContentCrs, contentCrs)
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
@@ -166,7 +166,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Add("Content-Crs", contentCrs)
+		w.Header().Add(engine.HeaderContentCrs, contentCrs)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))

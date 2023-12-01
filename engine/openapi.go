@@ -204,7 +204,7 @@ func (o *OpenAPI) validateRequest(r *http.Request) error {
 func (o *OpenAPI) validateResponse(contentType string, body []byte, r *http.Request) error {
 	requestValidationInput, _ := o.getRequestValidationInput(r)
 	if requestValidationInput != nil {
-		responseHeaders := http.Header{"Content-Type": []string{contentType}}
+		responseHeaders := http.Header{HeaderContentType: []string{contentType}}
 		responseCode := 200
 
 		responseValidationInput := &openapi3filter.ResponseValidationInput{

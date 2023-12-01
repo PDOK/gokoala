@@ -24,6 +24,13 @@ import (
 const (
 	templatesDir    = "engine/templates/"
 	shutdownTimeout = 5 * time.Second
+
+	HeaderAccept         = "Accept"
+	HeaderAcceptLanguage = "Accept-Language"
+	HeaderContentType    = "Content-Type"
+	HeaderContentLength  = "Content-Length"
+	HeaderContentCrs     = "Content-Crs"
+	HeaderBaseURL        = "X-BaseUrl"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
@@ -196,7 +203,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 
 	// return response output to client
 	if contentType != "" {
-		w.Header().Set("Content-Type", contentType)
+		w.Header().Set(HeaderContentType, contentType)
 	}
 	SafeWrite(w.Write, output)
 }
@@ -227,7 +234,7 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 
 	// return response output to client
 	if contentType != "" {
-		w.Header().Set("Content-Type", contentType)
+		w.Header().Set(HeaderContentType, contentType)
 	}
 	SafeWrite(w.Write, output)
 }
@@ -240,7 +247,7 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 		r.Out.URL = target
 		r.Out.Host = ""   // Don't pass Host header (similar to Traefik's passHostHeader=false)
 		r.SetXForwarded() // Set X-Forwarded-* headers.
-		r.Out.Header.Set("X-BaseUrl", e.Config.BaseURL.String())
+		r.Out.Header.Set(HeaderBaseURL, e.Config.BaseURL.String())
 	}
 
 	modifyResponse := func(proxyRes *http.Response) error {
@@ -253,7 +260,7 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 				removeBody(proxyRes)
 			}
 			if contentTypeOverwrite != "" {
-				proxyRes.Header.Set("Content-Type", contentTypeOverwrite)
+				proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
 			}
 		}
 		return nil
@@ -266,8 +273,8 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 func removeBody(proxyRes *http.Response) {
 	buf := bytes.NewBuffer(make([]byte, 0))
 	proxyRes.Body = io.NopCloser(buf)
-	proxyRes.Header["Content-Length"] = []string{"0"}
-	proxyRes.Header["Content-Type"] = []string{}
+	proxyRes.Header[HeaderContentLength] = []string{"0"}
+	proxyRes.Header[HeaderContentType] = []string{}
 }
 
 func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) {

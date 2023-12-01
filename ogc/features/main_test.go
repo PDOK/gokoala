@@ -172,6 +172,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&limit=2",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
 				format:       "json",
 			},
 			want: want{
