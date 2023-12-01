@@ -16,7 +16,7 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FOGC%2F1.3%2FCRS84&cursor=c3yUrNE5&f=json&limit=10"
+      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FOGC%2F1.3%2FCRS84&cursor=c3zomdje&f=json&limit=10"
     }
   ],
   "numberReturned": 10,
