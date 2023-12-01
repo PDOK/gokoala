@@ -43,14 +43,12 @@ ogcApi:
         geopackage:
           local:
             file: ./examples/resources/addresses-crs84.gpkg
-            fid: fid
             queryTimeout: 5s
       additional:
         - srs: EPSG:28992
           geopackage:
             local:
               file: ./examples/resources/addresses-rd.gpkg
-              fid: fid
               queryTimeout: 10s
         - srs: EPSG:3035
           geopackage:

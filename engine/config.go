@@ -17,11 +17,10 @@ import (
 )
 
 const (
-	cookieMaxAge        = 60 * 60 * 24
-	defaultQueryTimeout = 10 * time.Second
+	cookieMaxAge = 60 * 60 * 24
 )
 
-func readConfigFile(configFile string) *Config {
+func NewConfig(configFile string) *Config {
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {
 		log.Fatalf("failed to read config file %v", err)
@@ -36,6 +35,10 @@ func readConfigFile(configFile string) *Config {
 		log.Fatalf("failed to unmarshal config file %v", err)
 	}
 
+	return NewConfigFromStruct(config)
+}
+
+func NewConfigFromStruct(config *Config) *Config {
 	setDefaults(config)
 	validate(config)
 	return config
@@ -60,7 +63,7 @@ func validate(config *Config) {
 	if err != nil {
 		var ive *validator.InvalidValidationError
 		if ok := errors.Is(err, ive); ok {
-			log.Fatalf("failed to validate config file: %v", err)
+			log.Fatalf("failed to validate config: %v", err)
 		}
 		var errMessages []string
 		var valErrs validator.ValidationErrors
@@ -69,7 +72,7 @@ func validate(config *Config) {
 				errMessages = append(errMessages, valErr.Error()+"\n")
 			}
 		}
-		log.Fatalf("invalid config file provided:\n %v", errMessages)
+		log.Fatalf("invalid config provided:\n %v", errMessages)
 	}
 }
 
@@ -333,17 +336,10 @@ type GeoPackage struct {
 // GeoPackageCommon shared config between local and cloud GeoPackage
 type GeoPackageCommon struct {
 	// feature id column name
-	Fid string `yaml:"fid" validate:"required"`
+	Fid string `yaml:"fid" validate:"required" default:"fid"`
 
-	// optional timeout after which queries are canceled (default is 10s, see constant)
-	QueryTimeout *time.Duration `yaml:"queryTimeout"`
-}
-
-func (gc *GeoPackageCommon) GetQueryTimeout() time.Duration {
-	if gc.QueryTimeout != nil {
-		return *gc.QueryTimeout
-	}
-	return defaultQueryTimeout
+	// optional timeout after which queries are canceled
+	QueryTimeout time.Duration `yaml:"queryTimeout" default:"15s"`
 }
 
 // GeoPackageLocal settings to read a GeoPackage from local disk

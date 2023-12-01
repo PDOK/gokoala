@@ -48,6 +48,36 @@ type Link struct {
 	Templated bool   `json:"templated,omitempty"`
 }
 
+// MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
+func MapRowsToFeatureIDs(rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
+	firstRow := true
+	for rows.Next() {
+		var values []any
+		if values, err = rows.SliceScan(); err != nil {
+			return nil, nil, err
+		}
+		if len(values) != 3 {
+			return nil, nil, fmt.Errorf("expected 3 columns containing the feature id, "+
+				"the previous feature id and the next feature id. Got: %v", values)
+		}
+		featureID := values[0].(int64)
+		featureIDs = append(featureIDs, featureID)
+		if firstRow {
+			prev := int64(0)
+			if values[1] != nil {
+				prev = values[1].(int64)
+			}
+			next := int64(0)
+			if values[2] != nil {
+				next = values[2].(int64)
+			}
+			prevNextID = &PrevNextFID{Prev: prev, Next: next}
+			firstRow = false
+		}
+	}
+	return
+}
+
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
 func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 	geomMapper func([]byte) (geom.Geometry, error)) ([]*Feature, *PrevNextFID, error) {

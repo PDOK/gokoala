@@ -26,7 +26,7 @@ func newAddressesGeoPackage() geoPackageBackend {
 		GeoPackageCommon: engine.GeoPackageCommon{
 			Fid: "feature_id",
 		},
-		File: pwd + "/testdata/addresses.gpkg",
+		File: pwd + "/testdata/bag.gpkg",
 	})
 }
 
@@ -47,7 +47,7 @@ func TestNewGeoPackage(t *testing.T) {
 						GeoPackageCommon: engine.GeoPackageCommon{
 							Fid: "feature_id",
 						},
-						File: pwd + "/testdata/addresses.gpkg",
+						File: pwd + "/testdata/bag.gpkg",
 					},
 				},
 			},
@@ -71,7 +71,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 	type args struct {
 		ctx         context.Context
 		collection  string
-		queryParams datasources.FeatureOptions
+		queryParams datasources.FeaturesCriteria
 	}
 	tests := []struct {
 		name       string
@@ -92,7 +92,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
-				queryParams: datasources.FeatureOptions{
+				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
 					Limit:  2,
 				},
@@ -135,7 +135,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "ligplaatsen",
-				queryParams: datasources.FeatureOptions{
+				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{
 						FID:             3838, // see next cursor from test above
 						FiltersChecksum: []byte{},
@@ -189,7 +189,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			args: args{
 				ctx:        context.Background(),
 				collection: "vakantiehuizen", // not in gpkg
-				queryParams: datasources.FeatureOptions{
+				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
 					Limit:  10,
 				},
