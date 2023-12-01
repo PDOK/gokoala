@@ -12,7 +12,9 @@ import (
 	ds "github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/datasources/geopackage"
 	"github.com/PDOK/gokoala/ogc/features/datasources/postgis"
+	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-spatial/geom"
 )
 
 const (
@@ -61,7 +63,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		collectionID := chi.URLParam(r, "collectionId")
 
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
-		encodedCursor, limit, crs, bbox, bboxCrs, err := url.parseParams()
+		encodedCursor, limit, inputSRID, outputSRID, bbox, err := url.parseParams()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -76,26 +78,50 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			return
 		}
 
-		datasource := f.datasources[DatasourceKey{srid: crs, collectionID: collectionID}]
-		fc, newCursor, err := datasource.GetFeatures(r.Context(), collectionID, ds.FeatureOptions{
-			Cursor:  encodedCursor.Decode(url.checksum()),
-			Limit:   limit,
-			Crs:     crs,
-			Bbox:    bbox,
-			BboxCrs: bboxCrs,
-			// Add filter, filter-crs, etc
-		})
-		if err != nil {
-			// log error, but sent generic message to client to prevent possible information leakage from datasource
-			msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
-			log.Printf("%s, error: %v\n", msg, err)
-			http.Error(w, msg, http.StatusInternalServerError)
-			return
+		var newCursor domain.Cursors
+		var fc *domain.FeatureCollection
+		if querySingleDatasource(inputSRID, outputSRID, bbox) {
+			// fast path
+			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
+			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
+				Cursor:     encodedCursor.Decode(url.checksum()),
+				Limit:      limit,
+				InputSRID:  inputSRID.GetOrDefault(),
+				OutputSRID: outputSRID.GetOrDefault(),
+				Bbox:       bbox,
+				// Add filter, filter-lang
+			})
+			if err != nil {
+				handleFeatureCollectionError(w, collectionID, err)
+				return
+			}
+		} else {
+			// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
+			var fids []int64
+			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
+			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
+				Cursor:     encodedCursor.Decode(url.checksum()),
+				Limit:      limit,
+				InputSRID:  inputSRID.GetOrDefault(),
+				OutputSRID: outputSRID.GetOrDefault(),
+				Bbox:       bbox,
+				// Add filter, filter-lang
+			})
+			if err != nil {
+				handleFeatureCollectionError(w, collectionID, err)
+				return
+			}
+			datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
+			fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
+			if err != nil {
+				handleFeatureCollectionError(w, collectionID, err)
+				return
+			}
 		}
 		if fc == nil {
 			log.Printf("no results found for collection '%s' with params: %s",
 				collectionID, r.URL.Query().Encode())
-			return // still 200 OK
+			fc = &domain.FeatureCollection{}
 		}
 
 		switch f.engine.CN.NegotiateFormat(r) {
@@ -123,7 +149,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		crs, err := url.parseParams()
+		outputSRID, err := url.parseParams()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -138,7 +164,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 
-		datasource := f.datasources[DatasourceKey{srid: crs, collectionID: collectionID}]
+		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
@@ -263,4 +289,18 @@ func epsgToSrid(srs string) (int, error) {
 		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
 	}
 	return srid, nil
+}
+
+func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
+	// log error, but sent generic message to client to prevent possible information leakage from datasource
+	msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
+	log.Printf("%s, error: %v\n", msg, err)
+	http.Error(w, msg, http.StatusInternalServerError)
+}
+
+func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
+	return bbox == nil ||
+		int(input) == int(output) ||
+		(int(input) == undefinedSRID && int(output) == wgs84SRID) ||
+		(int(input) == wgs84SRID && int(output) == undefinedSRID)
 }

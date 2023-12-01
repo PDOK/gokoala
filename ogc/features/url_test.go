@@ -3,6 +3,7 @@ package features
 import (
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
@@ -22,9 +23,9 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 		fields            fields
 		wantEncodedCursor domain.EncodedCursor
 		wantLimit         int
-		wantCrs           int
+		wantOutputCrs     int
 		wantBbox          *geom.Extent
-		wantBboxCrs       int
+		wantInputCrs      int
 		wantErr           assert.ErrorAssertionFunc
 	}{
 		{
@@ -39,9 +40,9 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			},
 			wantEncodedCursor: "",
 			wantLimit:         10,
-			wantCrs:           100000,
+			wantOutputCrs:     100000,
 			wantBbox:          nil,
-			wantBboxCrs:       100000,
+			wantInputCrs:      100000,
 			wantErr:           success(),
 		},
 		{
@@ -62,10 +63,98 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			},
 			wantEncodedCursor: "H3w%3D",
 			wantLimit:         20, // use max instead of supplied limit
-			wantCrs:           28992,
+			wantOutputCrs:     28992,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
-			wantBboxCrs:       28992,
+			wantInputCrs:      28992,
 			wantErr:           success(),
+		},
+		{
+			name: "Parse input crs specified, no output crs specified",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"cursor":   []string{"H3w%3D"},
+					"bbox":     []string{"1,2,3,4"},
+					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+					"limit":    []string{"10000"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantEncodedCursor: "H3w%3D",
+			wantLimit:         20, // use max instead of supplied limit
+			wantOutputCrs:     100000,
+			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
+			wantInputCrs:      28992,
+			wantErr:           success(),
+		},
+		{
+			name: "Parse no input crs specified, output crs specified",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"cursor": []string{"H3w%3D"},
+					"crs":    []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+					"bbox":   []string{"1,2,3,4"},
+					"limit":  []string{"10000"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantEncodedCursor: "H3w%3D",
+			wantLimit:         20, // use max instead of supplied limit
+			wantOutputCrs:     28992,
+			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
+			wantInputCrs:      100000,
+			wantErr:           success(),
+		},
+		{
+			name: "Parse multiple input crs specified, output crs specified",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"cursor":     []string{"H3w%3D"},
+					"filter-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+					"bbox-crs":   []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+					"bbox":       []string{"1,2,3,4"},
+					"limit":      []string{"10000"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantEncodedCursor: "H3w%3D",
+			wantLimit:         20, // use max instead of supplied limit
+			wantOutputCrs:     100000,
+			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
+			wantInputCrs:      28992,
+			wantErr:           success(),
+		},
+		{
+			name: "Fail on difference in input crs",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"cursor":     []string{"H3w%3D"},
+					"filter-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+					"bbox-crs":   []string{"http://www.opengis.net/def/crs/EPSG/0/4258"},
+					"bbox":       []string{"1,2,3,4"},
+					"limit":      []string{"10000"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equalf(t, "bbox-crs and filter-crs need to be equal. Can't use more than one CRS as input, but input and output CRS may differ", err.Error(), "parseParams()")
+				return false
+			},
 		},
 		{
 			name: "Fail on wrong crs",
@@ -119,6 +208,40 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				return false
 			},
 		},
+		{
+			name: "Fail on unimplemented datetime",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"datetime": []string{time.Now().String()},
+				},
+				limit: engine.Limit{
+					Default: 1,
+					Max:     2,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equalf(t, "datetime param is currently not supported", err.Error(), "parseParams()")
+				return false
+			},
+		},
+		{
+			name: "Fail on unimplemented filter",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"filter": []string{"some CQL expression"},
+				},
+				limit: engine.Limit{
+					Default: 1,
+					Max:     2,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equalf(t, "CQL filter param is currently not supported", err.Error(), "parseParams()")
+				return false
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -127,15 +250,15 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
 			}
-			gotEncodedCursor, gotLimit, gotCrs, gotBbox, gotBboxCrs, err := fc.parseParams()
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, gotBbox, err := fc.parseParams()
 			if !tt.wantErr(t, err, "parseParams()") {
 				return
 			}
 			assert.Equalf(t, tt.wantEncodedCursor, gotEncodedCursor, "parseParams()")
 			assert.Equalf(t, tt.wantLimit, gotLimit, "parseParams()")
-			assert.Equalf(t, tt.wantCrs, gotCrs, "parseParams()")
+			assert.Equalf(t, tt.wantOutputCrs, gotOutputCrs.GetOrDefault(), "parseParams()")
 			assert.Equalf(t, tt.wantBbox, gotBbox, "parseParams()")
-			assert.Equalf(t, tt.wantBboxCrs, gotBboxCrs, "parseParams()")
+			assert.Equalf(t, tt.wantInputCrs, gotInputCrs.GetOrDefault(), "parseParams()")
 		})
 	}
 }

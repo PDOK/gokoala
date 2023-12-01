@@ -7,33 +7,39 @@ import (
 	"github.com/go-spatial/geom"
 )
 
-// Datasource holding all the features for a single dataset
+// Datasource holds all Features for a single object type in a specific projection
 type Datasource interface {
 
-	// GetFeatures returns a FeatureCollection from the underlying datasource and Cursors for pagination
-	GetFeatures(ctx context.Context, collection string, options FeatureOptions) (*domain.FeatureCollection, domain.Cursors, error)
+	// GetFeatureIDs returns all Feature IDs matching the given criteria and Cursors for pagination. To be used in concert with GetFeaturesByID
+	GetFeatureIDs(ctx context.Context, collection string, criteria FeaturesCriteria) ([]int64, domain.Cursors, error)
 
-	// GetFeature returns a specific Feature from the FeatureCollection of the underlying datasource
+	// GetFeaturesByID returns a collection of Features with the given IDs. To be used in concert with GetFeatureIDs
+	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64) (*domain.FeatureCollection, error)
+
+	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
+	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria) (*domain.FeatureCollection, domain.Cursors, error)
+
+	// GetFeature returns a specific Feature
 	GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error)
 
 	// Close closes (connections to) the datasource gracefully
 	Close()
 }
 
-// FeatureOptions to select a certain set of Features
-type FeatureOptions struct {
+// FeaturesCriteria to select a certain set of Features
+type FeaturesCriteria struct {
 	// pagination
 	Cursor domain.DecodedCursor
 	Limit  int
 
 	// multiple projections support
-	Crs int
+	InputSRID  int // derived from bbox or filter param when available, or WGS84 as default
+	OutputSRID int // derived from crs param when available, or WGS84 as default
 
 	// filtering by bounding box
-	Bbox    *geom.Extent
-	BboxCrs int
+	Bbox *geom.Extent
 
 	// filtering by CQL
-	Filter    string
-	FilterCrs string
+	Filter     string
+	FilterLang string
 }

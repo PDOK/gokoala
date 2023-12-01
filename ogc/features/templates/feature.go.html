@@ -60,43 +60,19 @@
         </table>
     </div>
 
-    <div class="col-4" >
-        <table>
-            <tr>
-                <td class="w-auto px-2">
-                    <b>{{ i18n "Example" }} URL</b>
-                </td>
-            </tr>
-            <tr>
-                <td class="w-auto px-2">
-                    <code id="field-url-example"></code>
-                </td>
-            </tr>
-        </table>
-
+    <div class="col4">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="BRT" projection="EPSG:28992">
-        </app-feature-view>
-        <script type="module">
-            let url = new URL(window.location.href)
-            url.searchParams.set('f','json');
-            let viewer = document.getElementById('viewer');
-            viewer.setAttribute('items-url', url );
+        <app-feature-view id="viewer"></app-feature-view>
 
-            document.getElementById("field-url-example").innerHTML = url
-            if (new URLSearchParams(window.location.search).get('crs') !== null) {
-                let crs = url.searchParams.get('crs');
-                document.getElementById('srs-select').value = crs;
-                viewer.setAttribute('projection', crs)
-            }
-
-            document.getElementById("body").hidden = ""
-
+       <script>
+            const jsonurl = new URL(window.location.href)
+            jsonurl.searchParams.set('f','json');
+            const map = document.getElementById('viewer');
+            map.setAttribute('items-url', jsonurl );
         </script>
     </div>
-
 </section>
 {{end}}

@@ -33,8 +33,8 @@ jobs:
         with:
           report: true
           chart: false
-          amend: true
+          amend: false
           reuse-go: true
         if: |
           github.event_name == 'push'
-        continue-on-error: true
+        continue-on-error: false
