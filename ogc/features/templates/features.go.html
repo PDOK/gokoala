@@ -21,7 +21,6 @@
         url.searchParams.set('crs', value);
         window.location.href = url.toString();
     }
-   
 </script>
 
 <hgroup>
@@ -65,16 +64,13 @@
             </tr>
             <tr>
                 <td class="w-auto text-nowrap">
-                    <b>{{ i18n "LimitMax" }} ({{ i18n "Max" }} {{ $cfg.OgcAPI.Features.Limit.Max }})</b>
+                    <b>{{ i18n "Limit" }}</b>
                 </td>
                 <td id="field-limit" class="w-auto px-2">
-
                     <select id="limit-select" class="form-select" aria-label="Limit selection" onchange="updateQueryString('limit', this.value)">
-                        <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>{{ i18n "Limit" }} 10 {{ i18n "Items" }} </option>
-                        <option value="50" {{if eq .Params.Limit 50 }}selected{{end}}>{{ i18n "Limit" }} 50 {{ i18n "Items" }}</option>
-                        <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>{{ i18n "Limit" }} 100 {{ i18n "Items" }}</option>
-                        <option value="500" {{if eq .Params.Limit 500 }}selected{{end}}>{{ i18n "Limit" }} 500 {{ i18n "Items" }}</option>
-                        <option value="1000" {{if eq .Params.Limit 1000 }}selected{{end}}>{{ i18n "Limit" }} 1000 {{ i18n "Items" }}</option>
+                        <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }} </option>
+                        <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option> {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
+                        <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>{{ $cfg.OgcAPI.Features.Limit.Max }} {{ i18n "Items" }} ({{ i18n "Max" }})</option>
                     </select>
                 </td>
             </tr>
@@ -82,8 +78,8 @@
                 <td class="w-auto text-nowrap">
                     <b>Bounding box</b>
                 </td>
-                <td id="field-boundingbox" class="form-text" >
-                    <input type="text" id="bbox" name="bbox" value="" onchange="updateQueryString('bbox', this.value)">
+                <td id="field-boundingbox" class="w-auto px-2">
+                    <input type="text" class="form-control"  id="bbox" name="bbox" value="" onchange="updateQueryString('bbox', this.value)">
                 </td>
             </tr>
             </tbody>
@@ -145,13 +141,12 @@
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="BRT" >
-        </app-feature-view>
+        <app-feature-view id="viewer" background-map="BRT" ></app-feature-view>
         <script type="module">
             const url = new URL(window.location.href)
             url.searchParams.set('f','json');
             const viewer = document.getElementById('viewer');
-            viewer.setAttribute('items-url', url );
+            viewer.setAttribute('items-url', url);
 
             document.getElementById("field-url-example").innerHTML = url
             if (url.searchParams.get('crs') !== null) {
@@ -166,8 +161,6 @@
             document.getElementById("body").hidden = ""
 
             viewer.addEventListener('box', selectbox => {
-                console.log('box')
-                console.log(JSON.stringify(selectbox.detail))
                 document.getElementById('bbox').value = selectbox.detail
                 updateQueryString("bbox", selectbox.detail)
             })
