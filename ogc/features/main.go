@@ -18,10 +18,12 @@ import (
 )
 
 const (
-	templatesDir = "ogc/features/templates/"
-	wgs84SRID    = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time we may need to read this value dynamically from the geopackage.
-	wgs84CodeOGC = "CRS84"
-	crsURLPrefix = "http://www.opengis.net/def/crs/"
+	templatesDir  = "ogc/features/templates/"
+	crsURIPrefix  = "http://www.opengis.net/def/crs/"
+	undefinedSRID = 0
+	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time we may need to read this value dynamically from the geopackage.
+	wgs84CodeOGC  = "CRS84"
+	wgs84CrsURI   = crsURIPrefix + "OGC/1.3/" + wgs84CodeOGC
 )
 
 var (
@@ -63,7 +65,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		collectionID := chi.URLParam(r, "collectionId")
 
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
-		encodedCursor, limit, inputSRID, outputSRID, bbox, err := url.parseParams()
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, err := url.parse()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -77,6 +79,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
+		w.Header().Add("Content-Crs", contentCrs)
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
@@ -149,7 +152,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		outputSRID, err := url.parseParams()
+		outputSRID, contentCrs, err := url.parse()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -163,6 +166,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
+		w.Header().Add("Content-Crs", contentCrs)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))

@@ -25,24 +25,14 @@ const (
 	bboxCrsParam   = "bbox-crs"
 	filterParam    = "filter"
 	filterCrsParam = "filter-crs"
-	undefinedSRID  = 0
 )
 
 var (
 	checksumExcludedParams = []string{engine.FormatParam, cursorParam} // don't include these in checksum
 )
 
-type URL interface {
-	validateNoUnknownParams() error
-}
-
-// URL to a page in a collection of features
-type featureCollectionURL struct {
-	baseURL url.URL
-	params  url.Values
-	limit   engine.Limit
-}
-
+// SRID Spatial Reference System Identifier: a unique value to unambiguously identify a spatial coordinate system.
+// For example '28992' in https://www.opengis.net/def/crs/EPSG/0/28992
 type SRID int
 
 func (s SRID) GetOrDefault() int {
@@ -59,12 +49,25 @@ func (s SRID) IsSameAs(other SRID) bool {
 		(int(s) == wgs84SRID && int(other) == undefinedSRID)
 }
 
-func (fc featureCollectionURL) parseParams() (encodedCursor domain.EncodedCursor, limit int,
-	inputSRID SRID, outputSRID SRID, bbox *geom.Extent, err error) {
+type URL interface {
+	validateNoUnknownParams() error
+}
+
+// URL to a page in a collection of features
+type featureCollectionURL struct {
+	baseURL url.URL
+	params  url.Values
+	limit   engine.Limit
+}
+
+// parse the given URL to values required to delivery a set of Features
+func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limit int,
+	inputSRID SRID, outputSRID SRID, contentCrs string, bbox *geom.Extent, err error) {
 
 	encodedCursor = domain.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := parseLimit(fc.params, fc.limit)
-	outputSRID, outputSRIDErr := parseSRID(fc.params, crsParam)
+	outputSRID, outputSRIDErr := parseCrsToSRID(fc.params, crsParam)
+	contentCrs = parseCrsToContentCrs(fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
 	dateTimeErr := parseDateTime(fc.params)
 	_, filterSRID, filterErr := parseFilter(fc.params)
@@ -154,8 +157,11 @@ type featureURL struct {
 	params  url.Values
 }
 
-func (f featureURL) parseParams() (srid SRID, err error) {
-	return parseSRID(f.params, crsParam)
+// parse the given URL to values required to delivery a specific Feature
+func (f featureURL) parse() (srid SRID, contentCrs string, err error) {
+	srid, err = parseCrsToSRID(f.params, crsParam)
+	contentCrs = parseCrsToContentCrs(f.params)
+	return
 }
 
 func (f featureURL) toSelfURL(collectionID string, featureID int64, format string) string {
@@ -226,7 +232,7 @@ func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
 }
 
 func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
-	bboxSRID, err := parseSRID(params, bboxCrsParam)
+	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
 	if err != nil {
 		return nil, undefinedSRID, err
 	}
@@ -251,14 +257,22 @@ func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
 	return &extent, bboxSRID, nil
 }
 
-func parseSRID(params url.Values, paramName string) (SRID, error) {
+func parseCrsToContentCrs(params url.Values) string {
+	param := params.Get(crsParam)
+	if param == "" {
+		return fmt.Sprintf("<%s>", wgs84CrsURI)
+	}
+	return fmt.Sprintf("<%s>", param)
+}
+
+func parseCrsToSRID(params url.Values, paramName string) (SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
 		return undefinedSRID, nil
 	}
 	param = strings.TrimSpace(param)
-	if !strings.HasPrefix(param, crsURLPrefix) {
-		return undefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURLPrefix, param)
+	if !strings.HasPrefix(param, crsURIPrefix) {
+		return undefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURIPrefix, param)
 	}
 	var srid SRID
 	lastIndex := strings.LastIndex(param, "/")
@@ -285,7 +299,7 @@ func parseDateTime(params url.Values) error {
 
 func parseFilter(params url.Values) (filter string, filterSRID SRID, err error) {
 	filter = params.Get(filterParam)
-	filterSRID, _ = parseSRID(params, filterCrsParam)
+	filterSRID, _ = parseCrsToSRID(params, filterCrsParam)
 
 	if filter != "" {
 		return filter, filterSRID, fmt.Errorf("CQL filter param is currently not supported")
