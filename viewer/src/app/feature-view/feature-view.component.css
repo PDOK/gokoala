@@ -1,7 +1,7 @@
 .featuremaparea {
   height: 100vh;
 
-  .boxcontrol {
+  .boundingboxcontrol {
     top: 65px;
     left: 0.5em;
 
@@ -10,7 +10,7 @@
     }
   }
 
-  .ol-touch .boxcontrol {
+  .ol-touch .oundingboxcontrol {
     top: 80px;
   }
 }

@@ -65,8 +65,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       .getFeatures(aurl)
       .pipe(take(1))
       .subscribe(data => {
-        this.map.setLayerGroup(new Group())
         this.features = data
+        this.map.setLayerGroup(new Group())
         this.loadFeatures(this.features)
         this.loadBackground()
       })
@@ -123,10 +123,12 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       })
     )
     const ext = vsource.getExtent()
-    if (features.length < 3) {
-      this.setViewExtent(ext, 10)
-    } else {
-      this.setViewExtent(ext, 1.05)
+    if (features.length > 0) {
+      if (features.length < 3) {
+        this.setViewExtent(ext, 10)
+      } else {
+        this.setViewExtent(ext, 1.05)
+      }
     }
 
     return ext
