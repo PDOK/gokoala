@@ -18,6 +18,7 @@ import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { NgChanges } from '../app.component'
 import { DataUrl, FeatureServiceService, featureCollectionGeoJSON } from '../feature-service.service'
+import { boxControl } from './boxcontrol'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
@@ -32,7 +33,7 @@ export function exhaustiveGuard(_value: never): never {
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() itemsUrl!: string
-  @Input() projection: ProjectionLike = 'EPSG:3857'
+  @Input() projection: ProjectionLike = 'EPSG:3857' //Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
   @Input() backgroundMap: 'BRT' | 'OSM' = 'OSM'
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
@@ -70,11 +71,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         this.features = data
         this.loadFeatures(this.features)
         this.loadBackground()
-        this.addDragbox()
       })
   }
 
   ngAfterViewInit() {
+    this.map.addControl(new boxControl(this.box, {}))
     this.addFeatureEmit()
   }
 
@@ -244,55 +245,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         },
         { hitTolerance: 3 }
       )
-    })
-  }
-
-  addDragbox() {
-    const dragBox = new DragBox({
-      condition: platformModifierKeyOnly, //shiftKeyOnly,
-    })
-    this.map.addInteraction(dragBox)
-    dragBox.on('boxstart', () => {
-      if (this.boxLayer) {
-        this.map.removeLayer(this.boxLayer)
-        this.box.emit('')
-      }
-    })
-
-    dragBox.on('boxend', () => {
-      const bboxGeometry = dragBox.getGeometry()
-
-      const bbox = new Feature({
-        geometry: bboxGeometry,
-        name: 'bbox',
-        projection: this.projection,
-      })
-
-      const bboxsource = new VectorSource({})
-      bboxsource.addFeature(bbox)
-      // The map use WebMercator/RD as the projection, so the bounding box need to be projected from  EPSG:3857 to EPSG:4326
-      // in other cases the map projection is same as data projection.
-      if (this.projection === 'EPSG:3857') {
-        const box84 = bboxGeometry.transform(this.projection, 'EPSG:4326').getExtent()
-        const extString = box84.join(',')
-        this.box.emit(extString)
-      } else {
-        const box = bboxGeometry.getExtent()
-        const extString = box.join(',')
-        this.box.emit(extString)
-      }
-
-      const bboxStyle = new Style({
-        stroke: new Stroke({
-          color: 'blue',
-          width: 3,
-        }),
-        fill: new Fill({
-          color: 'rgba(0, 0, 255, 0.06)',
-        }),
-      })
-      this.boxLayer = new VectorLayer({ source: bboxsource, style: bboxStyle })
-      this.map.addLayer(this.boxLayer)
     })
   }
 }

@@ -1,6 +1,21 @@
 .featuremaparea {
   height: 100vh;
+
+  .boxcontrol {
+    top: 65px;
+    left: .5em;
+
+    .innersvg {
+      padding: 3px;
+    }
+  }
+
+  .ol-touch .boxcontrol {
+    top: 80px;
+  }
 }
+
+
 
 .maptooltip {
   visibility: hidden;
