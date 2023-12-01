@@ -14,6 +14,7 @@ import (
 	"github.com/PDOK/gokoala/ogc/features/datasources/postgis"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-spatial/geom"
 )
 
 const (
@@ -79,7 +80,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
-		if inputSRID.IsSameAs(outputSRID) {
+		if querySingleDatasource(inputSRID, outputSRID, bbox) {
 			// fast path
 			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
@@ -295,4 +296,11 @@ func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, er
 	msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
 	log.Printf("%s, error: %v\n", msg, err)
 	http.Error(w, msg, http.StatusInternalServerError)
+}
+
+func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
+	return bbox == nil ||
+		int(input) == int(output) ||
+		(int(input) == undefinedSRID && int(output) == wgs84SRID) ||
+		(int(input) == wgs84SRID && int(output) == undefinedSRID)
 }

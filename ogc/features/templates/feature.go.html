@@ -24,26 +24,18 @@
     </div>
 
     <div class="col4">
-  
-       
-            <link rel="stylesheet" type="text/css" href="view-component/styles.css">
-            <script type="text/javascript" src="view-component/main.js"></script>
-            <script type="text/javascript" src="view-component/polyfills.js"></script>
-            <script type="text/javascript" src="view-component/runtime.js"></script>
-            <app-feature-view
-                id="featuresmap"                 
-            >
-           </app-feature-view>
-    
-           <script>
-                const jsonurl = new URL(window.location.href)
-                jsonurl.searchParams.set('f','json'); 
-                const map = document.getElementById('featuresmap'); 
-                map.setAttribute('items-url', jsonurl );        
-            </script>
-    
-        </div>
-    </div>
+        <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+        <script type="text/javascript" src="view-component/main.js"></script>
+        <script type="text/javascript" src="view-component/polyfills.js"></script>
+        <script type="text/javascript" src="view-component/runtime.js"></script>
+        <app-feature-view id="viewer"></app-feature-view>
 
+       <script>
+            const jsonurl = new URL(window.location.href)
+            jsonurl.searchParams.set('f','json');
+            const map = document.getElementById('viewer');
+            map.setAttribute('items-url', jsonurl );
+        </script>
+    </div>
 </section>
 {{end}}

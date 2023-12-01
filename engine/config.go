@@ -305,7 +305,7 @@ type OgcAPIProcesses struct {
 
 type Limit struct {
 	Default int `yaml:"default" validate:"gt=1" default:"10"`
-	Max     int `yaml:"max" validate:"gt=1" default:"1000"`
+	Max     int `yaml:"max" validate:"gte=100" default:"1000"`
 }
 
 type Datasources struct {

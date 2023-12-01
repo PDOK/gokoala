@@ -161,6 +161,19 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output in RD explicitly",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&limit=2",
+				collectionID: "dutch-addresses",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in default (WGS84) and bbox in default (WGS84)",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
