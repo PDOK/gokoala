@@ -17,6 +17,7 @@ import { environment } from 'src/environments/environment'
 import { NgChanges } from '../app.component'
 import { DataUrl, FeatureServiceService, featureCollectionGeoJSON } from '../feature-service.service'
 import { boxControl } from './boxcontrol'
+import { Zoom } from 'ol/control'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
@@ -49,6 +50,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   private getMap(): OLMap {
     return new OLMap({
+      controls: [],
       view: new View({
         projection: this.projection,
       }),
@@ -73,6 +75,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.map.addControl(new Zoom())
     this.map.addControl(new boxControl(this.box, {}))
     this.addFeatureEmit()
   }
