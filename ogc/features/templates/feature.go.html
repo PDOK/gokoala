@@ -91,16 +91,9 @@
                 document.getElementById('srs-select').value = crs;
                 viewer.setAttribute('projection', crs)
             }
-            if (url.searchParams.get('bbox') !== null) {
-                document.getElementById('bbox').value = url.searchParams.get('bbox');
-            }
 
             document.getElementById("body").hidden = ""
 
-            viewer.addEventListener('box', selectbox => {
-                document.getElementById('bbox').value = selectbox.detail
-                updateQueryString("bbox", selectbox.detail)
-            })
         </script>
     </div>
 
