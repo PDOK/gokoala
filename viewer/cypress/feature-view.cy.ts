@@ -17,6 +17,7 @@ beforeEach(() => {
       itemsUrl: 'https://test',
       box: createOutputSpy('boxSpy'),
       backgroundMap: 'OSM',
+      projection: 'http://www.opengis.net/def/crs/OGC/1.3/CRS84',
     },
   }).then(comp1 => {
     console.log(comp1)

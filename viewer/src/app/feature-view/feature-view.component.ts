@@ -58,6 +58,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   private init() {
+    this.convertProjectionString()
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapdiv: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
@@ -74,6 +75,17 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       })
   }
 
+  private convertProjectionString() {
+    if (typeof this.projection === 'string') {
+      if (this.projection.toUpperCase() === 'HTTP://WWW.OPENGIS.NET/DEF/CRS/OGC/1.3/CRS84') {
+        this.projection = 'EPSG:3857'
+      }
+      if (this.projection.toUpperCase().startsWith('HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/')) {
+        this.projection = 'EPSG' + this.projection.substring(this.projection.lastIndexOf('/') + 1)
+      }
+    }
+  }
+
   ngAfterViewInit() {
     this.map.addControl(new Zoom())
     this.map.addControl(new boxControl(this.box, {}))
@@ -81,13 +93,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
-    if (
-      changes.itemsUrl?.previousValue !== changes.itemsUrl?.currentValue ||
-      changes.projection.previousValue !== changes.projection.currentValue
-    ) {
-      if (changes.itemsUrl?.currentValue) {
-        this.init()
-      }
+    if (changes.itemsUrl?.currentValue) {
+      this.features = []
+      this.init()
     }
   }
 
@@ -114,7 +122,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   loadFeatures(features: Feature<Geometry>[]) {
     const vsource = new VectorSource({
-      //features: new GeoJSON().readFeatures(this.featureCollectionGeoJSON, { featureProjection: this.projection  }),
+      //features: new GeoJSON().readFeatures(this.featureCollectionGeoJSON, { featureProjection: this.projection }),
       features: features,
     })
 
@@ -250,4 +258,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       )
     })
   }
+}
+
+export function createFeatureViewComponent(el: ElementRef, featureService: FeatureServiceService) {
+  return new FeatureViewComponent(el, featureService)
 }

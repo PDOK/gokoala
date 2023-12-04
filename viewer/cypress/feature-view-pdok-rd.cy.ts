@@ -16,7 +16,7 @@ beforeEach(() => {
     componentProperties: {
       itemsUrl: 'https://api.pdok.nl/items',
       box: createOutputSpy('boxSpyWGS84'),
-      projection: 'EPSG:28992',
+      projection: 'http://www.opengis.net/def/crs/EPSG/0/28992',
       backgroundMap: 'BRT',
     },
   }).then(comp1 => {
