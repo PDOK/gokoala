@@ -29,7 +29,7 @@
                     <b>{{ i18n "Projection" }}</b>
                 </td>
                 <td class="w-auto px-2">
-                    <select id="srs-select" onchange="crsChange(this.value)">
+                    <select id="srs-select" class="form-select" onchange="crsChange(this.value)">
                         <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected > http://www.opengis.net/def/crs/OGC/1.3/CRS84 </option>
                         {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection $collId }}
                         <option value=http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }} > http://www.opengis.net/def/crs/EPSG/0/{{ $srs }}  </option>
@@ -60,19 +60,49 @@
         </table>
     </div>
 
-    <div class="col4">
+    <div class="col-4" >
+        <table>
+            <tr>
+                <td class="w-auto px-2">
+                    <b>{{ i18n "Example" }} URL</b>
+                </td>
+            </tr>
+            <tr>
+                <td class="w-auto px-2">
+                    <code id="field-url-example"></code>
+                </td>
+            </tr>
+        </table>
+
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer"></app-feature-view>
+        <app-feature-view id="viewer" background-map="BRT" ></app-feature-view>
+        <script type="module">
+            const url = new URL(window.location.href)
+            url.searchParams.set('f','json');
+            const viewer = document.getElementById('viewer');
+            viewer.setAttribute('items-url', url);
 
-       <script>
-            const jsonurl = new URL(window.location.href)
-            jsonurl.searchParams.set('f','json');
-            const map = document.getElementById('viewer');
-            map.setAttribute('items-url', jsonurl );
+            document.getElementById("field-url-example").innerHTML = url
+            if (url.searchParams.get('crs') !== null) {
+                let crs = url.searchParams.get('crs');
+                document.getElementById('srs-select').value = crs;
+                viewer.setAttribute('projection', crs)
+            }
+            if (url.searchParams.get('bbox') !== null) {
+                document.getElementById('bbox').value = url.searchParams.get('bbox');
+            }
+
+            document.getElementById("body").hidden = ""
+
+            viewer.addEventListener('box', selectbox => {
+                document.getElementById('bbox').value = selectbox.detail
+                updateQueryString("bbox", selectbox.detail)
+            })
         </script>
     </div>
+
 </section>
 {{end}}
