@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "npm run format && npm run lint && ng build --output-hashing none",
     "watch": "ng build --watch --configuration development",
-    "test": "npx cypress run --component",
+    "test": "npx cypress info && npx cypress run --component",
     "deploy": "npm run format && npm run lint  && ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
     "lint": "ng lint",
     "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222;  npx cypress open",
