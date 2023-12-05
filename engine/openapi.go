@@ -135,7 +135,6 @@ func mergeSpecs(ctx context.Context, config *Config, files []string) (*openapi3.
 
 	for _, file := range files {
 		specJSON := renderOpenAPITemplate(config, file)
-		_ = loadSpec(loader, specJSON)
 		var mergedJSON []byte
 		if resultSpecJSON == nil {
 			mergedJSON = specJSON

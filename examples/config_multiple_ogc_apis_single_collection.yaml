@@ -35,12 +35,15 @@ ogcApi:
         metadata: *collectionMetadata
         tileServerPath: "NewYork/3DTiles"
         uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
-        3dViewerUrl: "https://app.pdok.nl/viewer"
-  # this is just for demonstration purposes
   features:
-    datasource:
-      fakedb: true
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            # Dutch addresses, but for example purposes let's present these are NYC addresses
+            file: ./examples/resources/addresses-crs84.gpkg
     collections:
       - id: NewYork
+        tableName: addresses
         # reference to common metadata
         metadata: *collectionMetadata

@@ -43,12 +43,6 @@ func (s SRID) GetOrDefault() int {
 	return val
 }
 
-func (s SRID) IsSameAs(other SRID) bool {
-	return int(s) == int(other) ||
-		(int(s) == undefinedSRID && int(other) == wgs84SRID) ||
-		(int(s) == wgs84SRID && int(other) == undefinedSRID)
-}
-
 type URL interface {
 	validateNoUnknownParams() error
 }

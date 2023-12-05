@@ -29,7 +29,7 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
 
-		for _, coll := range e.Config.AllCollections() {
+		for _, coll := range e.Config.AllCollections().Unique() {
 			title := coll.ID
 			if coll.Metadata != nil && coll.Metadata.Title != nil {
 				title = *coll.Metadata.Title
