@@ -9,6 +9,7 @@ require (
 	github.com/elnormous/contenttype v1.0.4
 	github.com/getkin/kin-openapi v0.116.0
 	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/cors v1.2.1
 	github.com/go-playground/validator/v10 v10.13.0
 	github.com/go-spatial/geom v0.0.0-20220918193402-3cd2f5a9a082
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
