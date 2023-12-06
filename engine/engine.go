@@ -259,9 +259,9 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 				proxyRes.StatusCode = http.StatusNoContent
 				removeBody(proxyRes)
 			}
-			if contentTypeOverwrite != "" {
-				proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
-			}
+		}
+		if contentTypeOverwrite != "" {
+			proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
 		}
 		return nil
 	}
