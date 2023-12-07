@@ -69,6 +69,7 @@ GLOBAL OPTIONS:
    --config-file value     reference to YAML configuration file [$CONFIG_FILE]
    --openapi-file value    reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
    --allow-trailing-slash  support API calls to URLs with a trailing slash (default: false) [$ALLOW_TRAILING_SLASH]
+   --enable-cors           enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere. (default: false) [$ENABLE_CORS]
    --help, -h              show help
 ```
 

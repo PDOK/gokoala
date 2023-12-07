@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	gokoalaEngine "github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/core"
@@ -17,6 +18,7 @@ import (
 	"github.com/PDOK/gokoala/ogc/tiles"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -73,6 +75,13 @@ func main() {
 			Required: false,
 			EnvVars:  []string{"ALLOW_TRAILING_SLASH"},
 		},
+		&cli.BoolFlag{
+			Name:     "enable-cors",
+			Usage:    "enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere.",
+			Value:    false,
+			Required: false,
+			EnvVars:  []string{"ENABLE_CORS"},
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -87,7 +96,7 @@ func main() {
 		// Engine encapsulates shared non-OGC API specific logic
 		engine := gokoalaEngine.NewEngine(configFile, openAPIFile)
 
-		router := newRouter(engine, c.Bool("allow-trailing-slash"))
+		router := newRouter(engine, c.Bool("allow-trailing-slash"), c.Bool("enable-cors"))
 
 		return engine.Start(address, router, debugPort, shutdownDelay)
 	}
@@ -98,13 +107,23 @@ func main() {
 	}
 }
 
-func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool) *chi.Mux {
+func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool, enableCORS bool) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
 	if allowTrailingSlash {
 		router.Use(middleware.StripSlashes)
+	}
+	if enableCORS {
+		router.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"*"},
+			AllowedMethods:   []string{"GET", "HEAD", "OPTIONS"},
+			AllowedHeaders:   []string{"X-Requested-With"},
+			ExposedHeaders:   []string{"Content-Crs", "Link"},
+			AllowCredentials: false,
+			MaxAge:           int((time.Hour * 24).Seconds()),
+		}))
 	}
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
 	router.Use(middleware.SetHeader("API-Version", engine.Config.Version))
