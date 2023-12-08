@@ -170,7 +170,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	params interface{}, breadcrumbs []Breadcrumb) {
 
 	// validate request
-	if err := e.OpenAPI.validateRequest(r); err != nil {
+	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -211,7 +211,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 // ServePage validates incoming HTTP request against OpenAPI spec and serve a pre-rendered template as HTTP response
 func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
 	// validate request
-	if err := e.OpenAPI.validateRequest(r); err != nil {
+	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -237,6 +237,31 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 		w.Header().Set(HeaderContentType, contentType)
 	}
 	SafeWrite(w.Write, output)
+}
+
+// ServeResponse validates incoming HTTP request against OpenAPI spec and serve the given response (bytes)
+func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request, validateRequest bool, contentType string, response []byte) {
+	// validate request
+	if validateRequest {
+		if err := e.OpenAPI.ValidateRequest(r); err != nil {
+			log.Printf("%v", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	// validate response
+	if err := e.OpenAPI.validateResponse(contentType, response, r); err != nil {
+		log.Printf("%v", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// return response output to client
+	if contentType != "" {
+		w.Header().Set(HeaderContentType, contentType)
+	}
+	SafeWrite(w.Write, response)
 }
 
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response

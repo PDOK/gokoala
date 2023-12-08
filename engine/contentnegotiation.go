@@ -36,6 +36,10 @@ const (
 	FormatJSONFG      = "jsonfg"
 )
 
+var (
+	MediaTypeJSONVariations = []string{MediaTypeTileJSON, MediaTypeMapboxStyle, MediaTypeGeoJSON, MediaTypeJSONFG}
+)
+
 type ContentNegotiation struct {
 	availableMediaTypes []contenttype.MediaType
 	availableLanguages  []language.Tag

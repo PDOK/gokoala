@@ -62,8 +62,12 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 	cfg := f.engine.Config
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		collectionID := chi.URLParam(r, "collectionId")
+		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
+		collectionID := chi.URLParam(r, "collectionId")
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, err := url.parse()
 		if err != nil {
@@ -131,7 +135,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		case engine.FormatHTML:
 			f.html.features(w, r, collectionID, newCursor, url, limit, fc)
 		case engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, collectionID, newCursor, url, fc)
+			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG()
 		default:
@@ -144,6 +148,11 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 // Feature serves a single Feature
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		collectionID := chi.URLParam(r, "collectionId")
 		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
 		if err != nil {
@@ -188,7 +197,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		case engine.FormatHTML:
 			f.html.feature(w, r, collectionID, feat)
 		case engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, collectionID, feat, url)
+			f.json.featureAsGeoJSON(w, r, collectionID, feat, url)
 		case engine.FormatJSONFG:
 			f.json.featureAsJSONFG()
 		default:

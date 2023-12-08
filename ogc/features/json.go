@@ -19,7 +19,7 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 	}
 }
 
-func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID string,
+func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
 
 	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, featuresURL)
@@ -28,17 +28,19 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, collectionID st
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
 		return
 	}
-	engine.SafeWrite(w.Write, fcJSON)
+	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeGeoJSON, fcJSON)
 }
 
-func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, collectionID string, feat *domain.Feature, url featureURL) {
+func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
+	feat *domain.Feature, url featureURL) {
+
 	feat.Links = jf.createFeatureLinks(url, collectionID, feat.ID)
 	featJSON, err := toJSON(feat)
 	if err != nil {
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
 		return
 	}
-	engine.SafeWrite(w.Write, featJSON)
+	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeGeoJSON, featJSON)
 }
 
 func (jf *jsonFeatures) featuresAsJSONFG() {

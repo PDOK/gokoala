@@ -103,17 +103,19 @@ func setupRequestResponseValidation() {
 			return string(data), nil
 		})
 
-	openapi3filter.RegisterBodyDecoder(MediaTypeTileJSON,
-		func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
-			fn openapi3filter.EncodingFn) (interface{}, error) {
-			var value interface{}
-			dec := json.NewDecoder(body)
-			dec.UseNumber()
-			if err := dec.Decode(&value); err != nil {
-				return nil, errors.New("response doesn't contain valid JSON")
-			}
-			return value, nil
-		})
+	for _, mediaType := range MediaTypeJSONVariations {
+		openapi3filter.RegisterBodyDecoder(mediaType,
+			func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
+				fn openapi3filter.EncodingFn) (interface{}, error) {
+				var value interface{}
+				dec := json.NewDecoder(body)
+				dec.UseNumber()
+				if err := dec.Decode(&value); err != nil {
+					return nil, errors.New("response doesn't contain valid JSON")
+				}
+				return value, nil
+			})
+	}
 }
 
 // mergeSpecs merges the given OpenAPI specs.
@@ -189,7 +191,7 @@ func renderOpenAPITemplate(config *Config, fileName string) []byte {
 	return rendered.Bytes()
 }
 
-func (o *OpenAPI) validateRequest(r *http.Request) error {
+func (o *OpenAPI) ValidateRequest(r *http.Request) error {
 	requestValidationInput, _ := o.getRequestValidationInput(r)
 	if requestValidationInput != nil {
 		err := openapi3filter.ValidateRequest(context.Background(), requestValidationInput)

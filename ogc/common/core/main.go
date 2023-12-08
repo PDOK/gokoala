@@ -51,7 +51,7 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 	router.Get(rootPath, core.LandingPage())
 	router.Get(apiPath, core.API())
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-17
-	router.Get(alternativeAPIPath, func(w http.ResponseWriter, r *http.Request) { core.apiAsJSON(w) })
+	router.Get(alternativeAPIPath, func(w http.ResponseWriter, r *http.Request) { core.apiAsJSON(w, r) })
 	router.Get(conformancePath, core.Conformance())
 	router.Handle("/*", http.FileServer(http.Dir("assets")))
 
@@ -72,7 +72,7 @@ func (c *CommonCore) API() http.HandlerFunc {
 			c.apiAsHTML(w, r)
 			return
 		} else if format == engine.FormatJSON {
-			c.apiAsJSON(w)
+			c.apiAsJSON(w, r)
 			return
 		}
 		http.NotFound(w, r)
@@ -84,9 +84,8 @@ func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 	c.engine.ServePage(w, r, key)
 }
 
-func (c *CommonCore) apiAsJSON(w http.ResponseWriter) {
-	w.Header().Set(engine.HeaderContentType, engine.MediaTypeOpenAPI)
-	engine.SafeWrite(w.Write, c.engine.OpenAPI.SpecJSON)
+func (c *CommonCore) apiAsJSON(w http.ResponseWriter, r *http.Request) {
+	c.engine.ServeResponse(w, r, true, engine.MediaTypeOpenAPI, c.engine.OpenAPI.SpecJSON)
 }
 
 func (c *CommonCore) Conformance() http.HandlerFunc {
