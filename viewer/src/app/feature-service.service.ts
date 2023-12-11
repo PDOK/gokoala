@@ -8,7 +8,6 @@ import { Geometry } from 'ol/geom'
 
 import { ProjectionLike } from 'ol/proj'
 
-import { BackgroundMap } from './feature-view/feature-view.component'
 import { initProj4 } from './mapprojection'
 
 export type link = {

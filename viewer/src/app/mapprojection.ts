@@ -1,5 +1,5 @@
 import { getWidth } from 'ol/extent'
-import { Projection, get as projGet } from 'ol/proj'
+import { Projection } from 'ol/proj'
 import { register as proj4register } from 'ol/proj/proj4'
 import proj4 from 'proj4'
 export const NetherlandsRDNewQuadDefault = 'NetherlandsRDNewQuad'
