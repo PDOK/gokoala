@@ -8,6 +8,9 @@ import { Geometry } from 'ol/geom'
 
 import { ProjectionLike } from 'ol/proj'
 
+import { BackgroundMap } from './feature-view/feature-view.component'
+import { initProj4 } from './mapprojection'
+
 export type link = {
   /**
    * Supplies the URI to a remote resource (or resource fragment).
@@ -96,9 +99,42 @@ export type featureCollectionGeoJSON = {
   numberReturned?: number
 }
 
+export type DataProjectionMapping = {
+  dataProjection: ProjectionLike //Projection of the data we are reading
+  visualProjection: ProjectionLike //Projection of the feature geometries created by this function
+}
+
 export type DataUrl = {
   url: string
-  projection: ProjectionLike
+  dataMapping: DataProjectionMapping
+}
+export const defaultMapping: DataProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857' }
+
+export function projectionAttribute(value: ProjectionLike = 'HTTP://WWW.OPENGIS.NET/DEF/CRS/OGC/1.3/CRS84'): DataProjectionMapping {
+  //console.log(typeof value)
+
+  initProj4()
+
+  if (value) {
+    if (typeof value === 'string') {
+      //console.log(value.substring(value.lastIndexOf('/') + 1).toLowerCase())
+      if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
+        //'EPSG:3857' //Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
+        //console.log('map')
+        return defaultMapping
+      }
+      if (value.toUpperCase().startsWith('HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/')) {
+        const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
+        return { dataProjection: projection, visualProjection: 'EPSG:3857' }
+      }
+      return { dataProjection: value, visualProjection: value }
+    } else {
+      console.log('wrong value ')
+      console.log(value)
+      return value as unknown as DataProjectionMapping
+    }
+  }
+  return { dataProjection: value, visualProjection: value }
 }
 
 @Injectable({
@@ -108,10 +144,13 @@ export class FeatureServiceService {
   constructor(private http: HttpClient) {}
 
   getFeatures(url: DataUrl): Observable<Feature<Geometry>[]> {
-    console.log(url)
+    console.log(JSON.stringify(url))
     return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
       map(data => {
-        return new GeoJSON().readFeatures(data, { featureProjection: url.projection })
+        return new GeoJSON().readFeatures(data, {
+          dataProjection: url.dataMapping.dataProjection,
+          featureProjection: url.dataMapping.visualProjection,
+        })
       })
     )
   }

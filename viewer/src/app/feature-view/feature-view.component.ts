@@ -3,7 +3,7 @@ import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
-import { Extent, getCenter, getTopLeft } from 'ol/extent'
+import { Extent, getCenter, getTopLeft, getWidth } from 'ol/extent'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
@@ -15,13 +15,22 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { NgChanges } from '../app.component'
-import { DataUrl, FeatureServiceService, featureCollectionGeoJSON } from '../feature-service.service'
+import {
+  DataUrl,
+  DataProjectionMapping,
+  FeatureServiceService,
+  featureCollectionGeoJSON,
+  projectionAttribute,
+  defaultMapping,
+} from '../feature-service.service'
 import { boxControl } from './boxcontrol'
-import { Zoom } from 'ol/control'
+import { projectionSetMercator } from '../mapprojection'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
+
+export type BackgroundMap = 'BRT' | 'OSM'
 
 @Component({
   selector: 'app-feature-view',
@@ -32,12 +41,17 @@ export function exhaustiveGuard(_value: never): never {
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() itemsUrl!: string
-  @Input() projection: ProjectionLike = 'EPSG:3857' //Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
-  @Input() backgroundMap: 'BRT' | 'OSM' = 'OSM'
+  private _projection: DataProjectionMapping = defaultMapping
+
+  @Input() backgroundMap: BackgroundMap = 'OSM'
+  @Input() set projection(value: ProjectionLike) {
+    this._projection = projectionAttribute(value)
+  }
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
   mapHeight = 400
   mapWidth = 600
+
   map: OLMap = this.getMap()
   featureCollectionGeoJSON!: featureCollectionGeoJSON
   features: Feature<Geometry>[] = []
@@ -50,20 +64,18 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   private getMap(): OLMap {
     return new OLMap({
-      controls: [],
       view: new View({
-        projection: this.projection,
+        projection: this._projection.visualProjection,
       }),
     })
   }
 
   private init() {
-    this.convertProjectionString()
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapdiv: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
     this.map.setTarget(mapdiv)
-    const aurl: DataUrl = { url: this.itemsUrl, projection: this.projection }
+    const aurl: DataUrl = { url: this.itemsUrl, dataMapping: this._projection }
     this.featureService
       .getFeatures(aurl)
       .pipe(take(1))
@@ -75,27 +87,19 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       })
   }
 
-  private convertProjectionString() {
-    if (typeof this.projection === 'string') {
-      if (this.projection.toUpperCase() === 'HTTP://WWW.OPENGIS.NET/DEF/CRS/OGC/1.3/CRS84') {
-        this.projection = 'EPSG:3857'
-      }
-      if (this.projection.toUpperCase().startsWith('HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/')) {
-        this.projection = 'EPSG' + this.projection.substring(this.projection.lastIndexOf('/') + 1)
-      }
-    }
-  }
-
   ngAfterViewInit() {
-    this.map.addControl(new Zoom())
     this.map.addControl(new boxControl(this.box, {}))
     this.addFeatureEmit()
   }
 
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
-    if (changes.itemsUrl?.currentValue) {
-      this.features = []
-      this.init()
+    if (
+      changes.itemsUrl?.previousValue !== changes.itemsUrl?.currentValue ||
+      changes.projection.previousValue !== changes.projection.currentValue
+    ) {
+      if (changes.itemsUrl?.currentValue) {
+        this.init()
+      }
     }
   }
 
@@ -109,7 +113,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         return
       }
       case 'BRT': {
-        this.map.addLayer(this.brtLayer())
+        // if (this._projection.visualProjection === 'EPSG:28992') {
+        //   this.map.addLayer(this.brtLayer(projectionSetRD()))
+        // } else {
+        this.map.addLayer(this.brtLayer(projectionSetMercator()))
+        // }
         return
       }
 
@@ -122,7 +130,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   loadFeatures(features: Feature<Geometry>[]) {
     const vsource = new VectorSource({
-      //features: new GeoJSON().readFeatures(this.featureCollectionGeoJSON, { featureProjection: this.projection }),
+      //features: new GeoJSON().readFeatures(this.featureCollectionGeoJSON, { featureProjection: this.projection  }),
       features: features,
     })
 
@@ -178,37 +186,47 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.map.setView(view)
   }
 
-  brtLayer() {
-    const projectionExtent = [-285401.92, 22598.08, 595401.9199999999, 903401.9199999999]
-    const projection = new Projection({
-      code: 'EPSG:28992',
-      units: 'm',
-      extent: projectionExtent,
-    })
-    const resolutions = [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76, 26.88, 13.44, 6.72, 3.36, 1.68, 0.84, 0.42, 0.21]
-    //const size = ol.extent.getWidth(projectionExtent) / 256
-
-    const matrixIds = []
-    for (let i = 0; i < resolutions.length; ++i) {
-      matrixIds[i] = 'EPSG:28992:' + i
-    }
+  brtLayer(p: { projection: Projection; resolutions: number[]; matrixIds: string[] }) {
     return new Tile({
       source: new WMTSSource({
         attributions: 'Kaartgegevens: &copy; <a href="https://www.kadaster.nl">Kadaster</a>',
         url: environment.bgtBackgroundUrl,
         layer: 'grijs',
-        matrixSet: 'EPSG:28992',
+        matrixSet: p.projection.getCode(),
         format: 'image/png',
-        projection: projection,
+        projection: p.projection,
         tileGrid: new WMTSTileGrid({
-          origin: getTopLeft(projectionExtent),
-          resolutions: resolutions,
-          matrixIds: matrixIds,
+          origin: getTopLeft(p.projection.getExtent()),
+          resolutions: p.resolutions,
+          matrixIds: p.matrixIds,
         }),
         style: 'default',
         wrapX: false,
       }),
     })
+  }
+
+  zzprojectionSet25831() {
+    const europ = new Projection({
+      code: 'EPSG:25831',
+      extent: [-1300111.74, 3638614.37, 4070492.73, 9528699.59],
+      worldExtent: [-16.1, 32.88, 40.18, 84.73],
+      units: 'm',
+      axisOrientation: 'enu',
+    })
+
+    const size = getWidth(europ.getExtent()) / 256
+    const resolutions: number[] = new Array(14)
+    const matrixIds: string[] = new Array(140)
+    for (let z = 0; z < 14; ++z) {
+      resolutions[z] = size / Math.pow(2, z)
+      matrixIds[z] = ('0' + z).slice(-2)
+    }
+    return {
+      projection: europ,
+      resolutions: resolutions,
+      matrixIds: matrixIds,
+    }
   }
 
   addFeatureEmit() {
@@ -258,8 +276,4 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       )
     })
   }
-}
-
-export function createFeatureViewComponent(el: ElementRef, featureService: FeatureServiceService) {
-  return new FeatureViewComponent(el, featureService)
 }
