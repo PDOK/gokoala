@@ -48,7 +48,6 @@ export class boxControl extends Control {
     draw.on('drawend', e => {
       const map = this.getMap()!
       const bbox = e.feature //this is the feature fired the event
-      console.log(JSON.stringify(bbox))
       const bboxGeometry = bbox.getGeometry()
       if (bboxGeometry) {
         if (map.getView().getProjection().getCode() === 'EPSG:3857') {

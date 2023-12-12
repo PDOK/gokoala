@@ -8,3 +8,4 @@ viewer/cypress/screenshots
 viewer/.angular
 viewer/dist
 viewer/node_modules
+viewer/cypress.env.json

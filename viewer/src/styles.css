@@ -1,0 +1,8 @@
+.boundingboxcontrol {
+  top: 60px;
+  left: 0.5em;
+
+  .innersvg {
+    padding: 3px;
+  }
+}

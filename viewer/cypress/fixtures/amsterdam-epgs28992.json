@@ -1,0 +1,30 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": 1,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [121329.8420159161, 487357.1123116203]
+      },
+      "properties": {
+        "name": "Dam Amsterdam",
+        "geohack": "https://geohack.toolforge.org/geohack.php?language=nl&params=52_22_23_N_4_53_34_E_type:landmark_scale:3000_region:NL&pagename=Dam_(Amsterdam)"
+      }
+    },
+    {
+      "id": 2,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+
+        "coordinates": [121863.87201149028, 488002.525313453]
+      },
+      "properties": {
+        "name": "Amsterdam Central station",
+        "geohack": "https://geohack.toolforge.org/geohack.php?language=nl&params=52_22_44_N_4_54_2_E_type:landmark_scale:2000_region:NL&pagename=Station_Amsterdam_Centraal"
+      }
+    }
+  ]
+}
