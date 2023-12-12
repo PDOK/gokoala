@@ -180,7 +180,7 @@ func TestProjectionsForCollections(t *testing.T) {
 		},
 	}
 
-	expected := []string{"EPSG:4355", "EPSG:4326", "EPSG:3857"}
+	expected := []string{"EPSG:3857", "EPSG:4326", "EPSG:4355"}
 	assert.Equal(t, expected, oaf.ProjectionsForCollections())
 }
 

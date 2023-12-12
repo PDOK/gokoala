@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -309,7 +310,9 @@ func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string
 			break
 		}
 	}
-	return util.Keys(uniqueSRSs)
+	result := util.Keys(uniqueSRSs)
+	slices.Sort(result)
+	return result
 }
 
 type OgcAPIMaps struct {
