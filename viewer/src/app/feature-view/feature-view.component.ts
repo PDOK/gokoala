@@ -15,14 +15,7 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { NgChanges } from '../app.component'
-import {
-  DataUrl,
-  FeatureServiceService,
-  ProjectionMapping,
-  defaultMapping,
-  featureCollectionGeoJSON,
-  getProjectionMapping,
-} from '../feature-service.service'
+import { DataUrl, FeatureServiceService, ProjectionMapping, defaultMapping, featureCollectionGeoJSON } from '../feature-service.service'
 import { projectionSetMercator } from '../mapprojection'
 import { boxControl } from './boxcontrol'
 
@@ -45,7 +38,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   @Input() backgroundMap: BackgroundMap = 'OSM'
   @Input() set projection(value: ProjectionLike) {
-    this._projection = getProjectionMapping(value)
+    this._projection = this.featureService.getProjectionMapping(value)
   }
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()

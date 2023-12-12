@@ -1,1 +1,6 @@
-export const environment = { bgtBackgroundUrl: 'https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0?' }
+import { NgxLoggerLevel } from 'ngx-logger'
+
+export const environment = {
+  bgtBackgroundUrl: 'https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0?',
+  loglevel: NgxLoggerLevel.DEBUG,
+}

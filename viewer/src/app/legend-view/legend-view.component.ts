@@ -1,9 +1,10 @@
-import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
 import { CommonModule } from '@angular/common'
-import { LegendItemComponent } from '../legend-item/legend-item.component'
+import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
 import { recordStyleLayer } from 'ol-mapbox-style'
-import { LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service'
 import { NgChanges } from '../app.component'
+import { LegendItemComponent } from '../legend-item/legend-item.component'
+import { LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service'
+import { NGXLogger } from 'ngx-logger'
 
 @Component({
   selector: 'app-legend-view',
@@ -21,6 +22,7 @@ export class LegendViewComponent implements OnInit, OnChanges {
   LegendItems: LegendItem[] = []
 
   constructor(
+    private logger: NGXLogger,
     private mapboxStyleService: MapboxStyleService,
     private elementRef: ElementRef
   ) {
@@ -58,7 +60,7 @@ export class LegendViewComponent implements OnInit, OnChanges {
         }
       })
     } else {
-      console.error('no style url supplied')
+      this.logger.error('no style url supplied')
     }
   }
 }

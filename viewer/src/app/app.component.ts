@@ -19,6 +19,7 @@ import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } f
 import { ObjectInfoComponent } from './object-info/object-info.component'
 
 import { CommonModule } from '@angular/common'
+import { NGXLogger } from 'ngx-logger'
 import { MapBrowserEvent, VectorTile } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
 import Collection from 'ol/Collection'
@@ -120,6 +121,7 @@ export class AppComponent implements OnChanges {
   mapWidth = 800
 
   constructor(
+    private logger: NGXLogger,
     private elementRef: ElementRef,
     private matrixsetService: MatrixsetService,
     private cdf: ChangeDetectorRef
@@ -127,7 +129,7 @@ export class AppComponent implements OnChanges {
 
   ngOnChanges(changes: NgChanges<AppComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
-      //console.log(this.id + ' style changed')
+      // this.logger.log(this.id + ' style changed')
       if (!changes.styleUrl.isFirstChange()) {
         if (this.vectorTileLayer) {
           this.setStyle(this.vectorTileLayer)
@@ -135,7 +137,7 @@ export class AppComponent implements OnChanges {
       }
     }
     if (changes.tileUrl?.previousValue !== changes.tileUrl?.currentValue) {
-      //console.log(this.id + ' projection changed')
+      // this.logger.log(this.id + ' projection changed')
       this.maxZoom = undefined
       this.minZoom = undefined
       this.zoom = -1
@@ -147,21 +149,21 @@ export class AppComponent implements OnChanges {
   private initialize() {
     this.vectorTileLayer = undefined
     let matrixurl = this.tileUrl.replace('tiles', 'tileMatrixSets') + '?f=json'
-    // console.log('url: ' + this.tileUrl)
+    //  this.logger.log('url: ' + this.tileUrl)
     this.matrixsetService.getMatrix(this.tileUrl).subscribe({
       next: tile => {
         const linkurl = this.FindMatrixUrl(tile.links)
         if (linkurl) {
           matrixurl = linkurl
         } else {
-          console.log('tileurl :' + this.tileUrl + 'not found')
+          this.logger.log('tileurl :' + this.tileUrl + 'not found')
         }
         this.drawFromMatrixUrl(tile, matrixurl)
         this.SetZoomLevel(tile)
         this.cdf.detectChanges()
       },
       error: msg => {
-        console.log(this.id + 'error: ' + JSON.stringify(msg))
+        this.logger.log(this.id + 'error: ' + JSON.stringify(msg))
       },
     })
   }
@@ -216,7 +218,7 @@ export class AppComponent implements OnChanges {
         this.drawMap(matrix)
       },
       error: error => {
-        console.log(this.id + 'tilematrixset not found: ' + matrixurl, error)
+        this.logger.log(this.id + 'tilematrixset not found: ' + matrixurl, error)
         this.projection = new MapProjection(this.tileUrl).Projection
         this.tileGrid = new TileGrid({
           extent: this.projection.getExtent(),
@@ -252,7 +254,7 @@ export class AppComponent implements OnChanges {
 
     map.getView().on('change:resolution', () => {
       const zoom = this.map.getView().getZoom()
-      console.log('zoom' + zoom)
+      this.logger.log('zoom' + zoom)
       if (zoom) {
         this._zoom = zoom
         this.currentZoomLevel.next(zoom)
@@ -268,20 +270,20 @@ export class AppComponent implements OnChanges {
   }
 
   private checkParams(): void {
-    console.log(this.id)
+    this.logger.log(this.id)
     if (!this.tileUrl) {
-      console.error('No TilteUrl was provided for the app-vectortile-view')
+      this.logger.error('No TilteUrl was provided for the app-vectortile-view')
     }
     if (!this.styleUrl) {
-      console.log('No StyleUrl was provided for the app-vectortile-view')
+      this.logger.log('No StyleUrl was provided for the app-vectortile-view')
     }
 
     if (!this.centerX) {
-      console.error('No zoom center-x was provided for the app-vectortile-view')
-    } else console.log('center-x=' + this.centerX)
+      this.logger.error('No zoom center-x was provided for the app-vectortile-view')
+    } else this.logger.log('center-x=' + this.centerX)
     if (!this.centerY) {
-      console.error('No center-y was provided for the app-vectortile-view')
-    } else console.log('center-y=' + this.centerY)
+      this.logger.error('No center-y was provided for the app-vectortile-view')
+    } else this.logger.log('center-y=' + this.centerY)
   }
 
   getMap() {
@@ -348,7 +350,7 @@ export class AppComponent implements OnChanges {
             vectorTileLayer.setSource(this.getVectorTileSource(projection!, this.tileUrl))
           }
         })
-        .catch(err => console.error('error loading: ' + this.id + ' ' + this.styleUrl + ' ' + err))
+        .catch(err => this.logger.error('error loading: ' + this.id + ' ' + this.styleUrl + ' ' + err))
     } else {
       const defaultStyle = new Style({
         fill: new Fill({
