@@ -15,12 +15,22 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { NgChanges } from '../app.component'
-import { DataUrl, FeatureServiceService, featureCollectionGeoJSON } from '../feature-service.service'
+import {
+  DataUrl,
+  FeatureServiceService,
+  ProjectionMapping,
+  defaultMapping,
+  featureCollectionGeoJSON,
+  getProjectionMapping,
+} from '../feature-service.service'
+import { projectionSetMercator } from '../mapprojection'
 import { boxControl } from './boxcontrol'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
+
+export type BackgroundMap = 'BRT' | 'OSM'
 
 @Component({
   selector: 'app-feature-view',
@@ -31,12 +41,17 @@ export function exhaustiveGuard(_value: never): never {
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() itemsUrl!: string
-  @Input() projection: ProjectionLike = 'EPSG:3857' //Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
-  @Input() backgroundMap: 'BRT' | 'OSM' = 'OSM'
+  private _projection: ProjectionMapping = defaultMapping
+
+  @Input() backgroundMap: BackgroundMap = 'OSM'
+  @Input() set projection(value: ProjectionLike) {
+    this._projection = getProjectionMapping(value)
+  }
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
   mapHeight = 400
   mapWidth = 600
+
   map: OLMap = this.getMap()
   featureCollectionGeoJSON!: featureCollectionGeoJSON
   features: Feature<Geometry>[] = []
@@ -50,7 +65,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private getMap(): OLMap {
     return new OLMap({
       view: new View({
-        projection: this.projection,
+        projection: this._projection.visualProjection,
       }),
     })
   }
@@ -60,7 +75,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapdiv: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
     this.map.setTarget(mapdiv)
-    const aurl: DataUrl = { url: this.itemsUrl, projection: this.projection }
+    const aurl: DataUrl = { url: this.itemsUrl, dataMapping: this._projection }
     this.featureService
       .getFeatures(aurl)
       .pipe(take(1))
@@ -98,7 +113,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         return
       }
       case 'BRT': {
-        this.map.addLayer(this.brtLayer())
+        this.map.addLayer(this.brtLayer(projectionSetMercator()))
         return
       }
 
@@ -111,7 +126,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   loadFeatures(features: Feature<Geometry>[]) {
     const vsource = new VectorSource({
-      //features: new GeoJSON().readFeatures(this.featureCollectionGeoJSON, { featureProjection: this.projection  }),
       features: features,
     })
 
@@ -167,32 +181,19 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.map.setView(view)
   }
 
-  brtLayer() {
-    const projectionExtent = [-285401.92, 22598.08, 595401.9199999999, 903401.9199999999]
-    const projection = new Projection({
-      code: 'EPSG:28992',
-      units: 'm',
-      extent: projectionExtent,
-    })
-    const resolutions = [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76, 26.88, 13.44, 6.72, 3.36, 1.68, 0.84, 0.42, 0.21]
-    //const size = ol.extent.getWidth(projectionExtent) / 256
-
-    const matrixIds = []
-    for (let i = 0; i < resolutions.length; ++i) {
-      matrixIds[i] = 'EPSG:28992:' + i
-    }
+  brtLayer(p: { projection: Projection; resolutions: number[]; matrixIds: string[] }) {
     return new Tile({
       source: new WMTSSource({
         attributions: 'Kaartgegevens: &copy; <a href="https://www.kadaster.nl">Kadaster</a>',
         url: environment.bgtBackgroundUrl,
         layer: 'grijs',
-        matrixSet: 'EPSG:28992',
+        matrixSet: p.projection.getCode(),
         format: 'image/png',
-        projection: projection,
+        projection: p.projection,
         tileGrid: new WMTSTileGrid({
-          origin: getTopLeft(projectionExtent),
-          resolutions: resolutions,
-          matrixIds: matrixIds,
+          origin: getTopLeft(p.projection.getExtent()),
+          resolutions: p.resolutions,
+          matrixIds: p.matrixIds,
         }),
         style: 'default',
         wrapX: false,
