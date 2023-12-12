@@ -25,12 +25,14 @@ const (
 	templatesDir    = "engine/templates/"
 	shutdownTimeout = 5 * time.Second
 
+	HeaderLink           = "Link"
 	HeaderAccept         = "Accept"
 	HeaderAcceptLanguage = "Accept-Language"
 	HeaderContentType    = "Content-Type"
 	HeaderContentLength  = "Content-Length"
 	HeaderContentCrs     = "Content-Crs"
 	HeaderBaseURL        = "X-BaseUrl"
+	HeaderRequestedWith  = "X-Requested-With"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
