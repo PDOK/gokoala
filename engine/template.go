@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,14 +54,28 @@ type TemplateKey struct {
 
 // TemplateData the data/variables passed as an argument into the template.
 type TemplateData struct {
+	// Config set during startup based on the given config file
 	Config *Config
 
-	// Params optional parameters not part of GoKoala's configfile. You can use
+	// Params optional parameters not part of GoKoala's config file. You can use
 	// this to provide extra data to a template at rendering time.
 	Params interface{}
 
-	// Crumb path to the page, in key-value pairs of name, path
+	// Breadcrumb path to the page, in key-value pairs of name->path
 	Breadcrumbs []Breadcrumb
+
+	queryParams url.Values
+}
+
+// QueryString return ?=foo=a&bar=b style query string of the current page
+func (td *TemplateData) QueryString(format string) string {
+	if len(td.queryParams) > 0 {
+		if format != "" {
+			td.queryParams.Set(FormatParam, format)
+		}
+		return "?" + td.queryParams.Encode()
+	}
+	return fmt.Sprintf("?%s=%s", FormatParam, format)
 }
 
 type Breadcrumb struct {
@@ -161,7 +176,7 @@ func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcr
 		var result []byte
 		if key.Format == FormatHTML {
 			file, parsed := t.parseHTMLTemplate(key, lang)
-			result = t.renderHTMLTemplate(parsed, params, breadcrumbs, file)
+			result = t.renderHTMLTemplate(parsed, nil, params, breadcrumbs, file)
 		} else {
 			file, parsed := t.parseNonHTMLTemplate(key, lang)
 			result = t.renderNonHTMLTemplate(parsed, params, key, file)
@@ -181,12 +196,15 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 	return file, parsed
 }
 
-func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
+func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, queryParams url.Values,
+	params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
+
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{
 		Config:      t.config,
 		Params:      params,
 		Breadcrumbs: breadcrumbs,
+		queryParams: queryParams,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}

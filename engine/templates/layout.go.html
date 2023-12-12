@@ -64,21 +64,13 @@
                 </nav>
 
                 <nav style="--bs-breadcrumb-divider: '|';" aria-label="switch language or format">
-                    <ol class="breadcrumb" >
+                    <ol class="breadcrumb">
                         {{ $languageSwitchCode := (i18n "LanguageSwitchCode") }}
-                        {{ if .Breadcrumbs }}
-                            {{ if gt (len .Config.AvailableLanguages) 1 }}
-                            <!-- TODO: support switching between more than two languages -->
-                            <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
-                            {{ end }}
-                            <li class="breadcrumb-item"><a href="{{ $lastcrumb.Path }}?f=json" target="_blank">JSON</a></li>
-                        {{ else }}
-                            {{ if gt (len .Config.AvailableLanguages) 1 }}
-                            <!-- TODO: support switching between more than two languages -->
-                            <li class="breadcrumb-item"><a href="" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
-                            {{ end }}
-                            <li class="breadcrumb-item"><a href="?f=json" target="_blank">JSON</a></li>
+                        {{ if gt (len .Config.AvailableLanguages) 1 }}
+                        <!-- TODO: support switching between more than two languages -->
+                        <li class="breadcrumb-item"><a href="{{ (empty .Breadcrumbs) | ternary "" $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
                         {{ end }}
+                        <li class="breadcrumb-item"><a href="{{ (empty .Breadcrumbs) | ternary "" $lastcrumb.Path }}{{ .QueryString "json" }}" target="_blank">JSON</a></li>
                     </ol>
                 </nav>
             </div>
