@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	gokoalaEngine "github.com/PDOK/gokoala/engine"
@@ -19,10 +20,16 @@ func Test_newRouter(t *testing.T) {
 		wantBody   string
 	}{
 		{
-			name:       "multiple_ogc_apis_single_collection",
+			name:       "multiple_ogc_apis_single_collection_json",
 			configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 			apiCall:    "http://localhost:8180/collections/NewYork?f=json",
 			wantBody:   "engine/testdata/expected_multiple_ogc_apis_single_collection.json",
+		},
+		{
+			name:       "multiple_ogc_apis_single_collection_html",
+			configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+			apiCall:    "http://localhost:8180/collections/NewYork?f=html",
+			wantBody:   "engine/testdata/expected_multiple_ogc_apis_single_collection.html",
 		},
 	}
 	for _, tt := range tests {
@@ -46,7 +53,19 @@ func Test_newRouter(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			assert.JSONEq(t, recorder.Body.String(), string(expectedBody))
+			log.Print(recorder.Body.String()) // to ease debugging
+			switch {
+			case strings.HasSuffix(tt.apiCall, "json"):
+				assert.JSONEq(t, recorder.Body.String(), string(expectedBody))
+			case strings.HasSuffix(tt.apiCall, "html"):
+				assert.Contains(t, normalize(recorder.Body.String()), normalize(string(expectedBody)))
+			default:
+				log.Fatalf("implement support to test format: %s", tt.apiCall)
+			}
 		})
 	}
+}
+
+func normalize(s string) string {
+	return strings.ToLower(strings.Join(strings.Fields(s), ""))
 }

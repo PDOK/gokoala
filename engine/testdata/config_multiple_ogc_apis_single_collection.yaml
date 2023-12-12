@@ -36,8 +36,13 @@ ogcApi:
       defaultWGS84:
         geopackage:
           local:
-            # Dutch addresses, but for example purposes let's present these are NYC addresses
+            # Dutch addresses, but for example purposes let's pretend these are NYC addresses
             file: ./examples/resources/addresses-crs84.gpkg
+      additional:
+        - srs: EPSG:28992
+          geopackage:
+            local:
+              file: ./examples/resources/addresses-rd.gpkg
     collections:
       - id: NewYork
         tableName: addresses
