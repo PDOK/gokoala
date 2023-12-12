@@ -64,16 +64,21 @@ type TemplateData struct {
 	// Breadcrumb path to the page, in key-value pairs of name->path
 	Breadcrumbs []Breadcrumb
 
+	// Request URL
 	url *url.URL
 }
 
 // AvailableFormats returns the output formats available for the current page
 func (td *TemplateData) AvailableFormats() map[string]string {
 	if td.url != nil && strings.Contains(td.url.Path, "/items") {
-		// For OGC API Features
-		return map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
+		return td.AvailableFormatsFeatures()
 	}
-	return map[string]string{FormatJSON: "JSON"}
+	return OutputFormatDefault
+}
+
+// AvailableFormatsFeatures convenience function
+func (td *TemplateData) AvailableFormatsFeatures() map[string]string {
+	return OutputFormatFeatures
 }
 
 // QueryString returns ?=foo=a&bar=b style query string of the current page

@@ -94,7 +94,7 @@ Extent = "Geographic extent"
 GoTo = "Go to the"
 ViewIn = "View in the"
 Browse = "Browse through the"
-FeaturesExplanation = "TODO Explain here GeoJSON vs JSON-FG"
+FeaturesExplanation = "GeoJSON is an open and widely accepted format for feature data and the first choice for many (web) applications. However, it formally only supports the WGS84 projection. JSON-FG is an extension of GeoJSON and does offer official support for other projections. Since JSON-FG is a recent development, from a compatibility point of view GeoJSON is also offered in other projections for the time being."
 
 # Features page
 Geometry = "geometry"

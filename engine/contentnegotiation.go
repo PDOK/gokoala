@@ -37,7 +37,9 @@ const (
 )
 
 var (
-	MediaTypeJSONVariations = []string{MediaTypeTileJSON, MediaTypeMapboxStyle, MediaTypeGeoJSON, MediaTypeJSONFG}
+	MediaTypeJSONFamily  = []string{MediaTypeTileJSON, MediaTypeMapboxStyle, MediaTypeGeoJSON, MediaTypeJSONFG}
+	OutputFormatDefault  = map[string]string{FormatJSON: "JSON"}
+	OutputFormatFeatures = map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
 )
 
 type ContentNegotiation struct {

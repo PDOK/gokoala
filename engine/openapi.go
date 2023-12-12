@@ -103,7 +103,7 @@ func setupRequestResponseValidation() {
 			return string(data), nil
 		})
 
-	for _, mediaType := range MediaTypeJSONVariations {
+	for _, mediaType := range MediaTypeJSONFamily {
 		openapi3filter.RegisterBodyDecoder(mediaType,
 			func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
 				fn openapi3filter.EncodingFn) (interface{}, error) {
