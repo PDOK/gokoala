@@ -38,7 +38,6 @@ export function mountFeatureComponent(aprojection: string, abackground: 'OSM' | 
       projection: aprojection,
     },
   }).then(comp1 => {
-    cy.log(JSON.stringify(comp1))
     const map = comp1.component.map as OLMap
     map.addEventListener('loadend', cy.stub().as('MapLoaded'))
     const viewport = map.getViewport()
