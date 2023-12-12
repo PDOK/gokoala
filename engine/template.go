@@ -211,7 +211,7 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 	return file, parsed
 }
 
-func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, URL *url.URL,
+func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
 	params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
 
 	var rendered bytes.Buffer
@@ -219,7 +219,7 @@ func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, URL *url.U
 		Config:      t.config,
 		Params:      params,
 		Breadcrumbs: breadcrumbs,
-		url:         URL,
+		url:         url,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}
