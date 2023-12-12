@@ -67,10 +67,12 @@
                     <ol class="breadcrumb">
                         {{ $languageSwitchCode := (i18n "LanguageSwitchCode") }}
                         {{ if gt (len .Config.AvailableLanguages) 1 }}
-                        <!-- TODO: support switching between more than two languages -->
-                        <li class="breadcrumb-item"><a href="{{ (empty .Breadcrumbs) | ternary "" $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
+                            <!-- TODO: support switching between more than two languages -->
+                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
                         {{ end }}
-                        <li class="breadcrumb-item"><a href="{{ (empty .Breadcrumbs) | ternary "" $lastcrumb.Path }}{{ .QueryString "json" }}" target="_blank">JSON</a></li>
+                        {{ range $formatKey, $formatName := .AvailableFormats }}
+                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}{{ $.QueryString $formatKey }}" target="_blank">{{ $formatName }}</a></li>
+                        {{ end }}
                     </ol>
                 </nav>
             </div>

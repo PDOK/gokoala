@@ -187,7 +187,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	var output []byte
 	if key.Format == FormatHTML {
 		htmlTmpl := parsedTemplate.(*htmltemplate.Template)
-		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL.Query(), params, breadcrumbs, "")
+		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "")
 	} else {
 		jsonTmpl := parsedTemplate.(*texttemplate.Template)
 		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")

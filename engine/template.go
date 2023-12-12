@@ -64,16 +64,26 @@ type TemplateData struct {
 	// Breadcrumb path to the page, in key-value pairs of name->path
 	Breadcrumbs []Breadcrumb
 
-	queryParams url.Values
+	url *url.URL
 }
 
-// QueryString return ?=foo=a&bar=b style query string of the current page
+// AvailableFormats returns the output formats available for the current page
+func (td *TemplateData) AvailableFormats() map[string]string {
+	if td.url != nil && strings.Contains(td.url.Path, "/items") {
+		// For OGC API Features
+		return map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
+	}
+	return map[string]string{FormatJSON: "JSON"}
+}
+
+// QueryString returns ?=foo=a&bar=b style query string of the current page
 func (td *TemplateData) QueryString(format string) string {
-	if len(td.queryParams) > 0 {
+	if td.url != nil {
+		q := td.url.Query()
 		if format != "" {
-			td.queryParams.Set(FormatParam, format)
+			q.Set(FormatParam, format)
 		}
-		return "?" + td.queryParams.Encode()
+		return "?" + q.Encode()
 	}
 	return fmt.Sprintf("?%s=%s", FormatParam, format)
 }
@@ -196,7 +206,7 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 	return file, parsed
 }
 
-func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, queryParams url.Values,
+func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, URL *url.URL,
 	params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
 
 	var rendered bytes.Buffer
@@ -204,7 +214,7 @@ func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, queryParam
 		Config:      t.config,
 		Params:      params,
 		Breadcrumbs: breadcrumbs,
-		queryParams: queryParams,
+		url:         URL,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}
