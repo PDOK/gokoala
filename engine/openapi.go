@@ -233,6 +233,9 @@ func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.Re
 		Request:    r,
 		PathParams: pathParams,
 		Route:      route,
+		Options: &openapi3filter.Options{
+			SkipSettingDefaults: true,
+		},
 	}, nil
 }
 

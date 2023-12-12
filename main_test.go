@@ -29,7 +29,7 @@ func Test_newRouter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
 			eng := gokoalaEngine.NewEngine(tt.configFile, "")
-			router := newRouter(eng, false)
+			router := newRouter(eng, false, false)
 
 			recorder := httptest.NewRecorder()
 			req, err := http.NewRequest(http.MethodGet, tt.apiCall, nil)
