@@ -10,7 +10,7 @@
         padding: 2px;
       }
     </style>
-  <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.ee42683d02a100f9.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.ee42683d02a100f9.css"></noscript></head>
+  <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.daa7d0d8a799e5b4.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.daa7d0d8a799e5b4.css"></noscript></head>
 
   <body onload="load()">
     <h2> OGC API BBOX sample</h2>
@@ -41,14 +41,14 @@
 
     <h2> OGC API BGT Road parts</h2>
 
-    <app-feature-view id="wegdelensample" items-url="https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?f=json&amp;limit=500" projection="EPSG:28992" background-map="BRT">
+    <app-feature-view id="wegdelensample" items-url="https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?f=json&amp;limit=500crs=http://www.opengis.net/def/crs/EPSG/0/28992" projection="http://www.opengis.net/def/crs/EPSG/0/28992" background-map="BRT">
     </app-feature-view>
-  <script src="runtime.84c19abfcab6064c.js" type="module"></script><script src="polyfills.b4164be01753d607.js" type="module"></script><script src="main.ee16193abbee919d.js" type="module"></script></body>
+  <script src="runtime.84c19abfcab6064c.js" type="module"></script><script src="polyfills.b4164be01753d607.js" type="module"></script><script src="main.1a8911715e6aa49c.js" type="module"></script></body>
   <script>
     function load() {
       const showurl =
         'https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&limit=50'
-      const showprojection = 'EPSG:3857'
+      const showprojection = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
       itemurl.value = showurl
       itemurl.title = showurl
       itemprojection.value = showprojection
