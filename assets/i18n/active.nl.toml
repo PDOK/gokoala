@@ -99,7 +99,7 @@ Extent = "Geografische begrenzing"
 GoTo = "Ga naar de"
 ViewIn = "Bekijk in de"
 Browse = "Blader door de"
-FeaturesExplanation = "GeoJSON is een open en breed geaccepteerd formaat voor feature data en voor veel (web)toepassingen de eerste keus. Formeel ondersteund het echter alleen de WGS84 projectie. JSON-FG is een uitbreiding op GeoJSON en biedt wel officiële ondersteuning voor andere projecties. Aangezien JSON-FG een recente ontwikkeling is wordt er vanuit compatibiliteit oogpunt vooralsnog ook GeoJSON in andere projecties aangeboden."
+FeaturesExplanation = "GeoJSON is een open en breed geaccepteerd formaat voor feature data en voor veel (web)toepassingen de eerste keus. Formeel ondersteunt het echter alleen de WGS84 projectie. JSON-FG is een uitbreiding op GeoJSON en biedt wel officiële ondersteuning voor andere projecties. Aangezien JSON-FG een recente ontwikkeling is wordt er vanuit compatibiliteit oogpunt vooralsnog ook GeoJSON in andere projecties aangeboden."
 
 # Features page
 Geometry = "geometrie"
