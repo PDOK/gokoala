@@ -3,7 +3,7 @@ import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
-import { Extent, getCenter, getTopLeft, getWidth } from 'ol/extent'
+import { Extent, getCenter, getTopLeft } from 'ol/extent'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
@@ -17,14 +17,14 @@ import { environment } from 'src/environments/environment'
 import { NgChanges } from '../app.component'
 import {
   DataUrl,
-  DataProjectionMapping,
   FeatureServiceService,
-  featureCollectionGeoJSON,
-  projectionAttribute,
+  ProjectionMapping,
   defaultMapping,
+  featureCollectionGeoJSON,
+  getProjectionMapping,
 } from '../feature-service.service'
-import { boxControl } from './boxcontrol'
 import { projectionSetMercator } from '../mapprojection'
+import { boxControl } from './boxcontrol'
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
@@ -41,11 +41,11 @@ export type BackgroundMap = 'BRT' | 'OSM'
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() itemsUrl!: string
-  private _projection: DataProjectionMapping = defaultMapping
+  private _projection: ProjectionMapping = defaultMapping
 
   @Input() backgroundMap: BackgroundMap = 'OSM'
   @Input() set projection(value: ProjectionLike) {
-    this._projection = projectionAttribute(value)
+    this._projection = getProjectionMapping(value)
   }
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
@@ -113,11 +113,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         return
       }
       case 'BRT': {
-        // if (this._projection.visualProjection === 'EPSG:28992') {
-        //   this.map.addLayer(this.brtLayer(projectionSetRD()))
-        // } else {
         this.map.addLayer(this.brtLayer(projectionSetMercator()))
-        // }
         return
       }
 
@@ -130,7 +126,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   loadFeatures(features: Feature<Geometry>[]) {
     const vsource = new VectorSource({
-      //features: new GeoJSON().readFeatures(this.featureCollectionGeoJSON, { featureProjection: this.projection  }),
       features: features,
     })
 
@@ -204,29 +199,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         wrapX: false,
       }),
     })
-  }
-
-  zzprojectionSet25831() {
-    const europ = new Projection({
-      code: 'EPSG:25831',
-      extent: [-1300111.74, 3638614.37, 4070492.73, 9528699.59],
-      worldExtent: [-16.1, 32.88, 40.18, 84.73],
-      units: 'm',
-      axisOrientation: 'enu',
-    })
-
-    const size = getWidth(europ.getExtent()) / 256
-    const resolutions: number[] = new Array(14)
-    const matrixIds: string[] = new Array(140)
-    for (let z = 0; z < 14; ++z) {
-      resolutions[z] = size / Math.pow(2, z)
-      matrixIds[z] = ('0' + z).slice(-2)
-    }
-    return {
-      projection: europ,
-      resolutions: resolutions,
-      matrixIds: matrixIds,
-    }
   }
 
   addFeatureEmit() {

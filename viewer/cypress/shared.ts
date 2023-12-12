@@ -45,7 +45,9 @@ export function mountFeatureComponent(aprojection: string, abackground: 'OSM' | 
 }
 
 export function idle() {
-  //cy.waitForNetworkIdle('*', '*', 2000)
+  if (Cypress.env('networkIdle')) {
+    cy.waitForNetworkIdle('*', '*', Cypress.env('networkIdle'))
+  }
 }
 export function screenshot(aname: string = '') {
   cy.screenshot(aname)

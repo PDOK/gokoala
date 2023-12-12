@@ -19,31 +19,6 @@ export function initProj4() {
   proj4register(proj4)
 }
 
-export function projectionSetRD() {
-  // Geldigheidsgebied van het tiling schema in RD-coördinaten:
-  const rDprojection = new Projection({
-    code: 'EPSG:28992',
-    units: 'm',
-    extent: [-285401.92, 22598.08, 595401.92, 903401.92],
-    axisOrientation: 'enu',
-    global: false,
-  })
-
-  // Resoluties (pixels per meter) van de zoomniveaus:
-  const resolutions = [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76, 26.88, 13.44, 6.72, 3.36, 1.68, 0.84, 0.42, 0.21]
-  //var size = ol.extent.getWidth(projectionExtent) / 256
-  // Er zijn 15 (0 tot 14) zoomniveaus beschikbaar van de WMTS-service voor de BRT-Achtergrondkaart:
-  const matrixIds = new Array(15)
-  for (let z = 0; z < 15; ++z) {
-    matrixIds[z] = 'EPSG:28992:' + z
-  }
-
-  return {
-    projection: rDprojection,
-    resolutions: resolutions,
-    matrixIds: matrixIds,
-  }
-}
 export function projectionSetMercator() {
   const mercator = new Projection({
     code: 'EPSG:3857',

@@ -98,28 +98,24 @@ export type featureCollectionGeoJSON = {
   numberReturned?: number
 }
 
-export type DataProjectionMapping = {
+export type ProjectionMapping = {
   dataProjection: ProjectionLike //Projection of the data we are reading
   visualProjection: ProjectionLike //Projection of the feature geometries created by this function
 }
 
 export type DataUrl = {
   url: string
-  dataMapping: DataProjectionMapping
+  dataMapping: ProjectionMapping
 }
-export const defaultMapping: DataProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857' }
+export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857' }
 
-export function projectionAttribute(value: ProjectionLike = 'HTTP://WWW.OPENGIS.NET/DEF/CRS/OGC/1.3/CRS84'): DataProjectionMapping {
-  //console.log(typeof value)
-
+export function getProjectionMapping(value: ProjectionLike = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
   initProj4()
 
   if (value) {
     if (typeof value === 'string') {
-      //console.log(value.substring(value.lastIndexOf('/') + 1).toLowerCase())
       if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
-        //'EPSG:3857' //Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
-        //console.log('map')
+        //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
         return defaultMapping
       }
       if (value.toUpperCase().startsWith('HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/')) {
@@ -128,9 +124,9 @@ export function projectionAttribute(value: ProjectionLike = 'HTTP://WWW.OPENGIS.
       }
       return { dataProjection: value, visualProjection: value }
     } else {
-      console.log('wrong value ')
-      console.log(value)
-      return value as unknown as DataProjectionMapping
+      console.error('wrong value:')
+      console.error(value)
+      return value as unknown as ProjectionMapping
     }
   }
   return { dataProjection: value, visualProjection: value }
