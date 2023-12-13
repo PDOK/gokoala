@@ -128,7 +128,9 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		if fc == nil {
 			log.Printf("no results found for collection '%s' with params: %s",
 				collectionID, r.URL.Query().Encode())
-			fc = &domain.FeatureCollection{}
+			fc = &domain.FeatureCollection{
+				Features: make([]*domain.Feature, 0),
+			}
 		}
 
 		switch f.engine.CN.NegotiateFormat(r) {
