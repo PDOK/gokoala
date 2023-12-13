@@ -88,7 +88,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
     if (
       changes.itemsUrl?.previousValue !== changes.itemsUrl?.currentValue ||
-      changes.projection.previousValue !== changes.projection.currentValue
+      changes.projection?.previousValue !== changes.projection?.currentValue
     ) {
       if (changes.itemsUrl?.currentValue) {
         this.init()
