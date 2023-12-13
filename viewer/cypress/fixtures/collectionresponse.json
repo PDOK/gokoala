@@ -20,14 +20,7 @@
       "description": "These are example addresses",
       "extent": {
         "spatial": {
-          "bbox": [
-            [
-              50.2129,
-              2.52713,
-              55.7212,
-              7.37403
-            ]
-          ],
+          "bbox": [[50.2129, 2.52713, 55.7212, 7.37403]],
           "crs": "http://www.opengis.net/def/crs/EPSG/0/4326"
         }
       },
