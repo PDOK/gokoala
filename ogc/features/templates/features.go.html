@@ -3,6 +3,7 @@
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
 {{ $collId := .Params.CollectionID }}
+{{ $map := $cfg.OgcAPI.Features.Basemap }}
 
 <script>
     {{- /* generic function to update query string parameters */ -}}
@@ -16,8 +17,6 @@
     function crsChange(value) {
         const url = new URL(window.location.href);
         url.searchParams.delete('cursor'); // when filters change, we can't continue pagination.
-        url.searchParams.delete('bbox'); // We need to either clear bbox, or transform it to new crs
-        document.getElementById('bbox').value = null;
         url.searchParams.set('crs', value);
         window.location.href = url.toString();
     }
@@ -28,8 +27,8 @@
 </hgroup>
 
 <section class="row row-cols-4 g-4 py-3" id="body" hidden="hidden">
-    <div class="col-8">
-        <div class="card h-100">
+    <div class="col-6 row g-1">
+        <div class="card h-50">
             <h5 class="card-header">
                 {{ if and .Params.Metadata .Params.Metadata.Title }}
                     {{ .Params.Metadata.Title }}
@@ -43,66 +42,84 @@
                 {{ end }}
             </div>
         </div>
-    </div>
-
-    <div class="col-8">
-        <table class="table table-borderless table-sm w-auto">
-            <tbody>
-            <tr>
-                <td class="w-auto text-nowrap">
-                    <b>{{ i18n "Projection" }}</b>
-                </td>
-                <td class="w-auto px-2">
+        <div class="col-auto row g-2">
+            <div class="form-group row">
+                <label for="srs-select" class="col-sm-2 col-form-label">{{ i18n "Projection" }}</label>
+                <div class="col-sm-10">
                     <select id="srs-select" class="form-select" onchange="crsChange(this.value)">
-                        <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected > http://www.opengis.net/def/crs/OGC/1.3/CRS84 </option>
+                        <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
+                            http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                        </option>
                         {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection $collId }}
                         <option value=http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }} > http://www.opengis.net/def/crs/EPSG/0/{{ $srs }}  </option>
                         {{ end }}
                     </select>
-                </td>
-
-            </tr>
-            <tr>
-                <td class="w-auto text-nowrap">
-                    <b>{{ i18n "Limit" }}</b>
-                </td>
-                <td id="field-limit" class="w-auto px-2">
-                    <select id="limit-select" class="form-select" aria-label="Limit selection" onchange="updateQueryString('limit', this.value)">
-                        <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }} </option>
-                        <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option> {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
-                        <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>{{ $cfg.OgcAPI.Features.Limit.Max }} {{ i18n "Items" }} ({{ i18n "Max" }})</option>
+                </div>
+            </div>
+            <div class="form-group row ">
+                <label for="limit-select" class="col-sm-2 col-form-label">{{ i18n "Limit" }}</label>
+                <div class="col-sm-10">
+                    <select id="limit-select" class="form-select" aria-label="Limit selection"
+                            onchange="updateQueryString('limit', this.value)">
+                        <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }}</option>
+                        <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option>
+                        {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
+                        <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit
+                                $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>{{ $cfg.OgcAPI.Features.Limit.Max }} {{
+                            i18n "Items" }} ({{ i18n "Max" }})
+                        </option>
                     </select>
-                </td>
-            </tr>
-            <tr>
-                <td class="w-auto text-nowrap">
-                    <b>Bounding box</b>
-                </td>
-                <td id="field-boundingbox" class="w-auto px-2">
-                    <input type="text" class="form-control"  id="bbox" name="bbox" value="" onchange="updateQueryString('bbox', this.value)">
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="col-8">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                <li>
-                    <a class="page-link {{if not .Params.Cursor.HasPrev }}disabled{{end}}" href="{{ .Params.PrevLink }}" aria-label="{{ i18n "Prev" }}">
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li>
+                        <a class="page-link {{if not .Params.Cursor.HasPrev }}disabled{{end}}" href="{{ .Params.PrevLink }}" aria-label="{{ i18n "Prev" }}">
                         <span aria-hidden="true">&laquo;</span>
                         {{ i18n "Prev" }}
-                    </a>
-                </li>
-                <li>
-                    <a class="page-link {{if not .Params.Cursor.HasNext }}disabled{{end}}" href="{{ .Params.NextLink }}" aria-label="{{ i18n "Next" }}">
+                        </a>
+                    </li>
+                    <li>
+                        <a class="page-link {{if not .Params.Cursor.HasNext }}disabled{{end}}" href="{{ .Params.NextLink }}" aria-label="{{ i18n "Next" }}">
                         {{ i18n "Next" }}
                         <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div class="col-6">
+        <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+            <script type="text/javascript" src="view-component/main.js"></script>
+            <script type="text/javascript" src="view-component/polyfills.js"></script>
+            <script type="text/javascript" src="view-component/runtime.js"></script>
+        <div class="featuremap">
+            <app-feature-view id="viewer" {{ if $map }} background-map={{ $map }} {{ else }} {{ " " }} {{ end }}></app-feature-view>
+        </div>
+            <script type="module">
+                const url = new URL(window.location.href)
+                url.searchParams.set('f', 'json');
+                const viewer = document.getElementById('viewer');
+                viewer.setAttribute('items-url', url);
+
+                if (url.searchParams.get('crs') !== null) {
+                    let crs = url.searchParams.get('crs');
+                    document.getElementById('srs-select').value = crs;
+                    viewer.setAttribute('projection', crs)
+                }
+
+                document.getElementById("body").hidden = ""
+
+                viewer.addEventListener('box', selectbox => {
+                    document.getElementById('bbox').value = selectbox.detail
+                    updateQueryString("bbox", selectbox.detail)
+                })
+            </script>
+        </div>
 
     {{ range $feat := .Params.Features }}
         <table class="table table-striped">
@@ -121,51 +138,5 @@
             </tbody>
         </table>
     {{ end }}
-    </div>
-
-    <div class="col-4" >
-        <table>
-            <tr>
-                <td class="w-auto px-2">
-                    <b>{{ i18n "Example" }} URL</b>
-                </td>
-            </tr>
-            <tr>
-                <td class="w-auto px-2">
-                    <code id="field-url-example"></code>
-                </td>
-            </tr>
-        </table>
-
-        <link rel="stylesheet" type="text/css" href="view-component/styles.css">
-        <script type="text/javascript" src="view-component/main.js"></script>
-        <script type="text/javascript" src="view-component/polyfills.js"></script>
-        <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="BRT" ></app-feature-view>
-        <script type="module">
-            const url = new URL(window.location.href)
-            url.searchParams.set('f','json');
-            const viewer = document.getElementById('viewer');
-            viewer.setAttribute('items-url', url);
-
-            document.getElementById("field-url-example").innerHTML = url
-            if (url.searchParams.get('crs') !== null) {
-                let crs = url.searchParams.get('crs');
-                document.getElementById('srs-select').value = crs;
-                viewer.setAttribute('projection', crs)
-            }
-            if (url.searchParams.get('bbox') !== null) {
-                document.getElementById('bbox').value = url.searchParams.get('bbox');
-            }
-
-            document.getElementById("body").hidden = ""
-
-            viewer.addEventListener('box', selectbox => {
-                document.getElementById('bbox').value = selectbox.detail
-                updateQueryString("bbox", selectbox.detail)
-            })
-        </script>
-    </div>
-
 </section>
 {{end}}

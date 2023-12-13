@@ -38,6 +38,7 @@ availableLanguages:
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   features:
+    basemap: BRT
     datasources:
       defaultWGS84:
         geopackage:

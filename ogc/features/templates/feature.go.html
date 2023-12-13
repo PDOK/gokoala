@@ -3,6 +3,7 @@
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
 {{ $collId := .Params.CollectionID }}
+{{ $map := $cfg.OgcAPI.Features.Basemap }}
 
 <script>
 
@@ -20,26 +21,21 @@
 </hgroup>
 
 <section class="row row-cols-4 g-4 py-3" id="body" hidden="hidden">
-
     <div class="col-8">
-        <table class="table table-borderless table-sm w-auto">
-            <tbody>
-            <tr>
-                <td class="w-auto text-nowrap">
-                    <b>{{ i18n "Projection" }}</b>
-                </td>
-                <td class="w-auto px-2">
-                    <select id="srs-select" class="form-select" onchange="crsChange(this.value)">
-                        <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected > http://www.opengis.net/def/crs/OGC/1.3/CRS84 </option>
-                        {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection $collId }}
-                        <option value=http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }} > http://www.opengis.net/def/crs/EPSG/0/{{ $srs }}  </option>
-                        {{ end }}
-                    </select>
-                </td>
-
-            </tr>
-            </tbody>
-        </table>
+        <div class="form-group row">
+            <label for="srs-select" class="col-sm-2 col-form-label">{{ i18n "Projection" }}</label>
+            <div class="col-sm-10">
+                <select id="srs-select" class="form-select" onchange="crsChange(this.value)">-->
+                    <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
+                        http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                    </option>
+                    {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection $collId }}
+                    <option value=http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix
+                    "EPSG:" $srs }} > http://www.opengis.net/def/crs/EPSG/0/{{ $srs }}  </option>
+                    {{ end }}
+                </select>
+            </div>
+        </div>
     </div>
 
     <div class="col-8">
@@ -60,32 +56,21 @@
         </table>
     </div>
 
-    <div class="col-4" >
-        <table>
-            <tr>
-                <td class="w-auto px-2">
-                    <b>{{ i18n "Example" }} URL</b>
-                </td>
-            </tr>
-            <tr>
-                <td class="w-auto px-2">
-                    <code id="field-url-example"></code>
-                </td>
-            </tr>
-        </table>
 
+    <div class="col-4">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="BRT" ></app-feature-view>
+
+        <app-feature-view id="viewer" {{ if $map }} background-map={{ $map }} {{ else }} {{ " " }} {{ end }} ></app-feature-view>
         <script type="module">
             const url = new URL(window.location.href)
-            url.searchParams.set('f','json');
+            url.searchParams.set('f', 'json');
             const viewer = document.getElementById('viewer');
             viewer.setAttribute('items-url', url);
 
-            document.getElementById("field-url-example").innerHTML = url
+
             if (url.searchParams.get('crs') !== null) {
                 let crs = url.searchParams.get('crs');
                 document.getElementById('srs-select').value = crs;
@@ -96,6 +81,5 @@
 
         </script>
     </div>
-
 </section>
 {{end}}
