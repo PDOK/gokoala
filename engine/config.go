@@ -283,7 +283,7 @@ type OgcAPIStyles struct {
 type OgcAPIFeatures struct {
 	Limit       Limit                 `yaml:"limit"`
 	Datasources *Datasources          `yaml:"datasources"`
-	Basemap     string                `yaml:"basemap"`
+	Basemap     string                `yaml:"basemap" default:"OSM"`
 	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
 }
 
