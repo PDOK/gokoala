@@ -10,10 +10,9 @@ _Cloud Native OGC APIs server, written in Go._
 [![Lint (go)](https://github.com/PDOK/gokoala/actions/workflows/lint-go.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint-go.yml)
 [![Lint (ts)](https://github.com/PDOK/gokoala/actions/workflows/lint-ts.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint-ts.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/PDOK/gokoala)](https://goreportcard.com/report/github.com/PDOK/gokoala)
-[![GitHub
-license](https://img.shields.io/github/license/PDOK/gokoala)](https://github.com/PDOK/gokoala/blob/master/LICENSE)
-[![Docker
-Pulls](https://img.shields.io/docker/pulls/pdok/gokoala.svg)](https://hub.docker.com/r/pdok/gokoala)
+[![Coverage (go)](https://github.com/PDOK/gokoala/wiki/coverage.svg)](https://raw.githack.com/wiki/PDOK/gokoala/coverage.html)
+[![GitHub license](https://img.shields.io/github/license/PDOK/gokoala)](https://github.com/PDOK/gokoala/blob/master/LICENSE)
+[![Docker Pulls](https://img.shields.io/docker/pulls/pdok/gokoala.svg)](https://hub.docker.com/r/pdok/gokoala)
 
 ## Description
 
@@ -153,12 +152,12 @@ Design principles:
 Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
 from the root.
 
-### Viewer Web Component
+### Viewer
 
 GoKoala includes a [viewer](viewer) which is available
-as a Web Component for embedding in HTML pages. To use the vector tile viewer locally when running
-GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will build the viewer and add
-it to the GoKoala assets.
+as a [Web Component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for embedding in HTML pages. 
+To use the viewer locally when running GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will 
+build the viewer and add it to the GoKoala assets.
 
 Note this is only required for local development. When running GoKoala as a container this is
 already being taken care of when building the Docker container image.
@@ -203,6 +202,7 @@ compliance when available. In the case of OGC API Features follow these steps:
 - Start a new test session in the TEAM Engine against http://localhost:8080 (or http://host.docker.internal:8080).
   - More details in the [features conformance test suite](https://opengeospatial.github.io/ets-ogcapi-features10/).
 - Publish test results HTML report in [docs](./docs/ogc-features-test-report) and list below.
+  - Test results on [13-12-2023](https://htmlpreview.github.io/?https://github.com/PDOK/gokoala/blob/master/docs/ogc-features-test-report/20231213.html)
   - Test results on [27-09-2023](https://htmlpreview.github.io/?https://github.com/PDOK/gokoala/blob/master/docs/ogc-features-test-report/20230927.html)
 
 ## Misc

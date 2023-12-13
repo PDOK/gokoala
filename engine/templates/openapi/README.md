@@ -48,6 +48,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Removal of generic OGC Collection types, already covered in `commons-collections.json`
     - Also removal of OGC Collection endpoints (we don't support these for Tiles at the
     moment), this may change in the future.
+    - Removed `extent`, already covered in `commons-collections.json`
   - Removal of OGC Style endpoint (/styles), already - and better - covered by `styles.json`
   - Removal of GeoJSON as tiles format, only MapBox Vector Tiles are supported.
   - Removal of optional parameters for `/tiles` endpoint like datetime (temporal data)
@@ -62,10 +63,11 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Replaced "EuropeanETRS89_GRS80Quad_Draft" with "EuropeanETRS89_LAEAQuad"
   - Removed default contact details
 
-### OGC Features (Part 1)
+### OGC Features
 
 `features.go.json` is based on
-[ogcapi-features-1.0.1](https://app.swaggerhub.com/apis/OGC/ogcapi-features-1-example-1/1.0.1)
+[ogcapi-features-1.0.1](https://app.swaggerhub.com/apis/OGC/ogcapi-features-1-example-1/1.0.1) and
+[ogcapi-features-2](https://schemas.opengis.net/ogcapi/features/part2/1.0/openapi/ogcapi-features-2.yaml)
 
 - Changes:
   - Removal of OGC Common endpoints (landing page, api, conformance), already
@@ -79,6 +81,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
     - removed `offset` since we (will) use `cursor` for pagination
   - Added `cursor` query param to feature collection request. Vendor specific parameters need to be explicitly listed 
     (the same holds true if you would use offset-based pagination, you would need to list the `offset` param).
+  - Added parameters/components/headers from part 2 schema (automatic merge wasn't possible).
 
 ### OGC 3D GeoVolumes
 
@@ -90,6 +93,7 @@ and [cologne_lod2](https://demo.ldproxy.net/cologne_lod2/api/?f=json)
   - Removal of OGC Common endpoints (landing page, api, conformance), already
     covered by `common.json`
   - Removed most endpoints only included 3d tiles specific endpoints
+  - Removed all unused components
   - Removed default contact details
 
 ### OGC Styles

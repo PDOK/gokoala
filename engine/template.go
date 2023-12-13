@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,14 +54,43 @@ type TemplateKey struct {
 
 // TemplateData the data/variables passed as an argument into the template.
 type TemplateData struct {
+	// Config set during startup based on the given config file
 	Config *Config
 
-	// Params optional parameters not part of GoKoala's configfile. You can use
+	// Params optional parameters not part of GoKoala's config file. You can use
 	// this to provide extra data to a template at rendering time.
 	Params interface{}
 
-	// Crumb path to the page, in key-value pairs of name, path
+	// Breadcrumb path to the page, in key-value pairs of name->path
 	Breadcrumbs []Breadcrumb
+
+	// Request URL
+	url *url.URL
+}
+
+// AvailableFormats returns the output formats available for the current page
+func (td *TemplateData) AvailableFormats() map[string]string {
+	if td.url != nil && strings.Contains(td.url.Path, "/items") {
+		return td.AvailableFormatsFeatures()
+	}
+	return OutputFormatDefault
+}
+
+// AvailableFormatsFeatures convenience function
+func (td *TemplateData) AvailableFormatsFeatures() map[string]string {
+	return OutputFormatFeatures
+}
+
+// QueryString returns ?=foo=a&bar=b style query string of the current page
+func (td *TemplateData) QueryString(format string) string {
+	if td.url != nil {
+		q := td.url.Query()
+		if format != "" {
+			q.Set(FormatParam, format)
+		}
+		return "?" + q.Encode()
+	}
+	return fmt.Sprintf("?%s=%s", FormatParam, format)
 }
 
 type Breadcrumb struct {
@@ -161,7 +191,7 @@ func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcr
 		var result []byte
 		if key.Format == FormatHTML {
 			file, parsed := t.parseHTMLTemplate(key, lang)
-			result = t.renderHTMLTemplate(parsed, params, breadcrumbs, file)
+			result = t.renderHTMLTemplate(parsed, nil, params, breadcrumbs, file)
 		} else {
 			file, parsed := t.parseNonHTMLTemplate(key, lang)
 			result = t.renderNonHTMLTemplate(parsed, params, key, file)
@@ -181,12 +211,15 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 	return file, parsed
 }
 
-func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
+func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
+	params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
+
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{
 		Config:      t.config,
 		Params:      params,
 		Breadcrumbs: breadcrumbs,
+		url:         url,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}

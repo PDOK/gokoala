@@ -18,14 +18,10 @@ title: New York
 serviceIdentifier: New York
 abstract: >-
   This is a description about the dataset in Markdown.
-thumbnail: 3d.png
-resources:
-  directory: ./examples/resources
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
-datasetCatalogUrl: https://www.pdok.nl/datasets
-baseUrl: http://localhost:8080
+baseUrl: http://localhost:8180
 ogcApi:
   3dgeovolumes:
     tileServer: https://maps.ecere.com/3DAPI/collections/
@@ -35,12 +31,20 @@ ogcApi:
         metadata: *collectionMetadata
         tileServerPath: "NewYork/3DTiles"
         uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
-        3dViewerUrl: "https://app.pdok.nl/viewer"
-  # this is just for demonstration purposes
   features:
-    datasource:
-      fakedb: true
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            # Dutch addresses, but for example purposes let's pretend these are NYC addresses
+            file: ./examples/resources/addresses-crs84.gpkg
+      additional:
+        - srs: EPSG:28992
+          geopackage:
+            local:
+              file: ./examples/resources/addresses-rd.gpkg
     collections:
       - id: NewYork
+        tableName: addresses
         # reference to common metadata
         metadata: *collectionMetadata

@@ -156,6 +156,34 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	}
 }
 
+func TestProjectionsForCollections(t *testing.T) {
+	oaf := OgcAPIFeatures{
+		Datasources: &Datasources{
+			DefaultWGS84: Datasource{},
+			Additional: []AdditionalDatasource{
+				{Srs: "EPSG:4355"},
+			},
+		},
+		Collections: GeoSpatialCollections{
+			GeoSpatialCollection{
+				ID: "coll1",
+				Features: &CollectionEntryFeatures{
+					Datasources: &Datasources{
+						DefaultWGS84: Datasource{},
+						Additional: []AdditionalDatasource{
+							{Srs: "EPSG:4326"},
+							{Srs: "EPSG:3857"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	expected := []string{"EPSG:3857", "EPSG:4326", "EPSG:4355"}
+	assert.Equal(t, expected, oaf.ProjectionsForCollections())
+}
+
 func ptrTo[T any](val T) *T {
 	return &val
 }

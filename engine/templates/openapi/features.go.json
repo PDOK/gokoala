@@ -22,59 +22,36 @@
         "operationId": "{{ $type.ID }}.getFeatures",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 1000. Default = 10.",
-            "required": false,
-            "style": "form",
-            "explode": false,
-            "schema": {
-              "maximum": {{ $cfg.OgcAPI.Features.Limit.Max }},
-              "minimum": 1,
-              "type": "integer",
-              "default": {{ $cfg.OgcAPI.Features.Limit.Default }}
-            }
+            "$ref": "#/components/parameters/limit"
           },
           {
-            "name": "cursor",
-            "in": "query",
-            "description": "The optional cursor parameter identifies the page in the features result set. You shouldn't specify the cursor value yourself, instead you should obtain the cursor value from the `next`-link in the features response.\n\nThis API uses \"_cursor-based pagination_\" which has the advantage of allowing users to pagination though all features regardless of the size of the dataset. This wouldn't be possible using traditional \"_offset-based pagination_\".",
-            "required": false,
-            "style": "form",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/crs"
           },
           {
-            "name": "bbox",
-            "in": "query",
-            "description": "Only features that have a geometry that intersects the bounding box are selected.\nThe bounding box is provided as four or six numbers, depending on whether the\ncoordinate reference system includes a vertical axis (height or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Minimum value, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Maximum value, coordinate axis 3 (optional)\n\nIf the value consists of four numbers, the coordinate reference system is\nWGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nIf the value consists of six numbers, the coordinate reference system is WGS 84\nlongitude/latitude/ellipsoidal height (http://www.opengis.net/def/crs/OGC/0/CRS84h)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nThe query parameter `bbox-crs` is specified in OGC API - Features - Part 2: Coordinate\nReference Systems by Reference.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf the vertical axis is included, the third and the sixth number are\nthe bottom and the top of the 3-dimensional bounding box.\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
-            "required": false,
-            "style": "form",
-            "explode": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "number"
-              }
-            }
+            "$ref": "#/components/parameters/bbox"
           },
           {
-            "name": "datetime",
-            "in": "query",
-            "description": "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\nIntervals may be bounded or half-bounded (double-dots at start or end).\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
-            "required": false,
-            "style": "form",
-            "explode": false,
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/bbox-crs"
+          },
+          {
+            "$ref": "#/components/parameters/datetime"
+          },
+          {
+            "$ref": "#/components/parameters/cursor"
           }
         ],
         "responses": {
           "200": {
             "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include information about the number of selected and\nreturned features (`numberMatched` and `numberReturned`) as well as\nlinks to support paging (link relation `next`).",
+            "headers": {
+              "Content-Crs": {
+                "description": "a URI, in angular brackets, identifying the coordinate reference system used in the content / payload",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<http://www.opengis.net/def/crs/EPSG/0/3395>"
+              }
+            },
             "content": {
               "application/geo+json": {
                 "schema": {
@@ -199,11 +176,23 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "$ref": "#/components/parameters/crs"
           }
         ],
         "responses": {
           "200": {
             "description": "fetch the feature with id `featureId` in the feature collection\nwith id `collectionId`",
+            "headers": {
+              "Content-Crs": {
+                "description": "a URI, in angular brackets, identifying the coordinate reference system used in the content / payload",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<http://www.opengis.net/def/crs/EPSG/0/3395>"
+              }
+            },
             "content": {
               "application/geo+json": {
                 "schema": {
@@ -282,90 +271,6 @@
   },
   "components": {
     "schemas": {
-      "collection": {
-        "required": [
-          "id",
-          "links"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "identifier of the collection used, for example, in URIs",
-            "example": "address"
-          },
-          "title": {
-            "type": "string",
-            "description": "human readable title of the collection",
-            "example": "address"
-          },
-          "description": {
-            "type": "string",
-            "description": "a description of the features in the collection",
-            "example": "An address."
-          },
-          "links": {
-            "type": "array",
-            "example": [
-              {
-                "href": "http://data.example.com/buildings",
-                "rel": "item"
-              },
-              {
-                "href": "http://example.com/concepts/buildings.html",
-                "rel": "describedby",
-                "type": "text/html"
-              }
-            ],
-            "items": {
-              "$ref": "#/components/schemas/link"
-            }
-          },
-          "extent": {
-            "$ref": "#/components/schemas/extent"
-          },
-          "itemType": {
-            "type": "string",
-            "description": "indicator about the type of the items in the collection (the default value is 'feature').",
-            "default": "feature"
-          },
-          "crs": {
-            "type": "array",
-            "description": "the list of coordinate reference systems supported by the service",
-            "example": [
-              "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
-              "http://www.opengis.net/def/crs/EPSG/0/4326"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "default": [
-              "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-            ]
-          }
-        }
-      },
-      "collections": {
-        "required": [
-          "collections",
-          "links"
-        ],
-        "type": "object",
-        "properties": {
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/link"
-            }
-          },
-          "collections": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/collection"
-            }
-          }
-        }
-      },
       "exception": {
         "required": [
           "code"
@@ -735,7 +640,7 @@
             "description": "One or more bounding boxes that describe the spatial extent of the dataset.\nIn the Core only a single bounding box is supported. Extensions may support\nadditional areas. If multiple areas are provided, the union of the bounding\nboxes describes the spatial extent.",
             "items": {
               "type": "array",
-              "description": "Each bounding box is provided as four or six numbers, depending on\nwhether the coordinate reference system includes a vertical axis\n(height or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Minimum value, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Maximum value, coordinate axis 3 (optional)\n\nThe coordinate reference system of the values is WGS 84 longitude/latitude\n(http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless a different coordinate\nreference system is specified in `crs`.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf the vertical axis is included, the third and the sixth number are\nthe bottom and the top of the 3-dimensional bounding box.\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
+              "description": "Each bounding box is provided as four or six numbers, depending on\nwhether the coordinate reference system includes a vertical axis\n(height or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Minimum value, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Maximum value, coordinate axis 3 (optional)\n\nThe coordinate reference system of the values is WGS 84 longitude/latitude\n(http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless a different coordinate\nreference system is specified in `crs`.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
               "example": [
                 -180,
                 -90,
@@ -1126,16 +1031,75 @@
       "bbox": {
         "name": "bbox",
         "in": "query",
-        "description": "Only features that have a geometry that intersects the bounding box are selected.\nThe bounding box is provided as four or six numbers, depending on whether the\ncoordinate reference system includes a vertical axis (height or depth):\n\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Minimum value, coordinate axis 3 (optional)\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n* Maximum value, coordinate axis 3 (optional)\n\nIf the value consists of four numbers, the coordinate reference system is\nWGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nIf the value consists of six numbers, the coordinate reference system is WGS 84\nlongitude/latitude/ellipsoidal height (http://www.opengis.net/def/crs/OGC/0/CRS84h)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nThe query parameter `bbox-crs` is specified in OGC API - Features - Part 2: Coordinate\nReference Systems by Reference.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf the vertical axis is included, the third and the sixth number are\nthe bottom and the top of the 3-dimensional bounding box.\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
+        "description": "Only features that have a geometry that intersects the bounding box are selected.\nThe bounding box is provided as four numbers\n* Lower left corner, coordinate axis 1\n* Lower left corner, coordinate axis 2\n* Upper right corner, coordinate axis 1\n* Upper right corner, coordinate axis 2\n\nThe coordinate reference system is\nWGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84)\nunless a different coordinate reference system is specified in the parameter `bbox-crs`.\n\nThe query parameter `bbox-crs` is specified in OGC API - Features - Part 2: Coordinate\nReference Systems by Reference.\n\nFor WGS 84 longitude/latitude the values are in most cases the sequence of\nminimum longitude, minimum latitude, maximum longitude and maximum latitude.\nHowever, in cases where the box spans the antimeridian the first value\n(west-most box edge) is larger than the third value (east-most box edge).\n\nIf a feature has multiple spatial geometry properties, it is the decision of the\nserver whether only a single spatial geometry property is used to determine\nthe extent or all relevant geometries.",
         "required": false,
         "style": "form",
         "explode": false,
         "schema": {
           "type": "array",
+          "minItems": 4,
+          "maxItems": 6,
           "items": {
             "type": "number"
           }
         }
+{{/* Replace schema with the following once https://github.com/opengeospatial/ets-ogcapi-features10/issues/223 is fixed*/}}
+{{/* */}}
+{{/*        "schema": {*/}}
+{{/*          "type": "array",*/}}
+{{/*          "oneOf": [*/}}
+{{/*            {*/}}
+{{/*              "maxItems": 4,*/}}
+{{/*              "minItems": 4*/}}
+{{/*            },*/}}
+{{/*            {*/}}
+{{/*              "maxItems": 6,*/}}
+{{/*              "minItems": 6*/}}
+{{/*            }*/}}
+{{/*          ],*/}}
+{{/*          "items": {*/}}
+{{/*            "type": "number",*/}}
+{{/*            "format": "double"*/}}
+{{/*          }*/}}
+{{/*        }*/}}
+      },
+      "bbox-crs": {
+        "name": "bbox-crs",
+        "in": "query",
+        "description": "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+          "enum": [
+            "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollections }}
+            ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
+            {{ end }}
+          ]
+        },
+        "style": "form",
+        "explode": false
+      },
+      "crs": {
+        "name": "crs",
+        "in": "query",
+        "description": "The coordinate reference system of the geometries in the response. Default is WGS84 longitude/latitude",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+          "enum": [
+            "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollections }}
+            ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
+            {{ end }}
+          ]
+        },
+        "style": "form",
+        "explode": false
       },
       "collectionId": {
         "name": "collectionId",

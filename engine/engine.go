@@ -24,6 +24,15 @@ import (
 const (
 	templatesDir    = "engine/templates/"
 	shutdownTimeout = 5 * time.Second
+
+	HeaderLink           = "Link"
+	HeaderAccept         = "Accept"
+	HeaderAcceptLanguage = "Accept-Language"
+	HeaderContentType    = "Content-Type"
+	HeaderContentLength  = "Content-Length"
+	HeaderContentCrs     = "Content-Crs"
+	HeaderBaseURL        = "X-BaseUrl"
+	HeaderRequestedWith  = "X-Requested-With"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
@@ -163,7 +172,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	params interface{}, breadcrumbs []Breadcrumb) {
 
 	// validate request
-	if err := e.OpenAPI.validateRequest(r); err != nil {
+	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -180,7 +189,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	var output []byte
 	if key.Format == FormatHTML {
 		htmlTmpl := parsedTemplate.(*htmltemplate.Template)
-		output = e.Templates.renderHTMLTemplate(htmlTmpl, params, breadcrumbs, "")
+		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "")
 	} else {
 		jsonTmpl := parsedTemplate.(*texttemplate.Template)
 		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")
@@ -196,7 +205,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 
 	// return response output to client
 	if contentType != "" {
-		w.Header().Set("Content-Type", contentType)
+		w.Header().Set(HeaderContentType, contentType)
 	}
 	SafeWrite(w.Write, output)
 }
@@ -204,7 +213,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 // ServePage validates incoming HTTP request against OpenAPI spec and serve a pre-rendered template as HTTP response
 func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
 	// validate request
-	if err := e.OpenAPI.validateRequest(r); err != nil {
+	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -227,9 +236,34 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 
 	// return response output to client
 	if contentType != "" {
-		w.Header().Set("Content-Type", contentType)
+		w.Header().Set(HeaderContentType, contentType)
 	}
 	SafeWrite(w.Write, output)
+}
+
+// ServeResponse validates incoming HTTP request against OpenAPI spec and serve the given response (bytes)
+func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request, validateRequest bool, contentType string, response []byte) {
+	// validate request
+	if validateRequest {
+		if err := e.OpenAPI.ValidateRequest(r); err != nil {
+			log.Printf("%v", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	// validate response
+	if err := e.OpenAPI.validateResponse(contentType, response, r); err != nil {
+		log.Printf("%v", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// return response output to client
+	if contentType != "" {
+		w.Header().Set(HeaderContentType, contentType)
+	}
+	SafeWrite(w.Write, response)
 }
 
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
@@ -240,7 +274,7 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 		r.Out.URL = target
 		r.Out.Host = ""   // Don't pass Host header (similar to Traefik's passHostHeader=false)
 		r.SetXForwarded() // Set X-Forwarded-* headers.
-		r.Out.Header.Set("X-BaseUrl", e.Config.BaseURL.String())
+		r.Out.Header.Set(HeaderBaseURL, e.Config.BaseURL.String())
 	}
 
 	modifyResponse := func(proxyRes *http.Response) error {
@@ -252,9 +286,9 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 				proxyRes.StatusCode = http.StatusNoContent
 				removeBody(proxyRes)
 			}
-			if contentTypeOverwrite != "" {
-				proxyRes.Header.Set("Content-Type", contentTypeOverwrite)
-			}
+		}
+		if contentTypeOverwrite != "" {
+			proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
 		}
 		return nil
 	}
@@ -266,8 +300,8 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 func removeBody(proxyRes *http.Response) {
 	buf := bytes.NewBuffer(make([]byte, 0))
 	proxyRes.Body = io.NopCloser(buf)
-	proxyRes.Header["Content-Length"] = []string{"0"}
-	proxyRes.Header["Content-Type"] = []string{}
+	proxyRes.Header[HeaderContentLength] = []string{"0"}
+	proxyRes.Header[HeaderContentType] = []string{}
 }
 
 func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) {

@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
+	"dario.cat/mergo"
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
@@ -182,8 +184,17 @@ func (g GeoSpatialCollections) ContainsID(id string) bool {
 
 func (g GeoSpatialCollections) toMap() map[string]GeoSpatialCollection {
 	collectionsByID := make(map[string]GeoSpatialCollection)
-	for _, v := range g {
-		collectionsByID[v.ID] = v
+	for _, current := range g {
+		existing, ok := collectionsByID[current.ID]
+		if ok {
+			err := mergo.Merge(&existing, current)
+			if err != nil {
+				log.Fatalf("failed to merge 2 collections with the same name '%s': %v", current.ID, err)
+			}
+			collectionsByID[current.ID] = existing
+		} else {
+			collectionsByID[current.ID] = current
+		}
 	}
 	return collectionsByID
 }
@@ -276,6 +287,15 @@ type OgcAPIFeatures struct {
 	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
 }
 
+func (oaf OgcAPIFeatures) ProjectionsForCollections() []string {
+	var result []string
+	for _, coll := range oaf.Collections {
+		projs := oaf.ProjectionsForCollection(coll.ID)
+		result = append(result, projs...)
+	}
+	return result
+}
+
 func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string {
 	uniqueSRSs := make(map[string]struct{})
 	if oaf.Datasources != nil {
@@ -284,14 +304,16 @@ func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string
 		}
 	}
 	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features.Datasources != nil {
+		if coll.ID == collectionID && coll.Features != nil && coll.Features.Datasources != nil {
 			for _, a := range coll.Features.Datasources.Additional {
 				uniqueSRSs[a.Srs] = struct{}{}
 			}
 			break
 		}
 	}
-	return util.Keys(uniqueSRSs)
+	result := util.Keys(uniqueSRSs)
+	slices.Sort(result)
+	return result
 }
 
 type OgcAPIMaps struct {

@@ -103,17 +103,19 @@ func setupRequestResponseValidation() {
 			return string(data), nil
 		})
 
-	openapi3filter.RegisterBodyDecoder(MediaTypeTileJSON,
-		func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
-			fn openapi3filter.EncodingFn) (interface{}, error) {
-			var value interface{}
-			dec := json.NewDecoder(body)
-			dec.UseNumber()
-			if err := dec.Decode(&value); err != nil {
-				return nil, errors.New("response doesn't contain valid JSON")
-			}
-			return value, nil
-		})
+	for _, mediaType := range MediaTypeJSONFamily {
+		openapi3filter.RegisterBodyDecoder(mediaType,
+			func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
+				fn openapi3filter.EncodingFn) (interface{}, error) {
+				var value interface{}
+				dec := json.NewDecoder(body)
+				dec.UseNumber()
+				if err := dec.Decode(&value); err != nil {
+					return nil, errors.New("response doesn't contain valid JSON")
+				}
+				return value, nil
+			})
+	}
 }
 
 // mergeSpecs merges the given OpenAPI specs.
@@ -135,7 +137,6 @@ func mergeSpecs(ctx context.Context, config *Config, files []string) (*openapi3.
 
 	for _, file := range files {
 		specJSON := renderOpenAPITemplate(config, file)
-		_ = loadSpec(loader, specJSON)
 		var mergedJSON []byte
 		if resultSpecJSON == nil {
 			mergedJSON = specJSON
@@ -190,7 +191,7 @@ func renderOpenAPITemplate(config *Config, fileName string) []byte {
 	return rendered.Bytes()
 }
 
-func (o *OpenAPI) validateRequest(r *http.Request) error {
+func (o *OpenAPI) ValidateRequest(r *http.Request) error {
 	requestValidationInput, _ := o.getRequestValidationInput(r)
 	if requestValidationInput != nil {
 		err := openapi3filter.ValidateRequest(context.Background(), requestValidationInput)
@@ -204,7 +205,7 @@ func (o *OpenAPI) validateRequest(r *http.Request) error {
 func (o *OpenAPI) validateResponse(contentType string, body []byte, r *http.Request) error {
 	requestValidationInput, _ := o.getRequestValidationInput(r)
 	if requestValidationInput != nil {
-		responseHeaders := http.Header{"Content-Type": []string{contentType}}
+		responseHeaders := http.Header{HeaderContentType: []string{contentType}}
 		responseCode := 200
 
 		responseValidationInput := &openapi3filter.ResponseValidationInput{
@@ -232,6 +233,9 @@ func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.Re
 		Request:    r,
 		PathParams: pathParams,
 		Route:      route,
+		Options: &openapi3filter.Options{
+			SkipSettingDefaults: true,
+		},
 	}, nil
 }
 

@@ -31,6 +31,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 	type fields struct {
 		configFile   string
 		url          string
+		contentCrs   string
 		collectionID string
 		format       string
 	}
@@ -49,6 +50,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
 				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -62,6 +64,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
 				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -75,6 +78,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv58Nwyr1Q%3D%3D&limit=2",
 				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -140,6 +144,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
 				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "html",
 			},
 			want: want{
@@ -153,6 +158,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&limit=2",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -166,6 +172,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&limit=2",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
 				format:       "json",
 			},
 			want: want{
@@ -179,6 +186,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=json&limit=10",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -192,6 +200,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
 				format:       "json",
 			},
 			want: want{
@@ -205,6 +214,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -218,6 +228,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "view-source:http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
 				format:       "json",
 			},
 			want: want{
@@ -231,6 +242,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
 				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -253,6 +265,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			handler := features.CollectionContent()
 			handler.ServeHTTP(rr, req)
 
+			assert.Equal(t, tt.fields.contentCrs, rr.Header().Get("Content-Crs"))
 			assert.Equal(t, tt.want.statusCode, rr.Code)
 			if tt.want.body != "" {
 				expectedBody, err := os.ReadFile(tt.want.body)

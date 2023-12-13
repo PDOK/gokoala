@@ -1,17 +1,17 @@
 ---
-name: lint (web/ts)
+name: deploy viewer
 on:
   push:
-    branches:
-      - master
+    branches: ["master"]
   pull_request:
+    branches: ["master"]
 
 defaults:
   run:
     working-directory: ./viewer
 
 jobs:
-  lint-ts:
+  build:
     runs-on: ubuntu-latest
 
     strategy:
@@ -27,9 +27,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
           cache-dependency-path: "./viewer/package-lock.json"
-      - name: Install
-        run: npm ci
-      - name: Formatting
-        run: npm run format
-      - name: Linting
-        run: npm run lint
+      - run: npm ci
+      - name: Deploy
+        run: npm run deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

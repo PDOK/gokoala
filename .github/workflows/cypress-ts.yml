@@ -10,7 +10,7 @@ defaults:
   run:
     working-directory: ./viewer
 jobs:
-  cypres-ts:
+  cypress-ts:
     runs-on: ubuntu-latest
 
     strategy:

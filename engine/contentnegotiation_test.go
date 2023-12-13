@@ -33,7 +33,7 @@ func TestContentNegotiation_NegotiateFormat(t *testing.T) {
 
 func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, givenURL string, expectedFormat string) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
-	req.Header.Set("Accept", acceptHeader)
+	req.Header.Set(HeaderAccept, acceptHeader)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, given
 
 func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader string, givenURL string, expectedLanguage language.Tag) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
-	req.Header.Set("Accept-Language", acceptLanguageHeader)
+	req.Header.Set(HeaderAcceptLanguage, acceptLanguageHeader)
 	if err != nil {
 		t.Fatal(err)
 	}

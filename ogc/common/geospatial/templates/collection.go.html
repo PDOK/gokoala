@@ -57,12 +57,15 @@
                     <li class="list-group-item">
                         <h5 class="card-title">Features</h5>
                         <ul>
-                            <li>{{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features</a></li>
-                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a> in WGS84</li>
-                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="#" onclick="alert('TODO')">JSON-FG</a> in WGS84</li>
-                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="#" onclick="alert('TODO')">JSON-FG</a> in RD</li>
-                            <li>{{ i18n "GoTo" }} Features {{ i18n "As" }} <a href="#" onclick="alert('TODO')">JSON-FG</a> in ETRS89</li>
-                            <li>Download {{ i18n "As" }} <a href="#" onclick="alert('TODO')">GeoPackage</a></li>
+                            <li><strong>{{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features</a></strong></li>
+                            <li>{{ i18n "GoTo" }} features in WGS84 {{ i18n "As" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a></li>
+                            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollections }}
+                                {{ range $formatKey, $formatName := $.AvailableFormatsFeatures }}
+                                    {{ $crs := printf "http://www.opengis.net/def/crs/EPSG/0/%s" (trimPrefix "EPSG:" $srs) }}
+                                    <li>{{ i18n "GoTo" }} features in {{ $srs }} {{ i18n "As" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.ID }}/items?f={{ $formatKey }}&crs={{ $crs }}">{{ $formatName }}</a></li>
+                                {{ end }}
+                            {{ end }}
+                            {{/* TODO offer download link to GeoPackage, for example <li>Download {{ i18n "As" }} <a href="#" onclick="alert('TODO')">GeoPackage</a></li>*/}}
                         </ul>
                         <br/>
                         <div class="alert alert-primary" role="alert">

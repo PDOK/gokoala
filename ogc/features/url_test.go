@@ -152,7 +152,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equalf(t, "bbox-crs and filter-crs need to be equal. Can't use more than one CRS as input, but input and output CRS may differ", err.Error(), "parseParams()")
+				assert.Equalf(t, "bbox-crs and filter-crs need to be equal. Can't use more than one CRS as input, but input and output CRS may differ", err.Error(), "parse()")
 				return false
 			},
 		},
@@ -170,7 +170,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equalf(t, "crs param should start with http://www.opengis.net/def/crs/, got: EPSG:28992", err.Error(), "parseParams()")
+				assert.Equalf(t, "crs param should start with http://www.opengis.net/def/crs/, got: EPSG:28992", err.Error(), "parse()")
 				return false
 			},
 		},
@@ -187,7 +187,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equalf(t, "bbox should contain exactly 4 values separated by commas: minx,miny,maxx,maxy", err.Error(), "parseParams()")
+				assert.Equalf(t, "bbox should contain exactly 4 values separated by commas: minx,miny,maxx,maxy", err.Error(), "parse()")
 				return false
 			},
 		},
@@ -204,7 +204,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equalf(t, "limit can't be negative", err.Error(), "parseParams()")
+				assert.Equalf(t, "limit can't be negative", err.Error(), "parse()")
 				return false
 			},
 		},
@@ -221,7 +221,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equalf(t, "datetime param is currently not supported", err.Error(), "parseParams()")
+				assert.Equalf(t, "datetime param is currently not supported", err.Error(), "parse()")
 				return false
 			},
 		},
@@ -238,7 +238,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				assert.Equalf(t, "CQL filter param is currently not supported", err.Error(), "parseParams()")
+				assert.Equalf(t, "CQL filter param is currently not supported", err.Error(), "parse()")
 				return false
 			},
 		},
@@ -250,15 +250,15 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
 			}
-			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, gotBbox, err := fc.parseParams()
-			if !tt.wantErr(t, err, "parseParams()") {
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, err := fc.parse()
+			if !tt.wantErr(t, err, "parse()") {
 				return
 			}
-			assert.Equalf(t, tt.wantEncodedCursor, gotEncodedCursor, "parseParams()")
-			assert.Equalf(t, tt.wantLimit, gotLimit, "parseParams()")
-			assert.Equalf(t, tt.wantOutputCrs, gotOutputCrs.GetOrDefault(), "parseParams()")
-			assert.Equalf(t, tt.wantBbox, gotBbox, "parseParams()")
-			assert.Equalf(t, tt.wantInputCrs, gotInputCrs.GetOrDefault(), "parseParams()")
+			assert.Equalf(t, tt.wantEncodedCursor, gotEncodedCursor, "parse()")
+			assert.Equalf(t, tt.wantLimit, gotLimit, "parse()")
+			assert.Equalf(t, tt.wantOutputCrs, gotOutputCrs.GetOrDefault(), "parse()")
+			assert.Equalf(t, tt.wantBbox, gotBbox, "parse()")
+			assert.Equalf(t, tt.wantInputCrs, gotInputCrs.GetOrDefault(), "parse()")
 		})
 	}
 }

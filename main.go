@@ -119,8 +119,8 @@ func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool, enableCORS
 		router.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"*"},
 			AllowedMethods:   []string{"GET", "HEAD", "OPTIONS"},
-			AllowedHeaders:   []string{"X-Requested-With"},
-			ExposedHeaders:   []string{"Content-Crs", "Link"},
+			AllowedHeaders:   []string{gokoalaEngine.HeaderRequestedWith},
+			ExposedHeaders:   []string{gokoalaEngine.HeaderContentCrs, gokoalaEngine.HeaderLink},
 			AllowCredentials: false,
 			MaxAge:           int((time.Hour * 24).Seconds()),
 		}))

@@ -18,10 +18,12 @@ import (
 )
 
 const (
-	templatesDir = "ogc/features/templates/"
-	wgs84SRID    = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time we may need to read this value dynamically from the geopackage.
-	wgs84CodeOGC = "CRS84"
-	crsURLPrefix = "http://www.opengis.net/def/crs/"
+	templatesDir  = "ogc/features/templates/"
+	crsURIPrefix  = "http://www.opengis.net/def/crs/"
+	undefinedSRID = 0
+	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time we may need to read this value dynamically from the geopackage.
+	wgs84CodeOGC  = "CRS84"
+	wgs84CrsURI   = crsURIPrefix + "OGC/1.3/" + wgs84CodeOGC
 )
 
 var (
@@ -60,10 +62,14 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 	cfg := f.engine.Config
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		collectionID := chi.URLParam(r, "collectionId")
+		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
+		collectionID := chi.URLParam(r, "collectionId")
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
-		encodedCursor, limit, inputSRID, outputSRID, bbox, err := url.parseParams()
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, err := url.parse()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -77,6 +83,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
+		w.Header().Add(engine.HeaderContentCrs, contentCrs)
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
@@ -121,14 +128,16 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		if fc == nil {
 			log.Printf("no results found for collection '%s' with params: %s",
 				collectionID, r.URL.Query().Encode())
-			fc = &domain.FeatureCollection{}
+			fc = &domain.FeatureCollection{
+				Features: make([]*domain.Feature, 0),
+			}
 		}
 
 		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
 			f.html.features(w, r, collectionID, newCursor, url, limit, fc)
 		case engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, collectionID, newCursor, url, fc)
+			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG()
 		default:
@@ -141,6 +150,11 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 // Feature serves a single Feature
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		collectionID := chi.URLParam(r, "collectionId")
 		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
 		if err != nil {
@@ -149,7 +163,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		outputSRID, err := url.parseParams()
+		outputSRID, contentCrs, err := url.parse()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -163,6 +177,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
+		w.Header().Add(engine.HeaderContentCrs, contentCrs)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
@@ -184,7 +199,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		case engine.FormatHTML:
 			f.html.feature(w, r, collectionID, feat)
 		case engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, collectionID, feat, url)
+			f.json.featureAsGeoJSON(w, r, collectionID, feat, url)
 		case engine.FormatJSONFG:
 			f.json.featureAsJSONFG()
 		default:
