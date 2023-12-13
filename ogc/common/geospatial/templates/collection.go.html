@@ -59,7 +59,7 @@
                         <ul>
                             <li><strong>{{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features</a></strong></li>
                             <li>{{ i18n "GoTo" }} features in WGS84 {{ i18n "As" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a></li>
-                            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollections }}
+                            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection .Params.ID }}
                                 {{ range $formatKey, $formatName := $.AvailableFormatsFeatures }}
                                     {{ $crs := printf "http://www.opengis.net/def/crs/EPSG/0/%s" (trimPrefix "EPSG:" $srs) }}
                                     <li>{{ i18n "GoTo" }} features in {{ $srs }} {{ i18n "As" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.ID }}/items?f={{ $formatKey }}&crs={{ $crs }}">{{ $formatName }}</a></li>
