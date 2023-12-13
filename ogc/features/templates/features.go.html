@@ -3,7 +3,7 @@
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
 {{ $collId := .Params.CollectionID }}
-{{ $map := $cfg.OgcAPI.Features.BackgroundMap }}
+{{ $map := $cfg.OgcAPI.Features.Basemap }}
 
 <script>
     {{- /* generic function to update query string parameters */ -}}

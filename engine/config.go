@@ -270,10 +270,10 @@ type OgcAPIStyles struct {
 }
 
 type OgcAPIFeatures struct {
-	Limit         Limit                 `yaml:"limit"`
-	Datasources   *Datasources          `yaml:"datasources"`
-	BackgroundMap string                `yaml:"backgroundMap"`
-	Collections   GeoSpatialCollections `yaml:"collections" validate:"required"`
+	Limit       Limit                 `yaml:"limit"`
+	Datasources *Datasources          `yaml:"datasources"`
+	Basemap     string                `yaml:"basemap"`
+	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
 }
 
 func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string {
