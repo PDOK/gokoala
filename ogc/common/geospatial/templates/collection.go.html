@@ -61,7 +61,8 @@
                             <li>{{ i18n "GoTo" }} features in WGS84 {{ i18n "As" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a></li>
                             {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollections }}
                                 {{ range $formatKey, $formatName := $.AvailableFormatsFeatures }}
-                                    <li>{{ i18n "GoTo" }} features in {{ $srs }} {{ i18n "As" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.ID }}/items?f={{ $formatKey }}">{{ $formatName }}</a></li>
+                                    {{ $crs := printf "http://www.opengis.net/def/crs/EPSG/0/%s" (trimPrefix "EPSG:" $srs) }}
+                                    <li>{{ i18n "GoTo" }} features in {{ $srs }} {{ i18n "As" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.ID }}/items?f={{ $formatKey }}&crs={{ $crs }}">{{ $formatName }}</a></li>
                                 {{ end }}
                             {{ end }}
                             {{/* TODO offer download link to GeoPackage, for example <li>Download {{ i18n "As" }} <a href="#" onclick="alert('TODO')">GeoPackage</a></li>*/}}
