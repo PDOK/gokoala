@@ -1037,10 +1037,31 @@
         "explode": false,
         "schema": {
           "type": "array",
+          "minItems": 4,
+          "maxItems": 6,
           "items": {
             "type": "number"
           }
         }
+{{/* Replace schema with the following once https://github.com/opengeospatial/ets-ogcapi-features10/issues/223 is fixed*/}}
+{{/* */}}
+{{/*        "schema": {*/}}
+{{/*          "type": "array",*/}}
+{{/*          "oneOf": [*/}}
+{{/*            {*/}}
+{{/*              "maxItems": 4,*/}}
+{{/*              "minItems": 4*/}}
+{{/*            },*/}}
+{{/*            {*/}}
+{{/*              "maxItems": 6,*/}}
+{{/*              "minItems": 6*/}}
+{{/*            }*/}}
+{{/*          ],*/}}
+{{/*          "items": {*/}}
+{{/*            "type": "number",*/}}
+{{/*            "format": "double"*/}}
+{{/*          }*/}}
+{{/*        }*/}}
       },
       "bbox-crs": {
         "name": "bbox-crs",
