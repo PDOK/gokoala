@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit } from '@angular/core'
+import { NGXLogger } from 'ngx-logger'
 import { Feature, Map as OLMap, Tile, VectorTile, View } from 'ol'
-import { Projection } from 'ol/proj'
-import { MVT } from 'ol/format'
-import VectorTileSource from 'ol/source/VectorTile.js'
-import VectorTileLayer from 'ol/layer/VectorTile'
-import { getCenter } from 'ol/extent'
-import { Geometry, LineString, Point } from 'ol/geom'
-import { exhaustiveGuard, LayerType, LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service'
 import { applyStyle } from 'ol-mapbox-style'
+import { getCenter } from 'ol/extent'
+import { MVT } from 'ol/format'
+import { Geometry, LineString, Point } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
+import VectorTileLayer from 'ol/layer/VectorTile'
+import { Projection } from 'ol/proj'
+import VectorTileSource from 'ol/source/VectorTile.js'
+import { LayerType, LegendItem, MapboxStyle, MapboxStyleService, exhaustiveGuard } from '../mapbox-style.service'
 
 @Component({
   selector: 'app-legend-item',
@@ -19,6 +20,7 @@ import { fromExtent } from 'ol/geom/Polygon'
 })
 export class LegendItemComponent implements OnInit {
   constructor(
+    private logger: NGXLogger,
     private mapboxStyleService: MapboxStyleService,
     private elementRef: ElementRef
   ) {}
@@ -80,11 +82,11 @@ export class LegendItemComponent implements OnInit {
 
     applyStyle(this.cvectorLayer, this.mapboxStyle, sources, undefined, resolutions)
       .then(() => {
-        console.log(' loading legend style')
+        this.logger.log(' loading legend style')
       })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((err: any) => {
-        console.error('error loading legend style: ' + ' ' + err)
+        this.logger.error('error loading legend style: ' + ' ' + err)
       })
     this.cvectorLayer.getSource()?.refresh()
     const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='itemmap']")

@@ -8,6 +8,7 @@ import { Geometry } from 'ol/geom'
 
 import { ProjectionLike } from 'ol/proj'
 
+import { NGXLogger } from 'ngx-logger'
 import { initProj4 } from './mapprojection'
 
 export type link = {
@@ -109,37 +110,17 @@ export type DataUrl = {
 }
 export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857' }
 
-export function getProjectionMapping(value: ProjectionLike = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
-  initProj4()
-
-  if (value) {
-    if (typeof value === 'string') {
-      if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
-        //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
-        return defaultMapping
-      }
-      if (value.toUpperCase().startsWith('HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/')) {
-        const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
-        return { dataProjection: projection, visualProjection: 'EPSG:3857' }
-      }
-      return { dataProjection: value, visualProjection: value }
-    } else {
-      console.error('wrong value:')
-      console.error(value)
-      return value as unknown as ProjectionMapping
-    }
-  }
-  return { dataProjection: value, visualProjection: value }
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export class FeatureServiceService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private logger: NGXLogger,
+    private http: HttpClient
+  ) {}
 
   getFeatures(url: DataUrl): Observable<Feature<Geometry>[]> {
-    console.log(JSON.stringify(url))
+    this.logger.log(JSON.stringify(url))
     return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
       map(data => {
         return new GeoJSON().readFeatures(data, {
@@ -148,5 +129,28 @@ export class FeatureServiceService {
         })
       })
     )
+  }
+
+  getProjectionMapping(value: ProjectionLike = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
+    initProj4()
+
+    if (value) {
+      if (typeof value === 'string') {
+        if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
+          //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
+          return defaultMapping
+        }
+        if (value.toUpperCase().startsWith('HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/')) {
+          const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
+          return { dataProjection: projection, visualProjection: 'EPSG:3857' }
+        }
+        return { dataProjection: value, visualProjection: value }
+      } else {
+        this.logger.error('wrong value:')
+        this.logger.error(value)
+        return value as unknown as ProjectionMapping
+      }
+    }
+    return { dataProjection: value, visualProjection: value }
   }
 }
