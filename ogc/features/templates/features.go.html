@@ -36,8 +36,8 @@
             </div>
         </div>
 
-        <div class="col-auto">
-            <div class="form-group row g-2">
+        <div class="col-12 row g-2">
+            <div class="form-group row g-3">
                 <label for="srs-select" class="col-sm-2 col-form-label fw-bold">{{ i18n "Projection" }}</label>
                 <div class="col-sm-10 row g-2">
                     <select id="srs-select" class="form-select" onchange="updateQueryString('crs',this.value)">
@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            <div class="form-group row row g-2">
+            <div class="form-group row g-3">
                 <label for="limit-select" class="col-sm-2 col-form-label fw-bold">{{ i18n "Limit" }}</label>
                 <div class="col-sm-10 row g-2">
                     <select id="limit-select" class="form-select" aria-label="Limit selection"
@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <div class="col-12 mt-2">
+        <div class="col-12 mt-4">
             <nav aria-label="Page navigation">
                 <ul class="pagination">
                     <li>
@@ -113,8 +113,9 @@
             })
         </script>
     </div>
-
+    <div class="col-9">
     {{ range $feat := .Params.Features }}
+
     <table class="table table-striped">
         <thead>
         <tr>
@@ -124,12 +125,13 @@
         <tbody>
         {{ range $key, $value := $feat.Properties }}
         <tr>
-            <td class="w-25">{{ $key }}</td>
+            <td class="w-20">{{ $key }}</td>
             <td>{{ $value }}</td>
         </tr>
         {{ end }}
         </tbody>
     </table>
     {{ end }}
+    </div>
 </section>
 {{end}}
