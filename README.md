@@ -172,7 +172,7 @@ already being taken care of when building the Docker container image.
   - `"*.go.tilejson"`
 - Now add template language support by running the
   [setup-jetbrains-gotemplates.sh](hack/setup-jetbrains-gotemplates.sh) script.
-- Now you'll have full IDE support in the GoKoala templates.
+- Reopen the project (or restart IDE). Now you'll have full IDE support in the GoKoala templates.
 
 Also:
 
