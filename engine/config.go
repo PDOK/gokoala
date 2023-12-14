@@ -34,7 +34,7 @@ func NewConfig(configFile string) *Config {
 	var config *Config
 	err = yaml.Unmarshal(yamlData, &config)
 	if err != nil {
-		log.Fatalf("failed to unmarshal config file %v", err)
+		log.Fatalf("failed to unmarshal config file, error: %v", err)
 	}
 
 	return NewConfigFromStruct(config)

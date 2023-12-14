@@ -69,8 +69,8 @@ func main() {
 			EnvVars:  []string{"OPENAPI_FILE"},
 		},
 		&cli.BoolFlag{
-			Name:     "allow-trailing-slash",
-			Usage:    "support API calls to URLs with a trailing slash",
+			Name:     "enable-trailing-slash",
+			Usage:    "allow API calls to URLs with a trailing slash.",
 			Value:    false, // to satisfy https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-48
 			Required: false,
 			EnvVars:  []string{"ALLOW_TRAILING_SLASH"},
@@ -96,7 +96,7 @@ func main() {
 		// Engine encapsulates shared non-OGC API specific logic
 		engine := gokoalaEngine.NewEngine(configFile, openAPIFile)
 
-		router := newRouter(engine, c.Bool("allow-trailing-slash"), c.Bool("enable-cors"))
+		router := newRouter(engine, c.Bool("enable-trailing-slash"), c.Bool("enable-cors"))
 
 		return engine.Start(address, router, debugPort, shutdownDelay)
 	}

@@ -13,7 +13,7 @@ import (
 const (
 	templatesDir = "ogc/styles/templates/"
 	stylesPath   = "/styles"
-	stylesCrumb  = "/styles"
+	stylesCrumb  = "styles/"
 )
 
 type Styles struct {
