@@ -142,6 +142,59 @@ func Test_newOpenAPI(t *testing.T) {
 				"/collections/{collectionId}/map/tiles", // extra from given spec through CLI
 			},
 		},
+		{
+			name: "Test render OpenAPI spec with ALL OGC APIs (common, tiles, styles, features, geovolumes)",
+			args: args{
+				config: &Config{
+					Version:  "2.3.0",
+					Title:    "Test API",
+					Abstract: "Test API description",
+					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: OgcAPI{
+						GeoVolumes: &OgcAPI3dGeoVolumes{
+							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+							Collections: GeoSpatialCollections{
+								GeoSpatialCollection{ID: "feature1"},
+								GeoSpatialCollection{ID: "feature2"},
+							},
+						},
+						Tiles: &OgcAPITiles{
+							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+						},
+						Styles: &OgcAPIStyles{},
+						Features: &OgcAPIFeatures{
+							Limit: Limit{
+								Default: 20,
+								Max:     2000,
+							},
+							Collections: []GeoSpatialCollection{
+								{
+									ID: "foobar",
+									Features: &CollectionEntryFeatures{
+										Datasources: &Datasources{
+											DefaultWGS84: Datasource{
+												GeoPackage: &GeoPackage{
+													Local: &GeoPackageLocal{
+														File: "./examples/resources/addresses-crs84.gpkg",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedStringsInOpenAPISpec: []string{
+				"Landing page",
+				"/conformance",
+				"/api",
+				"Vector Tiles",
+				"Features",
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
