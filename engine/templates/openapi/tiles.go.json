@@ -1378,33 +1378,6 @@
           }
         }
       },
-      "all-collections": {
-        "type": "string",
-        "enum": [
-          "blueMarble",
-          "NaturalEarth:raster:HYP_HR_SR_OB_DR",
-          "NaturalEarth:cultural:ne_10m_admin_0_countries",
-          "NaturalEarth:physical:bathymetry",
-          "SRTM_ViewFinderPanorama",
-          "HRDEM-Ottawa",
-          "HRDEM-RedRiver"
-        ]
-      },
-      "vectorTiles-collections": {
-        "type": "string",
-        "enum": [
-          "NaturalEarth:cultural:ne_10m_admin_0_countries",
-          "NaturalEarth:physical:bathymetry"
-        ]
-      },
-      "coverage-collections": {
-        "type": "string",
-        "enum": [
-          "SRTM_ViewFinderPanorama",
-          "HRDEM-Ottawa",
-          "HRDEM-RedRiver"
-        ]
-      },
       "styles": {
         "type": "string",
         "enum": [
@@ -1435,79 +1408,6 @@
         },
         "style": "form",
         "explode": false
-      },
-      "collectionId-all": {
-        "name": "collectionId",
-        "in": "path",
-        "description": "Local identifier of a collection",
-        "required": true,
-        "schema": {
-          "$ref": "#/components/schemas/all-collections"
-        }
-      },
-      "collectionId-coverage": {
-        "name": "collectionId",
-        "in": "path",
-        "description": "Local identifier of a coverage collection",
-        "required": true,
-        "allowEmptyValue": false,
-        "schema": {
-          "$ref": "#/components/schemas/coverage-collections"
-        },
-        "style": "simple",
-        "explode": false
-      },
-      "collectionId-vectorTiles": {
-        "name": "collectionId",
-        "in": "path",
-        "description": "Local identifier of a vector tile collection",
-        "required": true,
-        "allowEmptyValue": false,
-        "schema": {
-          "$ref": "#/components/schemas/vectorTiles-collections"
-        }
-      },
-      "collections": {
-        "name": "collections",
-        "in": "query",
-        "style": "form",
-        "description": "The collections that should be included in the response. The parameter value is a comma-separated list of collection identifiers. If the parameters is missing, some or all collections will be included. The collection will be rendered in the order specified, with the last one showing on top, unless the priority is overridden by styling rules.",
-        "required": false,
-        "explode": false,
-        "schema": {
-          "type": "array",
-          "items": {
-            "$ref": "#/components/schemas/all-collections"
-          }
-        }
-      },
-      "collections-coverage": {
-        "name": "collections",
-        "in": "query",
-        "style": "form",
-        "description": "The collections that should be included in the response. The parameter value is a comma-separated list of collection identifiers. If the parameters is missing, some or all collections will be included. The collection will be rendered in the order specified, with the last one showing on top, unless the priority is overridden by styling rules.",
-        "required": false,
-        "explode": false,
-        "schema": {
-          "type": "array",
-          "items": {
-            "$ref": "#/components/schemas/coverage-collections"
-          }
-        }
-      },
-      "collections-vectorTiles": {
-        "name": "collections",
-        "in": "query",
-        "style": "form",
-        "description": "The collections that should be included in the response. The parameter value is a comma-separated list of collection identifiers. If the parameters is missing, some or all collections will be included. The collection will be rendered in the order specified, with the last one showing on top, unless the priority is overridden by styling rules.",
-        "required": false,
-        "explode": false,
-        "schema": {
-          "type": "array",
-          "items": {
-            "$ref": "#/components/schemas/vectorTiles-collections"
-          }
-        }
       },
       "datetime": {
         "name": "datetime",
@@ -1643,30 +1543,6 @@
         },
         "style": "form",
         "explode": false
-      },
-      "bgcolor": {
-        "name": "bgcolor",
-        "in": "query",
-        "description": "Web color name or hexadecimal 0x[AA]RRGGBB color value for the background color (default to 0x9C9C9C gray). If alpha is not specified, full opacity is assumed.",
-        "required": false,
-        "style": "form",
-        "explode": false,
-        "schema": {
-          "type": "string",
-          "default": "0xFFFFFF"
-        }
-      },
-      "transparent": {
-        "name": "transparent",
-        "in": "query",
-        "description": "Background transparency of map (default=true).",
-        "required": false,
-        "style": "form",
-        "explode": false,
-        "schema": {
-          "type": "boolean",
-          "default": true
-        }
       }
     },
     "responses": {
