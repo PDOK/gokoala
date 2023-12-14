@@ -288,12 +288,7 @@ type OgcAPIFeatures struct {
 }
 
 func (oaf OgcAPIFeatures) ProjectionsForCollections() []string {
-	var result []string
-	for _, coll := range oaf.Collections {
-		projs := oaf.ProjectionsForCollection(coll.ID)
-		result = append(result, projs...)
-	}
-	return result
+	return oaf.ProjectionsForCollection("")
 }
 
 func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string {
@@ -304,7 +299,7 @@ func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string
 		}
 	}
 	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features != nil && coll.Features.Datasources != nil {
+		if (coll.ID == collectionID || collectionID == "") && coll.Features != nil && coll.Features.Datasources != nil {
 			for _, a := range coll.Features.Datasources.Additional {
 				uniqueSRSs[a.Srs] = struct{}{}
 			}
