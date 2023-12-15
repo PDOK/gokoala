@@ -36,6 +36,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Removal of `crs` enum restriction
   - Change values for `f` param from `application/json` to just `json`, same for HTML.
   - Removed default contact details
+  - Removed unused responses
 
 ### OGC Tiles
 
@@ -82,6 +83,10 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Added `cursor` query param to feature collection request. Vendor specific parameters need to be explicitly listed 
     (the same holds true if you would use offset-based pagination, you would need to list the `offset` param).
   - Added parameters/components/headers from part 2 schema (automatic merge wasn't possible).
+  - Removed unused responses
+
+- Added:
+   - JSON-FG support for conformance class "core", based on a subset of JSON schemas from [JSON-FG release 0.2](https://github.com/opengeospatial/ogc-feat-geo-json/releases/tag/v0.2.1)
 
 ### OGC 3D GeoVolumes
 

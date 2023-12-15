@@ -116,6 +116,76 @@
                   ]
                 }
               },
+              "application/vnd.ogc.fg+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/featureCollectionJSONFG"
+                },
+                "example": {
+                  "conformsTo": [
+                    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+                  ],
+                  "type": "FeatureCollection",
+                  "links": [
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.json",
+                      "rel": "self",
+                      "type": "application/geo+json",
+                      "title": "this document"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.html",
+                      "rel": "alternate",
+                      "type": "text/html",
+                      "title": "this document as HTML"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
+                      "rel": "next",
+                      "type": "application/geo+json",
+                      "title": "next page"
+                    }
+                  ],
+                  {{/*                  "timeStamp": "2018-04-03T14:52:23Z",*/}}
+                  {{/*                  "numberMatched": 123,*/}}
+                  "numberReturned": 2,
+                  "features": [
+                    {
+                      "type": "Feature",
+                      "id": "123",
+                      "place": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "geometry": null,
+                      "time": null,
+                      "properties": {
+                        "function": "residential",
+                        "floors": "2",
+                        "lastUpdate": "2015-08-01T12:34:56Z"
+                      }
+                    },
+                    {
+                      "type": "Feature",
+                      "id": "132",
+                      "place": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "geometry": null,
+                      "time": null,
+                      "properties": {
+                        "function": "public use",
+                        "floors": "10",
+                        "lastUpdate": "2013-12-03T10:15:37Z"
+                      }
+                    }
+                  ]
+                }
+              },
               "text/html": {
                 "schema": {
                   "type": "string"
@@ -239,6 +309,53 @@
                   }
                 }
               },
+              "application/vnd.ogc.fg+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/featureJSONFG"
+                },
+                "example": {
+                  "type": "Feature",
+                  "links": [
+                    {
+                      "href": "http://data.example.com/id/building/123",
+                      "rel": "canonical",
+                      "title": "canonical URI of the building"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items/123?f=json",
+                      "rel": "self",
+                      "type": "application/geo+json",
+                      "title": "this document"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items/123?f=html",
+                      "rel": "alternate",
+                      "type": "text/html",
+                      "title": "this document as HTML"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings",
+                      "rel": "collection",
+                      "type": "application/geo+json",
+                      "title": "the collection document"
+                    }
+                  ],
+                  "id": "123",
+                  "place": {
+                    "type": "Polygon",
+                    "coordinates": [
+                      "..."
+                    ]
+                  },
+                  "geometry": null,
+                  "time": null,
+                  "properties": {
+                    "function": "residential",
+                    "floors": "2",
+                    "lastUpdate": "2015-08-01T12:34:56Z"
+                  }
+                }
+              },
               "text/html": {
                 "schema": {
                   "type": "string"
@@ -298,6 +415,48 @@
         },
         "description": "The extent of the features in the collection. In the Core only spatial and temporal\nextents are specified. Extensions may add additional members to represent other\nextents, for example, thermal or pressure ranges."
       },
+      "featureCollectionJSONFG": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "conformsTo": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "coordRefSys": {
+            "type": "string",
+            "format": "uri"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/featureJSONFG"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+{{/*          "timeStamp": {*/}}
+{{/*            "$ref": "#/components/schemas/timeStamp"*/}}
+{{/*          },*/}}
+{{/*          "numberMatched": {*/}}
+{{/*            "$ref": "#/components/schemas/numberMatched"*/}}
+{{/*          },*/}}
+          "numberReturned": {
+            "$ref": "#/components/schemas/numberReturned"
+          }
+        }
+      },
       "featureCollectionGeoJSON": {
         "required": [
           "features",
@@ -331,6 +490,78 @@
 {{/*          },*/}}
           "numberReturned": {
             "$ref": "#/components/schemas/numberReturned"
+          }
+        }
+      },
+      "featureJSONFG": {
+        "required": [
+            "time",
+            "place",
+            "geometry",
+            "properties",
+            "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "conformsTo": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "coordRefSys": {
+            "type": "string",
+            "format": "uri"
+          },
+          "time": {
+            {{/* not implemented yet, since we don't yet support temporal data */}}
+            "nullable": true
+          },
+          "place": {
+            "nullable": true,
+            "allOf": [
+              {{/* 3D conformance class not implemented, so just delegate to GeoJSON compatible geometries */}}
+              {
+                "$ref": "#/components/schemas/geometryGeoJSON"
+              }
+            ]
+          },
+          "geometry": {
+            "nullable": true,
+            "allOf": [
+              {{/* 3D conformance class not implemented, so just delegate to GeoJSON compatible geometries */}}
+              {
+                "$ref": "#/components/schemas/geometryGeoJSON"
+              }
+            ]
+          },
+          "properties": {
+            "type": "object",
+            "nullable": true
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
           }
         }
       },
@@ -696,335 +927,6 @@
           }
         },
         "description": "The temporal extent of the features in the collection."
-      }
-    },
-    "responses": {
-      "Collections": {
-        "description": "The feature collections shared by this API.\n\nThe dataset is organized as one or more feature collections. This resource\nprovides information about and access to the collections.\n\nThe response contains the list of collections. For each collection, a link\nto the items in the collection (path `/collections/{collectionId}/items`,\nlink relation `items`) as well as key information about the collection.\nThis information includes:\n\n* A local identifier for the collection that is unique for the dataset;\n* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. The first CRS is the default coordinate reference system (the default is always WGS 84 with axis order longitude/latitude);\n* An optional title and description for the collection;\n* An optional extent that can be used to provide an indication of the spatial and temporal extent of the collection - typically derived from the data;\n* An optional indicator about the type of the items in the collection (the default value, if the indicator is not provided, is 'feature').",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/collections"
-            },
-            "example": {
-              "links": [
-                {
-                  "href": "http://data.example.org/collections?f=json",
-                  "rel": "self",
-                  "type": "application/json",
-                  "title": "this document"
-                },
-                {
-                  "href": "http://data.example.org/collections?f=html",
-                  "rel": "alternate",
-                  "type": "text/html",
-                  "title": "this document as HTML"
-                },
-                {
-                  "href": "http://schemas.example.org/1.0/buildings.xsd",
-                  "rel": "describedby",
-                  "type": "application/xml",
-                  "title": "GML application schema for Acme Corporation building data"
-                },
-                {
-                  "href": "http://download.example.org/buildings.gpkg",
-                  "rel": "enclosure",
-                  "type": "application/geopackage+sqlite3",
-                  "title": "Bulk download (GeoPackage)",
-                  "length": 472546
-                }
-              ],
-              "collections": [
-                {
-                  "id": "buildings",
-                  "title": "Buildings",
-                  "description": "Buildings in the city of Bonn.",
-                  "extent": {
-                    "spatial": {
-                      "bbox": [
-                        [
-                          7.01,
-                          50.63,
-                          7.22,
-                          50.78
-                        ]
-                      ]
-                    },
-                    "temporal": {
-                      "interval": [
-                        [
-                          "2010-02-15T12:34:56Z",
-                          null
-                        ]
-                      ]
-                    }
-                  },
-                  "links": [
-                    {
-                      "href": "http://data.example.org/collections/buildings/items",
-                      "rel": "items",
-                      "type": "application/geo+json",
-                      "title": "Buildings"
-                    },
-                    {
-                      "href": "http://data.example.org/collections/buildings/items?=fhtml",
-                      "rel": "items",
-                      "type": "text/html",
-                      "title": "Buildings"
-                    },
-                    {
-                      "href": "https://creativecommons.org/publicdomain/zero/1.0/",
-                      "rel": "license",
-                      "type": "text/html",
-                      "title": "CC0-1.0"
-                    },
-                    {
-                      "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
-                      "rel": "license",
-                      "type": "application/rdf+xml",
-                      "title": "CC0-1.0"
-                    }
-                  ]
-                }
-              ]
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "Collection": {
-        "description": "Information about the feature collection with id `collectionId`.\n\nThe response contains a link to the items in the collection\n(path `/collections/{collectionId}/items`, link relation `items`)\nas well as key information about the collection. This information\nincludes:\n\n* A local identifier for the collection that is unique for the dataset;\n* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. The first CRS is the default coordinate reference system (the default is always WGS 84 with axis order longitude/latitude);\n* An optional title and description for the collection;\n* An optional extent that can be used to provide an indication of the spatial and temporal extent of the collection - typically derived from the data;\n* An optional indicator about the type of the items in the collection (the default value, if the indicator is not provided, is 'feature').",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/collection"
-            },
-            "example": {
-              "id": "buildings",
-              "title": "Buildings",
-              "description": "Buildings in the city of Bonn.",
-              "extent": {
-                "spatial": {
-                  "bbox": [
-                    [
-                      7.01,
-                      50.63,
-                      7.22,
-                      50.78
-                    ]
-                  ]
-                },
-                "temporal": {
-                  "interval": [
-                    [
-                      "2010-02-15T12:34:56Z",
-                      null
-                    ]
-                  ]
-                }
-              },
-              "links": [
-                {
-                  "href": "http://data.example.org/collections/buildings/items",
-                  "rel": "items",
-                  "type": "application/geo+json",
-                  "title": "Buildings"
-                },
-                {
-                  "href": "http://data.example.org/collections/buildings/items?f=html",
-                  "rel": "items",
-                  "type": "text/html",
-                  "title": "Buildings"
-                },
-                {
-                  "href": "https://creativecommons.org/publicdomain/zero/1.0/",
-                  "rel": "license",
-                  "type": "text/html",
-                  "title": "CC0-1.0"
-                },
-                {
-                  "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
-                  "rel": "license",
-                  "type": "application/rdf+xml",
-                  "title": "CC0-1.0"
-                }
-              ]
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "Features": {
-        "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include information about the number of selected and\nreturned features (`numberMatched` and `numberReturned`) as well as\nlinks to support paging (link relation `next`).",
-        "content": {
-          "application/geo+json": {
-            "schema": {
-              "$ref": "#/components/schemas/featureCollectionGeoJSON"
-            },
-            "example": {
-              "type": "FeatureCollection",
-              "links": [
-                {
-                  "href": "http://data.example.com/collections/buildings/items?f=json",
-                  "rel": "self",
-                  "type": "application/geo+json",
-                  "title": "this document"
-                },
-                {
-                  "href": "http://data.example.com/collections/buildings/items?f=html",
-                  "rel": "alternate",
-                  "type": "text/html",
-                  "title": "this document as HTML"
-                },
-                {
-                  "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
-                  "rel": "next",
-                  "type": "application/geo+json",
-                  "title": "next page"
-                }
-              ],
-{{/*              "timeStamp": "2018-04-03T14:52:23Z",*/}}
-{{/*              "numberMatched": 123,*/}}
-              "numberReturned": 2,
-              "features": [
-                {
-                  "type": "Feature",
-                  "id": "123",
-                  "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                      "..."
-                    ]
-                  },
-                  "properties": {
-                    "function": "residential",
-                    "floors": "2",
-                    "lastUpdate": "2015-08-01T12:34:56Z"
-                  }
-                },
-                {
-                  "type": "Feature",
-                  "id": "132",
-                  "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                      "..."
-                    ]
-                  },
-                  "properties": {
-                    "function": "public use",
-                    "floors": "10",
-                    "lastUpdate": "2013-12-03T10:15:37Z"
-                  }
-                }
-              ]
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "Feature": {
-        "description": "fetch the feature with id `featureId` in the feature collection\nwith id `collectionId`",
-        "content": {
-          "application/geo+json": {
-            "schema": {
-              "$ref": "#/components/schemas/featureGeoJSON"
-            },
-            "example": {
-              "type": "Feature",
-              "links": [
-                {
-                  "href": "http://data.example.com/id/building/123",
-                  "rel": "canonical",
-                  "title": "canonical URI of the building"
-                },
-                {
-                  "href": "http://data.example.com/collections/buildings/items/123?f=json",
-                  "rel": "self",
-                  "type": "application/geo+json",
-                  "title": "this document"
-                },
-                {
-                  "href": "http://data.example.com/collections/buildings/items/123?f=html",
-                  "rel": "alternate",
-                  "type": "text/html",
-                  "title": "this document as HTML"
-                },
-                {
-                  "href": "http://data.example.com/collections/buildings",
-                  "rel": "collection",
-                  "type": "application/geo+json",
-                  "title": "the collection document"
-                }
-              ],
-              "id": "123",
-              "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                  "..."
-                ]
-              },
-              "properties": {
-                "function": "residential",
-                "floors": "2",
-                "lastUpdate": "2015-08-01T12:34:56Z"
-              }
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "InvalidParameter": {
-        "description": "A query parameter has an invalid value.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "NotFound": {
-        "description": "The requested resource does not exist on the server. For example, a path parameter had an incorrect value."
-      },
-      "NotAcceptable": {
-        "description": "Content negotiation failed. For example, the `Accept` header submitted in the request did not support any of the media types supported by the server for the requested resource."
-      },
-      "ServerError": {
-        "description": "A server error occurred.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
       }
     },
     "parameters": {
