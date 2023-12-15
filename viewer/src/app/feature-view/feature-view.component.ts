@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
+import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { PanIntoViewOptions } from 'ol/Overlay'
@@ -39,6 +40,13 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() backgroundMap: BackgroundMap = 'OSM'
   @Input() set projection(value: ProjectionLike) {
     this._projection = this.featureService.getProjectionMapping(value)
+  }
+  private _showBoundingBoxButton: boolean = true
+  @Input() set showBoundingBoxButton(showBox) {
+    this._showBoundingBoxButton = coerceBooleanProperty(showBox)
+  }
+  get showBoundingBoxButton() {
+    return this._showBoundingBoxButton
   }
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
@@ -81,7 +89,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.map.addControl(new boxControl(this.box, {}))
+    if (this._showBoundingBoxButton) {
+      this.map.addControl(new boxControl(this.box, {}))
+    }
     this.addFeatureEmit()
   }
 
