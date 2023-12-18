@@ -43,6 +43,13 @@ func (s SRID) GetOrDefault() int {
 	return val
 }
 
+type ContentCrs string
+
+// ToLink returns link target conforming to RFC 8288
+func (c ContentCrs) ToLink() string {
+	return fmt.Sprintf("<%s>", c)
+}
+
 type URL interface {
 	validateNoUnknownParams() error
 }
@@ -56,7 +63,7 @@ type featureCollectionURL struct {
 
 // parse the given URL to values required to delivery a set of Features
 func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limit int,
-	inputSRID SRID, outputSRID SRID, contentCrs string, bbox *geom.Extent, err error) {
+	inputSRID SRID, outputSRID SRID, contentCrs ContentCrs, bbox *geom.Extent, err error) {
 
 	encodedCursor = domain.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := parseLimit(fc.params, fc.limit)
@@ -152,7 +159,7 @@ type featureURL struct {
 }
 
 // parse the given URL to values required to delivery a specific Feature
-func (f featureURL) parse() (srid SRID, contentCrs string, err error) {
+func (f featureURL) parse() (srid SRID, contentCrs ContentCrs, err error) {
 	srid, err = parseCrsToSRID(f.params, crsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
 	return
@@ -251,12 +258,12 @@ func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
 	return &extent, bboxSRID, nil
 }
 
-func parseCrsToContentCrs(params url.Values) string {
+func parseCrsToContentCrs(params url.Values) ContentCrs {
 	param := params.Get(crsParam)
 	if param == "" {
-		return fmt.Sprintf("<%s>", wgs84CrsURI)
+		return wgs84CrsURI
 	}
-	return fmt.Sprintf("<%s>", param)
+	return ContentCrs(param)
 }
 
 func parseCrsToSRID(params url.Values, paramName string) (SRID, error) {

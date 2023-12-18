@@ -83,7 +83,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Add(engine.HeaderContentCrs, contentCrs)
+		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
@@ -139,7 +139,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		case engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
-			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, fc)
+			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, fc, contentCrs)
 		default:
 			http.NotFound(w, r)
 			return
@@ -177,7 +177,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Add(engine.HeaderContentCrs, contentCrs)
+		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
@@ -201,7 +201,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		case engine.FormatJSON:
 			f.json.featureAsGeoJSON(w, r, collectionID, feat, url)
 		case engine.FormatJSONFG:
-			f.json.featureAsJSONFG(w, r, collectionID, feat, url)
+			f.json.featureAsJSONFG(w, r, collectionID, feat, url, contentCrs)
 		default:
 			http.NotFound(w, r)
 			return
