@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/go-chi/chi/v5"
@@ -253,6 +254,9 @@ func TestFeatures_CollectionContent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// mock time
+			now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
 			if err != nil {
 				log.Fatal(err)

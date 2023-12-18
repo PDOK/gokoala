@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 )
+
+var now = time.Now
 
 type jsonFeatures struct {
 	engine *engine.Engine
@@ -22,7 +25,8 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
 
-	fc.Links = jf.createFeatureCollectionLinks(collectionID, cursor, featuresURL)
+	fc.Timestamp = now().Format(time.RFC3339)
+	fc.Links = jf.createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL)
 	fcJSON, err := toJSON(&fc)
 	if err != nil {
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
@@ -34,7 +38,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	feat *domain.Feature, url featureURL) {
 
-	feat.Links = jf.createFeatureLinks(url, collectionID, feat.ID)
+	feat.Links = jf.createFeatureLinks(engine.FormatGeoJSON, url, collectionID, feat.ID)
 	featJSON, err := toJSON(feat)
 	if err != nil {
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
@@ -47,18 +51,20 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection, crs ContentCrs) {
 
 	fgFC := domain.JSONFGFeatureCollection{}
+	fgFC.ConformsTo = []string{domain.ConformanceJSONFGCore}
+	fgFC.CoordRefSys = string(crs)
 	for _, f := range fc.Features {
 		fgF := domain.JSONFGFeature{
 			ID:         f.ID,
 			Links:      f.Links,
-			Place:      f.Geometry,
 			Properties: f.Properties,
 		}
+		setGeom(crs, &fgF, f)
 		fgFC.Features = append(fgFC.Features, &fgF)
-		fgFC.CoordRefSys = string(crs)
 	}
+	fgFC.Timestamp = now().Format(time.RFC3339)
+	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSONFG, collectionID, cursor, featuresURL)
 
-	fgFC.Links = jf.createFeatureCollectionLinks(collectionID, cursor, featuresURL)
 	featJSON, err := toJSON(&fgFC)
 	if err != nil {
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
@@ -73,12 +79,13 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 	fgF := domain.JSONFGFeature{
 		ID:          f.ID,
 		Links:       f.Links,
+		ConformsTo:  []string{domain.ConformanceJSONFGCore},
 		CoordRefSys: string(crs),
-		Place:       f.Geometry,
 		Properties:  f.Properties,
 	}
+	setGeom(crs, &fgF, f)
+	fgF.Links = jf.createFeatureLinks(engine.FormatJSONFG, url, collectionID, fgF.ID)
 
-	fgF.Links = jf.createFeatureLinks(url, collectionID, fgF.ID)
 	featJSON, err := toJSON(&fgF)
 	if err != nil {
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
@@ -87,14 +94,38 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeJSONFG, featJSON)
 }
 
-func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor domain.Cursors, featuresURL featureCollectionURL) []domain.Link {
+func (jf *jsonFeatures) createFeatureCollectionLinks(selfFormat string, collectionID string,
+	cursor domain.Cursors, featuresURL featureCollectionURL) []domain.Link {
+
 	links := make([]domain.Link, 0)
-	links = append(links, domain.Link{
-		Rel:   "self",
-		Title: "This document as GeoJSON",
-		Type:  engine.MediaTypeGeoJSON,
-		Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
-	})
+	switch selfFormat {
+	case engine.FormatGeoJSON:
+		links = append(links, domain.Link{
+			Rel:   "self",
+			Title: "This document as GeoJSON",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
+		})
+		links = append(links, domain.Link{
+			Rel:   "alternate",
+			Title: "This document as JSON-FG",
+			Type:  engine.MediaTypeJSONFG,
+			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSONFG),
+		})
+	case engine.FormatJSONFG:
+		links = append(links, domain.Link{
+			Rel:   "self",
+			Title: "This document as JSON-FG",
+			Type:  engine.MediaTypeJSONFG,
+			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSONFG),
+		})
+		links = append(links, domain.Link{
+			Rel:   "alternate",
+			Title: "This document as GeoJSON",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
+		})
+	}
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as HTML",
@@ -120,14 +151,38 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(collectionID string, cursor
 	return links
 }
 
-func (jf *jsonFeatures) createFeatureLinks(url featureURL, collectionID string, featureID int64) []domain.Link {
+func (jf *jsonFeatures) createFeatureLinks(selfFormat string, url featureURL,
+	collectionID string, featureID int64) []domain.Link {
+
 	links := make([]domain.Link, 0)
-	links = append(links, domain.Link{
-		Rel:   "self",
-		Title: "This document as GeoJSON",
-		Type:  engine.MediaTypeGeoJSON,
-		Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSON),
-	})
+	switch selfFormat {
+	case engine.FormatGeoJSON:
+		links = append(links, domain.Link{
+			Rel:   "self",
+			Title: "This document as GeoJSON",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSON),
+		})
+		links = append(links, domain.Link{
+			Rel:   "alternate",
+			Title: "This document as JSON-FG",
+			Type:  engine.MediaTypeJSONFG,
+			Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSONFG),
+		})
+	case engine.FormatJSONFG:
+		links = append(links, domain.Link{
+			Rel:   "self",
+			Title: "This document as JSON-FG",
+			Type:  engine.MediaTypeJSONFG,
+			Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSONFG),
+		})
+		links = append(links, domain.Link{
+			Rel:   "alternate",
+			Title: "This document as GeoJSON",
+			Type:  engine.MediaTypeGeoJSON,
+			Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSON),
+		})
+	}
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as HTML",
@@ -152,4 +207,12 @@ func toJSON(input interface{}) ([]byte, error) {
 	err := encoder.Encode(input)
 	marshalled := bytes.TrimRight(buffer.Bytes(), "\n")
 	return marshalled, err
+}
+
+func setGeom(crs ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature *domain.Feature) {
+	if crs.IsWGS84() {
+		jsonfgFeature.Geometry = feature.Geometry
+	} else {
+		jsonfgFeature.Place = feature.Geometry
+	}
 }

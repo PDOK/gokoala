@@ -50,6 +50,10 @@ func (c ContentCrs) ToLink() string {
 	return fmt.Sprintf("<%s>", c)
 }
 
+func (c ContentCrs) IsWGS84() bool {
+	return string(c) == wgs84CrsURI
+}
+
 type URL interface {
 	validateNoUnknownParams() error
 }

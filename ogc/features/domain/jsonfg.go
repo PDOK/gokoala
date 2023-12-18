@@ -4,6 +4,10 @@ import (
 	"github.com/go-spatial/geom"
 )
 
+const (
+	ConformanceJSONFGCore = "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+)
+
 // featureType allows the type for Feature to be automatically set during json Marshalling
 type featureType struct{}
 
@@ -12,19 +16,12 @@ func (ft *featureType) MarshalJSON() ([]byte, error) {
 }
 func (ft *featureType) UnmarshalJSON([]byte) error { return nil }
 
-// conformsTo allows the JSON-FG conformance to be automatically set during json Marshalling
-type conformsTo struct{}
-
-func (ct *conformsTo) MarshalJSON() ([]byte, error) {
-	return []byte("[\"http://www.opengis.net/spec/json-fg-1/0.2/conf/core\"]"), nil
-}
-func (ct *conformsTo) UnmarshalJSON([]byte) error { return nil }
-
 type JSONFGFeatureCollection struct {
 	Links          []Link                `json:"links,omitempty"`
 	NumberReturned int                   `json:"numberReturned"`
+	Timestamp      string                `json:"timeStamp,omitempty"`
 	Type           featureCollectionType `json:"type"`
-	ConformsTo     conformsTo            `json:"conformsTo"`
+	ConformsTo     []string              `json:"conformsTo"`
 	CoordRefSys    string                `json:"coordRefSys"`
 	Features       []*JSONFGFeature      `json:"features"`
 }
@@ -35,7 +32,7 @@ type JSONFGFeature struct {
 	ID          int64       `json:"id"`
 	Links       []Link      `json:"links,omitempty"`
 	Type        featureType `json:"type"`
-	ConformsTo  conformsTo  `json:"conformsTo"`
+	ConformsTo  []string    `json:"conformsTo,omitempty"`
 	CoordRefSys string      `json:"coordRefSys,omitempty"`
 	Time        any         `json:"time"`
 	// we don't implement the JSON-FG "3D" conformance class. So Place only

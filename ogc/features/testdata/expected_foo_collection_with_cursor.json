@@ -8,6 +8,12 @@
     },
     {
       "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/foo/items?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
       "href": "http://localhost:8080/collections/foo/items?f=html"
@@ -26,6 +32,7 @@
     }
   ],
   "numberReturned": 2,
+  "timeStamp": "2000-01-01T00:00:00Z",
   "type": "FeatureCollection",
   "features": [
     {

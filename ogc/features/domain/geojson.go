@@ -17,6 +17,7 @@ type FeatureCollection struct {
 	Links []Link `json:"links,omitempty"`
 
 	NumberReturned int                   `json:"numberReturned"`
+	Timestamp      string                `json:"timeStamp,omitempty"`
 	Type           featureCollectionType `json:"type"`
 	Features       []*Feature            `json:"features"`
 }

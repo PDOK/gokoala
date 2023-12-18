@@ -8,6 +8,12 @@
     },
     {
       "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
       "href": "http://localhost:8080/collections/dutch-addresses/items?f=html"
@@ -20,6 +26,7 @@
     }
   ],
   "numberReturned": 10,
+  "timeStamp": "2000-01-01T00:00:00Z",
   "type": "FeatureCollection",
   "features": [
     {

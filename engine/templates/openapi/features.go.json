@@ -79,7 +79,7 @@
                       "title": "next page"
                     }
                   ],
-{{/*                  "timeStamp": "2018-04-03T14:52:23Z",*/}}
+                  "timeStamp": "2018-04-03T14:52:23Z",
 {{/*                  "numberMatched": 123,*/}}
                   "numberReturned": 2,
                   "features": [
@@ -145,7 +145,7 @@
                       "title": "next page"
                     }
                   ],
-                  {{/*                  "timeStamp": "2018-04-03T14:52:23Z",*/}}
+                  "timeStamp": "2018-04-03T14:52:23Z",
                   {{/*                  "numberMatched": 123,*/}}
                   "numberReturned": 2,
                   "features": [
@@ -446,9 +446,9 @@
               "$ref": "#/components/schemas/link"
             }
           },
-{{/*          "timeStamp": {*/}}
-{{/*            "$ref": "#/components/schemas/timeStamp"*/}}
-{{/*          },*/}}
+          "timeStamp": {
+            "$ref": "#/components/schemas/timeStamp"
+          },
 {{/*          "numberMatched": {*/}}
 {{/*            "$ref": "#/components/schemas/numberMatched"*/}}
 {{/*          },*/}}
@@ -482,9 +482,9 @@
               "$ref": "#/components/schemas/link"
             }
           },
-{{/*          "timeStamp": {*/}}
-{{/*            "$ref": "#/components/schemas/timeStamp"*/}}
-{{/*          },*/}}
+          "timeStamp": {
+            "$ref": "#/components/schemas/timeStamp"
+          },
 {{/*          "numberMatched": {*/}}
 {{/*            "$ref": "#/components/schemas/numberMatched"*/}}
 {{/*          },*/}}
@@ -856,12 +856,12 @@
           }
         }
       },
-{{/*      "timeStamp": {*/}}
-{{/*        "type": "string",*/}}
-{{/*        "description": "This property indicates the time and date when the response was generated.",*/}}
-{{/*        "format": "date-time",*/}}
-{{/*        "example": "2017-08-17T08:05:32Z"*/}}
-{{/*      },*/}}
+      "timeStamp": {
+        "type": "string",
+        "description": "This property indicates the time and date when the response was generated.",
+        "format": "date-time",
+        "example": "2017-08-17T08:05:32Z"
+      },
       "extent_spatial": {
         "type": "object",
         "properties": {

@@ -9,6 +9,12 @@
     },
     {
       "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/foo/items/4030?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
       "href": "http://localhost:8080/collections/foo/items/4030?f=html"
