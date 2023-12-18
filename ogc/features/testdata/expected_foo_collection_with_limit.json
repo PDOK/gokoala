@@ -4,19 +4,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?f=json"
+      "href": "http://localhost:8080/collections/foo/items?f=json&limit=2"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/foo/items?f=jsonfg"
+      "href": "http://localhost:8080/collections/foo/items?f=jsonfg&limit=2"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/foo/items?f=html"
+      "href": "http://localhost:8080/collections/foo/items?f=html&limit=2"
     },
     {
       "rel": "next",

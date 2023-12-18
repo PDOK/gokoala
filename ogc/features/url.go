@@ -120,11 +120,11 @@ OUTER:
 }
 
 func (fc featureCollectionURL) toSelfURL(collectionID string, format string) string {
-	newParams := url.Values{}
-	newParams.Set(engine.FormatParam, format)
+	copyParams := clone(fc.params)
+	copyParams.Set(engine.FormatParam, format)
 
 	result := fc.baseURL.JoinPath("collections", collectionID, "items")
-	result.RawQuery = newParams.Encode()
+	result.RawQuery = copyParams.Encode()
 	return result.String()
 }
 
