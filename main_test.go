@@ -31,6 +31,12 @@ func Test_newRouter(t *testing.T) {
 			apiCall:    "http://localhost:8180/collections/NewYork?f=html",
 			wantBody:   "engine/testdata/expected_multiple_ogc_apis_single_collection.html",
 		},
+		{
+			name:       "ogc_api_processes",
+			configFile: "engine/testdata/config_processes.yaml",
+			apiCall:    "http://localhost:8181/conformance?f=html",
+			wantBody:   "engine/testdata/expected_processes_conformance.html",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

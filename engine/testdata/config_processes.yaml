@@ -8,9 +8,9 @@ abstract: |
 license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
-baseUrl: http://localhost:8081
+baseUrl: http://localhost:8181
 ogcApi:
   processes:
-    processesServer: http://localhost:8084/ogcapi
+    processesServer: http://localhost:8184/ogcapi
     supportsCallback: false
     supportsDismiss: true
