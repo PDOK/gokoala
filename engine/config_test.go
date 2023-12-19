@@ -173,6 +173,7 @@ func TestProjectionsForCollections(t *testing.T) {
 						Additional: []AdditionalDatasource{
 							{Srs: "EPSG:4326"},
 							{Srs: "EPSG:3857"},
+							{Srs: "EPSG:3857"},
 						},
 					},
 				},

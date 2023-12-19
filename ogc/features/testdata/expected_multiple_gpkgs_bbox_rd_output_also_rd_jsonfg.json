@@ -2,37 +2,43 @@
   "links": [
     {
       "rel": "self",
-      "title": "This document as GeoJSON",
-      "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10"
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10"
     },
     {
       "rel": "alternate",
-      "title": "This document as JSON-FG",
-      "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10"
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=html&limit=10"
+      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=html&limit=10"
     }
   ],
-  "numberReturned": 6,
+  "numberReturned": 0,
   "timeStamp": "2000-01-01T00:00:00Z",
   "type": "FeatureCollection",
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+  ],
+  "coordRefSys": "http://www.opengis.net/def/crs/EPSG/0/28992",
   "features": [
     {
       "id": 6810,
       "type": "Feature",
-      "geometry": {
+      "time": null,
+      "place": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          120386.98918833474,
+          566726.0621717612
         ]
       },
+      "geometry": null,
       "properties": {
         "alternativeidentifier": "",
         "building": "",
@@ -74,13 +80,15 @@
     {
       "id": 6811,
       "type": "Feature",
-      "geometry": {
+      "time": null,
+      "place": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          120386.98918833474,
+          566726.0621717612
         ]
       },
+      "geometry": null,
       "properties": {
         "alternativeidentifier": "",
         "building": "",
@@ -122,13 +130,15 @@
     {
       "id": 6812,
       "type": "Feature",
-      "geometry": {
+      "time": null,
+      "place": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          120386.98918833474,
+          566726.0621717612
         ]
       },
+      "geometry": null,
       "properties": {
         "alternativeidentifier": "",
         "building": "",
@@ -170,13 +180,15 @@
     {
       "id": 29315,
       "type": "Feature",
-      "geometry": {
+      "time": null,
+      "place": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          120386.98918833474,
+          566726.0621717612
         ]
       },
+      "geometry": null,
       "properties": {
         "alternativeidentifier": "",
         "building": "",
@@ -218,13 +230,15 @@
     {
       "id": 30535,
       "type": "Feature",
-      "geometry": {
+      "time": null,
+      "place": {
         "type": "Point",
         "coordinates": [
-          4.870615118577688,
-          53.086268434044996
+          120387.6551883251,
+          566728.4681717822
         ]
       },
+      "geometry": null,
       "properties": {
         "alternativeidentifier": "",
         "building": "",
@@ -266,13 +280,15 @@
     {
       "id": 30536,
       "type": "Feature",
-      "geometry": {
+      "time": null,
+      "place": {
         "type": "Point",
         "coordinates": [
-          4.870615118577688,
-          53.086268434044996
+          120387.6551883251,
+          566728.4681717822
         ]
       },
+      "geometry": null,
       "properties": {
         "alternativeidentifier": "",
         "building": "",

@@ -48,6 +48,12 @@
     },
     {
       "rel": "items",
+      "type": "application/vnd.ogc.fg+json",
+      "title": "The JSON-FG representation of the NewYork features served from this endpoint",
+      "href": "http://localhost:8180/collections/NewYork/items?f=jsonfg"
+    },
+    {
+      "rel": "items",
       "type": "text/html",
       "title": "The HTML representation of the NewYork features served from this endpoint",
       "href": "http://localhost:8180/collections/NewYork/items?f=html"

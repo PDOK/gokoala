@@ -56,6 +56,8 @@ func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiatio
 		contenttype.NewMediaType(MediaTypeJSON),
 		contenttype.NewMediaType(MediaTypeHTML),
 		contenttype.NewMediaType(MediaTypeTileJSON),
+		contenttype.NewMediaType(MediaTypeGeoJSON),
+		contenttype.NewMediaType(MediaTypeJSONFG),
 		contenttype.NewMediaType(MediaTypeMVT),
 		contenttype.NewMediaType(MediaTypeMapboxStyle),
 		contenttype.NewMediaType(MediaTypeCustomStyle),

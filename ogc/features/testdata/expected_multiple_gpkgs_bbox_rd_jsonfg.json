@@ -2,15 +2,15 @@
   "links": [
     {
       "rel": "self",
-      "title": "This document as GeoJSON",
-      "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10"
-    },
-    {
-      "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
       "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10"
     },
     {
       "rel": "alternate",
@@ -19,13 +19,19 @@
       "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=html&limit=10"
     }
   ],
-  "numberReturned": 6,
+  "numberReturned": 0,
   "timeStamp": "2000-01-01T00:00:00Z",
   "type": "FeatureCollection",
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+  ],
+  "coordRefSys": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
   "features": [
     {
       "id": 6810,
       "type": "Feature",
+      "time": null,
+      "place": null,
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -74,6 +80,8 @@
     {
       "id": 6811,
       "type": "Feature",
+      "time": null,
+      "place": null,
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -122,6 +130,8 @@
     {
       "id": 6812,
       "type": "Feature",
+      "time": null,
+      "place": null,
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -170,6 +180,8 @@
     {
       "id": 29315,
       "type": "Feature",
+      "time": null,
+      "place": null,
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -218,6 +230,8 @@
     {
       "id": 30535,
       "type": "Feature",
+      "time": null,
+      "place": null,
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -266,6 +280,8 @@
     {
       "id": 30536,
       "type": "Feature",
+      "time": null,
+      "place": null,
       "geometry": {
         "type": "Point",
         "coordinates": [

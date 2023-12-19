@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/go-chi/chi/v5"
@@ -223,16 +224,44 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output in default (WGS84) and bbox in RD, with format JSON-FG",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in RD and bbox in RD",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-				url:          "view-source:http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
 				collectionID: "dutch-addresses",
 				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
 				format:       "json",
 			},
 			want: want{
 				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd_output_also_rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in RD and bbox in RD, with format JSON-FG",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd_output_also_rd_jsonfg.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -253,6 +282,9 @@ func TestFeatures_CollectionContent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// mock time
+			now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
 			if err != nil {
 				log.Fatal(err)

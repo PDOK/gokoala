@@ -1,0 +1,1102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0096)http://localhost:8081/teamengine/viewSessionLog.jsp?session=s0009&stop=undefined&t=1702983182858 -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US" xmlns:cite="http://cite.opengeospatial.org/" xmlns:cnt="http://www.w3.org/2011/content#" xmlns:dct="http://purl.org/dc/terms/" xmlns:earl="http://www.w3.org/ns/earl#" xmlns:file="java:java.io.File" xmlns:http="http://www.w3.org/2011/http#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:testng="http://testng.org"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+		
+		<script src="./20231219_files/jquery-1.9.1.min.js"></script>			
+		<title>Test Session Results</title>
+		<script>
+		var checkStopSession="undefined";
+		if(checkStopSession == "true"){
+			alert("Session was stopped!!!");
+		}
+		
+			function toggleAll(testnum, state) {
+			  for (key in document.images) {
+			    var image = document.images[key];
+                            if (image.name) {
+			      if (image.name.substring(0, 5 + testnum.length) == "image" + testnum) {
+			        image.src = "images/" + (state ? "minus.png" : "plus.png");
+                                var div = document.getElementById('test' + image.name.substring(5));
+			        div.style.display = state ? "block" : "none";
+			      }
+			    }
+			  }
+			}
+
+			function toggle(testnum, e) {
+			  var evt = e || window.event;
+			  if (document.images['image' + testnum].src.indexOf('minus') > 0) {
+			    if (evt.ctrlKey) {
+			      toggleAll(testnum, false);
+			    } else {
+			      document.images['image' + testnum].src = 'images/plus.png';
+			      document.getElementById('test' + testnum).style.display = "none";
+			    }
+			  } else {
+			    if (evt.ctrlKey) {
+			      toggleAll(testnum, true);
+			    } else {
+			      document.images['image' + testnum].src = 'images/minus.png';
+			      document.getElementById('test' + testnum).style.display = "block";
+			    }
+			  }
+			}
+
+
+			function deleteSession() {
+				if (confirm("Are you sure you want to delete session s0009?")) {
+					window.location = "deleteSession?session=s0009"
+				}
+			}
+			
+			$( document ).ready(function() {
+				$("a.testDetailsLink").each(function() {
+					   var $this = $(this);       
+					   var _href = $this.attr("href"); 
+					   $this.attr("href", "/teamengine"+ "/reports/" + "ogctest" + "/" + "s0009" +"/result/"+ _href);
+					});
+			});
+			
+		    $( document ).ready(function() {
+		    	console.log( "document loaded" );
+		    	if(document.getElementById("sessionIdHtml")) {
+		    		$('#sessionIdHtml').append('s0009');
+		    		$('#sessionId').hide();
+		    		} 
+		    	if(document.getElementById("oldResultUrl")) {
+		    		$('#oldResultUrl').attr('href', '/teamengine/viewOldSessionLog.jsp?session=s0009');
+		    		$('#oldResultUrlPara').hide();
+		    		} 
+		    });
+			
+		</script>		
+	<script src="chrome-extension://nngceckbapebfimnlniiiahkandclblb/content/fido2/page-script.js"></script></head>
+	<body>
+		<div style="position: static">
+	<div style="position: static; background-color: black; width: 100%; height: 100px; overflow: hidden" onclick="window.location = &#39;&#39;">
+		<!-- Image derived from "Dinky the Steam Engine - main drive wheel", Steve Karg, http://www.burningwell.org -->
+		
+		<img style="position: absolute" src="./20231219_files/banner.jpg" alt="TEAM Engine Banner">
+		<div style="position: absolute;">
+      <div style="margin-bottom: 0.75em;"><img src="./20231219_files/logo.png"></div>
+      <span style="font-size: 1.25em;" xmlns="http://www.w3.org/1999/xhtml">
+  <strong>OGC Validator</strong>
+</span>
+
+		</div>
+				<div style="position: absolute; right:20px; top:25px; background-color: white; padding: 3px; border-style: inset">
+			User: ogctest<br>
+			<a href="http://localhost:8081/teamengine/logout">Logout</a>
+		</div>
+
+	</div>
+<hr>
+</div>
+
+		<span id="sessionId"><h2>Results for session s0009</h2></span>
+
+
+
+
+
+
+
+   
+      
+      <meta http-equiv="pragma" content="no-cache">
+      <meta http-equiv="cache-control" content="max-age=0">
+      <meta http-equiv="cache-control" content="no-cache">
+      <meta http-equiv="cache-control" content="no-store"><script type="text/javascript" src="./20231219_files/shCore.js"></script><script type="text/javascript" src="./20231219_files/shBrushXml.js"></script><link type="text/css" rel="stylesheet" href="./20231219_files/shCoreDefault.css"><script type="text/javascript">SyntaxHighlighter.all();</script><style type="text/css">.syntaxhighlighter {
+        max-height:200px;
+        }
+        .syntaxhighlighter table {
+        table-layout: fixed;
+        }
+      </style>
+   
+      <h3><font color="black">
+            
+            Test Name:
+            ogcapi-features-1.0<br>
+            Test version:
+            1.6<br>
+            Time:
+            2023-12-19T10:53:00.787Z<br><br>              
+            Test INPUT:
+            
+            <div style="margin-left:3.7%;"><span>noofcollections : </span><span style="text-intent:0px">3</span></div>
+            <div style="margin-left:3.7%;"><span>Tested Instance : </span><span style="text-intent:0px">http://host.docker.internal:8080</span></div><br>
+            Result:
+            <br><div style="text-indent:0px; float: left;width: 95%;margin-left:3.7%"><span><label>Passed Core conformance classes (Implementations passing these classes can be certified): </label></span><span style="text-intent:0px">Yes</span></div>
+            <div style="margin-left:3.7%">
+               Number of conformance classes tested:
+               2
+            </div><input type="hidden" id="noConformanceClass" name="noConformanceClass" value="2"><div style="margin-left:3.7%">
+               Number of conformance classes passed:
+               2
+            </div>
+            <div style="margin-left:3.7%">
+               Number of conformance classes failed:
+               0
+            </div><br>
+            
+            Core conformance classes (Pass = Green; Fail = Red; Skip = Grey):
+            
+            <div style="margin-left:3.7%"><span style="background-color:#B2F0D1;">Core</span></div></font></h3>
+      <table border="1">
+         <tbody><tr>
+            <td>Color Legend</td>
+            <td bgcolor="#B2F0D1">Pass</td>
+            <td bgcolor="#FFB2B2">Fail</td>
+            <td bgcolor="#CCCCCE">Skip</td>
+         </tr>
+      </tbody></table>
+      <div style="background:#FF8C00; width:25%;">
+         <h2>Core</h2>
+      </div>
+      <p>
+         </p><table border="1">
+            <tbody><tr>
+               <td bgcolor="#B2F0D1">
+                  Pass:
+                  <span id="testsPassed_Core">85</span></td>
+               <td bgcolor="#FFB2B2">
+                  Fail:
+                  <span id="testsFailed_Core">0</span></td>
+               <td bgcolor="#CCCCCE">
+                  Skip:
+                  <span id="testsSkipped_Core">15</span></td>
+               <td>
+                  Total tests:
+                  <span id="testsInTotal_Core">100</span></td>
+            </tr>
+         </tbody></table>
+      <p></p>
+      <table border="1" id="Core">
+         <tbody>
+            <tr>
+               <th>Name</th>
+               <th>Reason</th>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesOperation_QueryParamInvalid.html#validateFeaturesOperation_QueryParamInvalid" class="testDetailsLink" id="validateFeaturesOperation_QueryParamInvalid.html#validateFeaturesOperation_QueryParamInvalid">validate Features Operation_ Query Param Invalid </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_FeaturesProperty.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_FeaturesProperty.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty">validate Features With Bounding Box Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_FeaturesProperty36.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty36" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_FeaturesProperty36.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty36">validate Features With Bounding Box Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_FeaturesProperty65.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty65" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_FeaturesProperty65.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty65">validate Features With Bounding Box Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_FeaturesProperty69.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty69" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_FeaturesProperty69.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty69">validate Features With Bounding Box Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_FeaturesProperty124.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty124" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_FeaturesProperty124.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty124">validate Features With Bounding Box Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_FeaturesProperty126.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty126" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_FeaturesProperty126.html#validateFeaturesWithBoundingBoxResponse_FeaturesProperty126">validate Features With Bounding Box Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_FeaturesProperty.html#validateFeaturesWithLimitResponse_FeaturesProperty" class="testDetailsLink" id="validateFeaturesWithLimitResponse_FeaturesProperty.html#validateFeaturesWithLimitResponse_FeaturesProperty">validate Features With Limit Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_FeaturesProperty80.html#validateFeaturesWithLimitResponse_FeaturesProperty80" class="testDetailsLink" id="validateFeaturesWithLimitResponse_FeaturesProperty80.html#validateFeaturesWithLimitResponse_FeaturesProperty80">validate Features With Limit Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned.html#validateFeaturesResponse_NumberReturned" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned.html#validateFeaturesResponse_NumberReturned">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned34.html#validateFeaturesResponse_NumberReturned34" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned34.html#validateFeaturesResponse_NumberReturned34">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned49.html#validateFeaturesResponse_NumberReturned49" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned49.html#validateFeaturesResponse_NumberReturned49">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned63.html#validateFeaturesResponse_NumberReturned63" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned63.html#validateFeaturesResponse_NumberReturned63">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned74.html#validateFeaturesResponse_NumberReturned74" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned74.html#validateFeaturesResponse_NumberReturned74">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned85.html#validateFeaturesResponse_NumberReturned85" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned85.html#validateFeaturesResponse_NumberReturned85">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_TypeProperty.html#validateFeaturesResponse_TypeProperty" class="testDetailsLink" id="validateFeaturesResponse_TypeProperty.html#validateFeaturesResponse_TypeProperty">validate Features Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_TypeProperty.html#validateFeaturesWithLimitResponse_TypeProperty" class="testDetailsLink" id="validateFeaturesWithLimitResponse_TypeProperty.html#validateFeaturesWithLimitResponse_TypeProperty">validate Features With Limit Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_TypeProperty137.html#validateFeaturesWithLimitResponse_TypeProperty137" class="testDetailsLink" id="validateFeaturesWithLimitResponse_TypeProperty137.html#validateFeaturesWithLimitResponse_TypeProperty137">validate Features With Limit Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureCollectionsMetadataOperationResponse_CrsProperty.html#validateFeatureCollectionsMetadataOperationResponse_CrsProperty" class="testDetailsLink" id="validateFeatureCollectionsMetadataOperationResponse_CrsProperty.html#validateFeatureCollectionsMetadataOperationResponse_CrsProperty">validate Feature Collections Metadata Operation Response_ Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/openapiDocumentRetrieval.html#openapiDocumentRetrieval" class="testDetailsLink" id="openapiDocumentRetrieval.html#openapiDocumentRetrieval">openapi Document Retrieval </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxOperation.html#validateFeaturesWithBoundingBoxOperation" class="testDetailsLink" id="validateFeaturesWithBoundingBoxOperation.html#validateFeaturesWithBoundingBoxOperation">validate Features With Bounding Box Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxOperation19.html#validateFeaturesWithBoundingBoxOperation19" class="testDetailsLink" id="validateFeaturesWithBoundingBoxOperation19.html#validateFeaturesWithBoundingBoxOperation19">validate Features With Bounding Box Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxOperation77.html#validateFeaturesWithBoundingBoxOperation77" class="testDetailsLink" id="validateFeaturesWithBoundingBoxOperation77.html#validateFeaturesWithBoundingBoxOperation77">validate Features With Bounding Box Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxOperation92.html#validateFeaturesWithBoundingBoxOperation92" class="testDetailsLink" id="validateFeaturesWithBoundingBoxOperation92.html#validateFeaturesWithBoundingBoxOperation92">validate Features With Bounding Box Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxOperation100.html#validateFeaturesWithBoundingBoxOperation100" class="testDetailsLink" id="validateFeaturesWithBoundingBoxOperation100.html#validateFeaturesWithBoundingBoxOperation100">validate Features With Bounding Box Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxOperation111.html#validateFeaturesWithBoundingBoxOperation111" class="testDetailsLink" id="validateFeaturesWithBoundingBoxOperation111.html#validateFeaturesWithBoundingBoxOperation111">validate Features With Bounding Box Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberMatched.html#validateFeaturesResponse_NumberMatched" class="testDetailsLink" id="validateFeaturesResponse_NumberMatched.html#validateFeaturesResponse_NumberMatched">validate Features Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureCollectionsMetadataOperationResponse_Links.html#validateFeatureCollectionsMetadataOperationResponse_Links" class="testDetailsLink" id="validateFeatureCollectionsMetadataOperationResponse_Links.html#validateFeatureCollectionsMetadataOperationResponse_Links">validate Feature Collections Metadata Operation Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_FeaturesProperty.html#validateFeaturesResponse_FeaturesProperty" class="testDetailsLink" id="validateFeaturesResponse_FeaturesProperty.html#validateFeaturesResponse_FeaturesProperty">validate Features Response_ Features Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_GeometryInCRS84.html#validateFeaturesWithLimitResponse_GeometryInCRS84" class="testDetailsLink" id="validateFeaturesWithLimitResponse_GeometryInCRS84.html#validateFeaturesWithLimitResponse_GeometryInCRS84">validate Features With Limit Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_GeometryInCRS8475.html#validateFeaturesWithLimitResponse_GeometryInCRS8475" class="testDetailsLink" id="validateFeaturesWithLimitResponse_GeometryInCRS8475.html#validateFeaturesWithLimitResponse_GeometryInCRS8475">validate Features With Limit Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_NumberMatched.html#validateFeaturesWithLimitResponse_NumberMatched" class="testDetailsLink" id="validateFeaturesWithLimitResponse_NumberMatched.html#validateFeaturesWithLimitResponse_NumberMatched">validate Features With Limit Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_NumberMatched24.html#validateFeaturesWithLimitResponse_NumberMatched24" class="testDetailsLink" id="validateFeaturesWithLimitResponse_NumberMatched24.html#validateFeaturesWithLimitResponse_NumberMatched24">validate Features With Limit Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/limitParameterDefinition.html#limitParameterDefinition" class="testDetailsLink" id="limitParameterDefinition.html#limitParameterDefinition">limit Parameter Definition </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/landingPageRetrieval.html#landingPageRetrieval" class="testDetailsLink" id="landingPageRetrieval.html#landingPageRetrieval">landing Page Retrieval </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned82.html#validateFeaturesResponse_NumberReturned82" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned82.html#validateFeaturesResponse_NumberReturned82">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesOperation.html#validateFeaturesOperation" class="testDetailsLink" id="validateFeaturesOperation.html#validateFeaturesOperation">validate Features Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_GeometryInCRS84.html#validateFeaturesResponse_GeometryInCRS84" class="testDetailsLink" id="validateFeaturesResponse_GeometryInCRS84.html#validateFeaturesResponse_GeometryInCRS84">validate Features Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitOperation.html#validateFeaturesWithLimitOperation" class="testDetailsLink" id="validateFeaturesWithLimitOperation.html#validateFeaturesWithLimitOperation">validate Features With Limit Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitOperation91.html#validateFeaturesWithLimitOperation91" class="testDetailsLink" id="validateFeaturesWithLimitOperation91.html#validateFeaturesWithLimitOperation91">validate Features With Limit Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_TimeStamp.html#validateFeaturesWithLimitResponse_TimeStamp" class="testDetailsLink" id="validateFeaturesWithLimitResponse_TimeStamp.html#validateFeaturesWithLimitResponse_TimeStamp">validate Features With Limit Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_TimeStamp83.html#validateFeaturesWithLimitResponse_TimeStamp83" class="testDetailsLink" id="validateFeaturesWithLimitResponse_TimeStamp83.html#validateFeaturesWithLimitResponse_TimeStamp83">validate Features With Limit Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureResponse.html#validateFeatureResponse" class="testDetailsLink" id="validateFeatureResponse.html#validateFeatureResponse">validate Feature Response </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/landingPageValidation.html#landingPageValidation" class="testDetailsLink" id="landingPageValidation.html#landingPageValidation">landing Page Validation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse.html#validateFeaturesWithLimitResponse" class="testDetailsLink" id="validateFeaturesWithLimitResponse.html#validateFeaturesWithLimitResponse">validate Features With Limit Response </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse40.html#validateFeaturesWithLimitResponse40" class="testDetailsLink" id="validateFeaturesWithLimitResponse40.html#validateFeaturesWithLimitResponse40">validate Features With Limit Response </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TypeProperty.html#validateFeaturesWithBoundingBoxResponse_TypeProperty" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TypeProperty.html#validateFeaturesWithBoundingBoxResponse_TypeProperty">validate Features With Bounding Box Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TypeProperty89.html#validateFeaturesWithBoundingBoxResponse_TypeProperty89" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TypeProperty89.html#validateFeaturesWithBoundingBoxResponse_TypeProperty89">validate Features With Bounding Box Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TypeProperty108.html#validateFeaturesWithBoundingBoxResponse_TypeProperty108" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TypeProperty108.html#validateFeaturesWithBoundingBoxResponse_TypeProperty108">validate Features With Bounding Box Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TypeProperty113.html#validateFeaturesWithBoundingBoxResponse_TypeProperty113" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TypeProperty113.html#validateFeaturesWithBoundingBoxResponse_TypeProperty113">validate Features With Bounding Box Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TypeProperty119.html#validateFeaturesWithBoundingBoxResponse_TypeProperty119" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TypeProperty119.html#validateFeaturesWithBoundingBoxResponse_TypeProperty119">validate Features With Bounding Box Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TypeProperty128.html#validateFeaturesWithBoundingBoxResponse_TypeProperty128" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TypeProperty128.html#validateFeaturesWithBoundingBoxResponse_TypeProperty128">validate Features With Bounding Box Response_ Type Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureCollectionMetadataOperation.html#validateFeatureCollectionMetadataOperation" class="testDetailsLink" id="validateFeatureCollectionMetadataOperation.html#validateFeatureCollectionMetadataOperation">validate Feature Collection Metadata Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/featureOperation.html#featureOperation" class="testDetailsLink" id="featureOperation.html#featureOperation">feature Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TimeStamp.html#validateFeaturesWithBoundingBoxResponse_TimeStamp" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TimeStamp.html#validateFeaturesWithBoundingBoxResponse_TimeStamp">validate Features With Bounding Box Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TimeStamp6.html#validateFeaturesWithBoundingBoxResponse_TimeStamp6" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TimeStamp6.html#validateFeaturesWithBoundingBoxResponse_TimeStamp6">validate Features With Bounding Box Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TimeStamp37.html#validateFeaturesWithBoundingBoxResponse_TimeStamp37" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TimeStamp37.html#validateFeaturesWithBoundingBoxResponse_TimeStamp37">validate Features With Bounding Box Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TimeStamp59.html#validateFeaturesWithBoundingBoxResponse_TimeStamp59" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TimeStamp59.html#validateFeaturesWithBoundingBoxResponse_TimeStamp59">validate Features With Bounding Box Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TimeStamp117.html#validateFeaturesWithBoundingBoxResponse_TimeStamp117" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TimeStamp117.html#validateFeaturesWithBoundingBoxResponse_TimeStamp117">validate Features With Bounding Box Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_TimeStamp118.html#validateFeaturesWithBoundingBoxResponse_TimeStamp118" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_TimeStamp118.html#validateFeaturesWithBoundingBoxResponse_TimeStamp118">validate Features With Bounding Box Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/boundingBoxParameterDefinition.html#boundingBoxParameterDefinition" class="testDetailsLink" id="boundingBoxParameterDefinition.html#boundingBoxParameterDefinition">bounding Box Parameter Definition </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureCollectionsMetadataOperationResponse_Items.html#validateFeatureCollectionsMetadataOperationResponse_Items" class="testDetailsLink" id="validateFeatureCollectionsMetadataOperationResponse_Items.html#validateFeatureCollectionsMetadataOperationResponse_Items">validate Feature Collections Metadata Operation Response_ Items </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureCollectionsMetadataOperationResponse_Content.html#validateFeatureCollectionsMetadataOperationResponse_Content" class="testDetailsLink" id="validateFeatureCollectionsMetadataOperationResponse_Content.html#validateFeatureCollectionsMetadataOperationResponse_Content">validate Feature Collections Metadata Operation Response_ Content </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/http.html#http" class="testDetailsLink" id="http.html#http">http </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned5.html#validateFeaturesResponse_NumberReturned5" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned5.html#validateFeaturesResponse_NumberReturned5">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_NumberReturned99.html#validateFeaturesResponse_NumberReturned99" class="testDetailsLink" id="validateFeaturesResponse_NumberReturned99.html#validateFeaturesResponse_NumberReturned99">validate Features Response_ Number Returned </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateConformanceOperationAndResponse.html#validateConformanceOperationAndResponse" class="testDetailsLink" id="validateConformanceOperationAndResponse.html#validateConformanceOperationAndResponse">validate Conformance Operation And Response </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_Links.html#validateFeaturesResponse_Links" class="testDetailsLink" id="validateFeaturesResponse_Links.html#validateFeaturesResponse_Links">validate Features Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse.html#validateFeaturesWithBoundingBoxResponse" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse.html#validateFeaturesWithBoundingBoxResponse">validate Features With Bounding Box Response </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: No features were returned for collection.</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse20.html#validateFeaturesWithBoundingBoxResponse20" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse20.html#validateFeaturesWithBoundingBoxResponse20">validate Features With Bounding Box Response </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: No features were returned for collection.</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse28.html#validateFeaturesWithBoundingBoxResponse28" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse28.html#validateFeaturesWithBoundingBoxResponse28">validate Features With Bounding Box Response </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: No features were returned for collection.</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse47.html#validateFeaturesWithBoundingBoxResponse47" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse47.html#validateFeaturesWithBoundingBoxResponse47">validate Features With Bounding Box Response </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: No features were returned for collection.</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse106.html#validateFeaturesWithBoundingBoxResponse106" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse106.html#validateFeaturesWithBoundingBoxResponse106">validate Features With Bounding Box Response </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: No features were returned for collection.</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse109.html#validateFeaturesWithBoundingBoxResponse109" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse109.html#validateFeaturesWithBoundingBoxResponse109">validate Features With Bounding Box Response </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: No features were returned for collection.</p>
+               </td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_TimeStamp.html#validateFeaturesResponse_TimeStamp" class="testDetailsLink" id="validateFeaturesResponse_TimeStamp.html#validateFeaturesResponse_TimeStamp">validate Features Response_ Time Stamp </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureCollectionsMetadataOperation.html#validateFeatureCollectionsMetadataOperation" class="testDetailsLink" id="validateFeatureCollectionsMetadataOperation.html#validateFeatureCollectionsMetadataOperation">validate Feature Collections Metadata Operation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_Links.html#validateFeaturesWithLimitResponse_Links" class="testDetailsLink" id="validateFeaturesWithLimitResponse_Links.html#validateFeaturesWithLimitResponse_Links">validate Features With Limit Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithLimitResponse_Links121.html#validateFeaturesWithLimitResponse_Links121" class="testDetailsLink" id="validateFeaturesWithLimitResponse_Links121.html#validateFeaturesWithLimitResponse_Links121">validate Features With Limit Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/apiDefinitionValidation.html#apiDefinitionValidation" class="testDetailsLink" id="apiDefinitionValidation.html#apiDefinitionValidation">api Definition Validation </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/timeParameterDefinition.html#timeParameterDefinition" class="testDetailsLink" id="timeParameterDefinition.html#timeParameterDefinition">time Parameter Definition </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesOperation_QueryParamUnknown.html#validateFeaturesOperation_QueryParamUnknown" class="testDetailsLink" id="validateFeaturesOperation_QueryParamUnknown.html#validateFeaturesOperation_QueryParamUnknown">validate Features Operation_ Query Param Unknown </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_GeometryInCRS843.html#validateFeaturesResponse_GeometryInCRS843" class="testDetailsLink" id="validateFeaturesResponse_GeometryInCRS843.html#validateFeaturesResponse_GeometryInCRS843">validate Features Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_GeometryInCRS8423.html#validateFeaturesResponse_GeometryInCRS8423" class="testDetailsLink" id="validateFeaturesResponse_GeometryInCRS8423.html#validateFeaturesResponse_GeometryInCRS8423">validate Features Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_GeometryInCRS8429.html#validateFeaturesResponse_GeometryInCRS8429" class="testDetailsLink" id="validateFeaturesResponse_GeometryInCRS8429.html#validateFeaturesResponse_GeometryInCRS8429">validate Features Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_GeometryInCRS8444.html#validateFeaturesResponse_GeometryInCRS8444" class="testDetailsLink" id="validateFeaturesResponse_GeometryInCRS8444.html#validateFeaturesResponse_GeometryInCRS8444">validate Features Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_GeometryInCRS8488.html#validateFeaturesResponse_GeometryInCRS8488" class="testDetailsLink" id="validateFeaturesResponse_GeometryInCRS8488.html#validateFeaturesResponse_GeometryInCRS8488">validate Features Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesResponse_GeometryInCRS84107.html#validateFeaturesResponse_GeometryInCRS84107" class="testDetailsLink" id="validateFeaturesResponse_GeometryInCRS84107.html#validateFeaturesResponse_GeometryInCRS84107">validate Features Response_ Geometry In CRS84 </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_Links.html#validateFeaturesWithBoundingBoxResponse_Links" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_Links.html#validateFeaturesWithBoundingBoxResponse_Links">validate Features With Bounding Box Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_Links50.html#validateFeaturesWithBoundingBoxResponse_Links50" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_Links50.html#validateFeaturesWithBoundingBoxResponse_Links50">validate Features With Bounding Box Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_Links54.html#validateFeaturesWithBoundingBoxResponse_Links54" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_Links54.html#validateFeaturesWithBoundingBoxResponse_Links54">validate Features With Bounding Box Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_Links66.html#validateFeaturesWithBoundingBoxResponse_Links66" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_Links66.html#validateFeaturesWithBoundingBoxResponse_Links66">validate Features With Bounding Box Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_Links76.html#validateFeaturesWithBoundingBoxResponse_Links76" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_Links76.html#validateFeaturesWithBoundingBoxResponse_Links76">validate Features With Bounding Box Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_Links130.html#validateFeaturesWithBoundingBoxResponse_Links130" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_Links130.html#validateFeaturesWithBoundingBoxResponse_Links130">validate Features With Bounding Box Response_ Links </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeatureCollectionMetadataResponse.html#validateFeatureCollectionMetadataResponse" class="testDetailsLink" id="validateFeatureCollectionMetadataResponse.html#validateFeatureCollectionMetadataResponse">validate Feature Collection Metadata Response </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_NumberMatched.html#validateFeaturesWithBoundingBoxResponse_NumberMatched" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_NumberMatched.html#validateFeaturesWithBoundingBoxResponse_NumberMatched">validate Features With Bounding Box Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_NumberMatched8.html#validateFeaturesWithBoundingBoxResponse_NumberMatched8" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_NumberMatched8.html#validateFeaturesWithBoundingBoxResponse_NumberMatched8">validate Features With Bounding Box Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_NumberMatched38.html#validateFeaturesWithBoundingBoxResponse_NumberMatched38" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_NumberMatched38.html#validateFeaturesWithBoundingBoxResponse_NumberMatched38">validate Features With Bounding Box Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_NumberMatched98.html#validateFeaturesWithBoundingBoxResponse_NumberMatched98" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_NumberMatched98.html#validateFeaturesWithBoundingBoxResponse_NumberMatched98">validate Features With Bounding Box Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_NumberMatched116.html#validateFeaturesWithBoundingBoxResponse_NumberMatched116" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_NumberMatched116.html#validateFeaturesWithBoundingBoxResponse_NumberMatched116">validate Features With Bounding Box Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+            <tr bgcolor="#CCCCCE">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/validateFeaturesWithBoundingBoxResponse_NumberMatched127.html#validateFeaturesWithBoundingBoxResponse_NumberMatched127" class="testDetailsLink" id="validateFeaturesWithBoundingBoxResponse_NumberMatched127.html#validateFeaturesWithBoundingBoxResponse_NumberMatched127">validate Features With Bounding Box Response_ Number Matched </a></div>
+               </td>
+               <td>
+                  <p>org.testng.SkipException: Property numberMatched is not set in collection items 'dutch-addresses'</p>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+      <h2>Coordinate Reference Systems by Reference</h2>
+      <p>
+         </p><table border="1">
+            <tbody><tr>
+               <td bgcolor="#B2F0D1">
+                  Pass:
+                  <span id="testsPassed_Coordinate_Reference_Systems_by_Reference">37</span></td>
+               <td bgcolor="#FFB2B2">
+                  Fail:
+                  <span id="testsFailed_Coordinate_Reference_Systems_by_Reference">0</span></td>
+               <td bgcolor="#CCCCCE">
+                  Skip:
+                  <span id="testsSkipped_Coordinate_Reference_Systems_by_Reference">0</span></td>
+               <td>
+                  Total tests:
+                  <span id="testsInTotal_Coordinate_Reference_Systems_by_Reference">37</span></td>
+            </tr>
+         </tbody></table>
+      <p></p>
+      <table border="1" id="Coordinate_Reference_Systems_by_Reference">
+         <tbody>
+            <tr>
+               <th>Name</th>
+               <th>Reason</th>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameterTransformWithoutCrsParameter.html#verifyFeatureCrsParameterTransformWithoutCrsParameter" class="testDetailsLink" id="verifyFeatureCrsParameterTransformWithoutCrsParameter.html#verifyFeatureCrsParameterTransformWithoutCrsParameter">verify Feature Crs Parameter Transform Without Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameterTransformWithoutCrsParameter53.html#verifyFeatureCrsParameterTransformWithoutCrsParameter53" class="testDetailsLink" id="verifyFeatureCrsParameterTransformWithoutCrsParameter53.html#verifyFeatureCrsParameterTransformWithoutCrsParameter53">verify Feature Crs Parameter Transform Without Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameterTransformWithoutCrsParameter129.html#verifyFeatureCrsParameterTransformWithoutCrsParameter129" class="testDetailsLink" id="verifyFeatureCrsParameterTransformWithoutCrsParameter129.html#verifyFeatureCrsParameterTransformWithoutCrsParameter129">verify Feature Crs Parameter Transform Without Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionCrsIdentifierOfCrsProperty.html#verifyCollectionCrsIdentifierOfCrsProperty" class="testDetailsLink" id="verifyCollectionCrsIdentifierOfCrsProperty.html#verifyCollectionCrsIdentifierOfCrsProperty">verify Collection Crs Identifier Of Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameterTransformWithoutCrsParameter.html#verifyFeaturesCrsParameterTransformWithoutCrsParameter" class="testDetailsLink" id="verifyFeaturesCrsParameterTransformWithoutCrsParameter.html#verifyFeaturesCrsParameterTransformWithoutCrsParameter">verify Features Crs Parameter Transform Without Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyBboxCrsParameterWithDefaultCrs.html#verifyBboxCrsParameterWithDefaultCrs" class="testDetailsLink" id="verifyBboxCrsParameterWithDefaultCrs.html#verifyBboxCrsParameterWithDefaultCrs">verify Bbox Crs Parameter With Default Crs </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameterDefault.html#verifyFeaturesCrsParameterDefault" class="testDetailsLink" id="verifyFeaturesCrsParameterDefault.html#verifyFeaturesCrsParameterDefault">verify Features Crs Parameter Default </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionsCollectionCrsIdentifierOfStorageCrs.html#verifyCollectionsCollectionCrsIdentifierOfStorageCrs" class="testDetailsLink" id="verifyCollectionsCollectionCrsIdentifierOfStorageCrs.html#verifyCollectionsCollectionCrsIdentifierOfStorageCrs">verify Collections Collection Crs Identifier Of Storage Crs </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs.html#verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs" class="testDetailsLink" id="verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs.html#verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs">verify Collections Path Collection Crs Property Contains Default Crs </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameterInvalid.html#verifyFeaturesCrsParameterInvalid" class="testDetailsLink" id="verifyFeaturesCrsParameterInvalid.html#verifyFeaturesCrsParameterInvalid">verify Features Crs Parameter Invalid </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameterDefault.html#verifyFeatureCrsParameterDefault" class="testDetailsLink" id="verifyFeatureCrsParameterDefault.html#verifyFeatureCrsParameterDefault">verify Feature Crs Parameter Default </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyBboxCrsParameterDefault.html#verifyBboxCrsParameterDefault" class="testDetailsLink" id="verifyBboxCrsParameterDefault.html#verifyBboxCrsParameterDefault">verify Bbox Crs Parameter Default </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameterTransformWithCrsParameter.html#verifyFeatureCrsParameterTransformWithCrsParameter" class="testDetailsLink" id="verifyFeatureCrsParameterTransformWithCrsParameter.html#verifyFeatureCrsParameterTransformWithCrsParameter">verify Feature Crs Parameter Transform With Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionsCollectionCrsIdentifierOfCrsProperty.html#verifyCollectionsCollectionCrsIdentifierOfCrsProperty" class="testDetailsLink" id="verifyCollectionsCollectionCrsIdentifierOfCrsProperty.html#verifyCollectionsCollectionCrsIdentifierOfCrsProperty">verify Collections Collection Crs Identifier Of Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyBboxCrsParameter.html#verifyBboxCrsParameter" class="testDetailsLink" id="verifyBboxCrsParameter.html#verifyBboxCrsParameter">verify Bbox Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyBboxCrsParameter60.html#verifyBboxCrsParameter60" class="testDetailsLink" id="verifyBboxCrsParameter60.html#verifyBboxCrsParameter60">verify Bbox Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyBboxCrsParameter94.html#verifyBboxCrsParameter94" class="testDetailsLink" id="verifyBboxCrsParameter94.html#verifyBboxCrsParameter94">verify Bbox Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs97.html#verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs97" class="testDetailsLink" id="verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs97.html#verifyCollectionsPathCollectionCrsPropertyContainsDefaultCrs97">verify Collections Path Collection Crs Property Contains Default Crs </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionsCrsIdentifierOfCrsProperty.html#verifyCollectionsCrsIdentifierOfCrsProperty" class="testDetailsLink" id="verifyCollectionsCrsIdentifierOfCrsProperty.html#verifyCollectionsCrsIdentifierOfCrsProperty">verify Collections Crs Identifier Of Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionsCrsIdentifierOfStorageCrs.html#verifyCollectionsCrsIdentifierOfStorageCrs" class="testDetailsLink" id="verifyCollectionsCrsIdentifierOfStorageCrs.html#verifyCollectionsCrsIdentifierOfStorageCrs">verify Collections Crs Identifier Of Storage Crs </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameterTransformWithCrsParameter.html#verifyFeaturesCrsParameterTransformWithCrsParameter" class="testDetailsLink" id="verifyFeaturesCrsParameterTransformWithCrsParameter.html#verifyFeaturesCrsParameterTransformWithCrsParameter">verify Features Crs Parameter Transform With Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameterTransformWithCrsParameter120.html#verifyFeaturesCrsParameterTransformWithCrsParameter120" class="testDetailsLink" id="verifyFeaturesCrsParameterTransformWithCrsParameter120.html#verifyFeaturesCrsParameterTransformWithCrsParameter120">verify Features Crs Parameter Transform With Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameterTransformWithCrsParameter122.html#verifyFeaturesCrsParameterTransformWithCrsParameter122" class="testDetailsLink" id="verifyFeaturesCrsParameterTransformWithCrsParameter122.html#verifyFeaturesCrsParameterTransformWithCrsParameter122">verify Features Crs Parameter Transform With Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameter.html#verifyFeaturesCrsParameter" class="testDetailsLink" id="verifyFeaturesCrsParameter.html#verifyFeaturesCrsParameter">verify Features Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameter87.html#verifyFeaturesCrsParameter87" class="testDetailsLink" id="verifyFeaturesCrsParameter87.html#verifyFeaturesCrsParameter87">verify Features Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeaturesCrsParameter95.html#verifyFeaturesCrsParameter95" class="testDetailsLink" id="verifyFeaturesCrsParameter95.html#verifyFeaturesCrsParameter95">verify Features Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameter.html#verifyFeatureCrsParameter" class="testDetailsLink" id="verifyFeatureCrsParameter.html#verifyFeatureCrsParameter">verify Feature Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameter39.html#verifyFeatureCrsParameter39" class="testDetailsLink" id="verifyFeatureCrsParameter39.html#verifyFeatureCrsParameter39">verify Feature Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameter115.html#verifyFeatureCrsParameter115" class="testDetailsLink" id="verifyFeatureCrsParameter115.html#verifyFeatureCrsParameter115">verify Feature Crs Parameter </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyFeatureCrsParameterInvalid.html#verifyFeatureCrsParameterInvalid" class="testDetailsLink" id="verifyFeatureCrsParameterInvalid.html#verifyFeatureCrsParameterInvalid">verify Feature Crs Parameter Invalid </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionCrsIdentifierOfCrsProperty9.html#verifyCollectionCrsIdentifierOfCrsProperty9" class="testDetailsLink" id="verifyCollectionCrsIdentifierOfCrsProperty9.html#verifyCollectionCrsIdentifierOfCrsProperty9">verify Collection Crs Identifier Of Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionCrsIdentifierOfCrsProperty67.html#verifyCollectionCrsIdentifierOfCrsProperty67" class="testDetailsLink" id="verifyCollectionCrsIdentifierOfCrsProperty67.html#verifyCollectionCrsIdentifierOfCrsProperty67">verify Collection Crs Identifier Of Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionCrsIdentifierOfCrsProperty131.html#verifyCollectionCrsIdentifierOfCrsProperty131" class="testDetailsLink" id="verifyCollectionCrsIdentifierOfCrsProperty131.html#verifyCollectionCrsIdentifierOfCrsProperty131">verify Collection Crs Identifier Of Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionCrsIdentifierOfCrsProperty133.html#verifyCollectionCrsIdentifierOfCrsProperty133" class="testDetailsLink" id="verifyCollectionCrsIdentifierOfCrsProperty133.html#verifyCollectionCrsIdentifierOfCrsProperty133">verify Collection Crs Identifier Of Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyConformanceClass.html#verifyConformanceClass" class="testDetailsLink" id="verifyConformanceClass.html#verifyConformanceClass">verify Conformance Class </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyBboxCrsParameterInvalid.html#verifyBboxCrsParameterInvalid" class="testDetailsLink" id="verifyBboxCrsParameterInvalid.html#verifyBboxCrsParameterInvalid">verify Bbox Crs Parameter Invalid </a></div>
+               </td>
+               <td></td>
+            </tr>
+            <tr bgcolor="#B2F0D1">
+               <td>
+                  <div style="text-indent:0px;"><a href="http://localhost:8081/teamengine/reports/ogctest/s0009/result/verifyCollectionCrsIdentifierOfStorageCrsProperty.html#verifyCollectionCrsIdentifierOfStorageCrsProperty" class="testDetailsLink" id="verifyCollectionCrsIdentifierOfStorageCrsProperty.html#verifyCollectionCrsIdentifierOfStorageCrsProperty">verify Collection Crs Identifier Of Storage Crs Property </a></div>
+               </td>
+               <td></td>
+            </tr>
+         </tbody>
+      </table>
+   
+
+
+    
+
+
+
+	
+
+
+ <p id="oldResultUrlPara">
+    See the <a id="oldResultUrlPara" href="http://localhost:8081/teamengine/viewOldSessionLog.jsp?session=s0009">detailed old test report</a>.
+ </p> 
+
+
+		<br>
+		<input type="button" value="Execute this session again" onclick="window.location = &#39;test.jsp?mode=retest&amp;session=s0009&#39;">
+
+		<input type="button" value="Delete this session" onclick="deleteSession()">
+		<input type="button" value="Download log Files" onclick="window.location = &#39;downloadLog?session=s0009&#39;">
+<!-- 		<input type="button" value="Create execution log report file" onclick="window.location = 'prettyPrintLogs?session=s0009'"/>  -->
+
+		<br>
+    <p><a href="http://localhost:8081/teamengine/viewSessions.jsp">Sessions list</a></p>
+		
+<div style="margin-top: 2em;">
+
+	<footer>
+	<hr>
+  <p>TEAM Engine 5.4.1 </p>
+	<div xmlns="http://www.w3.org/1999/xhtml">
+  <p>If you have any questions or suggestions, feel free to contact the 
+    <a href="mailto:site-admin@example.net"> site administrator</a>.
+  </p>
+</div>
+	</footer>
+</div>
+				
+	
+
+</body></html>

@@ -30,13 +30,14 @@
     ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"
     ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html"
     ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"
-    ,"http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs"
+    ,"http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs",
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters"*/}}
+    "http://www.opengis.net/spec/json-fg-1/0.2"
     {{ end }}
 
     {{ if .Config.OgcAPI.Styles }}

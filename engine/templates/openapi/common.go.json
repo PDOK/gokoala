@@ -51,6 +51,7 @@
             "$ref": "#/components/parameters/f"
           }
         ],
+        "operationId": "getOpenApi",
         "responses": {
           "200": {
             "$ref": "#/components/responses/200"

@@ -172,7 +172,7 @@ already being taken care of when building the Docker container image.
   - `"*.go.tilejson"`
 - Now add template language support by running the
   [setup-jetbrains-gotemplates.sh](hack/setup-jetbrains-gotemplates.sh) script.
-- Now you'll have full IDE support in the GoKoala templates.
+- Reopen the project (or restart IDE). Now you'll have full IDE support in the GoKoala templates.
 
 Also:
 
@@ -202,6 +202,7 @@ compliance when available. In the case of OGC API Features follow these steps:
 - Start a new test session in the TEAM Engine against http://localhost:8080 (or http://host.docker.internal:8080).
   - More details in the [features conformance test suite](https://opengeospatial.github.io/ets-ogcapi-features10/).
 - Publish test results HTML report in [docs](./docs/ogc-features-test-report) and list below.
+  - Test results on [19-12-2023](https://htmlpreview.github.io/?https://github.com/PDOK/gokoala/blob/master/docs/ogc-features-test-report/20231219.html)
   - Test results on [13-12-2023](https://htmlpreview.github.io/?https://github.com/PDOK/gokoala/blob/master/docs/ogc-features-test-report/20231213.html)
   - Test results on [27-09-2023](https://htmlpreview.github.io/?https://github.com/PDOK/gokoala/blob/master/docs/ogc-features-test-report/20230927.html)
 

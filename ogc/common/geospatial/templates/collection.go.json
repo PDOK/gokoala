@@ -87,6 +87,12 @@
     },
     {
       "rel" : "items",
+      "type" : "application/vnd.ogc.fg+json",
+      "title" : "The JSON-FG representation of the {{ .Params.ID }} features served from this endpoint",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=jsonfg"
+    },
+    {
+      "rel" : "items",
       "type" : "text/html",
       "title" : "The HTML representation of the {{ .Params.ID }} features served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=html"
