@@ -9,7 +9,7 @@ import { fromExtent } from 'ol/geom/Polygon'
 import VectorTileLayer from 'ol/layer/VectorTile'
 import { Projection } from 'ol/proj'
 import VectorTileSource from 'ol/source/VectorTile.js'
-import { LayerType, LegendItem, MapboxStyle, MapboxStyleService, exhaustiveGuard } from '../mapbox-style.service'
+import { LayerType, LegendItem, MapboxStyle, MapboxStyleService, exhaustiveGuard } from '../../mapbox-style.service'
 
 @Component({
   selector: 'app-legend-item',

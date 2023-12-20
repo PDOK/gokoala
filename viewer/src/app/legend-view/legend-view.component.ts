@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common'
 import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
-import { LegendItemComponent } from '../legend-item/legend-item.component'
+import { LegendItemComponent } from './legend-item/legend-item.component'
 import { LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.service'
 import { NGXLogger } from 'ngx-logger'
 
