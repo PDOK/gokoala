@@ -150,7 +150,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	fids := map[string]interface{}{"fids": featureIDs}
+	fids := map[string]any{"fids": featureIDs}
 	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select * from %s where %s in (:fids)", table.TableName, g.fidColumn), fids)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make features query, error: %w", err)

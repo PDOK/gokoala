@@ -23,12 +23,12 @@ func PrettyPrintJSON(content []byte, name string) []byte {
 // It returns an error if x1 or x2 cannot be JSON-unmarshalled,
 // or the merged JSON is invalid.
 func MergeJSON(x1, x2 []byte) ([]byte, error) {
-	var j1 interface{}
+	var j1 any
 	err := json.Unmarshal(x1, &j1)
 	if err != nil {
 		return nil, err
 	}
-	var j2 interface{}
+	var j2 any
 	err = json.Unmarshal(x2, &j2)
 	if err != nil {
 		return nil, err
@@ -37,10 +37,10 @@ func MergeJSON(x1, x2 []byte) ([]byte, error) {
 	return json.Marshal(merged)
 }
 
-func merge(x1, x2 interface{}) interface{} {
+func merge(x1, x2 any) any {
 	switch x1 := x1.(type) {
-	case map[string]interface{}:
-		x2, ok := x2.(map[string]interface{})
+	case map[string]any:
+		x2, ok := x2.(map[string]any)
 		if !ok {
 			return x1
 		}
@@ -66,7 +66,7 @@ func merge(x1, x2 interface{}) interface{} {
 		x1 = append(x1, x2...)
 		return removeDuplicates(x1)
 	case nil:
-		x2, ok := x2.(map[string]interface{})
+		x2, ok := x2.(map[string]any)
 		if ok {
 			return x2
 		}

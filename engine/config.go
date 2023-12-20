@@ -468,7 +468,7 @@ type YAMLURL struct {
 
 // UnmarshalYAML parses a string to URL and also removes trailing slash if present,
 // so we can easily append a longer path without having to worry about double slashes
-func (o *YAMLURL) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (o *YAMLURL) UnmarshalYAML(unmarshal func(any) error) error {
 	var s string
 	err := unmarshal(&s)
 	if err != nil {

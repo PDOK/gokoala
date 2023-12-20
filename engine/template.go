@@ -59,7 +59,7 @@ type TemplateData struct {
 
 	// Params optional parameters not part of GoKoala's config file. You can use
 	// this to provide extra data to a template at rendering time.
-	Params interface{}
+	Params any
 
 	// Breadcrumb path to the page, in key-value pairs of name->path
 	Breadcrumbs []Breadcrumb
@@ -131,7 +131,7 @@ func ExpandTemplateKey(key TemplateKey, language language.Tag) TemplateKey {
 
 type Templates struct {
 	// ParsedTemplates templates loaded from disk and parsed to an in-memory Go representation.
-	ParsedTemplates map[TemplateKey]interface{}
+	ParsedTemplates map[TemplateKey]any
 
 	// RenderedTemplates templates parsed + rendered to their actual output format like JSON, HTMl, etc.
 	// We prefer pre-rendered templates whenever possible. These are stored in this map.
@@ -143,7 +143,7 @@ type Templates struct {
 
 func newTemplates(config *Config) *Templates {
 	templates := &Templates{
-		ParsedTemplates:   make(map[TemplateKey]interface{}),
+		ParsedTemplates:   make(map[TemplateKey]any),
 		RenderedTemplates: make(map[TemplateKey][]byte),
 		config:            config,
 		localizers:        newLocalizers(config.AvailableLanguages),
@@ -159,7 +159,7 @@ func newTemplates(config *Config) *Templates {
 	return templates
 }
 
-func (t *Templates) getParsedTemplate(key TemplateKey) (interface{}, error) {
+func (t *Templates) getParsedTemplate(key TemplateKey) (any, error) {
 	if parsedTemplate, ok := t.ParsedTemplates[key]; ok {
 		return parsedTemplate, nil
 	}
@@ -186,7 +186,7 @@ func (t *Templates) parseAndSaveTemplate(key TemplateKey) {
 	}
 }
 
-func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params interface{}) {
+func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcrumb, params any) {
 	for lang := range t.localizers {
 		var result []byte
 		if key.Format == FormatHTML {
@@ -212,7 +212,7 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 }
 
 func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
-	params interface{}, breadcrumbs []Breadcrumb, file string) []byte {
+	params any, breadcrumbs []Breadcrumb, file string) []byte {
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{
@@ -234,7 +234,7 @@ func (t *Templates) parseNonHTMLTemplate(key TemplateKey, lang language.Tag) (st
 	return file, parsed
 }
 
-func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params interface{}, key TemplateKey, file string) []byte {
+func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params any, key TemplateKey, file string) []byte {
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{
 		Config: t.config,
@@ -251,7 +251,7 @@ func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params 
 	return result
 }
 
-func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]interface{} {
+func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]any {
 	return combineFuncMaps(globalTemplateFuncs, texttemplate.FuncMap{
 		// create func just-in-time based on TemplateKey
 		"i18n": func(messageID string) htmltemplate.HTML {
@@ -331,8 +331,8 @@ func readPlainContents(filePath string) (string, error) {
 }
 
 // combine given FuncMaps
-func combineFuncMaps(funcMaps ...map[string]interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
+func combineFuncMaps(funcMaps ...map[string]any) map[string]any {
+	result := make(map[string]any)
 	for _, funcMap := range funcMaps {
 		for k, v := range funcMap {
 			result[k] = v

@@ -158,7 +158,7 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 
 // RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
 // This method does not perform OpenAPI validation of the rendered template (will be done during runtime).
-func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
+func (e *Engine) RenderTemplatesWithParams(params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
 	}
@@ -169,7 +169,7 @@ func (e *Engine) RenderTemplatesWithParams(params interface{}, breadcrumbs []Bre
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a backing store).
 func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key TemplateKey,
-	params interface{}, breadcrumbs []Breadcrumb) {
+	params any, breadcrumbs []Breadcrumb) {
 
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {

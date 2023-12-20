@@ -20,12 +20,12 @@ var logSQL, _ = strconv.ParseBool(os.Getenv("LOG_SQL"))
 type SQLLog struct{}
 
 // Before callback prior to execution of the given SQL query
-func (s *SQLLog) Before(ctx context.Context, _ string, _ ...interface{}) (context.Context, error) {
+func (s *SQLLog) Before(ctx context.Context, _ string, _ ...any) (context.Context, error) {
 	return context.WithValue(ctx, sqlContextKey, time.Now()), nil
 }
 
 // After callback once execution of the given SQL query is done
-func (s *SQLLog) After(ctx context.Context, query string, args ...interface{}) (context.Context, error) {
+func (s *SQLLog) After(ctx context.Context, query string, args ...any) (context.Context, error) {
 	if logSQL {
 		query = replaceBindVars(query, args)
 		start := ctx.Value(sqlContextKey).(time.Time)
@@ -36,7 +36,7 @@ func (s *SQLLog) After(ctx context.Context, query string, args ...interface{}) (
 }
 
 // replaces '?' bind vars in order to log a complete query
-func replaceBindVars(query string, args []interface{}) string {
+func replaceBindVars(query string, args []any) string {
 	for _, arg := range args {
 		query = strings.Replace(query, "?", fmt.Sprintf("%v", arg), 1)
 	}

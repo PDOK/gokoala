@@ -200,7 +200,7 @@ func (jf *jsonFeatures) createFeatureLinks(selfFormat string, url featureURL,
 
 // toJSON performs the equivalent of json.Marshal but without escaping '<', '>' and '&'.
 // Especially the '&' is important since we use this character in the next/prev links.
-func toJSON(input interface{}) ([]byte, error) {
+func toJSON(input any) ([]byte, error) {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)

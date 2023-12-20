@@ -52,12 +52,12 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 	firstRow := true
 	var prevNextID *PrevNextFID
 	for rows.Next() {
-		var values []interface{}
+		var values []any
 		if values, err = rows.SliceScan(); err != nil {
 			return result, nil, err
 		}
 
-		feature := &Feature{Feature: geojson.Feature{Properties: make(map[string]interface{})}}
+		feature := &Feature{Feature: geojson.Feature{Properties: make(map[string]any)}}
 		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, geomColumn, geomMapper)
 		if err != nil {
 			return result, nil, err
@@ -71,7 +71,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 }
 
 //nolint:cyclop,funlen
-func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []interface{},
+func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []any,
 	fidColumn string, geomColumn string, geomMapper func([]byte) (geom.Geometry, error)) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}

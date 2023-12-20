@@ -37,7 +37,7 @@ type JSONFGFeature struct {
 	Time        any         `json:"time"`
 	// we don't implement the JSON-FG "3D" conformance class. So Place only
 	// supports simple/2D geometries, no 3D geometries like Polyhedron, Prism, etc.
-	Place      geom.Geometry          `json:"place"`    // may only contain non-WGS84 geometries
-	Geometry   geom.Geometry          `json:"geometry"` // may only contain WGS84 geometries
-	Properties map[string]interface{} `json:"properties"`
+	Place      geom.Geometry  `json:"place"`    // may only contain non-WGS84 geometries
+	Geometry   geom.Geometry  `json:"geometry"` // may only contain WGS84 geometries
+	Properties map[string]any `json:"properties"`
 }
