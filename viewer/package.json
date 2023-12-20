@@ -11,7 +11,8 @@
     "lint": "ng lint",
     "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress open",
     "format": "npx prettier --write .",
-    "upgrade": "ng update @angular/cli @angular/core @angular-eslint/schematics @angular/material angular-cli-ghpages @angular-devkit/build-angular && npm update && npm audit fix --force"
+    "upgrade": "ng update @angular/cli @angular/core @angular-eslint/schematics @angular/material angular-cli-ghpages @angular-devkit/build-angular && npm update && npm audit fix --force",
+    "bundle-size": "ng build --configuration production --stats-json && webpack-bundle-analyzer dist/view-component/stats.json"
   },
   "private": true,
   "dependencies": {
@@ -53,6 +54,7 @@
     "eslint-plugin-prettier": "5.0.1",
     "prettier": "3.1.1",
     "prettier-eslint": "16.1.2",
-    "typescript": "~5.2.2"
+    "typescript": "~5.2.2",
+    "webpack-bundle-analyzer": "^4.10.1"
   }
 }
