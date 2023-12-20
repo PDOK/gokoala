@@ -1,5 +1,4 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import { Feature, Map as OLMap, MapBrowserEvent, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { PanIntoViewOptions } from 'ol/Overlay'
@@ -19,6 +18,12 @@ import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { DataUrl, defaultMapping, FeatureServiceService, ProjectionMapping } from '../feature-service.service'
 import { projectionSetMercator } from '../mapprojection'
 import { boxControl } from './boxcontrol'
+
+/** Coerces a data-bound value (typically a string) to a boolean. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function coerceBooleanProperty(value: any): boolean {
+  return value != null && `${value}` !== 'false'
+}
 
 export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)

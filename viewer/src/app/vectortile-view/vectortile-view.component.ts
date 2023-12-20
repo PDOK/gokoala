@@ -1,4 +1,3 @@
-import { coerceBooleanProperty } from '@angular/cdk/coercion'
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -37,6 +36,12 @@ import Projection from 'ol/proj/Projection'
 import { Fill, Stroke, Style } from 'ol/style'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import { Link, Matrix, MatrixsetService } from '../matrixset.service'
+
+/** Coerces a data-bound value (typically a string) to a boolean. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function coerceBooleanProperty(value: any): boolean {
+  return value != null && `${value}` !== 'false'
+}
 
 export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
   [Key in keyof Props]: {
