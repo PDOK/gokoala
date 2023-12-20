@@ -15,8 +15,8 @@ import TileDebug from 'ol/source/TileDebug.js'
 import VectorTileSource from 'ol/source/VectorTile.js'
 import View from 'ol/View'
 import { Subject } from 'rxjs'
-import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from './mapprojection'
-import { ObjectInfoComponent } from './object-info/object-info.component'
+import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../mapprojection'
+import { ObjectInfoComponent } from '../object-info/object-info.component'
 
 import { CommonModule } from '@angular/common'
 import { NGXLogger } from 'ngx-logger'
@@ -36,7 +36,7 @@ import { useGeographic } from 'ol/proj'
 import Projection from 'ol/proj/Projection'
 import { Fill, Stroke, Style } from 'ol/style'
 import TileGrid from 'ol/tilegrid/TileGrid'
-import { Link, Matrix, MatrixsetService } from './matrixset.service'
+import { Link, Matrix, MatrixsetService } from '../matrixset.service'
 
 export type NgChanges<Component extends object, Props = ExcludeFunctions<Component>> = {
   [Key in keyof Props]: {
@@ -57,8 +57,8 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
 
 @Component({
   selector: 'app-vectortile-view',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  templateUrl: './vectortile-view.component.html',
+  styleUrls: ['./vectortile-view.component.css'],
   //encapsulation: ViewEncapsulation.ShadowDom,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,7 +68,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
   ],
 })
-export class AppComponent implements OnChanges {
+export class VectortileViewComponent implements OnChanges {
   title = 'view-component'
   map = new Map({})
   xyzselector = '/{z}/{y}/{x}?f=mvt'
@@ -127,7 +127,7 @@ export class AppComponent implements OnChanges {
     private cdf: ChangeDetectorRef
   ) {}
 
-  ngOnChanges(changes: NgChanges<AppComponent>) {
+  ngOnChanges(changes: NgChanges<VectortileViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
       // this.logger.log(this.id + ' style changed')
       if (!changes.styleUrl.isFirstChange()) {

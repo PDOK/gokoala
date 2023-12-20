@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser'
-import { AppComponent } from './app.component'
+import { VectortileViewComponent } from './vectortile-view/vectortile-view.component'
 import { createCustomElement } from '@angular/elements'
 import { ObjectInfoComponent } from './object-info/object-info.component'
 import { NgModule, Injector } from '@angular/core'
@@ -17,7 +17,7 @@ import { environment } from 'src/environments/environment'
   imports: [
     BrowserModule,
     HttpClientModule,
-    AppComponent,
+    VectortileViewComponent,
     LoggerModule.forRoot({
       serverLoggingUrl: '/api/logs',
       level: environment.loglevel,
@@ -27,16 +27,14 @@ import { environment } from 'src/environments/environment'
 })
 export class AppModule {
   constructor(private injector: Injector) {
-    const webComponent = createCustomElement(AppComponent, { injector })
-    customElements.define('app-vectortile-view', webComponent)
+    const vectorTileView = createCustomElement(VectortileViewComponent, { injector })
+    customElements.define('app-vectortile-view', vectorTileView)
 
-    const webObjectInfo = createCustomElement(ObjectInfoComponent, {
-      injector,
-    })
-    customElements.define('app-objectinfo-view', webObjectInfo)
+    const objectInfo = createCustomElement(ObjectInfoComponent, { injector })
+    customElements.define('app-objectinfo-view', objectInfo)
 
-    const webLegend = createCustomElement(LegendViewComponent, { injector })
-    customElements.define('app-legend-view', webLegend)
+    const legendView = createCustomElement(LegendViewComponent, { injector })
+    customElements.define('app-legend-view', legendView)
 
     const featureView = createCustomElement(FeatureViewComponent, { injector })
     customElements.define('app-feature-view', featureView)

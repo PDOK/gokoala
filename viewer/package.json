@@ -9,7 +9,7 @@
     "test": "npx cypress info && npx cypress run --component",
     "deploy": "npm run format && npm run lint  && ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
     "lint": "ng lint",
-    "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222;  npx cypress open",
+    "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress open",
     "format": "npx prettier --write .",
     "upgrade": "ng update @angular/cli @angular/core @angular-eslint/schematics @angular/material angular-cli-ghpages @angular-devkit/build-angular && npm update && npm audit fix --force"
   },
