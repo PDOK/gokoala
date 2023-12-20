@@ -305,7 +305,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 					log.Fatal(err)
 				}
 
-				log.Print(rr.Body.String()) // to ease debugging
+				printActual(rr)
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
@@ -442,7 +442,7 @@ func TestFeatures_Feature(t *testing.T) {
 					log.Fatal(err)
 				}
 
-				log.Print(rr.Body.String()) // to ease debugging
+				printActual(rr)
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
@@ -490,4 +490,10 @@ func createRequest(url string, collectionID string, featureID string, format str
 
 func normalize(s string) string {
 	return strings.ToLower(strings.Join(strings.Fields(s), ""))
+}
+
+func printActual(rr *httptest.ResponseRecorder) {
+	log.Print("==> ACTUAL:")
+	log.Print(rr.Body.String()) // to ease debugging & updating expected results
+	log.Print("=========")
 }

@@ -46,7 +46,7 @@ type geoPackageBackend interface {
 
 type featureTable struct {
 	TableName          string    `db:"table_name"`
-	DataType           string    `db:"data_type"`
+	DataType           string    `db:"data_type"` // always 'features'
 	Identifier         string    `db:"identifier"`
 	Description        string    `db:"description"`
 	GeometryColumnName string    `db:"column_name"`
@@ -57,6 +57,16 @@ type featureTable struct {
 	MaxX               float64   `db:"max_x"` // bbox
 	MaxY               float64   `db:"max_y"` // bbox
 	SRS                int64     `db:"srs_id"`
+
+	ColumnsWithDateType map[string]string
+}
+
+func (ft featureTable) ColumnsWithDataType() map[string]string {
+	return ft.ColumnsWithDateType
+}
+
+func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.FeatureTableMetadata, error) {
+	return g.featureTableByCollectionID[collection], nil
 }
 
 type GeoPackage struct {
@@ -419,12 +429,17 @@ where
 
 	result := make(map[string]*featureTable, 10)
 	for rows.Next() {
-		row := featureTable{}
+		row := featureTable{
+			ColumnsWithDateType: make(map[string]string),
+		}
 		if err = rows.StructScan(&row); err != nil {
 			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 		}
 		if row.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
+		}
+		if err = readFeatureTableInfo(db, row); err != nil {
+			return nil, fmt.Errorf("failed to read feature table metadata, error: %w", err)
 		}
 
 		if len(collections) == 0 {
@@ -442,14 +457,31 @@ where
 		}
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 	if len(result) == 0 {
 		return nil, fmt.Errorf("no records found in gpkg_contents, can't serve features")
 	}
-
 	return result, nil
+}
+
+func readFeatureTableInfo(db *sqlx.DB, table featureTable) error {
+	rows, err := db.Queryx(fmt.Sprintf("select name, type from pragma_table_info('%s')", table.TableName))
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var colName, colType string
+		err = rows.Scan(&colName, &colType)
+		if err != nil {
+			return err
+		}
+		table.ColumnsWithDateType[colName] = colType
+	}
+	return nil
 }
 
 func hasMatchingTableName(collection engine.GeoSpatialCollection, row featureTable) bool {
