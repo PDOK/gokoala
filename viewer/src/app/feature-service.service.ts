@@ -140,7 +140,7 @@ export class FeatureServiceService {
           //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
           return defaultMapping
         }
-        if (value.toUpperCase().startsWith('HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/')) {
+        if (value.toLowerCase().startsWith('http://www.opengis.net/def/crs/epsg/')) {
           const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
           return { dataProjection: projection, visualProjection: 'EPSG:3857' }
         }

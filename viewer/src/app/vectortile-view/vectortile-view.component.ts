@@ -71,7 +71,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
 export class VectortileViewComponent implements OnChanges {
   title = 'view-component'
   map = new Map({})
-  xyzselector = '/{z}/{y}/{x}?f=mvt'
+  xyzSelector = '/{z}/{y}/{x}?f=mvt'
   private _showGrid = false
   private _showObjectInfo = false
   vectorTileLayer: VectorTileLayer | undefined
@@ -148,17 +148,17 @@ export class VectortileViewComponent implements OnChanges {
 
   private initialize() {
     this.vectorTileLayer = undefined
-    let matrixurl = this.tileUrl.replace('tiles', 'tileMatrixSets') + '?f=json'
+    let matrixUrl = this.tileUrl.replace('tiles', 'tileMatrixSets') + '?f=json'
     //  this.logger.log('url: ' + this.tileUrl)
     this.matrixsetService.getMatrix(this.tileUrl).subscribe({
       next: tile => {
-        const linkurl = this.FindMatrixUrl(tile.links)
-        if (linkurl) {
-          matrixurl = linkurl
+        const linkUrl = this.FindMatrixUrl(tile.links)
+        if (linkUrl) {
+          matrixUrl = linkUrl
         } else {
           this.logger.log('tileurl :' + this.tileUrl + 'not found')
         }
-        this.drawFromMatrixUrl(tile, matrixurl)
+        this.drawFromMatrixUrl(tile, matrixUrl)
         this.SetZoomLevel(tile)
         this.cdf.detectChanges()
       },
@@ -179,28 +179,28 @@ export class VectortileViewComponent implements OnChanges {
   }
 
   private FindMatrixUrl(links: Link[]) {
-    let matrixurl = undefined
+    let matrixUrl = undefined
     links.forEach(link => {
       if (link.rel == 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme') {
         const turl = new URL(this.tileUrl)
         if (this.isFullURL(link.href)) {
-          matrixurl = link.href
+          matrixUrl = link.href
         } else {
           const mUrl = new URL(turl.origin + link.href)
-          matrixurl = mUrl.href
+          matrixUrl = mUrl.href
         }
       }
     })
-    return matrixurl
+    return matrixUrl
   }
 
-  private drawFromMatrixUrl(matrix: Matrix, matrixurl: string) {
-    this.matrixsetService.getMatrixSet(matrixurl).subscribe({
-      next: matrixset => {
+  private drawFromMatrixUrl(matrix: Matrix, matrixUrl: string) {
+    this.matrixsetService.getMatrixSet(matrixUrl).subscribe({
+      next: matrixSet => {
         const resolutions: number[] = []
         const origins: number[][] = []
         const sizes: number[][] = []
-        matrixset.tileMatrices.forEach(x => {
+        matrixSet.tileMatrices.forEach(x => {
           resolutions[x.id] = x.cellSize
           if (this.tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
             origins[x.id] = [x.pointOfOrigin[1], x.pointOfOrigin[0]] //  x,y swap Workaround?
@@ -218,7 +218,7 @@ export class VectortileViewComponent implements OnChanges {
         this.drawMap(matrix)
       },
       error: error => {
-        this.logger.log(this.id + 'tilematrixset not found: ' + matrixurl, error)
+        this.logger.log(this.id + 'tilematrixset not found: ' + matrixUrl, error)
         this.projection = new MapProjection(this.tileUrl).Projection
         this.tileGrid = new TileGrid({
           extent: this.projection.getExtent(),
@@ -262,10 +262,10 @@ export class VectortileViewComponent implements OnChanges {
     })
 
     this.SetZoomLevel(tile)
-    const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']")
+    const mapElm: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']")
     this.mapWidth = this.elementRef.nativeElement.offsetWidth
     this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
-    map.setTarget(mapdiv)
+    map.setTarget(mapElm)
     this.cdf.detectChanges()
   }
 
@@ -290,7 +290,7 @@ export class VectortileViewComponent implements OnChanges {
     useGeographic()
     const l = this.generateLayers()
     const layers = l.layers
-    const acenter: Coordinate = [this.centerX, this.centerY]
+    const mapCenter: Coordinate = [this.centerX, this.centerY]
     this.vectorTileLayer = l.vectorTileLayer
 
     const contr = defaultControls({
@@ -301,7 +301,7 @@ export class VectortileViewComponent implements OnChanges {
       controls: contr,
       layers: layers,
       view: new View({
-        center: acenter,
+        center: mapCenter,
         zoom: this.zoom,
         maxZoom: this.maxZoom,
         minZoom: this.minZoom,
@@ -314,7 +314,7 @@ export class VectortileViewComponent implements OnChanges {
 
   private generateLayers() {
     this.projection = new MapProjection(this.tileUrl).Projection
-    const vectorTileLayer = this.getVectortileLayer(this.projection)
+    const vectorTileLayer = this.getVectorTileLayer(this.projection)
     this.setStyle(vectorTileLayer)
     let layers = [vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined
 
@@ -365,7 +365,7 @@ export class VectortileViewComponent implements OnChanges {
     }
   }
 
-  getVectortileLayer(projection: Projection): VectorTileLayer {
+  getVectorTileLayer(projection: Projection): VectorTileLayer {
     return new VectorTileLayer({
       source: this.getVectorTileSource(projection, this.tileUrl),
       renderMode: 'hybrid',
@@ -389,7 +389,7 @@ export class VectortileViewComponent implements OnChanges {
       format: new MVT(),
       projection: projection,
       tileGrid: this.tileGrid,
-      url: url + this.xyzselector,
+      url: url + this.xyzSelector,
       cacheSize: 0,
     })
     source.on(['tileloadend'], e => {

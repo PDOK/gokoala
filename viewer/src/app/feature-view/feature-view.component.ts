@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
 import { coerceBooleanProperty } from '@angular/cdk/coercion'
-import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
+import { Feature, Map as OLMap, MapBrowserEvent, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
@@ -16,7 +16,7 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
-import { DataUrl, FeatureServiceService, ProjectionMapping, defaultMapping, featureCollectionGeoJSON } from '../feature-service.service'
+import { DataUrl, defaultMapping, FeatureServiceService, ProjectionMapping } from '../feature-service.service'
 import { projectionSetMercator } from '../mapprojection'
 import { boxControl } from './boxcontrol'
 
@@ -54,9 +54,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   mapWidth = 600
 
   map: OLMap = this.getMap()
-  featureCollectionGeoJSON!: featureCollectionGeoJSON
   features: Feature<Geometry>[] = []
-  boxLayer!: VectorLayer<VectorSource<Geometry>>
 
   constructor(
     private el: ElementRef,
@@ -74,11 +72,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private init() {
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
-    const mapdiv: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
-    this.map.setTarget(mapdiv)
-    const aurl: DataUrl = { url: this.itemsUrl, dataMapping: this._projection }
+    const mapElm: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
+    this.map.setTarget(mapElm)
+    const featuresUrl: DataUrl = { url: this.itemsUrl, dataMapping: this._projection }
     this.featureService
-      .getFeatures(aurl)
+      .getFeatures(featuresUrl)
       .pipe(take(1))
       .subscribe(data => {
         this.features = data
@@ -122,7 +120,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
       default: {
         exhaustiveGuard(this.backgroundMap)
-        return
       }
     }
   }
@@ -159,7 +156,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       color: '#3399CC',
       width: 1.25,
     })
-    const styles = [
+    return [
       new Style({
         image: new Circle({
           fill: fill,
@@ -170,7 +167,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         stroke: stroke,
       }),
     ]
-    return styles
   }
 
   setViewExtent(extent: Extent, scale: number) {
@@ -222,11 +218,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         evt.pixel,
         (feature: FeatureLike) => {
           if (feature) {
-            const featureid = feature.getId()
-            if (featureid) {
+            const featureId = feature.getId()
+            if (featureId) {
               const items = 'items'
-              const itemsurl = this.itemsUrl.toLowerCase()
-              const currentUrl = new URL(itemsurl.substring(0, itemsurl.indexOf(items) + items.length))
+              const itemsUrl = this.itemsUrl.toLowerCase()
+              const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
               tooltipContent.innerHTML =
                 '<a href="' +
                 currentUrl.protocol +
@@ -234,9 +230,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
                 currentUrl.host +
                 currentUrl.pathname +
                 '/' +
-                featureid +
+                featureId +
                 '">' +
-                featureid +
+                featureId +
                 '</a>'
               const f = feature.getGeometry()
               if (f) {

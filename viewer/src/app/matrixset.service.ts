@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable } from 'rxjs'
+
 export interface MatrixSet {
   links: Link[]
   id: string
@@ -9,13 +10,6 @@ export interface MatrixSet {
   wellKnownScaleSet: string
   tileMatrices: TileMatrix[]
   orderedAxes: string[]
-}
-
-export interface Link {
-  rel: string
-  type: string
-  title: string
-  href: string
 }
 
 export interface TileMatrix {
