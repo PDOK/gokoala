@@ -4,7 +4,7 @@ title: Basisregistratie Grootschalige Topografie (BGT)
 # shortened title, used in breadcrumb path
 serviceIdentifier: BGT
 abstract: >-
-  This is a description about the dataset in Markdown. See [PDOK BGT dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-grootschalige-topografie-bgt-) for details.
+  This is a description about the example dataset in Markdown. See [PDOK BGT dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-grootschalige-topografie-bgt-) for details.
 # just a dummy picture, but you can put an actual thumbnail here
 thumbnail: bgt.png
 resources:
