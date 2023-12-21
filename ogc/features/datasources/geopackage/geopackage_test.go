@@ -102,7 +102,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Features: []*domain.Feature{
 					{
 						Feature: geojson.Feature{
-							Properties: map[string]interface{}{
+							Properties: map[string]any{
 								"straatnaam": "Van Diemenkade",
 								"nummer_id":  "0363200000454013",
 							},
@@ -110,7 +110,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					},
 					{
 						Feature: geojson.Feature{
-							Properties: map[string]interface{}{
+							Properties: map[string]any{
 								"straatnaam": "Realengracht",
 								"nummer_id":  "0363200000398886",
 							},
@@ -148,7 +148,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Features: []*domain.Feature{
 					{
 						Feature: geojson.Feature{
-							Properties: map[string]interface{}{
+							Properties: map[string]any{
 								"straatnaam": "Realengracht",
 								"nummer_id":  "0363200000398887",
 							},
@@ -156,7 +156,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					},
 					{
 						Feature: geojson.Feature{
-							Properties: map[string]interface{}{
+							Properties: map[string]any{
 								"straatnaam": "Realengracht",
 								"nummer_id":  "0363200000398888",
 							},
@@ -164,7 +164,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					},
 					{
 						Feature: geojson.Feature{
-							Properties: map[string]interface{}{
+							Properties: map[string]any{
 								"straatnaam": "Realengracht",
 								"nummer_id":  "0363200000398889",
 							},
@@ -262,7 +262,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				ID:    0,
 				Links: nil,
 				Feature: geojson.Feature{
-					Properties: map[string]interface{}{
+					Properties: map[string]any{
 						"straatnaam": "Realengracht",
 						"nummer_id":  "0363200000398886",
 					},

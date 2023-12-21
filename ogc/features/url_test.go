@@ -151,7 +151,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				assert.Equalf(t, "bbox-crs and filter-crs need to be equal. Can't use more than one CRS as input, but input and output CRS may differ", err.Error(), "parse()")
 				return false
 			},
@@ -169,7 +169,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				assert.Equalf(t, "crs param should start with http://www.opengis.net/def/crs/, got: EPSG:28992", err.Error(), "parse()")
 				return false
 			},
@@ -186,7 +186,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				assert.Equalf(t, "bbox should contain exactly 4 values separated by commas: minx,miny,maxx,maxy", err.Error(), "parse()")
 				return false
 			},
@@ -203,7 +203,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				assert.Equalf(t, "limit can't be negative", err.Error(), "parse()")
 				return false
 			},
@@ -220,7 +220,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     2,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				assert.Equalf(t, "datetime param is currently not supported", err.Error(), "parse()")
 				return false
 			},
@@ -237,7 +237,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     2,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				assert.Equalf(t, "CQL filter param is currently not supported", err.Error(), "parse()")
 				return false
 			},
@@ -263,8 +263,8 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 	}
 }
 
-func success() func(t assert.TestingT, err error, i ...interface{}) bool {
-	return func(t assert.TestingT, err error, i ...interface{}) bool {
+func success() func(t assert.TestingT, err error, i ...any) bool {
+	return func(t assert.TestingT, err error, i ...any) bool {
 		return true
 	}
 }

@@ -1,6 +1,12 @@
-# Vectortile map and legend component
+# Viewer
 
-See [demo with samples](https://pdok.github.io/gokoala/)
+This viewer is available as a [WebComponent](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) and amongst others able to:
+
+- display vector tiles, with object information
+- display GeoJSON features on a map
+- render a legend of a Mapbox style
+
+See [demo with samples](https://pdok.github.io/gokoala/).
 
 ## Embedding a vectortile map
 

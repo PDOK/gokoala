@@ -42,6 +42,7 @@ export function projectionSetMercator() {
     matrixIds: matrixIds,
   }
 }
+
 export class MapProjection {
   private _tileUrl: string
 
@@ -51,7 +52,7 @@ export class MapProjection {
   }
 
   public get Projection(): Projection {
-    const rDprojection = new Projection({
+    const rdProjection = new Projection({
       code: 'EPSG:28992',
       units: 'm',
       extent: [-285401.92, 22598.08, 595401.92, 903401.92],
@@ -76,7 +77,7 @@ export class MapProjection {
     })
 
     if (this._tileUrl.includes(NetherlandsRDNewQuadDefault)) {
-      return rDprojection
+      return rdProjection
     }
     if (this._tileUrl.includes(EuropeanETRS89_LAEAQuad)) {
       return ETRS89projection

@@ -2,7 +2,7 @@ import { Component, Input, ViewEncapsulation } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import RenderFeature from 'ol/render/Feature'
 
-type proprow = {
+type propRow = {
   title: string
   value: string
 }
@@ -18,18 +18,18 @@ type proprow = {
 export class ObjectInfoComponent {
   @Input() feature!: RenderFeature
 
-  public getFeatureProperties(): proprow[] {
-    const proptable: proprow[] = []
+  public getFeatureProperties(): propRow[] {
+    const propTable: propRow[] = []
     if (this.feature) {
       const prop = this.feature.getProperties()
 
       for (const val in prop) {
         if (val !== 'mapbox-layer') {
-          const p: proprow = { title: val, value: prop[val] }
-          proptable.push(p)
+          const p: propRow = { title: val, value: prop[val] }
+          propTable.push(p)
         }
       }
-      return proptable
+      return propTable
     } else {
       return []
     }

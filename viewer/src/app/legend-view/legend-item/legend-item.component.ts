@@ -9,7 +9,7 @@ import { fromExtent } from 'ol/geom/Polygon'
 import VectorTileLayer from 'ol/layer/VectorTile'
 import { Projection } from 'ol/proj'
 import VectorTileSource from 'ol/source/VectorTile.js'
-import { LayerType, LegendItem, MapboxStyle, MapboxStyleService, exhaustiveGuard } from '../mapbox-style.service'
+import { LayerType, LegendItem, MapboxStyle, MapboxStyleService, exhaustiveGuard } from '../../mapbox-style.service'
 
 @Component({
   selector: 'app-legend-item',
@@ -41,22 +41,22 @@ export class LegendItemComponent implements OnInit {
   })
 
   map: OLMap = new OLMap({})
-  cvectorSource = new VectorTileSource({
+  vectorSource = new VectorTileSource({
     format: new MVT(),
     projection: this.projection,
   })
 
-  cvectorLayer = new VectorTileLayer({
-    source: this.cvectorSource,
+  vectorLayer = new VectorTileLayer({
+    source: this.vectorSource,
   })
 
   ngOnInit() {
-    const feature = this.NewFeature(this.item)
+    const feature = this.newFeature(this.item)
     this.map = new OLMap({
       controls: [],
       interactions: [],
 
-      layers: [this.cvectorLayer],
+      layers: [this.vectorLayer],
       view: new View({
         projection: this.projection,
         center: getCenter(this.extent),
@@ -66,13 +66,13 @@ export class LegendItemComponent implements OnInit {
       }),
     })
 
-    this.cvectorLayer.getSource()?.setTileLoadFunction((tile: Tile) => {
-      const vtile = tile as VectorTile
-      vtile.setLoader(() => {
+    this.vectorLayer.getSource()?.setTileLoadFunction((tile: Tile) => {
+      const vectorTile = tile as VectorTile
+      vectorTile.setLoader(() => {
         const features: Feature<Geometry>[] = []
 
         features.push(feature)
-        vtile.setFeatures(features)
+        vectorTile.setFeatures(features)
       })
     })
 
@@ -80,20 +80,20 @@ export class LegendItemComponent implements OnInit {
     resolutions.push(1)
     const sources = this.mapboxStyleService.getLayersids(this.mapboxStyle)
 
-    applyStyle(this.cvectorLayer, this.mapboxStyle, sources, undefined, resolutions)
+    applyStyle(this.vectorLayer, this.mapboxStyle, sources, undefined, resolutions)
       .then(() => {
-        this.logger.log(' loading legend style')
+        this.logger.log('loading legend style')
       })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((err: any) => {
         this.logger.error('error loading legend style: ' + ' ' + err)
       })
-    this.cvectorLayer.getSource()?.refresh()
+    this.vectorLayer.getSource()?.refresh()
     const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='itemmap']")
     this.map.setTarget(mapdiv)
   }
 
-  NewFeature(item: LegendItem): Feature {
+  newFeature(item: LegendItem): Feature {
     const half = this.itemHeight / 2
     switch (item.geoType) {
       case LayerType.Fill: {

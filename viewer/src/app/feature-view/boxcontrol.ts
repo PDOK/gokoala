@@ -14,7 +14,6 @@ export class boxControl extends Control {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(
     public boxEmitter: EventEmitter<string>,
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     opt_options: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,6 +38,7 @@ export class boxControl extends Control {
 
     button.addEventListener('click', this.addBox.bind(this), false)
   }
+
   addBox() {
     const draw = new Draw({
       source: new VectorSource({}),
@@ -69,9 +69,9 @@ export class boxControl extends Control {
             color: 'rgba(0, 0, 255, 0.06)',
           }),
         })
-        const bboxsource = new VectorSource({})
-        bboxsource.addFeature(bbox)
-        const boxLayer = new VectorLayer({ source: bboxsource, style: bboxStyle })
+        const bboxSource = new VectorSource({})
+        bboxSource.addFeature(bbox)
+        const boxLayer = new VectorLayer({ source: bboxSource, style: bboxStyle })
         map.addLayer(boxLayer)
         map.removeInteraction(draw)
       }

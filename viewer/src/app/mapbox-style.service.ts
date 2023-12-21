@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { Circle, Fill, Stroke, Style } from 'ol/style'
 import { Observable } from 'rxjs'
 import { Feature } from 'ol'
 import { StyleLike } from 'ol/style/Style'
@@ -77,14 +76,6 @@ export interface FillPattern {
   stops: Array<string[]>
 }
 
-export interface SpriteData {
-  height: number
-  pixelRatio: number
-  width: number
-  x: number
-  y: number
-}
-
 export enum LayerType {
   Circle = 'circle',
   Fill = 'fill',
@@ -107,24 +98,12 @@ export class MapboxStyleService {
     return this.http.get<MapboxStyle>(url)
   }
 
-  getMapboxSpriteData(url: string): Observable<SpriteData> {
-    return this.http.get<SpriteData>(url)
-  }
-
   getLayersids(style: MapboxStyle): string[] {
     const ids: string[] = []
     style.layers.forEach((layer: Layer) => {
       ids.push(layer.id)
     })
     return ids
-  }
-
-  removefilters(style: MapboxStyle): MapboxStyle {
-    style.layers.forEach((layer: Layer) => {
-      layer.filterCopy = layer.filter
-      layer.filter = []
-    })
-    return style
   }
 
   removeRasterLayers(style: MapboxStyle): MapboxStyle {
@@ -211,28 +190,6 @@ export class MapboxStyleService {
       }
       names.push(i)
     }
-  }
-
-  defaultStyle() {
-    const fill = new Fill({
-      color: 'rgba(255,255,255,0.4)',
-    })
-    const stroke = new Stroke({
-      color: '#3399CC',
-      width: 1.25,
-    })
-    const styles = [
-      new Style({
-        image: new Circle({
-          fill: fill,
-          stroke: stroke,
-          radius: 5,
-        }),
-        fill: fill,
-        stroke: stroke,
-      }),
-    ]
-    return styles
   }
 }
 
