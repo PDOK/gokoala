@@ -35,13 +35,15 @@ const (
 )
 
 type OpenAPI struct {
-	config   *Config
 	spec     *openapi3.T
 	SpecJSON []byte
-	router   routers.Router
+
+	config            *Config
+	router            routers.Router
+	extraOpenAPIFiles []string
 }
 
-func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
+func newOpenAPI(config *Config, extraOpenAPIFiles []string, openAPIParams any) *OpenAPI {
 	setupRequestResponseValidation()
 	ctx := context.Background()
 
@@ -62,27 +64,26 @@ func newOpenAPI(config *Config, openAPIFile string) *OpenAPI {
 	if config.OgcAPI.GeoVolumes != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, geoVolumesSpec)
 	}
+
 	// add preamble first
 	openAPIFiles := []string{preamble}
-	if openAPIFile != "" {
-		// add provided spec thereafter, to allow it to override defaults of following specs
-		openAPIFiles = append(openAPIFiles, openAPIFile)
-	}
+	// add extra spec(s) thereafter, to allow it to override default openapi specs
+	openAPIFiles = append(openAPIFiles, extraOpenAPIFiles...)
 	openAPIFiles = append(openAPIFiles, defaultOpenAPIFiles...)
 
-	resultSpec, resultSpecJSON := mergeSpecs(ctx, config, openAPIFiles)
+	resultSpec, resultSpecJSON := mergeSpecs(ctx, config, openAPIFiles, openAPIParams)
 	validateSpec(ctx, resultSpec, resultSpecJSON)
 
 	for _, server := range resultSpec.Servers {
 		server.URL = normalizeBaseURL(server.URL)
-		log.Printf("url used for OpenAPI validation: %v", server.URL)
 	}
 
 	return &OpenAPI{
-		config:   config,
-		spec:     resultSpec,
-		SpecJSON: util.PrettyPrintJSON(resultSpecJSON, ""),
-		router:   newOpenAPIRouter(resultSpec),
+		config:            config,
+		spec:              resultSpec,
+		SpecJSON:          util.PrettyPrintJSON(resultSpecJSON, ""),
+		router:            newOpenAPIRouter(resultSpec),
+		extraOpenAPIFiles: extraOpenAPIFiles,
 	}
 }
 
@@ -126,8 +127,8 @@ func setupRequestResponseValidation() {
 //
 // The OpenAPI spec optionally provided through the CLI should be the second (after preamble) item in the
 // `files` slice since it allows the user to override other/default specs.
-func mergeSpecs(ctx context.Context, config *Config, files []string) (*openapi3.T, []byte) {
-	loader := &openapi3.Loader{Context: ctx, IsExternalRefsAllowed: true}
+func mergeSpecs(ctx context.Context, config *Config, files []string, params any) (*openapi3.T, []byte) {
+	loader := &openapi3.Loader{Context: ctx, IsExternalRefsAllowed: false}
 
 	if len(files) < 1 {
 		log.Fatalf("files can't be empty, at least OGC Common is expected")
@@ -136,7 +137,10 @@ func mergeSpecs(ctx context.Context, config *Config, files []string) (*openapi3.
 	var resultSpec *openapi3.T
 
 	for _, file := range files {
-		specJSON := renderOpenAPITemplate(config, file)
+		if file == "" {
+			continue
+		}
+		specJSON := renderOpenAPITemplate(config, file, params)
 		var mergedJSON []byte
 		if resultSpecJSON == nil {
 			mergedJSON = specJSON
@@ -180,12 +184,12 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 	return openAPIRouter
 }
 
-func renderOpenAPITemplate(config *Config, fileName string) []byte {
+func renderOpenAPITemplate(config *Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
 	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(file))
 
 	var rendered bytes.Buffer
-	if err := parsed.Execute(&rendered, &TemplateData{Config: config}); err != nil {
+	if err := parsed.Execute(&rendered, &TemplateData{Config: config, Params: params}); err != nil {
 		log.Fatalf("failed to render %s, error: %v", file, err)
 	}
 	return rendered.Bytes()
@@ -243,8 +247,8 @@ func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.Re
 // requests against the OpenAPI spec. This involves:
 //
 //   - striping the context root (path) from the base URL. If you use a context root we expect
-//     you have a proxying fronting GoKoala it from requests, therefore we also need to strip it from
-//     the base URL used during OpenAPI validation
+//     you to have a proxy fronting GoKoala, therefore we also  need to strip it from the base
+//     URL used during OpenAPI validation
 //
 //   - replacing HTTPS scheme with HTTP. Since GoKoala doesn't support HTTPS we always perform
 //     OpenAPI validation against HTTP requests. Note: it's possible to offer GoKoala over HTTPS, but you'll

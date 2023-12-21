@@ -66,7 +66,11 @@ func (ft featureTable) ColumnsWithDataType() map[string]string {
 }
 
 func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.FeatureTableMetadata, error) {
-	return g.featureTableByCollectionID[collection], nil
+	val, ok := g.featureTableByCollectionID[collection]
+	if !ok {
+		return nil, fmt.Errorf("no metadata for %s", collection)
+	}
+	return val, nil
 }
 
 type GeoPackage struct {

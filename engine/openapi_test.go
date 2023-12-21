@@ -198,7 +198,7 @@ func Test_newOpenAPI(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			openAPI := newOpenAPI(test.args.config, test.args.openAPIFile)
+			openAPI := newOpenAPI(test.args.config, []string{test.args.openAPIFile}, nil)
 			assert.NotNil(t, openAPI)
 
 			// verify resulting OpenAPI spec contains expected strings (keywords, paths, etc)

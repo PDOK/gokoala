@@ -39,6 +39,23 @@
           {
             "$ref": "#/components/parameters/cursor"
           }
+          {{ if and $.Params $.Params.PropertyFiltersByCollection }}
+            {{- range $pf := $.Params.PropertyFiltersByCollection -}}
+              {{- range $propFilterName, $propFilterType := $pf -}}
+              ,{
+                "name": "{{ $propFilterName }}",
+                "in": "query",
+                "description": "The optional blaat.",
+                "required": false,
+                "style": "form",
+                "explode": false,
+                "schema": {
+                  "type": "{{ $propFilterType }}"
+                }
+              }
+              {{ end }}
+            {{ end }}
+          {{ end }}
         ],
         "responses": {
           "200": {

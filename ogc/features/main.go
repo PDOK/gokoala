@@ -21,7 +21,7 @@ const (
 	templatesDir  = "ogc/features/templates/"
 	crsURIPrefix  = "http://www.opengis.net/def/crs/"
 	undefinedSRID = 0
-	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time we may need to read this value dynamically from the geopackage.
+	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
 	wgs84CodeOGC  = "CRS84"
 	wgs84CrsURI   = crsURIPrefix + "OGC/1.3/" + wgs84CodeOGC
 )
@@ -43,6 +43,8 @@ type Features struct {
 	json *jsonFeatures
 }
 
+type PropertyNamesWithType map[string]string
+
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 	f := &Features{
 		engine:      e,
@@ -51,6 +53,13 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 		json:        newJSONFeatures(e),
 	}
 	collections = f.cacheCollectionsMetadata()
+
+	// Rebuild OpenAPI spec with additional info from datasources
+	e.RebuildOpenAPI(struct {
+		PropertyFiltersByCollection map[string]PropertyNamesWithType
+	}{
+		PropertyFiltersByCollection: f.createPropertyFiltersByCollection(),
+	})
 
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.CollectionContent())
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
@@ -215,6 +224,33 @@ func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialColle
 		result[collection.ID] = collection.Metadata
 	}
 	return result
+}
+
+func (f *Features) createPropertyFiltersByCollection() map[string]PropertyNamesWithType {
+	propertyFiltersByCollection := make(map[string]PropertyNamesWithType)
+	for k, v := range f.datasources {
+		metadata, err := v.GetFeatureTableMetadata(k.collectionID)
+		if err != nil {
+			continue
+		}
+		propertyFilters := make(PropertyNamesWithType)
+		for name, dataType := range metadata.ColumnsWithDataType() {
+			// translate database data types to OpenAPI data types
+			switch dataType {
+			case "INTEGER":
+				dataType = "integer"
+			case "REAL":
+				dataType = "number"
+			case "TEXT":
+				dataType = "string"
+			default:
+				dataType = "string"
+			}
+			propertyFilters[name] = dataType
+		}
+		propertyFiltersByCollection[k.collectionID] = propertyFilters
+	}
+	return propertyFiltersByCollection
 }
 
 func configureDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
