@@ -33,6 +33,16 @@ var (
 	globalTemplateFuncs texttemplate.FuncMap
 )
 
+func init() {
+	customFuncs := texttemplate.FuncMap{
+		// custom template functions
+		"markdown":   markdown,
+		"unmarkdown": unmarkdown,
+	}
+	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
+	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
+}
+
 // TemplateKey unique key to register and lookup Go templates
 type TemplateKey struct {
 	// Name of the template, the filename including extension
@@ -148,14 +158,6 @@ func newTemplates(config *Config) *Templates {
 		config:            config,
 		localizers:        newLocalizers(config.AvailableLanguages),
 	}
-	customFuncs := texttemplate.FuncMap{
-		// custom template functions
-		"markdown":   markdown,
-		"unmarkdown": unmarkdown,
-	}
-	// we also support https://github.com/go-task/slim-sprig functions
-	sprigFuncs := sprig.FuncMap()
-	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
 	return templates
 }
 
