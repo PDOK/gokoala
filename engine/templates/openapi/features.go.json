@@ -12,14 +12,14 @@
     "version": "1.0.1"
   },
   "paths": {
-    {{- range $index, $type := .Config.OgcAPI.Features.Collections -}}
+    {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
     {{- if $index -}},{{- end -}}
-    "/collections/{{ $type.ID }}/items": {
+    "/collections/{{ $coll.ID }}/items": {
       "get": {
         "tags" : [ "Features" ],
         "summary": "fetch features",
-        "description": "Fetch features of the feature collection with id `{{ $type.ID }}`.\n\nEvery feature in a dataset belongs to a collection. A dataset may\nconsist of multiple feature collections. A feature collection is often a\ncollection of features of a similar type, based on a common schema.\n\nUse content negotiation to request HTML or GeoJSON.",
-        "operationId": "{{ $type.ID }}.getFeatures",
+        "description": "Fetch features of the feature collection with id `{{ $coll.ID }}`.\n\nEvery feature in a dataset belongs to a collection. A dataset may\nconsist of multiple feature collections. A feature collection is often a\ncollection of features of a similar type, based on a common schema.\n\nUse content negotiation to request HTML or GeoJSON.",
+        "operationId": "{{ $coll.ID }}.getFeatures",
         "parameters": [
           {
             "$ref": "#/components/parameters/limit"
@@ -40,19 +40,21 @@
             "$ref": "#/components/parameters/cursor"
           }
           {{ if and $.Params $.Params.PropertyFiltersByCollection }}
-            {{- range $pf := $.Params.PropertyFiltersByCollection -}}
-              {{- range $propFilterName, $propFilterType := $pf -}}
-              ,{
-                "name": "{{ $propFilterName }}",
-                "in": "query",
-                "description": "The optional blaat.",
-                "required": false,
-                "style": "form",
-                "explode": false,
-                "schema": {
-                  "type": "{{ $propFilterType }}"
+            {{- range $pfColl, $propFilters := $.Params.PropertyFiltersByCollection -}}
+              {{ if eq $coll.ID $pfColl }}
+                {{- range $propFilter := $propFilters -}}
+                ,{
+                  "name": "{{ $propFilter.Name }}",
+                  "in": "query",
+                  "description": "{{ $propFilter.Description }}",
+                  "required": false,
+                  "style": "form",
+                  "explode": false,
+                  "schema": {
+                    "type": "{{ $propFilter.DataType }}"
+                  }
                 }
-              }
+                {{ end }}
               {{ end }}
             {{ end }}
           {{ end }}
@@ -246,12 +248,12 @@
         }
       }
     },
-    "/collections/{{ $type.ID }}/items/{featureId}": {
+    "/collections/{{ $coll.ID }}/items/{featureId}": {
       "get": {
         "tags" : [ "Features" ],
         "summary": "fetch a single feature",
-        "description": "Fetch the feature with id `featureId` in the feature collection\nwith id `{{ $type.ID }}`.\n\nUse content negotiation to request HTML or GeoJSON.",
-        "operationId": "{{ $type.ID }}.getFeature",
+        "description": "Fetch the feature with id `featureId` in the feature collection\nwith id `{{ $coll.ID }}`.\n\nUse content negotiation to request HTML or GeoJSON.",
+        "operationId": "{{ $coll.ID }}.getFeature",
         "parameters": [
           {
             "name": "featureId",

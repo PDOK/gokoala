@@ -254,6 +254,14 @@ type CollectionEntryFeatures struct {
 
 	// Optional collection specific datasources. Mutually exclusive with top-level defined datasources.
 	Datasources *Datasources `yaml:"datasources"`
+
+	Filters struct {
+		// OAF Part 1: filter on feature properties
+		Properties []PropertyFilter `yaml:"properties" validate:"dive"`
+
+		// OAF Part 3: add config for complex/CQL filters here
+		// placeholder
+	} `yaml:"filters"`
 }
 
 type CollectionEntryMaps struct {
@@ -309,6 +317,15 @@ func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string
 	result := util.Keys(uniqueSRSs)
 	slices.Sort(result)
 	return result
+}
+
+func (oaf OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) ([]PropertyFilter, error) {
+	for _, coll := range oaf.Collections {
+		if coll.ID == collectionID && coll.Features != nil && coll.Features.Filters.Properties != nil {
+			return coll.Features.Filters.Properties, nil
+		}
+	}
+	return nil, errors.New("not found")
 }
 
 type OgcAPIMaps struct {
@@ -392,6 +409,11 @@ type GeoPackageCloud struct {
 
 	// local cache of fetched blocks from cloud storage
 	Cache *string `yaml:"cache" validate:"omitempty,dir"`
+}
+
+type PropertyFilter struct {
+	Name        string `yaml:"name" validate:"required"`
+	Description string `yaml:"description" default:"Filter features by this property"`
 }
 
 type SupportedSrs struct {

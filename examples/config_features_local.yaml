@@ -38,7 +38,7 @@ availableLanguages:
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   features:
-    basemap: BRT
+    basemap: OSM  # or BRT
     datasources:
       defaultWGS84:
         geopackage:
@@ -50,7 +50,6 @@ ogcApi:
           geopackage:
             local:
               file: ./examples/resources/addresses-rd.gpkg
-              queryTimeout: 10s
         - srs: EPSG:3035
           geopackage:
             local:

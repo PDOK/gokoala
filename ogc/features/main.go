@@ -43,23 +43,18 @@ type Features struct {
 	json *jsonFeatures
 }
 
-type PropertyNamesWithType map[string]string
-
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
+	collections = cacheCollectionsMetadata(e)
+	datasources := configureDatasources(e)
+
+	rebuildOpenAPIForFeatures(e, datasources)
+
 	f := &Features{
 		engine:      e,
-		datasources: configureDatasources(e),
+		datasources: datasources,
 		html:        newHTMLFeatures(e),
 		json:        newJSONFeatures(e),
 	}
-	collections = f.cacheCollectionsMetadata()
-
-	// Rebuild OpenAPI spec with additional info from datasources
-	e.RebuildOpenAPI(struct {
-		PropertyFiltersByCollection map[string]PropertyNamesWithType
-	}{
-		PropertyFiltersByCollection: f.createPropertyFiltersByCollection(),
-	})
 
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.CollectionContent())
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
@@ -77,6 +72,11 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
+		if _, ok := collections[collectionID]; !ok {
+			log.Printf("collection %s doesn't exist in this features service", collectionID)
+			http.NotFound(w, r)
+			return
+		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, err := url.parse()
 		if err != nil {
@@ -85,11 +85,6 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		}
 		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if _, ok := collections[collectionID]; !ok {
-			log.Printf("collection %s doesn't exist in this features service", collectionID)
-			http.NotFound(w, r)
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -165,12 +160,16 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
+		if _, ok := collections[collectionID]; !ok {
+			log.Printf("collection %s doesn't exist in this features service", collectionID)
+			http.NotFound(w, r)
+			return
+		}
 		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
 		if err != nil {
 			http.Error(w, "feature ID must be a number", http.StatusBadRequest)
 			return
 		}
-
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		outputSRID, contentCrs, err := url.parse()
 		if err != nil {
@@ -179,11 +178,6 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if _, ok := collections[collectionID]; !ok {
-			log.Printf("collection %s doesn't exist in this features service", collectionID)
-			http.NotFound(w, r)
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -218,39 +212,12 @@ func (f *Features) Feature() http.HandlerFunc {
 	}
 }
 
-func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialCollectionMetadata {
+func cacheCollectionsMetadata(e *engine.Engine) map[string]*engine.GeoSpatialCollectionMetadata {
 	result := make(map[string]*engine.GeoSpatialCollectionMetadata)
-	for _, collection := range f.engine.Config.OgcAPI.Features.Collections {
+	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		result[collection.ID] = collection.Metadata
 	}
 	return result
-}
-
-func (f *Features) createPropertyFiltersByCollection() map[string]PropertyNamesWithType {
-	propertyFiltersByCollection := make(map[string]PropertyNamesWithType)
-	for k, v := range f.datasources {
-		metadata, err := v.GetFeatureTableMetadata(k.collectionID)
-		if err != nil {
-			continue
-		}
-		propertyFilters := make(PropertyNamesWithType)
-		for name, dataType := range metadata.ColumnsWithDataType() {
-			// translate database data types to OpenAPI data types
-			switch dataType {
-			case "INTEGER":
-				dataType = "integer"
-			case "REAL":
-				dataType = "number"
-			case "TEXT":
-				dataType = "string"
-			default:
-				dataType = "string"
-			}
-			propertyFilters[name] = dataType
-		}
-		propertyFiltersByCollection[k.collectionID] = propertyFilters
-	}
-	return propertyFiltersByCollection
 }
 
 func configureDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {

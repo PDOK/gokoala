@@ -12,15 +12,15 @@
   },
   "tags" : [ ],
   "paths" : {
-    {{- range $index, $type := .Config.OgcAPI.GeoVolumes.Collections -}}
-    {{ if and $type.GeoVolumes $type.GeoVolumes.URITemplate3dTiles }}
+    {{- range $index, $coll := .Config.OgcAPI.GeoVolumes.Collections -}}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.URITemplate3dTiles }}
     {{- if $index -}},{{- end -}}
-    "/collections/{{ $type.ID }}/3dtiles" : {
+    "/collections/{{ $coll.ID }}/3dtiles" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
-        "summary" : "retrieve the root 3D Tiles tileset of the feature collection '{{ $type.ID }}'",
+        "summary" : "retrieve the root 3D Tiles tileset of the feature collection '{{ $coll.ID }}'",
         "description" : "Access a 3D Tiles 1.1 tileset with implicit quadtree tiling.",
-        "operationId" : "get3dTileset.{{ $type.ID }}",
+        "operationId" : "get3dTileset.{{ $coll.ID }}",
         "parameters" : [ ],
         "responses" : {
           "200" : {
@@ -42,12 +42,12 @@
         }
       }
     },
-    "/collections/{{ $type.ID }}/3dtiles/{{ $type.GeoVolumes.URITemplate3dTiles }}" : {
+    "/collections/{{ $coll.ID }}/3dtiles/{{ $coll.GeoVolumes.URITemplate3dTiles }}" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
-        "summary" : "retrieve a glTF tile of the feature collection '{{ $type.ID }}'",
+        "summary" : "retrieve a glTF tile of the feature collection '{{ $coll.ID }}'",
         "description" : "Access a 3D Tiles 1.1 Content file, a glTF 2.0 binary file.",
-        "operationId" : "get3dTilesContent.{{ $type.ID }}",
+        "operationId" : "get3dTilesContent.{{ $coll.ID }}",
         "parameters" : [ {
           "$ref" : "#/components/parameters/level"
         }, {
@@ -76,14 +76,14 @@
       }
     }
     {{ end }}
-    {{ if and $type.GeoVolumes $type.GeoVolumes.URITemplateImplicitTilingSubtree }}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree }}
     ,
-    "/collections/{{ $type.ID }}/3dtiles/{{ $type.GeoVolumes.URITemplateImplicitTilingSubtree }}" : {
+    "/collections/{{ $coll.ID }}/3dtiles/{{ $coll.GeoVolumes.URITemplateImplicitTilingSubtree }}" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
-        "summary" : "retrieve a 3D Tiles subtree of the feature collection '{{ $type.ID }}'",
+        "summary" : "retrieve a 3D Tiles subtree of the feature collection '{{ $coll.ID }}'",
         "description" : "Access a 3D Tiles 1.1 Subtree file.",
-        "operationId" : "get3dTilesSubtree.{{ $type.ID }}",
+        "operationId" : "get3dTilesSubtree.{{ $coll.ID }}",
         "parameters" : [ {
           "$ref" : "#/components/parameters/level"
         }, {
@@ -112,14 +112,14 @@
       }
     }
     {{ end }}
-    {{ if and $type.GeoVolumes $type.GeoVolumes.HasDTM }}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
     ,
-    "/collections/{{ $type.ID }}/quantized-mesh/{{ $type.GeoVolumes.URITemplateDTM }}" : {
+    "/collections/{{ $coll.ID }}/quantized-mesh/{{ $coll.GeoVolumes.URITemplateDTM }}" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
         "summary" : "retrieve digital terrain model (DTM)",
         "description" : "Access the digital terrain model (DTM) in Quantized Mesh format.",
-        "operationId" : "getDTM.{{ $type.ID }}",
+        "operationId" : "getDTM.{{ $coll.ID }}",
         "parameters" : [ {
           "$ref" : "#/components/parameters/level"
         }, {

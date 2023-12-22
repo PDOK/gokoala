@@ -76,16 +76,16 @@
         }
       }
     },
-    {{- range $index, $type := .Config.AllCollections -}}
+    {{- range $index, $coll := .Config.AllCollections -}}
     {{- if $index -}},{{- end -}}
-    "/collections/{{ $type.ID }}": {
+    "/collections/{{ $coll.ID }}": {
       "get": {
         "tags": [
           "Collections"
         ],
-        "summary": "describes a {{ $type.ID }} collection",
-        "description": "{{ $type.ID }} collection (geospatial data resource) in this dataset.",
-        "operationId": "getCollection.{{ $type.ID }}",
+        "summary": "describes a {{ $coll.ID }} collection",
+        "description": "{{ $coll.ID }} collection (geospatial data resource) in this dataset.",
+        "operationId": "getCollection.{{ $coll.ID }}",
         "parameters": [
           {
             "name": "f",
