@@ -22,12 +22,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
-	app := cli.NewApp()
-	app.Name = "GoKoala"
-	app.Usage = "Cloud Native OGC APIs server, written in Go"
-
-	app.Flags = []cli.Flag{
+var (
+	cliFlags = []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
 			Usage:    "bind host for OGC server",
@@ -83,7 +79,13 @@ func main() {
 			EnvVars:  []string{"ENABLE_CORS"},
 		},
 	}
+)
 
+func main() {
+	app := cli.NewApp()
+	app.Name = "GoKoala"
+	app.Usage = "Cloud Native OGC APIs server, written in Go"
+	app.Flags = cliFlags
 	app.Action = func(c *cli.Context) error {
 		log.Printf("%s - %s\n", app.Name, app.Usage)
 
