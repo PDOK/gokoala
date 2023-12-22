@@ -1,6 +1,6 @@
 ---
 version: 1.0.0
-
+title: Addresses
 # shortened title, used in breadcrumb path
 serviceIdentifier: ADR
 abstract: >-
