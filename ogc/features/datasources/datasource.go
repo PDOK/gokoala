@@ -43,6 +43,9 @@ type FeaturesCriteria struct {
 	// filtering by bounding box
 	Bbox *geom.Extent
 
+	// filtering by properties
+	PropertyFilters map[string]string
+
 	// filtering by CQL
 	Filter     string
 	FilterLang string

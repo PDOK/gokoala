@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"path"
 	"strings"
@@ -270,19 +271,23 @@ func (g *GeoPackage) makeFeaturesQuery(table *featureTable, onlyFIDs bool, crite
 }
 
 func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
+
 	defaultQuery := fmt.Sprintf(`
 with 
-    next as (select * from %[1]s where %[2]s >= :fid order by %[2]s asc limit :limit + 1),
-    prev as (select * from %[1]s where %[2]s < :fid order by %[2]s desc limit :limit),
+    next as (select * from %[1]s where %[2]s >= :fid %[3]s order by %[2]s asc limit :limit + 1),
+    prev as (select * from %[1]s where %[2]s < :fid %[3]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
-select * from nextprevfeat where %[2]s >= :fid limit :limit
-`, table.TableName, g.fidColumn)
+select * from nextprevfeat where %[2]s >= :fid %[3]s limit :limit
+`, table.TableName, g.fidColumn, pfClause)
 
-	return defaultQuery, map[string]any{
+	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
 		"limit": criteria.Limit,
-	}, nil
+	}
+	maps.Copy(namedParams, pfNamedParams)
+	return defaultQuery, namedParams, nil
 }
 
 func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
@@ -290,6 +295,8 @@ func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria 
 	if onlyFIDs {
 		selectClause = fmt.Sprintf("%s, prevfid, nextfid", g.fidColumn)
 	}
+
+	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
 
 	bboxQuery := fmt.Sprintf(`
 with 
@@ -302,14 +309,14 @@ with
                          from %[1]s f inner join rtree_%[1]s_%[4]s rf on f.%[2]s = rf.id
                          where rf.minx <= :maxx and rf.maxx >= :minx and rf.miny <= :maxy and rf.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s >= :fid 
+                           and f.%[2]s >= :fid %[6]s
                          order by f.%[2]s asc 
                          limit (select iif(bbox_size == 'small', :limit + 1, 0) from bbox_size)),
      next_bbox_btree as (select f.*
-                         from %[1]s f indexed by %[1]s_spatial_idx
+                         from %[1]s f
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s >= :fid 
+                           and f.%[2]s >= :fid %[6]s
                          order by f.%[2]s asc 
                          limit (select iif(bbox_size == 'big', :limit + 1, 0) from bbox_size)),
      next as (select * from next_bbox_rtree union all select * from next_bbox_btree),
@@ -317,27 +324,27 @@ with
                          from %[1]s f inner join rtree_%[1]s_%[4]s rf on f.%[2]s = rf.id
                          where rf.minx <= :maxx and rf.maxx >= :minx and rf.miny <= :maxy and rf.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s < :fid 
+                           and f.%[2]s < :fid %[6]s
                          order by f.%[2]s desc 
                          limit (select iif(bbox_size == 'small', :limit, 0) from bbox_size)),
      prev_bbox_btree as (select f.*
-                         from %[1]s f indexed by %[1]s_spatial_idx
+                         from %[1]s f
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s < :fid 
+                           and f.%[2]s < :fid %[6]s
                          order by f.%[2]s desc 
                          limit (select iif(bbox_size == 'big', :limit, 0) from bbox_size)),
      prev as (select * from prev_bbox_rtree union all select * from prev_bbox_btree),
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
-select %[5]s from nextprevfeat where %[2]s >= :fid limit :limit
-`, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName, selectClause)
+select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
+`, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName, selectClause, pfClause)
 
 	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {
 		return "", nil, err
 	}
-	return bboxQuery, map[string]any{
+	namedParams := map[string]any{
 		"fid":      criteria.Cursor.FID,
 		"limit":    criteria.Limit,
 		"bboxWkt":  bboxAsWKT,
@@ -345,7 +352,9 @@ select %[5]s from nextprevfeat where %[2]s >= :fid limit :limit
 		"minx":     criteria.Bbox.MinX(),
 		"maxy":     criteria.Bbox.MaxY(),
 		"miny":     criteria.Bbox.MinY(),
-		"bboxSrid": criteria.InputSRID}, nil
+		"bboxSrid": criteria.InputSRID}
+	maps.Copy(namedParams, pfNamedParams)
+	return bboxQuery, namedParams, nil
 }
 
 // Read metadata about gpkg and sqlite driver
@@ -499,4 +508,18 @@ func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
 		return nil, err
 	}
 	return geometry.Geometry, nil
+}
+
+func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[string]any) {
+	namedParams = make(map[string]any)
+	if len(pf) > 0 {
+		position := 0
+		for k, v := range pf {
+			position++
+			namedParam := fmt.Sprintf("pf%d", position)
+			sql += fmt.Sprintf(" and %s = :%s", k, namedParam)
+			namedParams[namedParam] = v
+		}
+	}
+	return sql, namedParams
 }
