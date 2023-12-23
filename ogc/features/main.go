@@ -77,13 +77,10 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
-		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, err := url.parse()
+		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
+			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID)}
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, propertyFilters, err := url.parse()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -95,11 +92,12 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			// fast path
 			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:     encodedCursor.Decode(url.checksum()),
-				Limit:      limit,
-				InputSRID:  inputSRID.GetOrDefault(),
-				OutputSRID: outputSRID.GetOrDefault(),
-				Bbox:       bbox,
+				Cursor:          encodedCursor.Decode(url.checksum()),
+				Limit:           limit,
+				InputSRID:       inputSRID.GetOrDefault(),
+				OutputSRID:      outputSRID.GetOrDefault(),
+				Bbox:            bbox,
+				PropertyFilters: propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err != nil {
@@ -111,11 +109,12 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			var fids []int64
 			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:     encodedCursor.Decode(url.checksum()),
-				Limit:      limit,
-				InputSRID:  inputSRID.GetOrDefault(),
-				OutputSRID: outputSRID.GetOrDefault(),
-				Bbox:       bbox,
+				Cursor:          encodedCursor.Decode(url.checksum()),
+				Limit:           limit,
+				InputSRID:       inputSRID.GetOrDefault(),
+				OutputSRID:      outputSRID.GetOrDefault(),
+				Bbox:            bbox,
+				PropertyFilters: propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err != nil {
@@ -173,10 +172,6 @@ func (f *Features) Feature() http.HandlerFunc {
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		outputSRID, contentCrs, err := url.parse()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if err = url.validateNoUnknownParams(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

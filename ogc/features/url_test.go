@@ -250,7 +250,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
 			}
-			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, err := fc.parse()
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, err := fc.parse()
 			if !tt.wantErr(t, err, "parse()") {
 				return
 			}

@@ -22,13 +22,13 @@ func rebuildOpenAPIForFeatures(e *engine.Engine, datasources map[DatasourceKey]d
 	})
 }
 
-func createPropertyFiltersByCollection(oaf *engine.OgcAPIFeatures,
+func createPropertyFiltersByCollection(config *engine.OgcAPIFeatures,
 	datasources map[DatasourceKey]ds.Datasource) map[string][]OpenAPIPropertyFilter {
 
 	result := make(map[string][]OpenAPIPropertyFilter)
 	for k, datasource := range datasources {
-		filtersConfig, err := oaf.PropertyFiltersForCollection(k.collectionID)
-		if err != nil {
+		filtersConfig := config.PropertyFiltersForCollection(k.collectionID)
+		if len(filtersConfig) == 0 {
 			continue
 		}
 		featTable, err := datasource.GetFeatureTableMetadata(k.collectionID)
@@ -40,6 +40,7 @@ func createPropertyFiltersByCollection(oaf *engine.OgcAPIFeatures,
 		for name, dataType := range featTableColumns {
 			for _, fc := range filtersConfig {
 				if fc.Name == name {
+					// match found between property filter in config file and database column name
 					dataType = datasourceToOpenAPI(dataType)
 					propertyFilters = append(propertyFilters, OpenAPIPropertyFilter{
 						Name:        name,

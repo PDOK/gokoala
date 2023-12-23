@@ -37,10 +37,10 @@ func NewConfig(configFile string) *Config {
 		log.Fatalf("failed to unmarshal config file, error: %v", err)
 	}
 
-	return NewConfigFromStruct(config)
+	return NewConfigValid(config)
 }
 
-func NewConfigFromStruct(config *Config) *Config {
+func NewConfigValid(config *Config) *Config {
 	setDefaults(config)
 	validate(config)
 	return config
@@ -257,6 +257,7 @@ type CollectionEntryFeatures struct {
 
 	Filters struct {
 		// OAF Part 1: filter on feature properties
+		// https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
 		Properties []PropertyFilter `yaml:"properties" validate:"dive"`
 
 		// OAF Part 3: add config for complex/CQL filters here
@@ -319,13 +320,13 @@ func (oaf OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string
 	return result
 }
 
-func (oaf OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) ([]PropertyFilter, error) {
+func (oaf OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []PropertyFilter {
 	for _, coll := range oaf.Collections {
 		if coll.ID == collectionID && coll.Features != nil && coll.Features.Filters.Properties != nil {
-			return coll.Features.Filters.Properties, nil
+			return coll.Features.Filters.Properties
 		}
 	}
-	return nil, errors.New("not found")
+	return []PropertyFilter{}
 }
 
 type OgcAPIMaps struct {
@@ -412,6 +413,7 @@ type GeoPackageCloud struct {
 }
 
 type PropertyFilter struct {
+	// needs to match with a column name in the feature table (in the configured datasource)
 	Name        string `yaml:"name" validate:"required"`
 	Description string `yaml:"description" default:"Filter features by this property"`
 }
