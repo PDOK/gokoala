@@ -1,6 +1,8 @@
 package features
 
 import (
+	"fmt"
+	"log"
 	"strings"
 
 	"github.com/PDOK/gokoala/engine"
@@ -15,15 +17,19 @@ type OpenAPIPropertyFilter struct {
 
 // rebuildOpenAPIForFeatures Rebuild OpenAPI spec with additional info from given datasources
 func rebuildOpenAPIForFeatures(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource) {
+	propertyFiltersByCollection, err := createPropertyFiltersByCollection(e.Config.OgcAPI.Features, datasources)
+	if err != nil {
+		log.Fatal(err)
+	}
 	e.RebuildOpenAPI(struct {
 		PropertyFiltersByCollection map[string][]OpenAPIPropertyFilter
 	}{
-		PropertyFiltersByCollection: createPropertyFiltersByCollection(e.Config.OgcAPI.Features, datasources),
+		PropertyFiltersByCollection: propertyFiltersByCollection,
 	})
 }
 
 func createPropertyFiltersByCollection(config *engine.OgcAPIFeatures,
-	datasources map[DatasourceKey]ds.Datasource) map[string][]OpenAPIPropertyFilter {
+	datasources map[DatasourceKey]ds.Datasource) (map[string][]OpenAPIPropertyFilter, error) {
 
 	result := make(map[string][]OpenAPIPropertyFilter)
 	for k, datasource := range datasources {
@@ -37,8 +43,9 @@ func createPropertyFiltersByCollection(config *engine.OgcAPIFeatures,
 		}
 		featTableColumns := featTable.ColumnsWithDataType()
 		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTableColumns))
-		for name, dataType := range featTableColumns {
-			for _, fc := range filtersConfig {
+		for _, fc := range filtersConfig {
+			match := false
+			for name, dataType := range featTableColumns {
 				if fc.Name == name {
 					// match found between property filter in config file and database column name
 					dataType = datasourceToOpenAPI(dataType)
@@ -47,12 +54,18 @@ func createPropertyFiltersByCollection(config *engine.OgcAPIFeatures,
 						Description: fc.Description,
 						DataType:    dataType,
 					})
+					match = true
+					break
 				}
+			}
+			if !match {
+				return nil, fmt.Errorf("invalid property filter specified, "+
+					"column '%s' doesn't exist in datasource attached to collection '%s'", fc.Name, k.collectionID)
 			}
 		}
 		result[k.collectionID] = propertyFilters
 	}
-	return result
+	return result, nil
 }
 
 // translate database data types to OpenAPI data types

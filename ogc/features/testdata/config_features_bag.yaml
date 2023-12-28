@@ -19,6 +19,10 @@ ogcApi:
     collections:
       - id: foo
         tableName: ligplaatsen
+        filters:
+          properties:
+            - name: straatnaam
+            - name: postcode
         metadata:
           title: Foooo
       - id: bar
