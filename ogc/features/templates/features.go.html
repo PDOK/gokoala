@@ -8,7 +8,11 @@
     function updateQueryString(name, value) {
         const url = new URL(window.location.href);
         url.searchParams.delete('cursor'); // when filters change, we can't continue pagination.
-        url.searchParams.set(name, value);
+        if (value) {
+          url.searchParams.set(name, value);
+        } else {
+          url.searchParams.delete(name);
+        }
         window.location.href = url.toString();
     }
 
@@ -39,7 +43,7 @@
             <div class="form-group row g-3">
                 <label for="srs-select" class="col-sm-2 col-form-label fw-bold">{{ i18n "Projection" }}</label>
                 <div class="col-sm-10 row g-2">
-                    <select id="srs-select" class="form-select" onchange="updateQueryString('crs',this.value)">
+                    <select id="srs-select" class="form-select" onchange="updateQueryString('crs', this.value)">
                         <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
                             http://www.opengis.net/def/crs/OGC/1.3/CRS84
                         </option>
@@ -117,7 +121,7 @@
                 viewer.setAttribute('projection', crs)
             }
 
-            document.getElementById("body").hidden = ""
+            document.getElementById("body").hidden = false
 
             viewer.addEventListener('box', selectbox => {
                 updateQueryString("bbox", selectbox.detail)
@@ -125,24 +129,23 @@
         </script>
     </div>
     <div class="col-9">
-    {{ range $feat := .Params.Features }}
-
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th colspan="2"><a href="{{ $baseUrl }}/collections/{{ $.Params.CollectionID }}/items/{{ $feat.ID }}">{{ $feat.ID }}</a></th>
-        </tr>
-        </thead>
-        <tbody>
-        {{ range $key, $value := $feat.Properties }}
-        <tr>
-            <td class="w-20">{{ $key }}</td>
-            <td>{{ $value }}</td>
-        </tr>
+        {{ range $feat := .Params.Features }}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th colspan="2"><a href="{{ $baseUrl }}/collections/{{ $.Params.CollectionID }}/items/{{ $feat.ID }}">{{ $feat.ID }}</a></th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ range $key, $value := $feat.Properties }}
+            <tr>
+                <td class="w-20">{{ $key }}</td>
+                <td>{{ $value }}</td>
+            </tr>
+            {{ end }}
+            </tbody>
+        </table>
         {{ end }}
-        </tbody>
-    </table>
-    {{ end }}
     </div>
 </section>
 {{end}}
