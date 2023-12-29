@@ -8,7 +8,6 @@ import (
 	"maps"
 	"os"
 	"path"
-	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/engine"
@@ -94,24 +93,23 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 		g.fidColumn = gpkgConfig.Cloud.Fid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout
 	default:
-		log.Fatal("unknown geopackage config encountered")
+		log.Fatal("unknown GeoPackage config encountered")
 	}
 
 	metadata, err := readDriverMetadata(g.backend.getDB())
 	if err != nil {
-		log.Fatalf("failed to connect with geopackage: %v", err)
+		log.Fatalf("failed to connect with GeoPackage: %v", err)
 	}
 	log.Println(metadata)
 
-	featureTables, err := readGpkgContents(collections, g.backend.getDB())
+	g.featureTableByCollectionID, err = readGpkgContents(collections, g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.featureTableByCollectionID = featureTables
 
-	// assert that an index named <table>_spatial_idx exists on each feature table with the given columns
-	g.assertIndexExistOnFeatureTables("_spatial_idx",
-		strings.Join([]string{g.fidColumn, "minx", "maxx", "miny", "maxy"}, ","))
+	if err = assertIndexesExist(collections, g.featureTableByCollectionID, g.backend.getDB(), g.fidColumn); err != nil {
+		log.Fatal(err)
+	}
 
 	return g
 }
@@ -280,7 +278,7 @@ with
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
 select * from nextprevfeat where %[2]s >= :fid %[3]s limit :limit
-`, table.TableName, g.fidColumn, pfClause)
+`, table.TableName, g.fidColumn, pfClause) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
@@ -338,7 +336,7 @@ with
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
 select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
-`, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName, selectClause, pfClause)
+`, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName, selectClause, pfClause) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {
@@ -357,59 +355,6 @@ select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
 	return bboxQuery, namedParams, nil
 }
 
-// Read metadata about gpkg and sqlite driver
-func readDriverMetadata(db *sqlx.DB) (string, error) {
-	type pragma struct {
-		UserVersion string `db:"user_version"`
-	}
-	type metadata struct {
-		Sqlite     string `db:"sqlite"`
-		Spatialite string `db:"spatialite"`
-		Arch       string `db:"arch"`
-	}
-
-	var m metadata
-	err := db.QueryRowx(`
-select sqlite_version() as sqlite, 
-spatialite_version() as spatialite,  
-spatialite_target_cpu() as arch`).StructScan(&m)
-	if err != nil {
-		return "", err
-	}
-
-	var gpkgVersion pragma
-	_ = db.QueryRowx(`pragma user_version`).StructScan(&gpkgVersion)
-	if gpkgVersion.UserVersion == "" {
-		gpkgVersion.UserVersion = "unknown"
-	}
-
-	return fmt.Sprintf("geopackage version: %s, sqlite version: %s, spatialite version: %s on %s",
-		gpkgVersion.UserVersion, m.Sqlite, m.Spatialite, m.Arch), nil
-}
-
-// Assert that an index on each feature table exists with the given suffix and covering the given columns, in the given order.
-func (g *GeoPackage) assertIndexExistOnFeatureTables(expectedIndexNameSuffix string, expectedIndexColumns string) {
-	for _, collection := range g.featureTableByCollectionID {
-		expectedIndexName := collection.TableName + expectedIndexNameSuffix
-		var actualIndexColumns string
-
-		query := fmt.Sprintf(`
-select group_concat(name) 
-from pragma_index_info('%s') 
-order by name asc`, expectedIndexName)
-
-		err := g.backend.getDB().QueryRowx(query).Scan(&actualIndexColumns)
-		if err != nil {
-			log.Fatalf("missing index: failed to read index '%s' from table '%s'",
-				expectedIndexName, collection.TableName)
-		}
-		if expectedIndexColumns != actualIndexColumns {
-			log.Fatalf("incorrect index: expected index '%s' with columns '%s' to exist on table '%s', found indexed columns '%s'",
-				expectedIndexName, expectedIndexColumns, collection.TableName, actualIndexColumns)
-		}
-	}
-}
-
 func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 	table, ok := g.featureTableByCollectionID[collection]
 	if !ok {
@@ -417,89 +362,6 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 			"geopackage, available in geopackage: %v", collection, util.Keys(g.featureTableByCollectionID))
 	}
 	return table, nil
-}
-
-// Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
-// collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
-// 'identifier' column. Also in case there's no exact match between 'collection ID' and 'identifier' we use
-// the explicitly configured table name.
-func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
-	query := `
-select
-	c.table_name, c.data_type, c.identifier, c.description, c.last_change,
-	c.min_x, c.min_y, c.max_x, c.max_y, c.srs_id, gc.column_name, gc.geometry_type_name
-from
-	gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
-where
-	c.data_type = 'features' and 
-	c.min_x is not null`
-
-	rows, err := db.Queryx(query)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", query, err)
-	}
-	defer rows.Close()
-
-	result := make(map[string]*featureTable, 10)
-	for rows.Next() {
-		row := featureTable{
-			ColumnsWithDateType: make(map[string]string),
-		}
-		if err = rows.StructScan(&row); err != nil {
-			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
-		}
-		if row.TableName == "" {
-			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
-		}
-		if err = readFeatureTableInfo(db, row); err != nil {
-			return nil, fmt.Errorf("failed to read feature table metadata, error: %w", err)
-		}
-
-		if len(collections) == 0 {
-			result[row.Identifier] = &row
-		} else {
-			for _, collection := range collections {
-				if row.Identifier == collection.ID {
-					result[collection.ID] = &row
-					break
-				} else if hasMatchingTableName(collection, row) {
-					result[collection.ID] = &row
-					break
-				}
-			}
-		}
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	if len(result) == 0 {
-		return nil, fmt.Errorf("no records found in gpkg_contents, can't serve features")
-	}
-	return result, nil
-}
-
-func readFeatureTableInfo(db *sqlx.DB, table featureTable) error {
-	rows, err := db.Queryx(fmt.Sprintf("select name, type from pragma_table_info('%s')", table.TableName))
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var colName, colType string
-		err = rows.Scan(&colName, &colType)
-		if err != nil {
-			return err
-		}
-		table.ColumnsWithDateType[colName] = colType
-	}
-	return nil
-}
-
-func hasMatchingTableName(collection engine.GeoSpatialCollection, row featureTable) bool {
-	return collection.Features != nil && collection.Features.TableName != nil &&
-		row.Identifier == *collection.Features.TableName
 }
 
 func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
