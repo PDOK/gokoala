@@ -154,6 +154,48 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output with property filter 'straatnaam' set to 'Silodam'",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_straatnaam_silodam.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request HTML output (= property filter form) with property filter 'straatnaam' set to 'Silodam'",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_straatnaam_silodam.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output with two property filters set (straatnaam and postcode)'",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Zandhoek&postcode=1104MM",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_straatnaam_and_postcode.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in WGS84 explicitly",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",

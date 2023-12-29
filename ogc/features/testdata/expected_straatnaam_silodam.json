@@ -1,0 +1,127 @@
+{
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json&straatnaam=Silodam"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/foo/items?f=jsonfg&straatnaam=Silodam"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items?f=html&straatnaam=Silodam"
+    }
+  ],
+  "numberReturned": 4,
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": 5716,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121209.137,
+          489301.29
+        ]
+      },
+      "properties": {
+        "datum_doc": "2006-07-17",
+        "datum_strt": "2006-07-17",
+        "document": "GV00000403",
+        "huisletter": "A",
+        "huisnummer": 460,
+        "nummer_id": "0363200000527297",
+        "postcode": "1013AW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000527297",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Silodam",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
+      }
+    },
+    {
+      "id": 5717,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121205.566,
+          489313.36
+        ]
+      },
+      "properties": {
+        "datum_doc": "2006-07-17",
+        "datum_strt": "2006-07-17",
+        "document": "GV00000403",
+        "huisletter": "B",
+        "huisnummer": 460,
+        "nummer_id": "0363200000527298",
+        "postcode": "1013AW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000527298",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Silodam",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
+      }
+    },
+    {
+      "id": 5718,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121194.463,
+          489355.933
+        ]
+      },
+      "properties": {
+        "datum_doc": "2006-07-17",
+        "datum_strt": "2006-07-17",
+        "document": "GV00000403",
+        "huisletter": "A",
+        "huisnummer": 461,
+        "nummer_id": "0363200000527299",
+        "postcode": "1013AW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000527299",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Silodam",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
+      }
+    },
+    {
+      "id": 5719,
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121191.258,
+          489367.231
+        ]
+      },
+      "properties": {
+        "datum_doc": "2006-07-17",
+        "datum_strt": "2006-07-17",
+        "document": "GV00000403",
+        "huisletter": "B",
+        "huisnummer": 461,
+        "nummer_id": "0363200000527300",
+        "postcode": "1013AW",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000527300",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Silodam",
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
+      }
+    }
+  ]
+}
