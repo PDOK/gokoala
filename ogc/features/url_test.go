@@ -242,6 +242,23 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				return false
 			},
 		},
+		{
+			name: "Fail on unknown param",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"this_param_does_not_exist_in_openapi_spec": []string{"foobar"},
+				},
+				limit: engine.Limit{
+					Default: 1,
+					Max:     2,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+				assert.Equalf(t, "unknown query parameter(s) found: this_param_does_not_exist_in_openapi_spec=foobar", err.Error(), "parse()")
+				return false
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

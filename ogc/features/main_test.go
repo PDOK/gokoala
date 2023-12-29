@@ -535,7 +535,7 @@ func normalize(s string) string {
 }
 
 func printActual(rr *httptest.ResponseRecorder) {
-	log.Print("==> ACTUAL:")
+	log.Print("\n==> ACTUAL:")
 	log.Print(rr.Body.String()) // to ease debugging & updating expected results
-	log.Print("=========")
+	log.Print("=========\n")
 }
