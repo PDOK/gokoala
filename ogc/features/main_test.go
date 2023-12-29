@@ -168,7 +168,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
-			name: "Request HTML output (= property filter form) with property filter 'straatnaam' set to 'Silodam'",
+			name: "Request HTML output with property filter (validate 2 form fields present, with only straatnaam filled)",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
