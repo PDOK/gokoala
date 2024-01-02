@@ -129,7 +129,7 @@ func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool, enableCORS
 		}))
 	}
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
-	router.Use(middleware.SetHeader(gokoalaEngine.HeaderApiVersion, engine.Config.Version))
+	router.Use(middleware.SetHeader(gokoalaEngine.HeaderAPIVersion, engine.Config.Version))
 	router.Use(middleware.Compress(5, gokoalaEngine.CompressibleMediaTypes...)) // enable gzip responses
 
 	// OGC Common Part 1, will always be started
