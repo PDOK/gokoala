@@ -33,6 +33,7 @@ const (
 	HeaderContentCrs     = "Content-Crs"
 	HeaderBaseURL        = "X-BaseUrl"
 	HeaderRequestedWith  = "X-Requested-With"
+	HeaderApiVersion     = "API-Version"
 )
 
 // Engine encapsulates shared non-OGC API specific logic

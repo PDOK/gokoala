@@ -114,13 +114,14 @@ func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool, enableCORS
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
+	router.Use(middleware.GetHead) // support HEAD requests https://docs.ogc.org/is/17-069r4/17-069r4.html#_http_1_1
 	if allowTrailingSlash {
 		router.Use(middleware.StripSlashes)
 	}
 	if enableCORS {
 		router.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"*"},
-			AllowedMethods:   []string{"GET", "HEAD", "OPTIONS"},
+			AllowedMethods:   []string{http.MethodGet, http.MethodHead, http.MethodOptions},
 			AllowedHeaders:   []string{gokoalaEngine.HeaderRequestedWith},
 			ExposedHeaders:   []string{gokoalaEngine.HeaderContentCrs, gokoalaEngine.HeaderLink},
 			AllowCredentials: false,
@@ -128,8 +129,8 @@ func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool, enableCORS
 		}))
 	}
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
-	router.Use(middleware.SetHeader("API-Version", engine.Config.Version))
-	router.Use(middleware.Compress(5)) // enable gzip responses
+	router.Use(middleware.SetHeader(gokoalaEngine.HeaderApiVersion, engine.Config.Version))
+	router.Use(middleware.Compress(5, gokoalaEngine.CompressibleMediaTypes...)) // enable gzip responses
 
 	// OGC Common Part 1, will always be started
 	core.NewCommonCore(engine, router)
