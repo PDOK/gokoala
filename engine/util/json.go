@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
+
+	"dario.cat/mergo"
 )
 
 func PrettyPrintJSON(content []byte, name string) []byte {
@@ -23,65 +25,19 @@ func PrettyPrintJSON(content []byte, name string) []byte {
 // It returns an error if x1 or x2 cannot be JSON-unmarshalled,
 // or the merged JSON is invalid.
 func MergeJSON(x1, x2 []byte) ([]byte, error) {
-	var j1 any
+	var j1 map[string]any
 	err := json.Unmarshal(x1, &j1)
 	if err != nil {
 		return nil, err
 	}
-	var j2 any
+	var j2 map[string]any
 	err = json.Unmarshal(x2, &j2)
 	if err != nil {
 		return nil, err
 	}
-	merged := merge(j1, j2)
-	return json.Marshal(merged)
-}
-
-func merge(x1, x2 any) any {
-	switch x1 := x1.(type) {
-	case map[string]any:
-		x2, ok := x2.(map[string]any)
-		if !ok {
-			return x1
-		}
-		for k, v2 := range x2 {
-			if v1, ok := x1[k]; ok {
-				x1[k] = merge(v1, v2)
-			} else {
-				x1[k] = v2
-			}
-		}
-	case []string:
-		x2, ok := x2.([]string)
-		if !ok {
-			return x1
-		}
-		x1 = append(x1, x2...)
-		return removeDuplicates(x1)
-	case []int:
-		x2, ok := x2.([]int)
-		if !ok {
-			return x1
-		}
-		x1 = append(x1, x2...)
-		return removeDuplicates(x1)
-	case nil:
-		x2, ok := x2.(map[string]any)
-		if ok {
-			return x2
-		}
+	err = mergo.Merge(&j1, &j2)
+	if err != nil {
+		return nil, err
 	}
-	return x1
-}
-
-func removeDuplicates[T string | int | bool](input []T) []T {
-	allKeys := make(map[T]bool)
-	var result []T
-	for _, item := range input {
-		if _, value := allKeys[item]; !value {
-			allKeys[item] = true
-			result = append(result, item)
-		}
-	}
-	return result
+	return json.Marshal(j1)
 }

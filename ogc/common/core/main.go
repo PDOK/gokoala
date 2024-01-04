@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
-	"github.com/go-chi/chi/v5"
 )
 
 const (
@@ -19,7 +18,7 @@ type CommonCore struct {
 	engine *engine.Engine
 }
 
-func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
+func NewCommonCore(e *engine.Engine) *CommonCore {
 	conformanceBreadcrumbs := []engine.Breadcrumb{
 		{
 			Name: "Conformance",
@@ -48,12 +47,12 @@ func NewCommonCore(e *engine.Engine, router *chi.Mux) *CommonCore {
 		engine: e,
 	}
 
-	router.Get(rootPath, core.LandingPage())
-	router.Get(apiPath, core.API())
+	e.Router.Get(rootPath, core.LandingPage())
+	e.Router.Get(apiPath, core.API())
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-17
-	router.Get(alternativeAPIPath, func(w http.ResponseWriter, r *http.Request) { core.apiAsJSON(w, r) })
-	router.Get(conformancePath, core.Conformance())
-	router.Handle("/*", http.FileServer(http.Dir("assets")))
+	e.Router.Get(alternativeAPIPath, func(w http.ResponseWriter, r *http.Request) { core.apiAsJSON(w, r) })
+	e.Router.Get(conformancePath, core.Conformance())
+	e.Router.Handle("/*", http.FileServer(http.Dir("assets")))
 
 	return core
 }

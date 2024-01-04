@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 const (
@@ -33,6 +34,7 @@ const (
 	HeaderContentCrs     = "Content-Crs"
 	HeaderBaseURL        = "X-BaseUrl"
 	HeaderRequestedWith  = "X-Requested-With"
+	HeaderAPIVersion     = "API-Version"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
@@ -41,32 +43,35 @@ type Engine struct {
 	OpenAPI   *OpenAPI
 	Templates *Templates
 	CN        *ContentNegotiation
+	Router    *chi.Mux
 
 	shutdownHooks []func()
 }
 
 // NewEngine builds a new Engine
-func NewEngine(configFile string, openAPIFile string) *Engine {
-	return NewEngineWithConfig(NewConfig(configFile), openAPIFile)
+func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
+	return NewEngineWithConfig(NewConfig(configFile), openAPIFile, enableTrailingSlash, enableCORS)
 }
 
 // NewEngineWithConfig builds a new Engine
-func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
+func NewEngineWithConfig(config *Config, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
 	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
 	templates := newTemplates(config)
 	openAPI := newOpenAPI(config, []string{openAPIFile}, nil)
+	router := newRouter(config.Version, enableTrailingSlash, enableCORS)
 
 	engine := &Engine{
 		Config:    config,
 		OpenAPI:   openAPI,
 		Templates: templates,
 		CN:        contentNegotiation,
+		Router:    router,
 	}
 	return engine
 }
 
 // Start the engine by initializing all components and starting the server
-func (e *Engine) Start(address string, router *chi.Mux, debugPort int, shutdownDelay int) error {
+func (e *Engine) Start(address string, debugPort int, shutdownDelay int) error {
 	// debug server (binds to localhost).
 	if debugPort > 0 {
 		go func() {
@@ -82,7 +87,7 @@ func (e *Engine) Start(address string, router *chi.Mux, debugPort int, shutdownD
 	}
 
 	// main server
-	return e.startServer("main server", address, shutdownDelay, router)
+	return e.startServer("main server", address, shutdownDelay, e.Router)
 }
 
 // startServer creates and starts an HTTP server, also takes care of graceful shutdown
@@ -332,4 +337,29 @@ func SafeWrite(write func([]byte) (int, error), body []byte) {
 	if err != nil {
 		log.Printf("failed to write response: %v", err)
 	}
+}
+
+func newRouter(version string, enableTrailingSlash bool, enableCORS bool) *chi.Mux {
+	router := chi.NewRouter()
+	router.Use(middleware.RealIP)    // should be first middleware
+	router.Use(middleware.Logger)    // log to console
+	router.Use(middleware.Recoverer) // catch panics and turn into 500s
+	router.Use(middleware.GetHead)   // support HEAD requests https://docs.ogc.org/is/17-069r4/17-069r4.html#_http_1_1
+	if enableTrailingSlash {
+		router.Use(middleware.StripSlashes)
+	}
+	if enableCORS {
+		router.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"*"},
+			AllowedMethods:   []string{http.MethodGet, http.MethodHead, http.MethodOptions},
+			AllowedHeaders:   []string{HeaderRequestedWith},
+			ExposedHeaders:   []string{HeaderContentCrs, HeaderLink},
+			AllowCredentials: false,
+			MaxAge:           int((time.Hour * 24).Seconds()),
+		}))
+	}
+	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
+	router.Use(middleware.SetHeader(HeaderAPIVersion, version))
+	router.Use(middleware.Compress(5, CompressibleMediaTypes...)) // enable gzip responses
+	return router
 }

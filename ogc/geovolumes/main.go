@@ -17,7 +17,7 @@ type ThreeDimensionalGeoVolumes struct {
 	engine *engine.Engine
 }
 
-func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDimensionalGeoVolumes {
+func NewThreeDimensionalGeoVolumes(e *engine.Engine) *ThreeDimensionalGeoVolumes {
 	_, err := url.ParseRequestURI(e.Config.OgcAPI.GeoVolumes.TileServer.String())
 	if err != nil {
 		log.Fatalf("invalid tileserver url provided: %v", err)
@@ -28,21 +28,21 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine, router *chi.Mux) *ThreeDime
 	}
 
 	// 3D Tiles
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles", geoVolumes.CollectionContent("tileset.json"))
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles", geoVolumes.CollectionContent("tileset.json"))
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 
 	// DTM/Quantized Mesh
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh", geoVolumes.CollectionContent("layer.json"))
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh", geoVolumes.CollectionContent("layer.json"))
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 
 	// path '/3dtiles' or '/quantized-mesh' is preferred but optional when requesting the actual tiles/tileset.
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 
 	return geoVolumes
 }

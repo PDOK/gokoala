@@ -24,7 +24,7 @@ type Tiles struct {
 	engine *engine.Engine
 }
 
-func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
+func NewTiles(e *engine.Engine) *Tiles {
 	tilesBreadcrumbs := []engine.Breadcrumb{
 		{
 			Name: "Tiles",
@@ -59,13 +59,13 @@ func NewTiles(e *engine.Engine, router *chi.Mux) *Tiles {
 		engine: e,
 	}
 
-	router.Get(tileMatrixSetsPath, tiles.TileMatrixSets())
-	router.Get(tileMatrixSetsPath+"/{tileMatrixSetId}", tiles.TileMatrixSet())
-	router.Get(tilesPath, tiles.TilesetsList())
-	router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
-	router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
-	router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
-	router.Get(geospatial.CollectionsPath+"/{collectionId}/tiles", tiles.CollectionContent())
+	e.Router.Get(tileMatrixSetsPath, tiles.TileMatrixSets())
+	e.Router.Get(tileMatrixSetsPath+"/{tileMatrixSetId}", tiles.TileMatrixSet())
+	e.Router.Get(tilesPath, tiles.TilesetsList())
+	e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
+	e.Router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
+	e.Router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/tiles", tiles.CollectionContent())
 
 	return tiles
 }

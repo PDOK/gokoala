@@ -16,7 +16,7 @@ type Collections struct {
 	engine *engine.Engine
 }
 
-func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
+func NewCollections(e *engine.Engine) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
 			{
@@ -54,8 +54,8 @@ func NewCollections(e *engine.Engine, router *chi.Mux) *Collections {
 		engine: e,
 	}
 
-	router.Get(CollectionsPath, instance.Collections())
-	router.Get(CollectionsPath+"/{collectionId}", instance.Collection())
+	e.Router.Get(CollectionsPath, instance.Collections())
+	e.Router.Get(CollectionsPath+"/{collectionId}", instance.Collection())
 
 	return instance
 }

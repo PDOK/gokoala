@@ -55,13 +55,13 @@ func TestNewCollections(t *testing.T) {
 							},
 						},
 					},
-				}, ""),
+				}, "", false, true),
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			collections := NewCollections(test.args.e, chi.NewRouter())
+			collections := NewCollections(test.args.e)
 			assert.NotEmpty(t, collections.engine.Templates.RenderedTemplates)
 		})
 	}
@@ -116,8 +116,8 @@ func TestNewCollections_Collections(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "")
-			collections := NewCollections(newEngine, chi.NewRouter())
+			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			collections := NewCollections(newEngine)
 			handler := collections.Collections()
 			handler.ServeHTTP(rr, req)
 
@@ -188,8 +188,8 @@ func TestNewCollections_Collection(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "")
-			collections := NewCollections(newEngine, chi.NewRouter())
+			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			collections := NewCollections(newEngine)
 			handler := collections.Collection()
 			handler.ServeHTTP(rr, req)
 

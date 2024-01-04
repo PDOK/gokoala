@@ -10,7 +10,6 @@ import (
 	"github.com/PDOK/gokoala/engine"
 	"golang.org/x/text/language"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,13 +68,13 @@ func TestNewStyles(t *testing.T) {
 							},
 						},
 					},
-				}, ""),
+				}, "", false, true),
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			styles := NewStyles(test.args.e, chi.NewRouter())
+			styles := NewStyles(test.args.e)
 			assert.NotEmpty(t, styles.engine.Templates.RenderedTemplates)
 		})
 	}

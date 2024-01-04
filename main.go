@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
-	gokoalaEngine "github.com/PDOK/gokoala/engine"
+	eng "github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/core"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features"
@@ -16,9 +15,6 @@ import (
 	"github.com/PDOK/gokoala/ogc/processes"
 	"github.com/PDOK/gokoala/ogc/styles"
 	"github.com/PDOK/gokoala/ogc/tiles"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -94,13 +90,15 @@ func main() {
 		shutdownDelay := c.Int("shutdown-delay")
 		configFile := c.String("config-file")
 		openAPIFile := c.String("openapi-file")
+		trailingSlash := c.Bool("enable-trailing-slash")
+		cors := c.Bool("enable-cors")
 
 		// Engine encapsulates shared non-OGC API specific logic
-		engine := gokoalaEngine.NewEngine(configFile, openAPIFile)
+		engine := eng.NewEngine(configFile, openAPIFile, trailingSlash, cors)
+		// Each OGC API building block makes use of said Engine
+		setupOGCBuildingBlocks(engine)
 
-		router := newRouter(engine, c.Bool("enable-trailing-slash"), c.Bool("enable-cors"))
-
-		return engine.Start(address, router, debugPort, shutdownDelay)
+		return engine.Start(address, debugPort, shutdownDelay)
 	}
 
 	err := app.Run(os.Args)
@@ -109,64 +107,41 @@ func main() {
 	}
 }
 
-func newRouter(engine *gokoalaEngine.Engine, allowTrailingSlash bool, enableCORS bool) *chi.Mux {
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.RealIP)
-	if allowTrailingSlash {
-		router.Use(middleware.StripSlashes)
-	}
-	if enableCORS {
-		router.Use(cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"*"},
-			AllowedMethods:   []string{"GET", "HEAD", "OPTIONS"},
-			AllowedHeaders:   []string{gokoalaEngine.HeaderRequestedWith},
-			ExposedHeaders:   []string{gokoalaEngine.HeaderContentCrs, gokoalaEngine.HeaderLink},
-			AllowCredentials: false,
-			MaxAge:           int((time.Hour * 24).Seconds()),
-		}))
-	}
-	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
-	router.Use(middleware.SetHeader("API-Version", engine.Config.Version))
-	router.Use(middleware.Compress(5)) // enable gzip responses
-
+func setupOGCBuildingBlocks(engine *eng.Engine) {
 	// OGC Common Part 1, will always be started
-	core.NewCommonCore(engine, router)
+	core.NewCommonCore(engine)
 
 	// OGC Common part 2
 	if engine.Config.HasCollections() {
-		geospatial.NewCollections(engine, router)
+		geospatial.NewCollections(engine)
 	}
 	// OGC 3D GeoVolumes API
 	if engine.Config.OgcAPI.GeoVolumes != nil {
-		geovolumes.NewThreeDimensionalGeoVolumes(engine, router)
+		geovolumes.NewThreeDimensionalGeoVolumes(engine)
 	}
 	// OGC Tiles API
 	if engine.Config.OgcAPI.Tiles != nil {
-		tiles.NewTiles(engine, router)
+		tiles.NewTiles(engine)
 	}
 	// OGC Styles API
 	if engine.Config.OgcAPI.Styles != nil {
-		styles.NewStyles(engine, router)
+		styles.NewStyles(engine)
 	}
 	// OGC Features API
 	if engine.Config.OgcAPI.Features != nil {
-		features.NewFeatures(engine, router)
+		features.NewFeatures(engine)
 	}
 	// OGC Processes API
 	if engine.Config.OgcAPI.Processes != nil {
-		processes.NewProcesses(engine, router)
+		processes.NewProcesses(engine)
 	}
 
 	// Resources endpoint to serve static assets
 	if engine.Config.Resources != nil {
-		gokoalaEngine.NewResourcesEndpoint(engine, router)
+		eng.NewResourcesEndpoint(engine)
 	}
 	// Health endpoint
-	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		gokoalaEngine.SafeWrite(w.Write, []byte("OK"))
+	engine.Router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		eng.SafeWrite(w.Write, []byte("OK"))
 	})
-
-	return router
 }

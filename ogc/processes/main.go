@@ -4,19 +4,17 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/engine"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type Processes struct {
 	engine *engine.Engine
 }
 
-func NewProcesses(e *engine.Engine, router *chi.Mux) *Processes {
+func NewProcesses(e *engine.Engine) *Processes {
 	processes := &Processes{engine: e}
-	router.Handle("/jobs*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
-	router.Handle("/processes*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
-	router.Handle("/api*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
+	e.Router.Handle("/jobs*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
+	e.Router.Handle("/processes*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
+	e.Router.Handle("/api*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
 	return processes
 }
 

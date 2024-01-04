@@ -37,9 +37,24 @@ const (
 )
 
 var (
-	MediaTypeJSONFamily  = []string{MediaTypeTileJSON, MediaTypeMapboxStyle, MediaTypeGeoJSON, MediaTypeJSONFG}
-	OutputFormatDefault  = map[string]string{FormatJSON: "JSON"}
-	OutputFormatFeatures = map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
+	MediaTypeJSONFamily    = []string{MediaTypeTileJSON, MediaTypeMapboxStyle, MediaTypeGeoJSON, MediaTypeJSONFG}
+	OutputFormatDefault    = map[string]string{FormatJSON: "JSON"}
+	OutputFormatFeatures   = map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
+	CompressibleMediaTypes = []string{
+		MediaTypeJSON,
+		MediaTypeGeoJSON,
+		MediaTypeJSONFG,
+		MediaTypeTileJSON,
+		MediaTypeMapboxStyle,
+		MediaTypeOpenAPI,
+		MediaTypeHTML,
+		// common web media types
+		"text/css",
+		"text/plain",
+		"text/javascript",
+		"application/javascript",
+		"image/svg+xml",
+	}
 )
 
 type ContentNegotiation struct {

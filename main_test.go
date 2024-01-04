@@ -41,8 +41,8 @@ func Test_newRouter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			eng := gokoalaEngine.NewEngine(tt.configFile, "")
-			router := newRouter(eng, false, true)
+			eng := gokoalaEngine.NewEngine(tt.configFile, "", false, true)
+			setupOGCBuildingBlocks(eng)
 
 			recorder := httptest.NewRecorder()
 			req, err := http.NewRequest(http.MethodGet, tt.apiCall, nil)
@@ -51,7 +51,7 @@ func Test_newRouter(t *testing.T) {
 			}
 
 			// when
-			router.ServeHTTP(recorder, req)
+			eng.Router.ServeHTTP(recorder, req)
 
 			// then
 			assert.Equal(t, http.StatusOK, recorder.Code)

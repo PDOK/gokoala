@@ -10,7 +10,6 @@ import (
 	"github.com/PDOK/gokoala/engine"
 	"golang.org/x/text/language"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,13 +45,13 @@ func TestNewCommonCore(t *testing.T) {
 						Tiles:      nil,
 						Styles:     nil,
 					},
-				}, ""),
+				}, "", false, true),
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			core := NewCommonCore(test.args.e, chi.NewRouter())
+			core := NewCommonCore(test.args.e)
 			assert.NotEmpty(t, core.engine.Templates.RenderedTemplates)
 		})
 	}
