@@ -392,7 +392,7 @@ func success() func(t assert.TestingT, err error, i ...any) bool {
 func generateRandomString(length int) string {
 	const charset = "abc"
 	seed := rand.NewSource(time.Now().UnixNano())
-	random := rand.New(seed)
+	random := rand.New(seed) //nolint:gosec  // good enough for testing
 
 	result := make([]byte, length)
 	for i := range result {
