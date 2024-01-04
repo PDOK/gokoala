@@ -154,6 +154,48 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output with property filter 'straatnaam' set to 'Silodam'",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_straatnaam_silodam.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request HTML output with property filter (validate 2 form fields present, with only straatnaam filled)",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_straatnaam_silodam.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output with two property filters set (straatnaam and postcode)'",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Zandhoek&postcode=1104MM",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_straatnaam_and_postcode.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in WGS84 explicitly",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
@@ -305,7 +347,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 					log.Fatal(err)
 				}
 
-				log.Print(rr.Body.String()) // to ease debugging
+				printActual(rr)
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
@@ -442,7 +484,7 @@ func TestFeatures_Feature(t *testing.T) {
 					log.Fatal(err)
 				}
 
-				log.Print(rr.Body.String()) // to ease debugging
+				printActual(rr)
 				switch {
 				case tt.fields.format == "json":
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
@@ -490,4 +532,10 @@ func createRequest(url string, collectionID string, featureID string, format str
 
 func normalize(s string) string {
 	return strings.ToLower(strings.Join(strings.Fields(s), ""))
+}
+
+func printActual(rr *httptest.ResponseRecorder) {
+	log.Print("\n==> ACTUAL:")
+	log.Print(rr.Body.String()) // to ease debugging & updating expected results
+	log.Print("=========\n")
 }

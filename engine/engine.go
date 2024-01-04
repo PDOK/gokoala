@@ -54,7 +54,7 @@ func NewEngine(configFile string, openAPIFile string) *Engine {
 func NewEngineWithConfig(config *Config, openAPIFile string) *Engine {
 	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
 	templates := newTemplates(config)
-	openAPI := newOpenAPI(config, openAPIFile)
+	openAPI := newOpenAPI(config, []string{openAPIFile}, nil)
 
 	engine := &Engine{
 		Config:    config,
@@ -100,7 +100,7 @@ func (e *Engine) startServer(name string, address string, shutdownDelay int, rou
 	defer stop()
 
 	go func() {
-		log.Printf("%s listening on %s", name, address)
+		log.Printf("%s listening on http://%2s", name, address)
 		// ListenAndServe always returns a non-nil error. After Shutdown or
 		// Close, the returned error is ErrServerClosed
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -129,8 +129,16 @@ func (e *Engine) startServer(name string, address string, shutdownDelay int, rou
 	return server.Shutdown(timeoutCtx)
 }
 
+// RegisterShutdownHook register a func to execute during graceful shutdown, e.g. to clean up resources.
 func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
+}
+
+// RebuildOpenAPI rebuild the full OpenAPI spec with the newly given parameters.
+// Use only once during bootstrap for specific use cases! For example: when you want to expand a
+// specific part of the OpenAPI spec with data outside the configuration file (e.g. from a database).
+func (e *Engine) RebuildOpenAPI(openAPIParams any) {
+	e.OpenAPI = newOpenAPI(e.Config, e.OpenAPI.extraOpenAPIFiles, openAPIParams)
 }
 
 // ParseTemplate parses both HTML and non-HTML templates depending on the format given in the TemplateKey and

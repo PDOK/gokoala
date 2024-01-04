@@ -7,10 +7,11 @@ import (
 	"github.com/go-spatial/geom"
 )
 
-// Datasource holds all Features for a single object type in a specific projection
+// Datasource holds all Features for a single object type in a specific projection.
 type Datasource interface {
 
-	// GetFeatureIDs returns all Feature IDs matching the given criteria and Cursors for pagination. To be used in concert with GetFeaturesByID
+	// GetFeatureIDs returns all IDs of Features matching the given criteria, as well as and Cursors for pagination.
+	// To be used in concert with GetFeaturesByID
 	GetFeatureIDs(ctx context.Context, collection string, criteria FeaturesCriteria) ([]int64, domain.Cursors, error)
 
 	// GetFeaturesByID returns a collection of Features with the given IDs. To be used in concert with GetFeatureIDs
@@ -21,6 +22,9 @@ type Datasource interface {
 
 	// GetFeature returns a specific Feature
 	GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error)
+
+	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
+	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
 
 	// Close closes (connections to) the datasource gracefully
 	Close()
@@ -39,7 +43,18 @@ type FeaturesCriteria struct {
 	// filtering by bounding box
 	Bbox *geom.Extent
 
+	// filtering by properties
+	PropertyFilters map[string]string
+
 	// filtering by CQL
 	Filter     string
 	FilterLang string
+}
+
+// FeatureTableMetadata abstraction to access metadata of a feature table (aka attribute table)
+type FeatureTableMetadata interface {
+
+	// ColumnsWithDataType returns a mapping from colum names to column data types.
+	// Note: data types could be datasource specific.
+	ColumnsWithDataType() map[string]string
 }

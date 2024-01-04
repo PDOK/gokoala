@@ -53,14 +53,18 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	fgFC := domain.JSONFGFeatureCollection{}
 	fgFC.ConformsTo = []string{domain.ConformanceJSONFGCore}
 	fgFC.CoordRefSys = string(crs)
-	for _, f := range fc.Features {
-		fgF := domain.JSONFGFeature{
-			ID:         f.ID,
-			Links:      f.Links,
-			Properties: f.Properties,
+	if len(fc.Features) == 0 {
+		fgFC.Features = make([]*domain.JSONFGFeature, 0)
+	} else {
+		for _, f := range fc.Features {
+			fgF := domain.JSONFGFeature{
+				ID:         f.ID,
+				Links:      f.Links,
+				Properties: f.Properties,
+			}
+			setGeom(crs, &fgF, f)
+			fgFC.Features = append(fgFC.Features, &fgF)
 		}
-		setGeom(crs, &fgF, f)
-		fgFC.Features = append(fgFC.Features, &fgF)
 	}
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSONFG, collectionID, cursor, featuresURL)

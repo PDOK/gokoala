@@ -22,12 +22,7 @@ ogcApi:
         filters:
           properties:
             - name: straatnaam
+            - name: invalid_this_does_not_exist_in_gpkg
             - name: postcode
         metadata:
           title: Foooo
-      - id: bar
-        tableName: ligplaatsen
-        metadata:
-          title: Barrr
-          tableName: ligplaatsen
-      - id: baz

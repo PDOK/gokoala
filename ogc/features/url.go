@@ -25,6 +25,9 @@ const (
 	bboxCrsParam   = "bbox-crs"
 	filterParam    = "filter"
 	filterCrsParam = "filter-crs"
+
+	propertyFilterMaxLength = 512
+	propertyFilterWildcard  = "*"
 )
 
 var (
@@ -43,6 +46,7 @@ func (s SRID) GetOrDefault() int {
 	return val
 }
 
+// ContentCrs the coordinate reference system (represented as a URI) of the content/output to return.
 type ContentCrs string
 
 // ToLink returns link target conforming to RFC 8288
@@ -54,37 +58,38 @@ func (c ContentCrs) IsWGS84() bool {
 	return string(c) == wgs84CrsURI
 }
 
-type URL interface {
-	validateNoUnknownParams() error
-}
-
 // URL to a page in a collection of features
 type featureCollectionURL struct {
-	baseURL url.URL
-	params  url.Values
-	limit   engine.Limit
+	baseURL                   url.URL
+	params                    url.Values
+	limit                     engine.Limit
+	configuredPropertyFilters []engine.PropertyFilter
 }
 
 // parse the given URL to values required to delivery a set of Features
-func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limit int,
-	inputSRID SRID, outputSRID SRID, contentCrs ContentCrs, bbox *geom.Extent, err error) {
+func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limit int, inputSRID SRID, outputSRID SRID,
+	contentCrs ContentCrs, bbox *geom.Extent, propertyFilters map[string]string, err error) {
 
+	err = fc.validateNoUnknownParams()
+	if err != nil {
+		return
+	}
 	encodedCursor = domain.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := parseLimit(fc.params, fc.limit)
 	outputSRID, outputSRIDErr := parseCrsToSRID(fc.params, crsParam)
 	contentCrs = parseCrsToContentCrs(fc.params)
+	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
 	dateTimeErr := parseDateTime(fc.params)
 	_, filterSRID, filterErr := parseFilter(fc.params)
-
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
-	err = errors.Join(limitErr, outputSRIDErr, bboxErr, dateTimeErr, filterErr, inputSRIDErr)
+	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, dateTimeErr, filterErr, inputSRIDErr)
 	return
 }
 
 // Calculate checksum over the query parameters that have a "filtering effect" on
-// the result set such as limit, bbox, CQL filters, etc. These query params
+// the result set such as limit, bbox, property filters, CQL filters, etc. These query params
 // aren't allowed to be changed during pagination. The checksum allows for the latter
 // to be verified
 func (fc featureCollectionURL) checksum() []byte {
@@ -150,6 +155,9 @@ func (fc featureCollectionURL) validateNoUnknownParams() error {
 	copyParams.Del(bboxCrsParam)
 	copyParams.Del(filterParam)
 	copyParams.Del(filterCrsParam)
+	for _, pf := range fc.configuredPropertyFilters {
+		copyParams.Del(pf.Name)
+	}
 	if len(copyParams) > 0 {
 		return fmt.Errorf("unknown query parameter(s) found: %v", copyParams.Encode())
 	}
@@ -164,6 +172,11 @@ type featureURL struct {
 
 // parse the given URL to values required to delivery a specific Feature
 func (f featureURL) parse() (srid SRID, contentCrs ContentCrs, err error) {
+	err = f.validateNoUnknownParams()
+	if err != nil {
+		return
+	}
+
 	srid, err = parseCrsToSRID(f.params, crsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
 	return
@@ -293,6 +306,28 @@ func parseCrsToSRID(params url.Values, paramName string) (SRID, error) {
 		srid = SRID(val)
 	}
 	return srid, nil
+}
+
+// Support simple filtering on properties: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
+func parsePropertyFilters(configuredPropertyFilters []engine.PropertyFilter, params url.Values) (map[string]string, error) {
+	propertyFilters := make(map[string]string)
+	for _, cpf := range configuredPropertyFilters {
+		pf := params.Get(cpf.Name)
+		if pf != "" {
+			if len(pf) > propertyFilterMaxLength {
+				return nil, fmt.Errorf("property filter %s is too large, "+
+					"value is limited to %d characters", cpf.Name, propertyFilterMaxLength)
+			}
+			if strings.Contains(pf, propertyFilterWildcard) {
+				// if/when we choose to support wildcards in the future, make sure wildcards are
+				// only allowed at the END (suffix) of the filter
+				return nil, fmt.Errorf("property filter %s contains a wildcard (%s), "+
+					"wildcard filtering is not allowed", cpf.Name, propertyFilterWildcard)
+			}
+			propertyFilters[cpf.Name] = pf
+		}
+	}
+	return propertyFilters, nil
 }
 
 func parseDateTime(params url.Values) error {

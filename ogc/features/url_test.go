@@ -1,6 +1,7 @@
 package features
 
 import (
+	"math/rand"
 	"net/url"
 	"testing"
 	"time"
@@ -26,6 +27,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 		wantOutputCrs     int
 		wantBbox          *geom.Extent
 		wantInputCrs      int
+		wantPropFilters   map[string]string
 		wantErr           assert.ErrorAssertionFunc
 	}{
 		{
@@ -136,6 +138,94 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantErr:           success(),
 		},
 		{
+			name: "Parse property filters",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"foo": []string{"baz"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantLimit:       10,
+			wantOutputCrs:   100000,
+			wantInputCrs:    100000,
+			wantPropFilters: map[string]string{"foo": "baz"},
+			wantErr:         success(),
+		},
+		{
+			name: "Parse multiple property filters",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"foo": []string{"baz"},
+					"bar": []string{"bazz"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantLimit:       10,
+			wantOutputCrs:   100000,
+			wantInputCrs:    100000,
+			wantPropFilters: map[string]string{"foo": "baz", "bar": "bazz"},
+			wantErr:         success(),
+		},
+		{
+			name: "Fail on invalid property filters",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"non_existent": []string{"baz"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+				assert.Equalf(t, "unknown query parameter(s) found: non_existent=baz", err.Error(), "parse()")
+				return false
+			},
+		},
+		{
+			name: "Fail on wildcard property filter",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"foo": []string{"baz*"},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+				assert.Equalf(t, "property filter foo contains a wildcard (*), wildcard filtering is not allowed", err.Error(), "parse()")
+				return false
+			},
+		},
+		{
+			name: "Fail on too large property filter",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"foo": []string{generateRandomString(propertyFilterMaxLength + 1)},
+				},
+				limit: engine.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+				assert.Equalf(t, "property filter foo is too large, value is limited to 512 characters", err.Error(), "parse()")
+				return false
+			},
+		},
+		{
 			name: "Fail on difference in input crs",
 			fields: fields{
 				baseURL: *host,
@@ -242,6 +332,23 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				return false
 			},
 		},
+		{
+			name: "Fail on unknown param",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"this_param_does_not_exist_in_openapi_spec": []string{"foobar"},
+				},
+				limit: engine.Limit{
+					Default: 1,
+					Max:     2,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+				assert.Equalf(t, "unknown query parameter(s) found: this_param_does_not_exist_in_openapi_spec=foobar", err.Error(), "parse()")
+				return false
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -249,8 +356,18 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
+				configuredPropertyFilters: []engine.PropertyFilter{
+					{
+						Name:        "foo",
+						Description: "awesome foo property to filter on",
+					},
+					{
+						Name:        "bar",
+						Description: "even more awesome bar property to filter on",
+					},
+				},
 			}
-			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, err := fc.parse()
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, gotPF, err := fc.parse()
 			if !tt.wantErr(t, err, "parse()") {
 				return
 			}
@@ -259,6 +376,9 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			assert.Equalf(t, tt.wantOutputCrs, gotOutputCrs.GetOrDefault(), "parse()")
 			assert.Equalf(t, tt.wantBbox, gotBbox, "parse()")
 			assert.Equalf(t, tt.wantInputCrs, gotInputCrs.GetOrDefault(), "parse()")
+			if tt.wantPropFilters != nil {
+				assert.Equalf(t, tt.wantPropFilters, gotPF, "parse()")
+			}
 		})
 	}
 }
@@ -267,4 +387,16 @@ func success() func(t assert.TestingT, err error, i ...any) bool {
 	return func(t assert.TestingT, err error, i ...any) bool {
 		return true
 	}
+}
+
+func generateRandomString(length int) string {
+	const charset = "abc"
+	seed := rand.NewSource(time.Now().UnixNano())
+	random := rand.New(seed) //nolint:gosec  // good enough for testing
+
+	result := make([]byte, length)
+	for i := range result {
+		result[i] = charset[random.Intn(len(charset))]
+	}
+	return string(result)
 }

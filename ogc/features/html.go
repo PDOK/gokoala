@@ -40,12 +40,13 @@ func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
 type featureCollectionPage struct {
 	domain.FeatureCollection
 
-	CollectionID string
-	Metadata     *engine.GeoSpatialCollectionMetadata
-	Cursor       domain.Cursors
-	PrevLink     string
-	NextLink     string
-	Limit        int
+	CollectionID    string
+	Metadata        *engine.GeoSpatialCollectionMetadata
+	Cursor          domain.Cursors
+	PrevLink        string
+	NextLink        string
+	Limit           int
+	PropertyFilters map[string]string
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -58,7 +59,8 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, fc *domain.FeatureCollection) {
+	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, propertyFilters map[string]string,
+	fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]
 
@@ -82,6 +84,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatHTML),
 		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
 		limit,
+		propertyFilters,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)

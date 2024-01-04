@@ -21,7 +21,7 @@ const (
 	templatesDir  = "ogc/features/templates/"
 	crsURIPrefix  = "http://www.opengis.net/def/crs/"
 	undefinedSRID = 0
-	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time we may need to read this value dynamically from the geopackage.
+	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
 	wgs84CodeOGC  = "CRS84"
 	wgs84CrsURI   = crsURIPrefix + "OGC/1.3/" + wgs84CodeOGC
 )
@@ -44,13 +44,17 @@ type Features struct {
 }
 
 func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
+	collections = cacheCollectionsMetadata(e)
+	datasources := configureDatasources(e)
+
+	rebuildOpenAPIForFeatures(e, datasources)
+
 	f := &Features{
 		engine:      e,
-		datasources: configureDatasources(e),
+		datasources: datasources,
 		html:        newHTMLFeatures(e),
 		json:        newJSONFeatures(e),
 	}
-	collections = f.cacheCollectionsMetadata()
 
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.CollectionContent())
 	router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
@@ -68,19 +72,16 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
-		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit}
-		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, err := url.parse()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if err = url.validateNoUnknownParams(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
 		if _, ok := collections[collectionID]; !ok {
 			log.Printf("collection %s doesn't exist in this features service", collectionID)
 			http.NotFound(w, r)
+			return
+		}
+		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
+			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID)}
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, propertyFilters, err := url.parse()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -91,11 +92,12 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			// fast path
 			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:     encodedCursor.Decode(url.checksum()),
-				Limit:      limit,
-				InputSRID:  inputSRID.GetOrDefault(),
-				OutputSRID: outputSRID.GetOrDefault(),
-				Bbox:       bbox,
+				Cursor:          encodedCursor.Decode(url.checksum()),
+				Limit:           limit,
+				InputSRID:       inputSRID.GetOrDefault(),
+				OutputSRID:      outputSRID.GetOrDefault(),
+				Bbox:            bbox,
+				PropertyFilters: propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err != nil {
@@ -107,11 +109,12 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			var fids []int64
 			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:     encodedCursor.Decode(url.checksum()),
-				Limit:      limit,
-				InputSRID:  inputSRID.GetOrDefault(),
-				OutputSRID: outputSRID.GetOrDefault(),
-				Bbox:       bbox,
+				Cursor:          encodedCursor.Decode(url.checksum()),
+				Limit:           limit,
+				InputSRID:       inputSRID.GetOrDefault(),
+				OutputSRID:      outputSRID.GetOrDefault(),
+				Bbox:            bbox,
+				PropertyFilters: propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err != nil {
@@ -135,7 +138,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 
 		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, fc)
+			f.html.features(w, r, collectionID, newCursor, url, limit, propertyFilters, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
@@ -156,25 +159,20 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
+		if _, ok := collections[collectionID]; !ok {
+			log.Printf("collection %s doesn't exist in this features service", collectionID)
+			http.NotFound(w, r)
+			return
+		}
 		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
 		if err != nil {
 			http.Error(w, "feature ID must be a number", http.StatusBadRequest)
 			return
 		}
-
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		outputSRID, contentCrs, err := url.parse()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if err = url.validateNoUnknownParams(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if _, ok := collections[collectionID]; !ok {
-			log.Printf("collection %s doesn't exist in this features service", collectionID)
-			http.NotFound(w, r)
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -209,9 +207,9 @@ func (f *Features) Feature() http.HandlerFunc {
 	}
 }
 
-func (f *Features) cacheCollectionsMetadata() map[string]*engine.GeoSpatialCollectionMetadata {
+func cacheCollectionsMetadata(e *engine.Engine) map[string]*engine.GeoSpatialCollectionMetadata {
 	result := make(map[string]*engine.GeoSpatialCollectionMetadata)
-	for _, collection := range f.engine.Config.OgcAPI.Features.Collections {
+	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		result[collection.ID] = collection.Metadata
 	}
 	return result

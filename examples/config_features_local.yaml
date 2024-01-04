@@ -1,12 +1,12 @@
 ---
 version: 1.0.0
-title: Basisregistratie Grootschalige Topografie (BGT)
+title: Addresses
 # shortened title, used in breadcrumb path
-serviceIdentifier: BGT
+serviceIdentifier: ADR
 abstract: >-
-  This is a description about the dataset in Markdown. See [PDOK BGT dataset](https://www.pdok.nl/introductie/-/article/basisregistratie-grootschalige-topografie-bgt-) for details.
+  This is a description about the example dataset in Markdown. See [PDOK](https://www.pdok.nl/) for details.
 # just a dummy picture, but you can put an actual thumbnail here
-thumbnail: bgt.png
+thumbnail: old.png
 resources:
   directory: ./examples/resources
 keywords:
@@ -38,7 +38,7 @@ availableLanguages:
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, maps
   features:
-    basemap: BRT
+    basemap: OSM  # or BRT
     datasources:
       defaultWGS84:
         geopackage:
@@ -50,7 +50,6 @@ ogcApi:
           geopackage:
             local:
               file: ./examples/resources/addresses-rd.gpkg
-              queryTimeout: 10s
         - srs: EPSG:3035
           geopackage:
             local:

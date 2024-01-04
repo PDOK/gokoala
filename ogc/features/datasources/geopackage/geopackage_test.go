@@ -32,7 +32,8 @@ func newAddressesGeoPackage() geoPackageBackend {
 
 func TestNewGeoPackage(t *testing.T) {
 	type args struct {
-		config engine.GeoPackage
+		config     engine.GeoPackage
+		collection engine.GeoSpatialCollections
 	}
 	tests := []struct {
 		name                        string
@@ -42,7 +43,7 @@ func TestNewGeoPackage(t *testing.T) {
 		{
 			name: "open local geopackage",
 			args: args{
-				engine.GeoPackage{
+				config: engine.GeoPackage{
 					Local: &engine.GeoPackageLocal{
 						GeoPackageCommon: engine.GeoPackageCommon{
 							Fid: "feature_id",
@@ -50,13 +51,19 @@ func TestNewGeoPackage(t *testing.T) {
 						File: pwd + "/testdata/bag.gpkg",
 					},
 				},
+				collection: []engine.GeoSpatialCollection{
+					{
+						ID:       "ligplaatsen",
+						Features: &engine.CollectionEntryFeatures{},
+					},
+				},
 			},
-			wantNrOfFeatureTablesInGpkg: 3,
+			wantNrOfFeatureTablesInGpkg: 1, // 3 in geopackage, but we define only 1 collection
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(nil, tt.args.config).featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
+			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(tt.args.collection, tt.args.config).featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
 		})
 	}
 }

@@ -21,21 +21,26 @@ func (PostGIS) Close() {
 }
 
 func (pg PostGIS) GetFeatureIDs(_ context.Context, _ string, _ datasources.FeaturesCriteria) ([]int64, domain.Cursors, error) {
-	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple datasources")
+	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return []int64{}, domain.Cursors{}, nil
 }
 
 func (pg PostGIS) GetFeaturesByID(_ context.Context, _ string, _ []int64) (*domain.FeatureCollection, error) {
-	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple datasources")
+	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return &domain.FeatureCollection{}, nil
 }
 
 func (pg PostGIS) GetFeatures(_ context.Context, _ string, _ datasources.FeaturesCriteria) (*domain.FeatureCollection, domain.Cursors, error) {
-	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple datasources")
+	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return nil, domain.Cursors{}, nil
 }
 
 func (pg PostGIS) GetFeature(_ context.Context, _ string, _ int64) (*domain.Feature, error) {
-	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple datasources")
+	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
+	return nil, nil
+}
+
+func (pg PostGIS) GetFeatureTableMetadata(_ string) (datasources.FeatureTableMetadata, error) {
+	log.Fatal("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return nil, nil
 }
