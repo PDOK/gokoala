@@ -13,7 +13,7 @@ type ResourcesEndpoint struct {
 	engine *Engine
 }
 
-func NewResourcesEndpoint(e *Engine, router *chi.Mux) *ResourcesEndpoint {
+func NewResourcesEndpoint(e *Engine) *ResourcesEndpoint {
 	resources := &ResourcesEndpoint{
 		engine: e,
 	}
@@ -21,9 +21,9 @@ func NewResourcesEndpoint(e *Engine, router *chi.Mux) *ResourcesEndpoint {
 	// Serve static assets either from local storage or through reverse proxy
 	if resourcesDir := e.Config.Resources.Directory; resourcesDir != "" {
 		resourcesPath := strings.TrimSuffix(resourcesDir, "/resources")
-		router.Handle("/resources/*", http.FileServer(http.Dir(resourcesPath)))
+		e.Router.Handle("/resources/*", http.FileServer(http.Dir(resourcesPath)))
 	} else if resourcesURL := e.Config.Resources.URL.String(); resourcesURL != "" {
-		router.Get("/resources/*",
+		e.Router.Get("/resources/*",
 			func(w http.ResponseWriter, r *http.Request) {
 				resourcePath, _ := url.JoinPath("/", chi.URLParam(r, "*"))
 				target, err := url.Parse(resourcesURL + resourcePath)

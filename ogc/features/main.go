@@ -43,7 +43,7 @@ type Features struct {
 	json *jsonFeatures
 }
 
-func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
+func NewFeatures(e *engine.Engine) *Features {
 	collections = cacheCollectionsMetadata(e)
 	datasources := configureDatasources(e)
 
@@ -56,8 +56,8 @@ func NewFeatures(e *engine.Engine, router *chi.Mux) *Features {
 		json:        newJSONFeatures(e),
 	}
 
-	router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.CollectionContent())
-	router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.CollectionContent())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
 	return f
 }
 

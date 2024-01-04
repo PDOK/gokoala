@@ -20,7 +20,7 @@ type Styles struct {
 	engine *engine.Engine
 }
 
-func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
+func NewStyles(e *engine.Engine) *Styles {
 	// default style must be the first entry in supportedstyles
 	if e.Config.OgcAPI.Styles.Default != e.Config.OgcAPI.Styles.SupportedStyles[0].ID {
 		log.Fatalf("default style must be first entry in supported styles. '%s' does not match '%s'", e.Config.OgcAPI.Styles.SupportedStyles[0].ID, e.Config.OgcAPI.Styles.Default)
@@ -85,9 +85,9 @@ func NewStyles(e *engine.Engine, router *chi.Mux) *Styles {
 		engine: e,
 	}
 
-	router.Get(stylesPath, styles.Styles())
-	router.Get(stylesPath+"/{style}", styles.Style())
-	router.Get(stylesPath+"/{style}/metadata", styles.StyleMetadata())
+	e.Router.Get(stylesPath, styles.Styles())
+	e.Router.Get(stylesPath+"/{style}", styles.Style())
+	e.Router.Get(stylesPath+"/{style}/metadata", styles.StyleMetadata())
 
 	return styles
 }

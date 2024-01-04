@@ -16,13 +16,13 @@ type Maps struct {
 }
 
 // NewMaps !!! Placeholder implementation, for future reference !!!
-func NewMaps(e *engine.Engine, router *chi.Mux) *Maps {
+func NewMaps(e *engine.Engine) *Maps {
 	maps := &Maps{
 		engine: e,
 	}
 
-	router.Get(geospatial.CollectionsPath+"/{collectionId}/map", maps.CollectionContent())
-	router.Get(geospatial.CollectionsPath+"/{collectionId}/map/tiles", maps.CollectionContent())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/map", maps.CollectionContent())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/map/tiles", maps.CollectionContent())
 	return maps
 }
 
