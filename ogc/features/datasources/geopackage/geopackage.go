@@ -65,14 +65,6 @@ func (ft featureTable) ColumnsWithDataType() map[string]string {
 	return ft.ColumnsWithDateType
 }
 
-func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.FeatureTableMetadata, error) {
-	val, ok := g.featureTableByCollectionID[collection]
-	if !ok {
-		return nil, fmt.Errorf("no metadata for %s", collection)
-	}
-	return val, nil
-}
-
 type GeoPackage struct {
 	backend geoPackageBackend
 
@@ -259,6 +251,14 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], nil
 }
 
+func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.FeatureTableMetadata, error) {
+	val, ok := g.featureTableByCollectionID[collection]
+	if !ok {
+		return nil, fmt.Errorf("no metadata for %s", collection)
+	}
+	return val, nil
+}
+
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
 func (g *GeoPackage) makeFeaturesQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
@@ -380,7 +380,7 @@ func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[str
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
 			// column name in double quotes in case it is a reserved keyword
-			// also: we don't currently support LIKE since wildcard searches don't using the index
+			// also: we don't currently support LIKE since wildcard searches don't use the index
 			sql += fmt.Sprintf(" and \"%s\" = :%s", k, namedParam)
 			namedParams[namedParam] = v
 		}

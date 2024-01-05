@@ -27,7 +27,8 @@ const (
 )
 
 var (
-	collections map[string]*engine.GeoSpatialCollectionMetadata
+	collections            map[string]*engine.GeoSpatialCollectionMetadata
+	emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 )
 
 type DatasourceKey struct {
@@ -56,13 +57,13 @@ func NewFeatures(e *engine.Engine) *Features {
 		json:        newJSONFeatures(e),
 	}
 
-	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.CollectionContent())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
 	return f
 }
 
-// CollectionContent serve a FeatureCollection with the given collectionId
-func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
+// Features serve a FeatureCollection with the given collectionId
+func (f *Features) Features() http.HandlerFunc {
 	cfg := f.engine.Config
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -129,11 +130,7 @@ func (f *Features) CollectionContent(_ ...any) http.HandlerFunc {
 			}
 		}
 		if fc == nil {
-			log.Printf("no results found for collection '%s' with params: %s",
-				collectionID, r.URL.Query().Encode())
-			fc = &domain.FeatureCollection{
-				Features: make([]*domain.Feature, 0),
-			}
+			fc = emptyFeatureCollection
 		}
 
 		switch f.engine.CN.NegotiateFormat(r) {
@@ -187,8 +184,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 		if feat == nil {
-			log.Printf("no result found for collection '%s' and feature id: %d",
-				collectionID, featureID)
+			log.Printf("no result found for feature id: %d in collection '%s'", featureID, collectionID)
 			http.NotFound(w, r)
 			return
 		}

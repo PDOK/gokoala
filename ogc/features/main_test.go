@@ -336,7 +336,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 
 			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
 			features := NewFeatures(newEngine)
-			handler := features.CollectionContent()
+			handler := features.Features()
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.fields.contentCrs, rr.Header().Get("Content-Crs"))
