@@ -14,7 +14,8 @@ OpenAPI
 
 Responses:
 - Expand the `collections` and `collection` [templates](./templates). 
-- Implement collection support in the given OGC building block code by implementing the `CollectionContent` interface.
+- Implement an endpoint in your specific OGC API building block to serve the CONTENTS of a collection 
+  (e.g. `/collection/{collectionId}/tiles`)
 
 Testing:
 - Add unit tests
