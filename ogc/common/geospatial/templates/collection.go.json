@@ -98,15 +98,6 @@
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=html"
     }
     {{ end }}
-    {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
-    ,
-    {
-      "rel" : "items",
-      "type" : "application/json",
-      "title" : "The JSON representation of the {{ .Params.ID }} raster map tileset served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/map/tiles?f=json"
-    },
-    {{ end }}
   ]
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   ,
