@@ -98,11 +98,11 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeJSONFG, featJSON)
 }
 
-func (jf *jsonFeatures) createFeatureCollectionLinks(selfFormat string, collectionID string,
+func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL) []domain.Link {
 
 	links := make([]domain.Link, 0)
-	switch selfFormat {
+	switch currentFormat {
 	case engine.FormatGeoJSON:
 		links = append(links, domain.Link{
 			Rel:   "self",
@@ -130,36 +130,59 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(selfFormat string, collecti
 			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
 		})
 	}
+
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as HTML",
 		Type:  engine.MediaTypeHTML,
 		Href:  featuresURL.toSelfURL(collectionID, engine.FormatHTML),
 	})
+
 	if cursor.HasNext {
-		links = append(links, domain.Link{
-			Rel:   "next",
-			Title: "Next page",
-			Type:  engine.MediaTypeGeoJSON,
-			Href:  featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatJSON),
-		})
+		switch currentFormat {
+		case engine.FormatGeoJSON:
+			links = append(links, domain.Link{
+				Rel:   "next",
+				Title: "Next page",
+				Type:  engine.MediaTypeGeoJSON,
+				Href:  featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatJSON),
+			})
+		case engine.FormatJSONFG:
+			links = append(links, domain.Link{
+				Rel:   "next",
+				Title: "Next page",
+				Type:  engine.MediaTypeJSONFG,
+				Href:  featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatJSONFG),
+			})
+		}
 	}
+
 	if cursor.HasPrev {
-		links = append(links, domain.Link{
-			Rel:   "prev",
-			Title: "Previous page",
-			Type:  engine.MediaTypeGeoJSON,
-			Href:  featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatJSON),
-		})
+		switch currentFormat {
+		case engine.FormatGeoJSON:
+			links = append(links, domain.Link{
+				Rel:   "prev",
+				Title: "Previous page",
+				Type:  engine.MediaTypeGeoJSON,
+				Href:  featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatJSON),
+			})
+		case engine.FormatJSONFG:
+			links = append(links, domain.Link{
+				Rel:   "prev",
+				Title: "Previous page",
+				Type:  engine.MediaTypeJSONFG,
+				Href:  featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatJSONFG),
+			})
+		}
 	}
 	return links
 }
 
-func (jf *jsonFeatures) createFeatureLinks(selfFormat string, url featureURL,
+func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 	collectionID string, featureID int64) []domain.Link {
 
 	links := make([]domain.Link, 0)
-	switch selfFormat {
+	switch currentFormat {
 	case engine.FormatGeoJSON:
 		links = append(links, domain.Link{
 			Rel:   "self",
