@@ -53,8 +53,14 @@ services:
       retries: 30
 
   smoketest:
-    image: alpine/curl
+    image: ghcr.io/osgeo/gdal:ubuntu-small-latest
     depends_on:
       gokoala:
         condition: service_healthy
-    command: "--fail-with-body -lsS http://gokoala:8080/collections/dutch-addresses/items?f=json&limit=2"
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        echo "test OGC API"
+        ogrinfo -so OAPIF:http://gokoala:8080 dutch-addresses
