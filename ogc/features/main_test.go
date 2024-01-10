@@ -238,6 +238,20 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output in default (WGS84) and bbox in default (WGS84) in JSOn-FG",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=jsonfg&limit=10",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_wgs84_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in RD and bbox in default (WGS84)",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
@@ -535,7 +549,7 @@ func normalize(s string) string {
 }
 
 func printActual(rr *httptest.ResponseRecorder) {
-	log.Print("\n==> ACTUAL:")
+	log.Print("\n==> ACTUAL JSON RESPONSE (copy/paste and compare with response in file):")
 	log.Print(rr.Body.String()) // to ease debugging & updating expected results
-	log.Print("=========\n")
+	log.Print("\n=========\n")
 }

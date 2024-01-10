@@ -66,6 +66,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 			fgFC.Features = append(fgFC.Features, &fgF)
 		}
 	}
+	fgFC.NumberReturned = fc.NumberReturned
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSONFG, collectionID, cursor, featuresURL)
 
