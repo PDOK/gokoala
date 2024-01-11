@@ -169,7 +169,7 @@ func TestThreeDimensionalGeoVolume_CollectionContent(t *testing.T) {
 
 			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine)
-			handler := threeDimensionalGeoVolume.CollectionContent("tileset.json")
+			handler := threeDimensionalGeoVolume.Tileset("tileset.json")
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)

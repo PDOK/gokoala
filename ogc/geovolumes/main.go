@@ -28,13 +28,13 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine) *ThreeDimensionalGeoVolumes
 	}
 
 	// 3D Tiles
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles", geoVolumes.CollectionContent("tileset.json"))
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles", geoVolumes.Tileset("tileset.json"))
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 
 	// DTM/Quantized Mesh
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh", geoVolumes.CollectionContent("layer.json"))
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh", geoVolumes.Tileset("layer.json"))
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
@@ -47,10 +47,9 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine) *ThreeDimensionalGeoVolumes
 	return geoVolumes
 }
 
-// CollectionContent reverse proxy to tileserver for tileset.json OGC 3D Tiles manifest (separate
-// spec from OGC 3D GeoVolumes) or the equivalent manifest (layer.json) for a quantized mesh
-func (t *ThreeDimensionalGeoVolumes) CollectionContent(args ...any) http.HandlerFunc {
-	fileName := args[0].(string)
+// Tileset serves tileset.json manifest in case of OGC 3D Tiles (= separate spec from OGC 3D GeoVolumes) requests or
+// layer.json manifest in case of quantized mesh requests. Both requests will be proxied to the configured tileserver.
+func (t *ThreeDimensionalGeoVolumes) Tileset(fileName string) http.HandlerFunc {
 	if !strings.HasSuffix(fileName, ".json") {
 		log.Fatalf("manifest should be a JSON file")
 	}
@@ -59,8 +58,8 @@ func (t *ThreeDimensionalGeoVolumes) CollectionContent(args ...any) http.Handler
 	}
 }
 
-// ExplicitTileset reverse proxy to tileserver for specific tileset.json OGC 3D Tiles manifest (separate
-// spec from OGC 3D GeoVolumes) or the equivalent manifest (layer.json) for a quantized mesh
+// ExplicitTileset serves OGC 3D Tiles manifest (= separate spec from OGC 3D GeoVolumes) or
+// quantized mesh manifest. All requests will be proxied to the configured tileserver.
 func (t *ThreeDimensionalGeoVolumes) ExplicitTileset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileSetName := chi.URLParam(r, "explicitTileSet")

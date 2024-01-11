@@ -65,7 +65,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 	e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
 	e.Router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
 	e.Router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
-	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/tiles", tiles.CollectionContent())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/tiles", tiles.TilesCollection())
 
 	return tiles
 }
@@ -169,7 +169,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 	}
 }
 
-func (t *Tiles) CollectionContent(_ ...any) http.HandlerFunc {
+func (t *Tiles) TilesCollection(_ ...any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 

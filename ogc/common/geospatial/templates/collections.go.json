@@ -124,17 +124,6 @@
             {{/* placeholder for more links*/}}
           {{end}}
         {{end}}
-        {{ if and $cfg.OgcAPI.Maps $cfg.OgcAPI.Maps.Collections }}
-          {{ if $cfg.OgcAPI.Maps.Collections.ContainsID $coll.ID }}
-            ,{
-              "rel" : "items",
-              "type" : "application/json",
-              "title" : "The JSON representation of the {{ $coll.ID }} raster map tileset served from this endpoint",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/map/tiles?f=json"
-            }
-            {{/* placeholder for more links*/}}
-          {{end}}
-        {{end}}
       ],
       "content" : [
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}

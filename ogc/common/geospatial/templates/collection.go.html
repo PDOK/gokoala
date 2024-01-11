@@ -75,17 +75,6 @@
 
                     {{ end }}
                 {{ end }}
-
-                {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
-                    {{ if .Config.OgcAPI.Maps.Collections.ContainsID .Params.ID }}
-                    <li class="list-group-item">
-                        <h5 class="card-title">Maps</h5>
-                        <ul>
-                            <li>TODO (placeholder)</li>
-                        </ul>
-                    </li>
-                    {{ end }}
-                {{ end }}
             </ul>
             <!-- end specific part per OGC spec -->
 

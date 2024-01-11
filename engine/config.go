@@ -114,9 +114,6 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	if c.OgcAPI.Features != nil {
 		result = append(result, c.OgcAPI.Features.Collections...)
 	}
-	if c.OgcAPI.Maps != nil {
-		result = append(result, c.OgcAPI.Maps.Collections...)
-	}
 	return result
 }
 
@@ -147,7 +144,6 @@ type OgcAPI struct {
 	Tiles      *OgcAPITiles        `yaml:"tiles" validate:"required_with=Styles"`
 	Styles     *OgcAPIStyles       `yaml:"styles"`
 	Features   *OgcAPIFeatures     `yaml:"features"`
-	Maps       *OgcAPIMaps         `yaml:"maps"`
 	Processes  *OgcAPIProcesses    `yaml:"processes"`
 }
 
@@ -206,7 +202,6 @@ type GeoSpatialCollection struct {
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline"`
 	Tiles      *CollectionEntryTiles        `yaml:",inline"`
 	Features   *CollectionEntryFeatures     `yaml:",inline"`
-	Maps       *CollectionEntryMaps         `yaml:",inline"`
 }
 
 type GeoSpatialCollectionMetadata struct {
@@ -263,10 +258,6 @@ type CollectionEntryFeatures struct {
 		// OAF Part 3: add config for complex/CQL filters here
 		// placeholder
 	} `yaml:"filters"`
-}
-
-type CollectionEntryMaps struct {
-	// placeholder
 }
 
 type OgcAPI3dGeoVolumes struct {
@@ -327,10 +318,6 @@ func (oaf OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []Pr
 		}
 	}
 	return []PropertyFilter{}
-}
-
-type OgcAPIMaps struct {
-	Collections GeoSpatialCollections `yaml:"collections"`
 }
 
 type OgcAPIProcesses struct {

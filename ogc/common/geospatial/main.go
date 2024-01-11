@@ -16,6 +16,8 @@ type Collections struct {
 	engine *engine.Engine
 }
 
+// NewCollections enables support for OGC APIs that organize data in the concept of collections.
+// A collection, also known as a geospatial data resource, is a common way to organize data in various OGC APIs.
 func NewCollections(e *engine.Engine) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
@@ -68,6 +70,14 @@ func (c *Collections) Collections() http.HandlerFunc {
 	}
 }
 
+// Collection provides METADATA about a specific collection. To get the CONTENTS of a collection each OGC API
+// building block must provide a separate/specific endpoint.
+//
+// For example in:
+// - OGC API Features you would have: /collections/{collectionId}/items
+// - OGC API Tiles could have: /collections/{collectionId}/tiles
+// - OGC API Maps could have: /collections/{collectionId}/maps
+// - OGC API 3d GeoVolumes would have: /collections/{collectionId}/3dtiles
 func (c *Collections) Collection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
@@ -75,20 +85,4 @@ func (c *Collections) Collection() http.HandlerFunc {
 		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+c.engine.CN.NegotiateFormat(r), collectionID, c.engine.CN.NegotiateLanguage(w, r))
 		c.engine.ServePage(w, r, key)
 	}
-}
-
-// CollectionSupport a collection, also known as a geospatial data resource, is a common way to organize
-// data in various OGC APIs.
-type CollectionSupport interface {
-
-	// CollectionContent While the generic /collections/{collectionId} endpoint provides METADATA about
-	// a collection this endpoint should provide the CONTENTS of a collection.
-	//
-	// For example in:
-	// - OGC API Features you would have: /collections/{collectionId}/items
-	// - OGC API Tiles could have: /collections/{collectionId}/tiles
-	// - OGC API Maps could have: /collections/{collectionId}/maps
-	// - OGC API 3d GeoVolumes could have: /collections/{collectionId}/3dtiles
-	// etc.
-	CollectionContent(args ...any) http.HandlerFunc
 }
