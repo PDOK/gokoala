@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 jobs:
-  golangci:
+  lint:
     name: lint
     runs-on: ubuntu-latest
     steps:
@@ -21,6 +21,9 @@ jobs:
           cache: false
 
       - uses: actions/checkout@v3
+
+      - name: Tidy
+        uses: katexochen/go-tidy-check@v2
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
