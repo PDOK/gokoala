@@ -20,19 +20,25 @@ func Test_newRouter(t *testing.T) {
 		wantBody   string
 	}{
 		{
-			name:       "multiple_ogc_apis_single_collection_json",
+			name:       "Serve multiple OGC APIs for single collection in JSON",
 			configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 			apiCall:    "http://localhost:8180/collections/NewYork?f=json",
 			wantBody:   "engine/testdata/expected_multiple_ogc_apis_single_collection.json",
 		},
 		{
-			name:       "multiple_ogc_apis_single_collection_html",
+			name:       "Serve multiple OGC APIs for single collection in HTML",
 			configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 			apiCall:    "http://localhost:8180/collections/NewYork?f=html",
 			wantBody:   "engine/testdata/expected_multiple_ogc_apis_single_collection.html",
 		},
 		{
-			name:       "ogc_api_processes",
+			name:       "Serve multiple Feature Tables from single GeoPackage",
+			configFile: "ogc/features/testdata/config_features_bag_multiple_feature_tables.yaml",
+			apiCall:    "http://localhost:8180/collections?f=json",
+			wantBody:   "ogc/features/testdata/expected_multiple_feature_tables_single_geopackage.json",
+		},
+		{
+			name:       "Check conformance of OGC API Processes",
 			configFile: "engine/testdata/config_processes.yaml",
 			apiCall:    "http://localhost:8181/conformance?f=html",
 			wantBody:   "engine/testdata/expected_processes_conformance.html",

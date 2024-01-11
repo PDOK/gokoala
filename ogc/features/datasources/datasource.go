@@ -10,7 +10,7 @@ import (
 // Datasource holds all Features for a single object type in a specific projection.
 type Datasource interface {
 
-	// GetFeatureIDs returns all IDs of Features matching the given criteria, as well as and Cursors for pagination.
+	// GetFeatureIDs returns all IDs of Features matching the given criteria, as well as Cursors for pagination.
 	// To be used in concert with GetFeaturesByID
 	GetFeatureIDs(ctx context.Context, collection string, criteria FeaturesCriteria) ([]int64, domain.Cursors, error)
 
@@ -54,7 +54,7 @@ type FeaturesCriteria struct {
 // FeatureTableMetadata abstraction to access metadata of a feature table (aka attribute table)
 type FeatureTableMetadata interface {
 
-	// ColumnsWithDataType returns a mapping from colum names to column data types.
-	// Note: data types could be datasource specific.
+	// ColumnsWithDataType returns a mapping from column names to column data types.
+	// Note: data types can be datasource specific.
 	ColumnsWithDataType() map[string]string
 }

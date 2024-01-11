@@ -23,7 +23,8 @@ type Styles struct {
 func NewStyles(e *engine.Engine) *Styles {
 	// default style must be the first entry in supportedstyles
 	if e.Config.OgcAPI.Styles.Default != e.Config.OgcAPI.Styles.SupportedStyles[0].ID {
-		log.Fatalf("default style must be first entry in supported styles. '%s' does not match '%s'", e.Config.OgcAPI.Styles.SupportedStyles[0].ID, e.Config.OgcAPI.Styles.Default)
+		log.Fatalf("default style must be first entry in supported styles. '%s' does not match '%s'",
+			e.Config.OgcAPI.Styles.SupportedStyles[0].ID, e.Config.OgcAPI.Styles.Default)
 	}
 
 	stylesBreadcrumbs := []engine.Breadcrumb{
@@ -94,7 +95,8 @@ func NewStyles(e *engine.Engine) *Styles {
 
 func (s *Styles) Styles() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"styles.go."+s.engine.CN.NegotiateFormat(r), s.engine.CN.NegotiateLanguage(w, r))
+		key := engine.NewTemplateKeyWithLanguage(
+			templatesDir+"styles.go."+s.engine.CN.NegotiateFormat(r), s.engine.CN.NegotiateLanguage(w, r))
 		s.engine.ServePage(w, r, key)
 	}
 }
@@ -106,7 +108,8 @@ func (s *Styles) Style() http.HandlerFunc {
 		// TODO: improve?
 		var key engine.TemplateKey
 		if styleFormat == engine.FormatHTML {
-			key = engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"style.go.html", styleID, s.engine.CN.NegotiateLanguage(w, r))
+			key = engine.NewTemplateKeyWithNameAndLanguage(
+				templatesDir+"style.go.html", styleID, s.engine.CN.NegotiateLanguage(w, r))
 		} else {
 			var instanceName string
 			if slices.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
@@ -130,7 +133,8 @@ func (s *Styles) Style() http.HandlerFunc {
 func (s *Styles) StyleMetadata() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		styleID := chi.URLParam(r, "style")
-		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), styleID, s.engine.CN.NegotiateLanguage(w, r))
+		key := engine.NewTemplateKeyWithNameAndLanguage(
+			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), styleID, s.engine.CN.NegotiateLanguage(w, r))
 		s.engine.ServePage(w, r, key)
 	}
 }
