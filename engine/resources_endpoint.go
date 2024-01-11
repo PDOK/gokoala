@@ -13,7 +13,7 @@ type ResourcesEndpoint struct {
 	engine *Engine
 }
 
-func NewResourcesEndpoint(e *Engine) *ResourcesEndpoint {
+func newResourcesEndpoint(e *Engine) *ResourcesEndpoint {
 	resources := &ResourcesEndpoint{
 		engine: e,
 	}

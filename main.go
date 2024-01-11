@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"strconv"
 
@@ -135,13 +134,4 @@ func setupOGCBuildingBlocks(engine *eng.Engine) {
 	if engine.Config.OgcAPI.Processes != nil {
 		processes.NewProcesses(engine)
 	}
-
-	// Resources endpoint to serve static assets
-	if engine.Config.Resources != nil {
-		eng.NewResourcesEndpoint(engine)
-	}
-	// Health endpoint
-	engine.Router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		eng.SafeWrite(w.Write, []byte("OK"))
-	})
 }
