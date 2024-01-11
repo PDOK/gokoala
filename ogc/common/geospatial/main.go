@@ -16,8 +16,8 @@ type Collections struct {
 	engine *engine.Engine
 }
 
-// NewCollections A collection, also known as a geospatial data resource, is a common way
-// to organize data in various OGC APIs.
+// NewCollections enables support for OGC APIs that organize data in the concept of collections.
+// A collection, also known as a geospatial data resource, is a common way to organize data in various OGC APIs.
 func NewCollections(e *engine.Engine) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
