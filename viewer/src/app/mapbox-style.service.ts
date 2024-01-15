@@ -128,25 +128,29 @@ export class MapboxStyleService {
       if (layer.layout?.['text-field']) {
         const label = layer.layout?.['text-field'].replace('{', '').replace('}', '')
         p['' + label + ''] = label.substring(0, 6)
-      }
-      let title = titleFunction(layer['source-layer'], p, customTitlePart)
-      this.pushItem(title, layer, names, p)
+        const labeltitle = titleFunction(layer['source-layer'], p, customTitlePart)
+        const showLabel = label[0].toUpperCase() + label.substring(1)
+        this.pushItem(labeltitle + ' ' + showLabel, layer, names, p)
+      } else {
+        let title = titleFunction(layer['source-layer'], p, customTitlePart)
+        this.pushItem(title, layer, names, p)
 
-      let paint = layer.paint['circle-color'] as FillPattern
-      if (layer.type == LayerType.Fill) {
-        paint = layer.paint['fill-color'] as FillPattern
-        if (!paint) {
-          paint = layer.paint['fill-pattern'] as FillPattern
+        let paint = layer.paint['circle-color'] as FillPattern
+        if (layer.type == LayerType.Fill) {
+          paint = layer.paint['fill-color'] as FillPattern
+          if (!paint) {
+            paint = layer.paint['fill-pattern'] as FillPattern
+          }
         }
-      }
-      if (paint) {
-        if (this.isFillPatternWithStops(paint)) {
-          paint.stops.forEach(stop => {
-            const prop: IProperties = {}
-            prop['' + paint.property + ''] = stop[0]
-            title = stop[0]
-            this.pushItem(title, layer, names, prop)
-          })
+        if (paint) {
+          if (this.isFillPatternWithStops(paint)) {
+            paint.stops.forEach(stop => {
+              const prop: IProperties = {}
+              prop['' + paint.property + ''] = stop[0]
+              title = stop[0]
+              this.pushItem(title, layer, names, prop)
+            })
+          }
         }
       }
     })
