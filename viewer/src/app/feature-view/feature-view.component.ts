@@ -59,7 +59,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   mapWidth = 600
 
   map: OLMap = this.getMap()
-  features: Feature<Geometry>[] = []
+  features: FeatureLike[] = []
 
   constructor(
     private el: ElementRef,
@@ -129,10 +129,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  loadFeatures(features: Feature<Geometry>[]) {
+  loadFeatures(features: FeatureLike[]) {
     const vsource = new VectorSource({
       features: features,
-    })
+    }) as VectorSource<Feature<Geometry>>
 
     this.map.addLayer(
       new VectorLayer({
