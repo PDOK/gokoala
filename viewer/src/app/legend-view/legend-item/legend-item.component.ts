@@ -28,11 +28,17 @@ export class LegendItemComponent implements OnInit {
   @Input() item!: LegendItem
   @Input() mapboxStyle!: MapboxStyle
 
-  itemHeight = 40
-  itemWidth = 60
+  private readonly _itemHeight = 40
+  get itemHeight() {
+    return this._itemHeight
+  }
+  private readonly _itemWidth = 60
+  get itemWidth() {
+    return this._itemWidth
+  }
   itemLeft = 10
   itemRight = 50
-  extent = [0, 0, this.itemWidth, this.itemHeight]
+  readonly extent = [0, 0, this.itemWidth, this.itemHeight]
 
   projection = new Projection({
     code: 'pixel-map',
@@ -70,7 +76,6 @@ export class LegendItemComponent implements OnInit {
       const vectorTile = tile as VectorTile
       vectorTile.setLoader(() => {
         const features: Feature<Geometry>[] = []
-
         features.push(feature)
         vectorTile.setFeatures(features)
       })
@@ -82,19 +87,17 @@ export class LegendItemComponent implements OnInit {
 
     applyStyle(this.vectorLayer, this.mapboxStyle, sources, undefined, resolutions)
       .then(() => {
-        this.logger.log('loading legend style')
+        this.vectorLayer.getSource()?.refresh()
+        const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='itemmap']")
+        this.map.setTarget(mapdiv)
       })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((err: any) => {
         this.logger.error('error loading legend style: ' + ' ' + err)
       })
-    this.vectorLayer.getSource()?.refresh()
-    const mapdiv: HTMLElement = this.elementRef.nativeElement.querySelector("[id='itemmap']")
-    this.map.setTarget(mapdiv)
   }
 
   newFeature(item: LegendItem): Feature {
-    const half = this.itemHeight / 2
     switch (item.geoType) {
       case LayerType.Fill: {
         const ageom = fromExtent(this.extent)
@@ -117,6 +120,7 @@ export class LegendItemComponent implements OnInit {
         return f
       }
       case LayerType.Line: {
+        const half = this.itemHeight / 2
         const f = new Feature({
           geometry: new LineString([
             [this.itemLeft, half],

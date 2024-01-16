@@ -68,3 +68,15 @@ export function zoomout(aname: string) {
 
   cy.screenshot('zoomout_final/' + aname)
 }
+
+export function downloadPng(selector: string, filename: string) {
+  expect(filename).to.be.a('string')
+  expect(selector).to.be.a('string')
+  const path = Cypress.config('screenshotsFolder') + '/' + filename
+  return cy.get(selector).then(canvas => {
+    const url = (canvas[0] as HTMLCanvasElement).toDataURL()
+    const data = url.replace(/^data:image\/png;base64,/, '')
+    cy.writeFile(path, data, 'base64')
+    cy.wrap(path)
+  })
+}

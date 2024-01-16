@@ -1,15 +1,11 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { map, Observable } from 'rxjs'
-
-import { Feature } from 'ol'
 import GeoJSON from 'ol/format/GeoJSON'
-import { Geometry } from 'ol/geom'
-
 import { ProjectionLike } from 'ol/proj'
-
 import { NGXLogger } from 'ngx-logger'
 import { initProj4 } from './mapprojection'
+import { FeatureLike } from 'ol/Feature'
 
 export type link = {
   /**
@@ -119,7 +115,7 @@ export class FeatureServiceService {
     private http: HttpClient
   ) {}
 
-  getFeatures(url: DataUrl): Observable<Feature<Geometry>[]> {
+  getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.log(JSON.stringify(url))
     return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
       map(data => {

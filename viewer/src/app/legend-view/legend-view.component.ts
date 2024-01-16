@@ -17,7 +17,7 @@ import { NGXLogger } from 'ngx-logger'
 export class LegendViewComponent implements OnInit, OnChanges {
   mapboxStyle!: MapboxStyle
   @Input() styleUrl!: string
-  @Input() titleItems!: string
+  @Input() titleItems!: string //= 'type,plus_type,functie,fysiek_voorkomen'
 
   LegendItems: LegendItem[] = []
 
