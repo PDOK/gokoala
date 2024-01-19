@@ -37,10 +37,10 @@ func NewConfig(configFile string) *Config {
 		log.Fatalf("failed to unmarshal config file, error: %v", err)
 	}
 
-	return NewConfigValid(config)
+	return InitConfig(config)
 }
 
-func NewConfigValid(config *Config) *Config {
+func InitConfig(config *Config) *Config {
 	setDefaults(config)
 	validate(config)
 	return config
