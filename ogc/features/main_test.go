@@ -399,14 +399,14 @@ func BenchmarkFeatures(b *testing.B) {
 			name: "1", // output is WGS84 json, input is WGS84 bbox
 			fields: fields{
 				configFile: "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&f=json&limit=1000",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.651476%2C52.962408%2C4.979398%2C53.074282&f=json&limit=1000",
 			},
 		},
 		{
 			name: "2", // output is WGS84 json, input is RD bbox
 			fields: fields{
 				configFile: "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=1000",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=105564.79055389616405591%2C553072.85584054281935096%2C127668.63754775881534442%2C565347.87356295716017485&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=1000",
 			},
 		},
 	}
