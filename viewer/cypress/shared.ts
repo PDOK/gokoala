@@ -106,5 +106,5 @@ export function logAccessibility() {
       const el = $el.get(0) //native DOM element
       cy.log(el.innerHTML)
     })
-  cy.checkA11y('body', null, null, true)
+  cy.checkA11y('body', undefined, null, true)
 }
