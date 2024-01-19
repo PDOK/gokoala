@@ -1,4 +1,4 @@
-import { idle, intercept, mountFeatureComponent, screenshot } from './shared'
+import { idle, injectAxe, intercept, logAccessibility, mountFeatureComponent, screenshot } from './shared'
 
 type ProjectionTest = { code: string; projection: string; geofix: string }
 
@@ -11,10 +11,12 @@ const tests: ProjectionTest[] = [
 tests.forEach(i => {
   describe(i.geofix + '-feature view', () => {
     it('It shows Point from url on OSM ', () => {
+      injectAxe()
       intercept(i.geofix)
       mountFeatureComponent(i.projection, 'OSM')
       idle()
       screenshot('OSM-' + i.code)
+      logAccessibility()
     })
 
     it('It can draw and emit boundingbox in ' + i.geofix + 'on BRT', () => {
