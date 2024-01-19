@@ -375,6 +375,64 @@ func TestFeatures_CollectionContent(t *testing.T) {
 	}
 }
 
+// Run each benchmark separately with the following commands:
+//
+//	go test -bench=BenchmarkFeatures/1 -run=^# -benchmem -count=10 > bench1_run1.txt
+//	go test -bench=BenchmarkFeatures/2 -run=^# -benchmem -count=10 > bench2_run1.txt
+//
+// Install "benchstat": go install golang.org/x/perf/cmd/benchstat@latest
+// Now compare the results for each benchmark before and after making a change, e.g:
+//
+//	benchstat bench1_run1.txt bench1_run2.txt
+//
+// This will summarize the difference in performance between the runs.
+func BenchmarkFeatures(b *testing.B) {
+	type fields struct {
+		configFile string
+		url        string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+		{
+			name: "1", // output is WGS84 json, input is WGS84 bbox
+			fields: fields{
+				configFile: "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&f=json&limit=1000",
+			},
+		},
+		{
+			name: "2", // output is WGS84 json, input is RD bbox
+			fields: fields{
+				configFile: "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=1000",
+			},
+		},
+	}
+	for _, tt := range tests {
+		req, err := createRequest(tt.fields.url, "dutch-addresses", "", "json")
+		if err != nil {
+			log.Fatal(err)
+		}
+		rr, ts := createMockServer()
+
+		newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+		features := NewFeatures(newEngine)
+		handler := features.Features()
+
+		// Start benchmark (don't add setup/teardown code inside)!
+		b.Run(tt.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				handler.ServeHTTP(rr, req)
+				assert.Equal(b, 200, rr.Code)
+			}
+		})
+
+		ts.Close()
+	}
+}
+
 func TestFeatures_Feature(t *testing.T) {
 	type fields struct {
 		configFile   string
