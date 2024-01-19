@@ -285,6 +285,10 @@ type OgcAPIFeatures struct {
 	Datasources *Datasources          `yaml:"datasources"` // optional since you can also define datasources at the collection level
 	Basemap     string                `yaml:"basemap" default:"OSM"`
 	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
+
+	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
+	// since it has significant performance impact when dealing with large JSON payloads.
+	ValidateResponses *bool `yaml:"validateResponses" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
 func (oaf OgcAPIFeatures) ProjectionsForCollections() []string {

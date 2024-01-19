@@ -261,8 +261,9 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 }
 
 // ServeResponse validates incoming HTTP request against OpenAPI spec and serve the given response (bytes)
-func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request, validateRequest bool, contentType string, response []byte) {
-	// validate request
+func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
+	validateRequest bool, validateRepsonse bool, contentType string, response []byte) {
+
 	if validateRequest {
 		if err := e.OpenAPI.ValidateRequest(r); err != nil {
 			log.Printf("%v", err.Error())
@@ -271,11 +272,12 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request, validateR
 		}
 	}
 
-	// validate response
-	if err := e.OpenAPI.validateResponse(contentType, response, r); err != nil {
-		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if validateRepsonse {
+		if err := e.OpenAPI.validateResponse(contentType, response, r); err != nil {
+			log.Printf("%v", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// return response output to client

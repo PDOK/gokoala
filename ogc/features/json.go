@@ -13,12 +13,14 @@ import (
 var now = time.Now
 
 type jsonFeatures struct {
-	engine *engine.Engine
+	engine           *engine.Engine
+	validateResponse *bool
 }
 
 func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 	return &jsonFeatures{
-		engine: e,
+		engine:           e,
+		validateResponse: e.Config.OgcAPI.Features.ValidateResponses,
 	}
 }
 
@@ -32,7 +34,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
 		return
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeGeoJSON, fcJSON)
+	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeGeoJSON, fcJSON)
 }
 
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -44,7 +46,7 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
 		return
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeGeoJSON, featJSON)
+	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeGeoJSON, featJSON)
 }
 
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -75,7 +77,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
 		return
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeJSONFG, featJSON)
+	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeJSONFG, featJSON)
 }
 
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -96,7 +98,7 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
 		return
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, engine.MediaTypeJSONFG, featJSON)
+	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeJSONFG, featJSON)
 }
 
 func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, collectionID string,

@@ -1,0 +1,29 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Config specific for benchmark
+baseUrl: http://localhost:8080
+serviceIdentifier: Bench
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    validateResponses: false  # improves performance
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./examples/resources/addresses-crs84.gpkg
+      additional:
+        - srs: EPSG:28992
+          geopackage:
+            local:
+              file: ./examples/resources/addresses-rd.gpkg
+        - srs: EPSG:3035
+          geopackage:
+            local:
+              file: ./examples/resources/addresses-etrs89.gpkg
+    collections:
+      - id: dutch-addresses
+        tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
