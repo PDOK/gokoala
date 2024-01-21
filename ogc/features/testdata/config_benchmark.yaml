@@ -1,7 +1,7 @@
 ---
 version: 1.0.2
 title: OGC API Features
-abstract: Config specific for benchmark
+abstract: Config specific for BAG benchmark
 baseUrl: http://localhost:8080
 serviceIdentifier: Bench
 license:
