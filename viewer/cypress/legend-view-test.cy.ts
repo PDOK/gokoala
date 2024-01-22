@@ -6,7 +6,7 @@ import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared
 
 describe('Legend-view-test.cy.ts', () => {
   it('mounts and shows legend items', () => {
-    cy.intercept('GET', 'https://teststyle*', { fixture: 'teststyle.json' }).as('geo')
+    cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: 'teststyle.json' }).as('geo')
 
     cy.mount(LegendViewComponent, {
       imports: [
@@ -16,7 +16,7 @@ describe('Legend-view-test.cy.ts', () => {
         }),
       ],
       componentProperties: {
-        styleUrl: 'https://teststyle/',
+        styleUrl: 'https://visualisation.example.com/teststyle/',
       },
     })
 
@@ -36,7 +36,7 @@ describe('Legend-view-test.cy.ts', () => {
   })
 
   it('Has no detectable a11y violations on mount', () => {
-    cy.intercept('GET', 'https://teststyle*', { fixture: 'teststyle.json' }).as('geo')
+    cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: 'teststyle.json' }).as('geo')
     injectAxe()
 
     cy.mount(LegendViewComponent, {
@@ -47,9 +47,9 @@ describe('Legend-view-test.cy.ts', () => {
         }),
       ],
       componentProperties: {
-        styleUrl: 'https://teststyle/',
+        styleUrl: 'https://visualisation.example.com/teststyle/',
       },
     })
-    checkAccessibility()
+    checkAccessibility('body')
   })
 })

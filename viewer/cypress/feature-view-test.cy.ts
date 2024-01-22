@@ -16,7 +16,7 @@ tests.forEach(i => {
       mountFeatureComponent(i.projection, 'OSM')
       idle()
       screenshot('OSM-' + i.code)
-      logAccessibility()
+      logAccessibility('body')
     })
 
     it('It can draw and emit boundingbox in ' + i.geofix + 'on BRT', () => {

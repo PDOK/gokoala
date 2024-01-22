@@ -5,17 +5,15 @@ import { VectortileViewComponent } from 'src/app/vectortile-view/vectortile-view
 
 describe('Vectortiled-view-test.cy.ts', () => {
   it.skip('Skipped unable to supply vectortile as feature yet, schould Write File Test', function () {
-    cy.request('GET', 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/NetherlandsRDNewQuad/2/1/1?f=mvt').then(
-      resp => {
-        cy.log(resp.body.length)
-        cy.log(JSON.stringify(resp.headers))
-        cy.writeFile('cypress/fixtures/vt1.mvt1', resp, null)
-      }
-    )
+    cy.request('GET', 'https://data.example.com/dataset/ogc/v1_0-preprod/tiles/NetherlandsRDNewQuad/2/1/1?f=mvt').then(resp => {
+      cy.log(resp.body.length)
+      cy.log(JSON.stringify(resp.headers))
+      cy.writeFile('cypress/fixtures/vt1.mvt1', resp, null)
+    })
   })
 
   it.skip('Skipped unable to supply vectortile as featureyet, should mounts and shows tiles', () => {
-    cy.intercept('GET', 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/NetherlandsRDNewQuad/*/*/1?f=mvt', {
+    cy.intercept('GET', 'https://data.example.com/dataset/ogc/v1_0-preprod/tiles/NetherlandsRDNewQuad/*/*/1?f=mvt', {
       fixture: 'fix-todo',
       statusCode: 200,
       headers: {
@@ -41,7 +39,7 @@ describe('Vectortiled-view-test.cy.ts', () => {
         }),
       ],
       componentProperties: {
-        tileUrl: 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/NetherlandsRDNewQuad',
+        tileUrl: 'https://data.example.com/dataset/ogc/v1_0-preprod/tiles/NetherlandsRDNewQuad',
         centerX: 5.3896944,
         centerY: 52.1562499,
         showGrid: true,

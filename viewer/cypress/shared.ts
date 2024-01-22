@@ -93,18 +93,18 @@ export function injectAxe() {
   })
 }
 
-export function checkAccessibility() {
-  cy.get('body').should('be.visible')
-  cy.checkA11y('body')
+export function checkAccessibility(selector: string) {
+  cy.get(selector).should('be.visible')
+  cy.checkA11y(selector)
 }
 
-export function logAccessibility() {
+export function logAccessibility(selector: string) {
   cy.log('Todo: fix or change to checkAccessibility()')
-  cy.get('body')
+  cy.get(selector)
     .should('be.visible')
     .then($el => {
       const el = $el.get(0) //native DOM element
       cy.log(el.innerHTML)
     })
-  cy.checkA11y('body', undefined, undefined, true)
+  cy.checkA11y(selector, undefined, undefined, true)
 }
