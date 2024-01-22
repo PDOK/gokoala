@@ -2,11 +2,11 @@ import { HttpClientModule } from '@angular/common/http'
 import { LoggerModule } from 'ngx-logger'
 import { LegendViewComponent } from 'src/app/legend-view/legend-view.component'
 import { environment } from 'src/environments/environment'
-import { downloadPng, screenshot } from './shared'
+import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared'
 
 describe('Legend-view-test.cy.ts', () => {
   it('mounts and shows legend items', () => {
-    cy.intercept('GET', 'https://teststyle*', { fixture: 'teststyle.json' }).as('geo')
+    cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: 'teststyle.json' }).as('geo')
 
     cy.mount(LegendViewComponent, {
       imports: [
@@ -16,11 +16,9 @@ describe('Legend-view-test.cy.ts', () => {
         }),
       ],
       componentProperties: {
-        styleUrl: 'https://teststyle/',
+        styleUrl: 'https://visualisation.example.com/teststyle/',
       },
     })
-
-    cy.wait(1000)
 
     cy.wrap(['1', '2', '3']).each(n => {
       const textsel = ':nth-child(' + n + ') > .legendText'
@@ -35,5 +33,23 @@ describe('Legend-view-test.cy.ts', () => {
     cy.get(':nth-child(2) > .legendText').contains('Name')
     cy.get(':nth-child(3) > .legendText').contains('Testline')
     screenshot('legend')
+  })
+
+  it('Has no detectable a11y violations on mount', () => {
+    cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: 'teststyle.json' }).as('geo')
+    injectAxe()
+
+    cy.mount(LegendViewComponent, {
+      imports: [
+        HttpClientModule,
+        LoggerModule.forRoot({
+          level: environment.loglevel,
+        }),
+      ],
+      componentProperties: {
+        styleUrl: 'https://visualisation.example.com/teststyle/',
+      },
+    })
+    checkAccessibility('body')
   })
 })

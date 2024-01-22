@@ -80,3 +80,31 @@ export function downloadPng(selector: string, filename: string) {
     cy.wrap(path)
   })
 }
+
+export function injectAxe() {
+  //cy.injectAxe();
+  // cy.injectAxe is currently broken. https://github.com/component-driven/cypress-axe/issues/82
+
+  // Creating our own injection logic
+  cy.readFile('node_modules/axe-core/axe.min.js').then(source => {
+    return cy.window({ log: false }).then(window => {
+      window.eval(source)
+    })
+  })
+}
+
+export function checkAccessibility(selector: string) {
+  cy.get(selector).should('be.visible')
+  cy.checkA11y(selector)
+}
+
+export function logAccessibility(selector: string) {
+  cy.log('Todo: fix or change to checkAccessibility()')
+  cy.get(selector)
+    .should('be.visible')
+    .then($el => {
+      const el = $el.get(0) //native DOM element
+      cy.log(el.innerHTML)
+    })
+  cy.checkA11y(selector, undefined, undefined, true)
+}

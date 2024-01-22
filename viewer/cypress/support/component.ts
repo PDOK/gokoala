@@ -20,15 +20,28 @@ import './commands'
 // require('./commands')
 
 import { mount } from 'cypress/angular'
+import { Options as AxeOptions, configureAxe, injectAxe } from 'cypress-axe'
+import * as axe from 'axe-core'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
 // Alternatively, can be defined in cypress/support/component.d.ts
 // with a <reference path="./component" /> at the top of your spec.
+
+declare const checkA11y: (
+  context?: string | Node | axe.ContextObject | undefined,
+  options?: AxeOptions | undefined,
+  violationCallback?: ((violations: axe.Result[]) => void) | undefined,
+  skipFailures?: boolean
+) => void
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
       mount: typeof mount
+      injectAxe: typeof injectAxe
+      configureAxe: typeof configureAxe
+      checkA11y: typeof checkA11y
     }
   }
 }
