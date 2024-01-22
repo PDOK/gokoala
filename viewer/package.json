@@ -38,7 +38,6 @@
     "@angular-eslint/template-parser": "17.2.0",
     "@angular/cli": "~17.0.10",
     "@angular/compiler-cli": "17.0.9",
-    "@mapbox/mvt-fixtures": "^3.10.0",
     "@types/jest": "^29.5.11",
     "@types/proj4": "2.5.5",
     "@typescript-eslint/eslint-plugin": "6.18.1",
