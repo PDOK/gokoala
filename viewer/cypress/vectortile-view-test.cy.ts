@@ -16,19 +16,7 @@ describe('Vectortiled-view-test.cy.ts', () => {
     cy.intercept('GET', 'https://data.example.com/dataset/ogc/v1_0-preprod/tiles/NetherlandsRDNewQuad/*/*/1?f=mvt', {
       fixture: 'fix-todo',
       statusCode: 200,
-      headers: {
-        'access-control-allow-origin': '*',
-        'access-control-expose-headers': 'Content-Crs,Link',
-        'api-version': '0.1.0',
-        'content-encoding': 'gzip',
-        'content-length': '9475',
-        'content-type': 'application/vnd.mapbox-vector-tile',
-        date: 'Mon, 15 Jan 2024 16:31:49 GMT',
-        etag: '0x8DBBD9891CEC887',
-        'last-modified': 'Mon, 25 Sep 2023 07:25:18 GMT',
-        'x-ms-meta-md5sum': '0ea1c6818378a22ebe1b1fd2280f27a5',
-        'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
-      },
+      headers: { 'content-encoding': 'gzip', 'content-type': 'application/vnd.mapbox-vector-tile' },
     }).as('vt1')
 
     cy.mount(VectortileViewComponent, {
