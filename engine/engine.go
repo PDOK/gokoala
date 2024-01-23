@@ -216,7 +216,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	contentType := e.CN.formatToMediaType(key.Format)
 
 	// validate response
-	if err := e.OpenAPI.validateResponse(contentType, output, r); err != nil {
+	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -229,7 +229,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	SafeWrite(w.Write, output)
 }
 
-// ServePage validates incoming HTTP request against OpenAPI spec and serve a pre-rendered template as HTTP response
+// ServePage serves a pre-rendered template while also validating against the OpenAPI spec
 func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
@@ -247,7 +247,7 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	contentType := e.CN.formatToMediaType(templateKey.Format)
 
 	// validate response
-	if err := e.OpenAPI.validateResponse(contentType, output, r); err != nil {
+	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -260,9 +260,9 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	SafeWrite(w.Write, output)
 }
 
-// ServeResponse validates incoming HTTP request against OpenAPI spec and serve the given response (bytes)
+// ServeResponse serves the given response (arbitrary bytes) while also validating against the OpenAPI spec
 func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
-	validateRequest bool, validateRepsonse bool, contentType string, response []byte) {
+	validateRequest bool, validateResponse bool, contentType string, response []byte) {
 
 	if validateRequest {
 		if err := e.OpenAPI.ValidateRequest(r); err != nil {
@@ -272,8 +272,8 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 		}
 	}
 
-	if validateRepsonse {
-		if err := e.OpenAPI.validateResponse(contentType, response, r); err != nil {
+	if validateResponse {
+		if err := e.OpenAPI.ValidateResponse(contentType, response, r); err != nil {
 			log.Printf("%v", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -333,7 +333,7 @@ func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) {
 		log.Fatalf("failed to construct request to validate %s "+
 			"template against OpenAPI spec %v", key.Name, err)
 	}
-	err = e.OpenAPI.validateResponse(e.CN.formatToMediaType(key.Format), template, req)
+	err = e.OpenAPI.ValidateResponse(e.CN.formatToMediaType(key.Format), template, req)
 	if err != nil {
 		log.Fatalf("validation of template %s failed: %v", key.Name, err)
 	}

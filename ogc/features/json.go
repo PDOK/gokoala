@@ -3,6 +3,8 @@ package features
 import (
 	"bytes"
 	stdjson "encoding/json"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -20,13 +22,17 @@ var (
 
 type jsonFeatures struct {
 	engine           *engine.Engine
-	validateResponse *bool
+	validateResponse bool
 }
 
 func newJSONFeatures(e *engine.Engine) *jsonFeatures {
+	if *e.Config.OgcAPI.Features.ValidateResponses {
+		log.Println("JSON response validation is enabled (by default). When serving large feature collections " +
+			"set 'validateResponses' to 'false' to improve performance")
+	}
 	return &jsonFeatures{
 		engine:           e,
-		validateResponse: e.Config.OgcAPI.Features.ValidateResponses,
+		validateResponse: *e.Config.OgcAPI.Features.ValidateResponses,
 	}
 }
 
@@ -35,24 +41,23 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 
 	fc.Timestamp = now().Format(time.RFC3339)
 	fc.Links = jf.createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL)
-	fcJSON, err := toJSON(&fc)
-	if err != nil {
-		http.Error(w, "Failed to marshal FeatureCollection to JSON", http.StatusInternalServerError)
-		return
+
+	if jf.validateResponse {
+		jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
+	} else {
+		serveJSON(&fc, engine.MediaTypeGeoJSON, w)
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeGeoJSON, fcJSON)
 }
 
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	feat *domain.Feature, url featureURL) {
 
 	feat.Links = jf.createFeatureLinks(engine.FormatGeoJSON, url, collectionID, feat.ID)
-	featJSON, err := toJSON(feat)
-	if err != nil {
-		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
-		return
+	if jf.validateResponse {
+		jf.serveAndValidateJSON(&feat, engine.MediaTypeGeoJSON, r, w)
+	} else {
+		serveJSON(&feat, engine.MediaTypeGeoJSON, w)
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeGeoJSON, featJSON)
 }
 
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -78,12 +83,11 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSONFG, collectionID, cursor, featuresURL)
 
-	featJSON, err := toJSON(&fgFC)
-	if err != nil {
-		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
-		return
+	if jf.validateResponse {
+		jf.serveAndValidateJSON(&fgFC, engine.MediaTypeJSONFG, r, w)
+	} else {
+		serveJSON(&fgFC, engine.MediaTypeJSONFG, w)
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeJSONFG, featJSON)
 }
 
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -99,12 +103,11 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 	setGeom(crs, &fgF, f)
 	fgF.Links = jf.createFeatureLinks(engine.FormatJSONFG, url, collectionID, fgF.ID)
 
-	featJSON, err := toJSON(&fgF)
-	if err != nil {
-		http.Error(w, "Failed to marshal Feature to JSON", http.StatusInternalServerError)
-		return
+	if jf.validateResponse {
+		jf.serveAndValidateJSON(&fgF, engine.MediaTypeJSONFG, r, w)
+	} else {
+		serveJSON(&fgF, engine.MediaTypeJSONFG, w)
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, *jf.validateResponse, engine.MediaTypeJSONFG, featJSON)
 }
 
 func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, collectionID string,
@@ -234,22 +237,49 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 	return links
 }
 
-// toJSON performs the equivalent of json.Marshal but without escaping '<', '>' and '&'.
+// serveAndValidateJSON serves JSON after performing OpenAPI response validation.
+// Note: this requires reading first marshalling to the result to JSON in-memory.
+func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *http.Request, w http.ResponseWriter) {
+	json := &bytes.Buffer{}
+	if err := getEncoder(json).Encode(input); err != nil {
+		handleJSONEncodingFailure(err, w)
+		return
+	}
+	jf.engine.ServeResponse(w, r, false /* performed earlier */, jf.validateResponse, contentType, json.Bytes())
+}
+
+// serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream
+func serveJSON(input any, contentType string, w http.ResponseWriter) {
+	w.Header().Set(engine.HeaderContentType, contentType)
+
+	if err := getEncoder(w).Encode(input); err != nil {
+		handleJSONEncodingFailure(err, w)
+		return
+	}
+}
+
+type jsonEncoder interface {
+	Encode(input any) error
+}
+
+// Create JSONEncoder. Note escaping of '<', '>' and '&' is disabled (HTMLEscape is false).
 // Especially the '&' is important since we use this character in the next/prev links.
-func toJSON(input any) ([]byte, error) {
-	buffer := &bytes.Buffer{}
+func getEncoder(w io.Writer) jsonEncoder {
 	if disableJSONPerfOptimization {
 		// use Go stdlib JSON encoder
-		encoder := stdjson.NewEncoder(buffer)
+		encoder := stdjson.NewEncoder(w)
 		encoder.SetEscapeHTML(false)
-		err := encoder.Encode(input)
-		return buffer.Bytes(), err
+		return encoder
 	}
-	// use ~7% faster 3rd party JSON encoder
-	encoder := perfjson.NewEncoder(buffer)
+	// use ~7% faster 3rd party JSON encoder (in case of issues switch based to stdlib using env variable)
+	encoder := perfjson.NewEncoder(w)
 	encoder.SetEscapeHTML(false)
-	err := encoder.Encode(input)
-	return buffer.Bytes(), err
+	return encoder
+}
+
+func handleJSONEncodingFailure(err error, w http.ResponseWriter) {
+	log.Printf("JSON encoding failed: %v", err)
+	http.Error(w, "Failed to write JSON response", http.StatusInternalServerError)
 }
 
 func setGeom(crs ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature *domain.Feature) {
