@@ -2,15 +2,21 @@ package features
 
 import (
 	"bytes"
-	"encoding/json"
+	stdjson "encoding/json"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
+	perfjson "github.com/goccy/go-json"
 )
 
-var now = time.Now
+var (
+	now                            = time.Now
+	disableJSONPerfOptimization, _ = strconv.ParseBool(os.Getenv("DISABLE_JSON_PERF_OPTIMIZATION"))
+)
 
 type jsonFeatures struct {
 	engine           *engine.Engine
@@ -232,11 +238,18 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 // Especially the '&' is important since we use this character in the next/prev links.
 func toJSON(input any) ([]byte, error) {
 	buffer := &bytes.Buffer{}
-	encoder := json.NewEncoder(buffer)
+	if disableJSONPerfOptimization {
+		// use Go stdlib JSON encoder
+		encoder := stdjson.NewEncoder(buffer)
+		encoder.SetEscapeHTML(false)
+		err := encoder.Encode(input)
+		return buffer.Bytes(), err
+	}
+	// use ~7% faster 3rd party JSON encoder
+	encoder := perfjson.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
 	err := encoder.Encode(input)
-	marshalled := bytes.TrimRight(buffer.Bytes(), "\n")
-	return marshalled, err
+	return buffer.Bytes(), err
 }
 
 func setGeom(crs ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature *domain.Feature) {

@@ -14,6 +14,7 @@ require (
 	github.com/go-playground/validator/v10 v10.13.0
 	github.com/go-spatial/geom v0.0.0-20220918193402-3cd2f5a9a082
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
+	github.com/goccy/go-json v0.10.2
 	github.com/gomarkdown/markdown v0.0.0-20231115200524-a660076da3fd
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/mattn/go-sqlite3 v1.14.18
