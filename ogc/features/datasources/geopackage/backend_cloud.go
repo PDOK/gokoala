@@ -34,7 +34,7 @@ func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) geoPackageBackend {
 	}
 	log.Printf("connected to %s\n", msg)
 
-	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("/%s/%s?vfs=%s", gpkg.Container, gpkg.File, vfsName))
+	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("/%s/%s?vfs=%s&mode=ro", gpkg.Container, gpkg.File, vfsName))
 	if err != nil {
 		log.Fatalf("failed to open %s, error: %v", msg, err)
 	}

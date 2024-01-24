@@ -43,6 +43,6 @@ func (c *PreparedStatementCache) Lookup(ctx context.Context, db *sqlx.DB, query 
 
 // Close purges the cache, and closes remaining prepared statements
 func (c *PreparedStatementCache) Close() {
-	log.Printf("Closing %d prepared statements", c.cache.Len())
+	log.Printf("closing %d prepared statements", c.cache.Len())
 	c.cache.Purge()
 }

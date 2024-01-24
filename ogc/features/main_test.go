@@ -375,10 +375,9 @@ func TestFeatures_CollectionContent(t *testing.T) {
 	}
 }
 
-// Run each benchmark separately with the following commands:
+// Run the benchmark with the following command:
 //
-//	go test -bench=BenchmarkFeatures/1 -run=^# -benchmem -count=10 > bench1_run1.txt
-//	go test -bench=BenchmarkFeatures/2 -run=^# -benchmem -count=10 > bench2_run1.txt
+//	go test -bench=BenchmarkFeatures -run=^# -benchmem -count=10 > bench1_run1.txt
 //
 // Install "benchstat": go install golang.org/x/perf/cmd/benchstat@latest
 // Now compare the results for each benchmark before and after making a change, e.g:
@@ -386,6 +385,16 @@ func TestFeatures_CollectionContent(t *testing.T) {
 //	benchstat bench1_run1.txt bench1_run2.txt
 //
 // This will summarize the difference in performance between the runs.
+// To profile CPU and Memory usage run as:
+//
+//	go test -bench=BenchmarkFeatures -run=^# -benchmem -count=10 -cpuprofile cpu.pprof -memprofile mem.pprof
+//
+// Now analyse the pprof files using:
+//
+//	go tool pprof -web cpu.pprof
+//	go tool pprof -web mem.pprof
+//
+// ----
 func BenchmarkFeatures(b *testing.B) {
 	type fields struct {
 		configFile string
