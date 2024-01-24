@@ -39,7 +39,7 @@ func TestPreparedStatementCache(t *testing.T) {
 		})
 	}
 
-	t.Run("Concurrent Access to the cache", func(t *testing.T) {
+	t.Run("Concurrent access to the cache", func(t *testing.T) {
 		var wg sync.WaitGroup
 
 		c := NewCache()
@@ -48,17 +48,23 @@ func TestPreparedStatementCache(t *testing.T) {
 		db, err := sqlx.Connect("sqlite3", ":memory:")
 		assert.NoError(t, err)
 
-		for i := 0; i < 10; i++ { // Run multiple goroutines that will access the cache concurrently.
+		// Run multiple goroutines that will access the cache concurrently.
+		for i := 0; i < 25; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				stmt, err := c.Lookup(context.Background(), db, "SELECT * FROM main.sqlite_master WHERE name = :n")
+				stmt1, err := c.Lookup(context.Background(), db, "SELECT * FROM main.sqlite_master WHERE name = :n")
 				assert.NoError(t, err)
-				assert.NotNil(t, stmt)
+				assert.NotNil(t, stmt1)
+
+				stmt2, err := c.Lookup(context.Background(), db, "SELECT * FROM main.sqlite_master WHERE type = :t")
+				assert.NoError(t, err)
+				assert.NotNil(t, stmt2)
 			}()
 		}
-
 		wg.Wait() // Wait for all goroutines to finish.
+
+		assert.Equal(t, 2, c.cache.Len())
 		c.Close()
 	})
 }
