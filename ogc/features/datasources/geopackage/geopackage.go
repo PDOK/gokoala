@@ -29,14 +29,14 @@ const (
 	bboxSizeBig      = 10000
 )
 
-// Load sqlite extensions once.
+// Load sqlite (with extensions) once.
 //
 // Extensions are by default expected in /usr/lib. For spatialite you can
 // alternatively/optionally set SPATIALITE_LIBRARY_PATH.
 func init() {
 	spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
 	driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
-	sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, &datasources.SQLLog{}))
+	sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, datasources.NewSQLLogFromEnv()))
 }
 
 type geoPackageBackend interface {
