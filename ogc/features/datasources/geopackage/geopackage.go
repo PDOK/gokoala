@@ -17,7 +17,6 @@ import (
 	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/gpkg"
 	"github.com/go-spatial/geom/encoding/wkt"
-	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/qustavo/sqlhooks/v2"
@@ -26,9 +25,8 @@ import (
 )
 
 const (
-	sqliteDriverName      = "sqlite3_with_extensions"
-	bboxSizeBig           = 10000
-	preparedStmtCacheSize = 15
+	sqliteDriverName = "sqlite3_with_extensions"
+	bboxSizeBig      = 10000
 )
 
 // Load sqlite extensions once.
@@ -69,7 +67,7 @@ func (ft featureTable) ColumnsWithDataType() map[string]string {
 
 type GeoPackage struct {
 	backend           geoPackageBackend
-	preparedStmtCache *lru.Cache[string, *sqlx.NamedStmt]
+	preparedStmtCache *PreparedStatementCache
 
 	fidColumn                  string
 	featureTableByCollectionID map[string]*featureTable
@@ -78,6 +76,8 @@ type GeoPackage struct {
 
 func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.GeoPackage) *GeoPackage {
 	g := &GeoPackage{}
+	g.preparedStmtCache = NewCache()
+
 	switch {
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
@@ -90,13 +90,6 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 	default:
 		log.Fatal("unknown GeoPackage config encountered")
 	}
-
-	g.preparedStmtCache, _ = lru.NewWithEvict[string, *sqlx.NamedStmt](preparedStmtCacheSize,
-		func(query string, stmt *sqlx.NamedStmt) {
-			if stmt != nil {
-				_ = stmt.Close()
-			}
-		})
 
 	metadata, err := readDriverMetadata(g.backend.getDB())
 	if err != nil {
@@ -117,7 +110,7 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 }
 
 func (g *GeoPackage) Close() {
-	g.preparedStmtCache.Purge() // closes remaining statements
+	g.preparedStmtCache.Close()
 	g.backend.close()
 }
 
@@ -266,17 +259,8 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, table *featureTable,
 	} else {
 		query, queryArgs = g.makeDefaultQuery(table, criteria)
 	}
-
 	// lookup prepared statement for given query, or create new one
-	stmt, ok := g.preparedStmtCache.Get(query)
-	if !ok {
-		stmt, err = g.backend.getDB().PrepareNamedContext(ctx, query)
-		if err != nil {
-			return
-		}
-		g.preparedStmtCache.Add(query, stmt)
-		return
-	}
+	stmt, err = g.preparedStmtCache.Lookup(ctx, g.backend.getDB(), query)
 	return
 }
 
