@@ -11,6 +11,8 @@ import (
 	"github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom/encoding/geojson"
+	lru "github.com/hashicorp/golang-lru/v2"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -214,6 +216,12 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				featureTableByCollectionID: tt.fields.featureTableByID,
 				queryTimeout:               tt.fields.queryTimeout,
 			}
+			g.preparedStmtCache, _ = lru.NewWithEvict[string, *sqlx.NamedStmt](preparedStmtCacheSize,
+				func(query string, stmt *sqlx.NamedStmt) {
+					if stmt != nil {
+						_ = stmt.Close()
+					}
+				})
 			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams)
 			if err != nil {
 				if !tt.wantErr {
