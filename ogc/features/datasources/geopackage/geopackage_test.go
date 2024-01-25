@@ -22,6 +22,7 @@ func init() {
 }
 
 func newAddressesGeoPackage() geoPackageBackend {
+	loadDriver()
 	return newLocalGeoPackage(&engine.GeoPackageLocal{
 		GeoPackageCommon: engine.GeoPackageCommon{
 			Fid: "feature_id",
