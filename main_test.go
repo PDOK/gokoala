@@ -47,7 +47,8 @@ func Test_newRouter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			eng := gokoalaEngine.NewEngine(tt.configFile, "", false, true)
+			eng, err := gokoalaEngine.NewEngine(tt.configFile, "", false, true)
+			assert.NoError(t, err)
 			setupOGCBuildingBlocks(eng)
 
 			recorder := httptest.NewRecorder()

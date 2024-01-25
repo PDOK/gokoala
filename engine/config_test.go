@@ -1,10 +1,62 @@
 package engine
 
 import (
+	"os"
+	"path"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	// change working dir to root, to mimic behavior of 'go run' in order to resolve template/config files.
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestNewConfig(t *testing.T) {
+	type args struct {
+		configFile string
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantErr    bool
+		wantErrMsg string
+	}{
+		{
+			name: "read valid config file",
+			args: args{
+				configFile: "engine/testdata/config_minimal.yaml",
+			},
+			wantErr: false,
+		},
+		{
+			name: "fail on invalid config file",
+			args: args{
+				configFile: "engine/testdata/config_invalid.yaml",
+			},
+			wantErr:    true,
+			wantErrMsg: "invalid URI",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewConfig(tt.args.configFile)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorContains(t, err, tt.wantErrMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
 func TestGeoSpatialCollections_Unique(t *testing.T) {
 	tests := []struct {
@@ -183,6 +235,45 @@ func TestProjectionsForCollections(t *testing.T) {
 
 	expected := []string{"EPSG:3857", "EPSG:4326", "EPSG:4355"}
 	assert.Equal(t, expected, oaf.ProjectionsForCollections())
+}
+
+func TestCacheDir(t *testing.T) {
+	tests := []struct {
+		name    string
+		gc      GeoPackageCloud
+		wantErr bool
+	}{
+		{
+			name: "With explicit cache path provided",
+			gc: GeoPackageCloud{
+				File: "test.gpkg",
+				Cache: GeoPackageCloudCache{
+					Path: ptrTo("/tmp"),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Without explicit cache path provided",
+			gc: GeoPackageCloud{
+				File: "test.gpkg",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.gc.CacheDir()
+			if (err != nil) != tt.wantErr {
+				assert.Fail(t, "error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.gc.Cache.Path == nil {
+				assert.DirExists(t, got)
+			} else {
+				assert.Equal(t, *tt.gc.Cache.Path+"/test", got)
+			}
+		})
+	}
 }
 
 func ptrTo[T any](val T) *T {

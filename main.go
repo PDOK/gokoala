@@ -93,7 +93,10 @@ func main() {
 		cors := c.Bool("enable-cors")
 
 		// Engine encapsulates shared non-OGC API specific logic
-		engine := eng.NewEngine(configFile, openAPIFile, trailingSlash, cors)
+		engine, err := eng.NewEngine(configFile, openAPIFile, trailingSlash, cors)
+		if err != nil {
+			return err
+		}
 		// Each OGC API building block makes use of said Engine
 		setupOGCBuildingBlocks(engine)
 

@@ -10,8 +10,13 @@ import (
 )
 
 func TestCreatePropertyFiltersByCollection(t *testing.T) {
-	oaf := engine.NewConfig("ogc/features/testdata/config_features_bag.yaml").OgcAPI.Features
-	oafWithInvalidPropertyFilter := engine.NewConfig("ogc/features/testdata/config_features_bag_invalid_filters.yaml").OgcAPI.Features
+	eng, err := engine.NewConfig("ogc/features/testdata/config_features_bag.yaml")
+	assert.NoError(t, err)
+	oaf := eng.OgcAPI.Features
+
+	eng2, err := engine.NewConfig("ogc/features/testdata/config_features_bag_invalid_filters.yaml")
+	assert.NoError(t, err)
+	oafWithInvalidPropertyFilter := eng2.OgcAPI.Features
 
 	tests := []struct {
 		name        string
