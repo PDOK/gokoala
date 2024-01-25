@@ -127,7 +127,7 @@ A similar flow can be used to profile memory issues.
 #### SQL query logging
 
 Set `LOG_SQL=true` environment variable to enable logging of all SQL queries to stdout for debug purposes. 
-Only applies to OGC API Features. Set e.g. `SQL_QUERY_TIME=10s` to change the definition of a
+Only applies to OGC API Features. Set e.g. `SLOW_QUERY_TIME=10s` to change the definition of a
 slow query. Slow queries are always logged.
 
 ## Develop
