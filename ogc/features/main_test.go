@@ -348,7 +348,8 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			features := NewFeatures(newEngine)
 			handler := features.Features()
 			handler.ServeHTTP(rr, req)
@@ -440,7 +441,8 @@ func BenchmarkFeatures(b *testing.B) {
 		}
 		rr, ts := createMockServer()
 
-		newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+		newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+		assert.NoError(b, err)
 		features := NewFeatures(newEngine)
 		handler := features.Features()
 
@@ -568,7 +570,8 @@ func TestFeatures_Feature(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			features := NewFeatures(newEngine)
 			handler := features.Feature()
 			handler.ServeHTTP(rr, req)

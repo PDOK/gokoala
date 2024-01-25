@@ -25,7 +25,8 @@ func init() {
 
 func TestEngine_ServePage_LandingPage(t *testing.T) {
 	// given
-	engine := NewEngine("engine/testdata/config_minimal.yaml", "", false, true)
+	engine, err := NewEngine("engine/testdata/config_minimal.yaml", "", false, true)
+	assert.NoError(t, err)
 
 	templateKey := NewTemplateKey("ogc/common/core/templates/landing-page.go.json")
 	engine.RenderTemplates("/", nil, templateKey)

@@ -116,7 +116,8 @@ func TestNewCollections_Collections(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			collections := NewCollections(newEngine)
 			handler := collections.Collections()
 			handler.ServeHTTP(rr, req)
@@ -188,7 +189,8 @@ func TestNewCollections_Collection(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			collections := NewCollections(newEngine)
 			handler := collections.Collection()
 			handler.ServeHTTP(rr, req)

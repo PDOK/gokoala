@@ -1,0 +1,9 @@
+---
+version: 1.0.2
+title: Invalid config file
+abstract: With wrong base url
+baseUrl: this_is_not_a_valid_url
+serviceIdentifier: Min
+license:
+  name: MIT
+  url: https://www.tldrlegal.com/license/mit-license

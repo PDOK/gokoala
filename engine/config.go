@@ -25,10 +25,10 @@ const (
 	cookieMaxAge = 60 * 60 * 24
 )
 
-func NewConfig(configFile string) *Config {
+func NewConfig(configFile string) (*Config, error) {
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {
-		log.Fatalf("failed to read config file %v", err)
+		return nil, fmt.Errorf("failed to read config file %w", err)
 	}
 
 	// expand environment variables
@@ -37,22 +37,25 @@ func NewConfig(configFile string) *Config {
 	var config *Config
 	err = yaml.Unmarshal(yamlData, &config)
 	if err != nil {
-		log.Fatalf("failed to unmarshal config file, error: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
-
 	return InitConfig(config)
 }
 
-func InitConfig(config *Config) *Config {
-	setDefaults(config)
-	validate(config)
-	return config
+func InitConfig(config *Config) (*Config, error) {
+	if err := setDefaults(config); err != nil {
+		return nil, err
+	}
+	if err := validate(config); err != nil {
+		return nil, err
+	}
+	return config, nil
 }
 
-func setDefaults(config *Config) {
+func setDefaults(config *Config) error {
 	// process 'default' tags
 	if err := defaults.Set(config); err != nil {
-		log.Fatalf("failed to set default configuration: %v", err)
+		return fmt.Errorf("failed to set default configuration: %w", err)
 	}
 
 	config.CookieMaxAge = cookieMaxAge
@@ -60,15 +63,16 @@ func setDefaults(config *Config) {
 	if len(config.AvailableLanguages) == 0 {
 		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch) // default to Dutch only
 	}
+	return nil
 }
 
-func validate(config *Config) {
+func validate(config *Config) error {
 	v := validator.New()
 	err := v.Struct(config)
 	if err != nil {
 		var ive *validator.InvalidValidationError
 		if ok := errors.Is(err, ive); ok {
-			log.Fatalf("failed to validate config: %v", err)
+			return fmt.Errorf("failed to validate config: %w", err)
 		}
 		var errMessages []string
 		var valErrs validator.ValidationErrors
@@ -77,8 +81,9 @@ func validate(config *Config) {
 				errMessages = append(errMessages, valErr.Error()+"\n")
 			}
 		}
-		log.Fatalf("invalid config provided:\n %v", errMessages)
+		return fmt.Errorf("invalid config provided:\n %v", errMessages)
 	}
+	return nil
 }
 
 type Config struct {

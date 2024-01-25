@@ -213,7 +213,8 @@ func TestTiles_Tile(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.Tile()
 			handler.ServeHTTP(rr, req)
@@ -270,7 +271,8 @@ func TestTile_TilesetsList(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TilesetsList()
 			handler.ServeHTTP(rr, req)
@@ -354,7 +356,8 @@ func TestTile_Tileset(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.Tileset()
 			handler.ServeHTTP(rr, req)
@@ -438,7 +441,8 @@ func TestTile_TilematrixSet(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TileMatrixSet()
 			handler.ServeHTTP(rr, req)
@@ -506,7 +510,8 @@ func TestTile_TilematrixSets(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TileMatrixSets()
 			handler.ServeHTTP(rr, req)

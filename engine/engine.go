@@ -48,8 +48,12 @@ type Engine struct {
 }
 
 // NewEngine builds a new Engine
-func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
-	return NewEngineWithConfig(NewConfig(configFile), openAPIFile, enableTrailingSlash, enableCORS)
+func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
+	config, err := NewConfig(configFile)
+	if err != nil {
+		return nil, err
+	}
+	return NewEngineWithConfig(config, openAPIFile, enableTrailingSlash, enableCORS), nil
 }
 
 // NewEngineWithConfig builds a new Engine
@@ -170,7 +174,9 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 		// all templates are created in all available languages, hence all are checked
 		for lang := range e.Templates.localizers {
 			key.Language = lang
-			e.validateStaticResponse(key, urlPath)
+			if err := e.validateStaticResponse(key, urlPath); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
@@ -325,18 +331,19 @@ func removeBody(proxyRes *http.Response) {
 	proxyRes.Header[HeaderContentType] = []string{}
 }
 
-func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) {
+func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) error {
 	template, _ := e.Templates.getRenderedTemplate(key)
 	serverURL := normalizeBaseURL(e.Config.BaseURL.String())
 	req, err := http.NewRequest(http.MethodGet, serverURL+urlPath, nil)
 	if err != nil {
-		log.Fatalf("failed to construct request to validate %s "+
+		return fmt.Errorf("failed to construct request to validate %s "+
 			"template against OpenAPI spec %v", key.Name, err)
 	}
 	err = e.OpenAPI.ValidateResponse(e.CN.formatToMediaType(key.Format), template, req)
 	if err != nil {
-		log.Fatalf("validation of template %s failed: %v", key.Name, err)
+		return fmt.Errorf("validation of template %s failed: %w", key.Name, err)
 	}
+	return nil
 }
 
 // SafeWrite executes the given http.ResponseWriter.Write while logging errors
