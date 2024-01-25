@@ -2,9 +2,11 @@ package engine
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
@@ -13,6 +15,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/creasty/defaults"
+	"github.com/docker/go-units"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/text/language"
 	"gopkg.in/yaml.v3"
@@ -400,7 +403,34 @@ type GeoPackageCloud struct {
 	File string `yaml:"file" validate:"required"`
 
 	// local cache of fetched blocks from cloud storage
-	Cache *string `yaml:"cache" validate:"omitempty,dir"`
+	Cache GeoPackageCloudCache `yaml:"cache"`
+
+	// only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
+	LogHTTPRequests bool `yaml:"logHttpRequests" default:"false"`
+}
+
+func (gc GeoPackageCloud) CacheDir() (string, error) {
+	fileNameWithoutExt := strings.TrimSuffix(gc.File, filepath.Ext(gc.File))
+	if gc.Cache.Path != nil {
+		return filepath.Join(*gc.Cache.Path, fileNameWithoutExt), nil
+	}
+	cacheDir, err := os.MkdirTemp("", fileNameWithoutExt)
+	if err != nil {
+		return "", fmt.Errorf("failed to create tempdir to cache %s, error %w", fileNameWithoutExt, err)
+	}
+	return cacheDir, nil
+}
+
+type GeoPackageCloudCache struct {
+	// optional path to directory for caching cloud-backed GeoPackage blocks, when omitted a temp dir will be used.
+	Path *string `yaml:"path" validate:"omitempty,dir"`
+
+	// max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
+	MaxSize string `yaml:"maxSize" default:"1Gb"`
+}
+
+func (cache *GeoPackageCloudCache) MaxSizeAsBytes() (int64, error) {
+	return units.FromHumanSize(cache.MaxSize)
 }
 
 type PropertyFilter struct {
