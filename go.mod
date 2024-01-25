@@ -5,8 +5,9 @@ go 1.21
 require (
 	dario.cat/mergo v1.0.0
 	github.com/BurntSushi/toml v1.3.2
-	github.com/PDOK/go-cloud-sqlite-vfs v0.2.4
+	github.com/PDOK/go-cloud-sqlite-vfs v0.2.5
 	github.com/creasty/defaults v1.7.0
+	github.com/docker/go-units v0.5.0
 	github.com/elnormous/contenttype v1.0.4
 	github.com/getkin/kin-openapi v0.122.0
 	github.com/go-chi/chi/v5 v5.0.10
@@ -14,7 +15,9 @@ require (
 	github.com/go-playground/validator/v10 v10.13.0
 	github.com/go-spatial/geom v0.0.0-20220918193402-3cd2f5a9a082
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
+	github.com/goccy/go-json v0.10.2
 	github.com/gomarkdown/markdown v0.0.0-20231115200524-a660076da3fd
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/mattn/go-sqlite3 v1.14.18
 	github.com/nicksnyder/go-i18n/v2 v2.3.0

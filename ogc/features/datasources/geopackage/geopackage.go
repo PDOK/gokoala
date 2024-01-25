@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path"
+	"sync"
 	"time"
 
 	"github.com/PDOK/gokoala/engine"
@@ -29,14 +30,18 @@ const (
 	bboxSizeBig      = 10000
 )
 
-// Load sqlite extensions once.
+var once sync.Once
+
+// Load sqlite (with extensions) once.
 //
 // Extensions are by default expected in /usr/lib. For spatialite you can
 // alternatively/optionally set SPATIALITE_LIBRARY_PATH.
-func init() {
-	spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
-	driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
-	sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, &datasources.SQLLog{}))
+func loadDriver() {
+	once.Do(func() {
+		spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
+		driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
+		sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, datasources.NewSQLLogFromEnv()))
+	})
 }
 
 type geoPackageBackend interface {
@@ -66,7 +71,8 @@ func (ft featureTable) ColumnsWithDataType() map[string]string {
 }
 
 type GeoPackage struct {
-	backend geoPackageBackend
+	backend           geoPackageBackend
+	preparedStmtCache *PreparedStatementCache
 
 	fidColumn                  string
 	featureTableByCollectionID map[string]*featureTable
@@ -74,7 +80,11 @@ type GeoPackage struct {
 }
 
 func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.GeoPackage) *GeoPackage {
+	loadDriver()
+
 	g := &GeoPackage{}
+	g.preparedStmtCache = NewCache()
+
 	switch {
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
@@ -107,6 +117,7 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 }
 
 func (g *GeoPackage) Close() {
+	g.preparedStmtCache.Close()
 	g.backend.close()
 }
 
@@ -119,16 +130,10 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query, queryArgs, err := g.makeFeaturesQuery(table, true, criteria)
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to make features query, error: %w", err)
+		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
-
-	stmt, err := g.backend.getDB().PrepareNamedContext(queryCtx, query)
-	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to prepare query '%s' error: %w", query, err)
-	}
-	defer stmt.Close()
 
 	rows, err := stmt.QueryxContext(queryCtx, queryArgs)
 	if err != nil {
@@ -189,16 +194,10 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query, queryArgs, err := g.makeFeaturesQuery(table, false, criteria)
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, table, false, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to make features query, error: %w", err)
+		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
-
-	stmt, err := g.backend.getDB().PrepareNamedContext(queryCtx, query)
-	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to prepare query '%s' error: %w", query, err)
-	}
-	defer stmt.Close()
 
 	rows, err := stmt.QueryxContext(queryCtx, queryArgs)
 	if err != nil {
@@ -229,13 +228,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	defer cancel()
 
 	query := fmt.Sprintf("select * from %s f where f.%s = :fid limit 1", table.TableName, g.fidColumn)
-	stmt, err := g.backend.getDB().PrepareNamedContext(queryCtx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryxContext(queryCtx, map[string]any{"fid": featureID})
+	rows, err := g.backend.getDB().NamedQueryContext(queryCtx, query, map[string]any{"fid": featureID})
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
@@ -261,14 +254,24 @@ func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.Fea
 
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
-func (g *GeoPackage) makeFeaturesQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, table *featureTable, onlyFIDs bool,
+	criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
+
+	// make query
 	if criteria.Bbox != nil {
-		return g.makeBboxQuery(table, onlyFIDs, criteria)
+		query, queryArgs, err = g.makeBboxQuery(table, onlyFIDs, criteria)
+		if err != nil {
+			return
+		}
+	} else {
+		query, queryArgs = g.makeDefaultQuery(table, criteria)
 	}
-	return g.makeDefaultQuery(table, criteria)
+	// lookup prepared statement for given query, or create new one
+	stmt, err = g.preparedStmtCache.Lookup(ctx, g.backend.getDB(), query)
+	return
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
 
 	defaultQuery := fmt.Sprintf(`
@@ -285,7 +288,7 @@ select * from nextprevfeat where %[2]s >= :fid %[3]s limit :limit
 		"limit": criteria.Limit,
 	}
 	maps.Copy(namedParams, pfNamedParams)
-	return defaultQuery, namedParams, nil
+	return defaultQuery, namedParams
 }
 
 func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {

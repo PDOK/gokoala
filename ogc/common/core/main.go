@@ -84,7 +84,7 @@ func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CommonCore) apiAsJSON(w http.ResponseWriter, r *http.Request) {
-	c.engine.ServeResponse(w, r, true, engine.MediaTypeOpenAPI, c.engine.OpenAPI.SpecJSON)
+	c.engine.ServeResponse(w, r, true, true, engine.MediaTypeOpenAPI, c.engine.OpenAPI.SpecJSON)
 }
 
 func (c *CommonCore) Conformance() http.HandlerFunc {

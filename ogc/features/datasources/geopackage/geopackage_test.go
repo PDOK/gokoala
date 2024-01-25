@@ -22,6 +22,7 @@ func init() {
 }
 
 func newAddressesGeoPackage() geoPackageBackend {
+	loadDriver()
 	return newLocalGeoPackage(&engine.GeoPackageLocal{
 		GeoPackageCommon: engine.GeoPackageCommon{
 			Fid: "feature_id",
@@ -214,6 +215,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				featureTableByCollectionID: tt.fields.featureTableByID,
 				queryTimeout:               tt.fields.queryTimeout,
 			}
+			g.preparedStmtCache = NewCache()
+
 			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams)
 			if err != nil {
 				if !tt.wantErr {

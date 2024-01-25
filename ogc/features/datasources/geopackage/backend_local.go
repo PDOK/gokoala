@@ -1,6 +1,7 @@
 package geopackage
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/PDOK/gokoala/engine"
@@ -13,7 +14,7 @@ type localGeoPackage struct {
 }
 
 func newLocalGeoPackage(gpkg *engine.GeoPackageLocal) geoPackageBackend {
-	db, err := sqlx.Open(sqliteDriverName, gpkg.File)
+	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("file:%s?mode=ro", gpkg.File))
 	if err != nil {
 		log.Fatalf("failed to open GeoPackage: %v", err)
 	}

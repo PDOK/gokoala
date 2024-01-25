@@ -118,12 +118,10 @@ func (f *Features) Features() http.HandlerFunc {
 				PropertyFilters: propertyFilters,
 				// Add filter, filter-lang
 			})
-			if err != nil {
-				handleFeatureCollectionError(w, collectionID, err)
-				return
+			if err == nil && fids != nil {
+				datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
+				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
 			}
-			datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-			fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
 			if err != nil {
 				handleFeatureCollectionError(w, collectionID, err)
 				return

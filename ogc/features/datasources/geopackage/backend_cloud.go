@@ -5,7 +5,6 @@ package geopackage
 import (
 	"fmt"
 	"log"
-	"os"
 
 	cloudsqlitevfs "github.com/PDOK/go-cloud-sqlite-vfs"
 	"github.com/PDOK/gokoala/engine"
@@ -13,8 +12,7 @@ import (
 )
 
 const (
-	vfsName     = "cloudbackedvfs"
-	tempDirName = "gokoala"
+	vfsName = "cloudbackedvfs"
 )
 
 // Cloud-Backed SQLite (CBS) GeoPackage in Azure or Google object storage
@@ -24,33 +22,32 @@ type cloudGeoPackage struct {
 }
 
 func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) geoPackageBackend {
+	cacheDir, err := gpkg.CacheDir()
+	if err != nil {
+		log.Fatalf("invalid cache dir, error: %v", err)
+	}
+	cacheSize, err := gpkg.Cache.MaxSizeAsBytes()
+	if err != nil {
+		log.Fatalf("invalid cache size provided, error: %v", err)
+	}
+
 	msg := fmt.Sprintf("Cloud-Backed GeoPackage '%s' in container '%s' on '%s'",
 		gpkg.File, gpkg.Container, gpkg.Connection)
 
 	log.Printf("connecting to %s\n", msg)
-	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth, gpkg.Container, getCacheDir(gpkg))
+	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth,
+		gpkg.Container, cacheDir, cacheSize, gpkg.LogHTTPRequests)
 	if err != nil {
 		log.Fatalf("failed to connect with %s, error: %v", msg, err)
 	}
 	log.Printf("connected to %s\n", msg)
 
-	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("/%s/%s?vfs=%s", gpkg.Container, gpkg.File, vfsName))
+	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("/%s/%s?vfs=%s&mode=ro", gpkg.Container, gpkg.File, vfsName))
 	if err != nil {
 		log.Fatalf("failed to open %s, error: %v", msg, err)
 	}
 
 	return &cloudGeoPackage{db, &vfs}
-}
-
-func getCacheDir(gpkg *engine.GeoPackageCloud) string {
-	if gpkg.Cache != nil {
-		return *gpkg.Cache
-	}
-	cacheDir, err := os.MkdirTemp("", tempDirName)
-	if err != nil {
-		log.Fatalf("failed to create tempdir %s, error %v", tempDirName, err)
-	}
-	return cacheDir
 }
 
 func (g *cloudGeoPackage) getDB() *sqlx.DB {
