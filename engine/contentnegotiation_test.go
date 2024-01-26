@@ -49,8 +49,8 @@ func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader str
 	if err != nil {
 		t.Fatal(err)
 	}
-	language := cn.NegotiateLanguage(httptest.NewRecorder(), req)
-	if language != expectedLanguage {
-		t.Fatalf("Expected %v for input %s, got %v", expectedLanguage, givenURL, language)
+	lang := cn.NegotiateLanguage(httptest.NewRecorder(), req)
+	if lang != expectedLanguage {
+		t.Fatalf("Expected %v for input %s, got %v", expectedLanguage, givenURL, lang)
 	}
 }
