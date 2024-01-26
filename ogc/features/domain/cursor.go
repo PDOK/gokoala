@@ -24,8 +24,8 @@ type EncodedCursor string
 
 // DecodedCursor the cursor values after decoding EncodedCursor
 type DecodedCursor struct {
-	FID             int64
 	FiltersChecksum []byte
+	FID             int64
 }
 
 // PrevNextFID previous and next feature id (fid) to encode in cursor.
@@ -62,19 +62,19 @@ func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 	value := string(c)
 	if value == "" {
-		return DecodedCursor{0, filtersChecksum}
+		return DecodedCursor{filtersChecksum, 0}
 	}
 
 	decoded, err := base64.URLEncoding.DecodeString(value)
 	if err != nil || len(decoded) == 0 {
 		log.Printf("decoding cursor value '%v' failed, defaulting to first page", decoded)
-		return DecodedCursor{0, filtersChecksum}
+		return DecodedCursor{filtersChecksum, 0}
 	}
 
 	decodedFid, decodedChecksum, found := bytes.Cut(decoded, []byte{separator})
 	if !found {
 		log.Printf("cursor '%v' doesn't contain expected separator %c", decoded, separator)
-		return DecodedCursor{0, filtersChecksum}
+		return DecodedCursor{filtersChecksum, 0}
 	}
 
 	// feature id
@@ -87,10 +87,10 @@ func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 	// checksum
 	if !bytes.Equal(decodedChecksum, filtersChecksum) {
 		log.Printf("filters in query params have changed during pagination, resetting to first page")
-		return DecodedCursor{0, filtersChecksum}
+		return DecodedCursor{filtersChecksum, 0}
 	}
 
-	return DecodedCursor{fid, filtersChecksum}
+	return DecodedCursor{filtersChecksum, fid}
 }
 
 func (c EncodedCursor) String() string {
