@@ -9,15 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type ResourcesEndpoint struct {
-	engine *Engine
-}
-
-func newResourcesEndpoint(e *Engine) *ResourcesEndpoint {
-	resources := &ResourcesEndpoint{
-		engine: e,
-	}
-
+func newResourcesEndpoint(e *Engine) {
 	// Serve static assets either from local storage or through reverse proxy
 	if resourcesDir := e.Config.Resources.Directory; resourcesDir != "" {
 		resourcesPath := strings.TrimSuffix(resourcesDir, "/resources")
@@ -35,6 +27,4 @@ func newResourcesEndpoint(e *Engine) *ResourcesEndpoint {
 				e.ReverseProxy(w, r, target, true, "")
 			})
 	}
-
-	return resources
 }

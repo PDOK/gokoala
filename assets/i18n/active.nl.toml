@@ -41,9 +41,12 @@ Deze API biedt één of meerdere collecties waarmee differentiatie gemaakt kan w
 dataset van PDOK op te splitsen in verschillende objecten die bijvoorbeeld via features of \
 tiles separaat aangeroepen kunnen worden."""
 Tiles = "Tiles"
-TilesText = """
+TilesTextHTML = """
 Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er \
 &eacute;&eacute;n of meerdere <a href="styles">styles</a> beschikbaar gesteld."""
+TilesTextPlain = """
+Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er \
+één of meerdere styles beschikbaar gesteld."""
 Styles = "Styles"
 StylesText = """
 Betreft één of meerdere officiële styles van/door de aanbieder gespecificeerd. \

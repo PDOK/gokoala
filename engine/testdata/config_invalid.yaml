@@ -1,8 +1,8 @@
 ---
-version: 1.0.2
+version: 1.0.2.6.8
 title: Invalid config file
-abstract: With wrong base url
-baseUrl: this_is_not_a_valid_url
+abstract: Version is invalid according to semver validation.
+baseUrl: http://test.example
 serviceIdentifier: Min
 license:
   name: MIT

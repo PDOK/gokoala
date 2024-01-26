@@ -22,8 +22,15 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: Tidy
+      - name: tidy
         uses: katexochen/go-tidy-check@v2
+
+      - name: check optimal struct field alignment (for crucial structs)
+        run: |
+          GOPATH_BIN=$(go env GOPATH)/bin
+          export PATH="/usr/share/miniconda/bin:${GOPATH_BIN}:${PATH}"
+          go install github.com/dkorunic/betteralign/cmd/betteralign@latest
+          betteralign ./ogc/features/domain
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3

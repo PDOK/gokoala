@@ -42,7 +42,7 @@ func TestNewConfig(t *testing.T) {
 				configFile: "engine/testdata/config_invalid.yaml",
 			},
 			wantErr:    true,
-			wantErrMsg: "invalid URI",
+			wantErrMsg: "validation for 'Version' failed on the 'semver' tag",
 		},
 	}
 	for _, tt := range tests {

@@ -15,6 +15,8 @@ import (
 	"github.com/PDOK/gokoala/ogc/styles"
 	"github.com/PDOK/gokoala/ogc/tiles"
 	"github.com/urfave/cli/v2"
+
+	_ "go.uber.org/automaxprocs"
 )
 
 var (

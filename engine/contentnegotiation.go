@@ -55,6 +55,11 @@ var (
 		"application/javascript",
 		"image/svg+xml",
 	}
+	StyleFormatExtension = map[string]string{
+		FormatMapboxStyle: ".json",
+		FormatCustomStyle: ".style",
+		FormatSLD:         ".sld",
+	}
 )
 
 type ContentNegotiation struct {
@@ -106,12 +111,7 @@ func (cn *ContentNegotiation) GetSupportedStyleFormats() []string {
 }
 
 func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
-	extensionsByFormat := map[string]string{
-		FormatMapboxStyle: ".json",
-		FormatCustomStyle: ".style",
-		FormatSLD:         ".sld",
-	}
-	if extension, exists := extensionsByFormat[format]; exists {
+	if extension, exists := StyleFormatExtension[format]; exists {
 		return extension
 	}
 	return ""

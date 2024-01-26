@@ -25,6 +25,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.26.0
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
+	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )
