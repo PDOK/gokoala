@@ -3,7 +3,7 @@
   {{ if .Config.OgcAPI.Tiles }}
   {{$baseUrl := .Config.BaseURL}}
   "title": "{{ .Config.Title }} - Tiles",
-  "description": "Deze hele dataset is beschikbaar via OGC API Tiles. Tiles kunnen zowel vector als raster data bevatten en in meerdere projecties beschikbaar worden gesteld. In het geval van vector tiles biedt PDOK ook styles aan.",
+  "description": "{{ i18n "TilesTextPlain" }}",
   "links": [
     {
       "rel": "self",
