@@ -374,7 +374,10 @@ type GeoPackageCommon struct {
 	Fid string `yaml:"fid" validate:"required" default:"fid"`
 
 	// optional timeout after which queries are canceled
-	QueryTimeout time.Duration `yaml:"queryTimeout" default:"15s"`
+	QueryTimeout time.Duration `yaml:"queryTimeout" validate:"required" default:"15s"`
+
+	// when the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
+	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree" validate:"required" default:"30000"`
 }
 
 // GeoPackageLocal settings to read a GeoPackage from local disk

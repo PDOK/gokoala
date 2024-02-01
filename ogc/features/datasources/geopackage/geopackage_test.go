@@ -25,7 +25,9 @@ func newAddressesGeoPackage() geoPackageBackend {
 	loadDriver()
 	return newLocalGeoPackage(&engine.GeoPackageLocal{
 		GeoPackageCommon: engine.GeoPackageCommon{
-			Fid: "feature_id",
+			Fid:                       "feature_id",
+			QueryTimeout:              15 * time.Second,
+			MaxBBoxSizeToUseWithRTree: 30000,
 		},
 		File: pwd + "/testdata/bag.gpkg",
 	})

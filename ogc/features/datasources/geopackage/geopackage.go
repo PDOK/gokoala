@@ -27,7 +27,6 @@ import (
 
 const (
 	sqliteDriverName = "sqlite3_with_extensions"
-	bboxSizeBig      = 10000
 )
 
 var once sync.Once
@@ -77,6 +76,7 @@ type GeoPackage struct {
 	fidColumn                  string
 	featureTableByCollectionID map[string]*featureTable
 	queryTimeout               time.Duration
+	maxBBoxSizeToUseWithRTree  int
 }
 
 func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.GeoPackage) *GeoPackage {
@@ -90,10 +90,12 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
 		g.fidColumn = gpkgConfig.Local.Fid
 		g.queryTimeout = gpkgConfig.Local.QueryTimeout
+		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
 		g.fidColumn = gpkgConfig.Cloud.Fid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout
+		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 	default:
 		log.Fatal("unknown GeoPackage config encountered")
 	}
@@ -339,7 +341,7 @@ with
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
 select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
-`, table.TableName, g.fidColumn, bboxSizeBig, table.GeometryColumnName, selectClause, pfClause) // don't add user input here, use named params for user input!
+`, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName, selectClause, pfClause) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {
