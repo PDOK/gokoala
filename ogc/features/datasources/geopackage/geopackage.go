@@ -95,7 +95,7 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
 		g.fidColumn = gpkgConfig.Cloud.Fid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout
-		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
+		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 	default:
 		log.Fatal("unknown GeoPackage config encountered")
 	}
