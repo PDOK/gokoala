@@ -43,7 +43,7 @@ select minx,maxx,miny,maxy from rtree_%[1]s_%[2]s where minx <= 0 and maxx >= 0 
 	if err != nil {
 		return fmt.Errorf("failed to warm-up feature table '%s'", tableName)
 	}
-	rows.Close() //nolint:sqlclosecheck // don't defer in loop
+	defer rows.Close()
 	log.Printf("end warm-up of feature table '%s'", tableName)
 	return nil
 }
