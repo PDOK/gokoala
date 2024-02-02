@@ -305,7 +305,14 @@ func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria 
 		selectClause = fmt.Sprintf("%s, prevfid, nextfid", g.fidColumn)
 	}
 
+	btreeIndexHint := fmt.Sprintf("indexed by %s_spatial_idx", table.TableName)
+
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
+	if pfClause != "" {
+		// don't force btree index when using property filter, let SQLite decide
+		// whether to use the BTree index or the property filter index
+		btreeIndexHint = ""
+	}
 
 	bboxQuery := fmt.Sprintf(`
 with 
@@ -322,7 +329,7 @@ with
                          order by f.%[2]s asc 
                          limit (select iif(bbox_size == 'small', :limit + 1, 0) from bbox_size)),
      next_bbox_btree as (select f.*
-                         from %[1]s f
+                         from %[1]s f %[7]s
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
                            and f.%[2]s >= :fid %[6]s
@@ -337,7 +344,7 @@ with
                          order by f.%[2]s desc 
                          limit (select iif(bbox_size == 'small', :limit, 0) from bbox_size)),
      prev_bbox_btree as (select f.*
-                         from %[1]s f
+                         from %[1]s f %[7]s
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
                            and f.%[2]s < :fid %[6]s
@@ -347,7 +354,8 @@ with
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
 select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
-`, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName, selectClause, pfClause) // don't add user input here, use named params for user input!
+`, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
+		selectClause, pfClause, btreeIndexHint) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {
