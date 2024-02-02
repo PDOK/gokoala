@@ -84,6 +84,7 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 
 	g := &GeoPackage{}
 	g.preparedStmtCache = NewCache()
+	warmUp := false
 
 	switch {
 	case gpkgConfig.Local != nil:
@@ -96,6 +97,7 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 		g.fidColumn = gpkgConfig.Cloud.Fid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
+		warmUp = gpkgConfig.Cloud.Cache.WarmUp
 	default:
 		log.Fatal("unknown GeoPackage config encountered")
 	}
@@ -114,7 +116,11 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 	if err = assertIndexesExist(collections, g.featureTableByCollectionID, g.backend.getDB(), g.fidColumn); err != nil {
 		log.Fatal(err)
 	}
-
+	if warmUp {
+		if err = warmUpFeatureTables(collections, g.featureTableByCollectionID, g.backend.getDB()); err != nil {
+			log.Fatal(err)
+		}
+	}
 	return g
 }
 

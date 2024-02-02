@@ -435,6 +435,9 @@ type GeoPackageCloudCache struct {
 
 	// max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
 	MaxSize string `yaml:"maxSize" default:"1Gb"`
+
+	// When true a warm-up query is executed on startup which aims to fill the local cache. Does increase startup time.
+	WarmUp bool `yaml:"warmUp" default:"false"`
 }
 
 func (cache *GeoPackageCloudCache) MaxSizeAsBytes() (int64, error) {

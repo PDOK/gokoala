@@ -271,7 +271,7 @@ func getEncoder(w io.Writer) jsonEncoder {
 		encoder.SetEscapeHTML(false)
 		return encoder
 	}
-	// use ~7% faster 3rd party JSON encoder (in case of issues switch based to stdlib using env variable)
+	// use ~7% overall faster 3rd party JSON encoder (in case of issues switch back to stdlib using env variable)
 	encoder := perfjson.NewEncoder(w)
 	encoder.SetEscapeHTML(false)
 	return encoder

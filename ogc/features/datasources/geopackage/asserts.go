@@ -8,7 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// assert required indexes in the GeoPackage exists
+// assertIndexesExist asserts required indexes in the GeoPackage exists
 func assertIndexesExist(
 	configuredCollections engine.GeoSpatialCollections,
 	featureTableByCollectionID map[string]*featureTable,
@@ -60,7 +60,7 @@ group by list.name`, tableName)
 			exists = true
 		}
 	}
-	rows.Close() //nolint:sqlclosecheck // don't defer in loop
+	defer rows.Close()
 	if !exists {
 		return fmt.Errorf("missing required index: no index exists on column(s) '%s' in table '%s'",
 			columns, tableName)
