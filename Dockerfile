@@ -1,7 +1,5 @@
-ARG REGISTRY="docker.io"
-
 ####### Node.js build
-FROM ${REGISTRY}/node:lts-alpine3.17 AS build-component
+FROM docker.io/node:lts-alpine3.17 AS build-component
 RUN mkdir -p /usr/src/app
 COPY ./viewer /usr/src/app
 WORKDIR /usr/src/app
@@ -9,7 +7,7 @@ RUN npm install
 RUN npm run build
 
 ####### Go build
-FROM ${REGISTRY}/golang:1.21-bookworm AS build-env
+FROM docker.io/golang:1.21-bookworm AS build-env
 WORKDIR /go/src/service
 ADD . /go/src/service
 
@@ -34,7 +32,7 @@ RUN go test -short && \
 RUN find . -type f -name "*.go" -delete && find . -type d -name "testdata" -prune -exec rm -rf {} \;
 
 ####### Final image (use debian tag since we rely on C-libs)
-FROM ${REGISTRY}/debian:bookworm-slim
+FROM docker.io/debian:bookworm-slim
 
 # install sqlite-related runtime dependencies
 RUN set -eux && \
@@ -46,7 +44,6 @@ EXPOSE 8080
 # use the WORKDIR to create a /tmp folder
 WORKDIR /tmp
 WORKDIR /
-ENV PATH=/
 
 # include executable
 COPY --from=build-env /gokoala /
@@ -65,4 +62,4 @@ COPY --from=build-env /go/src/service/ogc/ /ogc/
 
 # run as non-root
 USER 1001
-ENTRYPOINT ["gokoala"]
+ENTRYPOINT ["/gokoala"]
