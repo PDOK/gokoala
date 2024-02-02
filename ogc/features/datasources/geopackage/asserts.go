@@ -8,7 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// assert required indexes in the GeoPackage exists
+// assertIndexesExist asserts required indexes in the GeoPackage exists
 func assertIndexesExist(
 	configuredCollections engine.GeoSpatialCollections,
 	featureTableByCollectionID map[string]*featureTable,
