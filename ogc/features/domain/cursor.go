@@ -52,8 +52,7 @@ func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 	fidAsBytes := big.NewInt(fid).Bytes()
 
 	// format of the cursor: <encoded fid><separator><encoded checksum>
-	cursorB64 := base64.StdEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.StdEncoding.EncodeToString(filtersChecksum)
-	return EncodedCursor(neturl.QueryEscape(cursorB64))
+	return EncodedCursor(base64.StdEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.StdEncoding.EncodeToString(filtersChecksum))
 }
 
 // Decode turns encoded cursor into DecodedCursor and verifies the
