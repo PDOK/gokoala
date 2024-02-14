@@ -22,7 +22,7 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items?cursor=D798&f=json"
+      "href": "http://localhost:8080/collections/foo/items?cursor=D78%3D%7C&f=json"
     }
   ],
   "numberReturned": 10,
