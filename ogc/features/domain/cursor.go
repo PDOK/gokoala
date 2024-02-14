@@ -49,7 +49,7 @@ func NewCursors(fid PrevNextFID, filtersChecksum []byte) Cursors {
 }
 
 func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
-	fidAsBytes := big.NewInt(fid).Bytes() //TODO: if fid is 0, fidAsBytes is empty, and will encode to empty string - problem??
+	fidAsBytes := big.NewInt(fid).Bytes()
 
 	// format of the cursor: <encoded fid><separator><encoded checksum>
 	cursorB64 := base64.StdEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.StdEncoding.EncodeToString(filtersChecksum)
