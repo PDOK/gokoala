@@ -1,6 +1,7 @@
 package geopackage
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/PDOK/gokoala/engine"
@@ -20,8 +21,8 @@ func readDriverMetadata(db *sqlx.DB) (string, error) {
 
 	var m metadata
 	err := db.QueryRowx(`
-select sqlite_version() as sqlite, 
-spatialite_version() as spatialite,  
+select sqlite_version() as sqlite,
+spatialite_version() as spatialite,
 spatialite_target_cpu() as arch`).StructScan(&m)
 	if err != nil {
 		return "", err
@@ -49,7 +50,7 @@ select
 from
 	gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
 where
-	c.data_type = 'features' and 
+	c.data_type = 'features' and
 	c.min_x is not null`
 
 	rows, err := db.Queryx(query)
@@ -88,7 +89,7 @@ where
 		return nil, err
 	}
 	if len(result) == 0 {
-		return nil, fmt.Errorf("no records found in gpkg_contents, can't serve features")
+		return nil, errors.New("no records found in gpkg_contents, can't serve features")
 	}
 	return result, nil
 }

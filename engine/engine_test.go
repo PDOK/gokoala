@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -54,7 +53,7 @@ func TestEngine_ReverseProxy(t *testing.T) {
 	// given
 	mockTargetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(fmt.Sprintf("Mock response, received header %s", r.Header.Get(HeaderBaseURL))))
+		_, err := w.Write([]byte("Mock response, received header " + r.Header.Get(HeaderBaseURL)))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,7 +73,7 @@ func TestEngine_ReverseProxy(t *testing.T) {
 
 func TestEngine_ReverseProxy_Status204(t *testing.T) {
 	// given
-	mockTargetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mockTargetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer mockTargetServer.Close()

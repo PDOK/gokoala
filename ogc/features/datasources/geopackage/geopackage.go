@@ -283,7 +283,7 @@ func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
 
 	defaultQuery := fmt.Sprintf(`
-with 
+with
     next as (select * from %[1]s where %[2]s >= :fid %[3]s order by %[2]s asc limit :limit + 1),
     prev as (select * from %[1]s where %[2]s < :fid %[3]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
@@ -302,7 +302,7 @@ select * from nextprevfeat where %[2]s >= :fid %[3]s limit :limit
 func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	selectClause := "*"
 	if onlyFIDs {
-		selectClause = fmt.Sprintf("%s, prevfid, nextfid", g.fidColumn)
+		selectClause = g.fidColumn + ", prevfid, nextfid"
 	}
 
 	btreeIndexHint := fmt.Sprintf("indexed by %s_spatial_idx", table.TableName)
@@ -315,7 +315,7 @@ func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria 
 	}
 
 	bboxQuery := fmt.Sprintf(`
-with 
+with
      given_bbox as (select geomfromtext(:bboxWkt, :bboxSrid)),
      bbox_size as (select iif(count(id) < %[3]d, 'small', 'big') as bbox_size
                      from (select id from rtree_%[1]s_%[4]s
@@ -326,14 +326,14 @@ with
                          where rf.minx <= :maxx and rf.maxx >= :minx and rf.miny <= :maxy and rf.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
                            and f.%[2]s >= :fid %[6]s
-                         order by f.%[2]s asc 
+                         order by f.%[2]s asc
                          limit (select iif(bbox_size == 'small', :limit + 1, 0) from bbox_size)),
      next_bbox_btree as (select f.*
                          from %[1]s f %[7]s
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
                            and f.%[2]s >= :fid %[6]s
-                         order by f.%[2]s asc 
+                         order by f.%[2]s asc
                          limit (select iif(bbox_size == 'big', :limit + 1, 0) from bbox_size)),
      next as (select * from next_bbox_rtree union all select * from next_bbox_btree),
      prev_bbox_rtree as (select f.*
@@ -341,14 +341,14 @@ with
                          where rf.minx <= :maxx and rf.maxx >= :minx and rf.miny <= :maxy and rf.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
                            and f.%[2]s < :fid %[6]s
-                         order by f.%[2]s desc 
+                         order by f.%[2]s desc
                          limit (select iif(bbox_size == 'small', :limit, 0) from bbox_size)),
      prev_bbox_btree as (select f.*
                          from %[1]s f %[7]s
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
                            and f.%[2]s < :fid %[6]s
-                         order by f.%[2]s desc 
+                         order by f.%[2]s desc
                          limit (select iif(bbox_size == 'big', :limit, 0) from bbox_size)),
      prev as (select * from prev_bbox_rtree union all select * from prev_bbox_btree),
      nextprev as (select * from next union all select * from prev),
