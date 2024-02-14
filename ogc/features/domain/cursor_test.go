@@ -26,8 +26,8 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "%7C",
-				Next:    "BA%3D%3D%7C",
+				Prev:    "|",
+				Next:    "BA==|",
 				HasPrev: false,
 				HasNext: true,
 			},
@@ -42,8 +42,8 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "BA%3D%3D%7C",
-				Next:    "%7C",
+				Prev:    "BA==|",
+				Next:    "|",
 				HasPrev: true,
 				HasNext: false,
 			},
@@ -58,8 +58,8 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "Ag%3D%3D%7C",
-				Next:    "Bw%3D%3D%7C",
+				Prev:    "Ag==|",
+				Next:    "Bw==|",
 				HasPrev: true,
 				HasNext: true,
 			},

@@ -77,7 +77,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",
-				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv58Nwyr1Q%3D%3D&limit=2",
+				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv4%3D%7CNwyr1Q%3D%3D&limit=2",
 				collectionID: "foo",
 				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
@@ -227,7 +227,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request output in default (WGS84) and bbox in default (WGS84)",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=json&limit=10",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%3D%7C9YRHSw%3D%3D&f=json&limit=10",
 				collectionID: "dutch-addresses",
 				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
@@ -238,10 +238,10 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in default (WGS84) in JSOn-FG",
+			name: "Request output in default (WGS84) and bbox in default (WGS84) in JSON-FG",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=jsonfg&limit=10",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%3D%7C9YRHSw%3D%3D&f=jsonfg&limit=10",
 				collectionID: "dutch-addresses",
 				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
