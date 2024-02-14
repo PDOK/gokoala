@@ -416,7 +416,7 @@ func BenchmarkFeatures(b *testing.B) {
 			name: "2", // same as benchmark 1 above, but now the next page
 			fields: fields{
 				configFile: "ogc/features/testdata/config_benchmark.yaml",
-				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.651476%2C52.962408%2C4.979398%2C53.074282&cursor=Cpd8wXkQbQ%3D%3D&f=json&limit=1000",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.651476%2C52.962408%2C4.979398%2C53.074282&cursor=Cpc%3D%7CwXkQbQ%3D%3D&f=json&limit=1000",
 			},
 		},
 		{
@@ -430,7 +430,7 @@ func BenchmarkFeatures(b *testing.B) {
 			name: "4", // same as benchmark 3 above, but now the next page
 			fields: fields{
 				configFile: "ogc/features/testdata/config_benchmark.yaml",
-				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=105564.79055389616405591%2C553072.85584054281935096%2C127668.63754775881534442%2C565347.87356295716017485&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=Cyp8iLD6Iw%3D%3D&f=json&limit=1000",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=105564.79055389616405591%2C553072.85584054281935096%2C127668.63754775881534442%2C565347.87356295716017485&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=Cyo%3D%7CiLD6Iw%3D%3D&f=json&limit=1000",
 			},
 		},
 	}
