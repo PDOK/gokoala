@@ -27,7 +27,7 @@ func TestNewCursor(t *testing.T) {
 			},
 			want: Cursors{
 				Prev:    "|",
-				Next:    "BA==|",
+				Next:    "BA|",
 				HasPrev: false,
 				HasNext: true,
 			},
@@ -42,7 +42,7 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "BA==|",
+				Prev:    "BA|",
 				Next:    "|",
 				HasPrev: true,
 				HasNext: false,
@@ -58,8 +58,8 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "Ag==|",
-				Next:    "Bw==|",
+				Prev:    "Ag|",
+				Next:    "Bw|",
 				HasPrev: true,
 				HasNext: true,
 			},
@@ -173,7 +173,7 @@ func TestEncodedCursor_Pagination(t *testing.T) {
 	}{
 		{
 			name: "should not reset to first page",
-			c:    "Z3Z8%7C%2BQ8mwg%3D%3D",
+			c:    "Z3Z8%7C%2BQ8mwg",
 			args: args{
 				filtersChecksum: []byte{249, 15, 38, 194},
 			},

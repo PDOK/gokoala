@@ -130,7 +130,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			},
 			wantCursor: domain.Cursors{
 				Prev: "|",
-				Next: "Dv4=|", // 3838
+				Next: "Dv4|", // 3838
 			},
 			wantErr: false,
 		},
@@ -184,7 +184,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			},
 			wantCursor: domain.Cursors{
 				Prev: "|",
-				Next: "DwE=|",
+				Next: "DwE|",
 			},
 			wantErr: false,
 		},

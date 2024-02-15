@@ -52,7 +52,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":   []string{"H3w%3D"},
+					"cursor":   []string{"H3w"},
 					"crs":      []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox":     []string{"1,2,3,4"},
 					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
@@ -63,7 +63,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -75,7 +75,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":   []string{"H3w%3D"},
+					"cursor":   []string{"H3w"},
 					"bbox":     []string{"1,2,3,4"},
 					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"limit":    []string{"10000"},
@@ -85,7 +85,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -97,7 +97,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor": []string{"H3w%3D"},
+					"cursor": []string{"H3w"},
 					"crs":    []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox":   []string{"1,2,3,4"},
 					"limit":  []string{"10000"},
@@ -107,7 +107,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -119,7 +119,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":     []string{"H3w%3D"},
+					"cursor":     []string{"H3w"},
 					"filter-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox-crs":   []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox":       []string{"1,2,3,4"},
@@ -130,7 +130,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -230,7 +230,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":     []string{"H3w%3D"},
+					"cursor":     []string{"H3w"},
 					"filter-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox-crs":   []string{"http://www.opengis.net/def/crs/EPSG/0/4258"},
 					"bbox":       []string{"1,2,3,4"},

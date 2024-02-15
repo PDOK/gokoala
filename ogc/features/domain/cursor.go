@@ -52,7 +52,7 @@ func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 	fidAsBytes := big.NewInt(fid).Bytes()
 
 	// format of the cursor: <encoded fid><separator><encoded checksum>
-	return EncodedCursor(base64.StdEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.StdEncoding.EncodeToString(filtersChecksum))
+	return EncodedCursor(base64.RawStdEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.RawStdEncoding.EncodeToString(filtersChecksum))
 }
 
 // Decode turns encoded cursor into DecodedCursor and verifies the
@@ -69,8 +69,8 @@ func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 		log.Printf("cursor '%s' doesn't contain expected separator %c", value, separator)
 		return DecodedCursor{filtersChecksum, 0}
 	}
-	decodedFid, fidErr := base64.StdEncoding.DecodeString(encoded[0])
-	decodedChecksum, checksumErr := base64.StdEncoding.DecodeString(encoded[1])
+	decodedFid, fidErr := base64.RawStdEncoding.DecodeString(encoded[0])
+	decodedChecksum, checksumErr := base64.RawStdEncoding.DecodeString(encoded[1])
 	if fidErr != nil || checksumErr != nil {
 		log.Printf("decoding cursor value '%s' failed, defaulting to first page", value)
 		return DecodedCursor{filtersChecksum, 0}

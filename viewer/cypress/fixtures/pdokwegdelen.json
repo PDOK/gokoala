@@ -16,7 +16,7 @@
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?cursor=C3w%3D&f=json"
+      "href": "https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?cursor=C3w&f=json"
     }
   ],
   "numberReturned": 10,
