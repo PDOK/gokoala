@@ -170,7 +170,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 }
 
 func (t *Tiles) TilesCollection(_ ...any) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(_ http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 
 		// TODO: not implemented, since we don't (yet) support tile collections

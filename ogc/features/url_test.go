@@ -52,7 +52,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":   []string{"H3w%3D"},
+					"cursor":   []string{"H3w"},
 					"crs":      []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox":     []string{"1,2,3,4"},
 					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
@@ -63,7 +63,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -75,7 +75,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":   []string{"H3w%3D"},
+					"cursor":   []string{"H3w"},
 					"bbox":     []string{"1,2,3,4"},
 					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"limit":    []string{"10000"},
@@ -85,7 +85,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -97,7 +97,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor": []string{"H3w%3D"},
+					"cursor": []string{"H3w"},
 					"crs":    []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox":   []string{"1,2,3,4"},
 					"limit":  []string{"10000"},
@@ -107,7 +107,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -119,7 +119,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":     []string{"H3w%3D"},
+					"cursor":     []string{"H3w"},
 					"filter-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox-crs":   []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox":       []string{"1,2,3,4"},
@@ -130,7 +130,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantEncodedCursor: "H3w%3D",
+			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
@@ -186,7 +186,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "unknown query parameter(s) found: non_existent=baz", err.Error(), "parse()")
 				return false
 			},
@@ -203,7 +203,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "property filter foo contains a wildcard (*), wildcard filtering is not allowed", err.Error(), "parse()")
 				return false
 			},
@@ -220,7 +220,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "property filter foo is too large, value is limited to 512 characters", err.Error(), "parse()")
 				return false
 			},
@@ -230,7 +230,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"cursor":     []string{"H3w%3D"},
+					"cursor":     []string{"H3w"},
 					"filter-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"bbox-crs":   []string{"http://www.opengis.net/def/crs/EPSG/0/4258"},
 					"bbox":       []string{"1,2,3,4"},
@@ -241,7 +241,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "bbox-crs and filter-crs need to be equal. Can't use more than one CRS as input, but input and output CRS may differ", err.Error(), "parse()")
 				return false
 			},
@@ -259,7 +259,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "crs param should start with http://www.opengis.net/def/crs/, got: EPSG:28992", err.Error(), "parse()")
 				return false
 			},
@@ -276,7 +276,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "bbox should contain exactly 4 values separated by commas: minx,miny,maxx,maxy", err.Error(), "parse()")
 				return false
 			},
@@ -293,7 +293,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     20,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "limit can't be negative", err.Error(), "parse()")
 				return false
 			},
@@ -310,7 +310,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     2,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "datetime param is currently not supported", err.Error(), "parse()")
 				return false
 			},
@@ -327,7 +327,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     2,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "CQL filter param is currently not supported", err.Error(), "parse()")
 				return false
 			},
@@ -344,7 +344,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Max:     2,
 				},
 			},
-			wantErr: func(t assert.TestingT, err error, i ...any) bool {
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "unknown query parameter(s) found: this_param_does_not_exist_in_openapi_spec=foobar", err.Error(), "parse()")
 				return false
 			},
@@ -384,7 +384,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 }
 
 func success() func(t assert.TestingT, err error, i ...any) bool {
-	return func(t assert.TestingT, err error, i ...any) bool {
+	return func(_ assert.TestingT, _ error, _ ...any) bool {
 		return true
 	}
 }

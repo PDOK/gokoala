@@ -18,7 +18,7 @@ type PreparedStatementCache struct {
 // NewCache creates a new PreparedStatementCache that will evict least-recently used (LRU) statements.
 func NewCache() *PreparedStatementCache {
 	cache, _ := lru.NewWithEvict[string, *sqlx.NamedStmt](preparedStmtCacheSize,
-		func(query string, stmt *sqlx.NamedStmt) {
+		func(_ string, stmt *sqlx.NamedStmt) {
 			if stmt != nil {
 				_ = stmt.Close()
 			}

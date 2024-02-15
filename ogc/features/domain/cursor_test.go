@@ -26,8 +26,8 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "fA==",
-				Next:    "BHw=",
+				Prev:    "|",
+				Next:    "BA|",
 				HasPrev: false,
 				HasNext: true,
 			},
@@ -42,8 +42,8 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "BHw=",
-				Next:    "fA==",
+				Prev:    "BA|",
+				Next:    "|",
 				HasPrev: true,
 				HasNext: false,
 			},
@@ -58,8 +58,8 @@ func TestNewCursor(t *testing.T) {
 				},
 			},
 			want: Cursors{
-				Prev:    "Anw=",
-				Next:    "B3w=",
+				Prev:    "Ag|",
+				Next:    "Bw|",
 				HasPrev: true,
 				HasNext: true,
 			},
@@ -149,6 +149,48 @@ func TestEncodedCursor_Decode(t *testing.T) {
 			want: DecodedCursor{
 				FID:             0,
 				FiltersChecksum: []byte("foobar"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.Decode(tt.args.filtersChecksum); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Decode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEncodedCursor_Pagination(t *testing.T) {
+	type args struct {
+		filtersChecksum []byte
+	}
+	tests := []struct {
+		name string
+		c    EncodedCursor
+		args args
+		want DecodedCursor
+	}{
+		{
+			name: "should not reset to first page",
+			c:    "Z3Z8%7C%2BQ8mwg",
+			args: args{
+				filtersChecksum: []byte{249, 15, 38, 194},
+			},
+			want: DecodedCursor{
+				FID:             6780540,
+				FiltersChecksum: []byte{249, 15, 38, 194},
+			},
+		},
+		{
+			name: "should return cursor with fid 0 and empty checksum",
+			c:    "%7C",
+			args: args{
+				filtersChecksum: []byte{},
+			},
+			want: DecodedCursor{
+				FID:             0,
+				FiltersChecksum: []byte{},
 			},
 		},
 	}

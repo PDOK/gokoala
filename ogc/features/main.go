@@ -300,7 +300,7 @@ func epsgToSrid(srs string) (int, error) {
 
 func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
 	// log error, but sent generic message to client to prevent possible information leakage from datasource
-	msg := fmt.Sprintf("failed to retrieve feature collection %s", collectionID)
+	msg := "failed to retrieve feature collection " + collectionID
 	log.Printf("%s, error: %v\n", msg, err)
 	http.Error(w, msg, http.StatusInternalServerError)
 }

@@ -74,7 +74,7 @@ func NewEngineWithConfig(config *Config, openAPIFile string, enableTrailingSlash
 	if config.Resources != nil {
 		newResourcesEndpoint(engine) // Resources endpoint to serve static assets
 	}
-	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		SafeWrite(w.Write, []byte("OK")) // Health endpoint
 	})
 	return engine

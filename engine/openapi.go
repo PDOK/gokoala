@@ -91,8 +91,8 @@ func setupRequestResponseValidation() {
 	htmlRegex := regexp.MustCompile(HTMLRegex)
 
 	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
-		func(body io.Reader, header http.Header, ref *openapi3.SchemaRef,
-			fn openapi3filter.EncodingFn) (any, error) {
+		func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+			_ openapi3filter.EncodingFn) (any, error) {
 
 			data, err := io.ReadAll(body)
 			if err != nil {
@@ -106,8 +106,8 @@ func setupRequestResponseValidation() {
 
 	for _, mediaType := range MediaTypeJSONFamily {
 		openapi3filter.RegisterBodyDecoder(mediaType,
-			func(body io.Reader, header http.Header, schema *openapi3.SchemaRef,
-				fn openapi3filter.EncodingFn) (any, error) {
+			func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+				_ openapi3filter.EncodingFn) (any, error) {
 				var value any
 				dec := json.NewDecoder(body)
 				dec.UseNumber()

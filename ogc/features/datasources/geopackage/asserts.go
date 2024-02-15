@@ -1,6 +1,7 @@
 package geopackage
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -19,7 +20,7 @@ func assertIndexesExist(
 
 	for collID, table := range featureTableByCollectionID {
 		if table == nil {
-			return fmt.Errorf("given table can't be nil")
+			return errors.New("given table can't be nil")
 		}
 		for _, coll := range configuredCollections {
 			if coll.ID == collID && coll.Features != nil {

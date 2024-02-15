@@ -236,7 +236,7 @@ func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
 	if params.Get(limitParam) != "" {
 		limit, err = strconv.Atoi(params.Get(limitParam))
 		if err != nil {
-			err = fmt.Errorf("limit must be numeric")
+			err = errors.New("limit must be numeric")
 		}
 		// OpenAPI validation already guards against exceeding max limit, this is just a defense in-depth measure.
 		if limit > limitCfg.Max {
@@ -244,7 +244,7 @@ func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
 		}
 	}
 	if limit < 0 {
-		err = fmt.Errorf("limit can't be negative")
+		err = errors.New("limit can't be negative")
 	}
 	return limit, err
 }
@@ -260,7 +260,7 @@ func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
 	}
 	bboxValues := strings.Split(params.Get(bboxParam), ",")
 	if len(bboxValues) != 4 {
-		return nil, bboxSRID, fmt.Errorf("bbox should contain exactly 4 values " +
+		return nil, bboxSRID, errors.New("bbox should contain exactly 4 values " +
 			"separated by commas: minx,miny,maxx,maxy")
 	}
 
@@ -332,7 +332,7 @@ func parsePropertyFilters(configuredPropertyFilters []engine.PropertyFilter, par
 
 func parseDateTime(params url.Values) error {
 	if params.Get(dateTimeParam) != "" {
-		return fmt.Errorf("datetime param is currently not supported")
+		return errors.New("datetime param is currently not supported")
 	}
 	return nil
 }
@@ -342,7 +342,7 @@ func parseFilter(params url.Values) (filter string, filterSRID SRID, err error) 
 	filterSRID, _ = parseCrsToSRID(params, filterCrsParam)
 
 	if filter != "" {
-		return filter, filterSRID, fmt.Errorf("CQL filter param is currently not supported")
+		return filter, filterSRID, errors.New("CQL filter param is currently not supported")
 	}
 	return filter, filterSRID, nil
 }

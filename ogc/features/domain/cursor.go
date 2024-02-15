@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"log"
 	"math/big"
+	neturl "net/url"
+	"strings"
 )
 
 const separator = '|'
@@ -49,31 +51,28 @@ func NewCursors(fid PrevNextFID, filtersChecksum []byte) Cursors {
 func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 	fidAsBytes := big.NewInt(fid).Bytes()
 
-	// format of the cursor: <fid><separator><checksum>
-	cursor := fidAsBytes
-	cursor = append(cursor, byte(separator))
-	cursor = append(cursor, filtersChecksum...) // could contain any byte, so always keep this as the last element
-
-	return EncodedCursor(base64.URLEncoding.EncodeToString(cursor))
+	// format of the cursor: <encoded fid><separator><encoded checksum>
+	return EncodedCursor(base64.RawStdEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.RawStdEncoding.EncodeToString(filtersChecksum))
 }
 
 // Decode turns encoded cursor into DecodedCursor and verifies the
 // that the checksum of query params that act as filters hasn't changed
 func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
-	value := string(c)
-	if value == "" {
+	value, err := neturl.QueryUnescape(string(c))
+	if err != nil || value == "" {
 		return DecodedCursor{filtersChecksum, 0}
 	}
 
-	decoded, err := base64.URLEncoding.DecodeString(value)
-	if err != nil || len(decoded) == 0 {
-		log.Printf("decoding cursor value '%v' failed, defaulting to first page", decoded)
+	// split first, then decode
+	encoded := strings.Split(value, string(separator))
+	if len(encoded) < 2 {
+		log.Printf("cursor '%s' doesn't contain expected separator %c", value, separator)
 		return DecodedCursor{filtersChecksum, 0}
 	}
-
-	decodedFid, decodedChecksum, found := bytes.Cut(decoded, []byte{separator})
-	if !found {
-		log.Printf("cursor '%v' doesn't contain expected separator %c", decoded, separator)
+	decodedFid, fidErr := base64.RawStdEncoding.DecodeString(encoded[0])
+	decodedChecksum, checksumErr := base64.RawStdEncoding.DecodeString(encoded[1])
+	if fidErr != nil || checksumErr != nil {
+		log.Printf("decoding cursor value '%s' failed, defaulting to first page", value)
 		return DecodedCursor{filtersChecksum, 0}
 	}
 

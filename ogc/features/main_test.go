@@ -77,7 +77,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",
-				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv58Nwyr1Q%3D%3D&limit=2",
+				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv4%7CNwyr1Q&limit=2",
 				collectionID: "foo",
 				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
@@ -227,7 +227,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request output in default (WGS84) and bbox in default (WGS84)",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=json&limit=10",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%7C9YRHSw&f=json&limit=10",
 				collectionID: "dutch-addresses",
 				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
@@ -238,10 +238,10 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in default (WGS84) in JSOn-FG",
+			name: "Request output in default (WGS84) and bbox in default (WGS84) in JSON-FG",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
-				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl989YRHSw%3D%3D&f=jsonfg&limit=10",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%7C9YRHSw&f=jsonfg&limit=10",
 				collectionID: "dutch-addresses",
 				contentCrs:   "<" + wgs84CrsURI + ">",
 				format:       "json",
@@ -416,7 +416,7 @@ func BenchmarkFeatures(b *testing.B) {
 			name: "2", // same as benchmark 1 above, but now the next page
 			fields: fields{
 				configFile: "ogc/features/testdata/config_benchmark.yaml",
-				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.651476%2C52.962408%2C4.979398%2C53.074282&cursor=Cpd8wXkQbQ%3D%3D&f=json&limit=1000",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.651476%2C52.962408%2C4.979398%2C53.074282&cursor=Cpc%7CwXkQbQ&f=json&limit=1000",
 			},
 		},
 		{
@@ -430,7 +430,7 @@ func BenchmarkFeatures(b *testing.B) {
 			name: "4", // same as benchmark 3 above, but now the next page
 			fields: fields{
 				configFile: "ogc/features/testdata/config_benchmark.yaml",
-				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=105564.79055389616405591%2C553072.85584054281935096%2C127668.63754775881534442%2C565347.87356295716017485&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=Cyp8iLD6Iw%3D%3D&f=json&limit=1000",
+				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=105564.79055389616405591%2C553072.85584054281935096%2C127668.63754775881534442%2C565347.87356295716017485&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=Cyo%7CiLD6Iw&f=json&limit=1000",
 			},
 		},
 	}
