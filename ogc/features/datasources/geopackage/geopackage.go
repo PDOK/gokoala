@@ -281,6 +281,7 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, table *featureTable,
 
 func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
+	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria)
 
 	defaultQuery := fmt.Sprintf(`
 with
@@ -288,14 +289,15 @@ with
     prev as (select * from %[1]s where %[2]s < :fid %[3]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
-select * from nextprevfeat where %[2]s >= :fid %[3]s limit :limit
-`, table.TableName, g.fidColumn, pfClause) // don't add user input here, use named params for user input!
+select * from nextprevfeat where %[2]s >= :fid %[3]s %[4]s limit :limit
+`, table.TableName, g.fidColumn, temporalClause, pfClause) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
 		"limit": criteria.Limit,
 	}
 	maps.Copy(namedParams, pfNamedParams)
+	maps.Copy(namedParams, temporalNamedParams)
 	return defaultQuery, namedParams
 }
 
@@ -313,6 +315,7 @@ func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria 
 		// whether to use the BTree index or the property filter index
 		btreeIndexHint = ""
 	}
+	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria)
 
 	bboxQuery := fmt.Sprintf(`
 with
@@ -353,9 +356,9 @@ with
      prev as (select * from prev_bbox_rtree union all select * from prev_bbox_btree),
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
-select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
+select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s %[7]s limit :limit
 `, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
-		selectClause, pfClause, btreeIndexHint) // don't add user input here, use named params for user input!
+		selectClause, temporalClause, pfClause, btreeIndexHint) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {
@@ -371,6 +374,7 @@ select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
 		"miny":     criteria.Bbox.MinY(),
 		"bboxSrid": criteria.InputSRID}
 	maps.Copy(namedParams, pfNamedParams)
+	maps.Copy(namedParams, temporalNamedParams)
 	return bboxQuery, namedParams, nil
 }
 
@@ -403,6 +407,17 @@ func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[str
 			sql += fmt.Sprintf(" and \"%s\" = :%s", k, namedParam)
 			namedParams[namedParam] = v
 		}
+	}
+	return sql, namedParams
+}
+
+func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria) (sql string, namedParams map[string]any) {
+	namedParams = make(map[string]any)
+	if !temporalCriteria.ReferenceDate.IsZero() {
+		namedParams["referenceDate"] = temporalCriteria.ReferenceDate
+		startDate := temporalCriteria.StartDateProperty
+		endDate := temporalCriteria.EndDateProperty
+		sql = fmt.Sprintf(" and \"%[1]s\" <= :referenceDate and (\"%[2]s\" >= :referenceDate or \"%[2]s\" is null)", startDate, endDate)
 	}
 	return sql, namedParams
 }

@@ -2,6 +2,7 @@ package datasources
 
 import (
 	"context"
+	"time"
 
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom"
@@ -43,12 +44,24 @@ type FeaturesCriteria struct {
 	// filtering by bounding box
 	Bbox *geom.Extent
 
+	// filtering by reference date
+	TemporalCriteria TemporalCriteria
+
 	// filtering by properties
 	PropertyFilters map[string]string
 
 	// filtering by CQL
 	Filter     string
 	FilterLang string
+}
+
+type TemporalCriteria struct {
+	// reference date
+	ReferenceDate time.Time
+
+	// startDate and endDate properties
+	StartDateProperty string
+	EndDateProperty   string
 }
 
 // FeatureTableMetadata abstraction to access metadata of a feature table (aka attribute table)
