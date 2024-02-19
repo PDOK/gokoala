@@ -80,7 +80,12 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
 			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID)}
-		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, propertyFilters, err := url.parse()
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
+		temporalProperties := collections[collectionID].TemporalProperties
+		temporalCriteria := ds.TemporalCriteria{
+			ReferenceDate:     referenceDate,
+			StartDateProperty: temporalProperties.StartDate,
+			EndDateProperty:   temporalProperties.EndDate}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -93,12 +98,13 @@ func (f *Features) Features() http.HandlerFunc {
 			// fast path
 			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:          encodedCursor.Decode(url.checksum()),
-				Limit:           limit,
-				InputSRID:       inputSRID.GetOrDefault(),
-				OutputSRID:      outputSRID.GetOrDefault(),
-				Bbox:            bbox,
-				PropertyFilters: propertyFilters,
+				Cursor:           encodedCursor.Decode(url.checksum()),
+				Limit:            limit,
+				InputSRID:        inputSRID.GetOrDefault(),
+				OutputSRID:       outputSRID.GetOrDefault(),
+				Bbox:             bbox,
+				TemporalCriteria: temporalCriteria,
+				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err != nil {
@@ -110,12 +116,13 @@ func (f *Features) Features() http.HandlerFunc {
 			var fids []int64
 			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:          encodedCursor.Decode(url.checksum()),
-				Limit:           limit,
-				InputSRID:       inputSRID.GetOrDefault(),
-				OutputSRID:      outputSRID.GetOrDefault(),
-				Bbox:            bbox,
-				PropertyFilters: propertyFilters,
+				Cursor:           encodedCursor.Decode(url.checksum()),
+				Limit:            limit,
+				InputSRID:        inputSRID.GetOrDefault(),
+				OutputSRID:       outputSRID.GetOrDefault(),
+				Bbox:             bbox,
+				TemporalCriteria: temporalCriteria,
+				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err == nil && fids != nil {
