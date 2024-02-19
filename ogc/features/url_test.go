@@ -367,7 +367,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					},
 				},
 			}
-			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, gotPF, err := fc.parse()
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, err := fc.parse()
 			if !tt.wantErr(t, err, "parse()") {
 				return
 			}
