@@ -213,13 +213,14 @@ type GeoSpatialCollection struct {
 }
 
 type GeoSpatialCollectionMetadata struct {
-	Title         *string  `yaml:"title"`
-	Description   *string  `yaml:"description"`
-	Thumbnail     *string  `yaml:"thumbnail"`
-	Keywords      []string `yaml:"keywords"`
-	LastUpdated   *string  `yaml:"lastUpdated"`
-	LastUpdatedBy string   `yaml:"lastUpdatedBy"`
-	Extent        *Extent  `yaml:"extent"`
+	Title              *string             `yaml:"title"`
+	Description        *string             `yaml:"description" validate:"required"`
+	Thumbnail          *string             `yaml:"thumbnail"`
+	Keywords           []string            `yaml:"keywords"`
+	LastUpdated        *string             `yaml:"lastUpdated"`
+	LastUpdatedBy      string              `yaml:"lastUpdatedBy"`
+	TemporalProperties *TemporalProperties `yaml:"temporalProperties" validate:"required_with=Extent.Interval"`
+	Extent             *Extent             `yaml:"extent"`
 }
 
 type CollectionEntry3dGeoVolumes struct {
@@ -292,7 +293,7 @@ type OgcAPIFeatures struct {
 	Limit       Limit                 `yaml:"limit"`
 	Datasources *Datasources          `yaml:"datasources"` // optional since you can also define datasources at the collection level
 	Basemap     string                `yaml:"basemap" default:"OSM"`
-	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
+	Collections GeoSpatialCollections `yaml:"collections" validate:"required,dive"`
 
 	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
 	// since it has significant performance impact when dealing with large JSON payloads.
@@ -461,8 +462,14 @@ type ZoomLevelRange struct {
 }
 
 type Extent struct {
-	Srs  string   `yaml:"srs" validate:"required,startswith=EPSG:"`
-	Bbox []string `yaml:"bbox"`
+	Srs      string   `yaml:"srs" validate:"required,startswith=EPSG:"`
+	Bbox     []string `yaml:"bbox"`
+	Interval []string `yaml:"interval"`
+}
+
+type TemporalProperties struct {
+	StartDate string `yaml:"startDate" validate:"required"`
+	EndDate   string `yaml:"endDate" validate:"required"`
 }
 
 type License struct {
