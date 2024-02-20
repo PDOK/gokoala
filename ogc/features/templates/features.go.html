@@ -9,7 +9,11 @@
         const url = new URL(window.location.href);
         url.searchParams.delete('cursor'); // when filters change, we can't continue pagination.
         if (value) {
-          url.searchParams.set(name, value);
+          if (name === 'datetime') {
+            url.searchParams.set(name, new Date(value).toISOString()); // input is %Y-%m-%d, but parameter value should be RFC3339
+          } else {
+            url.searchParams.set(name, value);
+          }
         } else {
           url.searchParams.delete(name);
         }
@@ -51,6 +55,16 @@
                         <option value=http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}>http://www.opengis.net/def/crs/EPSG/0/{{ $srs }}</option>
                         {{ end }}
                     </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 mt-2">
+            <div class="form-group row g-3">
+                <label for="referencedate-input" class="col-sm-2 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
+                <div class="col-sm-10 row g-2">
+                    <input id="referencedate-input" type="text" class="form-control"
+                           value="{{ (.Params.ReferenceDate | default now) | date "2006-01-02" }}"
+                           onchange="updateQueryString('datetime', this.value)">
                 </div>
             </div>
         </div>

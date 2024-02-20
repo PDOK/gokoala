@@ -3,6 +3,7 @@ package features
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
@@ -46,6 +47,7 @@ type featureCollectionPage struct {
 	PrevLink        string
 	NextLink        string
 	Limit           int
+	ReferenceDate   time.Time
 	PropertyFilters map[string]string
 }
 
@@ -59,8 +61,8 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, propertyFilters map[string]string,
-	fc *domain.FeatureCollection) {
+	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate time.Time,
+	propertyFilters map[string]string, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]
 
@@ -76,6 +78,10 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		},
 	}...)
 
+	if referenceDate.IsZero() {
+		referenceDate = time.Now()
+	}
+
 	pageContent := &featureCollectionPage{
 		*fc,
 		collectionID,
@@ -84,6 +90,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatHTML),
 		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
 		limit,
+		referenceDate,
 		propertyFilters,
 	}
 

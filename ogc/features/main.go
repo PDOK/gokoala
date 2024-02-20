@@ -140,7 +140,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, propertyFilters, fc)
+			f.html.features(w, r, collectionID, newCursor, url, limit, referenceDate, propertyFilters, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
