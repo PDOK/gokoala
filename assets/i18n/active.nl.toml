@@ -98,7 +98,8 @@ Format = "Formaat"
 
 # Collections/Collection page
 ViewCollectionAs = "Bekijk collectie als"
-Extent = "Geografische begrenzing"
+GeographicExtent = "Geografische begrenzing"
+TemporalExtent = "Temporele begrenzing"
 GoTo = "Ga naar de"
 ViewIn = "Bekijk in de"
 Browse = "Blader door de"

@@ -17,7 +17,11 @@
     "spatial": {
       "bbox": [ [ {{ .Params.Metadata.Extent.Bbox | join "," }} ] ],
       "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}"
-    }
+    }{{ if and .Params.Metadata .Params.Metadata.Extent.Interval }},
+    "temporal": {
+      "interval": [ [ {{ .Params.Metadata.Extent.Interval | join ", " }} ] ],
+      "trs" : "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+    }{{ end }}
   },
   {{ end }}
   {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
