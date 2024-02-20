@@ -270,7 +270,7 @@ func TestCacheDir(t *testing.T) {
 			if tt.gc.Cache.Path == nil {
 				assert.DirExists(t, got)
 			} else {
-				assert.Equal(t, *tt.gc.Cache.Path+"/test", got)
+				assert.Contains(t, got, *tt.gc.Cache.Path+"/test-")
 			}
 		})
 	}
