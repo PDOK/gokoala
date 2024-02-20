@@ -81,7 +81,24 @@ func validate(config *Config) error {
 				errMessages = append(errMessages, valErr.Error()+"\n")
 			}
 		}
-		return fmt.Errorf("invalid config provided:\n %v", errMessages)
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+	// custom validations
+	if collections := config.OgcAPI.Features.Collections; collections != nil {
+		return validateCollectionsTemporalConfig(collections)
+	}
+	return nil
+}
+
+func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error {
+	var errMessages []string
+	for _, collection := range collections {
+		if collection.Metadata.TemporalProperties != nil && collection.Metadata.Extent.Interval == nil {
+			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
+		}
+	}
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
 	return nil
 }
@@ -464,7 +481,7 @@ type ZoomLevelRange struct {
 type Extent struct {
 	Srs      string   `yaml:"srs" validate:"required,startswith=EPSG:"`
 	Bbox     []string `yaml:"bbox"`
-	Interval []string `yaml:"interval"`
+	Interval []string `yaml:"interval" validate:"omitempty,len=2"`
 }
 
 type TemporalProperties struct {
