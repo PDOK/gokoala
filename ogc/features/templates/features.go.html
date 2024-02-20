@@ -63,7 +63,7 @@
                 <label for="referencedate-input" class="col-sm-2 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
                 <div class="col-sm-10 row g-2">
                     <input id="referencedate-input" type="text" class="form-control"
-                           value="{{ (.Params.ReferenceDate | default now) | date "2006-01-02" }}"
+                           value="{{ .Params.ReferenceDate | date "2006-01-02" }}"
                            onchange="updateQueryString('datetime', this.value)">
                 </div>
             </div>
