@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -420,7 +422,8 @@ type GeoPackageCloud struct {
 func (gc GeoPackageCloud) CacheDir() (string, error) {
 	fileNameWithoutExt := strings.TrimSuffix(gc.File, filepath.Ext(gc.File))
 	if gc.Cache.Path != nil {
-		return filepath.Join(*gc.Cache.Path, fileNameWithoutExt), nil
+		randomSuffix := strconv.Itoa(rand.Intn(99999)) //nolint:gosec // random isn't used for security purposes
+		return filepath.Join(*gc.Cache.Path, fileNameWithoutExt+"-"+randomSuffix), nil
 	}
 	cacheDir, err := os.MkdirTemp("", fileNameWithoutExt)
 	if err != nil {
