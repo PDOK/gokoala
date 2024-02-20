@@ -27,6 +27,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 		wantOutputCrs     int
 		wantBbox          *geom.Extent
 		wantInputCrs      int
+		wantRefDate       *time.Time
 		wantPropFilters   map[string]string
 		wantErr           assert.ErrorAssertionFunc
 	}{
@@ -44,6 +45,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantLimit:         10,
 			wantOutputCrs:     100000,
 			wantBbox:          nil,
+			wantRefDate:       nil,
 			wantInputCrs:      100000,
 			wantErr:           success(),
 		},
@@ -67,6 +69,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
+			wantRefDate:       nil,
 			wantInputCrs:      28992,
 			wantErr:           success(),
 		},
@@ -89,6 +92,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
+			wantRefDate:       nil,
 			wantInputCrs:      28992,
 			wantErr:           success(),
 		},
@@ -111,6 +115,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
+			wantRefDate:       nil,
 			wantInputCrs:      100000,
 			wantErr:           success(),
 		},
@@ -134,8 +139,27 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          (*geom.Extent)([]float64{1, 2, 3, 4}),
+			wantRefDate:       nil,
 			wantInputCrs:      28992,
 			wantErr:           success(),
+		},
+		{
+			name: "Parse datetime",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"datetime": []string{time.Time{}.Format(time.RFC3339)},
+				},
+				limit: engine.Limit{
+					Default: 1,
+					Max:     2,
+				},
+			},
+			wantLimit:     1,
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantRefDate:   &time.Time{},
+			wantErr:       success(),
 		},
 		{
 			name: "Parse property filters",
@@ -152,6 +176,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantLimit:       10,
 			wantOutputCrs:   100000,
 			wantInputCrs:    100000,
+			wantRefDate:     nil,
 			wantPropFilters: map[string]string{"foo": "baz"},
 			wantErr:         success(),
 		},
@@ -171,6 +196,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantLimit:       10,
 			wantOutputCrs:   100000,
 			wantInputCrs:    100000,
+			wantRefDate:     nil,
 			wantPropFilters: map[string]string{"foo": "baz", "bar": "bazz"},
 			wantErr:         success(),
 		},
@@ -299,11 +325,11 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on unimplemented datetime",
+			name: "Fail on unimplemented datetime interval",
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"datetime": []string{time.Now().String()},
+					"datetime": []string{"2023-11-10T23:00:00Z/2023-11-15T23:00:00Z"},
 				},
 				limit: engine.Limit{
 					Default: 1,
@@ -311,7 +337,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.Equalf(t, "datetime param is currently not supported", err.Error(), "parse()")
+				assert.Equalf(t, "datetime param '2023-11-10T23:00:00Z/2023-11-15T23:00:00Z' represents an interval, intervals are currently not supported", err.Error(), "parse()")
 				return false
 			},
 		},
