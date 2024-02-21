@@ -29,6 +29,14 @@ func assertIndexesExist(
 					return err
 				}
 
+				// assert temporal columns are indexed if configured
+				if coll.Metadata.TemporalProperties != nil {
+					temporalBtreeColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
+					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns); err != nil {
+						return err
+					}
+				}
+
 				// assert the column for each property filter is indexed.
 				for _, propertyFilter := range coll.Features.Filters.Properties {
 					if err := assertIndexExists(table.TableName, db, propertyFilter.Name); err != nil {
