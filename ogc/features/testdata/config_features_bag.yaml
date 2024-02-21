@@ -25,9 +25,11 @@ ogcApi:
             - name: postcode
         metadata:
           title: Foooo
+          description: Foooo
       - id: bar
         tableName: ligplaatsen
         metadata:
           title: Barrr
+          description: Barrr
           tableName: ligplaatsen
       - id: baz
