@@ -173,7 +173,7 @@ func TestEncodedCursor_Pagination(t *testing.T) {
 	}{
 		{
 			name: "should not reset to first page",
-			c:    "Z3Z8%7C%2BQ8mwg",
+			c:    "Z3Z8%7C-Q8mwg",
 			args: args{
 				filtersChecksum: []byte{249, 15, 38, 194},
 			},
