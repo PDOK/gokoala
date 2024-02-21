@@ -30,7 +30,7 @@ func assertIndexesExist(
 				}
 
 				// assert temporal columns are indexed if configured
-				if coll.Metadata.TemporalProperties != nil {
+				if coll.Metadata != nil && coll.Metadata.TemporalProperties != nil {
 					temporalBtreeColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
 					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns); err != nil {
 						return err

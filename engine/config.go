@@ -86,8 +86,8 @@ func validate(config *Config) error {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
 	// custom validations
-	if collections := config.OgcAPI.Features.Collections; collections != nil {
-		return validateCollectionsTemporalConfig(collections)
+	if config.OgcAPI.Features != nil {
+		return validateCollectionsTemporalConfig(config.OgcAPI.Features.Collections)
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func validate(config *Config) error {
 func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error {
 	var errMessages []string
 	for _, collection := range collections {
-		if collection.Metadata.TemporalProperties != nil && collection.Metadata.Extent.Interval == nil {
+		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil && collection.Metadata.Extent.Interval == nil {
 			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
 		}
 	}
@@ -238,7 +238,7 @@ type GeoSpatialCollectionMetadata struct {
 	Keywords           []string            `yaml:"keywords"`
 	LastUpdated        *string             `yaml:"lastUpdated"`
 	LastUpdatedBy      string              `yaml:"lastUpdatedBy"`
-	TemporalProperties *TemporalProperties `yaml:"temporalProperties" validate:"required_with=Extent.Interval"`
+	TemporalProperties *TemporalProperties `yaml:"temporalProperties" validate:"omitempty,required_with=Extent.Interval"`
 	Extent             *Extent             `yaml:"extent"`
 }
 

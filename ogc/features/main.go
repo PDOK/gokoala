@@ -63,6 +63,8 @@ func NewFeatures(e *engine.Engine) *Features {
 }
 
 // Features serve a FeatureCollection with the given collectionId
+//
+//nolint:cyclop
 func (f *Features) Features() http.HandlerFunc {
 	cfg := f.engine.Config
 
@@ -81,11 +83,13 @@ func (f *Features) Features() http.HandlerFunc {
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
 			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID)}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
-		temporalProperties := collections[collectionID].TemporalProperties
-		temporalCriteria := ds.TemporalCriteria{
-			ReferenceDate:     referenceDate,
-			StartDateProperty: temporalProperties.StartDate,
-			EndDateProperty:   temporalProperties.EndDate}
+		var temporalCriteria ds.TemporalCriteria
+		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
+			temporalCriteria = ds.TemporalCriteria{
+				ReferenceDate:     referenceDate,
+				StartDateProperty: collection.TemporalProperties.StartDate,
+				EndDateProperty:   collection.TemporalProperties.EndDate}
+		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
