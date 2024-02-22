@@ -39,12 +39,6 @@ footer {
     background-color: var(--bs-blue);
 }
 
-/* forms */
-.form-control::placeholder {
-    font-style: italic;
-    color: silver;
-}
-
 /* tables */
 td {
     overflow-wrap: break-word;
