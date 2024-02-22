@@ -26,3 +26,4 @@ ogcApi:
             - name: postcode
         metadata:
           title: Foooo
+          description: Foooo

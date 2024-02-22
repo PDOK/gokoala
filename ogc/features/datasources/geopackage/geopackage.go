@@ -281,21 +281,23 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, table *featureTable,
 
 func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
+	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria)
 
 	defaultQuery := fmt.Sprintf(`
 with
-    next as (select * from %[1]s where %[2]s >= :fid %[3]s order by %[2]s asc limit :limit + 1),
-    prev as (select * from %[1]s where %[2]s < :fid %[3]s order by %[2]s desc limit :limit),
+    next as (select * from %[1]s where %[2]s >= :fid %[3]s %[4]s order by %[2]s asc limit :limit + 1),
+    prev as (select * from %[1]s where %[2]s < :fid %[3]s %[4]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
-select * from nextprevfeat where %[2]s >= :fid %[3]s limit :limit
-`, table.TableName, g.fidColumn, pfClause) // don't add user input here, use named params for user input!
+select * from nextprevfeat where %[2]s >= :fid %[3]s %[4]s limit :limit
+`, table.TableName, g.fidColumn, temporalClause, pfClause) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
 		"limit": criteria.Limit,
 	}
 	maps.Copy(namedParams, pfNamedParams)
+	maps.Copy(namedParams, temporalNamedParams)
 	return defaultQuery, namedParams
 }
 
@@ -313,6 +315,7 @@ func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria 
 		// whether to use the BTree index or the property filter index
 		btreeIndexHint = ""
 	}
+	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria)
 
 	bboxQuery := fmt.Sprintf(`
 with
@@ -325,14 +328,14 @@ with
                          from %[1]s f inner join rtree_%[1]s_%[4]s rf on f.%[2]s = rf.id
                          where rf.minx <= :maxx and rf.maxx >= :minx and rf.miny <= :maxy and rf.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s >= :fid %[6]s
+                           and f.%[2]s >= :fid %[6]s %[7]s
                          order by f.%[2]s asc
                          limit (select iif(bbox_size == 'small', :limit + 1, 0) from bbox_size)),
      next_bbox_btree as (select f.*
-                         from %[1]s f %[7]s
+                         from %[1]s f %[8]s
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s >= :fid %[6]s
+                           and f.%[2]s >= :fid %[6]s %[7]s
                          order by f.%[2]s asc
                          limit (select iif(bbox_size == 'big', :limit + 1, 0) from bbox_size)),
      next as (select * from next_bbox_rtree union all select * from next_bbox_btree),
@@ -340,22 +343,22 @@ with
                          from %[1]s f inner join rtree_%[1]s_%[4]s rf on f.%[2]s = rf.id
                          where rf.minx <= :maxx and rf.maxx >= :minx and rf.miny <= :maxy and rf.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s < :fid %[6]s
+                           and f.%[2]s < :fid %[6]s %[7]s
                          order by f.%[2]s desc
                          limit (select iif(bbox_size == 'small', :limit, 0) from bbox_size)),
      prev_bbox_btree as (select f.*
-                         from %[1]s f %[7]s
+                         from %[1]s f %[8]s
                          where f.minx <= :maxx and f.maxx >= :minx and f.miny <= :maxy and f.maxy >= :miny
                            and st_intersects((select * from given_bbox), castautomagic(f.%[4]s)) = 1
-                           and f.%[2]s < :fid %[6]s
+                           and f.%[2]s < :fid %[6]s %[7]s
                          order by f.%[2]s desc
                          limit (select iif(bbox_size == 'big', :limit, 0) from bbox_size)),
      prev as (select * from prev_bbox_rtree union all select * from prev_bbox_btree),
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag(%[2]s, :limit) over (order by %[2]s) as prevfid, lead(%[2]s, :limit) over (order by %[2]s) as nextfid from nextprev)
-select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
+select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s %[7]s limit :limit
 `, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
-		selectClause, pfClause, btreeIndexHint) // don't add user input here, use named params for user input!
+		selectClause, temporalClause, pfClause, btreeIndexHint) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {
@@ -371,6 +374,7 @@ select %[5]s from nextprevfeat where %[2]s >= :fid %[6]s limit :limit
 		"miny":     criteria.Bbox.MinY(),
 		"bboxSrid": criteria.InputSRID}
 	maps.Copy(namedParams, pfNamedParams)
+	maps.Copy(namedParams, temporalNamedParams)
 	return bboxQuery, namedParams, nil
 }
 
@@ -403,6 +407,17 @@ func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[str
 			sql += fmt.Sprintf(" and \"%s\" = :%s", k, namedParam)
 			namedParams[namedParam] = v
 		}
+	}
+	return sql, namedParams
+}
+
+func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria) (sql string, namedParams map[string]any) {
+	namedParams = make(map[string]any)
+	if !temporalCriteria.ReferenceDate.IsZero() {
+		namedParams["referenceDate"] = temporalCriteria.ReferenceDate
+		startDate := temporalCriteria.StartDateProperty
+		endDate := temporalCriteria.EndDateProperty
+		sql = fmt.Sprintf(" and \"%[1]s\" <= :referenceDate and (\"%[2]s\" >= :referenceDate or \"%[2]s\" is null)", startDate, endDate)
 	}
 	return sql, namedParams
 }

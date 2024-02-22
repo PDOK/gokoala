@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
@@ -68,7 +69,7 @@ type featureCollectionURL struct {
 
 // parse the given URL to values required to delivery a set of Features
 func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limit int, inputSRID SRID, outputSRID SRID,
-	contentCrs ContentCrs, bbox *geom.Extent, propertyFilters map[string]string, err error) {
+	contentCrs ContentCrs, bbox *geom.Extent, referenceDate time.Time, propertyFilters map[string]string, err error) {
 
 	err = fc.validateNoUnknownParams()
 	if err != nil {
@@ -80,7 +81,7 @@ func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limi
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
-	dateTimeErr := parseDateTime(fc.params)
+	referenceDate, dateTimeErr := parseDateTime(fc.params)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
@@ -330,11 +331,16 @@ func parsePropertyFilters(configuredPropertyFilters []engine.PropertyFilter, par
 	return propertyFilters, nil
 }
 
-func parseDateTime(params url.Values) error {
-	if params.Get(dateTimeParam) != "" {
-		return errors.New("datetime param is currently not supported")
+// Support filtering on datetime: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime
+func parseDateTime(params url.Values) (time.Time, error) {
+	datetime := params.Get(dateTimeParam)
+	if strings.Contains(datetime, "/") {
+		return time.Time{}, fmt.Errorf("datetime param '%s' represents an interval, intervals are currently not supported", datetime)
 	}
-	return nil
+	if datetime != "" {
+		return time.Parse(time.RFC3339, datetime)
+	}
+	return time.Time{}, nil
 }
 
 func parseFilter(params url.Values) (filter string, filterSRID SRID, err error) {

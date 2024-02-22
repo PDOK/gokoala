@@ -63,6 +63,8 @@ func NewFeatures(e *engine.Engine) *Features {
 }
 
 // Features serve a FeatureCollection with the given collectionId
+//
+//nolint:cyclop
 func (f *Features) Features() http.HandlerFunc {
 	cfg := f.engine.Config
 
@@ -80,7 +82,14 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
 			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID)}
-		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, propertyFilters, err := url.parse()
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
+		var temporalCriteria ds.TemporalCriteria
+		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
+			temporalCriteria = ds.TemporalCriteria{
+				ReferenceDate:     referenceDate,
+				StartDateProperty: collection.TemporalProperties.StartDate,
+				EndDateProperty:   collection.TemporalProperties.EndDate}
+		}
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -93,12 +102,13 @@ func (f *Features) Features() http.HandlerFunc {
 			// fast path
 			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:          encodedCursor.Decode(url.checksum()),
-				Limit:           limit,
-				InputSRID:       inputSRID.GetOrDefault(),
-				OutputSRID:      outputSRID.GetOrDefault(),
-				Bbox:            bbox,
-				PropertyFilters: propertyFilters,
+				Cursor:           encodedCursor.Decode(url.checksum()),
+				Limit:            limit,
+				InputSRID:        inputSRID.GetOrDefault(),
+				OutputSRID:       outputSRID.GetOrDefault(),
+				Bbox:             bbox,
+				TemporalCriteria: temporalCriteria,
+				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err != nil {
@@ -110,12 +120,13 @@ func (f *Features) Features() http.HandlerFunc {
 			var fids []int64
 			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:          encodedCursor.Decode(url.checksum()),
-				Limit:           limit,
-				InputSRID:       inputSRID.GetOrDefault(),
-				OutputSRID:      outputSRID.GetOrDefault(),
-				Bbox:            bbox,
-				PropertyFilters: propertyFilters,
+				Cursor:           encodedCursor.Decode(url.checksum()),
+				Limit:            limit,
+				InputSRID:        inputSRID.GetOrDefault(),
+				OutputSRID:       outputSRID.GetOrDefault(),
+				Bbox:             bbox,
+				TemporalCriteria: temporalCriteria,
+				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err == nil && fids != nil {
@@ -133,7 +144,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 		switch f.engine.CN.NegotiateFormat(r) {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, propertyFilters, fc)
+			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:

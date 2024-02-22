@@ -40,7 +40,11 @@
         "spatial": {
           "bbox": [ [ {{ $coll.Metadata.Extent.Bbox | join "," }} ] ],
           "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}"
-        }
+        }{{ if and $coll.Metadata $coll.Metadata.Extent.Interval }},
+        "temporal": {
+          "interval": [ [ {{ $coll.Metadata.Extent.Interval | join ", " }} ] ],
+          "trs" : "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+        }{{ end }}
       }
       {{ end }}
       {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}

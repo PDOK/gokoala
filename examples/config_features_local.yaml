@@ -67,6 +67,10 @@ ogcApi:
             - Address
           thumbnail: old.png
           lastUpdated: "2030-01-02T12:00:00Z"
+          temporalProperties:
+            startDate: validfrom
+            endDate: validto
           extent:
             srs: EPSG:4326
             bbox: [ "50.2129", "2.52713", "55.7212", "7.37403" ]
+            interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]

@@ -83,7 +83,24 @@ func validate(config *Config) error {
 				errMessages = append(errMessages, valErr.Error()+"\n")
 			}
 		}
-		return fmt.Errorf("invalid config provided:\n %v", errMessages)
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+	// custom validations
+	if config.OgcAPI.Features != nil {
+		return validateCollectionsTemporalConfig(config.OgcAPI.Features.Collections)
+	}
+	return nil
+}
+
+func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error {
+	var errMessages []string
+	for _, collection := range collections {
+		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil && collection.Metadata.Extent.Interval == nil {
+			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
+		}
+	}
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
 	return nil
 }
@@ -215,13 +232,14 @@ type GeoSpatialCollection struct {
 }
 
 type GeoSpatialCollectionMetadata struct {
-	Title         *string  `yaml:"title"`
-	Description   *string  `yaml:"description"`
-	Thumbnail     *string  `yaml:"thumbnail"`
-	Keywords      []string `yaml:"keywords"`
-	LastUpdated   *string  `yaml:"lastUpdated"`
-	LastUpdatedBy string   `yaml:"lastUpdatedBy"`
-	Extent        *Extent  `yaml:"extent"`
+	Title              *string             `yaml:"title"`
+	Description        *string             `yaml:"description" validate:"required"`
+	Thumbnail          *string             `yaml:"thumbnail"`
+	Keywords           []string            `yaml:"keywords"`
+	LastUpdated        *string             `yaml:"lastUpdated"`
+	LastUpdatedBy      string              `yaml:"lastUpdatedBy"`
+	TemporalProperties *TemporalProperties `yaml:"temporalProperties" validate:"omitempty,required_with=Extent.Interval"`
+	Extent             *Extent             `yaml:"extent"`
 }
 
 type CollectionEntry3dGeoVolumes struct {
@@ -294,7 +312,7 @@ type OgcAPIFeatures struct {
 	Limit       Limit                 `yaml:"limit"`
 	Datasources *Datasources          `yaml:"datasources"` // optional since you can also define datasources at the collection level
 	Basemap     string                `yaml:"basemap" default:"OSM"`
-	Collections GeoSpatialCollections `yaml:"collections" validate:"required"`
+	Collections GeoSpatialCollections `yaml:"collections" validate:"required,dive"`
 
 	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
 	// since it has significant performance impact when dealing with large JSON payloads.
@@ -464,8 +482,14 @@ type ZoomLevelRange struct {
 }
 
 type Extent struct {
-	Srs  string   `yaml:"srs" validate:"required,startswith=EPSG:"`
-	Bbox []string `yaml:"bbox"`
+	Srs      string   `yaml:"srs" validate:"required,startswith=EPSG:"`
+	Bbox     []string `yaml:"bbox"`
+	Interval []string `yaml:"interval" validate:"omitempty,len=2"`
+}
+
+type TemporalProperties struct {
+	StartDate string `yaml:"startDate" validate:"required"`
+	EndDate   string `yaml:"endDate" validate:"required"`
 }
 
 type License struct {
