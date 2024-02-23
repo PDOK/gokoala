@@ -8,9 +8,13 @@ collectionMetadata: &collectionMetadata
     - Keyword2
   thumbnail: 3d.png
   lastUpdated: "2023-05-10T12:00:00Z"
+  temporalProperties:
+    startDate: validfrom
+    endDate: validto
   extent:
     srs: EPSG:3857
     bbox: ["-74.391538", "40.435655", "-73.430235", "41.030882"]
+    interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]
 
 version: 1.0.0
 title: New York

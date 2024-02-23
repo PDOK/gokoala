@@ -14,6 +14,15 @@
         ]
       ],
       "crs": "http://www.opengis.net/def/crs/EPSG/0/3857"
+    },
+    "temporal": {
+      "interval": [
+        [
+          "1970-01-01T00:00:00Z",
+          null
+        ]
+      ],
+      "trs": "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
     }
   },
   "crs": [
