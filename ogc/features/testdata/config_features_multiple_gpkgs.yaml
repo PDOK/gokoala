@@ -26,3 +26,11 @@ ogcApi:
     collections:
       - id: dutch-addresses
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
+        metadata:
+          description: addresses
+          temporalProperties:
+            startDate: validfrom
+            endDate: validto
+          extent:
+            srs: EPSG:4326
+            interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]

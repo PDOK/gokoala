@@ -24,17 +24,19 @@ func assertIndexesExist(
 		}
 		for _, coll := range configuredCollections {
 			if coll.ID == collID && coll.Features != nil {
-				// assert spatial b-tree index exists, this index substitutes the r-tree when querying large bounding boxes
-				if err := assertIndexExists(table.TableName, db, spatialBtreeColumns); err != nil {
-					return err
-				}
-
 				// assert temporal columns are indexed if configured
 				if coll.Metadata != nil && coll.Metadata.TemporalProperties != nil {
 					temporalBtreeColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
+					spatialBtreeColumns = strings.Join([]string{spatialBtreeColumns, coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
 					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns); err != nil {
 						return err
 					}
+				}
+
+				// assert spatial b-tree index exists, this index substitutes the r-tree when querying large bounding boxes
+				// if temporal columns are configured, they must be included in this index as well
+				if err := assertIndexExists(table.TableName, db, spatialBtreeColumns); err != nil {
+					return err
 				}
 
 				// assert the column for each property filter is indexed.
