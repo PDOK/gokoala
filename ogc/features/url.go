@@ -65,6 +65,7 @@ type featureCollectionURL struct {
 	params                    url.Values
 	limit                     engine.Limit
 	configuredPropertyFilters []engine.PropertyFilter
+	supportsDatetime          bool
 }
 
 // parse the given URL to values required to delivery a set of Features
@@ -81,7 +82,7 @@ func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limi
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
-	referenceDate, dateTimeErr := parseDateTime(fc.params)
+	referenceDate, dateTimeErr := parseDateTime(fc.params, fc.supportsDatetime)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
@@ -332,7 +333,10 @@ func parsePropertyFilters(configuredPropertyFilters []engine.PropertyFilter, par
 }
 
 // Support filtering on datetime: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime
-func parseDateTime(params url.Values) (time.Time, error) {
+func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error) {
+	if !datetimeSupported {
+		return time.Time{}, errors.New("datetime param is currently not supported for this collection")
+	}
 	datetime := params.Get(dateTimeParam)
 	if strings.Contains(datetime, "/") {
 		return time.Time{}, fmt.Errorf("datetime param '%s' represents an interval, intervals are currently not supported", datetime)

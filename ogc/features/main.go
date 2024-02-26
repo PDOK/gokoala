@@ -81,7 +81,10 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID)}
+			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), false}
+		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
+			url.supportsDatetime = true
+		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
 		var temporalCriteria ds.TemporalCriteria
 		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
