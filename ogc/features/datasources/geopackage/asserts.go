@@ -28,20 +28,20 @@ func assertIndexesExist(
 				if coll.Metadata != nil && coll.Metadata.TemporalProperties != nil {
 					temporalBtreeColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
 					spatialBtreeColumns = strings.Join([]string{spatialBtreeColumns, coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
-					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns); err != nil {
+					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns, true); err != nil {
 						return err
 					}
 				}
 
 				// assert spatial b-tree index exists, this index substitutes the r-tree when querying large bounding boxes
 				// if temporal columns are configured, they must be included in this index as well
-				if err := assertIndexExists(table.TableName, db, spatialBtreeColumns); err != nil {
+				if err := assertIndexExists(table.TableName, db, spatialBtreeColumns, true); err != nil {
 					return err
 				}
 
 				// assert the column for each property filter is indexed.
 				for _, propertyFilter := range coll.Features.Filters.Properties {
-					if err := assertIndexExists(table.TableName, db, propertyFilter.Name); err != nil {
+					if err := assertIndexExists(table.TableName, db, propertyFilter.Name, false); err != nil {
 						return err
 					}
 				}
@@ -52,7 +52,7 @@ func assertIndexesExist(
 	return nil
 }
 
-func assertIndexExists(tableName string, db *sqlx.DB, columns string) error {
+func assertIndexExists(tableName string, db *sqlx.DB, columns string, prefixMatch bool) error {
 	query := fmt.Sprintf(`
 select group_concat(info.name) as indexed_columns
 from pragma_index_list('%s') as list,
@@ -68,7 +68,9 @@ group by list.name`, tableName)
 		var indexedColumns string
 		_ = rows.Scan(&indexedColumns)
 		if columns == indexedColumns {
-			exists = true
+			exists = true // index on expected columns
+		} else if prefixMatch && strings.HasPrefix(indexedColumns, columns) {
+			exists = true // index with expected prefix columns
 		}
 	}
 	defer rows.Close()
