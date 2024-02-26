@@ -33,6 +33,18 @@ func newAddressesGeoPackage() geoPackageBackend {
 	})
 }
 
+func newTemporalAddressesGeoPackage() geoPackageBackend {
+	loadDriver()
+	return newLocalGeoPackage(&engine.GeoPackageLocal{
+		GeoPackageCommon: engine.GeoPackageCommon{
+			Fid:                       "feature_id",
+			QueryTimeout:              15 * time.Second,
+			MaxBBoxSizeToUseWithRTree: 30000,
+		},
+		File: pwd + "/testdata/bag-temporal.gpkg",
+	})
+}
+
 func TestNewGeoPackage(t *testing.T) {
 	type args struct {
 		config     engine.GeoPackage
@@ -83,6 +95,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		collection  string
 		queryParams datasources.FeaturesCriteria
 	}
+	refDate, _ := time.Parse(time.RFC3339, "2023-12-31T00:00:00Z")
 	tests := []struct {
 		name       string
 		fields     fields
@@ -185,6 +198,54 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			wantCursor: domain.Cursors{
 				Prev: "|",
 				Next: "DwE|",
+			},
+			wantErr: false,
+		},
+		{
+			name: "get first page of features with reference date",
+			fields: fields{
+				backend:          newTemporalAddressesGeoPackage(),
+				fidColumn:        "feature_id",
+				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				queryTimeout:     60 * time.Second,
+			},
+			args: args{
+				ctx:        context.Background(),
+				collection: "ligplaatsen",
+				queryParams: datasources.FeaturesCriteria{
+					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
+					Limit:  2,
+					TemporalCriteria: datasources.TemporalCriteria{
+						ReferenceDate:     refDate,
+						StartDateProperty: "datum_strt",
+						EndDateProperty:   "datum_eind",
+					},
+				},
+			},
+			wantFC: &domain.FeatureCollection{
+				NumberReturned: 2,
+				Features: []*domain.Feature{
+					{
+						Feature: geojson.Feature{
+							Properties: map[string]any{
+								"straatnaam": "Van Diemenkade",
+								"nummer_id":  "0363200000454013",
+							},
+						},
+					},
+					{
+						Feature: geojson.Feature{
+							Properties: map[string]any{
+								"straatnaam": "Realengracht",
+								"nummer_id":  "0363200000398886",
+							},
+						},
+					},
+				},
+			},
+			wantCursor: domain.Cursors{
+				Prev: "|",
+				Next: "Dv4|", // 3838
 			},
 			wantErr: false,
 		},
