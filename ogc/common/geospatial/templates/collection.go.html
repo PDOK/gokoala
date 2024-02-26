@@ -98,7 +98,7 @@
                         {{ .Params.Metadata.Extent.Bbox | join ", " }}
                     </li>
                 {{ end }}
-                {{ if and .Params.Metadata .Params.Metadata.Extent.Interval }}
+                {{ if and .Params.Metadata .Params.Metadata.Extent .Params.Metadata.Extent.Interval }}
                 <li class="list-group-item">
                     <strong>{{ i18n "TemporalExtent" }}</strong>
                     (<a href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian" target="_blank">ISO-8601</a>):
