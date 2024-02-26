@@ -14,9 +14,10 @@ import (
 
 func Test_featureCollectionURL_parseParams(t *testing.T) {
 	type fields struct {
-		baseURL url.URL
-		params  url.Values
-		limit   engine.Limit
+		baseURL   url.URL
+		params    url.Values
+		limit     engine.Limit
+		dtSupport bool
 	}
 	host, _ := url.Parse("http://ogc.example")
 	tests := []struct {
@@ -154,6 +155,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Default: 1,
 					Max:     2,
 				},
+				dtSupport: true,
 			},
 			wantLimit:     1,
 			wantOutputCrs: 100000,
@@ -335,9 +337,28 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					Default: 1,
 					Max:     2,
 				},
+				dtSupport: true,
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.Equalf(t, "datetime param '2023-11-10T23:00:00Z/2023-11-15T23:00:00Z' represents an interval, intervals are currently not supported", err.Error(), "parse()")
+				return false
+			},
+		},
+		{
+			name: "Fail on datetime not supported by collection",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"datetime": []string{"2023-11-10T23:00:00Z/2023-11-15T23:00:00Z"},
+				},
+				limit: engine.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				dtSupport: false,
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
+				assert.Equalf(t, "datetime param is currently not supported for this collection", err.Error(), "parse()")
 				return false
 			},
 		},
@@ -392,6 +413,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 						Description: "even more awesome bar property to filter on",
 					},
 				},
+				supportsDatetime: tt.fields.dtSupport,
 			}
 			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, err := fc.parse()
 			if !tt.wantErr(t, err, "parse()") {
