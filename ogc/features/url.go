@@ -334,14 +334,14 @@ func parsePropertyFilters(configuredPropertyFilters []engine.PropertyFilter, par
 
 // Support filtering on datetime: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime
 func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error) {
-	if !datetimeSupported {
-		return time.Time{}, errors.New("datetime param is currently not supported for this collection")
-	}
 	datetime := params.Get(dateTimeParam)
-	if strings.Contains(datetime, "/") {
-		return time.Time{}, fmt.Errorf("datetime param '%s' represents an interval, intervals are currently not supported", datetime)
-	}
 	if datetime != "" {
+		if !datetimeSupported {
+			return time.Time{}, errors.New("datetime param is currently not supported for this collection")
+		}
+		if strings.Contains(datetime, "/") {
+			return time.Time{}, fmt.Errorf("datetime param '%s' represents an interval, intervals are currently not supported", datetime)
+		}
 		return time.Parse(time.RFC3339, datetime)
 	}
 	return time.Time{}, nil
