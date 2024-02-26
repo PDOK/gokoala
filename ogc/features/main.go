@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
@@ -36,6 +37,11 @@ type DatasourceKey struct {
 	collectionID string
 }
 
+type DatasourceConfig struct {
+	collections engine.GeoSpatialCollections
+	ds          engine.Datasource
+}
+
 type Features struct {
 	engine      *engine.Engine
 	datasources map[DatasourceKey]ds.Datasource
@@ -46,7 +52,7 @@ type Features struct {
 
 func NewFeatures(e *engine.Engine) *Features {
 	collections = cacheCollectionsMetadata(e)
-	datasources := configureDatasources(e)
+	datasources := createDatasources(e)
 
 	rebuildOpenAPIForFeatures(e, datasources)
 
@@ -223,32 +229,51 @@ func cacheCollectionsMetadata(e *engine.Engine) map[string]*engine.GeoSpatialCol
 	return result
 }
 
-func configureDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
-	result := make(map[DatasourceKey]ds.Datasource, len(e.Config.OgcAPI.Features.Collections))
+func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
+	configured := make(map[DatasourceKey]*DatasourceConfig, len(e.Config.OgcAPI.Features.Collections))
 
 	// configure collection specific datasources first
-	configureCollectionDatasources(e, result)
+	configureCollectionDatasources(e, configured)
 	// now configure top-level datasources, for the whole dataset. But only when
 	// there's no collection specific datasource already configured
-	configureTopLevelDatasources(e, result)
+	configureTopLevelDatasources(e, configured)
 
-	if len(result) == 0 {
+	if len(configured) == 0 {
 		log.Fatal("no datasource(s) configured for OGC API Features, check config")
 	}
-	return result
+
+	// create datasource in parallel to minimize startup time (especially relevant
+	// when using GeoPackage datasources with cache warmup enabled)
+	created := make(map[DatasourceKey]ds.Datasource, len(configured))
+	var wg sync.WaitGroup
+	for key, config := range configured {
+		if config == nil {
+			continue
+		}
+		wg.Add(1)
+
+		k := key
+		cfg := config
+		go func() {
+			defer wg.Done()
+			created[k] = newDatasource(e, cfg.collections, cfg.ds)
+		}()
+	}
+	wg.Wait()
+	return created
 }
 
-func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]ds.Datasource) {
+func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	if cfg.Datasources == nil {
 		return
 	}
-	var defaultDS ds.Datasource
+	var defaultDS *DatasourceConfig
 	for _, coll := range cfg.Collections {
 		key := DatasourceKey{srid: wgs84SRID, collectionID: coll.ID}
 		if result[key] == nil {
 			if defaultDS == nil {
-				defaultDS = newDatasource(e, cfg.Collections, cfg.Datasources.DefaultWGS84)
+				defaultDS = &DatasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84}
 			}
 			result[key] = defaultDS
 		}
@@ -262,19 +287,19 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]ds.
 			}
 			key := DatasourceKey{srid: srid, collectionID: coll.ID}
 			if result[key] == nil {
-				result[key] = newDatasource(e, cfg.Collections, additional.Datasource)
+				result[key] = &DatasourceConfig{cfg.Collections, additional.Datasource}
 			}
 		}
 	}
 }
 
-func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]ds.Datasource) {
+func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	for _, coll := range cfg.Collections {
 		if coll.Features == nil || coll.Features.Datasources == nil {
 			continue
 		}
-		defaultDS := newDatasource(e, cfg.Collections, coll.Features.Datasources.DefaultWGS84)
+		defaultDS := &DatasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84}
 		result[DatasourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
 
 		for _, additional := range coll.Features.Datasources.Additional {
@@ -282,7 +307,7 @@ func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]d
 			if err != nil {
 				log.Fatal(err)
 			}
-			additionalDS := newDatasource(e, cfg.Collections, additional.Datasource)
+			additionalDS := &DatasourceConfig{cfg.Collections, additional.Datasource}
 			result[DatasourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
 		}
 	}
