@@ -62,6 +62,7 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
     "Support for alternative encodings for tileset metadata can be added, such as TileJSON."
   - Remove superfluous `/api/tileMatrixSets`, since it does the same as `/tileMatrixSets`
   - Replaced "EuropeanETRS89_GRS80Quad_Draft" with "EuropeanETRS89_LAEAQuad"
+  - Removed unused `datetime` parameter
   - Removed default contact details
 
 ### OGC Features
@@ -80,9 +81,10 @@ that are implemented and remove the references to the rest."_ source: OGC API Ti
   - Changed examples
     - to use `?f=format` instead of `.format` to be more inline with the OGC spec/docs
     - removed `offset` since we (will) use `cursor` for pagination
-  - Added `cursor` query param to feature collection request. Vendor specific parameters need to be explicitly listed 
+  - Added `cursor` query param to feature collection request. Vendor specific parameters need to be explicitly listed
     (the same holds true if you would use offset-based pagination, you would need to list the `offset` param).
   - Added parameters/components/headers from part 2 schema (automatic merge wasn't possible).
+  - For `datetime` query param only single datetimes are supported, not intervals.
   - Removed unused responses
 
 - Added:
