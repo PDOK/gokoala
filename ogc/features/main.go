@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -245,12 +246,20 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 	// create datasource in parallel to minimize startup time (especially relevant
 	// when using GeoPackage datasources with cache warmup enabled)
 	created := make(map[DatasourceKey]ds.Datasource, len(configured))
+
+	concurrencyLimitEnv, exists := os.LookupEnv("INIT_DATASOURCES_PARALLELISM")
+	if !exists {
+		concurrencyLimitEnv = "5"
+	}
+	concurrencyLimit, _ := strconv.Atoi(concurrencyLimitEnv)
+	semaphore := make(chan struct{}, concurrencyLimit)
 	var mutex sync.Mutex
 	var wg sync.WaitGroup
 	for key, config := range configured {
 		if config == nil {
 			continue
 		}
+		semaphore <- struct{}{} // acquire
 		wg.Add(1)
 
 		k := key
@@ -262,6 +271,7 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 			mutex.Lock()
 			created[k] = createdDatasource
 			mutex.Unlock()
+			<-semaphore // release
 		}()
 	}
 	wg.Wait()
