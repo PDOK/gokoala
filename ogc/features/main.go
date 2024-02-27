@@ -245,6 +245,7 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 	// create datasource in parallel to minimize startup time (especially relevant
 	// when using GeoPackage datasources with cache warmup enabled)
 	created := make(map[DatasourceKey]ds.Datasource, len(configured))
+	var mutex sync.Mutex
 	var wg sync.WaitGroup
 	for key, config := range configured {
 		if config == nil {
@@ -256,7 +257,11 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 		cfg := config
 		go func() {
 			defer wg.Done()
-			created[k] = newDatasource(e, cfg.collections, cfg.ds)
+			createdDatasource := newDatasource(e, cfg.collections, cfg.ds)
+
+			mutex.Lock()
+			created[k] = createdDatasource
+			mutex.Unlock()
 		}()
 	}
 	wg.Wait()
