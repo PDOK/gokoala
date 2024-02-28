@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
@@ -243,38 +241,13 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 		log.Fatal("no datasource(s) configured for OGC API Features, check config")
 	}
 
-	// create datasource in parallel to minimize startup time (especially relevant
-	// when using GeoPackage datasources with cache warmup enabled)
 	created := make(map[DatasourceKey]ds.Datasource, len(configured))
-
-	concurrencyLimitEnv, exists := os.LookupEnv("INIT_DATASOURCES_PARALLELISM")
-	if !exists {
-		concurrencyLimitEnv = "5"
-	}
-	concurrencyLimit, _ := strconv.Atoi(concurrencyLimitEnv)
-	semaphore := make(chan struct{}, concurrencyLimit)
-	var mutex sync.Mutex
-	var wg sync.WaitGroup
-	for key, config := range configured {
-		if config == nil {
+	for k, cfg := range configured {
+		if cfg == nil {
 			continue
 		}
-		semaphore <- struct{}{} // acquire
-		wg.Add(1)
-
-		k := key
-		cfg := config
-		go func() {
-			defer wg.Done()
-			createdDatasource := newDatasource(e, cfg.collections, cfg.ds)
-
-			mutex.Lock()
-			created[k] = createdDatasource
-			mutex.Unlock()
-			<-semaphore // release
-		}()
+		created[k] = newDatasource(e, cfg.collections, cfg.ds)
 	}
-	wg.Wait()
 	return created
 }
 
