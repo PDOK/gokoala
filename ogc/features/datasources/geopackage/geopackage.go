@@ -117,9 +117,12 @@ func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.G
 		log.Fatal(err)
 	}
 	if warmUp {
-		if err = warmUpFeatureTables(collections, g.featureTableByCollectionID, g.backend.getDB()); err != nil {
-			log.Fatal(err)
-		}
+		// perform warmup async since it can take a long time
+		go func() {
+			if err = warmUpFeatureTables(collections, g.featureTableByCollectionID, g.backend.getDB()); err != nil {
+				log.Fatal(err)
+			}
+		}()
 	}
 	return g
 }
