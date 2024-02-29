@@ -33,9 +33,11 @@
           {
             "$ref": "#/components/parameters/bbox-crs"
           },
+          {{ if and $coll.Metadata $coll.Metadata.TemporalProperties}}
           {
             "$ref": "#/components/parameters/datetime"
           },
+          {{ end }}
           {
             "$ref": "#/components/parameters/cursor"
           }
