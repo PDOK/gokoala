@@ -90,7 +90,8 @@
             <!-- property filters -->
             {{- range $propFilter := $cfg.OgcAPI.Features.PropertyFiltersForCollection $.Params.CollectionID -}}
             <div class="row mb-2">
-                <label for="{{ $propFilter.Name }}-input" class="col-sm-3 col-form-label fw-bold">{{ $propFilter.Name | title }}</label>
+                <label for="{{ $propFilter.Name }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
+                       title="{{ $propFilter.Name | title }}">{{ $propFilter.Name | title }}</label>
                 <div class="col-sm">
                     <input id="{{ $propFilter.Name }}-input" type="text" class="form-control"
                            value="{{ index $.Params.PropertyFilters $propFilter.Name }}"
