@@ -4,8 +4,8 @@
     <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}</h2>
 </hgroup>
 
-<section class="row row-cols-4 g-4 py-3">
-    <div class="col-8">
+<section class="row py-3">
+    <div class="col-md-8 col-sm-12">
         <div class="card h-100">
             <h5 class="card-header">
                 {{ if and .Params.Metadata .Params.Metadata.Title }}

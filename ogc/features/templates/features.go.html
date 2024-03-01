@@ -26,9 +26,10 @@
     <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h2>
 </hgroup>
 
-<section class="row row-cols-4 g-4 py-3" id="body" hidden="hidden">
-    <div class="col-6">
-        <div class="card h-50">
+<section class="row py-3">
+    <div class="col-md-6 col-sm-12">
+        <!-- description -->
+        <div class="card">
             <h5 class="card-header">
                 {{ if and .Params.Metadata .Params.Metadata.Title }}
                     {{ .Params.Metadata.Title }}
@@ -43,10 +44,12 @@
             </div>
         </div>
 
-        <div class="col-12 mt-4">
-            <div class="form-group row g-3">
-                <label for="srs-select" class="col-sm-2 col-form-label fw-bold">{{ i18n "Projection" }}</label>
-                <div class="col-sm-10 row g-2">
+        <!-- filters -->
+        <form class="col-12 mt-4">
+            <!-- projection -->
+            <div class="row mb-2">
+                <label for="srs-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Projection" }}</label>
+                <div class="col-sm">
                     <select id="srs-select" class="form-select" onchange="updateQueryString('crs', this.value)">
                         <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
                             http://www.opengis.net/def/crs/OGC/1.3/CRS84
@@ -57,28 +60,26 @@
                     </select>
                 </div>
             </div>
-        </div>
-        {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
-        <div class="col-12 mt-2">
-            <div class="form-group row g-3">
-                <label for="referencedate-input" class="col-sm-2 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
-                <div class="col-sm-10 row g-2">
+            {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
+            <!-- datetime -->
+            <div class="row mb-2">
+                <label for="referencedate-input" class="col-sm-3 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
+                <div class="col-sm">
                     <input id="referencedate-input" type="date" class="form-control"
                            value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}"
                            onchange="updateQueryString('datetime', this.value)">
                 </div>
             </div>
-        </div>
-        {{ end }}
-        <div class="col-12 mt-2">
-            <div class="form-group row g-3">
-                <label for="limit-select" class="col-sm-2 col-form-label fw-bold">{{ i18n "Limit" }}</label>
-                <div class="col-sm-10 row g-2">
+            {{ end }}
+            <!-- limit -->
+            <div class="row mb-2">
+                <label for="limit-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Limit" }}</label>
+                <div class="col-sm">
                     <select id="limit-select" class="form-select" aria-label="Limit selection"
                             onchange="updateQueryString('limit', this.value)">
                         <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }}</option>
                         <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option>
-                        {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
+                         see Limit.Max in config.go, can't be smaller than 100
                         <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit
                                 $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>{{ $cfg.OgcAPI.Features.Limit.Max }} {{
                             i18n "Items" }} ({{ i18n "Max" }})
@@ -86,65 +87,69 @@
                     </select>
                 </div>
             </div>
-        </div>
-        <div class="col-12 mt-2">
-            <div class="form-group row g-3">
+            <!-- property filters -->
             {{- range $propFilter := $cfg.OgcAPI.Features.PropertyFiltersForCollection $.Params.CollectionID -}}
-                <label for="{{ $propFilter.Name }}-input" class="col-sm-2 col-form-label fw-bold">{{ $propFilter.Name | title }}</label>
-                <div class="col-sm-10 row g-2">
+            <div class="row mb-2">
+                <label for="{{ $propFilter.Name }}-input" class="col-sm-3 col-form-label fw-bold">{{ $propFilter.Name | title }}</label>
+                <div class="col-sm">
                     <input id="{{ $propFilter.Name }}-input" type="text" class="form-control"
                            value="{{ index $.Params.PropertyFilters $propFilter.Name }}"
                            onchange="updateQueryString('{{ $propFilter.Name }}', this.value)">
                 </div>
-            {{ end }}
             </div>
-        </div>
-        <div class="col-12 mt-4">
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
-                    <li>
-                        <a class="page-link  {{if not .Params.Cursor.HasPrev }}disabled{{end}}" href="{{ .Params.PrevLink }}" aria-label="{{ i18n "Prev" }}">
-                        <span aria-hidden="true">&laquo;</span>
-                        {{ i18n "Prev" }}
-                        </a>
-                    </li>
-                    <li>
-                        <a class="page-link {{if not .Params.Cursor.HasNext }}disabled{{end}}" href="{{ .Params.NextLink }}" aria-label="{{ i18n "Next" }}">
-                        {{ i18n "Next" }}
-                        <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+            {{ end }}
+        </form>
     </div>
 
-    <div class="col-6">
+    <!-- map viewer -->
+    <div class="col-md-6 col-sm-12">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" ></app-feature-view>
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}"></app-feature-view>
         <script type="module">
-            const url = new URL(window.location.href)
-            url.searchParams.set('f','json');
-            const viewer = document.getElementById('viewer');
-            viewer.setAttribute('items-url', url);
+          const url = new URL(window.location.href)
+          url.searchParams.set('f','json');
+          const viewer = document.getElementById('viewer');
+          viewer.setAttribute('items-url', url);
 
-            if (url.searchParams.get('crs') !== null) {
-                let crs = url.searchParams.get('crs');
-                document.getElementById('srs-select').value = crs;
-                viewer.setAttribute('projection', crs)
-            }
+          if (url.searchParams.get('crs') !== null) {
+            let crs = url.searchParams.get('crs');
+            document.getElementById('srs-select').value = crs;
+            viewer.setAttribute('projection', crs)
+          }
 
-            document.getElementById("body").hidden = false
-
-            viewer.addEventListener('box', selectbox => {
-                updateQueryString("bbox", selectbox.detail)
-            })
+          viewer.addEventListener('box', selectbox => {
+            updateQueryString("bbox", selectbox.detail)
+          })
         </script>
     </div>
-    <div class="col-9">
+</section>
+
+<section class="row">
+    <!-- pagination -->
+    <div class="col-md-12">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li>
+                    <a class="page-link  {{if not .Params.Cursor.HasPrev }}disabled{{end}}" href="{{ .Params.PrevLink }}" aria-label="{{ i18n "Prev" }}">
+                        <span aria-hidden="true">&laquo;</span>
+                        {{ i18n "Prev" }}
+                    </a>
+                </li>
+                <li>
+                    <a class="page-link {{if not .Params.Cursor.HasNext }}disabled{{end}}" href="{{ .Params.NextLink }}" aria-label="{{ i18n "Next" }}">
+                        {{ i18n "Next" }}
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- results/features -->
+    <div class="col-md-12">
         {{ range $feat := .Params.Features }}
         <table class="table table-striped">
             <thead>
