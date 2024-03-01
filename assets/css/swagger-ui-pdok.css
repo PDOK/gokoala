@@ -99,13 +99,6 @@
   background-color: #1a1e4f;
 }
 
-.swagger-ui .topbar .topbar-wrapper {
-  background-image: url("../img/logo-pdok.svg");
-  padding: 45px;
-  background-repeat: no-repeat;
-  background-position: 0px 15px;
-}
-
 .swagger-ui .topbar .topbar-wrapper a {
   display: none;
 }

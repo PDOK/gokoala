@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}</h2>
+    <h1 class="title h2">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}</h1>
 </hgroup>
 
 <section class="row py-3">
@@ -25,7 +25,7 @@
                 {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
                     {{ if .Config.OgcAPI.GeoVolumes.Collections.ContainsID .Params.ID }}
                     <li class="list-group-item">
-                        <h5 class="card-title">3D GeoVolumes</h5>
+                        <h3 class="card-title h5">3D GeoVolumes</h3>
                         <ul>
                             {{ if and .Params.GeoVolumes .Params.GeoVolumes.Has3DTiles }}
                                 <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles">3D Tiles</a></li>
@@ -44,7 +44,7 @@
                 {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
                     {{ if .Config.OgcAPI.Tiles.Collections.ContainsID .Params.ID }}
                     <li class="list-group-item">
-                        <h5 class="card-title">Tiles</h5>
+                        <h3 class="card-title h5">Tiles</h3>
                         <ul>
                             <li>TODO (placeholder)</li>
                         </ul>
@@ -55,7 +55,7 @@
                 {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
                     {{ if .Config.OgcAPI.Features.Collections.ContainsID .Params.ID }}
                     <li class="list-group-item">
-                        <h5 class="card-title">Features</h5>
+                        <h3 class="card-title h5">Features</h3>
                         <ul>
                             <li><strong>{{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items">Features</a></strong></li>
                             <li>{{ i18n "GoTo" }} features in WGS84 {{ i18n "As" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json">GeoJSON</a></li>

@@ -11,7 +11,7 @@
 </script>
 
 <hgroup>
-    <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{.Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h2>
+    <h1 class="title h2">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{.Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
 </hgroup>
 
 <section class="row py-3">
@@ -69,6 +69,7 @@
 
             document.getElementById("body").hidden = false
         </script>
+        <noscript>Enable Javascript to view features on a map</noscript>
     </div>
 </section>
 {{end}}
