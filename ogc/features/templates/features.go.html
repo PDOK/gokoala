@@ -30,13 +30,13 @@
     <div class="col-md-6 col-sm-12">
         <!-- description -->
         <div class="card">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 {{ if and .Params.Metadata .Params.Metadata.Title }}
                     {{ .Params.Metadata.Title }}
                 {{ else }}
                     {{ .Params.CollectionID }}
                 {{ end }}
-            </h5>
+            </h2>
             <div class="card-body">
                 {{ if and .Params.Metadata .Params.Metadata.Description }}
                     {{ markdown .Params.Metadata.Description }}

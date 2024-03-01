@@ -10,7 +10,7 @@
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
-                <h5 class="card-header">
+                <h2 class="card-header h5">
                     <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}">
                         {{ if and $coll.Metadata $coll.Metadata.Title }}
                             {{ $coll.Metadata.Title }}
@@ -18,7 +18,7 @@
                             {{ $coll.ID }}
                         {{ end }}
                     </a>
-                </h5>
+                </h2>
                 <div class="card-body">
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
                         {{ markdown $coll.Metadata.Description }}
