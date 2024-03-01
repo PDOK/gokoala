@@ -8,7 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var preparedStmtCacheSize = 15
+var preparedStmtCacheSize = 25
 
 // PreparedStatementCache is thread safe
 type PreparedStatementCache struct {
