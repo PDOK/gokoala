@@ -20,13 +20,13 @@
         <tbody>
           <tr>
             <td class="w-auto text-nowrap">
-              <b>Style</b>
+              <label for="styles" class="col-form-label fw-bold">Style</label>
             </td>
             <td class="w-auto px-2">
               {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
               {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }}
               {{ else }}
-              <select id="styles">
+              <select id="styles" class="form-select">
                 {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
                 <option value="{{ $style.ID }}">{{ $style.Title }}</option>
                 {{ end }}
