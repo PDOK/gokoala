@@ -20,13 +20,13 @@
         <tbody>
           <tr>
             <td class="w-auto text-nowrap">
-              <b>Style</b>
+              <label for="styles" class="col-form-label fw-bold">Style</label>
             </td>
             <td class="w-auto px-2">
               {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
               {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }}
               {{ else }}
-              <select id="styles">
+              <select id="styles" class="form-select">
                 {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
                 <option value="{{ $style.ID }}">{{ $style.Title }}</option>
                 {{ end }}
@@ -35,24 +35,24 @@
             </td>
           </tr>
           <tr>
-            <td class="w-auto text-nowrap">
-              <b>URL</b>
+            <td class="w-auto text-nowrap fw-bold">
+              URL
             </td>
             <td class="w-auto px-2">
               <a id="href-url" href="styles/{{ $defaultStyle }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}</a>
             </td>
           </tr>
           <tr>
-            <td class="w-auto text-nowrap">
-              <b>{{ i18n "Format" }}</b>
+            <td class="w-auto text-nowrap fw-bold">
+              {{ i18n "Format" }}
             </td>
             <td class="w-auto px-2">
               Mapbox style
             </td>
           </tr>
           <tr>
-            <td class="w-auto text-nowrap">
-              <b>Metadata</b>
+            <td class="w-auto text-nowrap fw-bold">
+              Metadata
             </td>
             <td class="w-auto px-2">
               <a id="href-metadata" href="styles/{{ $defaultStyle }}/metadata">{{ i18n "StyleMetadata" }}</a>
@@ -91,5 +91,6 @@
       viewer.setAttribute('style-url', '{{ $baseUrl }}/styles/' + selectedStyle + '?f=mapbox')
     }, false);
   </script>
+  <noscript>Enable Javascript to display vector tiles viewer</noscript>
 {{ end }}
 {{ end }}

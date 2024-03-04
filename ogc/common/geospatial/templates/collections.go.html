@@ -3,14 +3,14 @@
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
 <hgroup>
-    <h2 class="title">{{ .Config.Title }} - {{ i18n "Collections" }}</h2>
+    <h1 class="title">{{ .Config.Title }} - {{ i18n "Collections" }}</h1>
 </hgroup>
 
 <section class="row row-cols-md-4 g-4 py-3">
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
-                <h5 class="card-header">
+                <h2 class="card-header h5">
                     <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}">
                         {{ if and $coll.Metadata $coll.Metadata.Title }}
                             {{ $coll.Metadata.Title }}
@@ -18,7 +18,7 @@
                             {{ $coll.ID }}
                         {{ end }}
                     </a>
-                </h5>
+                </h2>
                 <div class="card-body">
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
                         {{ markdown $coll.Metadata.Description }}
@@ -70,7 +70,7 @@
                     {{ end }}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}
-                <img src="resources/{{ $coll.Metadata.Thumbnail }}" class="card-img-bottom" alt="Tumbnail of collection {{ $coll.ID }}">
+                <img src="resources/{{ $coll.Metadata.Thumbnail }}" class="card-img-bottom" alt="{{ $coll.ID }} Thumbnail">
                 {{ end }}
             </div>
         </div>

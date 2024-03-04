@@ -23,20 +23,20 @@
 </script>
 
 <hgroup>
-    <h2 class="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h2>
+    <h1 class="title h2">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
 </hgroup>
 
 <section class="row py-3">
     <div class="col-md-6 col-sm-12">
         <!-- description -->
         <div class="card">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 {{ if and .Params.Metadata .Params.Metadata.Title }}
                     {{ .Params.Metadata.Title }}
                 {{ else }}
                     {{ .Params.CollectionID }}
                 {{ end }}
-            </h5>
+            </h2>
             <div class="card-body">
                 {{ if and .Params.Metadata .Params.Metadata.Description }}
                     {{ markdown .Params.Metadata.Description }}
@@ -79,7 +79,7 @@
                             onchange="updateQueryString('limit', this.value)">
                         <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }}</option>
                         <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option>
-                         see Limit.Max in config.go, can't be smaller than 100
+                        {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
                         <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit
                                 $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>{{ $cfg.OgcAPI.Features.Limit.Max }} {{
                             i18n "Items" }} ({{ i18n "Max" }})
@@ -90,7 +90,8 @@
             <!-- property filters -->
             {{- range $propFilter := $cfg.OgcAPI.Features.PropertyFiltersForCollection $.Params.CollectionID -}}
             <div class="row mb-2">
-                <label for="{{ $propFilter.Name }}-input" class="col-sm-3 col-form-label fw-bold">{{ $propFilter.Name | title }}</label>
+                <label for="{{ $propFilter.Name }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
+                       title="{{ $propFilter.Name | title }}">{{ $propFilter.Name | title }}</label>
                 <div class="col-sm">
                     <input id="{{ $propFilter.Name }}-input" type="text" class="form-control"
                            value="{{ index $.Params.PropertyFilters $propFilter.Name }}"
@@ -124,6 +125,7 @@
             updateQueryString("bbox", selectbox.detail)
           })
         </script>
+        <noscript>Enable Javascript to view features on a map</noscript>
     </div>
 </section>
 

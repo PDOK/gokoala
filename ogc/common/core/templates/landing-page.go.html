@@ -15,8 +15,8 @@
             <tbody>
                 {{ if .Config.Keywords }}
                 <tr>
-                    <td class="w-25 text-nowrap">
-                        <b>{{ i18n "Keywords" }}</b>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "Keywords" }}
                     </td>
                     <td>
                         {{ .Config.Keywords | join ", " }}
@@ -24,8 +24,8 @@
                 </tr>
                 {{ end }}
                 <tr>
-                    <td class="w-25 text-nowrap">
-                        <b>{{ i18n "License" }}</b>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "License" }}
                     </td>
                     <td>
                         <a href="{{ .Config.License.URL }}" target="_blank">{{ .Config.License.Name }}</a>
@@ -33,8 +33,8 @@
                 </tr>
                 {{ if .Config.Support}}
                 <tr>
-                    <td class="w-25 text-nowrap">
-                        <b>{{ i18n "Support" }}</b>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "Support" }}
                     </td>
                     <td>
                         <a href="{{ .Config.Support.URL }}" target="_blank">{{ .Config.Support.Name }}</a>
@@ -44,8 +44,8 @@
                 {{ if .Config.DatasetDetails }}
                 {{ range $detailField := .Config.DatasetDetails }}
                 <tr>
-                    <td class="w-25 text-nowrap">
-                        <b>{{ $detailField.Name }}</b>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ $detailField.Name }}
                     </td>
                     <td>
                         {{ markdown $detailField.Value }}
@@ -55,21 +55,21 @@
                 {{ end }}
                 {{ if .Config.DatasetMetadata.API }}
                 <tr>
-                    <td class="w-25 text-nowrap">
-                        <b>Metadata API</b>
+                    <td class="w-25 text-nowrap fw-bold">
+                        Metadata API
                     </td>
                     <td>
-                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.API }}" target="_blank">{{ .Config.DatasetMetadata.Source }}</a>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.API }}" target="_blank" aria-label="Metadata {{ i18n "Of" }} API in {{ .Config.DatasetMetadata.Source }}">{{ .Config.DatasetMetadata.Source }}</a>
                     </td>
                 </tr>
                 {{ end }}
                 {{ if .Config.DatasetMetadata.Dataset }}
                 <tr>
-                    <td class="w-25 text-nowrap">
-                        <b>Metadata dataset</b>
+                    <td class="w-25 text-nowrap fw-bold">
+                        Metadata dataset
                     </td>
                     <td>
-                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.Dataset }}" target="_blank">{{ .Config.DatasetMetadata.Source }}</a>
+                        {{ i18n "ViewInThe" }} <a href="{{ .Config.DatasetMetadata.Dataset }}" target="_blank" aria-label="Metadata {{ i18n "Of" }} dataset in {{ .Config.DatasetMetadata.Source }}">{{ .Config.DatasetMetadata.Source }}</a>
                     </td>
                 </tr>
                 {{ end }}
@@ -78,7 +78,7 @@
     </div>
     {{ if and .Config.Thumbnail .Config.Resources }}
     <div class="col-md-4">
-        <img src="resources/{{ .Config.Thumbnail }}" class="img-fluid" alt="thumbnail van {{ .Config.Title }}"/>
+        <img src="resources/{{ .Config.Thumbnail }}" class="img-fluid" alt="{{ .Config.Title }} Thumbnail"/>
     </div>
     {{ end }}
 </div>
@@ -86,30 +86,30 @@
 <div class="row row-cols-md-4 g-4">
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 <a href="api">OpenAPI {{ i18n "Specification" }}</a>
-            </h5>
+            </h2>
             <div class="card-body">
                 <p>
                     {{ i18n "SpecificationText" }}
                     {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="api?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="api?f=json" target="_blank" aria-label="OpenAPI {{ i18n "Specification" }} {{ i18n "As" }} JSON">JSON</a></small>
             </div>
         </div>
     </div>
 
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 <a href="conformance">{{ i18n "Conformance" }}</a>
-            </h5>
+            </h2>
             <div class="card-body">
                 <p>
                     {{ i18n "ConformanceText" }}
                     {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="conformance?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="conformance?f=json" target="_blank" aria-label="{{ i18n "Conformance" }} {{ i18n "As" }} JSON">JSON</a></small>
             </div>
         </div>
     </div>
@@ -117,15 +117,15 @@
     {{ if .Config.HasCollections }}
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 <a href="collections">{{ i18n "Collections" }}</a>
-            </h5>
+            </h2>
             <div class="card-body">
                 <p>
                     {{ i18n "CollectionsText" }}
                     {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="collections?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="collections?f=json" target="_blank" aria-label="{{ i18n "Collections" }} {{ i18n "As" }} JSON">JSON</a></small>
             </div>
         </div>
     </div>
@@ -134,15 +134,15 @@
     {{ if .Config.OgcAPI.Tiles }}
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 <a href="tiles">{{ i18n "Tiles" }}</a>
-            </h5>
+            </h2>
             <div class="card-body">
                 <p>
                     {{ i18n "TilesTextHTML" }}
                     {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tiles?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tiles?f=json" target="_blank" aria-label="{{ i18n "Tiles" }} {{ i18n "As" }} JSON">JSON</a></small>
             </div>
         </div>
     </div>
@@ -151,15 +151,15 @@
     {{ if .Config.OgcAPI.Styles }}
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 <a href="styles">{{ i18n "Styles" }}</a>
-            </h5>
+            </h2>
             <div class="card-body">
                 <p>
                     {{ i18n "StylesText" }}
                     {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="styles?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="styles?f=json" target="_blank" aria-label="{{ i18n "Styles" }} {{ i18n "As" }} JSON">JSON</a></small>
             </div>
         </div>
     </div>
@@ -168,15 +168,15 @@
     {{ if .Config.OgcAPI.Tiles }}
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
-            <h5 class="card-header">
+            <h2 class="card-header h5">
                 <a href="tileMatrixSets">{{ i18n "TileMatrixSets" }}</a>
-            </h5>
+            </h2>
             <div class="card-body">
                 <p>
                     {{ i18n "TileMatrixSetsText" }}
                     {{ i18n "AvailableIn" }}
                 </p>
-                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tileMatrixSets?f=json" target="_blank">JSON</a></small>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tileMatrixSets?f=json" target="_blank" aria-label="{{ i18n "TileMatrixSets" }} {{ i18n "As" }} JSON">JSON</a></small>
             </div>
         </div>
     </div>

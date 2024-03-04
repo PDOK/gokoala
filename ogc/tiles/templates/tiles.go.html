@@ -19,13 +19,13 @@
         <tbody>
         <tr>
           <td class="w-auto text-nowrap">
-            <b>Tile Matrix Set</b>
+            <label for="srs" class="col-form-label fw-bold">Tile Matrix Set</label>
           </td>
           <td class="w-auto px-2">
               {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
                   {{ get $projections $defaultSrs.Srs }}
               {{ else }}
-                <select id="srs">
+                <select id="srs" class="form-select">
                     {{ range $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
                       <option value="{{ $srs.Srs }}">{{ get $projections (index $srs).Srs }}</option>
                     {{ end }}
@@ -35,12 +35,12 @@
         </tr>
         <tr>
             {{ if .Config.LastUpdatedBy }}
-                <td class="w-auto text-nowrap">
-                  <b>{{ i18n "UpdatedBy" }} {{ .Config.LastUpdatedBy }} {{ i18n "On" }}</b>
+                <td class="w-auto text-nowrap fw-bold">
+                  {{ i18n "UpdatedBy" }} {{ .Config.LastUpdatedBy }} {{ i18n "On" }}
                 </td>
             {{ else }}
-                <td class="w-auto text-nowrap">
-                  <b>{{ i18n "LastUpdated" }}</b>
+                <td class="w-auto text-nowrap fw-bold">
+                  {{ i18n "LastUpdated" }}
                 </td>
             {{ end }}
             <td id="field-updated" class="w-auto px-2">
@@ -48,27 +48,27 @@
             </td>
         </tr>
         <tr>
-          <td class="w-auto text-nowrap">
-            <b>Type</b>
+          <td class="w-auto text-nowrap fw-bold">
+            Type
           </td>
           <td id="field-type" class="w-auto px-2">
             {{ (index .Config.OgcAPI.Tiles.Types 0) | title }}
           </td>
         </tr>
         <tr>
-          <td class="w-auto text-nowrap">
-            <b>CRS</b>
+          <td class="w-auto text-nowrap fw-bold">
+            CRS
           </td>
           <td id="field-srs" class="w-auto px-2">
             {{ $defaultSrs.Srs }}
           </td>
         </tr>
         <tr>
-          <td class="w-auto text-nowrap">
-            <b>Metadata</b>
+          <td class="w-auto text-nowrap fw-bold">
+            Metadata
           </td>
           <td id="field-metadata" class="w-auto px-2">
-            <a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">{{ i18n "View" }} {{ get $projections $defaultSrs.Srs }} tiles metadata</a>
+            <a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">{{ i18n "View" }} metadata</a>
           </td>
         </tr>
         </tbody>
@@ -78,16 +78,16 @@
       <table class="table table-borderless table-sm w-auto">
         <tbody>
           <tr>
-            <td class="w-auto text-nowrap">
-              <b>URL template</b>
+            <td class="w-auto text-nowrap fw-bold">
+              URL template
             </td>
             <td class="w-auto px-2">
               <code id="field-url-template">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt</code>
             </td>
           </tr>
           <tr>
-            <td class="w-auto text-nowrap">
-              <b>{{ i18n "Example" }} URL</b>
+            <td class="w-auto text-nowrap fw-bold">
+              {{ i18n "Example" }} URL
             </td>
             <td class="w-auto px-2">
               <code id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/2047/2048?f=mvt</code>
@@ -105,6 +105,7 @@
         center-x="5.3896944" center-y="52.1562499"
         show-grid="false" show-object-info="true">
       </app-vectortile-view>
+      <noscript>Enable Javascript to display vector tiles viewer</noscript>
     </div>
   </div>
   <script>
