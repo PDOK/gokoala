@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/jmoiron/sqlx"
 )
 
 // warmUpFeatureTables executes a warmup query to speedup subsequent queries.
 // This encompasses traversing index(es) to fill the local cache.
 func warmUpFeatureTables(
-	configuredCollections engine.GeoSpatialCollections,
+	configuredCollections config.GeoSpatialCollections,
 	featureTableByCollectionID map[string]*featureTable,
 	db *sqlx.DB) error {
 

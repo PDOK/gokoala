@@ -6,7 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 	type fields struct {
 		baseURL   url.URL
 		params    url.Values
-		limit     engine.Limit
+		limit     config.Limit
 		dtSupport bool
 	}
 	host, _ := url.Parse("http://ogc.example")
@@ -37,7 +38,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params:  url.Values{},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -61,7 +62,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"limit":    []string{"10000"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -84,7 +85,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 					"limit":    []string{"10000"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -107,7 +108,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					"bbox":   []string{"1,2,3,4"},
 					"limit":  []string{"10000"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -131,7 +132,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					"bbox":       []string{"1,2,3,4"},
 					"limit":      []string{"10000"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -151,7 +152,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"datetime": []string{time.Time{}.Format(time.RFC3339)},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 1,
 					Max:     2,
 				},
@@ -170,7 +171,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"foo": []string{"baz"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -190,7 +191,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					"foo": []string{"baz"},
 					"bar": []string{"bazz"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -209,7 +210,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"non_existent": []string{"baz"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -226,7 +227,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"foo": []string{"baz*"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -243,7 +244,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"foo": []string{generateRandomString(propertyFilterMaxLength + 1)},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -264,7 +265,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					"bbox":       []string{"1,2,3,4"},
 					"limit":      []string{"10000"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -282,7 +283,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 					"crs":      []string{"EPSG:28992"},
 					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -299,7 +300,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"bbox": []string{"1,2,3,4,5,6"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -316,7 +317,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"limit": []string{"-200"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 10,
 					Max:     20,
 				},
@@ -333,7 +334,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"datetime": []string{"2023-11-10T23:00:00Z/2023-11-15T23:00:00Z"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 1,
 					Max:     2,
 				},
@@ -351,7 +352,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"datetime": []string{"2023-11-10T23:00:00Z/2023-11-15T23:00:00Z"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 1,
 					Max:     2,
 				},
@@ -369,7 +370,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"filter": []string{"some CQL expression"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 1,
 					Max:     2,
 				},
@@ -386,7 +387,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				params: url.Values{
 					"this_param_does_not_exist_in_openapi_spec": []string{"foobar"},
 				},
-				limit: engine.Limit{
+				limit: config.Limit{
 					Default: 1,
 					Max:     2,
 				},
@@ -403,7 +404,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
-				configuredPropertyFilters: []engine.PropertyFilter{
+				configuredPropertyFilters: []config.PropertyFilter{
 					{
 						Name:        "foo",
 						Description: "awesome foo property to filter on",

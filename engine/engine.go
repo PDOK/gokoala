@@ -17,6 +17,8 @@ import (
 	texttemplate "text/template"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -38,7 +40,7 @@ const (
 
 // Engine encapsulates shared non-OGC API specific logic
 type Engine struct {
-	Config    *Config
+	Config    *config.Config
 	OpenAPI   *OpenAPI
 	Templates *Templates
 	CN        *ContentNegotiation
@@ -49,7 +51,7 @@ type Engine struct {
 
 // NewEngine builds a new Engine
 func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
-	config, err := NewConfig(configFile)
+	config, err := config.NewConfig(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +59,7 @@ func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, 
 }
 
 // NewEngineWithConfig builds a new Engine
-func NewEngineWithConfig(config *Config, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
+func NewEngineWithConfig(config *config.Config, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
 	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
 	templates := newTemplates(config)
 	openAPI := newOpenAPI(config, []string{openAPIFile}, nil)

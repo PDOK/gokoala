@@ -5,10 +5,10 @@ package geopackage
 import (
 	"log"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
 )
 
-func newCloudBackedGeoPackage(_ *engine.GeoPackageCloud) geoPackageBackend {
+func newCloudBackedGeoPackage(_ *config.GeoPackageCloud) geoPackageBackend {
 	log.Fatalf("Cloud backed GeoPackage isn't supported on windows")
 	return nil
 }

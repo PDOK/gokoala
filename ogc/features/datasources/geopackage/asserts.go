@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/jmoiron/sqlx"
 )
 
 // assertIndexesExist asserts required indexes in the GeoPackage exists
 func assertIndexesExist(
-	configuredCollections engine.GeoSpatialCollections,
+	configuredCollections config.GeoSpatialCollections,
 	featureTableByCollectionID map[string]*featureTable,
 	db *sqlx.DB, fidColumn string) error {
 

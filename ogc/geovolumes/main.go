@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 
@@ -131,7 +133,7 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 	t.engine.ReverseProxy(w, r, target, prefer204, contentTypeOverwrite)
 }
 
-func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*engine.GeoSpatialCollection, error) {
+func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*config.GeoSpatialCollection, error) {
 	for _, collection := range t.engine.Config.OgcAPI.GeoVolumes.Collections {
 		if collection.ID == cid {
 			return &collection, nil

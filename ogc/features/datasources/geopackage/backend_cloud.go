@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/PDOK/gokoala/config"
+
 	cloudsqlitevfs "github.com/PDOK/go-cloud-sqlite-vfs"
-	"github.com/PDOK/gokoala/engine"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -21,7 +22,7 @@ type cloudGeoPackage struct {
 	cloudVFS *cloudsqlitevfs.VFS
 }
 
-func newCloudBackedGeoPackage(gpkg *engine.GeoPackageCloud) geoPackageBackend {
+func newCloudBackedGeoPackage(gpkg *config.GeoPackageCloud) geoPackageBackend {
 	cacheDir, err := gpkg.CacheDir()
 	if err != nil {
 		log.Fatalf("invalid cache dir, error: %v", err)

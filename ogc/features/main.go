@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/ogc/features/datasources"
@@ -27,7 +29,7 @@ const (
 )
 
 var (
-	collections            map[string]*engine.GeoSpatialCollectionMetadata
+	collections            map[string]*config.GeoSpatialCollectionMetadata
 	emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 )
 
@@ -37,8 +39,8 @@ type DatasourceKey struct {
 }
 
 type DatasourceConfig struct {
-	collections engine.GeoSpatialCollections
-	ds          engine.Datasource
+	collections config.GeoSpatialCollections
+	ds          config.Datasource
 }
 
 type Features struct {
@@ -220,8 +222,8 @@ func (f *Features) Feature() http.HandlerFunc {
 	}
 }
 
-func cacheCollectionsMetadata(e *engine.Engine) map[string]*engine.GeoSpatialCollectionMetadata {
-	result := make(map[string]*engine.GeoSpatialCollectionMetadata)
+func cacheCollectionsMetadata(e *engine.Engine) map[string]*config.GeoSpatialCollectionMetadata {
+	result := make(map[string]*config.GeoSpatialCollectionMetadata)
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		result[collection.ID] = collection.Metadata
 	}
@@ -301,7 +303,7 @@ func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*
 	}
 }
 
-func newDatasource(e *engine.Engine, coll engine.GeoSpatialCollections, dsConfig engine.Datasource) ds.Datasource {
+func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig config.Datasource) ds.Datasource {
 	var datasource ds.Datasource
 	if dsConfig.GeoPackage != nil {
 		datasource = geopackage.NewGeoPackage(coll, *dsConfig.GeoPackage)

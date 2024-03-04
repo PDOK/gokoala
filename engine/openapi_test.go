@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	gokoalaconfig "github.com/PDOK/gokoala/config"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +17,7 @@ func Test_newOpenAPI(t *testing.T) {
 	}
 
 	type args struct {
-		config      *Config
+		config      *gokoalaconfig.Config
 		openAPIFile string
 	}
 	tests := []struct {
@@ -26,12 +28,12 @@ func Test_newOpenAPI(t *testing.T) {
 		{
 			name: "Test render OpenAPI spec with MINIMAL config",
 			args: args{
-				config: &Config{
+				config: &gokoalaconfig.Config{
 					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: OgcAPI{
+					BaseURL:  gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: gokoalaconfig.OgcAPI{
 						GeoVolumes: nil,
 						Tiles:      nil,
 						Styles:     nil,
@@ -47,14 +49,14 @@ func Test_newOpenAPI(t *testing.T) {
 		{
 			name: "Test render OpenAPI spec with OGC Tiles config",
 			args: args{
-				config: &Config{
+				config: &gokoalaconfig.Config{
 					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: OgcAPI{
-						Tiles: &OgcAPITiles{
-							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+					BaseURL:  gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: gokoalaconfig.OgcAPI{
+						Tiles: &gokoalaconfig.OgcAPITiles{
+							TileServer: gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 						},
 					},
 				},
@@ -70,13 +72,13 @@ func Test_newOpenAPI(t *testing.T) {
 		{
 			name: "Test render OpenAPI spec with OGC Styles config",
 			args: args{
-				config: &Config{
+				config: &gokoalaconfig.Config{
 					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: OgcAPI{
-						Styles: &OgcAPIStyles{},
+					BaseURL:  gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: gokoalaconfig.OgcAPI{
+						Styles: &gokoalaconfig.OgcAPIStyles{},
 					},
 				},
 			},
@@ -92,17 +94,17 @@ func Test_newOpenAPI(t *testing.T) {
 		{
 			name: "Test render OpenAPI spec with OGC GeoVolumes config",
 			args: args{
-				config: &Config{
+				config: &gokoalaconfig.Config{
 					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: OgcAPI{
-						GeoVolumes: &OgcAPI3dGeoVolumes{
-							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: GeoSpatialCollections{
-								GeoSpatialCollection{ID: "feature1"},
-								GeoSpatialCollection{ID: "feature2"},
+					BaseURL:  gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: gokoalaconfig.OgcAPI{
+						GeoVolumes: &gokoalaconfig.OgcAPI3dGeoVolumes{
+							TileServer: gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+							Collections: gokoalaconfig.GeoSpatialCollections{
+								gokoalaconfig.GeoSpatialCollection{ID: "feature1"},
+								gokoalaconfig.GeoSpatialCollection{ID: "feature2"},
 							},
 						},
 					},
@@ -119,14 +121,14 @@ func Test_newOpenAPI(t *testing.T) {
 		{
 			name: "Test render OpenAPI spec with OGC Tiles and extra spec provided through CLI for overwrite",
 			args: args{
-				config: &Config{
+				config: &gokoalaconfig.Config{
 					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: OgcAPI{
-						Tiles: &OgcAPITiles{
-							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+					BaseURL:  gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: gokoalaconfig.OgcAPI{
+						Tiles: &gokoalaconfig.OgcAPITiles{
+							TileServer: gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 						},
 					},
 				},
@@ -145,36 +147,36 @@ func Test_newOpenAPI(t *testing.T) {
 		{
 			name: "Test render OpenAPI spec with ALL OGC APIs (common, tiles, styles, features, geovolumes)",
 			args: args{
-				config: &Config{
+				config: &gokoalaconfig.Config{
 					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: OgcAPI{
-						GeoVolumes: &OgcAPI3dGeoVolumes{
-							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: GeoSpatialCollections{
-								GeoSpatialCollection{ID: "feature1"},
-								GeoSpatialCollection{ID: "feature2"},
+					BaseURL:  gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: gokoalaconfig.OgcAPI{
+						GeoVolumes: &gokoalaconfig.OgcAPI3dGeoVolumes{
+							TileServer: gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+							Collections: gokoalaconfig.GeoSpatialCollections{
+								gokoalaconfig.GeoSpatialCollection{ID: "feature1"},
+								gokoalaconfig.GeoSpatialCollection{ID: "feature2"},
 							},
 						},
-						Tiles: &OgcAPITiles{
-							TileServer: YAMLURL{&url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+						Tiles: &gokoalaconfig.OgcAPITiles{
+							TileServer: gokoalaconfig.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 						},
-						Styles: &OgcAPIStyles{},
-						Features: &OgcAPIFeatures{
-							Limit: Limit{
+						Styles: &gokoalaconfig.OgcAPIStyles{},
+						Features: &gokoalaconfig.OgcAPIFeatures{
+							Limit: gokoalaconfig.Limit{
 								Default: 20,
 								Max:     2000,
 							},
-							Collections: []GeoSpatialCollection{
+							Collections: []gokoalaconfig.GeoSpatialCollection{
 								{
 									ID: "foobar",
-									Features: &CollectionEntryFeatures{
-										Datasources: &Datasources{
-											DefaultWGS84: Datasource{
-												GeoPackage: &GeoPackage{
-													Local: &GeoPackageLocal{
+									Features: &gokoalaconfig.CollectionEntryFeatures{
+										Datasources: &gokoalaconfig.Datasources{
+											DefaultWGS84: gokoalaconfig.Datasource{
+												GeoPackage: &gokoalaconfig.GeoPackage{
+													Local: &gokoalaconfig.GeoPackageLocal{
 														File: "./examples/resources/addresses-crs84.gpkg",
 													},
 												},

@@ -11,7 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/domain"
@@ -79,7 +80,7 @@ type GeoPackage struct {
 	maxBBoxSizeToUseWithRTree  int
 }
 
-func NewGeoPackage(collections engine.GeoSpatialCollections, gpkgConfig engine.GeoPackage) *GeoPackage {
+func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
 	loadDriver()
 
 	g := &GeoPackage{}

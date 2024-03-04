@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	"golang.org/x/text/language"
 
@@ -34,33 +36,33 @@ func TestNewStyles(t *testing.T) {
 		{
 			name: "Test render templates with OGC Styles config",
 			args: args{
-				e: engine.NewEngineWithConfig(&engine.Config{
+				e: engine.NewEngineWithConfig(&config.Config{
 					Version:  "0.4.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					Resources: &engine.Resources{
+					Resources: &config.Resources{
 						Directory: "/fakedirectory",
 					},
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: engine.OgcAPI{
+					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
-						Tiles: &engine.OgcAPITiles{
-							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+						Tiles: &config.OgcAPITiles{
+							TileServer: config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:      []string{"vector"},
-							SupportedSrs: []engine.SupportedSrs{
+							SupportedSrs: []config.SupportedSrs{
 								{
 									Srs: "EPSG:28992",
-									ZoomLevelRange: engine.ZoomLevelRange{
+									ZoomLevelRange: config.ZoomLevelRange{
 										Start: 12,
 										End:   12,
 									},
 								},
 							},
 						},
-						Styles: &engine.OgcAPIStyles{
+						Styles: &config.OgcAPIStyles{
 							Default: "foo",
-							SupportedStyles: []engine.StyleMetadata{
+							SupportedStyles: []config.StyleMetadata{
 								{
 									ID:    "foo",
 									Title: "bar",

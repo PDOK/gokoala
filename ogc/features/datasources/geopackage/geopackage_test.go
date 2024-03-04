@@ -7,7 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom/encoding/geojson"
@@ -23,8 +24,8 @@ func init() {
 
 func newAddressesGeoPackage() geoPackageBackend {
 	loadDriver()
-	return newLocalGeoPackage(&engine.GeoPackageLocal{
-		GeoPackageCommon: engine.GeoPackageCommon{
+	return newLocalGeoPackage(&config.GeoPackageLocal{
+		GeoPackageCommon: config.GeoPackageCommon{
 			Fid:                       "feature_id",
 			QueryTimeout:              15 * time.Second,
 			MaxBBoxSizeToUseWithRTree: 30000,
@@ -35,8 +36,8 @@ func newAddressesGeoPackage() geoPackageBackend {
 
 func newTemporalAddressesGeoPackage() geoPackageBackend {
 	loadDriver()
-	return newLocalGeoPackage(&engine.GeoPackageLocal{
-		GeoPackageCommon: engine.GeoPackageCommon{
+	return newLocalGeoPackage(&config.GeoPackageLocal{
+		GeoPackageCommon: config.GeoPackageCommon{
 			Fid:                       "feature_id",
 			QueryTimeout:              15 * time.Second,
 			MaxBBoxSizeToUseWithRTree: 30000,
@@ -47,8 +48,8 @@ func newTemporalAddressesGeoPackage() geoPackageBackend {
 
 func TestNewGeoPackage(t *testing.T) {
 	type args struct {
-		config     engine.GeoPackage
-		collection engine.GeoSpatialCollections
+		config     config.GeoPackage
+		collection config.GeoSpatialCollections
 	}
 	tests := []struct {
 		name                        string
@@ -58,18 +59,18 @@ func TestNewGeoPackage(t *testing.T) {
 		{
 			name: "open local geopackage",
 			args: args{
-				config: engine.GeoPackage{
-					Local: &engine.GeoPackageLocal{
-						GeoPackageCommon: engine.GeoPackageCommon{
+				config: config.GeoPackage{
+					Local: &config.GeoPackageLocal{
+						GeoPackageCommon: config.GeoPackageCommon{
 							Fid: "feature_id",
 						},
 						File: pwd + "/testdata/bag.gpkg",
 					},
 				},
-				collection: []engine.GeoSpatialCollection{
+				collection: []config.GeoSpatialCollection{
 					{
 						ID:       "ligplaatsen",
-						Features: &engine.CollectionEntryFeatures{},
+						Features: &config.CollectionEntryFeatures{},
 					},
 				},
 			},

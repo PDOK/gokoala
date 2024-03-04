@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom"
@@ -63,8 +65,8 @@ func (c ContentCrs) IsWGS84() bool {
 type featureCollectionURL struct {
 	baseURL                   url.URL
 	params                    url.Values
-	limit                     engine.Limit
-	configuredPropertyFilters []engine.PropertyFilter
+	limit                     config.Limit
+	configuredPropertyFilters []config.PropertyFilter
 	supportsDatetime          bool
 }
 
@@ -232,7 +234,7 @@ func consolidateSRIDs(bboxSRID SRID, filterSRID SRID) (inputSRID SRID, err error
 	return inputSRID, err
 }
 
-func parseLimit(params url.Values, limitCfg engine.Limit) (int, error) {
+func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	limit := limitCfg.Default
 	var err error
 	if params.Get(limitParam) != "" {
@@ -311,7 +313,7 @@ func parseCrsToSRID(params url.Values, paramName string) (SRID, error) {
 }
 
 // Support simple filtering on properties: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
-func parsePropertyFilters(configuredPropertyFilters []engine.PropertyFilter, params url.Values) (map[string]string, error) {
+func parsePropertyFilters(configuredPropertyFilters []config.PropertyFilter, params url.Values) (map[string]string, error) {
 	propertyFilters := make(map[string]string)
 	for _, cpf := range configuredPropertyFilters {
 		pf := params.Get(cpf.Name)
