@@ -70,7 +70,7 @@
                     {{ end }}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}
-                <img src="resources/{{ $coll.Metadata.Thumbnail }}" class="card-img-bottom" alt="Tumbnail of collection {{ $coll.ID }}">
+                <img src="resources/{{ $coll.Metadata.Thumbnail }}" class="card-img-bottom" alt="{{ $coll.ID }} Thumbnail">
                 {{ end }}
             </div>
         </div>

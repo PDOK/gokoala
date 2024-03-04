@@ -84,7 +84,7 @@
                         <strong>{{ i18n "Keywords" }}</strong>: {{ .Params.Metadata.Keywords | join ", " }}
                     </li>
                 {{ end }}
-                {{/* <li class="list-group-item"><b>Schema</b>: TODO link to collection schema</li> */}}
+                {{/* <li class="list-group-item"><strong>Schema</strong>: TODO link to collection schema</li> */}}
                 {{ if and .Params.Metadata .Params.Metadata.LastUpdated }}
                     <li class="list-group-item">
                         <strong>{{ i18n "LastUpdated" }}</strong>:

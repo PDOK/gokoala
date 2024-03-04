@@ -9,8 +9,8 @@
         <table class="table table-borderless table-sm w-50">
             <tbody>
             <tr>
-                <td class="w-25">
-                    <b>{{ i18n "License" }}</b>
+                <td class="w-25 fw-bold">
+                    {{ i18n "License" }}
                 </td>
                 <td>
                     <a href="{{ .Config.License.URL }}" target="_blank">{{ .Config.License.Name }}</a>
@@ -18,8 +18,8 @@
             </tr>
             {{ if .Config.Support}}
                 <tr>
-                    <td>
-                        <b>{{ i18n "Support" }}</b>
+                    <td class="fw-bold">
+                        {{ i18n "Support" }}
                     </td>
                     <td>
                         <a href="{{ .Config.Support.URL }}" target="_blank">{{ .Config.Support.Name }}</a>

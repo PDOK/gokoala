@@ -17,6 +17,7 @@ None = "None"
 Example = "Example"
 On = "on"
 As = "as"
+Of = "of"
 
 # Layout frame
 ToMain = "To main content"

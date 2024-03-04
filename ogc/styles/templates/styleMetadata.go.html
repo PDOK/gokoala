@@ -11,8 +11,8 @@
         <table class="table table-borderless table-sm w-auto">
             <tbody>
                 <tr>
-                    <td class="w-auto text-nowrap">
-                        <b>{{ i18n "Keywords" }}</b>
+                    <td class="w-auto text-nowrap fw-bold">
+                        {{ i18n "Keywords" }}
                     </td>
                     <td class="w-auto px-2">
                         {{ if .Params.Keywords }}
@@ -26,8 +26,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="w-auto text-nowrap">
-                        <b>{{ i18n "AdditionalLinks" }}</b>
+                    <td class="w-auto text-nowrap fw-bold">
+                        {{ i18n "AdditionalLinks" }}
                     </td>
                     <td class="w-auto px-2">
                         {{ if .Params.Links }}
@@ -43,8 +43,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="w-auto text-nowrap">
-                        <b>Stylesheets</b>
+                    <td class="w-auto text-nowrap fw-bold">
+                        Stylesheets
                     </td>
                     <td class="w-auto px-2">
                         {{ range $stylesheet := .Params.Stylesheets }}

@@ -17,6 +17,7 @@ None = "Geen"
 Example = "Voorbeeld"
 On = "op"
 As = "als"
+Of = "van"
 
 # Layout frame
 ToMain = "Naar hoofdinhoud"
