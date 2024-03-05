@@ -33,3 +33,10 @@ This example uses 3D tiles of New York.
   and provide `config_3d.yaml` as the config file.
 - Open http://localhost:8080 to explore the landing page
 - Call http://localhost:8080/collections/NewYork/3dtiles/6/0/1.b3dm to download a specific 3D tile
+
+## OGC API All/Complete example
+
+This example demonstrates multiple OGC APIs (tiles, styles, features, geovolumes) in a single API.
+
+- Start GoKoala as specified in the root [README](../README.md#run)
+  and provide `config_all.yaml` as the config file.

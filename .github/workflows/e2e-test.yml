@@ -8,5 +8,37 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Test OGC API Features with Azure GeoPackage
-        run: docker-compose -f ./examples/docker-compose-features-azure.yaml up --exit-code-from smoketest
+      # Build a local test image for re-use across end-to-end tests
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+      - name: Build test image
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          tags: gokoala:local
+
+      # E2E Test
+      - name: E2E Test => OGC API Features with Azure GeoPackage
+        run: |
+          docker-compose -f ./examples/docker-compose-features-azure.yaml pull \
+          && \
+          docker-compose -f ./examples/docker-compose-features-azure.yaml up --no-build --exit-code-from smoketest
+
+      # E2E Test
+      - name: Start GoKoala test instance
+        run: |
+          docker run \
+            -v `pwd`/examples:/examples \
+            --rm --detach -p 8080:8080 \
+            --name gokoala \
+            gokoala:local --config-file /examples/config_all.yaml
+      - name: E2E Test => Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./tests
+          browser: chrome
+      - name: Stop GoKoala test instance
+        run: |
+          docker stop gokoala

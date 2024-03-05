@@ -22,10 +22,10 @@ support:
   url: https://support.example.com
 # further details of the dataset to be shown on the landing page; supports markdown
 datasetDetails:
-  - name: Dataset-aanbieder
+  - name: Owner
     value: Kadaster (LV-BGT)
-  - name: Kosten afname
-    value: Geen
+  - name: Costs
+    value: None
 datasetMetadata:
   source: Example Register
   api: https://example.com/my-api/metadata
@@ -37,14 +37,13 @@ availableLanguages:
   - en
 # how to serve resources (e.g., images, fonts, sprites). Possible values: directory (serve local files), url (serve through reverse proxy)
 ogcApi:
-  # which OGC apis to enable. Possible values: tiles, styles, features, maps
+  # which OGC apis to enable. Possible values: tiles, styles, features, 3dgeovolumes
   tiles:
     title: BGT
     abstract: BGT multi-layer vector tiles
     # base URL to webserver or object storage (e.g. azure blob or S3)
     # which hosts the tiles.
-    tileServer:
-      https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
+    tileServer: https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
     # vector tiles and/or raster tiles
     types:
       - vector

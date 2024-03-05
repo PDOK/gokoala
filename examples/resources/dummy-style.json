@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "name": "Dummy Mapbox Style, just for example purposes",
+  "id": "dummy_style",
+  "zoom": 12,
+  "pitch": 50,
+  "center": [
+    0,
+    0
+  ],
+  "layers": [
+    {
+      "filter": [
+        "all",
+        [
+          "==",
+          "status",
+          "Example"
+        ]
+      ],
+      "id": "example",
+      "type": "line",
+      "paint": {
+        "line-color": "rgb(170, 170, 170)",
+        "line-width": 2
+      },
+      "source": "example",
+      "source-layer": "example"
+    }
+  ],
+  "sources": {
+    "bag": {
+      "type": "vector",
+      "tiles": [
+        "http://localhost:8080/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"
+      ]
+    }
+  }
+}
