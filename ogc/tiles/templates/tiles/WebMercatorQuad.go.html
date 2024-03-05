@@ -9,18 +9,18 @@
             {{ i18n "WebMercatorQuadAbstract" }}
         </p>
         <p>
-          <code>{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt</code>
+            URL template: <code>{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt</code>
         </p>
         <h2>Tile matrix set limits</h2>
         {{ i18n "AvailableZoomLevels" }}:
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>{{ i18n "ZoomLevel" }} <code>{z}</code></th>
-                    <th>{{ i18n "MinimumValue" }} <code>{y}</code></th>
-                    <th>{{ i18n "MaximumValue" }} <code>{y}</code></th>
-                    <th>{{ i18n "MinimumValue" }} <code>{x}</code></th>
-                    <th>{{ i18n "MaximumValue" }} <code>{x}</code></th>
+                    <th>{{ i18n "ZoomLevel" }} {z}</th>
+                    <th>{{ i18n "MinimumValue" }} {y}</th>
+                    <th>{{ i18n "MaximumValue" }} {y}</th>
+                    <th>{{ i18n "MinimumValue" }} {x}</th>
+                    <th>{{ i18n "MaximumValue" }} {x}</th>
                 </tr>
           </thead>
           <tbody>

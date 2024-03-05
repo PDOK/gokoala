@@ -6,3 +6,7 @@ yarn-error.log
 # IDEs and editors
 .idea/
 .vscode/
+
+# Cypress
+cypress/videos
+cypress/screenshots

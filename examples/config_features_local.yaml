@@ -22,10 +22,10 @@ support:
   url: https://support.example.com
 # further details of the dataset to be shown on the landing page; supports markdown
 datasetDetails:
-  - name: Dataset-aanbieder
+  - name: Owner
     value: Kadaster (LV-BGT)
-  - name: Kosten afname
-    value: Geen
+  - name: Costs
+    value: None
 datasetMetadata:
   source: Example Register
   api: https://example.com/my-api/metadata
@@ -36,7 +36,7 @@ availableLanguages:
   - nl
   - en
 ogcApi:
-  # which OGC apis to enable. Possible values: tiles, styles, features, maps
+  # which OGC apis to enable. Possible values: tiles, styles, features, 3dgeovolumes
   features:
     basemap: OSM  # or BRT
     datasources:
