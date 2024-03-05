@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -91,8 +93,8 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 
 func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
 	engine := &Engine{
-		Config: &Config{
-			BaseURL: YAMLURL{&url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+		Config: &config.Config{
+			BaseURL: config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 		},
 	}
 	targetURL, _ := url.Parse(mockTargetServer.URL)

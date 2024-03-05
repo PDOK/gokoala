@@ -10,6 +10,8 @@ import (
 	"strings"
 	texttemplate "text/template"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine/util"
 	sprig "github.com/go-task/slim-sprig"
 	gomarkdown "github.com/gomarkdown/markdown"
@@ -60,7 +62,7 @@ type TemplateKey struct {
 // TemplateData the data/variables passed as an argument into the template.
 type TemplateData struct {
 	// Config set during startup based on the given config file
-	Config *Config
+	Config *config.Config
 
 	// Params optional parameters not part of GoKoala's config file. You can use
 	// this to provide extra data to a template at rendering time.
@@ -142,11 +144,11 @@ type Templates struct {
 	// We prefer pre-rendered templates whenever possible. These are stored in this map.
 	RenderedTemplates map[TemplateKey][]byte
 
-	config     *Config
+	config     *config.Config
 	localizers map[language.Tag]i18n.Localizer
 }
 
-func newTemplates(config *Config) *Templates {
+func newTemplates(config *config.Config) *Templates {
 	templates := &Templates{
 		ParsedTemplates:   make(map[TemplateKey]any),
 		RenderedTemplates: make(map[TemplateKey][]byte),

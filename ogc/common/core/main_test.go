@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	"golang.org/x/text/language"
 
@@ -34,13 +36,13 @@ func TestNewCommonCore(t *testing.T) {
 		{
 			name: "Test render templates with MINIMAL config",
 			args: args{
-				e: engine.NewEngineWithConfig(&engine.Config{
+				e: engine.NewEngineWithConfig(&config.Config{
 					Version:            "2.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: engine.OgcAPI{
+					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
 						Tiles:      nil,
 						Styles:     nil,

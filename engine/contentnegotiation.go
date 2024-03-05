@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/elnormous/contenttype"
 	"golang.org/x/text/language"
@@ -200,7 +201,7 @@ func setLanguageCookie(w http.ResponseWriter, lang string) {
 		Name:     languageParam,
 		Value:    lang,
 		Path:     "/",
-		MaxAge:   cookieMaxAge,
+		MaxAge:   config.CookieMaxAge,
 		SameSite: http.SameSiteStrictMode,
 		Secure:   true,
 	}

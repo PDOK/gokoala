@@ -3,6 +3,8 @@ package processes
 import (
 	"net/http"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 )
 
@@ -18,7 +20,7 @@ func NewProcesses(e *engine.Engine) *Processes {
 	return processes
 }
 
-func (p *Processes) forwarder(processServer engine.YAMLURL) http.HandlerFunc {
+func (p *Processes) forwarder(processServer config.YAMLURL) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		targetURL := *processServer.URL
 		targetURL.Path = processServer.URL.Path + r.URL.Path

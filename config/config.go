@@ -1,4 +1,4 @@
-package engine
+package config
 
 import (
 	"errors"
@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	cookieMaxAge = 60 * 60 * 24
+	CookieMaxAge = 60 * 60 * 24
 )
 
 func NewConfig(configFile string) (*Config, error) {
@@ -60,7 +60,7 @@ func setDefaults(config *Config) error {
 		return fmt.Errorf("failed to set default configuration: %w", err)
 	}
 
-	config.CookieMaxAge = cookieMaxAge
+	config.CookieMaxAge = CookieMaxAge
 
 	if len(config.AvailableLanguages) == 0 {
 		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch) // default to Dutch only

@@ -15,6 +15,8 @@ import (
 	"strings"
 	texttemplate "text/template"
 
+	gokoalaconfig "github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -38,12 +40,12 @@ type OpenAPI struct {
 	spec     *openapi3.T
 	SpecJSON []byte
 
-	config            *Config
+	config            *gokoalaconfig.Config
 	router            routers.Router
 	extraOpenAPIFiles []string
 }
 
-func newOpenAPI(config *Config, extraOpenAPIFiles []string, openAPIParams any) *OpenAPI {
+func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAPIParams any) *OpenAPI {
 	setupRequestResponseValidation()
 	ctx := context.Background()
 
@@ -127,7 +129,7 @@ func setupRequestResponseValidation() {
 //
 // The OpenAPI spec optionally provided through the CLI should be the second (after preamble) item in the
 // `files` slice since it allows the user to override other/default specs.
-func mergeSpecs(ctx context.Context, config *Config, files []string, params any) (*openapi3.T, []byte) {
+func mergeSpecs(ctx context.Context, config *gokoalaconfig.Config, files []string, params any) (*openapi3.T, []byte) {
 	loader := &openapi3.Loader{Context: ctx, IsExternalRefsAllowed: false}
 
 	if len(files) < 1 {
@@ -184,7 +186,7 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 	return openAPIRouter
 }
 
-func renderOpenAPITemplate(config *Config, fileName string, params any) []byte {
+func renderOpenAPITemplate(config *gokoalaconfig.Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
 	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(file))
 

@@ -3,31 +3,32 @@ package features
 import (
 	"testing"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
+
 	ds "github.com/PDOK/gokoala/ogc/features/datasources"
 	"github.com/PDOK/gokoala/ogc/features/datasources/geopackage"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreatePropertyFiltersByCollection(t *testing.T) {
-	eng, err := engine.NewConfig("ogc/features/testdata/config_features_bag.yaml")
+	eng, err := config.NewConfig("ogc/features/testdata/config_features_bag.yaml")
 	assert.NoError(t, err)
 	oaf := eng.OgcAPI.Features
 
-	eng2, err := engine.NewConfig("ogc/features/testdata/config_features_bag_invalid_filters.yaml")
+	eng2, err := config.NewConfig("ogc/features/testdata/config_features_bag_invalid_filters.yaml")
 	assert.NoError(t, err)
 	oafWithInvalidPropertyFilter := eng2.OgcAPI.Features
 
 	tests := []struct {
 		name        string
-		config      *engine.OgcAPIFeatures
+		config      *config.OgcAPIFeatures
 		datasources map[DatasourceKey]ds.Datasource
 		wantResult  map[string][]OpenAPIPropertyFilter
 		wantErr     bool
 	}{
 		{
 			name:        "Empty input",
-			config:      &engine.OgcAPIFeatures{},
+			config:      &config.OgcAPIFeatures{},
 			datasources: nil,
 			wantResult:  map[string][]OpenAPIPropertyFilter{},
 			wantErr:     false,

@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -42,7 +43,7 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'identifier' column. Also in case there's no exact match between 'collection ID' and 'identifier' we use
 // the explicitly configured table name.
-func readGpkgContents(collections engine.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
+func readGpkgContents(collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
 	query := `
 select
 	c.table_name, c.data_type, c.identifier, c.description, c.last_change,
@@ -112,7 +113,7 @@ func readFeatureTableInfo(db *sqlx.DB, table featureTable) error {
 	return nil
 }
 
-func hasMatchingTableName(collection engine.GeoSpatialCollection, row featureTable) bool {
+func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
 	return collection.Features != nil && collection.Features.TableName != nil &&
 		row.Identifier == *collection.Features.TableName
 }

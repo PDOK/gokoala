@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	"golang.org/x/text/language"
 
@@ -40,28 +42,28 @@ func TestNewTiles(t *testing.T) {
 		{
 			name: "Test render templates with OGC Tiles config",
 			args: args{
-				e: engine.NewEngineWithConfig(&engine.Config{
+				e: engine.NewEngineWithConfig(&config.Config{
 					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: engine.OgcAPI{
+					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
-						Tiles: &engine.OgcAPITiles{
-							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+						Tiles: &config.OgcAPITiles{
+							TileServer: config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:      []string{"vector"},
-							SupportedSrs: []engine.SupportedSrs{
+							SupportedSrs: []config.SupportedSrs{
 								{
 									Srs: "EPSG:28992",
-									ZoomLevelRange: engine.ZoomLevelRange{
+									ZoomLevelRange: config.ZoomLevelRange{
 										Start: 0,
 										End:   6,
 									},
 								},
 							},
 						},
-						Styles: &engine.OgcAPIStyles{
+						Styles: &config.OgcAPIStyles{
 							Default:         "foo",
 							SupportedStyles: nil,
 						},
@@ -72,28 +74,28 @@ func TestNewTiles(t *testing.T) {
 		{
 			name: "Test render templates with OGC Tiles config and one SRS",
 			args: args{
-				e: engine.NewEngineWithConfig(&engine.Config{
+				e: engine.NewEngineWithConfig(&config.Config{
 					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: engine.OgcAPI{
+					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
-						Tiles: &engine.OgcAPITiles{
-							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+						Tiles: &config.OgcAPITiles{
+							TileServer: config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:      []string{"vector"},
-							SupportedSrs: []engine.SupportedSrs{
+							SupportedSrs: []config.SupportedSrs{
 								{
 									Srs: "EPSG:28992",
-									ZoomLevelRange: engine.ZoomLevelRange{
+									ZoomLevelRange: config.ZoomLevelRange{
 										Start: 0,
 										End:   6,
 									},
 								},
 							},
 						},
-						Styles: &engine.OgcAPIStyles{
+						Styles: &config.OgcAPIStyles{
 							Default:         "foo",
 							SupportedStyles: nil,
 						},

@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	"golang.org/x/text/language"
 
@@ -40,18 +42,18 @@ func TestNewCollections(t *testing.T) {
 		{
 			name: "Test render templates with Collections (using OGC GeoVolumes config, since that contains collections)",
 			args: args{
-				e: engine.NewEngineWithConfig(&engine.Config{
+				e: engine.NewEngineWithConfig(&config.Config{
 					Version:            "1.0.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: engine.OgcAPI{
-						GeoVolumes: &engine.OgcAPI3dGeoVolumes{
-							TileServer: engine.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: engine.GeoSpatialCollections{
-								engine.GeoSpatialCollection{ID: "buildings"},
-								engine.GeoSpatialCollection{ID: "obstacles"},
+					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: config.OgcAPI{
+						GeoVolumes: &config.OgcAPI3dGeoVolumes{
+							TileServer: config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+							Collections: config.GeoSpatialCollections{
+								config.GeoSpatialCollection{ID: "buildings"},
+								config.GeoSpatialCollection{ID: "obstacles"},
 							},
 						},
 					},

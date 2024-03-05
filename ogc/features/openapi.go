@@ -5,6 +5,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/PDOK/gokoala/engine"
 	ds "github.com/PDOK/gokoala/ogc/features/datasources"
 )
@@ -28,7 +30,7 @@ func rebuildOpenAPIForFeatures(e *engine.Engine, datasources map[DatasourceKey]d
 	})
 }
 
-func createPropertyFiltersByCollection(config *engine.OgcAPIFeatures,
+func createPropertyFiltersByCollection(config *config.OgcAPIFeatures,
 	datasources map[DatasourceKey]ds.Datasource) (map[string][]OpenAPIPropertyFilter, error) {
 
 	result := make(map[string][]OpenAPIPropertyFilter)
