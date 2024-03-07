@@ -171,8 +171,8 @@ func TestTiles_Tile(t *testing.T) {
 				tileCol:         "15",
 			},
 			want: want{
-				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported\n",
-				statusCode: http.StatusBadRequest,
+				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
+				statusCode: http.StatusOK,
 			},
 		},
 		{
