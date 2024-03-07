@@ -29,7 +29,7 @@ const (
 	FormatHTML        = "html"
 	FormatJSON        = "json"
 	FormatTileJSON    = "tilejson"
-	FormatMVT         = "mvt"
+	FormatMVT         = "pbf"
 	FormatMapboxStyle = "mapbox"
 	FormatCustomStyle = "custom"
 	FormatSLD         = "sld10"
