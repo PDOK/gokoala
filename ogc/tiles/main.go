@@ -17,7 +17,7 @@ const (
 	tilesLocalPath          = "tiles/"
 	tileMatrixSetsPath      = "/tileMatrixSets"
 	tileMatrixSetsLocalPath = "tileMatrixSets/"
-	defaultTilesTmpl        = "{tms}/{z}/{x}/{y}." + engine.FormatMVT
+	defaultTilesTmpl        = "{tms}/{z}/{x}/{y}." + engine.FormatMVTAlternative
 )
 
 type Tiles struct {
@@ -142,7 +142,8 @@ func (t *Tiles) Tile() http.HandlerFunc {
 		// We support content negotiation using Accept header and ?f= param, but also
 		// using the .pbf extension. This is for backwards compatibility.
 		if !strings.HasSuffix(tileCol, ".pbf") {
-			if t.engine.CN.NegotiateFormat(r) != "mvt" {
+			// if no format is specified, default to mvt
+			if format := strings.Replace(t.engine.CN.NegotiateFormat(r), engine.FormatJSON, engine.FormatMVT, 1); format != engine.FormatMVT && format != engine.FormatMVTAlternative {
 				http.Error(w, "Specify tile format. Currently only"+
 					" Mapbox Vector Tiles (?f=mvt) tiles are supported", http.StatusBadRequest)
 				return
