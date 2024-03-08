@@ -26,15 +26,16 @@ const (
 	MediaTypeJSONFG        = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
 	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
 
-	FormatHTML        = "html"
-	FormatJSON        = "json"
-	FormatTileJSON    = "tilejson"
-	FormatMVT         = "pbf"
-	FormatMapboxStyle = "mapbox"
-	FormatCustomStyle = "custom"
-	FormatSLD         = "sld10"
-	FormatGeoJSON     = "geojson" // ?=json should also work for geojson
-	FormatJSONFG      = "jsonfg"
+	FormatHTML           = "html"
+	FormatJSON           = "json"
+	FormatTileJSON       = "tilejson"
+	FormatMVT            = "mvt"
+	FormatMVTAlternative = "pbf"
+	FormatMapboxStyle    = "mapbox"
+	FormatCustomStyle    = "custom"
+	FormatSLD            = "sld10"
+	FormatGeoJSON        = "geojson" // ?=json should also work for geojson
+	FormatJSONFG         = "jsonfg"
 )
 
 var (
