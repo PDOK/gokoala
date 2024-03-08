@@ -32,7 +32,7 @@
     "bag": {
       "type": "vector",
       "tiles": [
-        "http://localhost:8080/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"
+        "{{ .Config.BaseURL }}/tiles/{{ .Params.Projection }}/{z}/{y}/{x}?f=mvt"
       ]
     }
   }
