@@ -15,6 +15,7 @@
     <div class="col-md-6">
       {{ $baseUrl := .Config.BaseURL }}
       {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
+      {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
       {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}
       <table class="table table-borderless table-sm w-auto">
         <tbody>
@@ -23,15 +24,21 @@
               <label for="styles" class="col-form-label fw-bold">Style</label>
             </td>
             <td class="w-auto px-2">
-              {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
-              {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }}
-              {{ else }}
+            {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
+            {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
+              {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }} ({{ (get $projections $defaultSrs.Srs) }})
+            {{ else }}
+            {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
               <select id="styles" class="form-select">
                 {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
-                <option value="{{ $style.ID }}">{{ $style.Title }}</option>
+                {{ range $srs := $supportedSrs }}
+                {{ $projection := get $projections (index $srs).Srs }}
+                <option value='{"style":"{{ $style.ID }}__{{ lower $projection }}","proj":"{{ $projection }}"}'>{{ $style.Title }} ({{ get $projections (index $srs).Srs }})</option>
+                {{ end }}
                 {{ end }}
               </select>
-              {{ end }}
+            {{ end }}
+            {{ end }}
             </td>
           </tr>
           <tr>
@@ -39,7 +46,7 @@
               URL
             </td>
             <td class="w-auto px-2">
-              <a id="href-url" href="styles/{{ $defaultStyle }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}</a>
+              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}</a>
             </td>
           </tr>
           <tr>
@@ -55,14 +62,13 @@
               Metadata
             </td>
             <td class="w-auto px-2">
-              <a id="href-metadata" href="styles/{{ $defaultStyle }}/metadata">{{ i18n "StyleMetadata" }}</a>
+              <a id="href-metadata" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}/metadata">{{ i18n "StyleMetadata" }}</a>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
     <div class="col-md-6">
-      {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
       <link rel="stylesheet" type="text/css" href="view-component/styles.css">
       <script type="text/javascript" src="view-component/main.js"></script>
       <script type="text/javascript" src="view-component/polyfills.js"></script>
@@ -70,7 +76,7 @@
       <p>{{ i18n "StylingExample" }}:</p>
       <app-vectortile-view id="styles-vectortile-view" class="vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-        style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}?f=mapbox"
+        style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}?f=mapbox"
         center-x="5.3896944" center-y="52.1562499">
       </app-vectortile-view>
     </div>
@@ -80,7 +86,9 @@
       // only operate on styles dropdown
       if (event.target.id !== 'styles') return;
       // update table fields
-      const selectedStyle = event.target.value;
+      const value = JSON.parse(event.target.value);
+      const selectedStyle = value.style;
+      const selectedProjection = value.proj;
       const urlHref = document.getElementById('href-url');
       const metadataHref = document.getElementById('href-metadata');
       urlHref.textContent = '{{ $baseUrl }}/styles/' + selectedStyle;
@@ -88,6 +96,7 @@
       metadataHref.setAttribute('href', 'styles/' + selectedStyle + '/metadata');
       // update style-url in app-vectortile-view
       const viewer = document.getElementById('styles-vectortile-view')
+      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + selectedProjection)
       viewer.setAttribute('style-url', '{{ $baseUrl }}/styles/' + selectedStyle + '?f=mapbox')
     }, false);
   </script>
