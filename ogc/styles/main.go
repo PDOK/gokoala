@@ -144,9 +144,14 @@ func (s *Styles) Style() http.HandlerFunc {
 
 func (s *Styles) StyleMetadata() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		styleID := chi.URLParam(r, "style")
+		style := chi.URLParam(r, "style")
+		styleID := strings.Split(style, "__")[0]
+		// backwards compatibility
+		if style == styleID {
+			style += "__netherlandsrdnewquad"
+		}
 		key := engine.NewTemplateKeyWithNameAndLanguage(
-			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), styleID, s.engine.CN.NegotiateLanguage(w, r))
+			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), style, s.engine.CN.NegotiateLanguage(w, r))
 		s.engine.ServePage(w, r, key)
 	}
 }
