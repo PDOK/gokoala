@@ -2,6 +2,7 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -110,8 +111,8 @@ type Config struct {
 	ServiceIdentifier  string         `yaml:"serviceIdentifier"  json:"serviceIdentifier" validate:"required"`
 	Abstract           string         `yaml:"abstract" json:"abstract" validate:"required"`
 	License            License        `yaml:"license" json:"license" validate:"required"`
-	BaseURL            YAMLURL        `yaml:"baseUrl" json:"baseUrl" validate:"required,url"`
-	DatasetCatalogURL  YAMLURL        `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl" validate:"url"`
+	BaseURL            ConfigURL      `yaml:"baseUrl" json:"baseUrl" validate:"required,url"`
+	DatasetCatalogURL  ConfigURL      `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl" validate:"url"`
 	AvailableLanguages []language.Tag `yaml:"availableLanguages" json:"availableLanguages"`
 	OgcAPI             OgcAPI         `yaml:"ogcApi" json:"ogcApi" validate:"required"`
 	// +optional
@@ -178,8 +179,8 @@ type DatasetMetadata struct {
 }
 
 type Resources struct {
-	URL       YAMLURL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
-	Directory string  `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dir"`
+	URL       ConfigURL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
+	Directory string    `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dir"`
 }
 
 type OgcAPI struct {
@@ -294,7 +295,7 @@ type CollectionEntry3dGeoVolumes struct {
 
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
 	// +optional
-	URL3DViewer *YAMLURL `yaml:"3dViewerUrl" json:"3dViewerUrl" validate:"url"`
+	URL3DViewer *ConfigURL `yaml:"3dViewerUrl" json:"3dViewerUrl" validate:"url"`
 }
 
 func (gv *CollectionEntry3dGeoVolumes) Has3DTiles() bool {
@@ -331,12 +332,12 @@ type CollectionEntryFeatures struct {
 }
 
 type OgcAPI3dGeoVolumes struct {
-	TileServer  YAMLURL               `yaml:"tileServer" json:"tileServer" validate:"required,url"`
+	TileServer  ConfigURL             `yaml:"tileServer" json:"tileServer" validate:"required,url"`
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
 }
 
 type OgcAPITiles struct {
-	TileServer   YAMLURL        `yaml:"tileServer" json:"tileServer" validate:"required,url"`
+	TileServer   ConfigURL      `yaml:"tileServer" json:"tileServer" validate:"required,url"`
 	Types        []string       `yaml:"types" json:"types" validate:"required"`
 	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
 	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
@@ -401,9 +402,9 @@ func (oaf OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []Pr
 }
 
 type OgcAPIProcesses struct {
-	SupportsDismiss  bool    `yaml:"supportsDismiss" json:"supportsDismiss"`
-	SupportsCallback bool    `yaml:"supportsCallback" json:"supportsCallback"`
-	ProcessesServer  YAMLURL `yaml:"processesServer" json:"processesServer" validate:"required,url"`
+	SupportsDismiss  bool      `yaml:"supportsDismiss" json:"supportsDismiss"`
+	SupportsCallback bool      `yaml:"supportsCallback" json:"supportsCallback"`
+	ProcessesServer  ConfigURL `yaml:"processesServer" json:"processesServer" validate:"required,url"`
 }
 
 type Limit struct {
@@ -636,14 +637,15 @@ type PropertiesSchema struct {
 	// placeholder
 }
 
-type YAMLURL struct {
-	// +kubebuilder:validation:Type=string
-	*url.URL `json:",inline"`
+// +kubebuilder:validation:Type=string
+// +kubebuilder:validation:Format=uri
+type ConfigURL struct {
+	*url.URL
 }
 
 // UnmarshalYAML parses a string to URL and also removes trailing slash if present,
 // so we can easily append a longer path without having to worry about double slashes
-func (o *YAMLURL) UnmarshalYAML(unmarshal func(any) error) error {
+func (o *ConfigURL) UnmarshalYAML(unmarshal func(any) error) error {
 	var s string
 	err := unmarshal(&s)
 	if err != nil {
@@ -652,4 +654,21 @@ func (o *YAMLURL) UnmarshalYAML(unmarshal func(any) error) error {
 	parsedURL, err := url.ParseRequestURI(strings.TrimSuffix(s, "/"))
 	o.URL = parsedURL
 	return err
+}
+
+func (o *ConfigURL) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.URL.String())
+}
+
+func (o *ConfigURL) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+	if parsedURL, err := url.ParseRequestURI(strings.TrimSuffix(s, "/")); err != nil {
+		return err
+	} else if parsedURL != nil {
+		*o = ConfigURL{parsedURL}
+	}
+	return nil
 }
