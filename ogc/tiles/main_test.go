@@ -47,11 +47,11 @@ func TestNewTiles(t *testing.T) {
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            config.ConfigURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
 						Tiles: &config.OgcAPITiles{
-							TileServer: config.ConfigURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:      []string{"vector"},
 							SupportedSrs: []config.SupportedSrs{
 								{
@@ -79,11 +79,11 @@ func TestNewTiles(t *testing.T) {
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            config.ConfigURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
 						Tiles: &config.OgcAPITiles{
-							TileServer: config.ConfigURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:      []string{"vector"},
 							SupportedSrs: []config.SupportedSrs{
 								{

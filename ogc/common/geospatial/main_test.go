@@ -47,10 +47,10 @@ func TestNewCollections(t *testing.T) {
 					Title:              "Test API",
 					Abstract:           "Test API description",
 					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            config.ConfigURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: &config.OgcAPI3dGeoVolumes{
-							TileServer: config.ConfigURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 							Collections: config.GeoSpatialCollections{
 								config.GeoSpatialCollection{ID: "buildings"},
 								config.GeoSpatialCollection{ID: "obstacles"},
