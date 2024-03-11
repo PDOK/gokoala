@@ -86,6 +86,7 @@ ogcApi:
     supportedStyles:
       - id: "dummy-style"
         title: "Dummy style"
+        scope: "style"
         stylesheets:
           - title: "Mapbox Style"
             version: "8"
