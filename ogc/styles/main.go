@@ -13,9 +13,14 @@ import (
 )
 
 const (
-	templatesDir = "ogc/styles/templates/"
-	stylesPath   = "/styles"
-	stylesCrumb  = "styles/"
+	templatesDir        = "ogc/styles/templates/"
+	stylesPath          = "/styles"
+	stylesCrumb         = "styles/"
+	projectionDelimiter = "__"
+)
+
+var (
+	defaultProjection = ""
 )
 
 type Styles struct {
@@ -42,11 +47,12 @@ func NewStyles(e *engine.Engine) *Styles {
 		engine.NewTemplateKey(templatesDir+"styles.go.html"))
 
 	projections := map[string]string{"EPSG:28992": "NetherlandsRDNewQuad", "EPSG:3035": "EuropeanETRS89_LAEAQuad", "EPSG:3857": "WebMercatorQuad"}
+	defaultProjection = strings.ToLower(projections[e.Config.OgcAPI.Tiles.SupportedSrs[0].Srs])
 
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
 		for _, supportedSrs := range e.Config.OgcAPI.Tiles.SupportedSrs {
 			projection := projections[supportedSrs.Srs]
-			styleInstanceID := style.ID + "__" + strings.ToLower(projection)
+			styleInstanceID := style.ID + projectionDelimiter + strings.ToLower(projection)
 			// Render metadata templates
 			e.RenderTemplatesWithParams(struct {
 				Metadata   config.StyleMetadata
@@ -115,10 +121,13 @@ func (s *Styles) Styles() http.HandlerFunc {
 func (s *Styles) Style() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		style := chi.URLParam(r, "style")
-		styleID := strings.Split(style, "__")[0]
-		// backwards compatibility
+		styleID := strings.Split(style, projectionDelimiter)[0]
+		// Previously, the API did not utilise separate styles per projection; whereas the current implementation
+		// advertises all possible combinations of available styles and available projections as separate styles.
+		// To ensure that the use of style URLs without projection remains possible for previously published APIs,
+		// URLs without an explicit projection are defaulted to the first configured projection.
 		if style == styleID {
-			style += "__netherlandsrdnewquad"
+			style += projectionDelimiter + defaultProjection
 		}
 		styleFormat := s.engine.CN.NegotiateFormat(r)
 		// TODO: improve?
@@ -149,10 +158,13 @@ func (s *Styles) Style() http.HandlerFunc {
 func (s *Styles) StyleMetadata() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		style := chi.URLParam(r, "style")
-		styleID := strings.Split(style, "__")[0]
-		// backwards compatibility
+		styleID := strings.Split(style, projectionDelimiter)[0]
+		// Previously, the API did not utilise separate styles per projection; whereas the current implementation
+		// advertises all possible combinations of available styles and available projections as separate styles.
+		// To ensure that the use of style URLs without projection remains possible for previously published APIs,
+		// URLs without an explicit projection are defaulted to the first configured projection.
 		if style == styleID {
-			style += "__netherlandsrdnewquad"
+			style += projectionDelimiter + defaultProjection
 		}
 		key := engine.NewTemplateKeyWithNameAndLanguage(
 			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), style, s.engine.CN.NegotiateLanguage(w, r))
