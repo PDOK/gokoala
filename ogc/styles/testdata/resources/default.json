@@ -1,0 +1,39 @@
+{
+  "version": 8,
+  "name": "Dummy Mapbox Style, just for testing purposes",
+  "id": "default",
+  "zoom": 12,
+  "pitch": 50,
+  "center": [
+    0,
+    0
+  ],
+  "layers": [
+    {
+      "filter": [
+        "all",
+        [
+          "==",
+          "status",
+          "Testing"
+        ]
+      ],
+      "id": "testing",
+      "type": "line",
+      "paint": {
+        "line-color": "rgb(170, 170, 170)",
+        "line-width": 2
+      },
+      "source": "testing",
+      "source-layer": "testing"
+    }
+  ],
+  "sources": {
+    "bag": {
+      "type": "vector",
+      "tiles": [
+        "{{ .Config.BaseURL }}/tiles/{{ .Params.Projection }}/{z}/{y}/{x}?f=mvt"
+      ]
+    }
+  }
+}
