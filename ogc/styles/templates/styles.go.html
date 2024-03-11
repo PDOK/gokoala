@@ -20,15 +20,19 @@
       <table class="table table-borderless table-sm w-auto">
         <tbody>
           <tr>
+          {{ if and (eq (len .Config.OgcAPI.Styles.SupportedStyles) 1) (eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1) }}
+            <td class="w-auto text-nowrap fw-bold">
+              Style
+            </td>
+            <td class="w-auto px-2">
+              {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }} ({{ (get $projections $defaultSrs.Srs) }})
+            </td>
+          {{ else }}
             <td class="w-auto text-nowrap">
               <label for="styles" class="col-form-label fw-bold">Style</label>
             </td>
             <td class="w-auto px-2">
-            {{ if eq (len .Config.OgcAPI.Styles.SupportedStyles) 1 }}
-            {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
-              {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }} ({{ (get $projections $defaultSrs.Srs) }})
-            {{ else }}
-            {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
+              {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
               <select id="styles" class="form-select">
                 {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
                 {{ range $srs := $supportedSrs }}
@@ -37,9 +41,8 @@
                 {{ end }}
                 {{ end }}
               </select>
-            {{ end }}
-            {{ end }}
             </td>
+          {{ end }}
           </tr>
           <tr>
             <td class="w-auto text-nowrap fw-bold">

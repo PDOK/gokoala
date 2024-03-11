@@ -18,20 +18,25 @@
       <table class="table table-borderless table-sm w-auto">
         <tbody>
         <tr>
+        {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
+          <td class="w-auto text-nowrap fw-bold">
+            Tile Matrix Set
+          </td>
+          <td class="w-auto px-2">
+            {{ get $projections $defaultSrs.Srs }}
+          </td>
+        {{ else }}
           <td class="w-auto text-nowrap">
             <label for="srs" class="col-form-label fw-bold">Tile Matrix Set</label>
           </td>
           <td class="w-auto px-2">
-              {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
-                  {{ get $projections $defaultSrs.Srs }}
-              {{ else }}
-                <select id="srs" class="form-select">
-                    {{ range $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
-                      <option value="{{ $srs.Srs }}">{{ get $projections (index $srs).Srs }}</option>
-                    {{ end }}
-                </select>
+            <select id="srs" class="form-select">
+              {{ range $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
+              <option value="{{ $srs.Srs }}">{{ get $projections (index $srs).Srs }}</option>
               {{ end }}
+            </select>
           </td>
+        {{ end }}
         </tr>
         <tr>
             {{ if .Config.LastUpdatedBy }}
