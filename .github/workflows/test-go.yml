@@ -35,6 +35,9 @@ jobs:
       - name: Benchmark
         run: go test -v ./... -bench=. -run=^# -benchmem -count=5
 
+      - name: Generate CRD (for testing)
+        run: hack/generate-crd.sh
+
       - name: Update coverage report
         uses: ncruces/go-coverage-report@v0
         with:
