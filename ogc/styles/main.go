@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/engine"
 
 	"github.com/go-chi/chi/v5"
@@ -47,7 +48,10 @@ func NewStyles(e *engine.Engine) *Styles {
 			projection := projections[supportedSrs.Srs]
 			styleInstanceID := style.ID + "__" + strings.ToLower(projection)
 			// Render metadata templates
-			e.RenderTemplatesWithParams(style,
+			e.RenderTemplatesWithParams(struct {
+				Metadata   config.StyleMetadata
+				Projection string
+			}{Metadata: style, Projection: projection},
 				nil,
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", styleInstanceID))
 			styleMetadataBreadcrumbs := stylesBreadcrumbs
@@ -58,7 +62,7 @@ func NewStyles(e *engine.Engine) *Styles {
 				},
 				{
 					Name: "Metadata",
-					Path: stylesCrumb + style.ID + "/metadata",
+					Path: stylesCrumb + styleInstanceID + "/metadata",
 				},
 			}...)
 			e.RenderTemplatesWithParams(style,
