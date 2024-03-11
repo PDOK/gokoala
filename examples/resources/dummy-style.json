@@ -2,7 +2,6 @@
   "version": 8,
   "name": "Dummy Mapbox Style, just for example purposes",
   "id": "dummy_style",
-  "zoom": 12,
   "pitch": 50,
   "center": [
     0,
@@ -33,7 +32,9 @@
       "type": "vector",
       "tiles": [
         "{{ .Config.BaseURL }}/tiles/{{ .Params.Projection }}/{z}/{y}/{x}?f=mvt"
-      ]
+      ],
+      "minzoom": {{ .Params.ZoomLevelRange.Start }},
+      "maxzoom": {{ .Params.ZoomLevelRange.End }}
     }
   }
 }

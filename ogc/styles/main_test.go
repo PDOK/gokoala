@@ -298,7 +298,7 @@ func TestTile_Styles(t *testing.T) {
 
 func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	rr := httptest.NewRecorder()
-	l, err := net.Listen("tcp", "localhost:9091")
+	l, err := net.Listen("tcp", "localhost:10090")
 	if err != nil {
 		log.Fatal(err)
 	}
