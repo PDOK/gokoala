@@ -63,7 +63,7 @@ func setDefaults(config *Config) error {
 	}
 
 	if len(config.AvailableLanguages) == 0 {
-		config.AvailableLanguages = append(config.AvailableLanguages, language.Dutch) // default to Dutch only
+		config.AvailableLanguages = append(config.AvailableLanguages, Language{language.Dutch}) // default to Dutch only
 	}
 	return nil
 }
@@ -106,15 +106,15 @@ func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error 
 }
 
 type Config struct {
-	Version            string         `yaml:"version" json:"version" validate:"required,semver"`
-	Title              string         `yaml:"title" json:"title"  validate:"required"`
-	ServiceIdentifier  string         `yaml:"serviceIdentifier"  json:"serviceIdentifier" validate:"required"`
-	Abstract           string         `yaml:"abstract" json:"abstract" validate:"required"`
-	License            License        `yaml:"license" json:"license" validate:"required"`
-	BaseURL            URL            `yaml:"baseUrl" json:"baseUrl" validate:"required,url"`
-	DatasetCatalogURL  URL            `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl" validate:"url"`
-	AvailableLanguages []language.Tag `yaml:"availableLanguages" json:"availableLanguages"`
-	OgcAPI             OgcAPI         `yaml:"ogcApi" json:"ogcApi" validate:"required"`
+	Version            string     `yaml:"version" json:"version" validate:"required,semver"`
+	Title              string     `yaml:"title" json:"title"  validate:"required"`
+	ServiceIdentifier  string     `yaml:"serviceIdentifier"  json:"serviceIdentifier" validate:"required"`
+	Abstract           string     `yaml:"abstract" json:"abstract" validate:"required"`
+	License            License    `yaml:"license" json:"license" validate:"required"`
+	BaseURL            URL        `yaml:"baseUrl" json:"baseUrl" validate:"required,url"`
+	DatasetCatalogURL  URL        `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl" validate:"url"`
+	AvailableLanguages []Language `yaml:"availableLanguages" json:"availableLanguages"`
+	OgcAPI             OgcAPI     `yaml:"ogcApi" json:"ogcApi" validate:"required"`
 	// +optional
 	Thumbnail *string `yaml:"thumbnail" json:"thumbnail"`
 	// +optional
@@ -131,6 +131,27 @@ type Config struct {
 	DatasetMetadata DatasetMetadata `yaml:"datasetMetadata" json:"datasetMetadata"`
 	// +optional
 	Resources *Resources `yaml:"resources" json:"resources"`
+}
+
+// Language represents a BCP 47 language tag.
+// +kubebuilder:validation:Type=string
+type Language struct {
+	language.Tag
+}
+
+// MarshalJSON turn language tag into JSON
+func (l *Language) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l.Tag.String())
+}
+
+// UnmarshalJSON turn JSON into Language
+func (l *Language) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+	*l = Language{language.Make(s)}
+	return nil
 }
 
 func (c *Config) CookieMaxAge() int {
@@ -158,7 +179,7 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 type Support struct {
 	Name string `yaml:"name" json:"name" validate:"required"`
 	// +kubebuilder:validation:Type=string
-	URL string `yaml:"url" json:"url" validate:"required,url"`
+	URL URL `yaml:"url" json:"url" validate:"required,url"`
 
 	// +optional
 	Email string `yaml:"email" json:"email" validate:"omitempty,email"`
@@ -355,6 +376,7 @@ type OgcAPIStyles struct {
 
 type OgcAPIFeatures struct {
 	// +kubebuilder:default="OSM"
+	// +kubebuilder:validation:Enum=OSM;BRT
 	Basemap     string                `yaml:"basemap" json:"basemap" default:"OSM"`
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections" validate:"required,dive"`
 	// +optional
@@ -454,6 +476,7 @@ type GeoPackageCommon struct {
 
 	// optional timeout after which queries are canceled
 	// +kubebuilder:default="15s"
+	// +kubebuilder:validation:Format=duration
 	QueryTimeout time.Duration `yaml:"queryTimeout" json:"queryTimeout" validate:"required" default:"15s"`
 
 	// when the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
@@ -565,8 +588,7 @@ type TemporalProperties struct {
 
 type License struct {
 	Name string `yaml:"name" json:"name" validate:"required"`
-	// +kubebuilder:validation:Type=string
-	URL string `yaml:"url" json:"url" validate:"required,url"`
+	URL  URL    `yaml:"url" json:"url" validate:"required,url"`
 }
 
 // StyleMetadata based on OGC API Styles Requirement 7B
@@ -643,6 +665,7 @@ type PropertiesSchema struct {
 //
 // +kubebuilder:validation:Type=string
 // +kubebuilder:validation:Format=uri
+// +kubebuilder:validation:Pattern=`^https?://`
 type URL struct {
 	*url.URL
 }

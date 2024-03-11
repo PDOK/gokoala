@@ -46,7 +46,7 @@ func TestNewTiles(t *testing.T) {
 					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
-					AvailableLanguages: []language.Tag{language.Dutch},
+					AvailableLanguages: []config.Language{{Tag: language.Dutch}},
 					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
@@ -78,7 +78,7 @@ func TestNewTiles(t *testing.T) {
 					Version:            "3.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
-					AvailableLanguages: []language.Tag{language.Dutch},
+					AvailableLanguages: []config.Language{{Tag: language.Dutch}},
 					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,

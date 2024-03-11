@@ -72,7 +72,7 @@ type ContentNegotiation struct {
 	mediaTypesByFormat map[string]string
 }
 
-func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiation {
+func newContentNegotiation(availableLanguages []config.Language) *ContentNegotiation {
 	availableMediaTypes := []contenttype.MediaType{
 		// in order
 		contenttype.NewMediaType(MediaTypeJSON),
@@ -100,9 +100,14 @@ func newContentNegotiation(availableLanguages []language.Tag) *ContentNegotiatio
 
 	mediaTypesByFormat := util.ReverseMap(formatsByMediaType)
 
+	languageTags := make([]language.Tag, 0, len(availableLanguages))
+	for _, availableLanguage := range availableLanguages {
+		languageTags = append(languageTags, availableLanguage.Tag)
+	}
+
 	return &ContentNegotiation{
 		availableMediaTypes: availableMediaTypes,
-		availableLanguages:  availableLanguages,
+		availableLanguages:  languageTags,
 		formatsByMediaType:  formatsByMediaType,
 		mediaTypesByFormat:  mediaTypesByFormat,
 	}
