@@ -1,13 +1,10 @@
-// +groupName=test
 package config
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"math/rand"
-	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -115,8 +112,6 @@ func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error 
 	return nil
 }
 
-// Config the configuration for running this GoKoala instance. Config can be provided
-// by means of a YAML config file or through a Kubernetes CRD.
 type Config struct {
 	Version            string     `yaml:"version" json:"version" validate:"required,semver"`
 	Title              string     `yaml:"title" json:"title"  validate:"required"`
@@ -143,27 +138,6 @@ type Config struct {
 	DatasetMetadata DatasetMetadata `yaml:"datasetMetadata" json:"datasetMetadata"`
 	// +optional
 	Resources *Resources `yaml:"resources" json:"resources"`
-}
-
-// Language represents a BCP 47 language tag.
-// +kubebuilder:validation:Type=string
-type Language struct {
-	language.Tag
-}
-
-// MarshalJSON turn language tag into JSON
-func (l *Language) MarshalJSON() ([]byte, error) {
-	return json.Marshal(l.Tag.String())
-}
-
-// UnmarshalJSON turn JSON into Language
-func (l *Language) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-	*l = Language{language.Make(s)}
-	return nil
 }
 
 func (c *Config) CookieMaxAge() int {
@@ -381,9 +355,10 @@ type OgcAPITiles struct {
 }
 
 type OgcAPIStyles struct {
-	Default          string          `yaml:"default" json:"default" validate:"required"`
-	MapboxStylesPath string          `yaml:"mapboxStylesPath" json:"mapboxStylesPath" validate:"required,dir"`
-	SupportedStyles  []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required"`
+	Default          string `yaml:"default" json:"default" validate:"required"`
+	MapboxStylesPath string `yaml:"mapboxStylesPath" json:"mapboxStylesPath" validate:"required,dir"`
+	// bbased on OGC API Styles Requirement 7B
+	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required"`
 }
 
 type OgcAPIFeatures struct {
@@ -474,8 +449,10 @@ type PostGIS struct {
 }
 
 type GeoPackage struct {
+	// Settings to read a GeoPackage from local disk
 	// +optional
 	Local *GeoPackageLocal `yaml:"local" json:"local" validate:"required_without_all=Cloud"`
+	// Settings to read a GeoPackage as a Cloud-Backed SQLite database
 	// +optional
 	Cloud *GeoPackageCloud `yaml:"cloud" json:"cloud" validate:"required_without_all=Local"`
 }
@@ -496,7 +473,6 @@ type GeoPackageCommon struct {
 	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree" json:"maxBBoxSizeToUseWithRTree" validate:"required" default:"30000"`
 }
 
-// GeoPackageLocal settings to read a GeoPackage from local disk
 type GeoPackageLocal struct {
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
@@ -504,7 +480,6 @@ type GeoPackageLocal struct {
 	File string `yaml:"file" json:"file" validate:"file"`
 }
 
-// GeoPackageCloud settings to read a GeoPackage as a Cloud-Backed SQLite database
 type GeoPackageCloud struct {
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
@@ -556,7 +531,7 @@ type GeoPackageCloudCache struct {
 	// +kubebuilder:default="1Gb"
 	MaxSize string `yaml:"maxSize" json:"maxSize" default:"1Gb"`
 
-	// When true a warm-up query is executed on startup which aims to fill the local cache. Does increase startup time.
+	// when true a warm-up query is executed on startup which aims to fill the local cache. Does increase startup time.
 	// +kubebuilder:default=false
 	WarmUp bool `yaml:"warmUp" json:"warmUp" default:"false"`
 }
@@ -603,7 +578,6 @@ type License struct {
 	URL  URL    `yaml:"url" json:"url" validate:"required,url"`
 }
 
-// StyleMetadata based on OGC API Styles Requirement 7B
 type StyleMetadata struct {
 	ID    string `yaml:"id" json:"id"`
 	Title string `yaml:"title" json:"title"`
@@ -622,7 +596,8 @@ type StyleMetadata struct {
 	// +optional
 	Scope *string `yaml:"scope" json:"scope"`
 	// +optional
-	Version     *string      `yaml:"version" json:"version" `
+	Version *string `yaml:"version" json:"version" `
+	// Based on OGC API Styles Requirement 7B
 	Stylesheets []StyleSheet `yaml:"stylesheets" json:"stylesheets"`
 	Layers      []struct {
 		ID string `yaml:"id" json:"id"`
@@ -632,10 +607,10 @@ type StyleMetadata struct {
 		// +optional
 		PropertiesSchema *PropertiesSchema `yaml:"propertiesSchema" json:"propertiesSchema"`
 	} `yaml:"layers" json:"layers"`
+	// Based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
 	Links []Link `yaml:"links" json:"links"`
 }
 
-// StyleSheet based on OGC API Styles Requirement 7B
 type StyleSheet struct {
 	// +optional
 	Title *string `yaml:"title" json:"title"`
@@ -645,10 +620,10 @@ type StyleSheet struct {
 	Specification *string `yaml:"specification" json:"specification"`
 	// +optional
 	Native *bool `yaml:"native" json:"native"`
-	Link   Link  `yaml:"link" json:"link"`
+	// Based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
+	Link Link `yaml:"link" json:"link"`
 }
 
-// Link based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
 type Link struct {
 	AssetFilename string `yaml:"assetFilename" json:"assetFilename"`
 	Rel           string `yaml:"rel" json:"rel"` // This is allowed to be empty according to the spec, but we leverage this
@@ -669,48 +644,4 @@ type Link struct {
 
 type PropertiesSchema struct {
 	// placeholder
-}
-
-// URL Custom net.URL compatible with YAML and JSON (un)marshalling and kubebuilder.
-// In addition, it also removes trailing slash if present, so we can easily
-// append a longer path without having to worry about double slashes.
-//
-// +kubebuilder:validation:Type=string
-// +kubebuilder:validation:Format=uri
-// +kubebuilder:validation:Pattern=`^https?://`
-type URL struct {
-	*url.URL
-}
-
-// UnmarshalYAML parses a string to URL and also removes trailing slash if present,
-// so we can easily append a longer path without having to worry about double slashes.
-func (o *URL) UnmarshalYAML(unmarshal func(any) error) error {
-	var s string
-	err := unmarshal(&s)
-	if err != nil {
-		return err
-	}
-	parsedURL, err := url.ParseRequestURI(strings.TrimSuffix(s, "/"))
-	o.URL = parsedURL
-	return err
-}
-
-// MarshalJSON turns URL into JSON.
-func (o *URL) MarshalJSON() ([]byte, error) {
-	return json.Marshal(o.URL.String())
-}
-
-// UnmarshalJSON parses a string to URL and also removes trailing slash if present,
-// so we can easily append a longer path without having to worry about double slashes.
-func (o *URL) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-	if parsedURL, err := url.ParseRequestURI(strings.TrimSuffix(s, "/")); err != nil {
-		return err
-	} else if parsedURL != nil {
-		*o = URL{parsedURL}
-	}
-	return nil
 }
