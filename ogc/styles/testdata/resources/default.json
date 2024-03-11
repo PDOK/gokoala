@@ -1,7 +1,7 @@
 {
   "version": 8,
-  "name": "Dummy Mapbox Style, just for example purposes",
-  "id": "dummy_style",
+  "name": "Dummy Mapbox Style, just for testing purposes",
+  "id": "default",
   "zoom": 12,
   "pitch": 50,
   "center": [
@@ -15,17 +15,17 @@
         [
           "==",
           "status",
-          "Example"
+          "Testing"
         ]
       ],
-      "id": "example",
+      "id": "testing",
       "type": "line",
       "paint": {
         "line-color": "rgb(170, 170, 170)",
         "line-width": 2
       },
-      "source": "example",
-      "source-layer": "example"
+      "source": "testing",
+      "source-layer": "testing"
     }
   ],
   "sources": {

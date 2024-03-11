@@ -2,24 +2,25 @@
 {
   {{ if .Params }}
   {{ $baseUrl := .Config.BaseURL }}
-  {{ $style := .Params.ID }}
+  {{ $style := .Params.Metadata.ID }}
+  {{ $projection := .Params.Projection }}
   "id": "{{ $style }}",
-  "title": "{{ .Params.Title }}",
-  "description": "{{ unmarkdown .Params.Description }}",
+  "title": "{{ .Params.Metadata.Title }}",
+  "description": "{{ unmarkdown .Params.Metadata.Description }}",
   "keywords": [
-    {{ range $kw_index, $keyword := .Params.Keywords }}
+    {{ range $kw_index, $keyword := .Params.Metadata.Keywords }}
     {{ if $kw_index }},{{end}}
     "{{ $keyword }}"
     {{ end }}
   ],
-  "pointOfContact": "{{ .Params.PointOfContact }}",
-  "license": "{{ .Params.License }}",
-  "created": "{{ .Params.Created }}",
-  "updated": "{{ .Params.Updated }}",
-  "scope": "{{ .Params.Scope }}",
-  "version": "{{ .Params.Version }}",
+  "pointOfContact": "{{ .Params.Metadata.PointOfContact }}",
+  "license": "{{ .Params.Metadata.License }}",
+  "created": "{{ .Params.Metadata.Created }}",
+  "updated": "{{ .Params.Metadata.Updated }}",
+  "scope": "{{ .Params.Metadata.Scope }}",
+  "version": "{{ .Params.Metadata.Version }}",
   "stylesheets": [
-    {{ range $sh_index, $stylesheet := .Params.Stylesheets }}
+    {{ range $sh_index, $stylesheet := .Params.Metadata.Stylesheets }}
     {{ if $sh_index }},{{ end }}
     {
         "title": "{{ $stylesheet.Title }}",
@@ -27,7 +28,7 @@
         "specification": "{{ $stylesheet.Specification }}",
         "native": {{ $stylesheet.Native }},
         "link": {
-            "href": "{{ $baseUrl }}/styles/{{ $style }}?f={{ $stylesheet.Link.Format }}",
+            "href": "{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f={{ $stylesheet.Link.Format }}",
             "rel": "stylesheet",
             "type": "{{ $stylesheet.Link.Type }}"
         }
@@ -36,12 +37,12 @@
   ],
   "links": [
     {
-        "href": "{{ $baseUrl }}/styles/{{ $style }}/metadata",
+        "href": "{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}/metadata",
         "rel": "self",
-        "title": "Style Metadata for {{ $style }}"
+        "title": "Style Metadata for {{ $style }} ({{ $projection }})"
     }
-    {{ if .Params.Links }}, {{ end }}
-    {{ range $l_index, $link := .Params.Links }}
+    {{ if .Params.Metadata.Links }}, {{ end }}
+    {{ range $l_index, $link := .Params.Metadata.Links }}
     {{ if $l_index }},{{ end }}
     {
         "href": "{{ $baseUrl }}/resources/{{ $link.AssetFilename }}",

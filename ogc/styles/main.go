@@ -4,16 +4,23 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"strings"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/engine"
 
 	"github.com/go-chi/chi/v5"
 )
 
 const (
-	templatesDir = "ogc/styles/templates/"
-	stylesPath   = "/styles"
-	stylesCrumb  = "styles/"
+	templatesDir        = "ogc/styles/templates/"
+	stylesPath          = "/styles"
+	stylesCrumb         = "styles/"
+	projectionDelimiter = "__"
+)
+
+var (
+	defaultProjection = ""
 )
 
 type Styles struct {
@@ -39,46 +46,56 @@ func NewStyles(e *engine.Engine) *Styles {
 		engine.NewTemplateKey(templatesDir+"styles.go.json"),
 		engine.NewTemplateKey(templatesDir+"styles.go.html"))
 
-	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
-		// Render metadata templates
-		e.RenderTemplatesWithParams(style,
-			nil,
-			engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", style.ID))
-		styleMetadataBreadcrumbs := stylesBreadcrumbs
-		styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
-			{
-				Name: style.Title,
-				Path: stylesCrumb + style.ID,
-			},
-			{
-				Name: "Metadata",
-				Path: stylesCrumb + style.ID + "/metadata",
-			},
-		}...)
-		e.RenderTemplatesWithParams(style,
-			styleMetadataBreadcrumbs,
-			engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", style.ID))
+	projections := map[string]string{"EPSG:28992": "NetherlandsRDNewQuad", "EPSG:3035": "EuropeanETRS89_LAEAQuad", "EPSG:3857": "WebMercatorQuad"}
+	defaultProjection = strings.ToLower(projections[e.Config.OgcAPI.Tiles.SupportedSrs[0].Srs])
 
-		// Add existing style definitions to rendered templates
-		for _, stylesheet := range style.Stylesheets {
-			formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
-			styleKey := engine.TemplateKey{
-				Name:         style.ID + formatExtension,
-				Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
-				Format:       *stylesheet.Link.Format,
-				InstanceName: style.ID + "." + *stylesheet.Link.Format,
-			}
-			e.RenderTemplatesWithParams(nil, nil, styleKey)
-			styleBreadCrumbs := stylesBreadcrumbs
-			styleBreadCrumbs = append(styleBreadCrumbs, []engine.Breadcrumb{
+	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
+		for _, supportedSrs := range e.Config.OgcAPI.Tiles.SupportedSrs {
+			projection := projections[supportedSrs.Srs]
+			styleInstanceID := style.ID + projectionDelimiter + strings.ToLower(projection)
+			// Render metadata templates
+			e.RenderTemplatesWithParams(struct {
+				Metadata   config.StyleMetadata
+				Projection string
+			}{Metadata: style, Projection: projection},
+				nil,
+				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", styleInstanceID))
+			styleMetadataBreadcrumbs := stylesBreadcrumbs
+			styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
 				{
-					Name: style.Title,
-					Path: stylesCrumb + style.ID,
+					Name: style.Title + " (" + projection + ")",
+					Path: stylesCrumb + styleInstanceID,
+				},
+				{
+					Name: "Metadata",
+					Path: stylesCrumb + styleInstanceID + "/metadata",
 				},
 			}...)
 			e.RenderTemplatesWithParams(style,
-				styleBreadCrumbs,
-				engine.NewTemplateKeyWithName(templatesDir+"style.go.html", style.ID))
+				styleMetadataBreadcrumbs,
+				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", styleInstanceID))
+
+			// Add existing style definitions to rendered templates
+			for _, stylesheet := range style.Stylesheets {
+				formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
+				styleKey := engine.TemplateKey{
+					Name:         style.ID + formatExtension,
+					Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
+					Format:       *stylesheet.Link.Format,
+					InstanceName: styleInstanceID + "." + *stylesheet.Link.Format,
+				}
+				e.RenderTemplatesWithParams(struct{ Projection string }{Projection: projection}, nil, styleKey)
+				styleBreadCrumbs := stylesBreadcrumbs
+				styleBreadCrumbs = append(styleBreadCrumbs, []engine.Breadcrumb{
+					{
+						Name: style.Title + " (" + projection + ")",
+						Path: stylesCrumb + styleInstanceID,
+					},
+				}...)
+				e.RenderTemplatesWithParams(style,
+					styleBreadCrumbs,
+					engine.NewTemplateKeyWithName(templatesDir+"style.go.html", styleInstanceID))
+			}
 		}
 	}
 
@@ -103,20 +120,28 @@ func (s *Styles) Styles() http.HandlerFunc {
 
 func (s *Styles) Style() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		styleID := chi.URLParam(r, "style")
+		style := chi.URLParam(r, "style")
+		styleID := strings.Split(style, projectionDelimiter)[0]
+		// Previously, the API did not utilise separate styles per projection; whereas the current implementation
+		// advertises all possible combinations of available styles and available projections as separate styles.
+		// To ensure that the use of style URLs without projection remains possible for previously published APIs,
+		// URLs without an explicit projection are defaulted to the first configured projection.
+		if style == styleID {
+			style += projectionDelimiter + defaultProjection
+		}
 		styleFormat := s.engine.CN.NegotiateFormat(r)
 		// TODO: improve?
 		var key engine.TemplateKey
 		if styleFormat == engine.FormatHTML {
 			key = engine.NewTemplateKeyWithNameAndLanguage(
-				templatesDir+"style.go.html", styleID, s.engine.CN.NegotiateLanguage(w, r))
+				templatesDir+"style.go.html", style, s.engine.CN.NegotiateLanguage(w, r))
 		} else {
 			var instanceName string
 			if slices.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
-				instanceName = styleID + "." + styleFormat
+				instanceName = style + "." + styleFormat
 			} else {
 				styleFormat = "mapbox"
-				instanceName = styleID + ".mapbox"
+				instanceName = style + ".mapbox"
 			}
 			key = engine.TemplateKey{
 				Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
@@ -132,9 +157,17 @@ func (s *Styles) Style() http.HandlerFunc {
 
 func (s *Styles) StyleMetadata() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		styleID := chi.URLParam(r, "style")
+		style := chi.URLParam(r, "style")
+		styleID := strings.Split(style, projectionDelimiter)[0]
+		// Previously, the API did not utilise separate styles per projection; whereas the current implementation
+		// advertises all possible combinations of available styles and available projections as separate styles.
+		// To ensure that the use of style URLs without projection remains possible for previously published APIs,
+		// URLs without an explicit projection are defaulted to the first configured projection.
+		if style == styleID {
+			style += projectionDelimiter + defaultProjection
+		}
 		key := engine.NewTemplateKeyWithNameAndLanguage(
-			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), styleID, s.engine.CN.NegotiateLanguage(w, r))
+			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), style, s.engine.CN.NegotiateLanguage(w, r))
 		s.engine.ServePage(w, r, key)
 	}
 }

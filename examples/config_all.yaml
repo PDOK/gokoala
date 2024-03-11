@@ -49,6 +49,10 @@ ogcApi:
         zoomLevelRange:
           start: 12
           end: 12
+      - srs: EPSG:3035
+        zoomLevelRange:
+          start: 14
+          end: 14
 
   features:
     datasources:
@@ -82,3 +86,14 @@ ogcApi:
     supportedStyles:
       - id: "dummy-style"
         title: "Dummy style"
+        scope: "style"
+        stylesheets:
+          - title: "Mapbox Style"
+            version: "8"
+            specification: "https://docs.mapbox.com/mapbox-gl-js/style-spec/"
+            native: true
+            link:
+              assetFilename: "dummy-style.json"
+              rel: "stylesheet"
+              type: "application/vnd.mapbox.style+json"
+              format: "mapbox"
