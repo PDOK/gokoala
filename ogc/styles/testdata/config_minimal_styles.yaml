@@ -13,7 +13,7 @@ ogcApi:
     # base URL to webserver or object storage (e.g. azure blob or S3)
     # which hosts the tiles.
     tileServer:
-      http://localhost:9090
+      http://localhost:9091
     types:
       - vector
     supportedSrs:
