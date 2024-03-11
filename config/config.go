@@ -29,6 +29,7 @@ const (
 	CookieMaxAge = 60 * 60 * 24
 )
 
+// NewConfig read YAML config file, required to start GoKoala
 func NewConfig(configFile string) (*Config, error) {
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {
@@ -43,17 +44,23 @@ func NewConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
-	return InitConfig(config)
+	return config, nil
 }
 
-func InitConfig(config *Config) (*Config, error) {
-	if err := setDefaults(config); err != nil {
-		return nil, err
+func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	type cfg Config
+	if err := unmarshal((*cfg)(c)); err != nil {
+		return err
 	}
-	if err := validate(config); err != nil {
-		return nil, err
+
+	// init config
+	if err := setDefaults(c); err != nil {
+		return err
 	}
-	return config, nil
+	if err := validate(c); err != nil {
+		return err
+	}
+	return nil
 }
 
 func setDefaults(config *Config) error {
@@ -62,6 +69,7 @@ func setDefaults(config *Config) error {
 		return fmt.Errorf("failed to set default configuration: %w", err)
 	}
 
+	// custom default logic
 	if len(config.AvailableLanguages) == 0 {
 		config.AvailableLanguages = append(config.AvailableLanguages, Language{language.Dutch}) // default to Dutch only
 	}
@@ -69,6 +77,7 @@ func setDefaults(config *Config) error {
 }
 
 func validate(config *Config) error {
+	// process 'validate' tags
 	v := validator.New()
 	err := v.Struct(config)
 	if err != nil {
@@ -85,6 +94,7 @@ func validate(config *Config) error {
 		}
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
+
 	// custom validations
 	if config.OgcAPI.Features != nil {
 		return validateCollectionsTemporalConfig(config.OgcAPI.Features.Collections)
@@ -105,6 +115,8 @@ func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error 
 	return nil
 }
 
+// Config the configuration for running this GoKoala instance. Config can be provided
+// by means of a YAML config file or through a Kubernetes CRD.
 type Config struct {
 	Version            string     `yaml:"version" json:"version" validate:"required,semver"`
 	Title              string     `yaml:"title" json:"title"  validate:"required"`
