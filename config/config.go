@@ -359,7 +359,7 @@ type OgcAPITiles struct {
 type OgcAPIStyles struct {
 	Default          string `yaml:"default" json:"default" validate:"required"`
 	MapboxStylesPath string `yaml:"mapboxStylesPath" json:"mapboxStylesPath" validate:"required,dir"`
-	// bbased on OGC API Styles Requirement 7B
+	// based on OGC API Styles Requirement 7B
 	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required"`
 }
 
