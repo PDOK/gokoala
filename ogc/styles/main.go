@@ -52,6 +52,7 @@ func NewStyles(e *engine.Engine) *Styles {
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
 		for _, supportedSrs := range e.Config.OgcAPI.Tiles.SupportedSrs {
 			projection := projections[supportedSrs.Srs]
+			zoomLevelRange := supportedSrs.ZoomLevelRange
 			styleInstanceID := style.ID + projectionDelimiter + strings.ToLower(projection)
 			// Render metadata templates
 			e.RenderTemplatesWithParams(struct {
@@ -84,7 +85,10 @@ func NewStyles(e *engine.Engine) *Styles {
 					Format:       *stylesheet.Link.Format,
 					InstanceName: styleInstanceID + "." + *stylesheet.Link.Format,
 				}
-				e.RenderTemplatesWithParams(struct{ Projection string }{Projection: projection}, nil, styleKey)
+				e.RenderTemplatesWithParams(struct {
+					Projection     string
+					ZoomLevelRange config.ZoomLevelRange
+				}{Projection: projection, ZoomLevelRange: zoomLevelRange}, nil, styleKey)
 				styleBreadCrumbs := stylesBreadcrumbs
 				styleBreadCrumbs = append(styleBreadCrumbs, []engine.Breadcrumb{
 					{
