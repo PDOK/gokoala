@@ -35,7 +35,7 @@ jobs:
       - name: Benchmark
         run: go test -v ./... -bench=. -run=^# -benchmem -count=5
 
-      - name: Generate CRD (for testing)
+      - name: Test generating example CRD
         run: hack/generate-crd.sh
 
       - name: Update coverage report

@@ -9,3 +9,4 @@ viewer/.angular
 viewer/dist
 viewer/node_modules
 viewer/cypress.env.json
+hack/tmp
