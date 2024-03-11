@@ -2,16 +2,20 @@
 {
   {{ if .Config.OgcAPI.Styles }}
   {{ $baseUrl := .Config.BaseURL }}
+  {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
+  {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
   "default": "{{ .Config.OgcAPI.Styles.Default }}",
   "styles": [
     {{ range $st_index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
     {{ if $st_index }},{{ end }}
+    {{ range $srs_index, $srs := $supportedSrs }}
+    {{ if $srs_index }},{{ end }}
     {
       "id": "{{ $style.ID }}",
-      "title": "{{ $style.Title }}",
+      "title": "{{ $style.Title }} ({{ get $projections (index $srs).Srs }})",
       "links": [
         {
-          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}/metadata",
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}/metadata",
           "rel": "describedby",
           "title": "Style Metadata for {{ $style.ID }}"
         }
@@ -19,7 +23,7 @@
         {{ range $sh_index, $stylesheet := $style.Stylesheets }}
         {{ if $sh_index }},{{ end }}
         {
-          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}?f={{ $stylesheet.Link.Format }}",
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}?f={{ $stylesheet.Link.Format }}",
           "rel": "stylesheet",
           "type": "{{ $stylesheet.Link.Type }}"
         }
@@ -40,6 +44,7 @@
         {{ end }}
       ]
     }
+    {{ end }}
     {{ end }}
   ]
   {{ end }}
