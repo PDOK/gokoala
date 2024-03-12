@@ -24,26 +24,30 @@ jobs:
       - name: Download
         run: go mod download all
 
-      - name: Generate
-        run: go generate -v ./...
+      - name: Generate (fail when generated code is not committed)
+        run: go generate -v ./... && git diff ':!go.sum' --exit-code
 
       - name: Build
         run: go build -v ./...
 
-      - name: Test
-        run: go test -v -shuffle=on ./...
+      - name: Unit Test
+        run: |
+          go test -v -shuffle=on -coverprofile cover.out.tmp ./...
+          # remove generate code from coverage results
+          grep -v "zz_generated" cover.out.tmp > cover.out
+
+      - name: Test generating example CRD
+        run: hack/generate-crd.sh
 
       # we don't (yet) fail on benchmark results, these are just to make sure
       # the benchmarks keep working
       - name: Benchmark
         run: go test -v ./... -bench=. -run=^# -benchmem -count=5
 
-      - name: Test generating example CRD
-        run: hack/generate-crd.sh
-
       - name: Update coverage report
         uses: ncruces/go-coverage-report@v0
         with:
+          coverage-file: cover.out
           report: true
           chart: false
           amend: false
