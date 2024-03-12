@@ -20,7 +20,7 @@ func NewProcesses(e *engine.Engine) *Processes {
 	return processes
 }
 
-func (p *Processes) forwarder(processServer config.YAMLURL) http.HandlerFunc {
+func (p *Processes) forwarder(processServer config.URL) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		targetURL := *processServer.URL
 		targetURL.Path = processServer.URL.Path + r.URL.Path

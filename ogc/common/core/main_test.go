@@ -8,11 +8,9 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/PDOK/gokoala/engine"
-	"golang.org/x/text/language"
-
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 )
 
 func init() {
@@ -40,8 +38,8 @@ func TestNewCommonCore(t *testing.T) {
 					Version:            "2.3.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
-					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					AvailableLanguages: []config.Language{{Tag: language.Dutch}},
+					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
 						Tiles:      nil,

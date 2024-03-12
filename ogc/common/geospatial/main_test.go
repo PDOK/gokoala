@@ -13,10 +13,9 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
-
-	"github.com/PDOK/gokoala/engine"
 	"golang.org/x/text/language"
 
+	"github.com/PDOK/gokoala/engine"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -46,11 +45,11 @@ func TestNewCollections(t *testing.T) {
 					Version:            "1.0.0",
 					Title:              "Test API",
 					Abstract:           "Test API description",
-					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					AvailableLanguages: []config.Language{{Tag: language.Dutch}},
+					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: &config.OgcAPI3dGeoVolumes{
-							TileServer: config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 							Collections: config.GeoSpatialCollections{
 								config.GeoSpatialCollection{ID: "buildings"},
 								config.GeoSpatialCollection{ID: "obstacles"},

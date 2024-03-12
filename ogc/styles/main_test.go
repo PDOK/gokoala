@@ -49,12 +49,12 @@ func TestNewStyles(t *testing.T) {
 					Resources: &config.Resources{
 						Directory: "/fakedirectory",
 					},
-					AvailableLanguages: []language.Tag{language.Dutch},
-					BaseURL:            config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					AvailableLanguages: []config.Language{{Tag: language.Dutch}},
+					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: nil,
 						Tiles: &config.OgcAPITiles{
-							TileServer: config.YAMLURL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
 							Types:      []string{"vector"},
 							SupportedSrs: []config.SupportedSrs{
 								{
