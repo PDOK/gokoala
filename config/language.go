@@ -8,7 +8,6 @@ import (
 
 // Language represents a BCP 47 language tag.
 // +kubebuilder:validation:Type=string
-// +kubebuilder:object:generate=true
 type Language struct {
 	language.Tag
 }
