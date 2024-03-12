@@ -4,17 +4,14 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"dario.cat/mergo"
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/creasty/defaults"
 	"github.com/docker/go-units"
@@ -45,6 +42,7 @@ func NewConfig(configFile string) (*Config, error) {
 	return config, nil
 }
 
+// UnmarshalYAML hooks into unmarshalling to set defaults and validate config
 func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	type cfg Config
 	if err := unmarshal((*cfg)(c)); err != nil {
@@ -104,7 +102,8 @@ func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error 
 	var errMessages []string
 	for _, collection := range collections {
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil && collection.Metadata.Extent.Interval == nil {
-			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
+			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
+				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
 		}
 	}
 	if len(errMessages) > 0 {
@@ -209,54 +208,6 @@ type OgcAPI struct {
 	Features *OgcAPIFeatures `yaml:"features" json:"features"`
 	// +optional
 	Processes *OgcAPIProcesses `yaml:"processes" json:"processes"`
-}
-
-type GeoSpatialCollections []GeoSpatialCollection
-
-// Unique lists all unique GeoSpatialCollections (no duplicate IDs),
-// return results in alphabetic order
-func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
-	collectionsByID := g.toMap()
-	flattened := make([]GeoSpatialCollection, 0, len(collectionsByID))
-	for _, v := range collectionsByID {
-		flattened = append(flattened, v)
-	}
-	sort.Slice(flattened, func(i, j int) bool {
-		icomp := flattened[i].ID
-		jcomp := flattened[j].ID
-		// prefer to sort by title when available, collection ID otherwise
-		if flattened[i].Metadata != nil && flattened[i].Metadata.Title != nil {
-			icomp = *flattened[i].Metadata.Title
-		}
-		if flattened[j].Metadata != nil && flattened[j].Metadata.Title != nil {
-			jcomp = *flattened[j].Metadata.Title
-		}
-		return icomp < jcomp
-	})
-	return flattened
-}
-
-// ContainsID check if given collection - by ID - exists
-func (g GeoSpatialCollections) ContainsID(id string) bool {
-	_, ok := g.toMap()[id]
-	return ok
-}
-
-func (g GeoSpatialCollections) toMap() map[string]GeoSpatialCollection {
-	collectionsByID := make(map[string]GeoSpatialCollection)
-	for _, current := range g {
-		existing, ok := collectionsByID[current.ID]
-		if ok {
-			err := mergo.Merge(&existing, current)
-			if err != nil {
-				log.Fatalf("failed to merge 2 collections with the same name '%s': %v", current.ID, err)
-			}
-			collectionsByID[current.ID] = existing
-		} else {
-			collectionsByID[current.ID] = current
-		}
-	}
-	return collectionsByID
 }
 
 // +kubebuilder:object:generate=true
@@ -541,7 +492,7 @@ type GeoPackageCloud struct {
 	LogHTTPRequests bool `yaml:"logHttpRequests" json:"logHttpRequests" default:"false"`
 }
 
-func (gc GeoPackageCloud) CacheDir() (string, error) {
+func (gc *GeoPackageCloud) CacheDir() (string, error) {
 	fileNameWithoutExt := strings.TrimSuffix(gc.File, filepath.Ext(gc.File))
 	if gc.Cache.Path != nil {
 		randomSuffix := strconv.Itoa(rand.Intn(99999)) //nolint:gosec // random isn't used for security purposes
