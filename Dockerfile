@@ -21,10 +21,13 @@ RUN set -eux && \
     apt-get install -y libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite && \
     rm -rf /var/lib/apt/lists/*
 
-RUN go mod download all
+# install controller-gen (used by go generate)
+RUN hack/build-controller-gen.sh
 
 # build & test the binary with debug information removed.
-RUN go test -short && \
+RUN go mod download all && \
+    go generate -v ./... && \
+    go test -short && \
     go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala
 
 # delete all go files (and testdata dirs) so only assets/templates/etc remain, since in a later

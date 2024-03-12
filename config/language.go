@@ -8,6 +8,7 @@ import (
 
 // Language represents a BCP 47 language tag.
 // +kubebuilder:validation:Type=string
+// +kubebuilder:object:generate=true
 type Language struct {
 	language.Tag
 }
@@ -25,4 +26,19 @@ func (l *Language) UnmarshalJSON(b []byte) error {
 	}
 	*l = Language{language.Make(s)}
 	return nil
+}
+
+// DeepCopyInto copy the receiver, write into out. in must be non-nil.
+func (l *Language) DeepCopyInto(out *Language) {
+	*out = *l
+}
+
+// DeepCopy copy the receiver, create a new Language.
+func (l *Language) DeepCopy() *Language {
+	if l == nil {
+		return nil
+	}
+	out := &Language{}
+	l.DeepCopyInto(out)
+	return out
 }
