@@ -25,7 +25,7 @@ jobs:
         run: go mod download all
 
       - name: Generate (fail when generated code is not committed)
-        run: go generate -v ./... && git diff ':!go.sum' --exit-code
+        run: go generate -v ./... && git diff --exit-code ':!go.sum'
 
       - name: Build
         run: go build -v ./...
