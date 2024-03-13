@@ -56,8 +56,8 @@ jobs:
             gokoala:local --config-file /examples/config_all.yaml
       - name: E2E Test => OGC API Features Conformance Validation
         run: |
-          sleep 20
-          docker run -t -v "$(pwd):/mnt" \
+          sleep 30
+          docker run -t -v --net=host "$(pwd):/mnt" \
             docker.io/pdok/ets-ogcapi-features10-docker:latest \
             http://localhost:8080 \
             --generateHtmlReport true \
