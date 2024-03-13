@@ -57,7 +57,12 @@ jobs:
       - name: E2E Test => OGC API Features Conformance Validation
         run: |
           sleep 20
-          curl http://localhost:8080/health
+          docker run -t -v "$(pwd):/mnt" \
+            docker.io/pdok/ets-ogcapi-features10-docker:latest \
+            http://localhost:8080 \
+            --generateHtmlReport true \
+            --outputDir /mnt/output \
+            --exitOnFail
       - name: Stop GoKoala test instance
         run: |
           docker stop gokoala
