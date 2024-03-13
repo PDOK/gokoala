@@ -19,7 +19,7 @@ else
    echo "controller-gen found, using this local install instead of Docker container"
 
    # Run against GoKoala config
-   controller-gen object paths="$(pwd)/hack/crd/..." output:dir="$(pwd)hack/tmp"
+   controller-gen crd paths="$(pwd)/hack/crd/..." output:dir="$(pwd)/hack/tmp"
 fi
 
 # Assertions
