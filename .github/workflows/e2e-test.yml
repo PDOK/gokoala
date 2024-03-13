@@ -57,7 +57,7 @@ jobs:
       - name: E2E Test => OGC API Features Conformance Validation
         run: |
           sleep 30
-          docker run -t -v --net=host "$(pwd):/mnt" \
+          docker run --net=host -t -v "$(pwd):/mnt" \
             docker.io/pdok/ets-ogcapi-features10-docker:latest \
             http://localhost:8080 \
             --generateHtmlReport true \
