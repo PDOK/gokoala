@@ -47,12 +47,14 @@ jobs:
       - name: Start GoKoala test instance
         run: |
           docker run \
+            --net=host \
             -v `pwd`/examples:/examples \
             --rm --detach -p 8080:8080 \
             --name gokoala \
             gokoala:local --config-file /examples/config_all.yaml
       - name: E2E Test => OGC APi Features Conformance Validation
         run: |
+          curl http://localhost:8080 && \
           docker run -t -v --net=host "$(pwd):/mnt" \
             docker.io/pdok/ets-ogcapi-features10-docker:latest \
             http://localhost:8080 \
