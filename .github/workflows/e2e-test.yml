@@ -53,7 +53,7 @@ jobs:
             gokoala:local --config-file /examples/config_all.yaml
       - name: E2E Test => OGC APi Features Conformance Validation
         run: |
-          docker run -t -v "$(pwd):/mnt" \
+          docker run -t -v --net=host "$(pwd):/mnt" \
             docker.io/pdok/ets-ogcapi-features10-docker:latest \
             http://localhost:8080 \
             --generateHtmlReport true \
