@@ -56,7 +56,8 @@ jobs:
             gokoala:local --config-file /examples/config_all.yaml
       - name: E2E Test => OGC API Features Conformance Validation
         run: |
-          curl http://localhost:8080
+          sleep 20
+          curl http://localhost:8080/health
       - name: Stop GoKoala test instance
         run: |
           docker stop gokoala
