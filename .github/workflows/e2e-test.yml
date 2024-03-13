@@ -49,9 +49,12 @@ jobs:
           docker run \
             -v `pwd`/examples:/examples \
             --rm --detach -p 8080:8080 \
+            --health-cmd="curl http://localhost:8080/health" \
+            --health-interval=5s \
+            --health-start-period=10s \
             --name gokoala \
             gokoala:local --config-file /examples/config_all.yaml
-      - name: E2E Test => OGC APi Features Conformance Validation
+      - name: E2E Test => OGC API Features Conformance Validation
         run: |
           curl http://localhost:8080
       - name: Stop GoKoala test instance
