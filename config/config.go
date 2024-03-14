@@ -127,7 +127,8 @@ type Config struct {
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated"`
 	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy" json:"lastUpdatedBy"`
@@ -234,7 +235,8 @@ type GeoSpatialCollectionMetadata struct {
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated"`
 	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy" json:"lastUpdatedBy"`
@@ -579,10 +581,12 @@ type StyleMetadata struct {
 	// +optional
 	License *string `yaml:"license" json:"license"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	Created *string `yaml:"created" json:"created"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	Updated *string `yaml:"updated" json:"updated"`
 	// +optional
 	Scope *string `yaml:"scope" json:"scope"`
