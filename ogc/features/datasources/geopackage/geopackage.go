@@ -91,12 +91,12 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
 		g.fidColumn = gpkgConfig.Local.Fid
-		g.queryTimeout = gpkgConfig.Local.QueryTimeout
+		g.queryTimeout = gpkgConfig.Local.QueryTimeout.Duration
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
 		g.fidColumn = gpkgConfig.Cloud.Fid
-		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout
+		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout.Duration
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 		warmUp = gpkgConfig.Cloud.Cache.WarmUp
 	default:

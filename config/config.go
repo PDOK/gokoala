@@ -10,7 +10,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/creasty/defaults"
@@ -444,8 +443,7 @@ type GeoPackageCommon struct {
 
 	// optional timeout after which queries are canceled
 	// +kubebuilder:default="15s"
-	// +kubebuilder:validation:Format=duration
-	QueryTimeout time.Duration `yaml:"queryTimeout" json:"queryTimeout" validate:"required" default:"15s"`
+	QueryTimeout Duration `yaml:"queryTimeout" json:"queryTimeout" validate:"required" default:"15s"`
 
 	// when the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
 	// +kubebuilder:default=30000

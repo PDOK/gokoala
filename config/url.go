@@ -24,7 +24,7 @@ func (u *URL) UnmarshalYAML(unmarshal func(any) error) error {
 	if err := unmarshal(&s); err != nil {
 		return err
 	}
-	if parsedURL, err := parse(s); err != nil {
+	if parsedURL, err := parseURL(s); err != nil {
 		return err
 	} else if parsedURL != nil {
 		u.URL = parsedURL
@@ -44,7 +44,7 @@ func (u *URL) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &s); err != nil {
 		return err
 	}
-	if parsedURL, err := parse(s); err != nil {
+	if parsedURL, err := parseURL(s); err != nil {
 		return err
 	} else if parsedURL != nil {
 		*u = URL{parsedURL}
@@ -52,12 +52,14 @@ func (u *URL) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// DeepCopyInto copy the receiver, write into out. in must be non-nil.
+// DeepCopyInto copies the receiver, writes into out.
 func (u *URL) DeepCopyInto(out *URL) {
-	*out = *u
+	if out != nil {
+		*out = *u
+	}
 }
 
-// DeepCopy copy the receiver, create a new URL.
+// DeepCopy copies the receiver, creates a new URL.
 func (u *URL) DeepCopy() *URL {
 	if u == nil {
 		return nil
@@ -67,6 +69,6 @@ func (u *URL) DeepCopy() *URL {
 	return out
 }
 
-func parse(s string) (*url.URL, error) {
+func parseURL(s string) (*url.URL, error) {
 	return url.ParseRequestURI(strings.TrimSuffix(s, "/"))
 }

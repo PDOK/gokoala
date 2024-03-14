@@ -27,7 +27,7 @@ func newAddressesGeoPackage() geoPackageBackend {
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
 			Fid:                       "feature_id",
-			QueryTimeout:              15 * time.Second,
+			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
 			MaxBBoxSizeToUseWithRTree: 30000,
 		},
 		File: pwd + "/testdata/bag.gpkg",
@@ -39,7 +39,7 @@ func newTemporalAddressesGeoPackage() geoPackageBackend {
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
 			Fid:                       "feature_id",
-			QueryTimeout:              15 * time.Second,
+			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
 			MaxBBoxSizeToUseWithRTree: 30000,
 		},
 		File: pwd + "/testdata/bag-temporal.gpkg",
