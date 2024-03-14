@@ -12,7 +12,7 @@ import (
 //
 // +kubebuilder:validation:Type=string
 // +kubebuilder:validation:Format=uri
-// +kubebuilder:validation:Pattern=`^https?://`
+// +kubebuilder:validation:Pattern=`^https?://.+`
 type URL struct {
 	*url.URL
 }
