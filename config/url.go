@@ -52,6 +52,11 @@ func (u *URL) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// MarshalYAML turns URL into YAML.
+func (u *URL) MarshalYAML() (interface{}, error) {
+	return u.URL.String(), nil
+}
+
 // DeepCopyInto copies the receiver, writes into out.
 func (u *URL) DeepCopyInto(out *URL) {
 	if out != nil {
