@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/url"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 // URL Custom net.URL compatible with YAML and JSON (un)marshalling and kubebuilder.
@@ -40,16 +42,7 @@ func (u *URL) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON parses a string to URL and also removes trailing slash if present,
 // so we can easily append a longer path without having to worry about double slashes.
 func (u *URL) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-	if parsedURL, err := parseURL(s); err != nil {
-		return err
-	} else if parsedURL != nil {
-		*u = URL{parsedURL}
-	}
-	return nil
+	return yaml.Unmarshal(b, u)
 }
 
 // MarshalYAML turns URL into YAML.
