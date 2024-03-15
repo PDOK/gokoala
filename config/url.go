@@ -36,6 +36,9 @@ func (u *URL) UnmarshalYAML(unmarshal func(any) error) error {
 
 // MarshalJSON turns URL into JSON.
 func (u *URL) MarshalJSON() ([]byte, error) {
+	if u.URL == nil {
+		return json.Marshal("")
+	}
 	return json.Marshal(u.URL.String())
 }
 
@@ -47,6 +50,9 @@ func (u *URL) UnmarshalJSON(b []byte) error {
 
 // MarshalYAML turns URL into YAML.
 func (u *URL) MarshalYAML() (interface{}, error) {
+	if u.URL == nil {
+		return "", nil
+	}
 	return u.URL.String(), nil
 }
 
