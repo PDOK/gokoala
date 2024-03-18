@@ -10,7 +10,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PDOK/gokoala/engine/util"
 	"github.com/creasty/defaults"
@@ -128,7 +127,8 @@ type Config struct {
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated"`
 	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy" json:"lastUpdatedBy"`
@@ -235,7 +235,8 @@ type GeoSpatialCollectionMetadata struct {
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated"`
 	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy" json:"lastUpdatedBy"`
@@ -444,8 +445,7 @@ type GeoPackageCommon struct {
 
 	// optional timeout after which queries are canceled
 	// +kubebuilder:default="15s"
-	// +kubebuilder:validation:Format=duration
-	QueryTimeout time.Duration `yaml:"queryTimeout" json:"queryTimeout" validate:"required" default:"15s"`
+	QueryTimeout Duration `yaml:"queryTimeout" json:"queryTimeout" validate:"required" default:"15s"`
 
 	// when the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
 	// +kubebuilder:default=30000
@@ -581,10 +581,12 @@ type StyleMetadata struct {
 	// +optional
 	License *string `yaml:"license" json:"license"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	Created *string `yaml:"created" json:"created"`
 	// +optional
-	// +kubebuilder:validation:Type=datetime
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Format="date-time"
 	Updated *string `yaml:"updated" json:"updated"`
 	// +optional
 	Scope *string `yaml:"scope" json:"scope"`
