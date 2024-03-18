@@ -24,9 +24,9 @@ jobs:
         run: |
           docker-compose -f ./examples/docker-compose-features-azure.yaml pull \
           && \
-          docker-compose -f ./examples/docker-compose-features-azure.yaml up --no-build --exit-code-from smoketest
+          docker-compose -f ./examples/docker-compose-features-azure.yaml up \
+            --no-build --exit-code-from smoketest
 
-      # E2E Test
       - name: Start GoKoala test instance
         run: |
           docker run \
@@ -34,32 +34,25 @@ jobs:
             --rm --detach -p 8080:8080 \
             --name gokoala \
             gokoala:local --config-file /examples/config_all.yaml
+
+      # E2E Test
       - name: E2E Test => Cypress
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./tests
           browser: chrome
-      - name: Stop GoKoala test instance
-        run: |
-          docker stop gokoala
 
       # E2E Test
-      - name: Start GoKoala test instance
-        run: |
-          docker run \
-            -v `pwd`/examples:/examples \
-            --rm --detach -p 8080:8080 \
-            --name gokoala \
-            gokoala:local --config-file /examples/config_all.yaml
       - name: E2E Test => OGC API Features Conformance Validation
         run: |
-          sleep 20
+          sleep 5
           docker run --net=host -t -v "$(pwd):/mnt" \
             docker.io/pdok/ets-ogcapi-features10-docker:latest \
             http://localhost:8080 \
             --generateHtmlReport true \
             --outputDir /mnt/output \
             --exitOnFail
+
       - name: Stop GoKoala test instance
         run: |
           docker stop gokoala
