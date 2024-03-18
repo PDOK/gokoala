@@ -16,6 +16,8 @@ import (
 // +kubebuilder:validation:Format=uri
 // +kubebuilder:validation:Pattern=`^https?://.+`
 type URL struct {
+	// This is a pointer so the wrapper can directly be used in templates, e.g.: {{ .Config.BaseURL }}
+	// Otherwise you would need .String() or template.URL(). (Might be a bug.)
 	*url.URL
 }
 
