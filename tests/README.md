@@ -1,7 +1,7 @@
 # End-to-end tests
 
 Besides unit- and integration tests (which are stored near the production code) we also use a couple of end-to-end tests.
-These tests are also part of the CI workflow.
+These tests are also part of the [CI workflow](../.github/workflows/e2e-test.yml).
 
 ## Cypress end-to-end tests
 
@@ -18,4 +18,7 @@ See [OGC API Features example](../examples) involving the `config_features_azure
 
 ## OGC Compliance validation
 
-Will be automated in the future, currently [executed manually](../README.md).
+In the case of OGC API Features the complaince is [validated on each PR in CI](.github/workflows/e2e-test.yml)
+using the OGC [TEAM Engine](https://cite.opengeospatial.org/teamengine/). More specifically using a 
+[CLI friendly](https://github.com/PDOK/ets-ogcapi-features10-docker) version of this tool. GoKoala currently
+passes all OGC API Features compliance tests.
