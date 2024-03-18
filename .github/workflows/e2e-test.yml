@@ -51,7 +51,8 @@ jobs:
             http://localhost:8080 \
             --generateHtmlReport true \
             --outputDir /mnt/output \
-            --exitOnFail
+            --exitOnFail \
+            --prettyPrint
 
       - name: Stop GoKoala test instance
         run: |
