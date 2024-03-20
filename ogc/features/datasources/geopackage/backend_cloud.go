@@ -7,13 +7,10 @@ import (
 	"log"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/google/uuid"
 
 	cloudsqlitevfs "github.com/PDOK/go-cloud-sqlite-vfs"
 	"github.com/jmoiron/sqlx"
-)
-
-const (
-	vfsName = "cloudbackedvfs"
 )
 
 // Cloud-Backed SQLite (CBS) GeoPackage in Azure or Google object storage
@@ -36,6 +33,7 @@ func newCloudBackedGeoPackage(gpkg *config.GeoPackageCloud) geoPackageBackend {
 		gpkg.File, gpkg.Container, gpkg.Connection)
 
 	log.Printf("connecting to %s\n", msg)
+	vfsName := uuid.New().String() // important: each geopackage must use a unique VFS name
 	vfs, err := cloudsqlitevfs.NewVFS(vfsName, gpkg.Connection, gpkg.User, gpkg.Auth,
 		gpkg.Container, cacheDir, cacheSize, gpkg.LogHTTPRequests)
 	if err != nil {
