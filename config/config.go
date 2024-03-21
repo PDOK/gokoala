@@ -192,7 +192,11 @@ type DatasetMetadata struct {
 
 // +kubebuilder:object:generate=true
 type Resources struct {
-	URL       URL    `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
+	// This is optional if Directory is set
+	// +optional
+	URL URL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
+	// This is optional if URL is set
+	// +optional
 	Directory string `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dir"`
 }
 
@@ -485,6 +489,7 @@ type GeoPackageCloud struct {
 	File string `yaml:"file" json:"file" validate:"required"`
 
 	// local cache of fetched blocks from cloud storage
+	// +optional
 	Cache GeoPackageCloudCache `yaml:"cache" json:"cache"`
 
 	// only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
@@ -551,6 +556,7 @@ type Extent struct {
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	Srs  string   `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
 	Bbox []string `yaml:"bbox" json:"bbox"`
+	// +optional
 	// +kubebuilder:validation:MinItems=2
 	// +kubebuilder:validation:MaxItems=2
 	Interval []string `yaml:"interval" json:"interval" validate:"omitempty,len=2"`
@@ -593,8 +599,10 @@ type StyleMetadata struct {
 	// +optional
 	Version *string `yaml:"version" json:"version" `
 	// Based on OGC API Styles Requirement 7B
+	// +optional
 	Stylesheets []StyleSheet `yaml:"stylesheets" json:"stylesheets"`
-	Layers      []StyleLayer `yaml:"layers" json:"layers"`
+	// +optional
+	Layers []StyleLayer `yaml:"layers" json:"layers"`
 	// Based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
 	Links []Link `yaml:"links" json:"links"`
 }
