@@ -10,6 +10,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type TestEmbeddedURL struct {
+	U URL `json:"U" yaml:"U"`
+}
+
 func TestURL_DeepCopy(t *testing.T) {
 	tests := []struct {
 		url *URL
@@ -69,6 +73,13 @@ func TestURL_Marshalling_JSON(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.want, string(marshalled), "json.Marshal")
+
+			// non-pointer
+			marshalled, err = json.Marshal(*tt.url)
+			if !tt.wantErr(t, err, errors.New("json.Marshal")) {
+				return
+			}
+			assert.Equalf(t, tt.want, string(marshalled), "json.Marshal")
 		})
 	}
 }
@@ -93,6 +104,14 @@ func TestURL_Unmarshalling_JSON(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.want, unmarshalled, "json.Unmarshal")
+
+			// non-pointer
+			unmarshalledEmbedded := &TestEmbeddedURL{}
+			err = json.Unmarshal([]byte(`{"U": `+tt.url+`}`), unmarshalledEmbedded)
+			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
+				return
+			}
+			assert.EqualValuesf(t, &TestEmbeddedURL{U: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
 		})
 	}
 }
@@ -121,6 +140,13 @@ func TestURL_Marshalling_YAML(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.want, string(marshalled), "yaml.Marshal")
+
+			// non-pointer
+			marshalled, err = yaml.Marshal(*tt.url)
+			if !tt.wantErr(t, err, errors.New("yaml.Marshal")) {
+				return
+			}
+			assert.Equalf(t, tt.want, string(marshalled), "yaml.Marshal")
 		})
 	}
 }
@@ -145,6 +171,14 @@ func TestURL_Unmarshalling_YAML(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.want, unmarshalled, "yaml.Unmarshal")
+
+			// non-pointer
+			unmarshalledEmbedded := &TestEmbeddedURL{}
+			err = yaml.Unmarshal([]byte(`{"U": `+tt.url+`}`), unmarshalledEmbedded)
+			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
+				return
+			}
+			assert.EqualValuesf(t, &TestEmbeddedURL{U: *tt.want}, unmarshalledEmbedded, "yaml.Unmarshal")
 		})
 	}
 }

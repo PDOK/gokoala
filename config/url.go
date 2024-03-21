@@ -37,7 +37,8 @@ func (u *URL) UnmarshalYAML(unmarshal func(any) error) error {
 }
 
 // MarshalJSON turns URL into JSON.
-func (u *URL) MarshalJSON() ([]byte, error) {
+// Value instead of pointer receiver because only that way it can be used for both.
+func (u URL) MarshalJSON() ([]byte, error) {
 	if u.URL == nil {
 		return json.Marshal("")
 	}
@@ -51,7 +52,8 @@ func (u *URL) UnmarshalJSON(b []byte) error {
 }
 
 // MarshalYAML turns URL into YAML.
-func (u *URL) MarshalYAML() (interface{}, error) {
+// Value instead of pointer receiver because only that way it can be used for both.
+func (u URL) MarshalYAML() (interface{}, error) {
 	if u.URL == nil {
 		return "", nil
 	}
