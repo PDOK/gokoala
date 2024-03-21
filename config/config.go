@@ -38,6 +38,10 @@ func NewConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
+	err = validateLocalPaths(config)
+	if err != nil {
+		return nil, fmt.Errorf("validation error in config file, error: %w", err)
+	}
 	return config, nil
 }
 
@@ -113,6 +117,27 @@ func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error 
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
 	return nil
+}
+
+// validateLocalPaths validates the existence of local paths.
+// Not suitable for general validation while unmarshalling.
+// Because that could happen on another machine.
+func validateLocalPaths(config *Config) error {
+	// Could use a deep dive and reflection.
+	// But the settings with a path are not recursive and relatively limited in numbers.
+	// GeoPackageCloudCache.Path is not verified. It will be created anyway in cloud_sqlite_vfs.createCacheDir during startup time.
+	if config.Resources != nil && config.Resources.Directory != "" && !isExistingLocalDir(config.Resources.Directory) {
+		return errors.New("Config.Resources.Directory should be an existing directory: " + config.Resources.Directory)
+	}
+	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.MapboxStylesPath) {
+		return errors.New("Config.OgcAPI.Styles.MapboxStylesPath should be an existing directory: " + config.OgcAPI.Styles.MapboxStylesPath)
+	}
+	return nil
+}
+
+func isExistingLocalDir(path string) bool {
+	fileInfo, err := os.Stat(path)
+	return err == nil && fileInfo.IsDir()
 }
 
 // +kubebuilder:object:generate=true
@@ -201,7 +226,7 @@ type Resources struct {
 	URL URL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
 	// This is optional if URL is set
 	// +optional
-	Directory string `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dir"`
+	Directory string `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dirpath|filepath"`
 }
 
 // +kubebuilder:object:generate=true
@@ -336,7 +361,7 @@ type OgcAPITiles struct {
 // +kubebuilder:object:generate=true
 type OgcAPIStyles struct {
 	Default          string `yaml:"default" json:"default" validate:"required"`
-	MapboxStylesPath string `yaml:"mapboxStylesPath" json:"mapboxStylesPath" validate:"required,dir"`
+	MapboxStylesPath string `yaml:"mapboxStylesPath" json:"mapboxStylesPath" validate:"required,dirpath|filepath"`
 	// based on OGC API Styles Requirement 7B
 	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required"`
 }
@@ -518,7 +543,7 @@ func (gc *GeoPackageCloud) CacheDir() (string, error) {
 type GeoPackageCloudCache struct {
 	// optional path to directory for caching cloud-backed GeoPackage blocks, when omitted a temp dir will be used.
 	// +optional
-	Path *string `yaml:"path" json:"path" validate:"omitempty,dir"`
+	Path *string `yaml:"path" json:"path" validate:"omitempty,dirpath|filepath"`
 
 	// max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
 	// +kubebuilder:default="1Gb"
