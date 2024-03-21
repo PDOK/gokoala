@@ -58,6 +58,10 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (c *Config) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, c)
+}
+
 func setDefaults(config *Config) error {
 	// process 'default' tags
 	if err := defaults.Set(config); err != nil {
