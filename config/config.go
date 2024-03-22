@@ -588,7 +588,7 @@ type Extent struct {
 	// +optional
 	// +kubebuilder:validation:MinItems=2
 	// +kubebuilder:validation:MaxItems=2
-	Interval []string `yaml:"interval" json:"interval" validate:"omitempty,len=2"`
+	Interval []string `yaml:"interval,omitempty" json:"interval,omitempty" validate:"omitempty,len=2"`
 }
 
 // +kubebuilder:object:generate=true
