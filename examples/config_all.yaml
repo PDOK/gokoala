@@ -86,54 +86,6 @@ ogcApi:
     stylesDir: ./examples/resources
     supportedStyles:
       - id: "dummy-style"
-        title: "BGT Standaardvisualisatie"
-        description:
-          "Een visualisatie voor het gebruik van de BGT/IMGeo-inhoud als hoofdthema,
-          die aansluit bij de visualisatie van de Basisregistratie Topografie (BRT).
-          In de standaardvisualisatie worden alleen de puntsymbolen voor CADO,
-          verkeersdrempel en kering toegepast. Omwille van de visuele hiërarchie wordt
-          met klem geadviseerd om de icoonvisualisatie van IMGeo puntobjecten NIET af
-          te beelden in combinatie met de standaardvisualisatie."
-        keywords:
-          - "standaardvisualisatie"
-          - "standaard"
-          - "pdok"
-        lastUpdated: "2023-02-24T11:27:00Z"
-        thumbnail: "old.png"
+        title: "Dummy style"
         stylesheets:
-          - format: mapbox
-          - format: sld10
-      - id: "bgt_achtergrondvisualisatie"
-        title: "BGT Achtergrondvisualisatie"
-        description:
-          "Een visualisatie voor het gebruik van de BGT/IMGeo-inhoud als hoofdthema,
-          die aansluit bij de visualisatie van de Basisregistratie Topografie (BRT).
-          In de achtergrondvisualisatie worden alleen de puntsymbolen voor CADO,
-          verkeersdrempel en kering toegepast. Omwille van de visuele hiërarchie wordt
-          met klem geadviseerd om de icoonvisualisatie van IMGeo puntobjecten NIET af
-          te beelden in combinatie met de achtergrondvisualisatie."
-        keywords:
-          - "achtergrondvisualisatie"
-          - "achtergrond"
-          - "pdok"
-        pointOfContact: "Beheer PDOK"
-        created: "2023-02-24T11:27:00Z"
-        updated: "2023-02-24T11:27:00Z"
-        license: "MIT"
-        scope: "style"
-        version: "1.0.0"
-        stylesheets:
-          - title: "Mapbox Style"
-            version: "8"
-            specification: "https://docs.mapbox.com/mapbox-gl-js/style-spec/"
-            native: true
-            link:
-              assetFilename: "dummy-style.json"
-              rel: "stylesheet"
-              type: "application/vnd.mapbox.style+json"
-              format: "mapbox"
-        links:
-          - rel: "preview"
-            type: "image/png"
-            title: "BGT Achtergrondvisualisatie"
-            assetFilename: "old.png"
+          - format: "mapbox"
