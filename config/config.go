@@ -129,8 +129,8 @@ func validateLocalPaths(config *Config) error {
 	if config.Resources != nil && config.Resources.Directory != "" && !isExistingLocalDir(config.Resources.Directory) {
 		return errors.New("Config.Resources.Directory should be an existing directory: " + config.Resources.Directory)
 	}
-	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.MapboxStylesPath) {
-		return errors.New("Config.OgcAPI.Styles.MapboxStylesPath should be an existing directory: " + config.OgcAPI.Styles.MapboxStylesPath)
+	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.StylesDir) {
+		return errors.New("Config.OgcAPI.Styles.StylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
 	}
 	return nil
 }
