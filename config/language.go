@@ -13,7 +13,7 @@ type Language struct {
 }
 
 // MarshalJSON turn language tag into JSON
-func (l *Language) MarshalJSON() ([]byte, error) {
+func (l Language) MarshalJSON() ([]byte, error) {
 	return json.Marshal(l.Tag.String())
 }
 

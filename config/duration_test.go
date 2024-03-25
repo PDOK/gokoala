@@ -9,6 +9,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type TestEmbeddedDuration struct {
+	D Duration `json:"D" yaml:"D"`
+}
+
 func TestDuration_DeepCopy(t *testing.T) {
 	tests := []struct {
 		duration *Duration
@@ -70,6 +74,14 @@ func TestDuration_Marshalling_JSON(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.duration, unmarshalled, "json.Unmarshal")
+
+			// non-pointer
+			unmarshalledEmbedded := &TestEmbeddedDuration{}
+			err = yaml.Unmarshal([]byte(`{"D": `+tt.want+`}`), unmarshalledEmbedded)
+			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
+				return
+			}
+			assert.EqualValuesf(t, &TestEmbeddedDuration{D: *tt.duration}, unmarshalledEmbedded, "yaml.Unmarshal")
 		})
 	}
 }

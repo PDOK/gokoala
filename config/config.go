@@ -38,6 +38,10 @@ func NewConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
+	err = validateLocalPaths(config)
+	if err != nil {
+		return nil, fmt.Errorf("validation error in config file, error: %w", err)
+	}
 	return config, nil
 }
 
@@ -56,6 +60,10 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 	return nil
+}
+
+func (c *Config) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, c)
 }
 
 func setDefaults(config *Config) error {
@@ -109,6 +117,27 @@ func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error 
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
 	return nil
+}
+
+// validateLocalPaths validates the existence of local paths.
+// Not suitable for general validation while unmarshalling.
+// Because that could happen on another machine.
+func validateLocalPaths(config *Config) error {
+	// Could use a deep dive and reflection.
+	// But the settings with a path are not recursive and relatively limited in numbers.
+	// GeoPackageCloudCache.Path is not verified. It will be created anyway in cloud_sqlite_vfs.createCacheDir during startup time.
+	if config.Resources != nil && config.Resources.Directory != "" && !isExistingLocalDir(config.Resources.Directory) {
+		return errors.New("Config.Resources.Directory should be an existing directory: " + config.Resources.Directory)
+	}
+	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.MapboxStylesPath) {
+		return errors.New("Config.OgcAPI.Styles.MapboxStylesPath should be an existing directory: " + config.OgcAPI.Styles.MapboxStylesPath)
+	}
+	return nil
+}
+
+func isExistingLocalDir(path string) bool {
+	fileInfo, err := os.Stat(path)
+	return err == nil && fileInfo.IsDir()
 }
 
 // +kubebuilder:object:generate=true
@@ -197,7 +226,7 @@ type Resources struct {
 	URL URL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
 	// This is optional if URL is set
 	// +optional
-	Directory string `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dir"`
+	Directory string `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dirpath|filepath"`
 }
 
 // +kubebuilder:object:generate=true
@@ -248,6 +277,9 @@ type GeoSpatialCollectionMetadata struct {
 	TemporalProperties *TemporalProperties `yaml:"temporalProperties" json:"temporalProperties" validate:"omitempty,required_with=Extent.Interval"`
 	// +optional
 	Extent *Extent `yaml:"extent" json:"extent"`
+	// +kubebuilder:default="http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+	// +kubebuilder:validation:Pattern=`^http:\/\/www\.opengis\.net\/def\/crs\/.*$`
+	StorageCrs *string `yaml:"storageCrs" json:"storageCrs" default:"http://www.opengis.net/def/crs/OGC/1.3/CRS84" validate:"startswith=http://www.opengis.net/def/crs"`
 }
 
 // +kubebuilder:object:generate=true
@@ -332,7 +364,7 @@ type OgcAPITiles struct {
 // +kubebuilder:object:generate=true
 type OgcAPIStyles struct {
 	Default         string          `yaml:"default" json:"default" validate:"required"`
-	StylesDir       string          `yaml:"stylesDir" json:"stylesDir" validate:"required,dir"`
+	StylesDir       string          `yaml:"stylesDir" json:"stylesDir" validate:"required,dirpath|filepath"`
 	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required,dive"`
 }
 
@@ -513,7 +545,7 @@ func (gc *GeoPackageCloud) CacheDir() (string, error) {
 type GeoPackageCloudCache struct {
 	// optional path to directory for caching cloud-backed GeoPackage blocks, when omitted a temp dir will be used.
 	// +optional
-	Path *string `yaml:"path" json:"path" validate:"omitempty,dir"`
+	Path *string `yaml:"path" json:"path" validate:"omitempty,dirpath|filepath"`
 
 	// max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
 	// +kubebuilder:default="1Gb"
@@ -558,7 +590,7 @@ type Extent struct {
 	// +optional
 	// +kubebuilder:validation:MinItems=2
 	// +kubebuilder:validation:MaxItems=2
-	Interval []string `yaml:"interval" json:"interval" validate:"omitempty,len=2"`
+	Interval []string `yaml:"interval,omitempty" json:"interval,omitempty" validate:"omitempty,len=2"`
 }
 
 // +kubebuilder:object:generate=true
