@@ -27,18 +27,9 @@ ogcApi:
           end: 30
   styles:
     default: default
-    mapboxStylesPath: ./ogc/styles/testdata/resources
+    stylesDir: ./ogc/styles/testdata/resources
     supportedStyles:
       - id: "default"
         title: "Test style"
-        scope: "style"
         stylesheets:
-          - title: "Mapbox Style"
-            version: "8"
-            specification: "https://docs.mapbox.com/mapbox-gl-js/style-spec/"
-            native: true
-            link:
-              assetFilename: "default.json"
-              rel: "stylesheet"
-              type: "application/vnd.mapbox.style+json"
-              format: "mapbox"
+          - format: "mapbox"

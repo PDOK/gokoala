@@ -72,18 +72,21 @@ func NewStyles(e *engine.Engine) *Styles {
 					Path: stylesCrumb + styleInstanceID + "/metadata",
 				},
 			}...)
-			e.RenderTemplatesWithParams(style,
+			e.RenderTemplatesWithParams(struct {
+				Metadata   config.StyleMetadata
+				Projection string
+			}{Metadata: style, Projection: projection},
 				styleMetadataBreadcrumbs,
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", styleInstanceID))
 
 			// Add existing style definitions to rendered templates
 			for _, stylesheet := range style.Stylesheets {
-				formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
+				formatExtension := e.CN.GetStyleFormatExtension(stylesheet.Format)
 				styleKey := engine.TemplateKey{
 					Name:         style.ID + formatExtension,
-					Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
-					Format:       *stylesheet.Link.Format,
-					InstanceName: styleInstanceID + "." + *stylesheet.Link.Format,
+					Directory:    e.Config.OgcAPI.Styles.StylesDir,
+					Format:       stylesheet.Format,
+					InstanceName: styleInstanceID + "." + stylesheet.Format,
 				}
 				e.RenderTemplatesWithParams(struct {
 					Projection     string
@@ -149,7 +152,7 @@ func (s *Styles) Style() http.HandlerFunc {
 			}
 			key = engine.TemplateKey{
 				Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
-				Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
+				Directory:    s.engine.Config.OgcAPI.Styles.StylesDir,
 				Format:       styleFormat,
 				InstanceName: instanceName,
 				Language:     s.engine.CN.NegotiateLanguage(w, r),

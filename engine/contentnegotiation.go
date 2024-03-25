@@ -19,7 +19,6 @@ const (
 	MediaTypeTileJSON      = "application/vnd.mapbox.tile+json"
 	MediaTypeMVT           = "application/vnd.mapbox-vector-tile"
 	MediaTypeMapboxStyle   = "application/vnd.mapbox.style+json"
-	MediaTypeCustomStyle   = "application/vnd.custom.style+json"
 	MediaTypeSLD           = "application/vnd.ogc.sld+xml;version=1.0"
 	MediaTypeOpenAPI       = "application/vnd.oai.openapi+json;version=3.0"
 	MediaTypeGeoJSON       = "application/geo+json"
@@ -32,7 +31,6 @@ const (
 	FormatMVT            = "mvt"
 	FormatMVTAlternative = "pbf"
 	FormatMapboxStyle    = "mapbox"
-	FormatCustomStyle    = "custom"
 	FormatSLD            = "sld10"
 	FormatGeoJSON        = "geojson" // ?=json should also work for geojson
 	FormatJSONFG         = "jsonfg"
@@ -59,7 +57,6 @@ var (
 	}
 	StyleFormatExtension = map[string]string{
 		FormatMapboxStyle: ".json",
-		FormatCustomStyle: ".style",
 		FormatSLD:         ".sld",
 	}
 )
@@ -82,7 +79,6 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeJSONFG),
 		contenttype.NewMediaType(MediaTypeMVT),
 		contenttype.NewMediaType(MediaTypeMapboxStyle),
-		contenttype.NewMediaType(MediaTypeCustomStyle),
 		contenttype.NewMediaType(MediaTypeSLD),
 	}
 
@@ -94,7 +90,6 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		MediaTypeJSONFG:      FormatJSONFG,
 		MediaTypeMVT:         FormatMVT,
 		MediaTypeMapboxStyle: FormatMapboxStyle,
-		MediaTypeCustomStyle: FormatCustomStyle,
 		MediaTypeSLD:         FormatSLD,
 	}
 
@@ -114,7 +109,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 }
 
 func (cn *ContentNegotiation) GetSupportedStyleFormats() []string {
-	return []string{FormatMapboxStyle, FormatCustomStyle, FormatSLD}
+	return []string{FormatMapboxStyle, FormatSLD}
 }
 
 func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {

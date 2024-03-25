@@ -331,17 +331,16 @@ type OgcAPITiles struct {
 
 // +kubebuilder:object:generate=true
 type OgcAPIStyles struct {
-	Default          string `yaml:"default" json:"default" validate:"required"`
-	MapboxStylesPath string `yaml:"mapboxStylesPath" json:"mapboxStylesPath" validate:"required,dir"`
-	// based on OGC API Styles Requirement 7B
-	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required"`
+	Default         string          `yaml:"default" json:"default" validate:"required"`
+	StylesDir       string          `yaml:"stylesDir" json:"stylesDir" validate:"required,dir"`
+	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required,dive"`
 }
 
 // +kubebuilder:object:generate=true
 type OgcAPIFeatures struct {
 	// +kubebuilder:default="OSM"
 	// +kubebuilder:validation:Enum=OSM;BRT
-	Basemap     string                `yaml:"basemap" json:"basemap" default:"OSM"`
+	Basemap     string                `yaml:"basemap" json:"basemap" default:"OSM" validate:"oneof=OSM BRT"`
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections" validate:"required,dive"`
 	// +optional
 	Limit Limit `yaml:"limit" json:"limit"`
@@ -576,81 +575,25 @@ type License struct {
 
 // +kubebuilder:object:generate=true
 type StyleMetadata struct {
-	ID    string `yaml:"id" json:"id"`
-	Title string `yaml:"title" json:"title"`
+	ID    string `yaml:"id" json:"id" validate:"required"`
+	Title string `yaml:"title" json:"title" validate:"required"`
 	// +optional
 	Description *string `yaml:"description" json:"description"`
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
 	// +optional
-	PointOfContact *string `yaml:"pointOfContact" json:"pointOfContact"`
-	// +optional
-	License *string `yaml:"license" json:"license"`
-	// +optional
 	// +kubebuilder:validation:Type=string
 	// +kubebuilder:validation:Format="date-time"
-	Created *string `yaml:"created" json:"created"`
+	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated" validate:"omitempty,datetime=2006-01-02T15:04:05Z"`
 	// +optional
-	// +kubebuilder:validation:Type=string
-	// +kubebuilder:validation:Format="date-time"
-	Updated *string `yaml:"updated" json:"updated"`
+	Version *string `yaml:"version" json:"version"`
 	// +optional
-	Scope *string `yaml:"scope" json:"scope"`
-	// +optional
-	Version *string `yaml:"version" json:"version" `
-	// Based on OGC API Styles Requirement 7B
-	// +optional
-	Stylesheets []StyleSheet `yaml:"stylesheets" json:"stylesheets"`
-	// +optional
-	Layers []StyleLayer `yaml:"layers" json:"layers"`
-	// Based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
-	Links []Link `yaml:"links" json:"links"`
-}
-
-// +kubebuilder:object:generate=true
-type StyleLayer struct {
-	ID string `yaml:"id" json:"id"`
-	// +optional
-	GeometryType *string `yaml:"type" json:"type"`
-	SampleData   Link    `yaml:"sampleData" json:"sampleData"`
-	// +optional
-	PropertiesSchema *PropertiesSchema `yaml:"propertiesSchema" json:"propertiesSchema"`
+	Thumbnail   *string      `yaml:"thumbnail" json:"thumbnail"`
+	Stylesheets []StyleSheet `yaml:"stylesheets" json:"stylesheets" validate:"required,dive"`
 }
 
 // +kubebuilder:object:generate=true
 type StyleSheet struct {
-	// +optional
-	Title *string `yaml:"title" json:"title"`
-	// +optional
-	Version *string `yaml:"version" json:"version"`
-	// +optional
-	Specification *string `yaml:"specification" json:"specification"`
-	// +optional
-	Native *bool `yaml:"native" json:"native"`
-	// Based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
-	Link Link `yaml:"link" json:"link"`
-}
-
-// +kubebuilder:object:generate=true
-type Link struct {
-	AssetFilename string `yaml:"assetFilename" json:"assetFilename"`
-	Rel           string `yaml:"rel" json:"rel"` // This is allowed to be empty according to the spec, but we leverage this
-
-	// +optional
-	Href *string `yaml:"href" json:"href"`
-	// +optional
-	Type *string `yaml:"type" json:"type"`
-	// +optional
-	Format *string `yaml:"format" json:"format"`
-	// +optional
-	Title *string `yaml:"title" json:"title"`
-	// +optional
-	Hreflang *string `yaml:"hreflang" json:"hreflang"`
-	// +optional
-	Length *int `yaml:"length" json:"length"`
-}
-
-// +kubebuilder:object:generate=true
-type PropertiesSchema struct {
-	// placeholder
+	// +kubebuilder:default="mapbox"
+	Format string `yaml:"format" json:"format" default:"mapbox" validate:"required,oneof=mapbox sld10"`
 }

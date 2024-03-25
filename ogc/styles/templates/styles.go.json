@@ -4,6 +4,20 @@
   {{ $baseUrl := .Config.BaseURL }}
   {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
   {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "This document",
+      "href": "{{ $baseUrl }}/styles?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "This document as HTML",
+      "href": "{{ $baseUrl }}/styles?f=html"
+    }
+  ],
   "default": "{{ .Config.OgcAPI.Styles.Default }}",
   "styles": [
     {{ range $st_index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
@@ -11,35 +25,28 @@
     {{ range $srs_index, $srs := $supportedSrs }}
     {{ if $srs_index }},{{ end }}
     {
-      "id": "{{ $style.ID }}",
+      "id": "{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}",
       "title": "{{ $style.Title }} ({{ get $projections (index $srs).Srs }})",
       "links": [
         {
-          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}/metadata",
           "rel": "describedby",
-          "title": "Style Metadata for {{ $style.ID }}"
+          "title": "Style Metadata for {{ $style.ID }}",
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}/metadata"
         }
         {{ if $style.Stylesheets }},{{ end }}
         {{ range $sh_index, $stylesheet := $style.Stylesheets }}
         {{ if $sh_index }},{{ end }}
         {
-          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}?f={{ $stylesheet.Link.Format }}",
           "rel": "stylesheet",
-          "type": "{{ $stylesheet.Link.Type }}"
-        }
-        {{ end }}
-        {{ if $style.Links }},{{ end }}
-        {{ range $l_index, $link := $style.Links }}
-        {{if $l_index }},{{ end }}
-        {
-          "href": "{{ $baseUrl }}/resources/{{ $link.AssetFilename }}",
-          "rel": "{{ $link.Rel }}",
-          {{ if $link.Type }}
-          "type": "{{ $link.Type }}"{{ if $link.Title }},{{ end }}
+          {{ if eq $stylesheet.Format "mapbox" }}
+          "title": "Mapbox Style",
+          "type": "application/vnd.mapbox.style+json",
+          {{ else if eq $stylesheet.Format "sld10" }}
+          "title": "OpenGIS Styled Layer Descriptor 1.0 Style",
+          "type": "application/vnd.ogc.sld+xml;version=1.0",
           {{ end }}
-          {{ if $link.Title }}
-          "title": "{{ $link.Title }}"
-          {{ end }}
+          {{/* Add support for more style formats here */}}
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}?f={{ $stylesheet.Format }}"
         }
         {{ end }}
       ]
