@@ -277,6 +277,9 @@ type GeoSpatialCollectionMetadata struct {
 	TemporalProperties *TemporalProperties `yaml:"temporalProperties" json:"temporalProperties" validate:"omitempty,required_with=Extent.Interval"`
 	// +optional
 	Extent *Extent `yaml:"extent" json:"extent"`
+	// +kubebuilder:default="http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+	// +kubebuilder:validation:Pattern=`^http:\/\/www\.opengis\.net\/def\/crs\/.*$`
+	StorageCrs *string `yaml:"storageCrs" json:"storageCrs" default:"http://www.opengis.net/def/crs/OGC/1.3/CRS84" validate:"startswith=http://www.opengis.net/def/crs"`
 }
 
 // +kubebuilder:object:generate=true
