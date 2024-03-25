@@ -137,7 +137,6 @@ func (s *Styles) Style() http.HandlerFunc {
 			style += projectionDelimiter + defaultProjection
 		}
 		styleFormat := s.engine.CN.NegotiateFormat(r)
-		// TODO: improve?
 		var key engine.TemplateKey
 		if styleFormat == engine.FormatHTML {
 			key = engine.NewTemplateKeyWithNameAndLanguage(
@@ -147,8 +146,8 @@ func (s *Styles) Style() http.HandlerFunc {
 			if slices.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
 				instanceName = style + "." + styleFormat
 			} else {
-				styleFormat = "mapbox"
-				instanceName = style + ".mapbox"
+				styleFormat = engine.FormatMapboxStyle
+				instanceName = style + "." + engine.FormatMapboxStyle
 			}
 			key = engine.TemplateKey{
 				Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),

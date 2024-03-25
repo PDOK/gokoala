@@ -6,6 +6,12 @@ describe('OGC API Styles tests', () => {
     cy.checkA11y()
   })
 
+  it('style page should have no a11y violations', () => {
+    cy.visit('/styles/dummy-style')
+    cy.injectAxe()
+    cy.checkA11y()
+  })
+
   it('styles metadata page should have no a11y violations', () => {
     cy.visit('/styles/dummy-style/metadata')
     cy.injectAxe()
