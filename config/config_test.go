@@ -37,7 +37,7 @@ func TestNewConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "read valid config file with all og apis",
+			name: "read valid config file with all ogc apis",
 			args: args{
 				configFile: "examples/config_all.yaml",
 			},

@@ -353,7 +353,7 @@ type GeoSpatialCollectionMetadata struct {
 	// +optional
 	TemporalProperties *TemporalProperties `yaml:"temporalProperties" json:"temporalProperties" validate:"omitempty,required_with=Extent.Interval"`
 
-	// Extent ot the collection, both geospatial and/or temporal
+	// Extent of the collection, both geospatial and/or temporal
 	// +optional
 	Extent *Extent `yaml:"extent" json:"extent"`
 
