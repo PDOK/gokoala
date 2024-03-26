@@ -56,7 +56,7 @@ func NewStyles(e *engine.Engine) *Styles {
 			styleInstanceID := style.ID + projectionDelimiter + strings.ToLower(projection)
 			// Render metadata templates
 			e.RenderTemplatesWithParams(struct {
-				Metadata   config.StyleMetadata
+				Metadata   config.Style
 				Projection string
 			}{Metadata: style, Projection: projection},
 				nil,
@@ -72,18 +72,21 @@ func NewStyles(e *engine.Engine) *Styles {
 					Path: stylesCrumb + styleInstanceID + "/metadata",
 				},
 			}...)
-			e.RenderTemplatesWithParams(style,
+			e.RenderTemplatesWithParams(struct {
+				Metadata   config.Style
+				Projection string
+			}{Metadata: style, Projection: projection},
 				styleMetadataBreadcrumbs,
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", styleInstanceID))
 
 			// Add existing style definitions to rendered templates
-			for _, stylesheet := range style.Stylesheets {
-				formatExtension := e.CN.GetStyleFormatExtension(*stylesheet.Link.Format)
+			for _, styleFormat := range style.Formats {
+				formatExtension := e.CN.GetStyleFormatExtension(styleFormat.Format)
 				styleKey := engine.TemplateKey{
 					Name:         style.ID + formatExtension,
-					Directory:    e.Config.OgcAPI.Styles.MapboxStylesPath,
-					Format:       *stylesheet.Link.Format,
-					InstanceName: styleInstanceID + "." + *stylesheet.Link.Format,
+					Directory:    e.Config.OgcAPI.Styles.StylesDir,
+					Format:       styleFormat.Format,
+					InstanceName: styleInstanceID + "." + styleFormat.Format,
 				}
 				e.RenderTemplatesWithParams(struct {
 					Projection     string
@@ -134,7 +137,6 @@ func (s *Styles) Style() http.HandlerFunc {
 			style += projectionDelimiter + defaultProjection
 		}
 		styleFormat := s.engine.CN.NegotiateFormat(r)
-		// TODO: improve?
 		var key engine.TemplateKey
 		if styleFormat == engine.FormatHTML {
 			key = engine.NewTemplateKeyWithNameAndLanguage(
@@ -144,12 +146,12 @@ func (s *Styles) Style() http.HandlerFunc {
 			if slices.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
 				instanceName = style + "." + styleFormat
 			} else {
-				styleFormat = "mapbox"
-				instanceName = style + ".mapbox"
+				styleFormat = engine.FormatMapboxStyle
+				instanceName = style + "." + engine.FormatMapboxStyle
 			}
 			key = engine.TemplateKey{
 				Name:         styleID + s.engine.CN.GetStyleFormatExtension(styleFormat),
-				Directory:    s.engine.Config.OgcAPI.Styles.MapboxStylesPath,
+				Directory:    s.engine.Config.OgcAPI.Styles.StylesDir,
 				Format:       styleFormat,
 				InstanceName: instanceName,
 				Language:     s.engine.CN.NegotiateLanguage(w, r),

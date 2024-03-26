@@ -14,7 +14,6 @@ type featureType struct{}
 func (ft *featureType) MarshalJSON() ([]byte, error) {
 	return []byte(`"Feature"`), nil
 }
-func (ft *featureType) UnmarshalJSON([]byte) error { return nil }
 
 type JSONFGFeatureCollection struct {
 	Type           featureCollectionType `json:"type"`

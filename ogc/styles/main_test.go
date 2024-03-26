@@ -68,7 +68,7 @@ func TestNewStyles(t *testing.T) {
 						},
 						Styles: &config.OgcAPIStyles{
 							Default: "foo",
-							SupportedStyles: []config.StyleMetadata{
+							SupportedStyles: []config.Style{
 								{
 									ID:    "foo",
 									Title: "bar",

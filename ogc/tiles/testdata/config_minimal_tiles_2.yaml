@@ -27,6 +27,10 @@ ogcApi:
           end: 14
   styles:
     default: "default"
-    mapboxStylesPath: /tmp
+    stylesDir: /tmp
     supportedStyles:
       - id: "default"
+        title: Default style
+        formats:
+          - format: mapbox
+          - format: sld10

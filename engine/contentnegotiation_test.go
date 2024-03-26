@@ -30,6 +30,7 @@ func TestContentNegotiation_NegotiateFormat(t *testing.T) {
 	testLanguage(t, cn, "", "http://pdok.example/ogc/api", language.Dutch)
 	testLanguage(t, cn, "", "http://pdok.example/ogc/api?lang=fr", language.Dutch)
 	testLanguage(t, cn, "", "http://pdok.example/ogc/api?lang=en", language.English)
+	testLanguageWithCookie(t, cn, "en", "http://pdok.example/ogc/api", language.English)
 }
 
 func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, givenURL string, expectedFormat string) {
@@ -47,6 +48,25 @@ func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, given
 func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader string, givenURL string, expectedLanguage language.Tag) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
 	req.Header.Set(HeaderAcceptLanguage, acceptLanguageHeader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lang := cn.NegotiateLanguage(httptest.NewRecorder(), req)
+	if lang != expectedLanguage {
+		t.Fatalf("Expected %v for input %s, got %v", expectedLanguage, givenURL, lang)
+	}
+}
+
+func testLanguageWithCookie(t *testing.T, cn *ContentNegotiation, cookieLanguage string, givenURL string, expectedLanguage language.Tag) {
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
+	req.AddCookie(&http.Cookie{
+		Name:     languageParam,
+		Value:    cookieLanguage,
+		Path:     "/",
+		MaxAge:   config.CookieMaxAge,
+		SameSite: http.SameSiteStrictMode,
+		Secure:   true,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

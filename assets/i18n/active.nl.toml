@@ -93,6 +93,8 @@ AdditionalLinks = "Aanvullende links"
 LayerExample = "Laag voorbeeld"
 LayerName = "Laagnaam"
 Format = "Formaat"
+Version = "Versie"
+Legend = "legenda"
 
 # Collections/Collection page
 ViewCollectionAs = "Bekijk collectie als"

@@ -10,7 +10,6 @@ type featureCollectionType struct{}
 func (fc *featureCollectionType) MarshalJSON() ([]byte, error) {
 	return []byte(`"FeatureCollection"`), nil
 }
-func (fc *featureCollectionType) UnmarshalJSON([]byte) error { return nil }
 
 // FeatureCollection is a GeoJSON FeatureCollection with extras such as links
 type FeatureCollection struct {

@@ -88,6 +88,8 @@ AdditionalLinks = "Additional links"
 LayerExample = "Layer example"
 LayerName = "Layer name"
 Format = "Format"
+Version = "Version"
+Legend = "legend"
 
 # Collections/Collection page
 ViewCollectionAs = "View collection as"

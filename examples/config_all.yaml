@@ -83,18 +83,9 @@ ogcApi:
 
   styles:
     default: dummy-style
-    mapboxStylesPath: ./examples/resources
+    stylesDir: ./examples/resources
     supportedStyles:
       - id: "dummy-style"
         title: "Dummy style"
-        scope: "style"
-        stylesheets:
-          - title: "Mapbox Style"
-            version: "8"
-            specification: "https://docs.mapbox.com/mapbox-gl-js/style-spec/"
-            native: true
-            link:
-              assetFilename: "dummy-style.json"
-              rel: "stylesheet"
-              type: "application/vnd.mapbox.style+json"
-              format: "mapbox"
+        formats:
+          - format: "mapbox"

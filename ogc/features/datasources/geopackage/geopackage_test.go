@@ -399,3 +399,23 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 		})
 	}
 }
+
+func TestGeoPackage_Warmup(t *testing.T) {
+	t.Run("warmup", func(t *testing.T) {
+		g := &GeoPackage{
+			backend:                    newAddressesGeoPackage(),
+			fidColumn:                  "feature_id",
+			featureTableByCollectionID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+			queryTimeout:               5 * time.Second,
+		}
+		collections :=
+			[]config.GeoSpatialCollection{
+				{
+					ID:       "ligplaatsen",
+					Features: &config.CollectionEntryFeatures{},
+				},
+			}
+		err := warmUpFeatureTables(collections, g.featureTableByCollectionID, g.backend.getDB())
+		assert.NoError(t, err)
+	})
+}

@@ -3,63 +3,75 @@
 {{ if .Params }}
 {{ $baseUrl := .Config.BaseURL }}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ .Params.Title }} Metadata</h1>
+    <h1 class="title">{{ .Config.Title }} - {{ .Params.Metadata.Title }} Metadata</h1>
 </hgroup>
 <div class="row py-3">
+    {{ if and .Params.Metadata.Thumbnail .Config.Resources }}
+    <div class="col-md-8">
+    {{ else }}
     <div class="col-md-12">
-        {{ markdown .Params.Description }}
-        <table class="table table-borderless table-sm w-auto">
-            <tbody>
-                <tr>
-                    <td class="w-auto text-nowrap fw-bold">
-                        {{ i18n "Keywords" }}
-                    </td>
-                    <td class="w-auto px-2">
-                        {{ if .Params.Keywords }}
-                        {{ range $keyword := .Params.Keywords }}
-                        {{ $keyword }}<br/>
-                        {{ end }}
-                        {{ else }}
-                        {{ i18n "None" }}
-                        {{ end }}
-                        <br/>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="w-auto text-nowrap fw-bold">
-                        {{ i18n "AdditionalLinks" }}
-                    </td>
-                    <td class="w-auto px-2">
-                        {{ if .Params.Links }}
-                        {{ range $link := .Params.Links}}
-                        {{ if $link.Title }}{{ $link.Title }}{{ else }}{{ $link.AssetFilename }}{{ end }}
-                        <ul>
-                            <li>Href: <a href="{{ $baseUrl }}/resources/{{ $link.AssetFilename }}">{{ $baseUrl }}/resources/{{ $link.AssetFilename }}</a></li>
-                            <li>Rel: {{ $link.Rel }}</li>
-                            {{ if $link.Type }}<li>Type: {{ $link.Type }}</li>{{ end }}
-                        </ul>
-                        {{ end }}
-                        {{ end }}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="w-auto text-nowrap fw-bold">
-                        Stylesheets
-                    </td>
-                    <td class="w-auto px-2">
-                        {{ range $stylesheet := .Params.Stylesheets }}
-                        {{ $stylesheet.Title }}
-                        <ul>
-                            <li><a href="{{ $stylesheet.Specification}}" target="_blank">Specification</a></li>
-                            <li>Version: {{ $stylesheet.Version }}</li>
-                            <li>Native: {{ if $stylesheet.Native }}Yes{{ else }}No{{ end }}</li>
-                        </ul>
-                        {{ end }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    {{ end }}
+    {{ markdown .Params.Metadata.Description }}
+    <table class="table table-borderless table-sm w-100">
+        <tbody>
+        {{ if .Params.Metadata.LastUpdated }}
+            <tr>
+                <td class="w-25 text-nowrap fw-bold">
+                    {{ i18n "LastUpdated" }}
+                </td>
+                <td>
+                    {{ default "-" .Params.Metadata.LastUpdated }}
+                </td>
+            </tr>
+        {{ end }}
+        {{ if .Params.Metadata.Version }}
+            <tr>
+                <td class="w-25 text-nowrap fw-bold">
+                    {{ i18n "Version" }}
+                </td>
+                <td>
+                    {{ default "-" .Params.Metadata.Version }}
+                </td>
+            </tr>
+        {{ end }}
+        <tr>
+            <td class="w-25 text-nowrap fw-bold">
+                {{ i18n "License" }}
+            </td>
+            <td>
+                <a href="{{ .Config.License.URL }}" target="_blank">{{ .Config.License.Name }}</a>
+            </td>
+        </tr>
+        {{ if .Config.Support}}
+            <tr>
+                <td class="w-25 text-nowrap fw-bold">
+                    {{ i18n "Support" }}
+                </td>
+                <td>
+                    <a href="{{ .Config.Support.URL }}" target="_blank">{{ .Config.Support.Name }}</a>
+                </td>
+            </tr>
+        {{ end }}
+        </tbody>
+    </table>
+    <ul>
+        {{ $style := .Params.Metadata.ID }}
+        {{ $projection := .Params.Projection }}
+        {{ range $sh_index, $styleFormat := .Params.Metadata.Formats }}
+            {{ if eq $styleFormat.Format "mapbox" }}
+                <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=mapbox">Mapbox Style</a> (<a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=html">{{ i18n "Legend" }}</a>)</li>
+            {{ else if eq $styleFormat.Format "sld10" }}
+                <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" title="OpenGIS Styled Layer Descriptor 1.0 Style">SLD 1.0 Style</a></li>
+            {{ end }}
+            {{/* Add support for more style formats here */}}
+        {{ end }}
+    </ul>
     </div>
+{{ if and .Params.Metadata.Thumbnail .Config.Resources }}
+    <div class="col-md-4">
+        <img src="resources/{{ .Params.Metadata.Thumbnail }}" class="img-fluid" alt="{{ .Params.Metadata.Title }} Thumbnail"/>
+    </div>
+{{ end }}
 </div>
 {{end}}
 {{end}}

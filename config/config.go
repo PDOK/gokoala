@@ -129,8 +129,8 @@ func validateLocalPaths(config *Config) error {
 	if config.Resources != nil && config.Resources.Directory != "" && !isExistingLocalDir(config.Resources.Directory) {
 		return errors.New("Config.Resources.Directory should be an existing directory: " + config.Resources.Directory)
 	}
-	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.MapboxStylesPath) {
-		return errors.New("Config.OgcAPI.Styles.MapboxStylesPath should be an existing directory: " + config.OgcAPI.Styles.MapboxStylesPath)
+	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.StylesDir) {
+		return errors.New("Config.OgcAPI.Styles.StylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
 	}
 	return nil
 }
@@ -142,31 +142,65 @@ func isExistingLocalDir(path string) bool {
 
 // +kubebuilder:object:generate=true
 type Config struct {
-	Version            string     `yaml:"version" json:"version" validate:"required,semver"`
-	Title              string     `yaml:"title" json:"title"  validate:"required"`
-	ServiceIdentifier  string     `yaml:"serviceIdentifier"  json:"serviceIdentifier" validate:"required"`
-	Abstract           string     `yaml:"abstract" json:"abstract" validate:"required"`
-	License            License    `yaml:"license" json:"license" validate:"required"`
-	BaseURL            URL        `yaml:"baseUrl" json:"baseUrl" validate:"required,url"`
-	DatasetCatalogURL  URL        `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl" validate:"url"`
+	// Version of the API. When releasing a new version which contains backwards-incompatible changes, a new major version must be released.
+	Version string `yaml:"version" json:"version" validate:"required,semver"`
+
+	// Human friendly title of the API. Don't include "OGC API" in the title, this is added automatically.
+	Title string `yaml:"title" json:"title"  validate:"required"`
+
+	// Shorted title / abbreviation describing the API.
+	ServiceIdentifier string `yaml:"serviceIdentifier"  json:"serviceIdentifier" validate:"required"`
+
+	// Human friendly description of the API and dataset.
+	Abstract string `yaml:"abstract" json:"abstract" validate:"required"`
+
+	// Licensing term that apply to this API and dataset
+	License License `yaml:"license" json:"license" validate:"required"`
+
+	// The base URL - that's the part until the OGC API landing page - under which this API is served
+	BaseURL URL `yaml:"baseUrl" json:"baseUrl" validate:"required,url"`
+
+	// Optional reference to a catalog/portal/registry that lists all datasets, not just this one
+	DatasetCatalogURL URL `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl" validate:"url"`
+
+	// The languages/translations to offer, valid options are Dutch (nl) and English (en). Dutch is the default.
 	AvailableLanguages []Language `yaml:"availableLanguages" json:"availableLanguages"`
-	OgcAPI             OgcAPI     `yaml:"ogcApi" json:"ogcApi" validate:"required"`
+
+	// Define which OGC API building blocks this API supports
+	OgcAPI OgcAPI `yaml:"ogcApi" json:"ogcApi" validate:"required"`
+
+	// Reference to a PNG image to use a thumbnail on the landing page.
+	// The full path is constructed by appending Resources + Thumbnail.
 	// +optional
 	Thumbnail *string `yaml:"thumbnail" json:"thumbnail"`
+
+	// Keywords to make this API beter discoverable
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
+
+	// Moment in time when the dataset was last updated
 	// +optional
 	// +kubebuilder:validation:Type=string
 	// +kubebuilder:validation:Format="date-time"
-	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated"`
+	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated" validate:"omitempty,datetime=2006-01-02T15:04:05Z"`
+
+	// Who updated the dataset
 	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy" json:"lastUpdatedBy"`
+
+	// Available support channels
 	// +optional
 	Support *Support `yaml:"support" json:"support"`
+
+	// Key/value pairs to add extra information to the landing page
 	// +optional
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails" json:"datasetDetails"`
+
+	// External reference to metadata register that further describes this API and dataset (a CSW service)
 	// +optional
 	DatasetMetadata DatasetMetadata `yaml:"datasetMetadata" json:"datasetMetadata"`
+
+	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted
 	// +optional
 	Resources *Resources `yaml:"resources" json:"resources"`
 }
@@ -195,90 +229,140 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 
 // +kubebuilder:object:generate=true
 type Support struct {
+	// Name of the support organization
 	Name string `yaml:"name" json:"name" validate:"required"`
+
+	// URL to external support webpage
 	// +kubebuilder:validation:Type=string
 	URL URL `yaml:"url" json:"url" validate:"required,url"`
 
+	// Email for support questions
 	// +optional
 	Email string `yaml:"email" json:"email" validate:"omitempty,email"`
 }
 
 // +kubebuilder:object:generate=true
 type DatasetDetail struct {
-	Name  string `yaml:"name" json:"name"`
+	// Arbitrary name to add extra information to the landing page
+	Name string `yaml:"name" json:"name"`
+
+	// Arbitrary value associated with the given name
 	Value string `yaml:"value" json:"value"`
 }
 
 // +kubebuilder:object:generate=true
 type DatasetMetadata struct {
+	// Name of the registry where additional metadata about this API/dataset is hosted (a CSW service)
 	Source string `yaml:"source" json:"source"`
 
+	// Reference to metadata describing this API (service record).
 	// +optional
 	API *string `yaml:"api" json:"api" validate:"omitempty,url"`
+
+	// Reference to metadata describing this dataset (dataset record).
 	// +optional
 	Dataset *string `yaml:"dataset" json:"dataset" validate:"omitempty,url"`
 }
 
 // +kubebuilder:object:generate=true
 type Resources struct {
-	// This is optional if Directory is set
+	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if Directory is set
 	// +optional
 	URL URL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
-	// This is optional if URL is set
+
+	// // Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if URL is set
 	// +optional
 	Directory string `yaml:"directory" json:"directory" validate:"required_without=URL,omitempty,dirpath|filepath"`
 }
 
 // +kubebuilder:object:generate=true
 type OgcAPI struct {
+	// Enable when this API should offer OGC API 3D GeoVolumes. This includes OGC 3D Tiles.
 	// +optional
 	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes" json:"3dgeovolumes"`
+
+	// Enable when this API should offer OGC API Tiles. This also requires OGC API Styles.
 	// +optional
 	Tiles *OgcAPITiles `yaml:"tiles" json:"tiles" validate:"required_with=Styles"`
+
+	// Enable when this API should offer OGC API Styles.
 	// +optional
 	Styles *OgcAPIStyles `yaml:"styles" json:"styles"`
+
+	// Enable when this API should offer OGC API Features.
 	// +optional
 	Features *OgcAPIFeatures `yaml:"features" json:"features"`
+
+	// Enable when this API should offer OGC API Processes.
 	// +optional
 	Processes *OgcAPIProcesses `yaml:"processes" json:"processes"`
 }
 
 // +kubebuilder:object:generate=true
 type GeoSpatialCollection struct {
+	// Unique ID of the collection
 	ID string `yaml:"id" json:"id" validate:"required"`
 
+	// Metadata describing the collection contents
 	// +optional
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata" json:"metadata"`
 
+	// 3D GeoVolumes specific to this collection
 	// +optional
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline" json:",inline"`
+
+	// Tiles specific to this collection
 	// +optional
 	Tiles *CollectionEntryTiles `yaml:",inline" json:",inline"`
+
+	// Features specific to this collection
 	// +optional
 	Features *CollectionEntryFeatures `yaml:",inline" json:",inline"`
 }
 
 // +kubebuilder:object:generate=true
 type GeoSpatialCollectionMetadata struct {
+	// Human friendly title of this collection. When no title is specified the collection ID is used.
 	// +optional
-	Title       *string `yaml:"title" json:"title"`
+	Title *string `yaml:"title" json:"title"`
+
+	// Describes the content of this collection
 	Description *string `yaml:"description" json:"description" validate:"required"`
+
+	// Reference to a PNG image to use a thumbnail on the collections.
+	// The full path is constructed by appending Resources + Thumbnail.
 	// +optional
 	Thumbnail *string `yaml:"thumbnail" json:"thumbnail"`
+
+	// Keywords to make this collection beter discoverable
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
+
+	// Moment in time when the collection was last updated
+	//
 	// +optional
 	// +kubebuilder:validation:Type=string
 	// +kubebuilder:validation:Format="date-time"
 	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated"`
+
+	// Who updated this collection
 	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy" json:"lastUpdatedBy"`
+
+	// Fields in the datasource to be used in temporal queries
 	// +optional
 	TemporalProperties *TemporalProperties `yaml:"temporalProperties" json:"temporalProperties" validate:"omitempty,required_with=Extent.Interval"`
+
+	// Extent of the collection, both geospatial and/or temporal
 	// +optional
 	Extent *Extent `yaml:"extent" json:"extent"`
+
+	// The CRS identifier which the features are originally stored, meaning no CRS transformations are applied when features are retrieved in this CRS.
+	// WGS84 is the default storage CRS.
+	//
 	// +kubebuilder:default="http://www.opengis.net/def/crs/OGC/1.3/CRS84"
 	// +kubebuilder:validation:Pattern=`^http:\/\/www\.opengis\.net\/def\/crs\/.*$`
+	// +optional
 	StorageCrs *string `yaml:"storageCrs" json:"storageCrs" default:"http://www.opengis.net/def/crs/OGC/1.3/CRS84" validate:"startswith=http://www.opengis.net/def/crs"`
 }
 
@@ -328,6 +412,7 @@ type CollectionEntryFeatures struct {
 	// +optional
 	Datasources *Datasources `yaml:"datasources" json:"datasources"`
 
+	// Filters available for this collection
 	// +optional
 	Filters FeatureFilters `yaml:"filters" json:"filters"`
 }
@@ -336,6 +421,7 @@ type CollectionEntryFeatures struct {
 type FeatureFilters struct {
 	// OAF Part 1: filter on feature properties
 	// https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
+	//
 	// +optional
 	Properties []PropertyFilter `yaml:"properties" json:"properties" validate:"dive"`
 
@@ -345,44 +431,70 @@ type FeatureFilters struct {
 
 // +kubebuilder:object:generate=true
 type OgcAPI3dGeoVolumes struct {
-	TileServer  URL                   `yaml:"tileServer" json:"tileServer" validate:"required,url"`
+	// Reference to the server (or object storage) hosting the 3D Tiles
+	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required,url"`
+
+	// Collections to be served as 3D GeoVolumes
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
 }
 
 // +kubebuilder:object:generate=true
 type OgcAPITiles struct {
-	TileServer   URL            `yaml:"tileServer" json:"tileServer" validate:"required,url"`
-	Types        []string       `yaml:"types" json:"types" validate:"required"`
+	// Reference to the server (or object storage) hosting the tiles
+	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required,url"`
+
+	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
+	Types []string `yaml:"types" json:"types" validate:"required"`
+
+	// Specifies in what projections (SRS/CRS) the tiles are offered
 	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
+
 	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
 	// +optional
 	URITemplateTiles *string `yaml:"uriTemplateTiles" json:"uriTemplateTiles"`
+
+	// The collections to offer as tiles. When no collection is specified the tiles are hosted at the root of the API (/tiles endpoint).
 	// +optional
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
 }
 
 // +kubebuilder:object:generate=true
 type OgcAPIStyles struct {
-	Default          string `yaml:"default" json:"default" validate:"required"`
-	MapboxStylesPath string `yaml:"mapboxStylesPath" json:"mapboxStylesPath" validate:"required,dirpath|filepath"`
-	// based on OGC API Styles Requirement 7B
-	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required"`
+	// ID of the style to use a default
+	Default string `yaml:"default" json:"default" validate:"required"`
+
+	// Location on disk where the styles are hosted
+	StylesDir string `yaml:"stylesDir" json:"stylesDir" validate:"required,dirpath|filepath"`
+
+	// Styles exposed though this API
+	SupportedStyles []Style `yaml:"supportedStyles" json:"supportedStyles" validate:"required,dive"`
 }
 
 // +kubebuilder:object:generate=true
 type OgcAPIFeatures struct {
+	// Basemap to use in embedded viewer on the HTML pages.
 	// +kubebuilder:default="OSM"
 	// +kubebuilder:validation:Enum=OSM;BRT
-	Basemap     string                `yaml:"basemap" json:"basemap" default:"OSM"`
+	// +optional
+	Basemap string `yaml:"basemap" json:"basemap" default:"OSM" validate:"oneof=OSM BRT"`
+
+	// Collections to be served as features through this API
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections" validate:"required,dive"`
+
+	// Limits the amount of features to retrieve with a single call
 	// +optional
 	Limit Limit `yaml:"limit" json:"limit"`
+
+	// One or more datasources to get the features from (geopackages, postgis, etc).
+	// Optional since you can also define datasources at the collection level
 	// +optional
-	Datasources *Datasources `yaml:"datasources" json:"datasources"` // optional since you can also define datasources at the collection level
+	Datasources *Datasources `yaml:"datasources" json:"datasources"`
 
 	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
 	// since it has significant performance impact when dealing with large JSON payloads.
+	//
 	// +kubebuilder:default=true
+	// +optional
 	ValidateResponses *bool `yaml:"validateResponses" json:"validateResponses" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
@@ -421,40 +533,62 @@ func (oaf *OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []P
 
 // +kubebuilder:object:generate=true
 type OgcAPIProcesses struct {
-	SupportsDismiss  bool `yaml:"supportsDismiss" json:"supportsDismiss"`
+	// Enable to advertise dismiss operations on the conformance page
+	SupportsDismiss bool `yaml:"supportsDismiss" json:"supportsDismiss"`
+
+	// Enable to advertise callback operations on the conformance page
 	SupportsCallback bool `yaml:"supportsCallback" json:"supportsCallback"`
-	ProcessesServer  URL  `yaml:"processesServer" json:"processesServer" validate:"required,url"`
+
+	// Reference to an external service implementing the process API. GoKoala acts only as a proxy for OGC API Processes.
+	ProcessesServer URL `yaml:"processesServer" json:"processesServer" validate:"required,url"`
 }
 
 // +kubebuilder:object:generate=true
 type Limit struct {
+	// Number of features to return by default.
 	// +kubebuilder:default=10
 	// +kubebuilder:validation:Minimum=2
+	// +optional
 	Default int `yaml:"default" json:"default" validate:"gt=1" default:"10"`
+
+	// Max number of features to return. Should be larger than 100 since the HTML interface always offers a 100 limit option.
 	// +kubebuilder:default=1000
 	// +kubebuilder:validation:Minimum=100
+	// +optional
 	Max int `yaml:"max" json:"max" validate:"gte=100" default:"1000"`
 }
 
 // +kubebuilder:object:generate=true
 type Datasources struct {
-	DefaultWGS84 Datasource             `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"`
-	Additional   []AdditionalDatasource `yaml:"additional" json:"additional" validate:"dive"`
+	// Features should always be available in WGS84 (according to spec).
+	// This specifies the datasource to be used for features in the WGS84 projection
+	DefaultWGS84 Datasource `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"`
+
+	// One or more additional datasources for features in other projections. GoKoala doesn't do
+	// any on-the-fly reprojection so additional datasources need to be reprojected ahead of time.
+	Additional []AdditionalDatasource `yaml:"additional" json:"additional" validate:"dive"`
 }
 
 // +kubebuilder:object:generate=true
 type Datasource struct {
+	// GeoPakcage to get the features from.
 	// +optional
 	GeoPackage *GeoPackage `yaml:"geopackage" json:"geopackage" validate:"required_without_all=PostGIS"`
+
+	// PostGIS database to get the features from (not implemented yet).
 	// +optional
 	PostGIS *PostGIS `yaml:"postgis" json:"postgis" validate:"required_without_all=GeoPackage"`
+
 	// Add more datasources here such as Mongo, Elastic, etc
 }
 
 // +kubebuilder:object:generate=true
 type AdditionalDatasource struct {
+	// Projection (SRS/CRS) used for the features in this datasource
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
-	Srs        string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
+	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
+
+	// The additional datasource
 	Datasource `yaml:",inline" json:",inline"`
 }
 
@@ -468,6 +602,7 @@ type GeoPackage struct {
 	// Settings to read a GeoPackage from local disk
 	// +optional
 	Local *GeoPackageLocal `yaml:"local" json:"local" validate:"required_without_all=Cloud"`
+
 	// Settings to read a GeoPackage as a Cloud-Backed SQLite database
 	// +optional
 	Cloud *GeoPackageCloud `yaml:"cloud" json:"cloud" validate:"required_without_all=Local"`
@@ -475,16 +610,19 @@ type GeoPackage struct {
 
 // +kubebuilder:object:generate=true
 type GeoPackageCommon struct {
-	// feature id column name
+	// Feature id column name
 	// +kubebuilder:default="fid"
+	// +optional
 	Fid string `yaml:"fid" json:"fid" validate:"required" default:"fid"`
 
-	// optional timeout after which queries are canceled
+	// Optional timeout after which queries are canceled
 	// +kubebuilder:default="15s"
+	// +optional
 	QueryTimeout Duration `yaml:"queryTimeout" json:"queryTimeout" validate:"required" default:"15s"`
 
-	// when the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
+	// When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
 	// +kubebuilder:default=30000
+	// +optional
 	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree" json:"maxBBoxSizeToUseWithRTree" validate:"required" default:"30000"`
 }
 
@@ -493,7 +631,7 @@ type GeoPackageLocal struct {
 	// GeoPackageCommon shared config between local and cloud GeoPackage
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
-	// location of GeoPackage on disk
+	// Location of GeoPackage on disk
 	File string `yaml:"file" json:"file" validate:"file"`
 }
 
@@ -502,29 +640,29 @@ type GeoPackageCloud struct {
 	// GeoPackageCommon shared config between local and cloud GeoPackage
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
-	// reference to the cloud storage (either azure or google at the moment), e.g:
+	// Reference to the cloud storage (either azure or google at the moment), e.g:
 	// - azure?emulator=127.0.0.1:10000&sas=0
 	// - google
 	Connection string `yaml:"connection" json:"connection" validate:"required"`
 
-	// username of the storage account, e.g: devstoreaccount1 when using Azurite
+	// Username of the storage account, e.g: devstoreaccount1 when using Azurite
 	User string `yaml:"user" json:"user" validate:"required"`
 
-	// some kind of credential like a password or key to authenticate with the storage backend, e.g:
+	// Some kind of credential like a password or key to authenticate with the storage backend, e.g:
 	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite
 	Auth string `yaml:"auth" json:"auth" validate:"required"`
 
-	// container/bucket on the storage account
+	// Container/bucket on the storage account
 	Container string `yaml:"container" json:"container" validate:"required"`
 
-	// filename of the GeoPackage
+	// Filename of the GeoPackage
 	File string `yaml:"file" json:"file" validate:"required"`
 
-	// local cache of fetched blocks from cloud storage
+	// Local cache of fetched blocks from cloud storage
 	// +optional
 	Cache GeoPackageCloudCache `yaml:"cache" json:"cache"`
 
-	// only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
+	// Only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
 	// +kubebuilder:default=false
 	LogHTTPRequests bool `yaml:"logHttpRequests" json:"logHttpRequests" default:"false"`
 }
@@ -544,16 +682,18 @@ func (gc *GeoPackageCloud) CacheDir() (string, error) {
 
 // +kubebuilder:object:generate=true
 type GeoPackageCloudCache struct {
-	// optional path to directory for caching cloud-backed GeoPackage blocks, when omitted a temp dir will be used.
+	// Optional path to directory for caching cloud-backed GeoPackage blocks, when omitted a temp dir will be used.
 	// +optional
 	Path *string `yaml:"path" json:"path" validate:"omitempty,dirpath|filepath"`
 
-	// max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
+	// Max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
 	// +kubebuilder:default="1Gb"
+	// +optional
 	MaxSize string `yaml:"maxSize" json:"maxSize" default:"1Gb"`
 
-	// when true a warm-up query is executed on startup which aims to fill the local cache. Does increase startup time.
+	// When true a warm-up query is executed on startup which aims to fill the local cache. Does increase startup time.
 	// +kubebuilder:default=false
+	// +optional
 	WarmUp bool `yaml:"warmUp" json:"warmUp" default:"false"`
 }
 
@@ -563,31 +703,45 @@ func (cache *GeoPackageCloudCache) MaxSizeAsBytes() (int64, error) {
 
 // +kubebuilder:object:generate=true
 type PropertyFilter struct {
-	// needs to match with a column name in the feature table (in the configured datasource)
+	// Needs to match with a column name in the feature table (in the configured datasource)
 	Name string `yaml:"name" json:"name" validate:"required"`
+
+	// Explains this property filter
 	// +kubebuilder:default="Filter features by this property"
+	// +optional
 	Description string `yaml:"description" json:"description" default:"Filter features by this property"`
 }
 
 // +kubebuilder:object:generate=true
 type SupportedSrs struct {
+	// Projection (SRS/CRS) used
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
-	Srs            string         `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
+	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
+
+	// Available zoom levels
 	ZoomLevelRange ZoomLevelRange `yaml:"zoomLevelRange" json:"zoomLevelRange" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
 type ZoomLevelRange struct {
+	// Start zoom level
 	// +kubebuilder:validation:Minimum=0
 	Start int `yaml:"start" json:"start" validate:"gte=0,ltefield=End"`
-	End   int `yaml:"end" json:"end" validate:"required,gtefield=Start"`
+
+	// End zoom level
+	End int `yaml:"end" json:"end" validate:"required,gtefield=Start"`
 }
 
 // +kubebuilder:object:generate=true
 type Extent struct {
+	// Projection (SRS/CRS) used
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
-	Srs  string   `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
+	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
+
+	// Geospatial extent
 	Bbox []string `yaml:"bbox" json:"bbox"`
+
+	// Temporal extent
 	// +optional
 	// +kubebuilder:validation:MinItems=2
 	// +kubebuilder:validation:MaxItems=2
@@ -596,93 +750,61 @@ type Extent struct {
 
 // +kubebuilder:object:generate=true
 type TemporalProperties struct {
+	// Name of field in datasource to be used in temporal queries as the start date
 	StartDate string `yaml:"startDate" json:"startDate" validate:"required"`
-	EndDate   string `yaml:"endDate" json:"endDate" validate:"required"`
+
+	// Name of field in datasource to be used in temporal queries as the end date
+	EndDate string `yaml:"endDate" json:"endDate" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
 type License struct {
+	// Name of the license, e.g. MIT, CC0, etc
 	Name string `yaml:"name" json:"name" validate:"required"`
-	URL  URL    `yaml:"url" json:"url" validate:"required,url"`
+
+	// URL to license text on the web
+	URL URL `yaml:"url" json:"url" validate:"required,url"`
 }
 
 // +kubebuilder:object:generate=true
-type StyleMetadata struct {
-	ID    string `yaml:"id" json:"id"`
-	Title string `yaml:"title" json:"title"`
+type Style struct {
+	// Unique ID of this style
+	ID string `yaml:"id" json:"id" validate:"required"`
+
+	// Human-friendly name of this style
+	Title string `yaml:"title" json:"title" validate:"required"`
+
+	// Explains what is visualized by this style
 	// +optional
 	Description *string `yaml:"description" json:"description"`
+
+	// Keywords to make this style better discoverable
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
-	// +optional
-	PointOfContact *string `yaml:"pointOfContact" json:"pointOfContact"`
-	// +optional
-	License *string `yaml:"license" json:"license"`
+
+	// Moment in time when the dataset was last updated
 	// +optional
 	// +kubebuilder:validation:Type=string
 	// +kubebuilder:validation:Format="date-time"
-	Created *string `yaml:"created" json:"created"`
-	// +optional
-	// +kubebuilder:validation:Type=string
-	// +kubebuilder:validation:Format="date-time"
-	Updated *string `yaml:"updated" json:"updated"`
-	// +optional
-	Scope *string `yaml:"scope" json:"scope"`
-	// +optional
-	Version *string `yaml:"version" json:"version" `
-	// Based on OGC API Styles Requirement 7B
-	// +optional
-	Stylesheets []StyleSheet `yaml:"stylesheets" json:"stylesheets"`
-	// +optional
-	Layers []StyleLayer `yaml:"layers" json:"layers"`
-	// Based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
-	Links []Link `yaml:"links" json:"links"`
-}
+	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated" validate:"omitempty,datetime=2006-01-02T15:04:05Z"`
 
-// +kubebuilder:object:generate=true
-type StyleLayer struct {
-	ID string `yaml:"id" json:"id"`
-	// +optional
-	GeometryType *string `yaml:"type" json:"type"`
-	SampleData   Link    `yaml:"sampleData" json:"sampleData"`
-	// +optional
-	PropertiesSchema *PropertiesSchema `yaml:"propertiesSchema" json:"propertiesSchema"`
-}
-
-// +kubebuilder:object:generate=true
-type StyleSheet struct {
-	// +optional
-	Title *string `yaml:"title" json:"title"`
+	// Optional version of this style
 	// +optional
 	Version *string `yaml:"version" json:"version"`
+
+	// Reference to a PNG image to use a thumbnail on the style metadata page.
+	// The full path is constructed by appending Resources + Thumbnail.
 	// +optional
-	Specification *string `yaml:"specification" json:"specification"`
-	// +optional
-	Native *bool `yaml:"native" json:"native"`
-	// Based on OGC API Features - http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/link.yaml - as referenced by OGC API Styles Requirements 3B and 7B
-	Link Link `yaml:"link" json:"link"`
+	Thumbnail *string `yaml:"thumbnail" json:"thumbnail"`
+
+	// This style is offered in the following formats
+	Formats []StyleFormat `yaml:"formats" json:"formats" validate:"required,dive"`
 }
 
 // +kubebuilder:object:generate=true
-type Link struct {
-	AssetFilename string `yaml:"assetFilename" json:"assetFilename"`
-	Rel           string `yaml:"rel" json:"rel"` // This is allowed to be empty according to the spec, but we leverage this
-
+type StyleFormat struct {
+	// Name of the format
+	// +kubebuilder:default="mapbox"
 	// +optional
-	Href *string `yaml:"href" json:"href"`
-	// +optional
-	Type *string `yaml:"type" json:"type"`
-	// +optional
-	Format *string `yaml:"format" json:"format"`
-	// +optional
-	Title *string `yaml:"title" json:"title"`
-	// +optional
-	Hreflang *string `yaml:"hreflang" json:"hreflang"`
-	// +optional
-	Length *int `yaml:"length" json:"length"`
-}
-
-// +kubebuilder:object:generate=true
-type PropertiesSchema struct {
-	// placeholder
+	Format string `yaml:"format" json:"format" default:"mapbox" validate:"required,oneof=mapbox sld10"`
 }
