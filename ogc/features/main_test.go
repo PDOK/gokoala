@@ -491,6 +491,20 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 		},
 		{
+			name: "Request JSON-FG for feature 4030",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
+				collectionID: "foo",
+				featureID:    "4030",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_feature_4030_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request non existing feature",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_bag.yaml",

@@ -1,16 +1,20 @@
 package core
 
 import (
-	"net/url"
+	"context"
+	"log"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path"
 	"runtime"
 	"testing"
 
-	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/engine"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
 )
 
 func init() {
@@ -23,36 +27,199 @@ func init() {
 	}
 }
 
-func TestNewCommonCore(t *testing.T) {
-	type args struct {
-		e *engine.Engine
+func TestCommonCore_LandingPage(t *testing.T) {
+	type fields struct {
+		configFile string
+		url        string
+	}
+	type want struct {
+		body       string
+		statusCode int
 	}
 	tests := []struct {
-		name string
-		args args
+		name   string
+		fields fields
+		want   want
 	}{
 		{
-			name: "Test render templates with MINIMAL config",
-			args: args{
-				e: engine.NewEngineWithConfig(&config.Config{
-					Version:            "2.3.0",
-					Title:              "Test API",
-					Abstract:           "Test API description",
-					AvailableLanguages: []config.Language{{Tag: language.Dutch}},
-					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-					OgcAPI: config.OgcAPI{
-						GeoVolumes: nil,
-						Tiles:      nil,
-						Styles:     nil,
-					},
-				}, "", false, true),
+			name: "landing page as JSON",
+			fields: fields{
+				configFile: "engine/testdata/config_minimal.yaml",
+				url:        "http://localhost:8080/?f=json",
+			},
+			want: want{
+				body:       "Landing page as JSON",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "landing page as HTML",
+			fields: fields{
+				configFile: "engine/testdata/config_minimal.yaml",
+				url:        "http://localhost:8080/?f=html",
+			},
+			want: want{
+				body:       "<title>Minimal OGC API (OGC API)</title>",
+				statusCode: http.StatusOK,
 			},
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			core := NewCommonCore(test.args.e)
-			assert.NotEmpty(t, core.engine.Templates.RenderedTemplates)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createRequest(tt.fields.url)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
+			core := NewCommonCore(newEngine)
+			handler := core.LandingPage()
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.Contains(t, rr.Body.String(), tt.want.body)
 		})
 	}
+}
+
+func TestCommonCore_Conformance(t *testing.T) {
+	type fields struct {
+		configFile string
+		url        string
+	}
+	type want struct {
+		body       string
+		statusCode int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "conformance as JSON",
+			fields: fields{
+				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:        "http://localhost:8080/conformance?f=json",
+			},
+			want: want{
+				body:       "conformsTo",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "conformance as HTML",
+			fields: fields{
+				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:        "http://localhost:8080/conformance?f=html",
+			},
+			want: want{
+				body:       "conformiteitsklassen",
+				statusCode: http.StatusOK,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createRequest(tt.fields.url)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
+			core := NewCommonCore(newEngine)
+			handler := core.Conformance()
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.Contains(t, rr.Body.String(), tt.want.body)
+		})
+	}
+}
+
+func TestCommonCore_API(t *testing.T) {
+	type fields struct {
+		configFile string
+		url        string
+	}
+	type want struct {
+		body       string
+		statusCode int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "OpenAPI as JSON",
+			fields: fields{
+				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:        "http://localhost:8080/api?f=json",
+			},
+			want: want{
+				body:       "OpenAPI",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "OpenAPI as HTML",
+			fields: fields{
+				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:        "http://localhost:8080/api?f=html",
+			},
+			want: want{
+				body:       "GoKoalaLayoutPlugin", // exists on swagger page, this to make sure we get HTML
+				statusCode: http.StatusOK,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createRequest(tt.fields.url)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
+			core := NewCommonCore(newEngine)
+			handler := core.API()
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.Contains(t, rr.Body.String(), tt.want.body)
+		})
+	}
+}
+
+func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
+	rr := httptest.NewRecorder()
+	l, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		engine.SafeWrite(w.Write, []byte(r.URL.String()))
+	}))
+	defer ts.Listener.Close()
+	ts.Listener = l
+	ts.Start()
+	return rr, ts
+}
+
+func createRequest(url string) (*http.Request, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	rctx := chi.NewRouteContext()
+
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	return req, err
 }
