@@ -57,10 +57,10 @@
     <ul>
         {{ $style := .Params.Metadata.ID }}
         {{ $projection := .Params.Projection }}
-        {{ range $sh_index, $stylesheet := .Params.Metadata.Stylesheets }}
-            {{ if eq $stylesheet.Format "mapbox" }}
+        {{ range $sh_index, $styleFormat := .Params.Metadata.Formats }}
+            {{ if eq $styleFormat.Format "mapbox" }}
                 <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=mapbox">Mapbox Style</a> (<a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=html">{{ i18n "Legend" }}</a>)</li>
-            {{ else if eq $stylesheet.Format "sld10" }}
+            {{ else if eq $styleFormat.Format "sld10" }}
                 <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" title="OpenGIS Styled Layer Descriptor 1.0 Style">SLD 1.0 Style</a></li>
             {{ end }}
             {{/* Add support for more style formats here */}}

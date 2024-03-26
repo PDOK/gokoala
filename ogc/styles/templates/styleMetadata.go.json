@@ -50,10 +50,10 @@
   "version": "{{ .Params.Metadata.Version }}",
   {{ end }}
   "stylesheets": [
-    {{ range $sh_index, $stylesheet := .Params.Metadata.Stylesheets }}
+    {{ range $sh_index, $styleFormat := .Params.Metadata.Formats }}
     {{ if $sh_index }},{{ end }}
     {
-        {{ if eq $stylesheet.Format "mapbox" }}
+        {{ if eq $styleFormat.Format "mapbox" }}
         "title": "Mapbox Style",
         "version": "8",
         "specification": "https://docs.mapbox.com/mapbox-gl-js/style-spec/",
@@ -63,7 +63,7 @@
             "rel": "stylesheet",
             "type": "application/vnd.mapbox.style+json"
         }
-        {{ else if eq $stylesheet.Format "sld10" }}
+        {{ else if eq $styleFormat.Format "sld10" }}
         "title": "OpenGIS Styled Layer Descriptor 1.0 Style",
         "version": "1.0",
         "specification": "https://www.ogc.org/standard/sld/",

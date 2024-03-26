@@ -80,13 +80,13 @@ func NewStyles(e *engine.Engine) *Styles {
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", styleInstanceID))
 
 			// Add existing style definitions to rendered templates
-			for _, stylesheet := range style.Stylesheets {
-				formatExtension := e.CN.GetStyleFormatExtension(stylesheet.Format)
+			for _, styleFormat := range style.Formats {
+				formatExtension := e.CN.GetStyleFormatExtension(styleFormat.Format)
 				styleKey := engine.TemplateKey{
 					Name:         style.ID + formatExtension,
 					Directory:    e.Config.OgcAPI.Styles.StylesDir,
-					Format:       stylesheet.Format,
-					InstanceName: styleInstanceID + "." + stylesheet.Format,
+					Format:       styleFormat.Format,
+					InstanceName: styleInstanceID + "." + styleFormat.Format,
 				}
 				e.RenderTemplatesWithParams(struct {
 					Projection     string

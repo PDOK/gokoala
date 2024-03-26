@@ -31,5 +31,5 @@ ogcApi:
     supportedStyles:
       - id: "default"
         title: "Test style"
-        stylesheets:
+        formats:
           - format: "mapbox"

@@ -31,6 +31,6 @@ ogcApi:
     supportedStyles:
       - id: "default"
         title: Default style
-        stylesheets:
+        formats:
           - format: mapbox
           - format: sld10

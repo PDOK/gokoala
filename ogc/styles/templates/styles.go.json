@@ -33,8 +33,8 @@
           "title": "Style Metadata for {{ $style.ID }}",
           "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}/metadata"
         }
-        {{ if $style.Stylesheets }},{{ end }}
-        {{ range $sh_index, $stylesheet := $style.Stylesheets }}
+        {{ if $style.Formats }},{{ end }}
+        {{ range $sh_index, $stylesheet := $style.Formats }}
         {{ if $sh_index }},{{ end }}
         {
           "rel": "stylesheet",
