@@ -56,7 +56,7 @@ func NewStyles(e *engine.Engine) *Styles {
 			styleInstanceID := style.ID + projectionDelimiter + strings.ToLower(projection)
 			// Render metadata templates
 			e.RenderTemplatesWithParams(struct {
-				Metadata   config.StyleMetadata
+				Metadata   config.Style
 				Projection string
 			}{Metadata: style, Projection: projection},
 				nil,
@@ -73,7 +73,7 @@ func NewStyles(e *engine.Engine) *Styles {
 				},
 			}...)
 			e.RenderTemplatesWithParams(struct {
-				Metadata   config.StyleMetadata
+				Metadata   config.Style
 				Projection string
 			}{Metadata: style, Projection: projection},
 				styleMetadataBreadcrumbs,

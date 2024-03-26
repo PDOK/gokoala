@@ -467,7 +467,7 @@ type OgcAPIStyles struct {
 	StylesDir string `yaml:"stylesDir" json:"stylesDir" validate:"required,dirpath|filepath"`
 
 	// Styles exposed though this API
-	SupportedStyles []StyleMetadata `yaml:"supportedStyles" json:"supportedStyles" validate:"required,dive"`
+	SupportedStyles []Style `yaml:"supportedStyles" json:"supportedStyles" validate:"required,dive"`
 }
 
 // +kubebuilder:object:generate=true
@@ -756,7 +756,7 @@ type License struct {
 }
 
 // +kubebuilder:object:generate=true
-type StyleMetadata struct {
+type Style struct {
 	// Unique ID of this style
 	ID string `yaml:"id" json:"id" validate:"required"`
 
