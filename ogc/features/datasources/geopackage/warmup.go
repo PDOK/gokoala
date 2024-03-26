@@ -41,7 +41,7 @@ select minx,maxx,miny,maxy from %[1]s where minx <= 0 and maxx >= 0 and miny <= 
 	log.Printf("start warm-up of feature table '%s'", tableName)
 	_, err := db.Exec(query)
 	if err != nil {
-		return fmt.Errorf("failed to warm-up feature table '%s'", tableName)
+		return fmt.Errorf("failed to warm-up feature table '%s': %w", tableName, err)
 	}
 	log.Printf("end warm-up of feature table '%s'", tableName)
 	return nil
