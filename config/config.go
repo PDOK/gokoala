@@ -475,6 +475,7 @@ type OgcAPIFeatures struct {
 	// Basemap to use in embedded viewer on the HTML pages.
 	// +kubebuilder:default="OSM"
 	// +kubebuilder:validation:Enum=OSM;BRT
+	// +optional
 	Basemap string `yaml:"basemap" json:"basemap" default:"OSM" validate:"oneof=OSM BRT"`
 
 	// Collections to be served as features through this API
@@ -491,7 +492,9 @@ type OgcAPIFeatures struct {
 
 	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
 	// since it has significant performance impact when dealing with large JSON payloads.
+	//
 	// +kubebuilder:default=true
+	// +optional
 	ValidateResponses *bool `yaml:"validateResponses" json:"validateResponses" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
@@ -545,11 +548,13 @@ type Limit struct {
 	// Number of features to return by default.
 	// +kubebuilder:default=10
 	// +kubebuilder:validation:Minimum=2
+	// +optional
 	Default int `yaml:"default" json:"default" validate:"gt=1" default:"10"`
 
 	// Max number of features to return. Should be larger than 100 since the HTML interface always offers a 100 limit option.
 	// +kubebuilder:default=1000
 	// +kubebuilder:validation:Minimum=100
+	// +optional
 	Max int `yaml:"max" json:"max" validate:"gte=100" default:"1000"`
 }
 
@@ -607,14 +612,17 @@ type GeoPackage struct {
 type GeoPackageCommon struct {
 	// Feature id column name
 	// +kubebuilder:default="fid"
+	// +optional
 	Fid string `yaml:"fid" json:"fid" validate:"required" default:"fid"`
 
 	// Optional timeout after which queries are canceled
 	// +kubebuilder:default="15s"
+	// +optional
 	QueryTimeout Duration `yaml:"queryTimeout" json:"queryTimeout" validate:"required" default:"15s"`
 
 	// When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
 	// +kubebuilder:default=30000
+	// +optional
 	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree" json:"maxBBoxSizeToUseWithRTree" validate:"required" default:"30000"`
 }
 
@@ -680,10 +688,12 @@ type GeoPackageCloudCache struct {
 
 	// Max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
 	// +kubebuilder:default="1Gb"
+	// +optional
 	MaxSize string `yaml:"maxSize" json:"maxSize" default:"1Gb"`
 
 	// When true a warm-up query is executed on startup which aims to fill the local cache. Does increase startup time.
 	// +kubebuilder:default=false
+	// +optional
 	WarmUp bool `yaml:"warmUp" json:"warmUp" default:"false"`
 }
 
@@ -698,6 +708,7 @@ type PropertyFilter struct {
 
 	// Explains this property filter
 	// +kubebuilder:default="Filter features by this property"
+	// +optional
 	Description string `yaml:"description" json:"description" default:"Filter features by this property"`
 }
 
@@ -794,5 +805,6 @@ type Style struct {
 type StyleFormat struct {
 	// Name of the format
 	// +kubebuilder:default="mapbox"
+	// +optional
 	Format string `yaml:"format" json:"format" default:"mapbox" validate:"required,oneof=mapbox sld10"`
 }
