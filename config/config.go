@@ -158,10 +158,10 @@ type Config struct {
 	License License `yaml:"license" json:"license" validate:"required"`
 
 	// The base URL - that's the part until the OGC API landing page - under which this API is served
-	BaseURL URL `yaml:"baseUrl" json:"baseUrl" validate:"required,url"`
+	BaseURL URL `yaml:"baseUrl" json:"baseUrl" validate:"required"`
 
 	// Optional reference to a catalog/portal/registry that lists all datasets, not just this one
-	DatasetCatalogURL URL `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl" validate:"url"`
+	DatasetCatalogURL URL `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl"`
 
 	// The languages/translations to offer, valid options are Dutch (nl) and English (en). Dutch is the default.
 	AvailableLanguages []Language `yaml:"availableLanguages" json:"availableLanguages"`
@@ -234,7 +234,7 @@ type Support struct {
 
 	// URL to external support webpage
 	// +kubebuilder:validation:Type=string
-	URL URL `yaml:"url" json:"url" validate:"required,url"`
+	URL URL `yaml:"url" json:"url" validate:"required"`
 
 	// Email for support questions
 	// +optional
@@ -268,7 +268,7 @@ type DatasetMetadata struct {
 type Resources struct {
 	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if Directory is set
 	// +optional
-	URL URL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty,url"`
+	URL URL `yaml:"url" json:"url" validate:"required_without=Directory,omitempty"`
 
 	// // Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if URL is set
 	// +optional
@@ -343,7 +343,7 @@ type GeoSpatialCollectionMetadata struct {
 	// +optional
 	// +kubebuilder:validation:Type=string
 	// +kubebuilder:validation:Format="date-time"
-	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated"`
+	LastUpdated *string `yaml:"lastUpdated" json:"lastUpdated" validate:"omitempty,datetime=2006-01-02T15:04:05Z"`
 
 	// Who updated this collection
 	// +optional
@@ -386,7 +386,7 @@ type CollectionEntry3dGeoVolumes struct {
 
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
 	// +optional
-	URL3DViewer *URL `yaml:"3dViewerUrl" json:"3dViewerUrl" validate:"url"`
+	URL3DViewer *URL `yaml:"3dViewerUrl" json:"3dViewerUrl"`
 }
 
 func (gv *CollectionEntry3dGeoVolumes) Has3DTiles() bool {
@@ -432,7 +432,7 @@ type FeatureFilters struct {
 // +kubebuilder:object:generate=true
 type OgcAPI3dGeoVolumes struct {
 	// Reference to the server (or object storage) hosting the 3D Tiles
-	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required,url"`
+	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
 
 	// Collections to be served as 3D GeoVolumes
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
@@ -441,9 +441,11 @@ type OgcAPI3dGeoVolumes struct {
 // +kubebuilder:object:generate=true
 type OgcAPITiles struct {
 	// Reference to the server (or object storage) hosting the tiles
-	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required,url"`
+	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
 
 	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
+	// +kubebuilder:validation:Enum=raster;vector
+	// +kubebuilder:validation:UniqueItems=true
 	Types []string `yaml:"types" json:"types" validate:"required"`
 
 	// Specifies in what projections (SRS/CRS) the tiles are offered
@@ -540,7 +542,7 @@ type OgcAPIProcesses struct {
 	SupportsCallback bool `yaml:"supportsCallback" json:"supportsCallback"`
 
 	// Reference to an external service implementing the process API. GoKoala acts only as a proxy for OGC API Processes.
-	ProcessesServer URL `yaml:"processesServer" json:"processesServer" validate:"required,url"`
+	ProcessesServer URL `yaml:"processesServer" json:"processesServer" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
@@ -764,7 +766,7 @@ type License struct {
 	Name string `yaml:"name" json:"name" validate:"required"`
 
 	// URL to license text on the web
-	URL URL `yaml:"url" json:"url" validate:"required,url"`
+	URL URL `yaml:"url" json:"url" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
