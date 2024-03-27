@@ -12,9 +12,9 @@ import (
 // In addition, it also removes trailing slash if present, so we can easily
 // append a longer path without having to worry about double slashes.
 //
+// Allow only http/https URLs or environment variables like ${FOOBAR}
+// +kubebuilder:validation:Pattern=`^(https?://.+)|(\$\{.+\})`
 // +kubebuilder:validation:Type=string
-// +kubebuilder:validation:Format=uri
-// +kubebuilder:validation:Pattern=`^https?://.+`
 type URL struct {
 	// This is a pointer so the wrapper can directly be used in templates, e.g.: {{ .Config.BaseURL }}
 	// Otherwise you would need .String() or template.URL(). (Might be a bug.)
