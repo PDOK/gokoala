@@ -571,7 +571,7 @@ type Datasources struct {
 
 // +kubebuilder:object:generate=true
 type Datasource struct {
-	// GeoPakcage to get the features from.
+	// GeoPackage to get the features from.
 	// +optional
 	GeoPackage *GeoPackage `yaml:"geopackage" json:"geopackage" validate:"required_without_all=PostGIS"`
 
@@ -664,6 +664,7 @@ type GeoPackageCloud struct {
 
 	// Only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
 	// +kubebuilder:default=false
+	// +optional
 	LogHTTPRequests bool `yaml:"logHttpRequests" json:"logHttpRequests" default:"false"`
 }
 
@@ -782,7 +783,7 @@ type Style struct {
 	// +optional
 	Keywords []string `yaml:"keywords" json:"keywords"`
 
-	// Moment in time when the dataset was last updated
+	// Moment in time when the style was last updated
 	// +optional
 	// +kubebuilder:validation:Type=string
 	// +kubebuilder:validation:Format="date-time"
