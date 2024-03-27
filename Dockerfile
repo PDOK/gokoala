@@ -7,7 +7,7 @@ RUN npm install
 RUN npm run build
 
 ####### Go build
-FROM docker.io/golang:1.21-bookworm AS build-env
+FROM docker.io/golang:1.22-bookworm AS build-env
 WORKDIR /go/src/service
 ADD . /go/src/service
 

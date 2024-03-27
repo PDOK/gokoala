@@ -11,7 +11,7 @@ import (
 )
 
 type TestEmbeddedLanguage struct {
-	L language.Tag `json:"L" yaml:"L"`
+	L Language `json:"L" yaml:"L"`
 }
 
 func TestLanguage_DeepCopy(t *testing.T) {
@@ -51,12 +51,12 @@ func TestLanguage_DeepCopyInto(t *testing.T) {
 
 func TestLanguage_Marshalling_JSON(t *testing.T) {
 	tests := []struct {
-		lang    *language.Tag
+		lang    *Language
 		want    string
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			lang:    &language.French,
+			lang:    &Language{language.French},
 			want:    `"fr"`,
 			wantErr: assert.NoError,
 		},
@@ -69,7 +69,7 @@ func TestLanguage_Marshalling_JSON(t *testing.T) {
 			}
 			assert.Equalf(t, tt.want, string(marshalled), "json.Marshal")
 
-			unmarshalled := &language.Tag{}
+			unmarshalled := &Language{}
 			err = json.Unmarshal(marshalled, unmarshalled)
 			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
 				return
