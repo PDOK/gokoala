@@ -766,7 +766,7 @@ type License struct {
 	Name string `yaml:"name" json:"name" validate:"required"`
 
 	// URL to license text on the web
-	URL URL `yaml:"url" json:"url" validate:"required`
+	URL URL `yaml:"url" json:"url" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
