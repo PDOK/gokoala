@@ -445,7 +445,6 @@ type OgcAPITiles struct {
 
 	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
 	// +kubebuilder:validation:Enum=raster;vector
-	// +kubebuilder:validation:UniqueItems=true
 	Types []string `yaml:"types" json:"types" validate:"required"`
 
 	// Specifies in what projections (SRS/CRS) the tiles are offered
