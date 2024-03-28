@@ -647,7 +647,7 @@ func (in *OgcAPITiles) DeepCopyInto(out *OgcAPITiles) {
 	in.TileServer.DeepCopyInto(&out.TileServer)
 	if in.Types != nil {
 		in, out := &in.Types, &out.Types
-		*out = make([]string, len(*in))
+		*out = make([]TilesType, len(*in))
 		copy(*out, *in)
 	}
 	if in.SupportedSrs != nil {
