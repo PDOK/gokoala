@@ -438,14 +438,21 @@ type OgcAPI3dGeoVolumes struct {
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
 }
 
+// +kubebuilder:validation:Enum=raster;vector
+type TilesType string
+
+const (
+	TilesTypeRaster TilesType = "raster"
+	TilesTypeVector TilesType = "vector"
+)
+
 // +kubebuilder:object:generate=true
 type OgcAPITiles struct {
 	// Reference to the server (or object storage) hosting the tiles
 	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
 
 	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
-	// +kubebuilder:validation:Enum=raster;vector
-	Types []string `yaml:"types" json:"types" validate:"required"`
+	Types []TilesType `yaml:"types" json:"types" validate:"required"`
 
 	// Specifies in what projections (SRS/CRS) the tiles are offered
 	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`

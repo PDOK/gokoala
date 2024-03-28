@@ -57,7 +57,7 @@
             Type
           </td>
           <td id="field-type" class="w-auto px-2">
-            {{ (index .Config.OgcAPI.Tiles.Types 0) | title }}
+            {{ (index .Config.OgcAPI.Tiles.Types 0) | toString | title }}
           </td>
         </tr>
         <tr>

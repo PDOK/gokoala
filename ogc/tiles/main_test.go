@@ -52,7 +52,7 @@ func TestNewTiles(t *testing.T) {
 						GeoVolumes: nil,
 						Tiles: &config.OgcAPITiles{
 							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
-							Types:      []string{"vector"},
+							Types:      []config.TilesType{config.TilesTypeVector},
 							SupportedSrs: []config.SupportedSrs{
 								{
 									Srs: "EPSG:28992",
@@ -84,7 +84,7 @@ func TestNewTiles(t *testing.T) {
 						GeoVolumes: nil,
 						Tiles: &config.OgcAPITiles{
 							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
-							Types:      []string{"vector"},
+							Types:      []config.TilesType{config.TilesTypeVector},
 							SupportedSrs: []config.SupportedSrs{
 								{
 									Srs: "EPSG:28992",
