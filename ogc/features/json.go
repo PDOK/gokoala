@@ -279,7 +279,7 @@ func getEncoder(w io.Writer) jsonEncoder {
 
 func handleJSONEncodingFailure(err error, w http.ResponseWriter) {
 	log.Printf("JSON encoding failed: %v", err)
-	http.Error(w, "Failed to write JSON response", http.StatusInternalServerError)
+	engine.HandleProblem(engine.ProblemInternalServer, w, "Failed to write JSON response")
 }
 
 func setGeom(crs ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature *domain.Feature) {

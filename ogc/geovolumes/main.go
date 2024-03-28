@@ -127,7 +127,7 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 	target, err := url.Parse(t.engine.Config.OgcAPI.GeoVolumes.TileServer.String() + path)
 	if err != nil {
 		log.Printf("invalid target url, can't proxy tiles: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		engine.HandleProblem(engine.ProblemInternalServer, w)
 		return
 	}
 	t.engine.ReverseProxy(w, r, target, prefer204, contentTypeOverwrite)

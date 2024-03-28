@@ -77,7 +77,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
@@ -101,7 +101,7 @@ func (f *Features) Features() http.HandlerFunc {
 				EndDateProperty:   collection.TemporalProperties.EndDate}
 		}
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -170,7 +170,7 @@ func (f *Features) Features() http.HandlerFunc {
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
@@ -182,13 +182,13 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
 		if err != nil {
-			http.Error(w, "feature ID must be a number", http.StatusBadRequest)
+			engine.HandleProblem(engine.ProblemBadRequest, w, "feature ID must be a number")
 			return
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		outputSRID, contentCrs, err := url.parse()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -199,7 +199,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)
 			log.Printf("%s, error: %v\n", msg, err)
-			http.Error(w, msg, http.StatusInternalServerError)
+			engine.HandleProblem(engine.ProblemInternalServer, w, msg)
 			return
 		}
 		if feat == nil {
@@ -331,7 +331,7 @@ func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, er
 	// log error, but sent generic message to client to prevent possible information leakage from datasource
 	msg := "failed to retrieve feature collection " + collectionID
 	log.Printf("%s, error: %v\n", msg, err)
-	http.Error(w, msg, http.StatusInternalServerError)
+	engine.HandleProblem(engine.ProblemInternalServer, w, msg)
 }
 
 func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {

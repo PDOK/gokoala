@@ -29,6 +29,7 @@ require (
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
+	schneider.vip/problem v1.9.1
 )
 
 require (
