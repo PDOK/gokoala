@@ -126,8 +126,9 @@ func validateLocalPaths(config *Config) error {
 	// Could use a deep dive and reflection.
 	// But the settings with a path are not recursive and relatively limited in numbers.
 	// GeoPackageCloudCache.Path is not verified. It will be created anyway in cloud_sqlite_vfs.createCacheDir during startup time.
-	if config.Resources != nil && config.Resources.Directory != "" && !isExistingLocalDir(config.Resources.Directory) {
-		return errors.New("Config.Resources.Directory should be an existing directory: " + config.Resources.Directory)
+	if config.Resources != nil && config.Resources.Directory != nil && *config.Resources.Directory != "" &&
+		!isExistingLocalDir(*config.Resources.Directory) {
+		return errors.New("Config.Resources.Directory should be an existing directory: " + *config.Resources.Directory)
 	}
 	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.StylesDir) {
 		return errors.New("Config.OgcAPI.Styles.StylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
@@ -268,11 +269,11 @@ type DatasetMetadata struct {
 type Resources struct {
 	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if Directory is set
 	// +optional
-	URL URL `yaml:"url,omitempty" json:"url,omitempty" validate:"required_without=Directory,omitempty"`
+	URL *URL `yaml:"url,omitempty" json:"url,omitempty" validate:"required_without=Directory,omitempty"`
 
 	// // Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if URL is set
 	// +optional
-	Directory string `yaml:"directory,omitempty" json:"directory,omitempty" validate:"required_without=URL,omitempty,dirpath|filepath"`
+	Directory *string `yaml:"directory,omitempty" json:"directory,omitempty" validate:"required_without=URL,omitempty,dirpath|filepath"`
 }
 
 // +kubebuilder:object:generate=true
