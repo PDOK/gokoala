@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/json"
+	"errors"
 	"os"
 	"path"
 	"runtime"
@@ -279,6 +281,38 @@ func TestCacheDir(t *testing.T) {
 			} else {
 				assert.Contains(t, got, *tt.gc.Cache.Path+"/test-")
 			}
+		})
+	}
+}
+
+func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
+	tests := []struct {
+		coll    GeoSpatialCollection
+		want    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			coll: GeoSpatialCollection{
+				ID: "test i",
+				Metadata: &GeoSpatialCollectionMetadata{
+					Title: ptrTo("test t"),
+				},
+				GeoVolumes: &CollectionEntry3dGeoVolumes{
+					TileServerPath: ptrTo("test p"),
+				},
+			},
+			// language=json
+			want:    `{"id": "test i", "metadata": {"title": "test t"}, "tileServerPath":  "test p"}`,
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			marshalled, err := json.Marshal(tt.coll)
+			if !tt.wantErr(t, err, errors.New("json.Marshal")) {
+				return
+			}
+			assert.Equalf(t, tt.want, string(marshalled), "json.Marshal")
 		})
 	}
 }
