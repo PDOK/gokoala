@@ -20,6 +20,24 @@ func Test_newRouter(t *testing.T) {
 		wantBody   string
 	}{
 		{
+			name:       "Check landing page with all OGC APIs enabled",
+			configFile: "examples/config_all.yaml",
+			apiCall:    "http://localhost:8181?f=html",
+			wantBody:   "engine/testdata/expected_landing_page.html",
+		},
+		{
+			name:       "Check conformance with all OGC APIs enabled in JSON",
+			configFile: "examples/config_all.yaml",
+			apiCall:    "http://localhost:8181/conformance?f=json",
+			wantBody:   "engine/testdata/expected_conformance.json",
+		},
+		{
+			name:       "Check conformance with all OGC APIs enabled in HTML",
+			configFile: "examples/config_all.yaml",
+			apiCall:    "http://localhost:8181/conformance?f=html",
+			wantBody:   "engine/testdata/expected_conformance.html",
+		},
+		{
 			name:       "Serve multiple OGC APIs for single collection in JSON",
 			configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 			apiCall:    "http://localhost:8180/collections/NewYork?f=json",
