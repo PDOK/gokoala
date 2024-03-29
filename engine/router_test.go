@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProblemRecoverer(t *testing.T) {
+func TestUnexpectedProblemRecoverer(t *testing.T) {
 	// given
 	defer func() {
 		_ = recover()
@@ -30,6 +30,30 @@ func TestProblemRecoverer(t *testing.T) {
 
 	// then
 	assert.Equal(t, "{\"detail\":\"An unexpected error has occurred, try again or contact support if the problem persists\",\"status\":500,\"title\":\"Internal Server Error\"}", w.Body.String())
+}
+
+func TestExpectedProblemRecoverer(t *testing.T) {
+	// given
+	defer func() {
+		_ = recover()
+	}()
+	w := httptest.NewRecorder()
+
+	r := newRouter("1.2.3", true, false)
+	r.Get("/panic", func(_ http.ResponseWriter, _ *http.Request) {
+		HandleProblem(ProblemBadRequest, w, "foo bar baz")
+	})
+
+	req, err := http.NewRequest(http.MethodGet, "/panic", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// when
+	r.ServeHTTP(w, req)
+
+	// then
+	assert.Equal(t, "{\"detail\":\"foo bar baz\",\"status\":400,\"title\":\"Bad Request\"}", w.Body.String())
 }
 
 func TestAbortRecoverer(t *testing.T) {
