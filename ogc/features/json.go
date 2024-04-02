@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	now                            = time.Now
+	now                            = time.Now // allow mocking
 	disableJSONPerfOptimization, _ = strconv.ParseBool(os.Getenv("DISABLE_JSON_PERF_OPTIMIZATION"))
 )
 

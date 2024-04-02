@@ -1,0 +1,6 @@
+{
+  "detail": "the requested feature with id: 999999 does not exist in collection 'dutch-addresses'",
+  "status": 404,
+  "timestamp": "2000-01-01T00:00:00Z",
+  "title": "Not Found"
+}

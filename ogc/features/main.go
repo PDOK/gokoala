@@ -83,9 +83,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 		collectionID := chi.URLParam(r, "collectionId")
 		if _, ok := collections[collectionID]; !ok {
-			msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
-			log.Println(msg)
-			engine.RenderProblem(engine.ProblemNotFound, w, msg)
+			handleCollectionNotFound(w, collectionID)
 			return
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
@@ -178,9 +176,7 @@ func (f *Features) Feature() http.HandlerFunc {
 
 		collectionID := chi.URLParam(r, "collectionId")
 		if _, ok := collections[collectionID]; !ok {
-			msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
-			log.Println(msg)
-			engine.RenderProblem(engine.ProblemNotFound, w, msg)
+			handleCollectionNotFound(w, collectionID)
 			return
 		}
 		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
@@ -206,7 +202,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 		if feat == nil {
-			msg := fmt.Sprintf("no result found for feature id: %d in collection '%s'", featureID, collectionID)
+			msg := fmt.Sprintf("the requested feature with id: %d does not exist in collection '%s'", featureID, collectionID)
 			log.Println(msg)
 			engine.RenderProblem(engine.ProblemNotFound, w, msg)
 			return
@@ -330,6 +326,12 @@ func epsgToSrid(srs string) (int, error) {
 		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
 	}
 	return srid, nil
+}
+
+func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
+	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }
 
 func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
