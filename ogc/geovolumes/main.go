@@ -16,7 +16,8 @@ import (
 )
 
 type ThreeDimensionalGeoVolumes struct {
-	engine *engine.Engine
+	engine           *engine.Engine
+	validateResponse bool
 }
 
 func NewThreeDimensionalGeoVolumes(e *engine.Engine) *ThreeDimensionalGeoVolumes {
@@ -26,7 +27,8 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine) *ThreeDimensionalGeoVolumes
 	}
 
 	geoVolumes := &ThreeDimensionalGeoVolumes{
-		engine: e,
+		engine:           e,
+		validateResponse: *e.Config.OgcAPI.GeoVolumes.ValidateResponses,
 	}
 
 	// 3D Tiles
@@ -130,7 +132,7 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	t.engine.ReverseProxy(w, r, target, prefer204, contentTypeOverwrite)
+	t.engine.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, t.validateResponse)
 }
 
 func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*config.GeoSpatialCollection, error) {

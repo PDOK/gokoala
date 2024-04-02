@@ -2,6 +2,7 @@ package engine
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -298,6 +299,12 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
 func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *url.URL,
 	prefer204 bool, contentTypeOverwrite string) {
+	e.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, false)
+}
+
+// ReverseProxy forwards given HTTP request to given target server, and optionally tweaks and validates response
+func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request, target *url.URL,
+	prefer204 bool, contentTypeOverwrite string, validateResponse bool) {
 
 	rewrite := func(r *httputil.ProxyRequest) {
 		r.Out.URL = target
@@ -318,6 +325,19 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 		}
 		if contentTypeOverwrite != "" {
 			proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
+		}
+		if contentType := proxyRes.Header.Get(HeaderContentType); contentType == MediaTypeJSON && validateResponse {
+			reader, err := gzip.NewReader(proxyRes.Body)
+			if err != nil {
+				log.Printf("%v", err.Error())
+				return err
+			}
+			res, err := io.ReadAll(reader)
+			if err != nil {
+				log.Printf("%v", err.Error())
+				return err
+			}
+			e.ServeResponse(w, r, false, true, contentType, res)
 		}
 		return nil
 	}
