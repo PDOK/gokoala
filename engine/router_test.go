@@ -29,7 +29,7 @@ func TestUnexpectedProblemRecoverer(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	// then
-	assert.Equal(t, "{\"detail\":\"An unexpected error has occurred, try again or contact support if the problem persists\",\"status\":500,\"title\":\"Internal Server Error\"}", w.Body.String())
+	assert.Contains(t, w.Body.String(), "{\"detail\":\"An unexpected error has occurred, try again or contact support if the problem persists\",\"status\":500,")
 }
 
 func TestExpectedProblemRecoverer(t *testing.T) {
@@ -53,7 +53,7 @@ func TestExpectedProblemRecoverer(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	// then
-	assert.Equal(t, "{\"detail\":\"foo bar baz\",\"status\":400,\"title\":\"Bad Request\"}", w.Body.String())
+	assert.Contains(t, w.Body.String(), "{\"detail\":\"foo bar baz\",\"status\":400,")
 }
 
 func TestAbortRecoverer(t *testing.T) {

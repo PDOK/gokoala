@@ -24,7 +24,7 @@ func RenderProblem(p *problem.Problem, w http.ResponseWriter, details ...string)
 	for _, detail := range details {
 		p = p.Append(problem.Detail(detail))
 	}
-	p = p.Append(problem.Custom(timestampKey, time.Now().UTC()))
+	p = p.Append(problem.Custom(timestampKey, time.Now().UTC().Format(time.RFC3339)))
 	_, err := p.WriteTo(w)
 	if err != nil {
 		log.Printf("failed to write response: %v", err)
