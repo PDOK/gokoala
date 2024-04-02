@@ -217,7 +217,7 @@ func TestThreeDimensionalGeoVolume_ExplicitTileSet(t *testing.T) {
 				containerID: "container_2",
 			},
 			want: want{
-				body:       "404 page not found\n",
+				body:       "{\"status\":404,\"title\":\"Not Found\"}",
 				statusCode: http.StatusNotFound,
 			},
 		},

@@ -41,7 +41,7 @@ func TestExpectedProblemRecoverer(t *testing.T) {
 
 	r := newRouter("1.2.3", true, false)
 	r.Get("/panic", func(_ http.ResponseWriter, _ *http.Request) {
-		HandleProblem(ProblemBadRequest, w, "foo bar baz")
+		RenderProblem(ProblemBadRequest, w, "foo bar baz")
 	})
 
 	req, err := http.NewRequest(http.MethodGet, "/panic", nil)

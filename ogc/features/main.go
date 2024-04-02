@@ -77,14 +77,15 @@ func (f *Features) Features() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
 		if _, ok := collections[collectionID]; !ok {
-			log.Printf("collection %s doesn't exist in this features service", collectionID)
-			http.NotFound(w, r)
+			msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
+			log.Println(msg)
+			engine.RenderProblem(engine.ProblemNotFound, w, msg)
 			return
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
@@ -101,7 +102,7 @@ func (f *Features) Features() http.HandlerFunc {
 				EndDateProperty:   collection.TemporalProperties.EndDate}
 		}
 		if err != nil {
-			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -152,7 +153,8 @@ func (f *Features) Features() http.HandlerFunc {
 			fc = emptyFeatureCollection
 		}
 
-		switch f.engine.CN.NegotiateFormat(r) {
+		format := f.engine.CN.NegotiateFormat(r)
+		switch format {
 		case engine.FormatHTML:
 			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
@@ -160,7 +162,7 @@ func (f *Features) Features() http.HandlerFunc {
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, fc, contentCrs)
 		default:
-			http.NotFound(w, r)
+			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return
 		}
 	}
@@ -170,25 +172,26 @@ func (f *Features) Features() http.HandlerFunc {
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
 		if _, ok := collections[collectionID]; !ok {
-			log.Printf("collection %s doesn't exist in this features service", collectionID)
-			http.NotFound(w, r)
+			msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
+			log.Println(msg)
+			engine.RenderProblem(engine.ProblemNotFound, w, msg)
 			return
 		}
 		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
 		if err != nil {
-			engine.HandleProblem(engine.ProblemBadRequest, w, "feature ID must be a number")
+			engine.RenderProblem(engine.ProblemBadRequest, w, "feature ID must be a number")
 			return
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		outputSRID, contentCrs, err := url.parse()
 		if err != nil {
-			engine.HandleProblem(engine.ProblemBadRequest, w, err.Error())
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -199,16 +202,18 @@ func (f *Features) Feature() http.HandlerFunc {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
 			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)
 			log.Printf("%s, error: %v\n", msg, err)
-			engine.HandleProblem(engine.ProblemInternalServer, w, msg)
+			engine.RenderProblem(engine.ProblemServerError, w, msg)
 			return
 		}
 		if feat == nil {
-			log.Printf("no result found for feature id: %d in collection '%s'", featureID, collectionID)
-			http.NotFound(w, r)
+			msg := fmt.Sprintf("no result found for feature id: %d in collection '%s'", featureID, collectionID)
+			log.Println(msg)
+			engine.RenderProblem(engine.ProblemNotFound, w, msg)
 			return
 		}
 
-		switch f.engine.CN.NegotiateFormat(r) {
+		format := f.engine.CN.NegotiateFormat(r)
+		switch format {
 		case engine.FormatHTML:
 			f.html.feature(w, r, collectionID, feat)
 		case engine.FormatGeoJSON, engine.FormatJSON:
@@ -216,7 +221,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		case engine.FormatJSONFG:
 			f.json.featureAsJSONFG(w, r, collectionID, feat, url, contentCrs)
 		default:
-			http.NotFound(w, r)
+			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return
 		}
 	}
@@ -331,7 +336,7 @@ func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, er
 	// log error, but sent generic message to client to prevent possible information leakage from datasource
 	msg := "failed to retrieve feature collection " + collectionID
 	log.Printf("%s, error: %v\n", msg, err)
-	engine.HandleProblem(engine.ProblemInternalServer, w, msg)
+	engine.RenderProblem(engine.ProblemServerError, w, msg)
 }
 
 func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {

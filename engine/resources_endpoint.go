@@ -21,7 +21,7 @@ func newResourcesEndpoint(e *Engine) {
 				target, err := url.Parse(resourcesURL + resourcePath)
 				if err != nil {
 					log.Printf("invalid target url, can't proxy resources: %v", err)
-					HandleProblem(ProblemInternalServer, w)
+					RenderProblem(ProblemServerError, w)
 					return
 				}
 				e.ReverseProxy(w, r, target, true, "")

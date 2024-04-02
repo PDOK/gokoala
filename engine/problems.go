@@ -12,11 +12,13 @@ const (
 )
 
 var (
-	ProblemInternalServer = problem.Of(http.StatusInternalServerError).Append(problem.Detail(messageInternalServer))
-	ProblemBadRequest     = problem.Of(http.StatusBadRequest)
+	ProblemServerError   = problem.Of(http.StatusInternalServerError).Append(problem.Detail(messageInternalServer))
+	ProblemBadRequest    = problem.Of(http.StatusBadRequest)
+	ProblemNotFound      = problem.Of(http.StatusNotFound)
+	ProblemNotAcceptable = problem.Of(http.StatusNotAcceptable)
 )
 
-func HandleProblem(p *problem.Problem, w http.ResponseWriter, details ...string) {
+func RenderProblem(p *problem.Problem, w http.ResponseWriter, details ...string) {
 	for _, detail := range details {
 		p = p.Append(problem.Detail(detail))
 	}

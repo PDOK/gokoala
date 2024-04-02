@@ -67,7 +67,7 @@ func problemRecoverer(next http.Handler) http.Handler {
 				}
 
 				if r.Header.Get("Connection") != "Upgrade" {
-					HandleProblem(ProblemInternalServer, w)
+					RenderProblem(ProblemServerError, w)
 				}
 			}
 		}()

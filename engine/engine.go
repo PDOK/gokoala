@@ -201,7 +201,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
-		HandleProblem(ProblemBadRequest, w, err.Error())
+		RenderProblem(ProblemBadRequest, w, err.Error())
 		return
 	}
 
@@ -209,7 +209,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	parsedTemplate, err := e.Templates.getParsedTemplate(key)
 	if err != nil {
 		log.Printf("%v", err.Error())
-		HandleProblem(ProblemInternalServer, w)
+		RenderProblem(ProblemServerError, w)
 	}
 
 	// render output
@@ -226,7 +226,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	// validate response
 	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 		log.Printf("%v", err.Error())
-		HandleProblem(ProblemInternalServer, w, err.Error())
+		RenderProblem(ProblemServerError, w, err.Error())
 		return
 	}
 
@@ -242,14 +242,15 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
-		HandleProblem(ProblemBadRequest, w, err.Error())
+		RenderProblem(ProblemBadRequest, w, err.Error())
 		return
 	}
 
 	// render output
 	output, err := e.Templates.getRenderedTemplate(templateKey)
 	if err != nil {
-		http.NotFound(w, r)
+		log.Printf("%v", err.Error())
+		RenderProblem(ProblemNotFound, w)
 		return
 	}
 	contentType := e.CN.formatToMediaType(templateKey.Format)
@@ -257,7 +258,7 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	// validate response
 	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 		log.Printf("%v", err.Error())
-		HandleProblem(ProblemInternalServer, w, err.Error())
+		RenderProblem(ProblemServerError, w, err.Error())
 		return
 	}
 
@@ -275,7 +276,7 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 	if validateRequest {
 		if err := e.OpenAPI.ValidateRequest(r); err != nil {
 			log.Printf("%v", err.Error())
-			HandleProblem(ProblemBadRequest, w, err.Error())
+			RenderProblem(ProblemBadRequest, w, err.Error())
 			return
 		}
 	}
@@ -283,7 +284,7 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 	if validateResponse {
 		if err := e.OpenAPI.ValidateResponse(contentType, response, r); err != nil {
 			log.Printf("%v", err.Error())
-			HandleProblem(ProblemInternalServer, w, err.Error())
+			RenderProblem(ProblemServerError, w, err.Error())
 			return
 		}
 	}
