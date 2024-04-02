@@ -291,6 +291,13 @@
           },
           "refine" : {
             "type" : "string"
+          },
+          "children" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Tile_Explicit"
+            },
+            "minItems": 1
           }
         }
       },
