@@ -19,7 +19,11 @@
       "get" : {
         "tags" : [ "3D Tiles" ],
         "summary" : "retrieve the root 3D Tiles tileset of the feature collection '{{ $coll.ID }}'",
+        {{- if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree -}}
         "description" : "Access a 3D Tiles 1.1 tileset with implicit quadtree tiling.",
+        {{- else -}}
+        "description" : "Access a 3D Tiles 1.1 tileset with explicit quadtree tiling.",
+        {{- end -}}
         "operationId" : "get3dTileset.{{ $coll.ID }}",
         "parameters" : [ ],
         "responses" : {
@@ -28,7 +32,11 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/Tileset3dTiles"
+                  {{- if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree -}}
+                  "$ref" : "#/components/schemas/Tileset3dTiles_Implicit"
+                  {{- else -}}
+                  "$ref" : "#/components/schemas/Tileset3dTiles_Explicit"
+                  {{- end -}}
                 }
               }
             }
@@ -158,12 +166,42 @@
         "type" : "string",
         "format" : "binary"
       },
-      "Tileset3dTiles" : {
+      "Tileset3dTiles_Implicit" : {
         "required" : [ "asset", "root" ],
         "type" : "object",
         "properties" : {
           "root" : {
-            "$ref" : "#/components/schemas/Tile"
+            "$ref" : "#/components/schemas/Tile_Implicit"
+          },
+          "asset" : {
+            "$ref" : "#/components/schemas/AssetMetadata"
+          },
+          "schemaUri" : {
+            "type" : "string"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "extensionsUsed" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "extensionsRequired" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Tileset3dTiles_Explicit" : {
+        "required" : [ "asset", "root" ],
+        "type" : "object",
+        "properties" : {
+          "root" : {
+            "$ref" : "#/components/schemas/Tile_Explicit"
           },
           "asset" : {
             "$ref" : "#/components/schemas/AssetMetadata"
@@ -217,7 +255,7 @@
           }
         }
       },
-      "Tile" : {
+      "Tile_Implicit" : {
         "required" : [ "boundingVolume", "content", "implicitTiling", "refine" ],
         "type" : "object",
         "properties" : {
@@ -235,6 +273,24 @@
           },
           "implicitTiling" : {
             "$ref" : "#/components/schemas/ImplicitTiling"
+          }
+        }
+      },
+      "Tile_Explicit" : {
+        "required" : [ "boundingVolume", "content", "refine" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "boundingVolume" : {
+            "$ref" : "#/components/schemas/BoundingVolume"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "refine" : {
+            "type" : "string"
           }
         }
       },
