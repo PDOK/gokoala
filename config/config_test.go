@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/json"
+	"errors"
 	"os"
 	"path"
 	"runtime"
@@ -279,6 +281,83 @@ func TestCacheDir(t *testing.T) {
 			} else {
 				assert.Contains(t, got, *tt.gc.Cache.Path+"/test-")
 			}
+		})
+	}
+}
+
+func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
+	tests := []struct {
+		coll    GeoSpatialCollection
+		want    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			coll: GeoSpatialCollection{
+				ID: "test i",
+				Metadata: &GeoSpatialCollectionMetadata{
+					Description: ptrTo("test d"),
+				},
+				GeoVolumes: &CollectionEntry3dGeoVolumes{
+					TileServerPath: ptrTo("test p"),
+				},
+			},
+			// language=json
+			want:    `{"id": "test i", "metadata": {"description": "test d"}, "tileServerPath":  "test p"}`,
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			marshalled, err := json.Marshal(tt.coll)
+			if !tt.wantErr(t, err, errors.New("json.Marshal")) {
+				return
+			}
+			assert.JSONEqf(t, tt.want, string(marshalled), "json.Marshal")
+		})
+	}
+}
+
+type TestEmbeddedGeoSpatialCollection struct {
+	C GeoSpatialCollection `json:"C"`
+}
+
+func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
+	tests := []struct {
+		marshalled string
+		want       *GeoSpatialCollection
+		wantErr    assert.ErrorAssertionFunc
+	}{
+		{
+			// language=json
+			marshalled: `{"id": "test i", "metadata": {"description": "test d"}, "tileServerPath":  "test p"}`,
+			want: &GeoSpatialCollection{
+				ID: "test i",
+				Metadata: &GeoSpatialCollectionMetadata{
+					Description: ptrTo("test d"),
+				},
+				GeoVolumes: &CollectionEntry3dGeoVolumes{
+					TileServerPath: ptrTo("test p"),
+				},
+			},
+			wantErr: assert.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			unmarshalled := &GeoSpatialCollection{}
+			err := json.Unmarshal([]byte(tt.marshalled), unmarshalled)
+			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
+				return
+			}
+			assert.Equalf(t, tt.want, unmarshalled, "json.Unmarshal")
+
+			// non-pointer
+			unmarshalledEmbedded := &TestEmbeddedGeoSpatialCollection{}
+			err = json.Unmarshal([]byte(`{"C": `+tt.marshalled+`}`), unmarshalledEmbedded)
+			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
+				return
+			}
+			assert.EqualValuesf(t, &TestEmbeddedGeoSpatialCollection{C: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
 		})
 	}
 }
