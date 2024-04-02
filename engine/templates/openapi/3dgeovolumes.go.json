@@ -256,7 +256,7 @@
         }
       },
       "Tile_Implicit" : {
-        "required" : [ "boundingVolume", "content", "implicitTiling", "refine" ],
+        "required" : [ "boundingVolume", "geometricError", "implicitTiling", "refine" ],
         "type" : "object",
         "properties" : {
           "content" : {
@@ -273,11 +273,18 @@
           },
           "implicitTiling" : {
             "$ref" : "#/components/schemas/ImplicitTiling"
+          },
+          "children" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Tile_Children"
+            },
+            "minItems": 1
           }
         }
       },
       "Tile_Explicit" : {
-        "required" : [ "boundingVolume", "content", "refine" ],
+        "required" : [ "boundingVolume", "geometricError", "refine" ],
         "type" : "object",
         "properties" : {
           "content" : {
@@ -295,7 +302,32 @@
           "children" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/Tile_Explicit"
+              "$ref" : "#/components/schemas/Tile_Children"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "Tile_Children" : {
+        "required" : [ "boundingVolume", "geometricError" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "boundingVolume" : {
+            "$ref" : "#/components/schemas/BoundingVolume"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "refine" : {
+            "type" : "string"
+          },
+          "children" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Tile_Children"
             },
             "minItems": 1
           }
