@@ -33,12 +33,7 @@
           "200": {
             "$ref": "#/components/responses/TileMatrixSetsList"
           },
-          "406": {
-            "$ref": "#/components/responses/NotAcceptable"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -61,22 +56,7 @@
           "200": {
             "$ref": "#/components/responses/TileMatrixSet"
           },
-          "404": {
-            "description": "The requested tile matrix set id was not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/exception"
-                }
-              }
-            }
-          },
-          "406": {
-            "$ref": "#/components/responses/NotAcceptable"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -96,15 +76,7 @@
           "200": {
             "$ref": "#/components/responses/TileSetsList"
           },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "406": {
-            "$ref": "#/components/responses/NotAcceptable"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -127,15 +99,7 @@
           "200": {
             "$ref": "#/components/responses/TileSet"
           },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "406": {
-            "$ref": "#/components/responses/NotAcceptable"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -170,15 +134,7 @@
           "204": {
             "$ref": "#/components/responses/EmptyTile"
           },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "406": {
-            "$ref": "#/components/responses/NotAcceptable"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }
@@ -271,31 +227,6 @@
             "items": {
               "$ref": "#/components/schemas/link"
             }
-          }
-        }
-      },
-      "exception": {
-        "title": "Exception Schema",
-        "description": "JSON schema for exceptions based on RFC 7807",
-        "type": "object",
-        "required": [
-          "type"
-        ],
-        "properties": {
-          "type": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "status": {
-            "type": "integer"
-          },
-          "detail": {
-            "type": "string"
-          },
-          "instance": {
-            "type": "string"
           }
         }
       },
@@ -1535,81 +1466,6 @@
       }
     },
     "responses": {
-      "NotFound": {
-        "description": "The requested resource does not exist on the server. For example, a path parameter had an incorrect value.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "NotAcceptable": {
-        "description": "Content negotiation failed. For example, the `Accept` header submitted in the request did not support any of the media types supported by the server for the requested resource.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "ServerError": {
-        "description": "A server error occurred.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "InvalidParameter": {
-        "description": "A query parameter has an invalid value.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "Exception": {
-        "description": "An error occured.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
       "API": {
         "description": "The OpenAPI definition of the API.",
         "content": {

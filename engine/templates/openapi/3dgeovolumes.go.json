@@ -33,12 +33,7 @@
               }
             }
           },
-          "400" : {
-            "description" : "Bad Request"
-          },
-          "500" : {
-            "description" : "Server Error"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -69,9 +64,7 @@
           "204" : {
             "description" : "Tile Not Found"
           },
-          "500" : {
-            "description" : "Server Error"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }
@@ -105,9 +98,7 @@
           "204" : {
             "description" : "Tile Not Found"
           },
-          "500" : {
-            "description" : "Server Error"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }
@@ -143,9 +134,7 @@
           "204" : {
             "description" : "Tile Not Found"
           },
-          "500" : {
-            "description" : "Server Error"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }
