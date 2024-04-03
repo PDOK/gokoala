@@ -315,6 +315,11 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 		r.Out.Header.Set(HeaderBaseURL, e.Config.BaseURL.String())
 	}
 
+	errorHandler := func(w http.ResponseWriter, _ *http.Request, err error) {
+		log.Printf("failed to proxy request: %v", err)
+		RenderProblem(ProblemBadGateway, w)
+	}
+
 	modifyResponse := func(proxyRes *http.Response) error {
 		if prefer204 {
 			// OGC spec: If the tile has no content due to lack of data in the area, but is within the data
@@ -334,7 +339,6 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			if proxyRes.Header.Get(HeaderContentEncoding) == FormatGzip {
 				reader, err = gzip.NewReader(proxyRes.Body)
 				if err != nil {
-					log.Printf("%v", err.Error())
 					return err
 				}
 			} else {
@@ -343,7 +347,6 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			defer reader.Close()
 			res, err := io.ReadAll(reader)
 			if err != nil {
-				log.Printf("%v", err.Error())
 				return err
 			}
 			e.ServeResponse(w, r, false, true, contentType, res)
@@ -351,7 +354,11 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 		return nil
 	}
 
-	reverseProxy := &httputil.ReverseProxy{Rewrite: rewrite, ModifyResponse: modifyResponse}
+	reverseProxy := &httputil.ReverseProxy{
+		Rewrite:        rewrite,
+		ModifyResponse: modifyResponse,
+		ErrorHandler:   errorHandler,
+	}
 	reverseProxy.ServeHTTP(w, r)
 }
 

@@ -63,7 +63,7 @@ func TestEngine_ReverseProxy(t *testing.T) {
 	defer mockTargetServer.Close()
 
 	engine, targetURL := makeEngine(mockTargetServer)
-	rec, req := makeAPICall(t, mockTargetServer)
+	rec, req := makeAPICall(t, mockTargetServer.URL)
 
 	// when
 	engine.ReverseProxy(rec, req, targetURL, false, "")
@@ -85,7 +85,7 @@ func TestEngine_ReverseProxyAndValidate(t *testing.T) {
 	defer mockTargetServer.Close()
 
 	engine, targetURL := makeEngine(mockTargetServer)
-	rec, req := makeAPICall(t, mockTargetServer)
+	rec, req := makeAPICall(t, mockTargetServer.URL)
 
 	// when
 	engine.ReverseProxyAndValidate(rec, req, targetURL, false, MediaTypeJSON, true)
@@ -103,7 +103,7 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 	defer mockTargetServer.Close()
 
 	engine, targetURL := makeEngine(mockTargetServer)
-	rec, req := makeAPICall(t, mockTargetServer)
+	rec, req := makeAPICall(t, mockTargetServer.URL)
 
 	// when
 	engine.ReverseProxy(rec, req, targetURL, true, "audio/wav")
@@ -126,9 +126,9 @@ func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
 	return engine, targetURL
 }
 
-func makeAPICall(t *testing.T, mockTargetServer *httptest.Server) (*httptest.ResponseRecorder, *http.Request) {
+func makeAPICall(t *testing.T, mockTargetServer string) (*httptest.ResponseRecorder, *http.Request) {
 	rec := httptest.NewRecorder()
-	req, err := http.NewRequest(http.MethodGet, mockTargetServer.URL+"/some/path", nil)
+	req, err := http.NewRequest(http.MethodGet, mockTargetServer+"/some/path", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

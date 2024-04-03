@@ -9,16 +9,20 @@ import (
 )
 
 const (
-	timestampKey          = "timestamp"
-	messageInternalServer = "An unexpected error has occurred, try again or contact support if the problem persists"
+	timestampKey             = "timestamp"
+	defaultMessageServerErr  = "An unexpected error has occurred, try again or contact support if the problem persists"
+	defaultMessageBadGateway = "Failed to proxy request, try again or contact support if the problem persists"
 )
 
+var Now = time.Now // allow mocking
+
+// The following problems should be added to openapi/problems.go.json
 var (
-	Now                  = time.Now // allow mocking
-	ProblemServerError   = problem.Of(http.StatusInternalServerError).Append(problem.Detail(messageInternalServer))
 	ProblemBadRequest    = problem.Of(http.StatusBadRequest)
 	ProblemNotFound      = problem.Of(http.StatusNotFound)
 	ProblemNotAcceptable = problem.Of(http.StatusNotAcceptable)
+	ProblemServerError   = problem.Of(http.StatusInternalServerError).Append(problem.Detail(defaultMessageServerErr))
+	ProblemBadGateway    = problem.Of(http.StatusBadGateway).Append(problem.Detail(defaultMessageBadGateway))
 )
 
 func RenderProblem(p *problem.Problem, w http.ResponseWriter, details ...string) {
