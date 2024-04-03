@@ -304,7 +304,7 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 	e.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, false)
 }
 
-// ReverseProxy forwards given HTTP request to given target server, and optionally tweaks and validates response
+// ReverseProxyAndValidate forwards given HTTP request to given target server, and optionally tweaks and validates response
 func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request, target *url.URL,
 	prefer204 bool, contentTypeOverwrite string, validateResponse bool) {
 

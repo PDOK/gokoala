@@ -7,9 +7,12 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -111,6 +114,53 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 	// then
 	assert.Equal(t, http.StatusNoContent, rec.Code)
 	assert.Equal(t, "audio/wav", rec.Header().Get(HeaderContentType))
+}
+
+type mockShutdownHook struct {
+	called bool
+}
+
+func (m *mockShutdownHook) Shutdown() {
+	m.called = true
+}
+
+func TestEngine_Start(t *testing.T) {
+	mockHook := &mockShutdownHook{}
+	tests := []struct {
+		name          string
+		address       string
+		shutdownDelay int
+		router        *chi.Mux
+		hooks         []func()
+	}{
+		{"Start/stop no delay", "localhost:8080", 0, chi.NewRouter(), []func(){mockHook.Shutdown}},
+		{"Start/stop 1s delay", "localhost:8080", 1, chi.NewRouter(), []func(){mockHook.Shutdown}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &Engine{shutdownHooks: tt.hooks}
+
+			// Start the server in a separate goroutine
+			errChan := make(chan error, 1)
+			go func() {
+				errChan <- e.Start(tt.address, 9999, tt.shutdownDelay)
+			}()
+
+			// Wait for a moment to ensure the server has started
+			time.Sleep(10 * time.Millisecond)
+
+			// Send an interrupt signal to stop the server
+			p, _ := os.FindProcess(os.Getpid())
+			_ = p.Signal(syscall.SIGINT)
+
+			// Wait for the server to shut down and check that there was no error
+			err := <-errChan
+			assert.NoError(t, err)
+
+			// Check that the shutdown hook was called
+			assert.True(t, mockHook.called)
+		})
+	}
 }
 
 func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
