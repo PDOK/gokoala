@@ -328,7 +328,7 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
 		}
 		if contentType := proxyRes.Header.Get(HeaderContentType); contentType == MediaTypeJSON && validateResponse {
-			var reader io.Reader
+			var reader io.ReadCloser
 			var err error
 			if proxyRes.Header.Get(HeaderContentEncoding) == FormatGzip {
 				reader, err = gzip.NewReader(proxyRes.Body)
@@ -339,6 +339,7 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			} else {
 				reader = proxyRes.Body
 			}
+			defer reader.Close()
 			res, err := io.ReadAll(reader)
 			if err != nil {
 				log.Printf("%v", err.Error())
