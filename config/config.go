@@ -438,7 +438,7 @@ type OgcAPI3dGeoVolumes struct {
 	// Collections to be served as 3D GeoVolumes
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
 
-	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
+	// Whether JSON responses will be validated against the OpenAPI spec
 	// since it has significant performance impact when dealing with large JSON payloads.
 	//
 	// +kubebuilder:default=true
