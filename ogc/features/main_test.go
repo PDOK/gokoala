@@ -574,9 +574,26 @@ func TestFeatures_Feature(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request non existing feature",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "dutch-addresses",
+				featureID:    "999999",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_feature_404.json",
+				statusCode: http.StatusNotFound,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// mock time
+			engine.Now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
 			if err != nil {
 				log.Fatal(err)

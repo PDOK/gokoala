@@ -19,8 +19,6 @@
   ],
   "paths": {
     "/styles": {
-      "summary": "ddd",
-      "description": "xxx",
       "get": {
         "tags": [
           "Styles"
@@ -35,7 +33,7 @@
         ],
         "responses": {
           "200": {
-            "description": "the set of available styles",
+            "description": "The set of available styles",
             "content": {
               "application/json": {
                 "schema": {
@@ -49,12 +47,7 @@
               }
             }
           },
-          "400": {
-            "description": "invalid or unknown query parameters"
-          },
-          "406": {
-            "description": "The media types accepted by the client are not\nsupported for this resource"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -78,12 +71,7 @@
           "200": {
             "description": "The style"
           },
-          "404": {
-            "description": "style not found"
-          },
-          "406": {
-            "description": "The requested style encoding is not supported\nfor this style"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -105,7 +93,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The metdata for the style.",
+            "description": "The metadata for the style.",
             "content": {
               "application/json": {
                 "schema": {
@@ -119,9 +107,7 @@
               }
             }
           },
-          "404": {
-            "description": "style not found"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }

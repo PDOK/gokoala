@@ -27,6 +27,7 @@ import (
 const (
 	specPath          = templatesDir + "openapi/"
 	preamble          = specPath + "preamble.go.json"
+	problems          = specPath + "problems.go.json"
 	commonCollections = specPath + "common-collections.go.json"
 	featuresSpec      = specPath + "features.go.json"
 	tilesSpec         = specPath + "tiles.go.json"
@@ -188,7 +189,8 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 
 func renderOpenAPITemplate(config *gokoalaconfig.Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
-	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(file))
+	files := []string{problems, file} // add problems template too since it's an "include" template
+	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(files...))
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{Config: config, Params: params}); err != nil {
@@ -235,13 +237,17 @@ func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.Re
 			"skipping OpenAPI validation", r.URL, r.Host)
 		return nil, err
 	}
+	opts := &openapi3filter.Options{
+		SkipSettingDefaults: true,
+	}
+	opts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
+		return err.Reason
+	})
 	return &openapi3filter.RequestValidationInput{
 		Request:    r,
 		PathParams: pathParams,
 		Route:      route,
-		Options: &openapi3filter.Options{
-			SkipSettingDefaults: true,
-		},
+		Options:    opts,
 	}, nil
 }
 

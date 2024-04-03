@@ -216,7 +216,7 @@ func TestTiles_Tile(t *testing.T) {
 				tileCol:         "15",
 			},
 			want: want{
-				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported\n",
+				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -252,7 +252,7 @@ func TestTiles_Tile(t *testing.T) {
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
-			assert.Equal(t, tt.want.body, rr.Body.String())
+			assert.Contains(t, rr.Body.String(), tt.want.body)
 		})
 	}
 }
@@ -374,7 +374,7 @@ func TestTile_Tileset(t *testing.T) {
 				tileMatrixSetID: "Invalid",
 			},
 			want: want{
-				bodyContains: "request doesn't conform to OpenAPI spec: parameter \"tileMatrixSetId\" in path has an error: value is not one of the allowed values",
+				bodyContains: "request doesn't conform to OpenAPI spec: parameter \\\"tileMatrixSetId\\\" in path has an error: value is not one of the allowed values",
 				statusCode:   http.StatusBadRequest,
 			},
 		},
@@ -459,7 +459,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 				tileMatrixSetID: "Invalid",
 			},
 			want: want{
-				bodyContains: "request doesn't conform to OpenAPI spec: parameter \"tileMatrixSetId\" in path has an error: value is not one of the allowed values",
+				bodyContains: "request doesn't conform to OpenAPI spec: parameter \\\"tileMatrixSetId\\\" in path has an error: value is not one of the allowed values",
 				statusCode:   http.StatusBadRequest,
 			},
 		},

@@ -58,21 +58,7 @@
               }
             }
           },
-          "500": {
-            "description": "A server error occurred",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/exception"
-                }
-              },
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -120,24 +106,7 @@
               }
             }
           },
-          "404": {
-            "description": "The requested URI was not found"
-          },
-          "500": {
-            "description": "A server error occurred",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/exception"
-                }
-              },
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }
@@ -379,24 +348,6 @@
               "http://www.opengis.net/spec/ogcapi-common-1/1.0/req/core"
             ]
           }
-        }
-      },
-      "exception": {
-        "type": "object",
-        "required": [
-          "code"
-        ],
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "example": {
-          "code": "500",
-          "description": "An internal server error occured. Incident ID: 1234567. Please contact admin@example.org."
         }
       },
       "extent": {

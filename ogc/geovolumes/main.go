@@ -66,7 +66,7 @@ func (t *ThreeDimensionalGeoVolumes) ExplicitTileset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileSetName := chi.URLParam(r, "explicitTileSet")
 		if tileSetName == "" {
-			http.NotFound(w, r)
+			engine.RenderProblem(engine.ProblemNotFound, w)
 			return
 		}
 		t.tileSet(w, r, tileSetName+".json")
@@ -80,7 +80,7 @@ func (t *ThreeDimensionalGeoVolumes) Tile() http.HandlerFunc {
 		collectionID := chi.URLParam(r, "3dContainerId")
 		collection, err := t.idToCollection(collectionID)
 		if err != nil {
-			http.NotFound(w, r)
+			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
 			return
 		}
 
@@ -108,7 +108,7 @@ func (t *ThreeDimensionalGeoVolumes) tileSet(w http.ResponseWriter, r *http.Requ
 	collectionID := chi.URLParam(r, "3dContainerId")
 	collection, err := t.idToCollection(collectionID)
 	if err != nil {
-		http.NotFound(w, r)
+		engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
 		return
 	}
 
@@ -127,7 +127,7 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 	target, err := url.Parse(t.engine.Config.OgcAPI.GeoVolumes.TileServer.String() + path)
 	if err != nil {
 		log.Printf("invalid target url, can't proxy tiles: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		engine.RenderProblem(engine.ProblemServerError, w)
 		return
 	}
 	t.engine.ReverseProxy(w, r, target, prefer204, contentTypeOverwrite)
