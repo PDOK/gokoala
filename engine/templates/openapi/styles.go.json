@@ -25,7 +25,7 @@
         ],
         "summary": "information about the available styles",
         "operationId": "getStyleSet",
-        "description": "This operation fetches the set of styles available. For\neach style the id, a title, links to the stylesheet of\nthe style in each supported encoding, and the link to the\nmetadata is provided.\n\nTestbed-15 only requires support for a small number of the\nstyles. Therefore, the currently simple approach is sufficient,\nbut in general the operation should support paging (using a\nparameter `limit` and links to the `next` page in responses).",
+        "description": "This operation fetches the set of styles available. For\neach style the id, a title, links to the stylesheet of\nthe style in each supported encoding, and the link to the\nmetadata is provided.",
         "parameters": [
           {
             "$ref": "#/components/parameters/f-json"
