@@ -16,31 +16,33 @@ _Cloud Native OGC APIs server, written in Go._
 
 ## Description
 
-This server implements modern OGC APIs such as Common, Tiles, Styles. The goal of
-this server is to keep a narrow focus and not implement every aspect of
-these APIs, for complex logic this application will delegate to other implementations.
-For example vector tiles hosting is delegated to a vector tile engine or object storage,
-raster map hosting may be delegated to a WMS server, etc.
+This server implements modern OGC APIs such as Common, Tiles, Styles, Features and GeoVolumes in a cloud-native way.
+It contains a complete implementation of OGC API Features (part 1 and 2). With respect to OGC API Tiles, Styles, 
+GeoVolumes the goal is to keep a narrow focus and not implement every aspect of these APIs. Meaning complex logic is 
+delegated to other implementations. For example vector tile hosting may be delegated to a vector tile engine, 
+3D tile hosting to object storage, raster map hosting to a WMS server, etc.
 
-This application is deliberately not multi-tenant, it exposes an OGC API for
-_one_ dataset.
+This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
+datasets? Spin up a separate instance/container.
 
 ## Features
 
-- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page
-  and conformance declaration. Also serves OpenAPI specification and interactive
-  Swagger UI.
-  - Comes with default OGC OpenAPI specs out-of-the box with option to overwrite
-    with your own custom spec.
-- [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and
-  TileJSON metadata. Act as a proxy in front of a vector tiles engine of your
-  choosing. Currently 3 projections (RD, ETRS89 and WebMercator) are supported.
-- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML and JSON representation of supported styles.
+- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves 
+  OpenAPI specification and interactive Swagger UI. Multilingual support available.
+- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. Serves features as HTML, GeoJSON or JSON-FG
+  from GeoPackages in multiple projections. No on-the-fly re-projections are applied, separate GeoPackages should
+  be configured ahead-of-time in each projection. Features can be served from local and/or
+  [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. Support for
+  property and temporal filter(s) is available.
+- [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
+  of a vector tiles engine (like Trex, Tegola, Martin) of your choosing. Currently, 3 
+  projections (RD, ETRS89 and WebMercator) are supported.
+- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends - 
+  and JSON representation of supported (Mapbox) styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
-  in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server of your choosing.
+  in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
 - [OGC API Processes](https://ogcapi.ogc.org/processes/) act as a passthrough proxy to an OGC API Processes
-  implementation of your choosing, but enables the use of OGC API Common functionality.
-- [OGC API Features](https://ogcapi.ogc.org/features/) _in development_.
+  implementation of your choosing, but enables the use of GoKoala's OGC API Common functionality.
 
 ## Build
 
