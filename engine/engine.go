@@ -340,7 +340,6 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			} else {
 				reader = proxyRes.Body
 			}
-			defer reader.Close()
 			res, err := io.ReadAll(reader)
 			if err != nil {
 				log.Printf("%v", err.Error())
