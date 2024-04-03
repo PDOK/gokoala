@@ -38,5 +38,15 @@
         }
       }
     }
+},
+"502": {
+    "description": "Bad Gateway: An unexpected error occurred while forwarding/proxying the request to another server.",
+    "content": {
+      "application/problem+json": {
+        "schema": {
+          "$ref": "#/components/schemas/exception"
+        }
+      }
+    }
 }
 {{ end }}

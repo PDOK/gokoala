@@ -119,7 +119,7 @@
         "description": "JSON schema for exceptions based on RFC 7807",
         "type": "object",
         "required": [
-          "type"
+          "title"
         ],
         "properties": {
           "type": {
