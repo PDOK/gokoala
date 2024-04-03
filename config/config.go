@@ -463,6 +463,13 @@ type OgcAPI3dGeoVolumes struct {
 
 	// Collections to be served as 3D GeoVolumes
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
+
+	// Whether JSON responses will be validated against the OpenAPI spec
+	// since it has significant performance impact when dealing with large JSON payloads.
+	//
+	// +kubebuilder:default=true
+	// +optional
+	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
 // +kubebuilder:validation:Enum=raster;vector

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -27,15 +28,16 @@ const (
 	templatesDir    = "engine/templates/"
 	shutdownTimeout = 5 * time.Second
 
-	HeaderLink           = "Link"
-	HeaderAccept         = "Accept"
-	HeaderAcceptLanguage = "Accept-Language"
-	HeaderContentType    = "Content-Type"
-	HeaderContentLength  = "Content-Length"
-	HeaderContentCrs     = "Content-Crs"
-	HeaderBaseURL        = "X-BaseUrl"
-	HeaderRequestedWith  = "X-Requested-With"
-	HeaderAPIVersion     = "API-Version"
+	HeaderLink            = "Link"
+	HeaderAccept          = "Accept"
+	HeaderAcceptLanguage  = "Accept-Language"
+	HeaderContentType     = "Content-Type"
+	HeaderContentLength   = "Content-Length"
+	HeaderContentCrs      = "Content-Crs"
+	HeaderContentEncoding = "Content-Encoding"
+	HeaderBaseURL         = "X-BaseUrl"
+	HeaderRequestedWith   = "X-Requested-With"
+	HeaderAPIVersion      = "API-Version"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
@@ -299,6 +301,12 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
 func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *url.URL,
 	prefer204 bool, contentTypeOverwrite string) {
+	e.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, false)
+}
+
+// ReverseProxy forwards given HTTP request to given target server, and optionally tweaks and validates response
+func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request, target *url.URL,
+	prefer204 bool, contentTypeOverwrite string, validateResponse bool) {
 
 	rewrite := func(r *httputil.ProxyRequest) {
 		r.Out.URL = target
@@ -319,6 +327,26 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 		}
 		if contentTypeOverwrite != "" {
 			proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
+		}
+		if contentType := proxyRes.Header.Get(HeaderContentType); contentType == MediaTypeJSON && validateResponse {
+			var reader io.ReadCloser
+			var err error
+			if proxyRes.Header.Get(HeaderContentEncoding) == FormatGzip {
+				reader, err = gzip.NewReader(proxyRes.Body)
+				if err != nil {
+					log.Printf("%v", err.Error())
+					return err
+				}
+			} else {
+				reader = proxyRes.Body
+			}
+			defer reader.Close()
+			res, err := io.ReadAll(reader)
+			if err != nil {
+				log.Printf("%v", err.Error())
+				return err
+			}
+			e.ServeResponse(w, r, false, true, contentType, res)
 		}
 		return nil
 	}
