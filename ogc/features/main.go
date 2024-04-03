@@ -334,7 +334,7 @@ func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }
 
-// log error, but sent generic message to client to prevent possible information leakage from datasource
+// log error, but send generic message to client to prevent possible information leakage from datasource
 func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
 	msg := "failed to retrieve feature collection " + collectionID
 	log.Printf("%s, error: %v\n", msg, err)
