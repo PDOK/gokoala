@@ -28,15 +28,16 @@ const (
 	templatesDir    = "engine/templates/"
 	shutdownTimeout = 5 * time.Second
 
-	HeaderLink           = "Link"
-	HeaderAccept         = "Accept"
-	HeaderAcceptLanguage = "Accept-Language"
-	HeaderContentType    = "Content-Type"
-	HeaderContentLength  = "Content-Length"
-	HeaderContentCrs     = "Content-Crs"
-	HeaderBaseURL        = "X-BaseUrl"
-	HeaderRequestedWith  = "X-Requested-With"
-	HeaderAPIVersion     = "API-Version"
+	HeaderLink            = "Link"
+	HeaderAccept          = "Accept"
+	HeaderAcceptLanguage  = "Accept-Language"
+	HeaderContentType     = "Content-Type"
+	HeaderContentLength   = "Content-Length"
+	HeaderContentCrs      = "Content-Crs"
+	HeaderContentEncoding = "Content-Encoding"
+	HeaderBaseURL         = "X-BaseUrl"
+	HeaderRequestedWith   = "X-Requested-With"
+	HeaderAPIVersion      = "API-Version"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
@@ -327,10 +328,16 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
 		}
 		if contentType := proxyRes.Header.Get(HeaderContentType); contentType == MediaTypeJSON && validateResponse {
-			reader, err := gzip.NewReader(proxyRes.Body)
-			if err != nil {
-				log.Printf("%v", err.Error())
-				return err
+			var reader io.Reader
+			var err error
+			if proxyRes.Header.Get(HeaderContentEncoding) == FormatGzip {
+				reader, err = gzip.NewReader(proxyRes.Body)
+				if err != nil {
+					log.Printf("%v", err.Error())
+					return err
+				}
+			} else {
+				reader = proxyRes.Body
 			}
 			res, err := io.ReadAll(reader)
 			if err != nil {

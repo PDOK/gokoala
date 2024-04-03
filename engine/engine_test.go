@@ -73,6 +73,28 @@ func TestEngine_ReverseProxy(t *testing.T) {
 	assert.Equal(t, rec.Body.String(), "Mock response, received header https://api.foobar.example/")
 }
 
+func TestEngine_ReverseProxyAndValidate(t *testing.T) {
+	// given
+	mockTargetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("Mock response, received header " + r.Header.Get(HeaderBaseURL)))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}))
+	defer mockTargetServer.Close()
+
+	engine, targetURL := makeEngine(mockTargetServer)
+	rec, req := makeAPICall(t, mockTargetServer)
+
+	// when
+	engine.ReverseProxyAndValidate(rec, req, targetURL, false, MediaTypeJSON, true)
+
+	// then
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, "Mock response, received header https://api.foobar.example/", rec.Body.String())
+}
+
 func TestEngine_ReverseProxy_Status204(t *testing.T) {
 	// given
 	mockTargetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -92,10 +114,13 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 }
 
 func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
+	cfg := &config.Config{
+		BaseURL: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+	}
+	openAPI := newOpenAPI(cfg, []string{""}, nil)
 	engine := &Engine{
-		Config: &config.Config{
-			BaseURL: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-		},
+		Config:  cfg,
+		OpenAPI: openAPI,
 	}
 	targetURL, _ := url.Parse(mockTargetServer.URL)
 	return engine, targetURL
