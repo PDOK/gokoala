@@ -27,23 +27,19 @@
       <option value="https://ri.ldproxy.net/vineyards/collections/vineyards/items?bbox=6.3021%2C49.0087%2C8.4179%2C50.6139">
         LDProxy Vineyards
       </option>
-      <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items">BGT wegdelen</option>
+      <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0-demo/collections/wegdelen/items">BGT wegdelen</option>
     </select>
 
     <input onclick="showMap()" type="button" value="Show">
 
     <div>show map for:</div>
     <a id="showurl">placeholdertext</a>
-    <div>Use Ctrl+Drag (Command+Drag on Mac) to draw a boundingbox to select. Ctrl-Click to remove the box</div>
     <div id="bbox"></div>
-
     <app-feature-view id="featuresample" items-url="https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&amp;limit=50"></app-feature-view>
 
-    <h2> OGC API BGT Road parts</h2>
-
-    <app-feature-view id="wegdelensample" items-url="https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?f=json&amp;limit=500&amp;crs=http://www.opengis.net/def/crs/EPSG/0/28992" projection="http://www.opengis.net/def/crs/EPSG/0/28992" background-map="BRT" show-bounding-box-button="false">
-    </app-feature-view>
-  <script src="runtime.84c19abfcab6064c.js" type="module"></script><script src="polyfills.f68f8dbbc9aec280.js" type="module"></script><script src="main.3a59c2fb3c7b7f03.js" type="module"></script></body>
+    <h2>legend sample 1</h2>
+    <app-legend-view id="legendview1" style-url="../cypress/fixtures/teststyle.json"> </app-legend-view>
+  <script src="runtime.735c6a055d4f787c.js" type="module"></script><script src="polyfills.da05a5a1c612cd73.js" type="module"></script><script src="main.c2eb5febc59ddf48.js" type="module"></script></body>
   <script>
     function load() {
       const showurl =
