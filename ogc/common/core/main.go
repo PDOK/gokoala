@@ -74,7 +74,7 @@ func (c *CommonCore) API() http.HandlerFunc {
 			c.apiAsJSON(w, r)
 			return
 		}
-		http.NotFound(w, r)
+		engine.RenderProblem(engine.ProblemNotFound, w)
 	}
 }
 

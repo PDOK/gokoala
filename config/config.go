@@ -2,6 +2,7 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -302,7 +303,7 @@ type OgcAPI struct {
 // +kubebuilder:object:generate=true
 type GeoSpatialCollection struct {
 	// Unique ID of the collection
-	ID string `yaml:"id" json:"id" validate:"required"`
+	ID string `yaml:"id" validate:"required" json:"id"`
 
 	// Metadata describing the collection contents
 	// +optional
@@ -319,6 +320,31 @@ type GeoSpatialCollection struct {
 	// Features specific to this collection
 	// +optional
 	Features *CollectionEntryFeatures `yaml:",inline" json:",inline"`
+}
+
+type GeoSpatialCollectionJSON struct {
+	ID                           string                        `json:"id"`
+	Metadata                     *GeoSpatialCollectionMetadata `json:"metadata,omitempty"`
+	*CollectionEntry3dGeoVolumes `json:",inline"`
+	*CollectionEntryTiles        `json:",inline"`
+	*CollectionEntryFeatures     `json:",inline"`
+}
+
+// MarshalJSON custom because inlining only works on embedded structs.
+// Value instead of pointer receiver because only that way it can be used for both.
+func (c GeoSpatialCollection) MarshalJSON() ([]byte, error) {
+	return json.Marshal(GeoSpatialCollectionJSON{
+		ID:                          c.ID,
+		Metadata:                    c.Metadata,
+		CollectionEntry3dGeoVolumes: c.GeoVolumes,
+		CollectionEntryTiles:        c.Tiles,
+		CollectionEntryFeatures:     c.Features,
+	})
+}
+
+// UnmarshalJSON parses a string to GeoSpatialCollection
+func (c *GeoSpatialCollection) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, c)
 }
 
 // +kubebuilder:object:generate=true
@@ -437,6 +463,13 @@ type OgcAPI3dGeoVolumes struct {
 
 	// Collections to be served as 3D GeoVolumes
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
+
+	// Whether JSON responses will be validated against the OpenAPI spec
+	// since it has significant performance impact when dealing with large JSON payloads.
+	//
+	// +kubebuilder:default=true
+	// +optional
+	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
 // +kubebuilder:validation:Enum=raster;vector

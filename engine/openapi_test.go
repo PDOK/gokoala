@@ -11,7 +11,7 @@ import (
 )
 
 func Test_newOpenAPI(t *testing.T) {
-	openAPIViaCliArgument, err := filepath.Abs("engine/testdata/ogcapi-tiles-1.bundled.json")
+	openAPIViaCliArgument, err := filepath.Abs("engine/testdata/ogcapi-tiles-1.modified.json")
 	if err != nil {
 		t.Fatalf("can't locate testdata %v", err)
 	}

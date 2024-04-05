@@ -280,6 +280,20 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output in default (WGS84) and bbox in RD, with GeoPackages configured on different levels (top-level and collection-level)",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs_multiple_levels.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in default (WGS84) and bbox in RD, with format JSON-FG",
 			fields: fields{
 				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
@@ -574,9 +588,26 @@ func TestFeatures_Feature(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request non existing feature",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "dutch-addresses",
+				featureID:    "999999",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_feature_404.json",
+				statusCode: http.StatusNotFound,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// mock time
+			engine.Now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
 			if err != nil {
 				log.Fatal(err)

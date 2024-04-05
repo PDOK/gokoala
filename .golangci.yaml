@@ -39,6 +39,10 @@ linters-settings:
     lines: 100
   nestif:
     min-complexity: 6
+  forbidigo:
+    forbid:
+      - http\.NotFound.*  # return RFC 7807 problem details instead
+      - http\.Error.*  # return RFC 7807 problem details instead
 
 linters:
   disable-all: true

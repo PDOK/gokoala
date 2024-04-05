@@ -144,8 +144,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 		if !strings.HasSuffix(tileCol, ".pbf") {
 			// if no format is specified, default to mvt
 			if format := strings.Replace(t.engine.CN.NegotiateFormat(r), engine.FormatJSON, engine.FormatMVT, 1); format != engine.FormatMVT && format != engine.FormatMVTAlternative {
-				http.Error(w, "Specify tile format. Currently only"+
-					" Mapbox Vector Tiles (?f=mvt) tiles are supported", http.StatusBadRequest)
+				engine.RenderProblem(engine.ProblemBadRequest, w, "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported")
 				return
 			}
 		} else {
@@ -163,7 +162,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 		target, err := url.Parse(t.engine.Config.OgcAPI.Tiles.TileServer.String() + path)
 		if err != nil {
 			log.Printf("invalid target url, can't proxy tiles: %v", err)
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+			engine.RenderProblem(engine.ProblemServerError, w)
 			return
 		}
 		t.engine.ReverseProxy(w, r, target, true, engine.MediaTypeMVT)

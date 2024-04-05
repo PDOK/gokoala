@@ -176,7 +176,7 @@ func TestNewCollections_Collection(t *testing.T) {
 				containerID: "container_404",
 			},
 			want: want{
-				bodyContains: "404 page not found",
+				bodyContains: "Not Found",
 				statusCode:   http.StatusNotFound,
 			},
 		},

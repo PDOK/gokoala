@@ -218,39 +218,7 @@
               }
             }
           },
-          "400": {
-            "description": "A query parameter has an invalid value.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/exception"
-                }
-              },
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The requested resource does not exist on the server. For example, a path parameter had an incorrect value."
-          },
-          "500": {
-            "description": "A server error occurred.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/exception"
-                }
-              },
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -388,24 +356,7 @@
               }
             }
           },
-          "404": {
-            "description": "The requested resource does not exist on the server. For example, a path parameter had an incorrect value."
-          },
-          "500": {
-            "description": "A server error occurred.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/exception"
-                }
-              },
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }
@@ -413,21 +364,6 @@
   },
   "components": {
     "schemas": {
-      "exception": {
-        "required": [
-          "code"
-        ],
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "description": "Information about the exception: an error code plus an optional description."
-      },
       "extent": {
         "type": "object",
         "properties": {

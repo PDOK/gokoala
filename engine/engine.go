@@ -2,6 +2,7 @@ package engine
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -27,15 +28,16 @@ const (
 	templatesDir    = "engine/templates/"
 	shutdownTimeout = 5 * time.Second
 
-	HeaderLink           = "Link"
-	HeaderAccept         = "Accept"
-	HeaderAcceptLanguage = "Accept-Language"
-	HeaderContentType    = "Content-Type"
-	HeaderContentLength  = "Content-Length"
-	HeaderContentCrs     = "Content-Crs"
-	HeaderBaseURL        = "X-BaseUrl"
-	HeaderRequestedWith  = "X-Requested-With"
-	HeaderAPIVersion     = "API-Version"
+	HeaderLink            = "Link"
+	HeaderAccept          = "Accept"
+	HeaderAcceptLanguage  = "Accept-Language"
+	HeaderContentType     = "Content-Type"
+	HeaderContentLength   = "Content-Length"
+	HeaderContentCrs      = "Content-Crs"
+	HeaderContentEncoding = "Content-Encoding"
+	HeaderBaseURL         = "X-BaseUrl"
+	HeaderRequestedWith   = "X-Requested-With"
+	HeaderAPIVersion      = "API-Version"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
@@ -51,11 +53,11 @@ type Engine struct {
 
 // NewEngine builds a new Engine
 func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
-	config, err := config.NewConfig(configFile)
+	cfg, err := config.NewConfig(configFile)
 	if err != nil {
 		return nil, err
 	}
-	return NewEngineWithConfig(config, openAPIFile, enableTrailingSlash, enableCORS), nil
+	return NewEngineWithConfig(cfg, openAPIFile, enableTrailingSlash, enableCORS), nil
 }
 
 // NewEngineWithConfig builds a new Engine
@@ -201,7 +203,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		RenderProblem(ProblemBadRequest, w, err.Error())
 		return
 	}
 
@@ -209,7 +211,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	parsedTemplate, err := e.Templates.getParsedTemplate(key)
 	if err != nil {
 		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		RenderProblem(ProblemServerError, w)
 	}
 
 	// render output
@@ -226,7 +228,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	// validate response
 	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		RenderProblem(ProblemServerError, w, err.Error())
 		return
 	}
 
@@ -242,14 +244,15 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		RenderProblem(ProblemBadRequest, w, err.Error())
 		return
 	}
 
 	// render output
 	output, err := e.Templates.getRenderedTemplate(templateKey)
 	if err != nil {
-		http.NotFound(w, r)
+		log.Printf("%v", err.Error())
+		RenderProblem(ProblemNotFound, w)
 		return
 	}
 	contentType := e.CN.formatToMediaType(templateKey.Format)
@@ -257,7 +260,7 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 	// validate response
 	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 		log.Printf("%v", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		RenderProblem(ProblemServerError, w, err.Error())
 		return
 	}
 
@@ -275,7 +278,7 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 	if validateRequest {
 		if err := e.OpenAPI.ValidateRequest(r); err != nil {
 			log.Printf("%v", err.Error())
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			RenderProblem(ProblemBadRequest, w, err.Error())
 			return
 		}
 	}
@@ -283,7 +286,7 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 	if validateResponse {
 		if err := e.OpenAPI.ValidateResponse(contentType, response, r); err != nil {
 			log.Printf("%v", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			RenderProblem(ProblemServerError, w, err.Error())
 			return
 		}
 	}
@@ -298,12 +301,23 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
 func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *url.URL,
 	prefer204 bool, contentTypeOverwrite string) {
+	e.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, false)
+}
+
+// ReverseProxyAndValidate forwards given HTTP request to given target server, and optionally tweaks and validates response
+func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request, target *url.URL,
+	prefer204 bool, contentTypeOverwrite string, validateResponse bool) {
 
 	rewrite := func(r *httputil.ProxyRequest) {
 		r.Out.URL = target
 		r.Out.Host = ""   // Don't pass Host header (similar to Traefik's passHostHeader=false)
 		r.SetXForwarded() // Set X-Forwarded-* headers.
 		r.Out.Header.Set(HeaderBaseURL, e.Config.BaseURL.String())
+	}
+
+	errorHandler := func(w http.ResponseWriter, _ *http.Request, err error) {
+		log.Printf("failed to proxy request: %v", err)
+		RenderProblem(ProblemBadGateway, w)
 	}
 
 	modifyResponse := func(proxyRes *http.Response) error {
@@ -319,10 +333,31 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 		if contentTypeOverwrite != "" {
 			proxyRes.Header.Set(HeaderContentType, contentTypeOverwrite)
 		}
+		if contentType := proxyRes.Header.Get(HeaderContentType); contentType == MediaTypeJSON && validateResponse {
+			var reader io.ReadCloser
+			var err error
+			if proxyRes.Header.Get(HeaderContentEncoding) == FormatGzip {
+				reader, err = gzip.NewReader(proxyRes.Body)
+				if err != nil {
+					return err
+				}
+			} else {
+				reader = proxyRes.Body
+			}
+			res, err := io.ReadAll(reader)
+			if err != nil {
+				return err
+			}
+			e.ServeResponse(w, r, false, true, contentType, res)
+		}
 		return nil
 	}
 
-	reverseProxy := &httputil.ReverseProxy{Rewrite: rewrite, ModifyResponse: modifyResponse}
+	reverseProxy := &httputil.ReverseProxy{
+		Rewrite:        rewrite,
+		ModifyResponse: modifyResponse,
+		ErrorHandler:   errorHandler,
+	}
 	reverseProxy.ServeHTTP(w, r)
 }
 

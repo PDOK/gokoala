@@ -19,15 +19,13 @@
   ],
   "paths": {
     "/styles": {
-      "summary": "ddd",
-      "description": "xxx",
       "get": {
         "tags": [
           "Styles"
         ],
         "summary": "information about the available styles",
         "operationId": "getStyleSet",
-        "description": "This operation fetches the set of styles available. For\neach style the id, a title, links to the stylesheet of\nthe style in each supported encoding, and the link to the\nmetadata is provided.\n\nTestbed-15 only requires support for a small number of the\nstyles. Therefore, the currently simple approach is sufficient,\nbut in general the operation should support paging (using a\nparameter `limit` and links to the `next` page in responses).",
+        "description": "This operation fetches the set of styles available. For\neach style the id, a title, links to the stylesheet of\nthe style in each supported encoding, and the link to the\nmetadata is provided.",
         "parameters": [
           {
             "$ref": "#/components/parameters/f-json"
@@ -35,7 +33,7 @@
         ],
         "responses": {
           "200": {
-            "description": "the set of available styles",
+            "description": "The set of available styles",
             "content": {
               "application/json": {
                 "schema": {
@@ -49,12 +47,7 @@
               }
             }
           },
-          "400": {
-            "description": "invalid or unknown query parameters"
-          },
-          "406": {
-            "description": "The media types accepted by the client are not\nsupported for this resource"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -78,12 +71,7 @@
           "200": {
             "description": "The style"
           },
-          "404": {
-            "description": "style not found"
-          },
-          "406": {
-            "description": "The requested style encoding is not supported\nfor this style"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     },
@@ -105,7 +93,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The metdata for the style.",
+            "description": "The metadata for the style.",
             "content": {
               "application/json": {
                 "schema": {
@@ -119,9 +107,7 @@
               }
             }
           },
-          "404": {
-            "description": "style not found"
-          }
+          {{block "problems" . }}{{end}}
         }
       }
     }

@@ -6,6 +6,11 @@ describe('OGC API Common tests', () => {
     cy.checkA11y()
   })
 
+  it('landing page should have headings for all expected children (openapi, conformance, etc)', () => {
+    cy.visit('/')
+    cy.get('.card-header.h5').should("have.length", 6)
+  })
+
   // disabled since it has two violations in the 3rd party swagger-ui component (outside our control)
   it.skip('openapi page should have no a11y violations', () => {
     cy.visit('/api')
