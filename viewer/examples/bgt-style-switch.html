@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>vectortile-viewComponent</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+
+  <body>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="polyfills.js"></script>
+    <script type="text/javascript" src="runtime.js"></script>
+
+    <H1>vectortile </H1>
+    <div>
+      <div id="sample1viewlink1"></div>
+      <div id="sample1viewlink2"></div>
+      <div id="zoomlevel"></div>
+      <div id="current-url"></div>
+    </div>
+
+    <select id="admin-selector" style="width: 15%">
+      <option value='{"style":"bgt_standaardvisualisatie__netherlandsrdnewquad","proj":"NetherlandsRDNewQuad"}'>
+        BGT Standaardvisualisatie (NetherlandsRDNewQuad)
+      </option>
+
+      <option value='{"style":"bgt_standaardvisualisatie__europeanetrs89_laeaquad","proj":"EuropeanETRS89_LAEAQuad"}'>
+        BGT Standaardvisualisatie (EuropeanETRS89_LAEAQuad)
+      </option>
+
+      <option value='{"style":"bgt_standaardvisualisatie__webmercatorquad","proj":"WebMercatorQuad"}'>
+        BGT Standaardvisualisatie (WebMercatorQuad)
+      </option>
+
+      <option value='{"style":"bgt_achtergrondvisualisatie__netherlandsrdnewquad","proj":"NetherlandsRDNewQuad"}'>
+        BGT Achtergrondvisualisatie (NetherlandsRDNewQuad)
+      </option>
+
+      <option value='{"style":"bgt_achtergrondvisualisatie__europeanetrs89_laeaquad","proj":"EuropeanETRS89_LAEAQuad"}'>
+        BGT Achtergrondvisualisatie (EuropeanETRS89_LAEAQuad)
+      </option>
+
+      <option value='{"style":"bgt_achtergrondvisualisatie__webmercatorquad","proj":"WebMercatorQuad"}'>
+        BGT Achtergrondvisualisatie (WebMercatorQuad)
+      </option>
+    </select>
+
+    <app-vectortile-view
+      id="adminunit"
+      tile-url=""
+      style="width: 746px; height: 559.5px"
+      center-x="5.3896944"
+      center-y="52.1562499"
+      show-grid="true"
+      show-object-info="true">
+    </app-vectortile-view>
+
+    <script>
+      adminunit.addEventListener('currentZoomLevel', a1 => {
+        console.log('zoomlevel sample1: ')
+        console.log(JSON.stringify(a1.detail))
+        const zooml = document.getElementById('zoomlevel')
+        zooml.innerHTML = 'openlayers zoomlevel ' + a1.detail.toFixed(2)
+      })
+
+      adminunit.addEventListener('activeTileUrl', activeurl => {
+        console.log(JSON.stringify(activeurl.detail))
+
+        const cururl = document.getElementById('current-url')
+        cururl.innerHTML = 'url ' + activeurl.detail
+      })
+
+      function seturl(style, projection) {
+        const viewer = document.getElementById('adminunit')
+        const url = 'https://api.pdok.nl/lv/bgt/ogc/v1_0'
+        const tileurl = url + '/tiles/' + projection
+        viewer.setAttribute('tile-url', tileurl)
+        const styleurl = url + '/styles/' + style + '?f=json'
+
+        viewer.setAttribute('style-url', styleurl)
+        const link1 = document.getElementById('sample1viewlink1')
+        link1.innerHTML = "<a href='" + tileurl + "'> " + tileurl + '</a>'
+        const link2 = document.getElementById('sample1viewlink2')
+        link2.innerHTML = "<a href='" + styleurl + "'> " + styleurl + '</a>'
+      }
+
+      seturl('bgt_standaardvisualisatie__netherlandsrdnewquad', 'NetherlandsRDNewQuad')
+
+      document.addEventListener(
+        'input',
+        function (event) {
+          // only operate on srs dropdown
+          if (event.target.id !== 'admin-selector') return
+          const value = JSON.parse(event.target.value)
+          const selectedStyle = value.style
+          const selectedProjection = value.proj
+
+          seturl(selectedStyle, selectedProjection)
+        },
+        false
+      )
+    </script>
+  </body>
+</html>

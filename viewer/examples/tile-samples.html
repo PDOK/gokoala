@@ -123,7 +123,7 @@
     <H2>Select vector tile </H2>
 
     <select id="url-selector">
-      <option value="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/">administrative Units</option>
+      <option value="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/">administrative Units</option>
       <option value="https://api.pdok.nl/lv/bag/ogc/v1_0/">Buildings (BAG)</option>
       <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0/">Large-scale Topography (BGT)</option>
     </select>
@@ -142,14 +142,14 @@
         <div>Projection:</div>
         <div id="thisprojection">NetherlandsRDNewQuad</div>
         <div>Url:</div>
-        <div id="thisurl">https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/</div>
+        <div id="thisurl">https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/</div>
         <div id="totalurl"></div>
       </div>
 
       <div class="showbox">
         <app-vectortile-view
           id="vectortile"
-          tile-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/"
+          tile-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/"
           center-x="5.3896944"
           center-y="52.1562499"
           show-grid="true"
@@ -285,7 +285,7 @@
     <H2>Admin unit legend</H2>
     <app-legend-view
       id="legendadminunit"
-      style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/styles/bestuurlijkegebieden_standaardvisualisatie?f=json">
+      style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/styles/bestuurlijkegebieden_standaardvisualisatie?f=json">
     </app-legend-view>
 
     <H2>9. BAG legend sample1 from OGC api test</H2>

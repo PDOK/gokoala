@@ -130,7 +130,9 @@ export class VectortileViewComponent implements OnChanges {
     private elementRef: ElementRef,
     private matrixsetService: MatrixsetService,
     private cdf: ChangeDetectorRef
-  ) {}
+  ) {
+    //empty constructor
+  }
 
   ngOnChanges(changes: NgChanges<VectortileViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
@@ -376,6 +378,7 @@ export class VectortileViewComponent implements OnChanges {
       renderMode: 'hybrid',
       declutter: true,
       useInterimTilesOnError: false,
+      minZoom: -1,
     })
   }
 
