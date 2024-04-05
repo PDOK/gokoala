@@ -308,10 +308,10 @@ select * from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
 func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	selectClause := "*"
 	if onlyFIDs {
-		selectClause = g.fidColumn + ", prevfid, nextfid"
+		selectClause = "\"" + g.fidColumn + "\", prevfid, nextfid"
 	}
 
-	btreeIndexHint := fmt.Sprintf("indexed by %s_spatial_idx", table.TableName)
+	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.TableName)
 
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
 	if pfClause != "" {
