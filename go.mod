@@ -16,7 +16,7 @@ require (
 	github.com/go-spatial/geom v0.0.0-20220918193402-3cd2f5a9a082
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/goccy/go-json v0.10.2
-	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
+	github.com/gomarkdown/markdown v0.0.0-20240328165702-4d01890c35c0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/jmoiron/sqlx v1.3.5
@@ -51,7 +51,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/net v0.24.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 )
