@@ -30,7 +30,7 @@
     <app-vectortile-view
       id="adminunit"
       style="width: 746px; height: 559.5px"
-      style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/styles/bestuurlijkegebieden_standaardvisualisatie?f=mapbox"
+      style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/styles/bestuurlijkegebieden_standaardvisualisatie?f=mapbox"
       center-x="5.3896944"
       center-y="52.1562499"
       show-grid="true"
@@ -67,7 +67,7 @@
 
       function seturl(projection) {
         const view = document.getElementById('adminunit')
-        const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/tiles/' + projection
+        const url = 'https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/tiles/' + projection
         view.setAttribute('tile-url', url)
         const link = document.getElementById('sample1viewlink')
         link.innerHTML = "<a href='" + url + "'> " + url + '</a>'
