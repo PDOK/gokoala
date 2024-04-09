@@ -363,6 +363,20 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request temporal collection ",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag_temporal.yaml",
+				url:          "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00:00:00Z&limit=10",
+				collectionID: "standplaatsen",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_temporal.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

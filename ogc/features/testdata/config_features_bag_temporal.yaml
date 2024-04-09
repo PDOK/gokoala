@@ -1,0 +1,45 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Contains a slimmed-down/example version of the BAG-dataset
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./ogc/features/datasources/geopackage/testdata/bag-temporal.gpkg
+            fid: feature_id
+    collections:
+      - id: ligplaatsen
+        metadata:
+          description: ligplaatsen
+          extent:
+            srs: EPSG:4326
+            interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]
+          temporalProperties:
+            startDate: datum_strt
+            endDate: datum_eind
+      - id: standplaatsen
+        metadata:
+          description: standplaatsen
+          extent:
+            srs: EPSG:4326
+            interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]
+          temporalProperties:
+            startDate: datum_strt
+            endDate: datum_eind
+      - id: verblijfsobjecten
+        metadata:
+          description: verblijfsobjecten
+          extent:
+            srs: EPSG:4326
+            interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]
+          temporalProperties:
+            startDate: datum_strt
+            endDate: datum_eind
