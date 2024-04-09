@@ -17,7 +17,7 @@ func assertIndexesExist(
 	db *sqlx.DB, fidColumn string) error {
 
 	// index needs to contain these columns in the given order
-	spatialBtreeColumns := strings.Join([]string{fidColumn, "minx", "maxx", "miny", "maxy"}, ",")
+	defaultSpatialBtreeColumns := strings.Join([]string{fidColumn, "minx", "maxx", "miny", "maxy"}, ",")
 
 	for collID, table := range featureTableByCollectionID {
 		if table == nil {
@@ -25,10 +25,12 @@ func assertIndexesExist(
 		}
 		for _, coll := range configuredCollections {
 			if coll.ID == collID && coll.Features != nil {
+				spatialBtreeColumns := defaultSpatialBtreeColumns
+
 				// assert temporal columns are indexed if configured
 				if coll.Metadata != nil && coll.Metadata.TemporalProperties != nil {
 					temporalBtreeColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
-					spatialBtreeColumns = strings.Join([]string{spatialBtreeColumns, coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
+					spatialBtreeColumns = strings.Join([]string{defaultSpatialBtreeColumns, coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
 					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns, true); err != nil {
 						return err
 					}

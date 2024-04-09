@@ -349,6 +349,34 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request WGS84 for collections with same backing feature table",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_multiple_collection_single_table.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_multiple_gpkgs_bbox_explicit_wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request temporal collection ",
+			fields: fields{
+				configFile:   "ogc/features/testdata/config_features_bag_temporal.yaml",
+				url:          "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00:00:00Z&limit=10",
+				collectionID: "standplaatsen",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "ogc/features/testdata/expected_temporal.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -109,7 +109,8 @@ func validate(config *Config) error {
 func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error {
 	var errMessages []string
 	for _, collection := range collections {
-		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil && collection.Metadata.Extent.Interval == nil {
+		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
+			(collection.Metadata.Extent == nil || collection.Metadata.Extent.Interval == nil) {
 			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
 				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
 		}

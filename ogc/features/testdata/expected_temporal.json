@@ -1,0 +1,51 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00%3A00%3A00Z&f=json&limit=10"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00%3A00%3A00Z&f=jsonfg&limit=10"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00%3A00%3A00Z&f=html&limit=10"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121301.554,
+          489089.022
+        ]
+      },
+      "properties": {
+        "datum_doc": "2020-05-20",
+        "datum_strt": "2020-05-20",
+        "document": "PC20200520_PC00PC",
+        "huisnummer": 1,
+        "nummer_id": "0363200012157127",
+        "postcode": "1013AJ",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200012157127",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Stenen Hoofd",
+        "type": "Standplaats",
+        "woonplaats": "Amsterdam"
+      },
+      "id": 11173
+    }
+  ],
+  "numberReturned": 1
+}

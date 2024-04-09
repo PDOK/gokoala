@@ -3,6 +3,7 @@ package geopackage
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/PDOK/gokoala/config"
 
@@ -78,10 +79,8 @@ where
 		for _, collection := range collections {
 			if row.Identifier == collection.ID {
 				result[collection.ID] = &row
-				break
 			} else if hasMatchingTableName(collection, row) {
 				result[collection.ID] = &row
-				break
 			}
 		}
 	}
@@ -91,6 +90,14 @@ where
 	}
 	if len(result) == 0 {
 		return nil, errors.New("no records found in gpkg_contents, can't serve features")
+	}
+	uniqueTables := make(map[string]struct{})
+	for _, table := range result {
+		uniqueTables[table.TableName] = struct{}{}
+	}
+	if len(uniqueTables) != len(result) {
+		log.Printf("Warning: found %d unique table names for %d collections, "+
+			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
 	}
 	return result, nil
 }
