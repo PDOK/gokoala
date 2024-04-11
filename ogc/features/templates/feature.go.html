@@ -11,7 +11,7 @@
 </script>
 
 <hgroup>
-    <h1 class="title h2">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{.Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{.Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
 </hgroup>
 
 <section class="row py-3">
