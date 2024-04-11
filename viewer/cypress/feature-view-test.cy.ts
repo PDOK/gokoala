@@ -4,6 +4,7 @@ type ProjectionTest = { code: string; projection: string; geofix: string }
 
 const tests: ProjectionTest[] = [
   { code: 'CRS84', projection: 'https://www.opengis.net/def/crs/OGC/1.3/CRS84', geofix: 'amsterdam-wgs84.json' },
+  { code: 'EPSG:4258', projection: 'http://www.opengis.net/def/crs/EPSG/0/4258', geofix: 'amsterdam-epsg4258.json' },
   { code: 'EPSG:28992', projection: 'http://www.opengis.net/def/crs/EPSG/0/28992', geofix: 'amsterdam-epgs28992.json' },
   { code: 'EPSG:3035', projection: 'http://www.opengis.net/def/crs/EPSG/0/3035', geofix: 'amsterdam-epgs3035.json' },
 ]
