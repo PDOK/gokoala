@@ -77,7 +77,7 @@
       <script type="text/javascript" src="view-component/polyfills.js"></script>
       <script type="text/javascript" src="view-component/runtime.js"></script>
       <p>{{ i18n "StylingExample" }}:</p>
-      <app-vectortile-view id="styles-vectortile-view" class="vectortile-view"
+      <app-vectortile-view id="styles-vectortile-view" class="card vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}?f=mapbox"
         center-x="5.3896944" center-y="52.1562499">
