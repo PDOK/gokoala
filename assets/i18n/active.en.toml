@@ -36,8 +36,8 @@ Conformance = "Conformance"
 ConformanceText = """The conformance describes which OGC standards this API implements."""
 Collections = "Collections"
 CollectionsText = """
-This API offers one or more collections that divide the dataset in object types \
-that can be called separately through for instance <i>features</i> or <i>tiles</i>."""
+This API offers one or more collections that divide the dataset in various object types, \
+which can be called separately through for instance <i>features</i> or <i>tiles</i>."""
 Tiles = "Tiles"
 TilesTextHTML = """
 This entire dataset is available as vector tiles in multiple projections. One or more <a href="styles">styles</a> are also available."""

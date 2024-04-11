@@ -37,7 +37,7 @@ ConformanceText = """De conformance beschrijft welke OGC standaarden deze API im
 Collections = "Collections"
 CollectionsText = """
 Deze API biedt één of meerdere collecties waarmee onderscheid gemaakt wordt \
-in verschillende object typen die bijvoorbeeld als <i>features</i> of <i>tiles</i> separaat aangeroepen kunnen worden."""
+in verschillende object typen, die bijvoorbeeld als <i>features</i> of <i>tiles</i> separaat aangeroepen kunnen worden."""
 Tiles = "Tiles"
 TilesTextHTML = """
 Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er \
