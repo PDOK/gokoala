@@ -18,7 +18,11 @@
     <link rel="shortcut icon" href="img/favicon.ico">
     <script type="text/javascript">
         // match window title to page title
-        window.addEventListener("load", (event) => { document.title = document.getElementById("title").innerHTML; });
+        window.addEventListener("load", (event) => {
+            if (document.getElementById("title")) {
+                document.title = document.getElementById("title").innerHTML;
+            }
+        });
 
         function setLanguage(lang) {
             document.cookie = 'lang='+lang+';path=/;max-age={{ .Config.CookieMaxAge }};same-site=strict;secure';
