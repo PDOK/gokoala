@@ -13,7 +13,7 @@
                     {{ i18n "License" }}
                 </td>
                 <td>
-                    <a href="{{ .Config.License.URL }}" target="_blank">{{ .Config.License.Name }}</a>
+                    <a href="{{ .Config.License.URL }}" target="_blank" aria-label="{{ cat (i18n "To") (i18n "License") .Config.License.Name }}">{{ .Config.License.Name }}</a>
                 </td>
             </tr>
             {{ if .Config.Support}}
@@ -22,7 +22,7 @@
                         {{ i18n "Support" }}
                     </td>
                     <td>
-                        <a href="{{ .Config.Support.URL }}" target="_blank">{{ .Config.Support.Name }}</a>
+                        <a href="{{ .Config.Support.URL }}" target="_blank" aria-label="{{ cat (i18n "To") (i18n "Support") }}">{{ .Config.Support.Name }}</a>
                     </td>
                 </tr>
             {{ end }}

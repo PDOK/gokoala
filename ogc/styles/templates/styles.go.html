@@ -49,7 +49,10 @@
               URL
             </td>
             <td class="w-auto px-2">
-              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}</a>
+              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}"
+                 aria-label="{{ i18n "View" }} style">
+                 {{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}
+              </a>
             </td>
           </tr>
           <tr>
@@ -65,7 +68,10 @@
               Metadata
             </td>
             <td class="w-auto px-2">
-              <a id="href-metadata" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}/metadata">{{ i18n "StyleMetadata" }}</a>
+              <a id="href-metadata" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}/metadata"
+                 aria-label="{{ i18n "View" }} style metadata">
+                {{ i18n "StyleMetadata" }}
+              </a>
             </td>
           </tr>
         </tbody>

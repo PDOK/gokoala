@@ -28,7 +28,7 @@
                         {{ i18n "License" }}
                     </td>
                     <td>
-                        <a href="{{ .Config.License.URL }}" target="_blank">{{ .Config.License.Name }}</a>
+                        <a href="{{ .Config.License.URL }}" target="_blank" aria-label="{{ i18n "To" }} {{ i18n "License" }} {{ .Config.License.Name }}">{{ .Config.License.Name }}</a>
                     </td>
                 </tr>
                 {{ if .Config.Support}}
@@ -37,7 +37,7 @@
                         {{ i18n "Support" }}
                     </td>
                     <td>
-                        <a href="{{ .Config.Support.URL }}" target="_blank">{{ .Config.Support.Name }}</a>
+                        <a href="{{ .Config.Support.URL }}" target="_blank" aria-label="{{ i18n "To" }} {{ i18n "Support" }}">{{ .Config.Support.Name }}</a>
                     </td>
                 </tr>
                 {{ end }}
@@ -87,7 +87,7 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">
-                <a href="api">OpenAPI {{ i18n "Specification" }}</a>
+                <a href="api" aria-label="{{ i18n "To" }} OpenAPI {{ i18n "Specification" }}">OpenAPI {{ i18n "Specification" }}</a>
             </h2>
             <div class="card-body">
                 <p>
@@ -102,7 +102,7 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">
-                <a href="conformance">{{ i18n "Conformance" }}</a>
+                <a href="conformance" aria-label="{{ i18n "To" }} {{ i18n "Conformance" }}">{{ i18n "Conformance" }}</a>
             </h2>
             <div class="card-body">
                 <p>
@@ -118,7 +118,7 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">
-                <a href="collections">{{ i18n "Collections" }}</a>
+                <a href="collections" aria-label="{{ i18n "To" }} {{ i18n "Collections" }}">{{ i18n "Collections" }}</a>
             </h2>
             <div class="card-body">
                 <p>
@@ -135,7 +135,7 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">
-                <a href="tiles">{{ i18n "Tiles" }}</a>
+                <a href="tiles" aria-label="{{ i18n "To" }} {{ i18n "Tiles" }}">{{ i18n "Tiles" }}</a>
             </h2>
             <div class="card-body">
                 <p>
@@ -152,7 +152,7 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">
-                <a href="styles">{{ i18n "Styles" }}</a>
+                <a href="styles" aria-label="{{ i18n "To" }} {{ i18n "Styles" }}">{{ i18n "Styles" }}</a>
             </h2>
             <div class="card-body">
                 <p>
@@ -169,7 +169,7 @@
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">
-                <a href="tileMatrixSets">{{ i18n "TileMatrixSets" }}</a>
+                <a href="tileMatrixSets" aria-label="{{ i18n "To" }} {{ i18n "TileMatrixSets" }}">{{ i18n "TileMatrixSets" }}</a>
             </h2>
             <div class="card-body">
                 <p>
