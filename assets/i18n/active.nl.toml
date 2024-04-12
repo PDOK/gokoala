@@ -24,7 +24,7 @@ For = "voor"
 # Layout frame
 ToMain = "Naar hoofdinhoud"
 Logo = "Logo PDOK: Ga naar de landingspagina"
-SwitchLanguage = "Set language to"
+SwitchLanguage = "Change language to"
 LanguageSwitchLabel = "English"
 LanguageSwitchCode = "en"
 SwitchFormat = "Deze pagina als"
