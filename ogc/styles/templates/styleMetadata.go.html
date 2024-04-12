@@ -61,7 +61,7 @@
             {{ if eq $styleFormat.Format "mapbox" }}
                 <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=mapbox" aria-label="{{ i18n "To" }} Mapbox Style">Mapbox Style</a> (<a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=html" aria-label="{{ i18n "To" }} style {{ i18n "Legend" }}">{{ i18n "Legend" }}</a>)</li>
             {{ else if eq $styleFormat.Format "sld10" }}
-                <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" title="OpenGIS Styled Layer Descriptor 1.0 Style">SLD 1.0 Style</a></li>
+                <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" aria-label="OpenGIS Styled Layer Descriptor 1.0 Style">SLD 1.0 Style</a></li>
             {{ end }}
             {{/* Add support for more style formats here */}}
         {{ end }}
