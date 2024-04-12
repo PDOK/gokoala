@@ -18,12 +18,16 @@ Example = "Example"
 On = "on"
 As = "as"
 Of = "of"
+To = "Go to"
+For = "for"
 
 # Layout frame
 ToMain = "To main content"
 Logo = "PDOK Logo: Go to landing page"
+SwitchLanguage = "Zet taal op"
 LanguageSwitchLabel = "Nederlands"
 LanguageSwitchCode = "nl"
+SwitchFormat = "This page as"
 FooterLogo = "Logo of The Netherlands Cadastre, Land Registry and Mapping Agency"
 
 # Landing page
@@ -40,7 +44,7 @@ This API offers one or more collections that divide the dataset in various objec
 which can be called separately through for instance <i>features</i> or <i>tiles</i>."""
 Tiles = "Tiles"
 TilesTextHTML = """
-This entire dataset is available as vector tiles in multiple projections. One or more <a href="styles">styles</a> are also available."""
+This entire dataset is available as vector tiles in multiple projections. One or more <a href="styles" aria-label="Go to styles">styles</a> are also available."""
 TilesTextPlain = """
 This entire dataset is available as vector tiles in multiple projections. One or more styles are also available."""
 Styles = "Styles"
@@ -49,7 +53,7 @@ One or more official styles as specified by the supplier. Styles are made availa
 TileMatrixSets = "Tile Matrix Sets"
 TileMatrixSetsText = """
 Description of the Tile Matrix Sets that are made available via this API. Note that all zoom levels
-of the tile matrix are described. See the <i>Tile Matrix Set Limits</i> on the <a href="tiles">Tiles</a>
+of the tile matrix are described. See the <i>Tile Matrix Set Limits</i> on the <a href="tiles" aria-label="Go to tiles">Tiles</a>
 pages to see what zoom levels are supported by this API."""
 
 # Conformance page
@@ -62,19 +66,19 @@ Draft = "Draft"
 NetherlandsRDNewQuadAbstract = """
 The tiles can be requested via the URL template below, where
 <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
-<a href="tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme. In some tools it is
-also possible to load this through <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>."""
+<a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="Go to tile matrix set NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme. In some tools it is
+also possible to load this through <a href="tiles/NetherlandsRDNewQuad?f=tilejson" aria-label="Go to NetherlandsRDNewQuad as TileJSON">TileJSON</a>."""
 WebMercatorQuadAbstract = """
 The tiles can be requested via the URL template below, where
 <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
-<a href="tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme. In some tools it is
-also possible to load this through <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>."""
+<a href="tileMatrixSets/WebMercatorQuad" aria-label="Go to tile matrix set WebMercatorQuad">WebMercatorQuad</a> tiling scheme. In some tools it is
+also possible to load this through <a href="tiles/WebMercatorQuad?f=tilejson" aria-label="Go to WebMercatorQuad as TileJSON">TileJSON</a>."""
 EuropeanETRS89_LAEAQuadAbstract = """
 The tiles can be requested via the URL template below, where
 <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
-<a href="tileMatrixSets/EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
+<a href="tileMatrixSets/EuropeanETRS89_LAEAQuad" aria-label="Go to tile matrix set EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
 In some tools it is also possible to load this through
-<a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson">TileJSON</a>."""
+<a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson" aria-label="Go to EuropeanETRS89_LAEAQuad as TileJSON">TileJSON</a>."""
 AvailableZoomLevels = "The tiles are available at the following zoomlevels"
 ZoomLevel = "Zoom level"
 MinimumValue = "Minimum value"
@@ -93,6 +97,8 @@ Legend = "legend"
 
 # Collections/Collection page
 ViewCollectionAs = "View collection as"
+Collection = "Collection"
+Definition = "definition    "
 GeographicExtent = "Geographic extent"
 TemporalExtent = "Temporal extent"
 GoTo = "Go to the"
