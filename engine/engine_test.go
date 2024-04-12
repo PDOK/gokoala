@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -142,8 +143,9 @@ func TestEngine_Start(t *testing.T) {
 
 			// Start the server in a separate goroutine
 			errChan := make(chan error, 1)
+			randomDebugPort := rand.IntN(9999-9000) + 9000
 			go func() {
-				errChan <- e.Start(tt.address, 9999, tt.shutdownDelay)
+				errChan <- e.Start(tt.address, randomDebugPort, tt.shutdownDelay)
 			}()
 
 			// Wait for a moment to ensure the server has started
