@@ -2,7 +2,7 @@
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
   <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
+    <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
   </hgroup>
   <div class="row py-3">
     <div class="col-md-12">
@@ -49,7 +49,10 @@
               URL
             </td>
             <td class="w-auto px-2">
-              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}">{{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}</a>
+              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}"
+                 aria-label="{{ i18n "View" }} style">
+                 {{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}
+              </a>
             </td>
           </tr>
           <tr>
@@ -65,7 +68,10 @@
               Metadata
             </td>
             <td class="w-auto px-2">
-              <a id="href-metadata" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}/metadata">{{ i18n "StyleMetadata" }}</a>
+              <a id="href-metadata" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}/metadata"
+                 aria-label="{{ i18n "View" }} style metadata">
+                {{ i18n "StyleMetadata" }}
+              </a>
             </td>
           </tr>
         </tbody>
@@ -77,7 +83,7 @@
       <script type="text/javascript" src="view-component/polyfills.js"></script>
       <script type="text/javascript" src="view-component/runtime.js"></script>
       <p>{{ i18n "StylingExample" }}:</p>
-      <app-vectortile-view id="styles-vectortile-view" class="vectortile-view"
+      <app-vectortile-view id="styles-vectortile-view" class="card vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         style-url="{{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}?f=mapbox"
         center-x="5.3896944" center-y="52.1562499">

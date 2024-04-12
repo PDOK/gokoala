@@ -23,7 +23,7 @@
 </script>
 
 <hgroup>
-    <h1 class="title h2">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
 </hgroup>
 
 <section class="row py-3">
@@ -108,7 +108,7 @@
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}"></app-feature-view>
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" class="card"></app-feature-view>
         <script type="module">
           const url = new URL(window.location.href)
           url.searchParams.set('f','json');
@@ -156,7 +156,7 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th colspan="2"><a href="{{ $baseUrl }}/collections/{{ $.Params.CollectionID }}/items/{{ $feat.ID }}">{{ $feat.ID }}</a></th>
+                <th colspan="2"><a href="{{ $baseUrl }}/collections/{{ $.Params.CollectionID }}/items/{{ $feat.ID }}" aria-label="{{ i18n "To" }} feature {{ $feat.ID }}">{{ $feat.ID }}</a></th>
             </tr>
             </thead>
             <tbody>

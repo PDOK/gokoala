@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - Conformance</h1>
+    <h1 class="title" id="title">{{ .Config.Title }} - Conformance</h1>
 </hgroup>
 <div class="row">
     <div class="col-md-12">
@@ -24,19 +24,19 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core" target="_blank" aria-label="{{ i18n "To" }} conf/core {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json" target="_blank" aria-label="{{ i18n "To" }} conf/json {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html" target="_blank" aria-label="{{ i18n "To" }} conf/html {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30" target="_blank">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30" target="_blank" aria-label="{{ i18n "To" }} conf/oas30 {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
                     {{ if .Config.HasCollections }}
@@ -65,28 +65,28 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core</a></td>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core" target="_blank" aria-label="{{ i18n "To" }} conf/core {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core</a></td>
                             <td>{{ i18n "Standard" }}</td>
                         </tr>
                         <tr>
-                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html</a></td>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html" target="_blank" aria-label="{{ i18n "To" }} conf/html {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html</a></td>
                             <td>{{ i18n "Standard" }}</td>
                         </tr>
                         <tr>
-                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson</a></td>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson" target="_blank" aria-label="{{ i18n "To" }} conf/geojson {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson</a></td>
                             <td>{{ i18n "Standard" }}</td>
                         </tr>
 {{/*  Enable once we support GML output */}}
 {{/*                    <tr>*/}}
-{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0</a></td>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0" target="_blank" aria-label="{{ i18n "To" }} conf/gmlsf0 {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0</a></td>*/}}
 {{/*                        <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                    </tr>*/}}
 {{/*                    <tr>*/}}
-{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2" target="_blank">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2</a></td>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2" target="_blank" aria-label="{{ i18n "To" }} conf/gmlsf2 {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2</a></td>*/}}
 {{/*                        <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                    </tr>*/}}
                         <tr>
-                            <td><a href="http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs" target="_blank">http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs</a></td>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs" target="_blank" aria-label="{{ i18n "To" }} conf/crs {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs</a></td>
                             <td>{{ i18n "Standard" }}</td>
                         </tr>
                         <tr>
@@ -95,19 +95,19 @@
                         </tr>
 {{/*  Enable once we support Features part 3 */}}
 {{/*                    <tr>*/}}
-{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filterr</a></td>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter" target="_blank" aria-label="{{ i18n "To" }} conf/filter {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter</a></td>*/}}
 {{/*                        <td>{{ i18n "Draft" }}</td>*/}}
 {{/*                    </tr>*/}}
 {{/*                    <tr>*/}}
-{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter</a></td>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter" target="_blank" aria-label="{{ i18n "To" }} conf/features-filter {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter</a></td>*/}}
 {{/*                        <td>{{ i18n "Draft" }}</td>*/}}
 {{/*                    </tr>*/}}
 {{/*                    <tr>*/}}
-{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables</a></td>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables" target="_blank" aria-label="{{ i18n "To" }} conf/queryables {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables</a></td>*/}}
 {{/*                        <td>{{ i18n "Draft" }}</td>*/}}
 {{/*                    </tr>*/}}
 {{/*                    <tr>*/}}
-{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters" target="_blank">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters</a></td>*/}}
+{{/*                        <td><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters" target="_blank" aria-label="{{ i18n "To" }} conf/queryables-query-parameters {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters</a></td>*/}}
 {{/*                        <td>{{ i18n "Draft" }}</td>*/}}
 {{/*                    </tr>*/}}
                         </tbody>
@@ -183,58 +183,58 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core" target="_blank" aria-label="{{ i18n "To" }} conf/core {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset" target="_blank" aria-label="{{ i18n "To" }} conf/tileset {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list" target="_blank" aria-label="{{ i18n "To" }} conf/tilesets-list {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
                     <tr>
-                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets</a></td>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets" target="_blank" aria-label="{{ i18n "To" }} conf/dataset-tilesets {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
 {{/*  Enable the classes below once we support tiles inside collections */}}
 {{/*                        <tr>*/}}
-{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</a></td>*/}}
+{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets" target="_blank" aria-label="{{ i18n "To" }} conf/geodata-tilesets {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</a></td>*/}}
 {{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
 {{/*                        <tr>*/}}
-{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection</a></td>*/}}
+{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection" target="_blank" aria-label="{{ i18n "To" }} conf/geodata-selection {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection</a></td>*/}}
 {{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
                     {{range $type := .Config.OgcAPI.Tiles.Types}}
                         {{ if (eq $type "raster") }}
 {{/*                                <tr>*/}}
-{{/*                                    <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg</a></td>*/}}
+{{/*                                    <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg" target="_blank" aria-label="{{ i18n "To" }} conf/jpeg {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg</a></td>*/}}
 {{/*                                    <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                                </tr>*/}}
                             <tr>
-                                <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png</a></td>
+                                <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png" target="_blank" aria-label="{{ i18n "To" }} conf/png {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png</a></td>
                                 <td>{{ i18n "Standard" }}</td>
                             </tr>
                         {{ end }}
                         {{ if (eq $type "vector") }}
                             <tr>
-                                <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt</a></td>
+                                <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt" target="_blank" aria-label="{{ i18n "To" }} conf/mvt {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt</a></td>
                                 <td>{{ i18n "Standard" }}</td>
                             </tr>
                         {{ end }}
                     {{end}}
 {{/*                        <tr>*/}}
-{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson</a></td>*/}}
+{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson" target="_blank" aria-label="{{ i18n "To" }} conf/geojson {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson</a></td>*/}}
 {{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
 {{/*                        <tr>*/}}
-{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff</a></td>*/}}
+{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff" target="_blank" aria-label="{{ i18n "To" }} conf/tiff {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff</a></td>*/}}
 {{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
 {{/*                        <tr>*/}}
-{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf" target="_blank">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf</a></td>*/}}
+{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf" target="_blank" aria-label="{{ i18n "To" }} conf/netcdf {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf</a></td>*/}}
 {{/*                            <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                        </tr>*/}}
                     </tbody>

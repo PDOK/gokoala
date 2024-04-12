@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
 {{define "content"}}
   <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ i18n "Tiles" }}</h1>
+    <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Tiles" }}</h1>
   </hgroup>
   <div class="row py-3">
     <div class="col-md-12">
@@ -73,7 +73,7 @@
             Metadata
           </td>
           <td id="field-metadata" class="w-auto px-2">
-            <a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}">{{ i18n "View" }} metadata</a>
+            <a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}" aria-label="{{ i18n "View" }} tile matrix set metadata">{{ i18n "View" }} metadata</a>
           </td>
         </tr>
         </tbody>
@@ -104,7 +104,7 @@
       <script type="text/javascript" src="view-component/main.js"></script>
       <script type="text/javascript" src="view-component/polyfills.js"></script>
       <script type="text/javascript" src="view-component/runtime.js"></script>
-      <app-vectortile-view id="vectortileviewer" class="vectortile-view"
+      <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
         center-x="5.3896944" center-y="52.1562499"

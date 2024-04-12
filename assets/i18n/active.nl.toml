@@ -18,12 +18,16 @@ Example = "Voorbeeld"
 On = "op"
 As = "als"
 Of = "van"
+To = "Ga naar"
+For = "voor"
 
 # Layout frame
 ToMain = "Naar hoofdinhoud"
 Logo = "Logo PDOK: Ga naar de landingspagina"
+SwitchLanguage = "Change language to"
 LanguageSwitchLabel = "English"
 LanguageSwitchCode = "en"
+SwitchFormat = "Deze pagina als"
 FooterLogo = "Logo van het Kadaster"
 
 # Landing page
@@ -41,7 +45,7 @@ in verschillende object typen, die bijvoorbeeld als <i>features</i> of <i>tiles<
 Tiles = "Tiles"
 TilesTextHTML = """
 Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er \
-&eacute;&eacute;n of meerdere <a href="styles">styles</a> beschikbaar gesteld."""
+&eacute;&eacute;n of meerdere <a href="styles" aria-label="Ga naar styles">styles</a> beschikbaar gesteld."""
 TilesTextPlain = """
 Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er \
 één of meerdere styles beschikbaar gesteld."""
@@ -52,7 +56,7 @@ Styles worden beschikbaar gesteld in het Mapbox formaat."""
 TileMatrixSets = "Tile Matrix Sets"
 TileMatrixSetsText = """
 Beschrijving van de Tile Matrix Sets die via deze API worden ontsloten. Merk op dat alle zoomniveaus
-van de tile matrix zijn beschreven. Zie de <i>Tile Matrix Set Limits</i> op de <a href="tiles">Tiles</a>
+van de tile matrix zijn beschreven. Zie de <i>Tile Matrix Set Limits</i> op de <a href="tiles" aria-label="Ga naar tiles">Tiles</a>
 pagina's om te zien welke zoomniveaus door deze API worden ondersteund."""
 
 # Conformance page
@@ -65,20 +69,20 @@ Draft = "Concept"
 NetherlandsRDNewQuadAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
 <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
-tile volgens het <a href="tileMatrixSets/NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
-In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson">TileJSON</a>
+tile volgens het <a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="Ga naar tile matrix set NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
+In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson" aria-label="Ga naar NetherlandsRDNewQuad als TileJSON">TileJSON</a>
 in te laden."""
 WebMercatorQuadAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
 <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
-tile volgens het <a href="tileMatrixSets/WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
-In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson">TileJSON</a>
+tile volgens het <a href="tileMatrixSets/WebMercatorQuad" aria-label="Ga naar tile matrix set WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
+In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson" aria-label="Ga naar WebMercatorQuad als TileJSON">TileJSON</a>
 in te laden."""
 EuropeanETRS89_LAEAQuadAbstract = """
 De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
 <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
-tile volgens het <a href="tileMatrixSets/EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
-In sommige tools is het ook mogelijk om dit via <a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson">TileJSON</a>
+tile volgens het <a href="tileMatrixSets/EuropeanETRS89_LAEAQuad" aria-label="Ga naar tile matrix set EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
+In sommige tools is het ook mogelijk om dit via <a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson" aria-label="Ga naar EuropeanETRS89_LAEAQuad als TileJSON">TileJSON</a>
 in te laden."""
 AvailableZoomLevels = "De tiles zijn beschikbaar op de volgende zoomniveaus"
 ZoomLevel = "Zoomniveau"
@@ -98,6 +102,8 @@ Legend = "legenda"
 
 # Collections/Collection page
 ViewCollectionAs = "Bekijk collectie als"
+Collection = "Collectie"
+Definition = "definitie"
 GeographicExtent = "Geografische begrenzing"
 TemporalExtent = "Temporele begrenzing"
 GoTo = "Ga naar de"

@@ -3,7 +3,7 @@
 {{ if .Params }}
 {{ $baseUrl := .Config.BaseURL }}
 <hgroup>
-    <h1 class="title">{{ .Config.Title }} - {{ .Params.Title }}</h1>
+    <h1 class="title" id="title">{{ .Config.Title }} - {{ .Params.Title }}</h1>
 </hgroup>
 <div class="row py-3">
     <div class="col-md-12">
@@ -14,7 +14,7 @@
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-legend-view id="style-legend-view"
+        <app-legend-view id="style-legend-view" class="card"
                          style-url="{{ $baseUrl }}/styles/{{ .Params.ID }}?f=mapbox">
         </app-legend-view>
         <noscript>Enable Javascript to display style legend</noscript>

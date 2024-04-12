@@ -17,6 +17,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
     <link rel="shortcut icon" href="img/favicon.ico">
     <script type="text/javascript">
+        // match window title to page title
+        window.addEventListener("load", (event) => {
+            if (document.getElementById("title")) {
+                document.title = document.getElementById("title").innerHTML;
+            }
+        });
+
         function setLanguage(lang) {
             document.cookie = 'lang='+lang+';path=/;max-age={{ .Config.CookieMaxAge }};same-site=strict;secure';
             return true;
@@ -28,12 +35,12 @@
     <!-- header -->
     <header>
         <!-- skip link -->
-        <a class="visually-hidden visually-hidden-focusable" href="#main">{{ i18n "ToMain" }}</a>
+        <a class="visually-hidden visually-hidden-focusable" href="#main" aria-label="{{ i18n "ToMain" }}">{{ i18n "ToMain" }}</a>
 
         <nav class="navbar d-flex flex-column w-100" aria-label="top navigation">
             <!-- logo -->
             <div class="container">
-                <a class="navbar-brand py-3" href="{{ .Config.BaseURL }}">
+                <a class="navbar-brand py-3" href="{{ .Config.BaseURL }}" aria-label="{{ i18n "Logo" }}">
                     <img src="img/logo-header.svg" alt="{{ i18n "Logo" }}">
                 </a>
             </div>
@@ -45,17 +52,17 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         {{ if .Config.DatasetCatalogURL.URL }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.DatasetCatalogURL }}" target="_blank">Datasets</a></li>
+                            <li class="breadcrumb-item"><a href="{{ .Config.DatasetCatalogURL }}" target="_blank" aria-label="{{ i18n "To" }} Datasets">Datasets</a></li>
                         {{ end }}
                         {{ if .Breadcrumbs }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}">{{ .Config.ServiceIdentifier }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}" aria-label="{{ i18n "To" }} {{ .Config.ServiceIdentifier }}">{{ .Config.ServiceIdentifier }}</a></li>
                         {{ else }}
                             <li class="breadcrumb-item active">{{ .Config.ServiceIdentifier }}</li>
                         {{ end }}
 
                         {{ range $breadcrumb := .Breadcrumbs }}
                             {{ if ne $breadcrumb.Name $lastcrumb.Name }}
-                                <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}">{{ $breadcrumb.Name }}</a></li>
+                                <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}" aria-label="{{ i18n "To" }} {{ $breadcrumb.Name }}">{{ $breadcrumb.Name }}</a></li>
                             {{ else }}
                                 <li class="breadcrumb-item active">{{ $breadcrumb.Name }}</li>
                             {{ end }}
@@ -68,10 +75,12 @@
                         {{ $languageSwitchCode := (i18n "LanguageSwitchCode") }}
                         {{ if gt (len .Config.AvailableLanguages) 1 }}
                             <!-- TODO: support switching between more than two languages -->
-                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');">{{ i18n "LanguageSwitchLabel" }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');"
+                                                           aria-label="{{ i18n "SwitchLanguage" }} {{ i18n "LanguageSwitchLabel" }}">{{ i18n "LanguageSwitchLabel" }}</a></li>
                         {{ end }}
                         {{ range $formatKey, $formatName := .AvailableFormats }}
-                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}{{ $.QueryString $formatKey }}" target="_blank">{{ $formatName }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}{{ $.QueryString $formatKey }}" target="_blank"
+                                                           aria-label="{{ i18n "SwitchFormat" }} {{ $formatName }}">{{ $formatName }}</a></li>
                         {{ end }}
                     </ol>
                 </nav>
