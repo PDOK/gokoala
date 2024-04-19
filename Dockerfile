@@ -53,15 +53,14 @@ COPY --from=build-env /gokoala /
 
 # include assets/templates/etc (be specific here to only include required dirs)
 COPY --from=build-env /go/src/service/assets/ /assets/
+COPY --from=build-env /go/src/service/internal/ /internal/
+
 # include view-component webcomponent as asset
 COPY --from=build-component /usr/src/app/dist/view-component/styles.css  /assets/view-component/styles.css
 COPY --from=build-component /usr/src/app/dist/view-component/main.js  /assets/view-component/main.js
 COPY --from=build-component /usr/src/app/dist/view-component/polyfills.js  /assets/view-component/polyfills.js
 COPY --from=build-component /usr/src/app/dist/view-component/runtime.js  /assets/view-component/runtime.js
 COPY --from=build-component /usr/src/app/dist/view-component/3rdpartylicenses.txt /assets/view-component/3rdpartylicenses.txt
-
-COPY --from=build-env /go/src/service/engine/ /engine/
-COPY --from=build-env /go/src/service/ogc/ /ogc/
 
 # run as non-root
 USER 1001
