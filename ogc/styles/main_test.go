@@ -15,7 +15,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 	"golang.org/x/text/language"
 
 	"github.com/stretchr/testify/assert"

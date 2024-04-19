@@ -1,4 +1,4 @@
-{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {
   "openapi": "3.0.1",
   "info": {

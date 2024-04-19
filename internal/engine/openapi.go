@@ -17,7 +17,7 @@ import (
 
 	gokoalaconfig "github.com/PDOK/gokoala/config"
 
-	"github.com/PDOK/gokoala/engine/util"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"

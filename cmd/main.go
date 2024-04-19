@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	eng "github.com/PDOK/gokoala/engine"
+	eng "github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/ogc/common/core"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/ogc/features"

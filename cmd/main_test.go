@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	gokoalaEngine "github.com/PDOK/gokoala/engine"
+	gokoalaEngine "github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,25 +35,25 @@ func Test_newRouter(t *testing.T) {
 			name:       "Check conformance with all OGC APIs enabled in JSON",
 			configFile: "examples/config_all.yaml",
 			apiCall:    "http://localhost:8181/conformance?f=json",
-			wantBody:   "engine/testdata/expected_conformance.json",
+			wantBody:   "internal/engine/testdata/expected_conformance.json",
 		},
 		{
 			name:       "Check conformance with all OGC APIs enabled in HTML",
 			configFile: "examples/config_all.yaml",
 			apiCall:    "http://localhost:8181/conformance?f=html",
-			wantBody:   "engine/testdata/expected_conformance.html",
+			wantBody:   "internal/engine/testdata/expected_conformance.html",
 		},
 		{
 			name:       "Serve multiple OGC APIs for single collection in JSON",
-			configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+			configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 			apiCall:    "http://localhost:8180/collections/NewYork?f=json",
-			wantBody:   "engine/testdata/expected_multiple_ogc_apis_single_collection.json",
+			wantBody:   "internal/engine/testdata/expected_multiple_ogc_apis_single_collection.json",
 		},
 		{
 			name:       "Serve multiple OGC APIs for single collection in HTML",
-			configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+			configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 			apiCall:    "http://localhost:8180/collections/NewYork?f=html",
-			wantBody:   "engine/testdata/expected_multiple_ogc_apis_single_collection.html",
+			wantBody:   "internal/engine/testdata/expected_multiple_ogc_apis_single_collection.html",
 		},
 		{
 			name:       "Serve multiple Feature Tables from single GeoPackage",
@@ -63,9 +63,9 @@ func Test_newRouter(t *testing.T) {
 		},
 		{
 			name:       "Check conformance of OGC API Processes",
-			configFile: "engine/testdata/config_processes.yaml",
+			configFile: "internal/engine/testdata/config_processes.yaml",
 			apiCall:    "http://localhost:8181/conformance?f=html",
-			wantBody:   "engine/testdata/expected_processes_conformance.html",
+			wantBody:   "internal/engine/testdata/expected_processes_conformance.html",
 		},
 	}
 	for _, tt := range tests {

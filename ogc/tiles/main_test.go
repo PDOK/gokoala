@@ -14,7 +14,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 	"golang.org/x/text/language"
 
 	"github.com/go-chi/chi/v5"

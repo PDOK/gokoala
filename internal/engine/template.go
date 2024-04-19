@@ -12,7 +12,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 
-	"github.com/PDOK/gokoala/engine/util"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	sprig "github.com/go-task/slim-sprig"
 	gomarkdown "github.com/gomarkdown/markdown"
 	gomarkdownhtml "github.com/gomarkdown/markdown/html"

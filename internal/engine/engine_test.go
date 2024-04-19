@@ -21,7 +21,7 @@ import (
 func init() {
 	// change working dir to root, to mimic behavior of 'go run' in order to resolve template/config files.
 	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "..")
+	dir := path.Join(path.Dir(filename), "../../")
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)
@@ -30,7 +30,7 @@ func init() {
 
 func TestEngine_ServePage_LandingPage(t *testing.T) {
 	// given
-	engine, err := NewEngine("engine/testdata/config_minimal.yaml", "", false, true)
+	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "", false, true)
 	assert.NoError(t, err)
 
 	templateKey := NewTemplateKey("ogc/common/core/templates/landing-page.go.json")

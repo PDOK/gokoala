@@ -5,7 +5,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 )
 
 type Processes struct {

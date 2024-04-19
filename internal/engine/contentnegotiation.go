@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/engine/util"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/elnormous/contenttype"
 	"golang.org/x/text/language"
 )

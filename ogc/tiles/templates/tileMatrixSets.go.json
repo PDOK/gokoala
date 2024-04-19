@@ -1,4 +1,4 @@
-{{- /*gotype: github.com/PDOK/gokoala/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {
   {{ if .Config.OgcAPI.Tiles }}
   {{$baseUrl := .Config.BaseURL}}

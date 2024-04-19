@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +44,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 		{
 			name: "landing page as JSON",
 			fields: fields{
-				configFile: "engine/testdata/config_minimal.yaml",
+				configFile: "internal/engine/testdata/config_minimal.yaml",
 				url:        "http://localhost:8080/?f=json",
 			},
 			want: want{
@@ -55,7 +55,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 		{
 			name: "landing page as HTML",
 			fields: fields{
-				configFile: "engine/testdata/config_minimal.yaml",
+				configFile: "internal/engine/testdata/config_minimal.yaml",
 				url:        "http://localhost:8080/?f=html",
 			},
 			want: want{
@@ -102,7 +102,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 		{
 			name: "conformance as JSON",
 			fields: fields{
-				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 				url:        "http://localhost:8080/conformance?f=json",
 			},
 			want: want{
@@ -113,7 +113,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 		{
 			name: "conformance as HTML",
 			fields: fields{
-				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 				url:        "http://localhost:8080/conformance?f=html",
 			},
 			want: want{
@@ -160,7 +160,7 @@ func TestCommonCore_API(t *testing.T) {
 		{
 			name: "OpenAPI as JSON",
 			fields: fields{
-				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 				url:        "http://localhost:8080/api?f=json",
 			},
 			want: want{
@@ -171,7 +171,7 @@ func TestCommonCore_API(t *testing.T) {
 		{
 			name: "OpenAPI as HTML",
 			fields: fields{
-				configFile: "engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
 				url:        "http://localhost:8080/api?f=html",
 			},
 			want: want{

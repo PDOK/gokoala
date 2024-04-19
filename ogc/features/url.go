@@ -14,7 +14,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	"github.com/go-spatial/geom"
 )

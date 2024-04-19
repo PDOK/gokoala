@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/ogc/features/domain"
 	perfjson "github.com/goccy/go-json"
 )

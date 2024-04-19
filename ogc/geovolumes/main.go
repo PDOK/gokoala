@@ -9,7 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/ogc/common/geospatial"
 
 	"github.com/go-chi/chi/v5"

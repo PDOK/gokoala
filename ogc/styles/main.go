@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 
 	"github.com/go-chi/chi/v5"
 )

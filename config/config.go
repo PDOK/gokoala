@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/PDOK/gokoala/engine/util"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/creasty/defaults"
 	"github.com/docker/go-units"
 	"github.com/go-playground/validator/v10"

@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"

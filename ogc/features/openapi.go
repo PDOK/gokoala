@@ -7,7 +7,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 
-	"github.com/PDOK/gokoala/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 	ds "github.com/PDOK/gokoala/ogc/features/datasources"
 )
 

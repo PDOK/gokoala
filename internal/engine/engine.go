@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	templatesDir    = "engine/templates/"
+	templatesDir    = "internal/engine/templates/"
 	shutdownTimeout = 5 * time.Second
 
 	HeaderLink            = "Link"
