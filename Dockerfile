@@ -27,8 +27,8 @@ RUN hack/build-controller-gen.sh
 # build & test the binary with debug information removed.
 RUN go mod download all && \
     go generate -v ./... && \
-    go test -short && \
-    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala
+    go test -short ./... && \
+    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala/cmd
 
 # delete all go files (and testdata dirs) so only assets/templates/etc remain, since in a later
 # stage we need to copy these remaining files including their subdirectories to the final docker image.
