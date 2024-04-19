@@ -138,7 +138,7 @@ Design principles:
 
 - Performance and scalability are key!
 - Be opinionated when you can, only make stuff configurable when you must.
-- The `ogc` [package](ogc/README.md) contains logic per specific OGC API
+- The `ogc` [package](internal/ogc/README.md) contains logic per specific OGC API
   building block.
 - The `engine` package should contain general logic. `ogc` may reference
   `engine`.

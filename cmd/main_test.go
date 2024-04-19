@@ -57,9 +57,9 @@ func Test_newRouter(t *testing.T) {
 		},
 		{
 			name:       "Serve multiple Feature Tables from single GeoPackage",
-			configFile: "ogc/features/testdata/config_features_bag_multiple_feature_tables.yaml",
+			configFile: "internal/ogc/features/testdata/config_features_bag_multiple_feature_tables.yaml",
 			apiCall:    "http://localhost:8180/collections?f=json",
-			wantBody:   "ogc/features/testdata/expected_multiple_feature_tables_single_geopackage.json",
+			wantBody:   "internal/ogc/features/testdata/expected_multiple_feature_tables_single_geopackage.json",
 		},
 		{
 			name:       "Check conformance of OGC API Processes",

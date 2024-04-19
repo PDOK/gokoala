@@ -33,7 +33,7 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "", false, true)
 	assert.NoError(t, err)
 
-	templateKey := NewTemplateKey("ogc/common/core/templates/landing-page.go.json")
+	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json")
 	engine.RenderTemplates("/", nil, templateKey)
 
 	recorder := httptest.NewRecorder()
