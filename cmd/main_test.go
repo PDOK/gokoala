@@ -5,12 +5,24 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path"
+	"runtime"
 	"strings"
 	"testing"
 
 	gokoalaEngine "github.com/PDOK/gokoala/engine"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	// change working dir to root, to mimic behavior of 'go run' in order to resolve files.
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "../")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func Test_newRouter(t *testing.T) {
 	tests := []struct {
