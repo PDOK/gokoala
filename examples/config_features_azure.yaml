@@ -26,10 +26,12 @@ datasetDetails:
     value: Kadaster (LV-BGT)
   - name: Costs
     value: None
-datasetMetadata:
-  source: Example Register
-  api: https://example.com/my-api/metadata
-  dataset: https://example.com/my-dataset/metadata
+  - name: Metadata OGC API Features
+    value: >-
+      [OGC API Features metadata in Example Register](https://example.com/my-features/metadata)
+  - name: Metadata dataset
+    value: >-
+      [Dataset metadata in Example Register](https://example.com/my-dataset/metadata)
 datasetCatalogUrl: https://www.pdok.nl/datasets
 baseUrl: http://localhost:8080
 availableLanguages:

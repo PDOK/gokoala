@@ -199,10 +199,6 @@ type Config struct {
 	// +optional
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails,omitempty" json:"datasetDetails,omitempty"`
 
-	// External reference to metadata register that further describes this API and dataset (a CSW service)
-	// +optional
-	DatasetMetadata DatasetMetadata `yaml:"datasetMetadata,omitempty" json:"datasetMetadata,omitempty"`
-
 	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted
 	// +optional
 	Resources *Resources `yaml:"resources,omitempty" json:"resources,omitempty"`
@@ -251,20 +247,6 @@ type DatasetDetail struct {
 
 	// Arbitrary value associated with the given name
 	Value string `yaml:"value" json:"value"`
-}
-
-// +kubebuilder:object:generate=true
-type DatasetMetadata struct {
-	// Name of the registry where additional metadata about this API/dataset is hosted (a CSW service)
-	Source string `yaml:"source" json:"source"`
-
-	// Reference to metadata describing this API (service record).
-	// +optional
-	API *string `yaml:"api,omitempty" json:"api,omitempty" validate:"omitempty,url"`
-
-	// Reference to metadata describing this dataset (dataset record).
-	// +optional
-	Dataset *string `yaml:"dataset,omitempty" json:"dataset,omitempty" validate:"omitempty,url"`
 }
 
 // +kubebuilder:object:generate=true
