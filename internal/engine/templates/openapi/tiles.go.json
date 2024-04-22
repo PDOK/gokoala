@@ -1,0 +1,1645 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0",
+    "title": "OGC API - Tiles",
+    "description": "Example API Definition for OGC API - Tiles - Part 1: Core",
+    "license": {
+      "name": "OGC License",
+      "url": "http://www.opengeospatial.org/legal/"
+    }
+  },
+  "servers": [
+    {
+      "description": "Example OGC API - Tiles server",
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/tileMatrixSets": {
+      "get": {
+        "tags": [
+          "Tiling Schemes"
+        ],
+        "summary": "Retrieve the list of available tiling schemes (tile matrix sets)",
+        "operationId": "getTileMatrixSetsList",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f-metadata"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TileMatrixSetsList"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/tileMatrixSets/{tileMatrixSetId}": {
+      "get": {
+        "tags": [
+          "Tiling Schemes"
+        ],
+        "summary": "Retrieve the definition of the specified tiling scheme (tile matrix set)",
+        "operationId": "getTileMatrixSet",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tileMatrixSetId"
+          },
+          {
+            "$ref": "#/components/parameters/f-metadata"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TileMatrixSet"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/tiles": {
+      "get": {
+        "tags": [
+          "Vector Tiles"
+        ],
+        "summary": "Retrieve a list of available vector tilesets for the dataset",
+        "operationId": "getVectorTiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f-metadata"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TileSetsList"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/tiles/{tileMatrixSetId}": {
+      "get": {
+        "tags": [
+          "Vector Tiles"
+        ],
+        "summary": "Retrieve the vector tileset metadata for the whole dataset and the specified tiling scheme (tile matrix set)",
+        "operationId": "getVectorTilesMetadata",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tileMatrixSetId"
+          },
+          {
+            "$ref": "#/components/parameters/f-metadata"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TileSet"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}": {
+      "get": {
+        "tags": [
+          "Vector Tiles"
+        ],
+        "summary": "Retrieve a vector tile including one or more collections from the dataset.",
+        "operationId": "getTile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tileMatrix"
+          },
+          {
+            "$ref": "#/components/parameters/tileRow"
+          },
+          {
+            "$ref": "#/components/parameters/tileCol"
+          },
+          {
+            "$ref": "#/components/parameters/tileMatrixSetId"
+          },
+          {
+            "$ref": "#/components/parameters/f-vectorTile"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/VectorTile"
+          },
+          "204": {
+            "$ref": "#/components/responses/EmptyTile"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "confClasses": {
+        "type": "object",
+        "required": [
+          "conformsTo"
+        ],
+        "properties": {
+          "conformsTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "link": {
+        "type": "object",
+        "required": [
+          "href",
+          "rel"
+        ],
+        "properties": {
+          "href": {
+            "type": "string",
+            "description": "Supplies the URI to a remote resource (or resource fragment).",
+            "example": "http://data.example.com/buildings/123"
+          },
+          "rel": {
+            "type": "string",
+            "description": "The type or semantics of the relation.",
+            "example": "alternate"
+          },
+          "type": {
+            "type": "string",
+            "description": "A hint indicating what the media type of the result of dereferencing the link should be.",
+            "example": "application/geo+json"
+          },
+          "templated": {
+            "type": "boolean",
+            "description": "This flag set to true if the link is a URL template."
+          },
+          "varBase": {
+            "description": "A base path to retrieve semantic information about the variables used in URL template.",
+            "type": "string",
+            "example": "/ogcapi/vars/"
+          },
+          "hreflang": {
+            "type": "string",
+            "description": "A hint indicating what the language of the result of dereferencing the link should be.",
+            "example": "en"
+          },
+          "title": {
+            "type": "string",
+            "description": "Used to label the destination of a link such that it can be used as a human-readable identifier.",
+            "example": "Trierer Strasse 70, 53115 Bonn"
+          },
+          "length": {
+            "type": "integer"
+          }
+        }
+      },
+      "landingPage": {
+        "type": "object",
+        "required": [
+          "links"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "The title of the API.",
+            "description": "While a title is not required, implementors are strongly advised to include one.",
+            "example": "Buildings in Bonn"
+          },
+          "description": {
+            "type": "string",
+            "example": "Access to data about buildings in the city of Bonn via a Web API that conforms to the OGC API Common specification."
+          },
+          "attribution": {
+            "type": "string",
+            "title": "attribution for the API",
+            "description": "The `attribution` should be short and intended for presentation to a user, for example, in a corner of a map. Parts of the text can be links to other resources if additional information is needed. The string can include HTML markup."
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      },
+      "crs": {
+        "title": "CRS",
+        "oneOf": [
+          {
+            "description": "Simplification of the object into a url if the other properties are not present",
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "oneOf": [
+              {
+                "required": [
+                  "uri"
+                ],
+                "properties": {
+                  "uri": {
+                    "description": "Reference to one coordinate reference system (CRS)",
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              },
+              {
+                "required": [
+                  "wkt"
+                ],
+                "properties": {
+                  "wkt": {
+                    "allOf": [
+                      {
+                        "description": "An object defining the CRS using the JSON encoding for Well-known text representation of coordinate reference systems 2.0"
+                      },
+                      {
+                        "type": "object"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "required": [
+                  "referenceSystem"
+                ],
+                "properties": {
+                  "referenceSystem": {
+                    "description": "A reference system data structure as defined in the MD_ReferenceSystem of the ISO 19115",
+                    "type": "object"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "dataType": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "map",
+              "vector",
+              "coverage"
+            ]
+          }
+        ]
+      },
+      "timeStamp": {
+        "description": "This property indicates the time and date when the response was generated using RFC 3339 notation.",
+        "type": "string",
+        "format": "date-time",
+        "example": "2017-08-17T08:05:32Z"
+      },
+      "tileJSON": {
+        "type": "object",
+        "required": ["tilejson", "tiles"],
+        "properties": {
+          "tilejson": {
+            "type": "string",
+            "pattern": "\\d+\\.\\d+\\.\\d+\\w?[\\w\\d]*"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "\\d+\\.\\d+\\.\\d+\\w?[\\w\\d]*"
+          },
+          "attribution": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          },
+          "legend": {
+            "type": "string"
+          },
+          "scheme": {
+            "type": "string"
+          },
+          "tiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "grids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minzoom": {
+            "minimum": 0,
+            "maximum": 30,
+            "type": "integer"
+          },
+          "maxzoom": {
+            "minimum": 0,
+            "maximum": 30,
+            "type": "integer"
+          },
+          "bounds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "center": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "profile": {
+            "type": "string"
+          },
+          "crs": {
+            "type": "string"
+          },
+          "proj4": {
+            "type": "string"
+          },
+          "extent": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "tile_matrix": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "tile_size": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "extent": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "origin": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "pixel_size": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "scale_denominator": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "tileSet": {
+        "title": "Tile Set Metadata",
+        "description": "A resource describing a tileset based on the OGC TileSet Metadata Standard. At least one of the 'TileMatrixSet',  or a link with 'rel' http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
+        "type": "object",
+        "required": [
+          "dataType",
+          "crs",
+          "links"
+        ],
+        "properties": {
+          "title": {
+            "description": "A title for this tileset",
+            "type": "string"
+          },
+          "description": {
+            "description": "Brief narrative description of this tile set",
+            "type": "string"
+          },
+          "dataType": {
+            "allOf": [
+              {
+                "description": "Type of data represented in the tileset"
+              },
+              {
+                "$ref": "#/components/schemas/dataType"
+              }
+            ]
+          },
+          "crs": {
+            "allOf": [
+              {
+                "description": "Coordinate Reference System (CRS)"
+              },
+              {
+                "$ref": "#/components/schemas/crs"
+              }
+            ]
+          },
+          "tileMatrixSetURI": {
+            "description": "Reference to a Tile Matrix Set on an offical source for Tile Matrix Sets such as the OGC NA definition server (http://www.opengis.net/def/tms/). Required if the tile matrix set is registered on an open official source.",
+            "type": "string",
+            "format": "uri"
+          },
+          "links": {
+            "description": "Links to related resources. Possible link 'rel' values are: 'http://www.opengis.net/def/rel/ogc/1.0/dataset' for a URL pointing to the dataset, 'item' for a URL template to get a tile; 'alternate' for a URL pointing to another representation of the TileSetMetadata (e.g a TileJSON file); 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme' for a definition of the TileMatrixSet; 'http://www.opengis.net/def/rel/ogc/1.0/geodata' for pointing to a single collection (if the tileset represents a single collection)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "tileMatrixSetLimits": {
+            "description": "Limits for the TileRow and TileCol values for each TileMatrix in the tileMatrixSet. If missing, there are no limits other that the ones imposed by the TileMatrixSet. If present the TileMatrices listed are limited and the rest not available at all",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/tileMatrixLimits"
+            }
+          },
+          "epoch": {
+            "description": "Epoch of the Coordinate Reference System (CRS)",
+            "type": "number"
+          },
+          "layers": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "dataType"
+              ],
+              "properties": {
+                "title": {
+                  "description": "Title of this tile matrix set, normally used for display to a human",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "Brief narrative description of this tile matrix set, normally available for display to a human",
+                  "type": "string"
+                },
+                "keywords": {
+                  "description": "Unordered list of one or more commonly used or formalized word(s) or phrase(s) used to describe this layer",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Unique identifier of the Layer. Implementation of 'identifier'",
+                  "type": "string"
+                },
+                "dataType": {
+                  "allOf": [
+                    {
+                      "description": "Type of data represented in the layer"
+                    },
+                    {
+                      "$ref": "#/components/schemas/dataType"
+                    }
+                  ]
+                },
+                "geometryDimension": {
+                  "description": "The geometry dimension of the features shown in this layer (0: points, 1: curves, 2: surfaces, 3: solids), unspecified: mixed or unknown",
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                },
+                "featureType": {
+                  "description": "Feature type identifier. Only applicable to layers of datatype 'geometries'",
+                  "type": "string"
+                },
+                "attribution": {
+                  "description": "Short reference to recognize the author or provider",
+                  "type": "string"
+                },
+                "license": {
+                  "description": "License applicable to the tiles",
+                  "type": "string"
+                },
+                "pointOfContact": {
+                  "description": "Useful information to contact the authors or custodians for the layer (e.g. e-mail address, a physical address,  phone numbers, etc)",
+                  "type": "string"
+                },
+                "publisher": {
+                  "description": "Organization or individual responsible for making the layer available",
+                  "type": "string"
+                },
+                "theme": {
+                  "description": "Category where the layer can be grouped",
+                  "type": "string"
+                },
+                "crs": {
+                  "allOf": [
+                    {
+                      "description": "Coordinate Reference System (CRS)"
+                    },
+                    {
+                      "$ref": "#/components/schemas/crs"
+                    }
+                  ]
+                },
+                "epoch": {
+                  "description": "Epoch of the Coordinate Reference System (CRS)",
+                  "type": "number"
+                },
+                "minScaleDenominator": {
+                  "description": "Minimum scale denominator for usage of the layer",
+                  "type": "number"
+                },
+                "maxScaleDenominator": {
+                  "description": "Maximum scale denominator for usage of the layer",
+                  "type": "number"
+                },
+                "minCellSize": {
+                  "description": "Minimum cell size for usage of the layer",
+                  "type": "number"
+                },
+                "maxCellSize": {
+                  "description": "Maximum cell size for usage of the layer",
+                  "type": "number"
+                },
+                "maxTileMatrix": {
+                  "description": "TileMatrix identifier associated with the minScaleDenominator",
+                  "type": "string"
+                },
+                "minTileMatrix": {
+                  "description": "TileMatrix identifier associated with the maxScaleDenominator",
+                  "type": "string"
+                },
+                "boundingBox": {
+                  "allOf": [
+                    {
+                      "description": "Minimum bounding rectangle surrounding the layer"
+                    },
+                    {
+                      "$ref": "#/components/schemas/2DBoundingBox"
+                    }
+                  ]
+                },
+                "created": {
+                  "allOf": [
+                    {
+                      "description": "When the layer was first produced"
+                    },
+                    {
+                      "$ref": "#/components/schemas/timeStamp"
+                    }
+                  ]
+                },
+                "updated": {
+                  "allOf": [
+                    {
+                      "description": "Last layer change/revision"
+                    },
+                    {
+                      "$ref": "#/components/schemas/timeStamp"
+                    }
+                  ]
+                },
+                "style": {
+                  "allOf": [
+                    {
+                      "description": "Style used to generate the layer in the tileset"
+                    },
+                    {
+                      "$ref": "#/components/schemas/tileSet/properties/style/allOf/1"
+                    }
+                  ]
+                },
+                "geoDataClasses": {
+                  "description": "URI identifying a class of data contained in this layer (useful to determine compatibility with styles or processes)",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "propertiesSchema": {
+                  "allOf": [
+                    {
+                      "description": "Properties represented by the features in this layer. Can be the attributes of a feature dataset (datatype=geometries) or the rangeType of a coverage (datatype=coverage)"
+                    },
+                    {
+                      "description": "Attributes of the features or rangetypes of a coverage. Defined by a subset of the JSON Schema for the properties of a feature",
+                      "type": "object",
+                      "required": [
+                        "type",
+                        "properties"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "object"
+                          ]
+                        },
+                        "required": {
+                          "description": "Implements 'multiplicity' by citing property 'name' defined as 'additionalProperties'",
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "properties": {
+                          "type": "object",
+                          "default": {},
+                          "additionalProperties": {
+                            "description": "No property names are defined but any property name they should be described by JSON Schema. So 'additionalProperties' implements 'name'.",
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "description": "Implements 'description'",
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "array",
+                                  "boolean",
+                                  "integer",
+                                  "null",
+                                  "number",
+                                  "object",
+                                  "string"
+                                ]
+                              },
+                              "enum": {
+                                "description": "Implements 'acceptedValues'",
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {},
+                                "uniqueItems": true
+                              },
+                              "format": {
+                                "description": "Complements implementation of 'type'",
+                                "type": "string"
+                              },
+                              "contentMediaType": {
+                                "description": "Implements 'mediaType'",
+                                "type": "string"
+                              },
+                              "maximum": {
+                                "description": "Implements 'range'",
+                                "type": "number"
+                              },
+                              "exclusiveMaximum": {
+                                "description": "Implements 'range'",
+                                "type": "number"
+                              },
+                              "minimum": {
+                                "description": "Implements 'range'",
+                                "type": "number"
+                              },
+                              "exclusiveMinimum": {
+                                "description": "Implements 'range'",
+                                "type": "number"
+                              },
+                              "pattern": {
+                                "type": "string",
+                                "format": "regex"
+                              },
+                              "maxItems": {
+                                "description": "Implements 'upperMultiplicity'",
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "minItems": {
+                                "description": "Implements 'lowerMultiplicity'",
+                                "type": "integer",
+                                "default": 0,
+                                "minimum": 0
+                              },
+                              "observedProperty": {
+                                "type": "string"
+                              },
+                              "observedPropertyURI": {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              "uom": {
+                                "type": "string"
+                              },
+                              "uomURI": {
+                                "type": "string",
+                                "format": "uri"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "links": {
+                  "description": "Links related to this layer. Possible link 'rel' values are: 'geodata' for a URL pointing to the collection of geospatial data.",
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/components/schemas/link"
+                  }
+                }
+              }
+            }
+          },
+          "boundingBox": {
+            "allOf": [
+              {
+                "description": "Minimum bounding rectangle surrounding the tile matrix set, in the supported CRS"
+              },
+              {
+                "$ref": "#/components/schemas/2DBoundingBox"
+              }
+            ]
+          },
+          "centerPoint": {
+            "allOf": [
+              {
+                "description": "Location of a tile that nicely represents the tileset. Implementations may use this center value to set the default location or to present a representative tile in a user interface"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "coordinates"
+                ],
+                "properties": {
+                  "coordinates": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "crs": {
+                    "allOf": [
+                      {
+                        "description": "Coordinate Reference System (CRS) of the coordinates"
+                      },
+                      {
+                        "$ref": "#/components/schemas/crs"
+                      }
+                    ]
+                  },
+                  "tileMatrix": {
+                    "description": "TileMatrix identifier associated with the scaleDenominator",
+                    "type": "string"
+                  },
+                  "scaleDenominator": {
+                    "description": "Scale denominator of the tile matrix selected",
+                    "type": "number"
+                  },
+                  "cellSize": {
+                    "description": "Cell size of the tile matrix selected",
+                    "type": "number"
+                  }
+                }
+              }
+            ]
+          },
+          "style": {
+            "allOf": [
+              {
+                "description": "Style involving all layers used to generate the tileset"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "description": "An identifier for this style. Implementation of 'identifier'",
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "A title for this style",
+                    "type": "string"
+                  },
+                  "description": {
+                    "description": "Brief narrative description of this style",
+                    "type": "string"
+                  },
+                  "keywords": {
+                    "description": "keywords about this style",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "links": {
+                    "description": "Links to style related resources. Possible link 'rel' values are: 'style' for a URL pointing to the style description, 'styleSpec' for a URL pointing to the specification or standard used to define the style.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/components/schemas/link"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "attribution": {
+            "description": "Short reference to recognize the author or provider",
+            "type": "string"
+          },
+          "license": {
+            "description": "License applicable to the tiles",
+            "type": "string"
+          },
+          "accessConstraints": {
+            "description": "Restrictions on the availability of the Tile Set that the user needs to be aware of before using or redistributing the Tile Set",
+            "type": "string",
+            "default": "unclassified",
+            "enum": [
+              "unclassified",
+              "restricted",
+              "confidential",
+              "secret",
+              "topSecret"
+            ]
+          },
+          "keywords": {
+            "description": "keywords about this tileset",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "version": {
+            "description": "Version of the Tile Set. Changes if the data behind the tiles has been changed",
+            "type": "string"
+          },
+          "created": {
+            "allOf": [
+              {
+                "description": "When the Tile Set was first produced"
+              },
+              {
+                "$ref": "#/components/schemas/timeStamp"
+              }
+            ]
+          },
+          "updated": {
+            "allOf": [
+              {
+                "description": "Last Tile Set change/revision"
+              },
+              {
+                "$ref": "#/components/schemas/timeStamp"
+              }
+            ]
+          },
+          "pointOfContact": {
+            "description": "Useful information to contact the authors or custodians for the Tile Set",
+            "type": "string"
+          },
+          "mediaTypes": {
+            "description": "Media types available for the tiles",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "tileSet-item": {
+        "title": "Tile Set Metadata item",
+        "description": "A minimal tileset element for use within a list of tilesets linking to full description of those tilesets.",
+        "type": "object",
+        "required": [
+          "dataType",
+          "links",
+          "crs"
+        ],
+        "properties": {
+          "title": {
+            "description": "A title for this tileset",
+            "type": "string"
+          },
+          "dataType": {
+            "allOf": [
+              {
+                "description": "Type of data represented in the tileset"
+              },
+              {
+                "$ref": "#/components/schemas/dataType"
+              }
+            ]
+          },
+          "crs": {
+            "allOf": [
+              {
+                "description": "Coordinate Reference System (CRS)"
+              },
+              {
+                "$ref": "#/components/schemas/crs"
+              }
+            ]
+          },
+          "tileMatrixSetURI": {
+            "description": "Reference to a Tile Matrix Set on an offical source for Tile Matrix Sets such as the OGC NA definition server (http://www.opengis.net/def/tms/). Required if the tile matrix set is registered on an open official source.",
+            "type": "string",
+            "format": "uri"
+          },
+          "links": {
+            "description": "Links to related resources. A 'self' link to the tileset as well as a 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme' link to a definition of the TileMatrixSet are required.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      },
+      "tileMatrixSet": {
+        "title": "Tile Matrix Set Definition",
+        "description": "A definition of a tile matrix set following the Tile Matrix Set standard. For tileset metadata, such a description (in `tileMatrixSet` property) is only required for offline use, as an alternative to a link with a `http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme` relation type.",
+        "type": "object",
+        "required": [
+          "crs",
+          "tileMatrices"
+        ],
+        "properties": {
+          "title": {
+            "description": "Title of this tile matrix set, normally used for display to a human",
+            "type": "string"
+          },
+          "description": {
+            "description": "Brief narrative description of this tile matrix set, normally available for display to a human",
+            "type": "string"
+          },
+          "keywords": {
+            "description": "Unordered list of one or more commonly used or formalized word(s) or phrase(s) used to describe this tile matrix set",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "description": "Tile matrix set identifier. Implementation of 'identifier'",
+            "type": "string"
+          },
+          "uri": {
+            "description": "Reference to an official source for this tileMatrixSet",
+            "type": "string",
+            "format": "uri"
+          },
+          "orderedAxes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "crs": {
+            "allOf": [
+              {
+                "description": "Coordinate Reference System (CRS)"
+              },
+              {
+                "$ref": "#/components/schemas/crs"
+              }
+            ]
+          },
+          "wellKnownScaleSet": {
+            "description": "Reference to a well-known scale set",
+            "type": "string",
+            "format": "uri"
+          },
+          "boundingBox": {
+            "allOf": [
+              {
+                "description": "Minimum bounding rectangle surrounding the tile matrix set, in the supported CRS"
+              },
+              {
+                "$ref": "#/components/schemas/2DBoundingBox"
+              }
+            ]
+          },
+          "tileMatrices": {
+            "type": "array",
+            "description": "Describes scale levels and its tile matrices",
+            "items": {
+              "description": "A tile matrix, usually corresponding to a particular zoom level of a TileMatrixSet.",
+              "type": "object",
+              "required": [
+                "id",
+                "scaleDenominator",
+                "cellSize",
+                "pointOfOrigin",
+                "tileWidth",
+                "tileHeight",
+                "matrixWidth",
+                "matrixHeight"
+              ],
+              "properties": {
+                "title": {
+                  "description": "Title of this tile matrix, normally used for display to a human",
+                  "type": "string"
+                },
+                "description": {
+                  "description": "Brief narrative description of this tile matrix set, normally available for display to a human",
+                  "type": "string"
+                },
+                "keywords": {
+                  "description": "Unordered list of one or more commonly used or formalized word(s) or phrase(s) used to describe this dataset",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "id": {
+                  "description": "Identifier selecting one of the scales defined in the TileMatrixSet and representing the scaleDenominator the tile. Implementation of 'identifier'",
+                  "type": "string"
+                },
+                "scaleDenominator": {
+                  "description": "Scale denominator of this tile matrix",
+                  "type": "number"
+                },
+                "cellSize": {
+                  "description": "Cell size of this tile matrix",
+                  "type": "number"
+                },
+                "cornerOfOrigin": {
+                  "description": "The corner of the tile matrix (_topLeft_ or _bottomLeft_) used as the origin for numbering tile rows and columns. This corner is also a corner of the (0, 0) tile.",
+                  "type": "string",
+                  "enum": [
+                    "topLeft",
+                    "bottomLeft"
+                  ],
+                  "default": "topLeft"
+                },
+                "pointOfOrigin": {
+                  "allOf": [
+                    {
+                      "description": "Precise position in CRS coordinates of the corner of origin (e.g. the top-left corner) for this tile matrix. This position is also a corner of the (0, 0) tile. In previous version, this was 'topLeftCorner' and 'cornerOfOrigin' did not exist."
+                    },
+                    {
+                      "$ref": "#/components/schemas/2DPoint"
+                    }
+                  ]
+                },
+                "tileWidth": {
+                  "type": "number",
+                  "description": "Width of each tile of this tile matrix in pixels",
+                  "format": "integer",
+                  "minimum": 1,
+                  "multipleOf": 1
+                },
+                "tileHeight": {
+                  "type": "number",
+                  "description": "Height of each tile of this tile matrix in pixels",
+                  "format": "integer",
+                  "minimum": 1,
+                  "multipleOf": 1
+                },
+                "matrixHeight": {
+                  "type": "number",
+                  "description": "Width of the matrix (number of tiles in width)",
+                  "format": "integer",
+                  "minimum": 1,
+                  "multipleOf": 1
+                },
+                "matrixWidth": {
+                  "type": "number",
+                  "description": "Height of the matrix (number of tiles in height)",
+                  "format": "integer",
+                  "minimum": 1,
+                  "multipleOf": 1
+                },
+                "variableMatrixWidths": {
+                  "description": "Describes the rows that has variable matrix width",
+                  "type": "array",
+                  "items": {
+                    "description": "Variable Matrix Width data structure",
+                    "type": "object",
+                    "required": [
+                      "coalesce",
+                      "minTileRow",
+                      "maxTileRow"
+                    ],
+                    "properties": {
+                      "coalesce": {
+                        "description": "Number of tiles in width that coalesce in a single tile for these rows",
+                        "type": "number",
+                        "format": "integer",
+                        "minimum": 2,
+                        "multipleOf": 1
+                      },
+                      "minTileRow": {
+                        "description": "First tile row where the coalescence factor applies for this tilematrix",
+                        "type": "number",
+                        "format": "integer",
+                        "minimum": 0,
+                        "multipleOf": 1
+                      },
+                      "maxTileRow": {
+                        "description": "Last tile row where the coalescence factor applies for this tilematrix",
+                        "type": "number",
+                        "format": "integer",
+                        "minimum": 0,
+                        "multipleOf": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "tileMatrixSet-item": {
+        "title": "Tile Matrix Set Item",
+        "description": "A minimal tile matrix set element for use within a list of tile matrix sets linking to a full definition.",
+        "type": "object",
+        "required": [
+          "links"
+        ],
+        "properties": {
+          "id": {
+            "description": "Optional local tile matrix set identifier, e.g. for use as unspecified `{tileMatrixSetId}` parameter. Implementation of 'identifier'",
+            "type": "string"
+          },
+          "title": {
+            "description": "Title of this tile matrix set, normally used for display to a human",
+            "type": "string"
+          },
+          "uri": {
+            "description": "Reference to an official source for this tileMatrixSet",
+            "type": "string",
+            "format": "uri"
+          },
+          "crs": {
+            "allOf": [
+              {
+                "description": "Coordinate Reference System (CRS)"
+              },
+              {
+                "$ref": "#/components/schemas/crs"
+              }
+            ]
+          },
+          "links": {
+            "description": "Links to related resources. A 'self' link to the tile matrix set definition is required.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      },
+      "tileMatrixLimits": {
+        "title": "TileMatrixLimits",
+        "description": "The limits for an individual tile matrix of a TileSet's TileMatrixSet, as defined in the OGC 2D TileMatrixSet and TileSet Metadata Standard",
+        "type": "object",
+        "required": [
+          "tileMatrix",
+          "minTileRow",
+          "maxTileRow",
+          "minTileCol",
+          "maxTileCol"
+        ],
+        "properties": {
+          "tileMatrix": {
+            "type": "string"
+          },
+          "minTileRow": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxTileRow": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minTileCol": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "maxTileCol": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "2DPoint": {
+        "description": "A 2D Point in the CRS indicated elsewhere",
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "number"
+        }
+      },
+      "2DBoundingBox": {
+        "description": "Minimum bounding rectangle surrounding a 2D resource in the CRS indicated elsewhere",
+        "type": "object",
+        "required": [
+          "lowerLeft",
+          "upperRight"
+        ],
+        "properties": {
+          "lowerLeft": {
+            "$ref": "#/components/schemas/2DPoint"
+          },
+          "upperRight": {
+            "$ref": "#/components/schemas/2DPoint"
+          },
+          "crs": {
+            "$ref": "#/components/schemas/crs"
+          },
+          "orderedAxes": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "enumeration": {
+        "type": "object",
+        "required": [
+          "type",
+          "enum"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "enum"
+            ]
+          },
+          "enum": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "styles": {
+        "type": "string",
+        "enum": [
+          "default"
+        ]
+      },
+      "tileMatrixSets": {
+        "type": "string",
+        "enum": [
+          "NetherlandsRDNewQuad",
+          "EuropeanETRS89_LAEAQuad",
+          "WebMercatorQuad"
+        ]
+      }
+    },
+    "parameters": {
+      "f-metadata": {
+        "name": "f",
+        "in": "query",
+        "description": "The format of the response. If no value is provided, the accept header is used to determine the format. Accepted values are 'json' or 'html'.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "json",
+            "html"
+          ]
+        },
+        "style": "form",
+        "explode": false
+      },
+      "subset": {
+        "name": "subset",
+        "in": "query",
+        "description": "Retrieve only part of the data by slicing or trimming along one or more axis\nFor trimming: {axisAbbrev}({low}:{high}) (preserves dimensionality)\n   An asterisk (`*`) can be used instead of {low} or {high} to indicate the minimum/maximum value.\nFor slicing:  {axisAbbrev}({value})      (reduces dimensionality)\n",
+        "style": "form",
+        "explode": false,
+        "required": false,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "crs": {
+        "name": "crs",
+        "in": "query",
+        "description": "reproject the output to the given crs",
+        "required": false,
+        "style": "form",
+        "explode": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "subset-crs": {
+        "name": "subset-crs",
+        "in": "query",
+        "description": "crs for the specified subset",
+        "required": false,
+        "style": "form",
+        "explode": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "tileMatrix": {
+        "name": "tileMatrix",
+        "in": "path",
+        "description": "Identifier selecting one of the scales defined in the TileMatrixSet and representing the scaleDenominator the tile. For example,\nIreland is fully within the Tile at WebMercatorQuad tileMatrix=5, tileRow=10 and tileCol=15.",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "example": "5"
+      },
+      "tileRow": {
+        "name": "tileRow",
+        "in": "path",
+        "description": "Row index of the tile on the selected TileMatrix. It cannot exceed the MatrixWidth-1 for the selected TileMatrix. For example, Ireland is fully within the Tile at WebMercatorQuad tileMatrix=5, tileRow=10 and tileCol=15.",
+        "required": true,
+        "schema": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "example": 10
+      },
+      "tileCol": {
+        "name": "tileCol",
+        "in": "path",
+        "description": "Column index of the tile on the selected TileMatrix. It cannot exceed the MatrixHeight-1 for the selected TileMatrix. For example, Ireland is fully within the Tile at WebMercatorQuad tileMatrix=5, tileRow=10 and tileCol=15.",
+        "required": true,
+        "schema": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "example": 15
+      },
+      "tileMatrixSetId": {
+        "name": "tileMatrixSetId",
+        "in": "path",
+        "description": "Identifier for a supported TileMatrixSet",
+        "required": true,
+        "allowEmptyValue": false,
+        "schema": {
+          "$ref": "#/components/schemas/tileMatrixSets"
+        }
+      },
+      "f-mapTile": {
+        "name": "f",
+        "in": "query",
+        "description": "The format of the map tile response (e.g. png). Accepted values are 'png', 'jpg' or 'tiff' (GeoTIFF).",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "png",
+            "jpg",
+            "tiff"
+          ]
+        },
+        "style": "form",
+        "explode": false
+      },
+      "f-vectorTile": {
+        "name": "f",
+        "in": "query",
+        "description": "The format of the vector tile response (e.g. json). Accepted value is 'mvt' (Mapbox Vector Tiles)",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "mvt"
+          ]
+        },
+        "style": "form",
+        "explode": false
+      },
+      "f-coverageTile": {
+        "name": "f",
+        "in": "query",
+        "description": "The format of the coverage tile response (e.g. tiff). Accepted values are 'tiff' (GeoTIFF), 'netcdf', or 'png'.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "tiff",
+            "netcdf",
+            "png"
+          ]
+        },
+        "style": "form",
+        "explode": false
+      }
+    },
+    "responses": {
+      "API": {
+        "description": "The OpenAPI definition of the API.",
+        "content": {
+          "application/vnd.oai.openapi+json;version=3.0": {
+            "schema": {
+              "type": "object"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Enumeration": {
+        "description": "An enumerated list of valid string values for API parameters.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/enumeration"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TileSetsList": {
+        "description": "List of available tilesets.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "tilesets"
+              ],
+              "properties": {
+                "links": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/link"
+                  }
+                },
+                "tilesets": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/tileSet-item"
+                  }
+                }
+              }
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TileSet": {
+        "description": "Description of the tileset",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/tileSet"
+            }
+          },
+          "application/vnd.mapbox.tile+json": {
+            "schema": {
+              "$ref": "#/components/schemas/tileJSON"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "MapTile": {
+        "description": "A map tile image returned as a response.",
+        "content": {
+          "image/png": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          },
+          "image/jpeg": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          },
+          "image/tiff; application=geotiff": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "CoverageTile": {
+        "description": "A coverage tile returned as a response.",
+        "content": {
+          "application/netcdf": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          },
+          "image/tiff; application=geotiff": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "VectorTile": {
+        "description": "A vector tile returned as a response.",
+        "content": {
+          "application/vnd.mapbox-vector-tile": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "EmptyTile": {
+        "description": "No data available for this tile."
+      },
+      "TileMatrixSetsList": {
+        "description": "List of tile matrix sets (tiling schemes).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "tileMatrixSets": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/tileMatrixSet-item"
+                  }
+                }
+              }
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TileMatrixSet": {
+        "description": "tile matrix set",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/tileMatrixSet"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

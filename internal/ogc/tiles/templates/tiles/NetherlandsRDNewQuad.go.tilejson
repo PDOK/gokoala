@@ -1,0 +1,267 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  {{ if .Config.OgcAPI.Tiles }}
+  "tilejson": "2.2.0",
+  "name": "NetherlandsRDNewQuad",
+  "description": "NetherlandsRDNewQuad as TileJSON (https://github.com/maptiler/tilejson-spec/tree/custom-projection/2.2.0)",
+  "version": "1.0.0",
+  "scheme": "xyz",
+  "tiles": [
+    "{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"
+  ],
+  {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+  {{ if eq $type.Srs "EPSG:28992" }}
+  "minzoom": {{ $type.ZoomLevelRange.Start }},
+  "maxzoom": {{ $type.ZoomLevelRange.End }},
+  {{ end }}
+  {{ end }}
+  "profile": "custom",
+  "crs": "EPSG:28992",
+{{/*  "extent": [0, 0, 0, 0],*/}}
+  "tile_matrix": [
+    {{ $first := true }}
+    {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+    {{ if eq $type.Srs "EPSG:28992" }}
+    {{ if eq $type.ZoomLevelRange.Start 0 }}
+    {{ if not $first }}{{else}} {{$first = false}} {{end}}
+    {
+      "id": "0",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 1.2288e7,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 1) (ge $type.ZoomLevelRange.End 1) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "1",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 6144000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 2) (ge $type.ZoomLevelRange.End 2) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "2",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 3072000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 3) (ge $type.ZoomLevelRange.End 3) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "3",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 1536000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 4) (ge $type.ZoomLevelRange.End 4) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "4",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 768000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 5) (ge $type.ZoomLevelRange.End 5) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "5",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 384000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 6) (ge $type.ZoomLevelRange.End 6) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "6",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 192000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 7) (ge $type.ZoomLevelRange.End 7) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "7",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 96000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 8) (ge $type.ZoomLevelRange.End 8) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "8",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 48000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 9) (ge $type.ZoomLevelRange.End 9) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "9",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 24000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 10) (ge $type.ZoomLevelRange.End 10) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "10",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 12000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 11) (ge $type.ZoomLevelRange.End 12) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "11",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 6000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 12) (ge $type.ZoomLevelRange.End 12) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "12",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 3000.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 13) (ge $type.ZoomLevelRange.End 13) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "13",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 1500.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 14) (ge $type.ZoomLevelRange.End 14) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "14",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 750.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 15) (ge $type.ZoomLevelRange.End 15) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "15",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 375.0,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 16) (ge $type.ZoomLevelRange.End 16) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "16",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 187.5,
+      "origin": [
+        -285401.92,
+        903401.92
+      ]
+    }
+    {{end}}
+    {{end}}
+    {{end}}
+  ]
+  {{ end }}
+}

@@ -1,0 +1,379 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  {{ if .Config.OgcAPI.Tiles }}
+  "tilejson": "2.2.0",
+  "name": "WebMercatorQuad",
+  "description": "WebMercatorQuad as TileJSON (https://github.com/maptiler/tilejson-spec/tree/custom-projection/2.2.0)",
+  "version": "1.0.0",
+  "scheme": "xyz",
+  "tiles": [
+    "{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt"
+  ],
+  {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+  {{ if eq $type.Srs "EPSG:3857" }}
+  "minzoom": {{ $type.ZoomLevelRange.Start }},
+  "maxzoom": {{ $type.ZoomLevelRange.End }},
+  {{ end }}
+  {{ end }}
+  "profile": "mercator",
+  "crs": "EPSG:3857",
+{{/*  "extent": [0, 0, 0, 0],*/}}
+  "tile_matrix": [
+    {{ $first := true }}
+    {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+    {{ if eq $type.Srs "EPSG:3857" }}
+    {{ if eq $type.ZoomLevelRange.Start 0 }}
+    {{ if not $first }}{{else}} {{$first = false}} {{end}}
+    {
+      "id": "0",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 559082264.028717,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 1) (ge $type.ZoomLevelRange.End 1) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "1",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 279541132.014358,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 2) (ge $type.ZoomLevelRange.End 2) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "2",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 139770566.007179,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 3) (ge $type.ZoomLevelRange.End 3) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "3",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 69885283.0035897,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 4) (ge $type.ZoomLevelRange.End 4) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "4",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 34942641.5017948,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 5) (ge $type.ZoomLevelRange.End 5) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "5",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 17471320.7508974,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 6) (ge $type.ZoomLevelRange.End 6) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "6",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 8735660.37544871,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 7) (ge $type.ZoomLevelRange.End 7) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "7",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 4367830.18772435,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 8) (ge $type.ZoomLevelRange.End 8) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "8",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 2183915.09386217,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 9) (ge $type.ZoomLevelRange.End 9) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "9",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 1091957.54693108,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 10) (ge $type.ZoomLevelRange.End 10) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "10",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 545978.773465544,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 11) (ge $type.ZoomLevelRange.End 12) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "11",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 272989.386732772,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 12) (ge $type.ZoomLevelRange.End 12) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "12",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 136494.693366386,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 13) (ge $type.ZoomLevelRange.End 13) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "13",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 68247.346683193,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 14) (ge $type.ZoomLevelRange.End 14) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "14",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 34123.6733415964,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 15) (ge $type.ZoomLevelRange.End 15) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "15",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 17061.8366707982,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 16) (ge $type.ZoomLevelRange.End 16) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "16",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 8530.91833539913,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 17) (ge $type.ZoomLevelRange.End 17) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "17",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 4265.45916769956,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 18) (ge $type.ZoomLevelRange.End 18) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "18",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 2132.72958384978,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 19) (ge $type.ZoomLevelRange.End 19) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "19",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 1066.36479192489,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 20) (ge $type.ZoomLevelRange.End 20) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "20",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 533.182395962445,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 21) (ge $type.ZoomLevelRange.End 21) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "21",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 266.591197981222,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 22) (ge $type.ZoomLevelRange.End 22) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "22",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 133.295598990611,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 23) (ge $type.ZoomLevelRange.End 23) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "23",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 66.6477994953056,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{ if and (le $type.ZoomLevelRange.Start 24) (ge $type.ZoomLevelRange.End 24) }}
+    {{ if not $first }}, {{else}} {{$first = false}} {{end}}
+    {
+      "id": "24",
+      "tile_size": [256, 256],
+      {{/*  "extent": [0, 0, 0, 0],*/}}
+      {{/*  "pixel_size": [0, 0],*/}}
+      "scale_denominator": 33.3238997476528,
+      "origin": [
+        -20037508.3427892,
+        20037508.3427892
+      ]
+    }
+    {{end}}
+    {{end}}
+    {{end}}
+  ]
+  {{ end }}
+}

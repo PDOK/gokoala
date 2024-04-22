@@ -37,7 +37,7 @@ jobs:
           GOPATH_BIN=$(go env GOPATH)/bin
           export PATH="${GOPATH_BIN}:${PATH}"
           go install github.com/dkorunic/betteralign/cmd/betteralign@latest
-          betteralign ./ogc/features/domain
+          betteralign ./internal/ogc/features/domain
 
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v3

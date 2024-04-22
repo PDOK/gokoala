@@ -1,0 +1,401 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "A sample API definition based on the draft OGC API - 3D GeoVolumes candidate standard",
+    "version": "0.0.2",
+    "description": "This is a sample OpenAPI definition produced by the OGC 3D Container API Pilot and adapted for the July 2022 OGC API Code Sprint - The Vector Data Code Sprint.",
+    "license": {
+      "name": "OGC License",
+      "url": "http://www.opengeospatial.org/legal/"
+    }
+  },
+  "tags" : [ ],
+  "paths" : {
+    {{- range $index, $coll := .Config.OgcAPI.GeoVolumes.Collections -}}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.URITemplate3dTiles }}
+    {{- if $index -}},{{- end -}}
+    "/collections/{{ $coll.ID }}/3dtiles" : {
+      "get" : {
+        "tags" : [ "3D Tiles" ],
+        "summary" : "retrieve the root 3D Tiles tileset of the feature collection '{{ $coll.ID }}'",
+        {{- if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree -}}
+        "description" : "Access a 3D Tiles 1.1 tileset with implicit quadtree tiling.",
+        {{- else -}}
+        "description" : "Access a 3D Tiles 1.1 tileset with explicit quadtree tiling.",
+        {{- end -}}
+        "operationId" : "get3dTileset.{{ $coll.ID }}",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "The operation was executed successfully.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  {{- if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree -}}
+                  "$ref" : "#/components/schemas/Tileset3dTiles_Implicit"
+                  {{- else -}}
+                  "$ref" : "#/components/schemas/Tileset3dTiles_Explicit"
+                  {{- end -}}
+                }
+              }
+            }
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/collections/{{ $coll.ID }}/3dtiles/{{ $coll.GeoVolumes.URITemplate3dTiles }}" : {
+      "get" : {
+        "tags" : [ "3D Tiles" ],
+        "summary" : "retrieve a glTF tile of the feature collection '{{ $coll.ID }}'",
+        "description" : "Access a 3D Tiles 1.1 Content file, a glTF 2.0 binary file.",
+        "operationId" : "get3dTilesContent.{{ $coll.ID }}",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/level"
+        }, {
+          "$ref" : "#/components/parameters/x"
+        }, {
+          "$ref" : "#/components/parameters/y"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The operation was executed successfully.",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/glTF"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Tile Not Found"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    }
+    {{ end }}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree }}
+    ,
+    "/collections/{{ $coll.ID }}/3dtiles/{{ $coll.GeoVolumes.URITemplateImplicitTilingSubtree }}" : {
+      "get" : {
+        "tags" : [ "3D Tiles" ],
+        "summary" : "retrieve a 3D Tiles subtree of the feature collection '{{ $coll.ID }}'",
+        "description" : "Access a 3D Tiles 1.1 Subtree file.",
+        "operationId" : "get3dTilesSubtree.{{ $coll.ID }}",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/level"
+        }, {
+          "$ref" : "#/components/parameters/x"
+        }, {
+          "$ref" : "#/components/parameters/y"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "The operation was executed successfully.",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/binary"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Tile Not Found"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    }
+    {{ end }}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
+    ,
+    "/collections/{{ $coll.ID }}/quantized-mesh/{{ $coll.GeoVolumes.URITemplateDTM }}" : {
+      "get" : {
+        "tags" : [ "3D Tiles" ],
+        "summary" : "retrieve digital terrain model (DTM)",
+        "description" : "Access the digital terrain model (DTM) in Quantized Mesh format.",
+        "operationId" : "getDTM.{{ $coll.ID }}",
+        "parameters" : [ {
+          "$ref" : "#/components/parameters/level"
+        }, {
+          "$ref" : "#/components/parameters/x"
+        }, {
+          "$ref" : "#/components/parameters/y"
+        }, {
+          "$ref" : "#/components/parameters/v"
+        }],
+        "responses" : {
+          "200" : {
+            "description" : "The operation was executed successfully.",
+            "content" : {
+              "application/vnd.quantized-mesh" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/binary"
+                }
+              }
+            }
+          },
+          "204" : {
+            "description" : "Tile Not Found"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    }
+    {{ end }}
+    {{- end -}}
+  },
+  "components" : {
+    "schemas" : {
+      "glTF" : {
+        "type" : "string",
+        "format" : "binary"
+      },
+      "Tileset3dTiles_Implicit" : {
+        "required" : [ "asset", "root" ],
+        "type" : "object",
+        "properties" : {
+          "root" : {
+            "$ref" : "#/components/schemas/Tile_Implicit"
+          },
+          "asset" : {
+            "$ref" : "#/components/schemas/AssetMetadata"
+          },
+          "schemaUri" : {
+            "type" : "string"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "extensionsUsed" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "extensionsRequired" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Tileset3dTiles_Explicit" : {
+        "required" : [ "asset", "root" ],
+        "type" : "object",
+        "properties" : {
+          "root" : {
+            "$ref" : "#/components/schemas/Tile_Explicit"
+          },
+          "asset" : {
+            "$ref" : "#/components/schemas/AssetMetadata"
+          },
+          "schemaUri" : {
+            "type" : "string"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "extensionsUsed" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "extensionsRequired" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Content" : {
+        "required" : [ "uri" ],
+        "type" : "object",
+        "properties" : {
+          "uri" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ImplicitTiling" : {
+        "required" : [ "availableLevels", "subdivisionScheme", "subtreeLevels", "subtrees" ],
+        "type" : "object",
+        "properties" : {
+          "subtreeLevels" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "availableLevels" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "subtrees" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "subdivisionScheme" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Tile_Implicit" : {
+        "required" : [ "boundingVolume", "geometricError", "implicitTiling", "refine" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "boundingVolume" : {
+            "$ref" : "#/components/schemas/BoundingVolume"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "refine" : {
+            "type" : "string"
+          },
+          "implicitTiling" : {
+            "$ref" : "#/components/schemas/ImplicitTiling"
+          },
+          "children" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Tile_Children"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "Tile_Explicit" : {
+        "required" : [ "boundingVolume", "geometricError", "refine" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "boundingVolume" : {
+            "$ref" : "#/components/schemas/BoundingVolume"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "refine" : {
+            "type" : "string"
+          },
+          "children" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Tile_Children"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "Tile_Children" : {
+        "required" : [ "boundingVolume", "geometricError" ],
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "$ref" : "#/components/schemas/Content"
+          },
+          "boundingVolume" : {
+            "$ref" : "#/components/schemas/BoundingVolume"
+          },
+          "geometricError" : {
+            "type" : "number"
+          },
+          "refine" : {
+            "type" : "string"
+          },
+          "children" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Tile_Children"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "BoundingVolume" : {
+        "type" : "object",
+        "properties" : {
+          "region" : {
+            "type" : "array",
+            "items" : {
+              "type" : "number"
+            }
+          }
+        }
+      },
+      "AssetMetadata" : {
+        "required" : [ "version" ],
+        "type" : "object",
+        "properties" : {
+          "version": {
+            "type": "string",
+            "description": "The 3D Tiles version. The version defines the JSON schema for the tileset JSON and the base set of tile formats."
+          },
+          "tilesetVersion": {
+            "type": "string",
+            "description": "Application-specific version of this tileset, e.g., for when an existing tileset is updated."
+          },
+          "extensions": {},
+          "extras": {}
+        }
+      },
+      "binary" : {
+        "type" : "string",
+        "format" : "binary"
+      }
+    },
+    "parameters" : {
+      "level" : {
+        "name" : "level",
+        "in" : "path",
+        "description" : "The level of the subtree or tile.",
+        "required" : true,
+        "schema" : {
+          "pattern" : "\\d+",
+          "type" : "string"
+        }
+      },
+      "x" : {
+        "name" : "x",
+        "in" : "path",
+        "description" : "The column of the subtree or tile.",
+        "required" : true,
+        "schema" : {
+          "minimum" : 0,
+          "type" : "integer",
+          "format" : "int32"
+        }
+      },
+      "y" : {
+        "name" : "y",
+        "in" : "path",
+        "description" : "The row of the subtree or tile.",
+        "required" : true,
+        "schema" : {
+          "minimum" : 0,
+          "type" : "integer",
+          "format" : "int32"
+        }
+      },
+      "v" : {
+        "name" : "v",
+        "in" : "query",
+        "description" : "The version of the DTM tile.",
+        "required" : false,
+        "schema" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}

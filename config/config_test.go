@@ -34,7 +34,7 @@ func TestNewConfig(t *testing.T) {
 		{
 			name: "read valid config file",
 			args: args{
-				configFile: "engine/testdata/config_minimal.yaml",
+				configFile: "internal/engine/testdata/config_minimal.yaml",
 			},
 			wantErr: false,
 		},
@@ -48,7 +48,7 @@ func TestNewConfig(t *testing.T) {
 		{
 			name: "fail on invalid config file",
 			args: args{
-				configFile: "engine/testdata/config_invalid.yaml",
+				configFile: "internal/engine/testdata/config_invalid.yaml",
 			},
 			wantErr:    true,
 			wantErrMsg: "validation for 'Version' failed on the 'semver' tag",

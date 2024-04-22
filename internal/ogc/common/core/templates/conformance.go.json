@@ -1,0 +1,84 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "{{ .Config.Title }} - Conformance",
+      "href": "{{ .Config.BaseURL }}/conformance?f=json",
+      "hreflang": "nl"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "{{ .Config.Title }} - Conformance",
+      "href": "{{ .Config.BaseURL }}/conformance?f=html",
+      "hreflang": "nl"
+    }
+  ],
+  "conformsTo": [
+    "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core"
+    ,"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json"
+    ,"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html"
+    ,"http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30"
+
+    {{ if .Config.HasCollections }}
+    ,"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections"
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Features }}
+    ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"
+    ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html"
+    ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"
+    ,"http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs",
+    {{/* ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0"*/}}
+    {{/* ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2"*/}}
+    {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"*/}}
+    {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"*/}}
+    {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables"*/}}
+    {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters"*/}}
+    "http://www.opengis.net/spec/json-fg-1/0.2"
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Styles }}
+    ,"http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core"
+    ,"http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles"
+    {{ end }}
+
+    {{ if .Config.OgcAPI.GeoVolumes }}
+    ,"http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core"
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Tiles }}
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core"
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset"
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list"
+      ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets"
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets", */}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection", */}}
+      {{range $index, $type := .Config.OgcAPI.Tiles.Types}}
+        {{ if (eq $type "raster") }}
+          {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg", */}}
+          ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png"
+        {{ end }}
+        {{ if (eq $type "vector") }}
+          ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt"
+        {{ end }}
+      {{end}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson" */}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tiff" */}}
+      {{/* ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/netcdf" */}}
+    {{end}}
+
+    {{ if .Config.OgcAPI.Processes }}
+      ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list"
+      ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/ogc-process-description"
+      {{ if .Config.OgcAPI.Processes.SupportsDismiss }}
+        ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/dismiss"
+      {{end}}
+      {{ if .Config.OgcAPI.Processes.SupportsCallback }}
+        ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/callback"
+      {{end}}
+    {{end}}
+  ]
+}

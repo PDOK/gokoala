@@ -1,0 +1,58 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  {{ if .Config.OgcAPI.Styles }}
+  {{ $baseUrl := .Config.BaseURL }}
+  {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
+  {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "This document",
+      "href": "{{ $baseUrl }}/styles?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "This document as HTML",
+      "href": "{{ $baseUrl }}/styles?f=html"
+    }
+  ],
+  "default": "{{ .Config.OgcAPI.Styles.Default }}",
+  "styles": [
+    {{ range $st_index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
+    {{ if $st_index }},{{ end }}
+    {{ range $srs_index, $srs := $supportedSrs }}
+    {{ if $srs_index }},{{ end }}
+    {
+      "id": "{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}",
+      "title": "{{ $style.Title }} ({{ get $projections (index $srs).Srs }})",
+      "links": [
+        {
+          "rel": "describedby",
+          "title": "Style Metadata for {{ $style.ID }}",
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}/metadata"
+        }
+        {{ if $style.Formats }},{{ end }}
+        {{ range $sh_index, $stylesheet := $style.Formats }}
+        {{ if $sh_index }},{{ end }}
+        {
+          "rel": "stylesheet",
+          {{ if eq $stylesheet.Format "mapbox" }}
+          "title": "Mapbox Style",
+          "type": "application/vnd.mapbox.style+json",
+          {{ else if eq $stylesheet.Format "sld10" }}
+          "title": "OpenGIS Styled Layer Descriptor 1.0 Style",
+          "type": "application/vnd.ogc.sld+xml;version=1.0",
+          {{ end }}
+          {{/* Add support for more style formats here */}}
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}?f={{ $stylesheet.Format }}"
+        }
+        {{ end }}
+      ]
+    }
+    {{ end }}
+    {{ end }}
+  ]
+  {{ end }}
+}
