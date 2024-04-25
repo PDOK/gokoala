@@ -38,7 +38,6 @@ func MergeJSON(x1, x2 []byte, orderBy func(output map[string]any) any) ([]byte, 
 	}
 	if orderBy != nil {
 		return json.Marshal(orderBy(j1))
-	} else {
-		return json.Marshal(j1)
 	}
+	return json.Marshal(j1)
 }
