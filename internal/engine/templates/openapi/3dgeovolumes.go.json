@@ -10,7 +10,6 @@
       "url": "http://www.opengeospatial.org/legal/"
     }
   },
-  "tags" : [ ],
   "paths" : {
     {{- range $index, $coll := .Config.OgcAPI.GeoVolumes.Collections -}}
     {{ if and $coll.GeoVolumes $coll.GeoVolumes.URITemplate3dTiles }}

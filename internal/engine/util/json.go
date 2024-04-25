@@ -17,14 +17,11 @@ func PrettyPrintJSON(content []byte, name string) []byte {
 	return pretty.Bytes()
 }
 
-// MergeJSON merges the two JSON byte slices containing x1 and x2,
-// preferring x1 over x2 except where x1 and x2 are
-// JSON objects, in which case the keys from both objects
-// are included and their values merged recursively.
-//
-// It returns an error if x1 or x2 cannot be JSON-unmarshalled,
+// MergeJSON merges the two JSON byte slices. It returns an error if x1 or x2 cannot be JSON-unmarshalled,
 // or the merged JSON is invalid.
-func MergeJSON(x1, x2 []byte) ([]byte, error) {
+//
+// Optionally, an orderBy function can be provided to alter the key order in the resulting JSON
+func MergeJSON(x1, x2 []byte, orderBy func(output map[string]any) any) ([]byte, error) {
 	var j1 map[string]any
 	err := json.Unmarshal(x1, &j1)
 	if err != nil {
@@ -38,6 +35,9 @@ func MergeJSON(x1, x2 []byte) ([]byte, error) {
 	err = mergo.Merge(&j1, &j2)
 	if err != nil {
 		return nil, err
+	}
+	if orderBy != nil {
+		return json.Marshal(orderBy(j1))
 	}
 	return json.Marshal(j1)
 }

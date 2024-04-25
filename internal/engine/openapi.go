@@ -16,6 +16,7 @@ import (
 	texttemplate "text/template"
 
 	gokoalaconfig "github.com/PDOK/gokoala/config"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -149,7 +150,7 @@ func mergeSpecs(ctx context.Context, config *gokoalaconfig.Config, files []strin
 			mergedJSON = specJSON
 		} else {
 			var err error
-			mergedJSON, err = util.MergeJSON(resultSpecJSON, specJSON)
+			mergedJSON, err = util.MergeJSON(resultSpecJSON, specJSON, orderByOpenAPIConvention)
 			if err != nil {
 				log.Print(string(mergedJSON))
 				log.Fatalf("failed to merge OpenAPI specs: %v", err)
@@ -159,6 +160,24 @@ func mergeSpecs(ctx context.Context, config *gokoalaconfig.Config, files []strin
 		resultSpec = loadSpec(loader, mergedJSON)
 	}
 	return resultSpec, resultSpecJSON
+}
+
+func orderByOpenAPIConvention(output map[string]any) any {
+	result := orderedmap.New[string, any]()
+	// OpenAPI specs are commonly ordered according to the following sequence.
+	desiredOrder := []string{"openapi", "info", "servers", "paths", "components"}
+	for _, order := range desiredOrder {
+		for k, v := range output {
+			if k == order {
+				result.Set(k, v)
+			}
+		}
+	}
+	// add remaining keys
+	for k, v := range output {
+		result.Set(k, v)
+	}
+	return result
 }
 
 func loadSpec(loader *openapi3.Loader, mergedJSON []byte, fileName ...string) *openapi3.T {

@@ -25,6 +25,7 @@ require (
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
+	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/text v0.14.0
@@ -33,6 +34,8 @@ require (
 )
 
 require (
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect

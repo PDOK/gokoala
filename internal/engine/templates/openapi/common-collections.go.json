@@ -10,11 +10,6 @@
       "url": "http://www.opengeospatial.org/legal/"
     }
   },
-  "tags": [
-    {
-      "name": "Collections"
-    }
-  ],
   "paths": {
     "/collections": {
       "get": {
