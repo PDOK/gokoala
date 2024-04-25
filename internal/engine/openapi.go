@@ -204,6 +204,13 @@ func (o *OpenAPI) ValidateRequest(r *http.Request) error {
 	if requestValidationInput != nil {
 		err := openapi3filter.ValidateRequest(context.Background(), requestValidationInput)
 		if err != nil {
+			var schemaErr *openapi3.SchemaError
+			// Don't fail on maximum constraints because OGC has decided these are soft limits, for instance
+			// in features: "If the value of the limit parameter is larger than the maximum value, this
+			// SHALL NOT result in an error (instead use the maximum as the parameter value)."
+			if errors.As(err, &schemaErr) && schemaErr.SchemaField == "maximum" {
+				return nil
+			}
 			return fmt.Errorf("request doesn't conform to OpenAPI spec: %w", err)
 		}
 	}
