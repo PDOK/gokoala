@@ -242,7 +242,8 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 		if err != nil {
 			err = errors.New("limit must be numeric")
 		}
-		// OpenAPI validation already guards against exceeding max limit, this is just a defense in-depth measure.
+		// "If the value of the limit parameter is larger than the maximum value, this SHALL NOT result
+		//  in an error (instead use the maximum as the parameter value)."
 		if limit > limitCfg.Max {
 			limit = limitCfg.Max
 		}
