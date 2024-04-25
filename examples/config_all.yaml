@@ -71,7 +71,6 @@ ogcApi:
           title: Addresses
           description: These are example addresses
           extent:
-            srs: EPSG:4326
             bbox:
               - 50.2129
               - 2.52713
