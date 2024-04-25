@@ -30,7 +30,7 @@ func TestJSONMerge_identical_json_input_should_not_result_in_differences(t *test
 	}
 
 	// when
-	actual, err := MergeJSON(fileContent, fileContent)
+	actual, err := MergeJSON(fileContent, fileContent, nil)
 	if err != nil {
 		t.Fatalf("JSON merge failed %v", err)
 	}
@@ -60,7 +60,7 @@ func TestJSONMerge_two_openapi_spec(t *testing.T) {
 	}
 
 	// when
-	actual, err := MergeJSON(fileFeaturesContent, fileTilesContent)
+	actual, err := MergeJSON(fileFeaturesContent, fileTilesContent, nil)
 	if err != nil {
 		t.Fatalf("JSON merge failed %v", err)
 	}
