@@ -25,6 +25,7 @@ require (
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
+	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/text v0.14.0
@@ -52,7 +53,6 @@ require (
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
