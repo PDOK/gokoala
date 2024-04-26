@@ -591,6 +591,7 @@ type Datasources struct {
 
 	// One or more additional datasources for features in other projections. GoKoala doesn't do
 	// any on-the-fly reprojection so additional datasources need to be reprojected ahead of time.
+	// +optional
 	Additional []AdditionalDatasource `yaml:"additional" json:"additional" validate:"dive"`
 }
 
