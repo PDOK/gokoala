@@ -27,13 +27,13 @@ var (
 	ProblemBadGateway    = ProblemKind(http.StatusBadGateway)
 )
 
-// RenderProblem writes FC 7807 (https://tools.ietf.org/html/rfc7807) problem to response output.
+// RenderProblem writes RFC 7807 (https://tools.ietf.org/html/rfc7807) problem to client.
 // Only the listed problem kinds are supported since they should be advertised in the OpenAPI spec.
 // Optionally a caller may add a details (single string) about the problem. Warning: Be sure to not
 // include sensitive information in the details string!
 func RenderProblem(kind ProblemKind, w http.ResponseWriter, details ...string) {
 	p := problem.Of(int(kind))
-	if kind == ProblemServerError { //nolint:gocritic // switch nog handy here
+	if kind == ProblemServerError { //nolint:gocritic // switch not handy here
 		p = p.Append(problem.Detail(defaultMessageServerErr))
 	} else if kind == ProblemBadGateway {
 		p = p.Append(problem.Detail(defaultMessageBadGateway))
