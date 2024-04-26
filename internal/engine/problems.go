@@ -14,20 +14,31 @@ const (
 	defaultMessageBadGateway = "Failed to proxy request, try again or contact support if the problem persists"
 )
 
+type ProblemKind int
+
 var Now = time.Now // allow mocking
 
 // The following problems should be added to openapi/problems.go.json
 var (
-	ProblemBadRequest    = problem.Of(http.StatusBadRequest)
-	ProblemNotFound      = problem.Of(http.StatusNotFound)
-	ProblemNotAcceptable = problem.Of(http.StatusNotAcceptable)
-	ProblemServerError   = problem.Of(http.StatusInternalServerError).Append(problem.Detail(defaultMessageServerErr))
-	ProblemBadGateway    = problem.Of(http.StatusBadGateway).Append(problem.Detail(defaultMessageBadGateway))
+	ProblemBadRequest    = ProblemKind(http.StatusBadRequest)
+	ProblemNotFound      = ProblemKind(http.StatusNotFound)
+	ProblemNotAcceptable = ProblemKind(http.StatusNotAcceptable)
+	ProblemServerError   = ProblemKind(http.StatusInternalServerError)
+	ProblemBadGateway    = ProblemKind(http.StatusBadGateway)
 )
 
-func RenderProblem(p *problem.Problem, w http.ResponseWriter, details ...string) {
-	for _, detail := range details {
-		p = p.Append(problem.Detail(detail))
+// RenderProblem writes FC 7807 (https://tools.ietf.org/html/rfc7807) problem to response output.
+// Only the listed problem kinds are supported since they should be advertised in the OpenAPI spec.
+// Optionally a caller may add a details (single string) about the problem. Warning: Be sure to not
+// include sensitive information in the details string!
+func RenderProblem(kind ProblemKind, w http.ResponseWriter, details ...string) {
+	p := problem.Of(int(kind))
+	if kind == http.StatusInternalServerError {
+		p = p.Append(problem.Detail(defaultMessageServerErr))
+	} else if kind == http.StatusBadGateway {
+		p = p.Append(problem.Detail(defaultMessageBadGateway))
+	} else if len(details) > 0 {
+		p = p.Append(problem.Detail(details[0]))
 	}
 	p = p.Append(problem.Custom(timestampKey, Now().UTC().Format(time.RFC3339)))
 	_, err := p.WriteTo(w)
