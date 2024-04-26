@@ -33,7 +33,7 @@ var (
 // include sensitive information in the details string!
 func RenderProblem(kind ProblemKind, w http.ResponseWriter, details ...string) {
 	p := problem.Of(int(kind))
-	if kind == ProblemServerError {
+	if kind == ProblemServerError { //nolint:gocritic // switch nog handy here
 		p = p.Append(problem.Detail(defaultMessageServerErr))
 	} else if kind == ProblemBadGateway {
 		p = p.Append(problem.Detail(defaultMessageBadGateway))
