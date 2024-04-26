@@ -128,11 +128,11 @@ export class MapboxStyleService {
       if (layer.layout?.['text-field']) {
         const label = layer.layout?.['text-field'].replace('{', '').replace('}', '')
         p['' + label + ''] = label.substring(0, 6)
-        const labeltitle = titleFunction(layer['source-layer'], p, customTitlePart)
+        const labeltitle = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'])
         const showLabel = label[0].toUpperCase() + label.substring(1)
         this.pushItem(labeltitle + ' ' + showLabel, layer, names, p)
       } else {
-        let title = titleFunction(layer['source-layer'], p, customTitlePart)
+        let title = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'])
         this.pushItem(title, layer, names, p)
 
         let paint = layer.paint['circle-color'] as FillPattern
@@ -159,6 +159,10 @@ export class MapboxStyleService {
 
   capitalizeFirstLetter(str: string): string {
     return [...str][0].toUpperCase() + str.slice(1)
+  }
+
+  idTitle(layername: string, props: IProperties, customTitlePart: string[], id: string): string {
+    return id
   }
 
   customTitle(layername: string, props: IProperties, customTitlePart: string[]): string {

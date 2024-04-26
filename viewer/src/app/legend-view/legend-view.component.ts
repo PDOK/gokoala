@@ -53,8 +53,13 @@ export class LegendViewComponent implements OnInit, OnChanges {
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe(style => {
         this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)
         if (this.titleItems) {
-          const titlepart = this.titleItems.split(',')
-          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
+          if (this.titleItems.toLocaleLowerCase() === 'id') {
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, [])
+          } else {
+            const titlepart = this.titleItems.split(',')
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
+          }
+
         } else {
           this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [])
         }
