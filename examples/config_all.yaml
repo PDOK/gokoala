@@ -91,5 +91,6 @@ ogcApi:
     supportedStyles:
       - id: "dummy-style"
         title: "Dummy style"
+        lastUpdated: "2023-02-24T11:27:00Z"
         formats:
           - format: "mapbox"
