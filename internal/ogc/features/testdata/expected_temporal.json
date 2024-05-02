@@ -33,14 +33,17 @@
       },
       "properties": {
         "datum_doc": "2020-05-20",
+        "datum_eind": null,
         "datum_strt": "2020-05-20",
         "document": "PC20200520_PC00PC",
+        "huisletter": null,
         "huisnummer": 1,
         "nummer_id": "0363200012157127",
         "postcode": "1013AJ",
         "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200012157127",
         "status": "Naamgeving uitgegeven",
         "straatnaam": "Stenen Hoofd",
+        "toevoeging": null,
         "type": "Standplaats",
         "woonplaats": "Amsterdam"
       },

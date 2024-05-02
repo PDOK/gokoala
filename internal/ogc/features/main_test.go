@@ -364,7 +364,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
-			name: "Request temporal collection ",
+			name: "Request temporal collection",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag_temporal.yaml",
 				url:          "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00:00:00Z&limit=10",
@@ -690,6 +690,9 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 
 func createRequest(url string, collectionID string, featureID string, format string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if req == nil || err != nil {
+		return req, err
+	}
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("collectionId", collectionID)
 	rctx.URLParams.Add("featureId", featureID)

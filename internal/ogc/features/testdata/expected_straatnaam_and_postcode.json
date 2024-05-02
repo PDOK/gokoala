@@ -35,14 +35,17 @@
       },
       "properties": {
         "datum_doc": "2021-09-29",
+        "datum_eind": null,
         "datum_strt": "2021-09-29",
         "document": "PC20210929_PC00PC",
+        "huisletter": null,
         "huisnummer": 24,
         "nummer_id": "0363200012111724",
         "postcode": "1104MM",
         "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200012111724",
         "status": "Naamgeving uitgegeven",
         "straatnaam": "Zandhoek",
+        "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       }
