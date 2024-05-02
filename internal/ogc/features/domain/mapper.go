@@ -77,15 +77,16 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
 		columnValue := values[i]
-		if columnValue == nil {
-			continue
-		}
 
 		switch columnName {
 		case fidColumn:
 			feature.ID = columnValue.(int64)
 
 		case geomColumn:
+			if columnValue == nil {
+				feature.Properties[columnName] = nil
+				continue
+			}
 			rawGeom, ok := columnValue.([]byte)
 			if !ok {
 				return nil, fmt.Errorf("failed to read geometry from %s column in datasource", geomColumn)
@@ -102,17 +103,21 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 
 		case "prevfid":
 			// Only the first row in the result set contains the previous feature id
-			if firstRow {
+			if firstRow && columnValue != nil {
 				prevNextID.Prev = columnValue.(int64)
 			}
 
 		case "nextfid":
 			// Only the first row in the result set contains the next feature id
-			if firstRow {
+			if firstRow && columnValue != nil {
 				prevNextID.Next = columnValue.(int64)
 			}
 
 		default:
+			if columnValue == nil {
+				feature.Properties[columnName] = nil
+				continue
+			}
 			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a tag
 			switch v := columnValue.(type) {
 			case []uint8:

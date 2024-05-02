@@ -47,14 +47,17 @@
       },
       "properties": {
         "datum_doc": "1900-01-01",
+        "datum_eind": null,
         "datum_strt": "1900-01-01",
         "document": "GV00000402",
+        "huisletter": null,
         "huisnummer": 11,
         "nummer_id": "0363200000398887",
         "postcode": "1013KW",
         "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398887",
         "status": "Naamgeving uitgegeven",
         "straatnaam": "Realengracht",
+        "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       }
@@ -71,14 +74,17 @@
       },
       "properties": {
         "datum_doc": "1900-01-01",
+        "datum_eind": null,
         "datum_strt": "1900-01-01",
         "document": "GV00000402",
+        "huisletter": null,
         "huisnummer": 15,
         "nummer_id": "0363200000398888",
         "postcode": "1013KW",
         "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000398888",
         "status": "Naamgeving uitgegeven",
         "straatnaam": "Realengracht",
+        "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       }

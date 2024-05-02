@@ -41,6 +41,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -51,7 +52,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BL",
         "component_thoroughfarename": "Achtertune",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 5,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -74,7 +78,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -89,6 +94,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -99,7 +105,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BL",
         "component_thoroughfarename": "Achtertune",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 5,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -122,7 +131,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2011-12-15T00:00:00.05Z"
+        "validfrom": "2011-12-15T00:00:00.05Z",
+        "validto": null
       }
     }
   ]

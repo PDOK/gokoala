@@ -47,6 +47,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -57,7 +58,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BD",
         "component_thoroughfarename": "Kotterstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 17,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -80,7 +84,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -95,6 +100,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -105,7 +111,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794AR",
         "component_thoroughfarename": "Oesterstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 7,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -128,7 +137,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -143,6 +153,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -153,7 +164,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -176,7 +190,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -191,6 +206,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -201,7 +217,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -224,7 +243,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2019-01-11T00:00:00Z"
+        "validfrom": "2019-01-11T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -239,6 +259,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -249,7 +270,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -272,7 +296,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -287,6 +312,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -297,7 +323,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -320,7 +349,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2019-01-11T00:00:00Z"
+        "validfrom": "2019-01-11T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -335,6 +365,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -345,7 +376,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -368,7 +402,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -383,6 +418,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -393,7 +429,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -416,7 +455,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2019-01-11T00:00:00Z"
+        "validfrom": "2019-01-11T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -431,6 +471,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -441,7 +482,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -464,7 +508,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -479,6 +524,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -489,7 +535,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794BR",
         "component_thoroughfarename": "Wierstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 1,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -512,7 +561,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2019-01-11T00:00:00Z"
+        "validfrom": "2019-01-11T00:00:00Z",
+        "validto": null
       }
     }
   ]

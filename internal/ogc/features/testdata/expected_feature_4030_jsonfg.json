@@ -12,8 +12,11 @@
   "properties": {
     "datum_doc": "1900-01-01",
     "datum_strt": "1900-01-01",
+    "datum_eind": null,
     "document": "GV00000402",
     "huisnummer": 285,
+    "huisletter": null,
+    "toevoeging": null,
     "nummer_id": "0363200000428648",
     "postcode": "1013LH",
     "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000428648",

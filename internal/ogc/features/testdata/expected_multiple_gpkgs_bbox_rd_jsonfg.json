@@ -41,6 +41,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -51,7 +52,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794AB",
         "component_thoroughfarename": "Mulderstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 2,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -74,7 +78,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -91,6 +96,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -101,7 +107,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794AB",
         "component_thoroughfarename": "Mulderstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 2,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -124,7 +133,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -141,6 +151,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -151,7 +162,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794AB",
         "component_thoroughfarename": "Mulderstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 2,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -174,7 +188,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -191,6 +206,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -201,7 +217,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794AB",
         "component_thoroughfarename": "Mulderstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 2,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -224,7 +243,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -241,6 +261,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -251,7 +272,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794AB",
         "component_thoroughfarename": "Mulderstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 2,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -274,7 +298,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     },
     {
@@ -291,6 +316,7 @@
       },
       "properties": {
         "alternativeidentifier": "",
+        "beginlifespanversion": null,
         "building": "",
         "component_addressareaname": "Oosterend",
         "component_adminunitname_1": "",
@@ -301,7 +327,10 @@
         "component_adminunitname_6": "",
         "component_postaldescriptor": "1794AB",
         "component_thoroughfarename": "Mulderstraat",
+        "endlifespanversion": null,
         "locator_designator_addressnumber": 2,
+        "locator_designator_addressnumber2ndextension": null,
+        "locator_designator_addressnumberextension": null,
         "locator_designator_buildingidentifier": "",
         "locator_designator_buildingidentifierprefix": "",
         "locator_designator_corneraddress1stidentifier": "",
@@ -324,7 +353,8 @@
         "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
         "status": "",
         "status_href": "",
-        "validfrom": "2009-12-21T00:00:00Z"
+        "validfrom": "2009-12-21T00:00:00Z",
+        "validto": null
       }
     }
   ]
