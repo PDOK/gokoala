@@ -1,6 +1,6 @@
 module github.com/PDOK/gokoala
 
-go 1.22.2
+go 1.22.3
 
 require (
 	dario.cat/mergo v1.0.0
