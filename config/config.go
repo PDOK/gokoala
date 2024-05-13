@@ -659,7 +659,7 @@ type GeoPackageCommon struct {
 	InMemoryCacheSize string `yaml:"inMemoryCacheSize,omitempty" json:"inMemoryCacheSize,omitempty" validate:"required" default:"15MiB"`
 }
 
-func (common *GeoPackageCommon) InMemoryCacheSizeAsKibibytes() (int64, error) {
+func (common *GeoPackageCommon) InMemoryCacheSizeSqlite() (int64, error) {
 	size, err := units.RAMInBytes(common.InMemoryCacheSize)
 	if err != nil {
 		return size, err

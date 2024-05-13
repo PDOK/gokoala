@@ -41,7 +41,7 @@ func newCloudBackedGeoPackage(gpkg *config.GeoPackageCloud) geoPackageBackend {
 	}
 	log.Printf("connected to %s\n", msg)
 
-	inMemCacheSize, err := gpkg.InMemoryCacheSizeAsKibibytes()
+	inMemCacheSize, err := gpkg.InMemoryCacheSizeSqlite()
 	if err != nil {
 		log.Fatalf("invalid in-memory cache size provided, error: %v", err)
 	}

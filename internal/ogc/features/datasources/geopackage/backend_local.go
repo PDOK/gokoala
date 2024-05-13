@@ -14,7 +14,7 @@ type localGeoPackage struct {
 }
 
 func newLocalGeoPackage(gpkg *config.GeoPackageLocal) geoPackageBackend {
-	inMemCacheSize, err := gpkg.InMemoryCacheSizeAsKibibytes()
+	inMemCacheSize, err := gpkg.InMemoryCacheSizeSqlite()
 	if err != nil {
 		log.Fatalf("invalid in-memory cache size provided, error: %v", err)
 	}
