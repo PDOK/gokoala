@@ -654,7 +654,7 @@ type GeoPackageCommon struct {
 	// Sets the SQLite "cache_size" pragma which determines how many pages are cached in-memory.
 	// See https://sqlite.org/pragma.html#pragma_cache_size for details.
 	// Default in SQLite is 2000 pages, which equates to 2000KiB (2048000 bytes). We use 15MiB as default.
-	// +kubebuilder:default=15MiB
+	// +kubebuilder:default="15MiB"
 	// +optional
 	InMemoryCacheSize string `yaml:"inMemoryCacheSize,omitempty" json:"inMemoryCacheSize,omitempty" validate:"required" default:"15MiB"`
 }
