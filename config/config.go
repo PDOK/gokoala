@@ -650,6 +650,26 @@ type GeoPackageCommon struct {
 	// +kubebuilder:default=30000
 	// +optional
 	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree,omitempty" json:"maxBBoxSizeToUseWithRTree,omitempty" validate:"required" default:"30000"`
+
+	// Sets the SQLite "cache_size" pragma which determines how many pages are cached in-memory.
+	// See https://sqlite.org/pragma.html#pragma_cache_size for details.
+	// Default in SQLite is 2000 pages, which equates to 2000KiB (2048000 bytes). We use 15MiB as default.
+	// +kubebuilder:default="15MiB"
+	// +optional
+	InMemoryCacheSize string `yaml:"inMemoryCacheSize,omitempty" json:"inMemoryCacheSize,omitempty" validate:"required" default:"15MiB"`
+}
+
+func (common *GeoPackageCommon) InMemoryCacheSizeSqlite() (int64, error) {
+	size, err := units.RAMInBytes(common.InMemoryCacheSize)
+	if err != nil {
+		return size, err
+	}
+	sqliteDefault := int64(2000 * units.KiB)
+	if size < sqliteDefault {
+		return -1, fmt.Errorf("%d in-memory cache size is less than SQLite default"+
+			" of %d, only higher or equal value is allowed", size, sqliteDefault)
+	}
+	return size, nil
 }
 
 // +kubebuilder:object:generate=true
