@@ -757,6 +757,13 @@ type PropertyFilter struct {
 	// +kubebuilder:default="Filter features by this property"
 	// +optional
 	Description string `yaml:"description,omitempty" json:"description,omitempty" default:"Filter features by this property"`
+
+	// When true the property/column in the feature table needs to be indexed. Initialization will fail
+	// when no index is present, when false the index check is skipped. For large tables an index is recommended!
+	//
+	// +kubebuilder:default=true
+	// +optional
+	IndexRequired *bool `yaml:"indexRequired,omitempty" json:"indexRequired,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
 // +kubebuilder:object:generate=true

@@ -44,8 +44,8 @@ func assertIndexesExist(
 
 				// assert the column for each property filter is indexed.
 				for _, propertyFilter := range coll.Features.Filters.Properties {
-					if err := assertIndexExists(table.TableName, db, propertyFilter.Name, false); err != nil {
-						return err
+					if err := assertIndexExists(table.TableName, db, propertyFilter.Name, false); err != nil && *propertyFilter.IndexRequired {
+						return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
 					}
 				}
 				break
