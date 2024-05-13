@@ -13,7 +13,7 @@ import (
 // append a longer path without having to worry about double slashes.
 //
 // Allow only http/https URLs or environment variables like ${FOOBAR}
-// +kubebuilder:validation:Pattern=`^(https?://.+)|(\$\{.+\})`
+// +kubebuilder:validation:Pattern=`^(https?://.+)|(\$\{.+\}.*)`
 // +kubebuilder:validation:Type=string
 type URL struct {
 	// This is a pointer so the wrapper can directly be used in templates, e.g.: {{ .Config.BaseURL }}
