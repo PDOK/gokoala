@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,7 +14,12 @@ type localGeoPackage struct {
 }
 
 func newLocalGeoPackage(gpkg *config.GeoPackageLocal) geoPackageBackend {
-	db, err := sqlx.Open(sqliteDriverName, fmt.Sprintf("file:%s?mode=ro", gpkg.File))
+	inMemCacheSize, err := gpkg.InMemoryCacheSizeAsKibibytes()
+	if err != nil {
+		log.Fatalf("invalid in-memory cache size provided, error: %v", err)
+	}
+	conn := fmt.Sprintf("file:%s?mode=ro&_cache_size=%d", gpkg.File, inMemCacheSize)
+	db, err := sqlx.Open(sqliteDriverName, conn)
 	if err != nil {
 		log.Fatalf("failed to open GeoPackage: %v", err)
 	}
