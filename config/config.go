@@ -677,8 +677,46 @@ type GeoPackageLocal struct {
 	// GeoPackageCommon shared config between local and cloud GeoPackage
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
-	// Location of GeoPackage on disk
-	File string `yaml:"file" json:"file" validate:"file"`
+	// Location of GeoPackage on disk.
+	// You can place the GeoPackage here manually (out-of-band) or you can specify "init"
+	// and let the application download the GeoPackage for you and store it at this location.
+	File string `yaml:"file" json:"file" validate:"required,omitempty,filepath"`
+
+	// Optional initialization task to execute during startup, like downloading a GeoPackage
+	// +optional
+	Init *InitDownload `yaml:"init,omitempty" json:"init,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type InitDownload struct {
+	// Location of GeoPackage on remote HTTP(S) URL, GeoPackage will be downloaded to local disk
+	// during startup and stored at the location specified in "file".
+	Download URL `yaml:"download" json:"download" validate:"required"`
+
+	// Advanced setting: Determines how many workers (goroutines) in parallel will download the specified GeoPackage.
+	// +kubebuilder:default="4"
+	// +optional
+	Parallelism int `yaml:"parallelism,omitempty" json:"parallelism,omitempty" validate:"required,gte=1" default:"4"`
+
+	// Advanced setting: when true TLS certs are validated, false otherwise. Only use false for your own self-signed certificates!
+	// +kubebuilder:default="false"
+	// +optional
+	TLSSkipVerify bool `yaml:"tlsSkipVerify,omitempty" json:"tlsSkipVerify,omitempty" default:"false"`
+
+	// Advanced setting: Minimum delay to use when retrying HTTP request to download (part of) GeoPackage.
+	// +kubebuilder:default="1s"
+	// +optional
+	RetryDelay Duration `yaml:"retryDelay,omitempty" json:"retryDelay,omitempty" validate:"required" default:"1s"`
+
+	// Advanced setting: Maximum overall delay of the exponential backoff while retrying HTTP requests to download (part of) GeoPackage.
+	// +kubebuilder:default="30s"
+	// +optional
+	RetryMaxDelay Duration `yaml:"retryMaxDelay,omitempty" json:"retryMaxDelay,omitempty" validate:"required" default:"30s"`
+
+	// Advanced setting: Maximum number of retries when retrying HTTP requests to download (part of) GeoPackage.
+	// +kubebuilder:default="5"
+	// +optional
+	MaxRetries int `yaml:"maxRetries,omitempty" json:"maxRetries,omitempty" validate:"required,gte=1" default:"5"`
 }
 
 // +kubebuilder:object:generate=true

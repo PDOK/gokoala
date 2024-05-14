@@ -38,6 +38,7 @@ require (
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/failsafe-go/failsafe-go v0.6.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gdey/errors v0.0.0-20190426172550-8ebd5bc891fb // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
