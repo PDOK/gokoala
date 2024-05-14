@@ -37,7 +37,7 @@ func downloadGeoPackage(gpkg *config.GeoPackageLocal) {
 	url := *gpkg.Init.Download.URL
 	log.Printf("start download of GeoPackage: %s", url.String())
 	downloadTime, err := engine.Download(url, gpkg.File, gpkg.Init.Parallelism, gpkg.Init.TLSSkipVerify,
-		gpkg.Init.RetryDelay.Duration, gpkg.Init.RetryMaxDelay.Duration, gpkg.Init.MaxRetries)
+		gpkg.Init.Timeout.Duration, gpkg.Init.RetryDelay.Duration, gpkg.Init.RetryMaxDelay.Duration, gpkg.Init.MaxRetries)
 	if err != nil {
 		log.Fatalf("failed to download GeoPackage: %v", err)
 	}

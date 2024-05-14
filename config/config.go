@@ -703,6 +703,11 @@ type InitDownload struct {
 	// +optional
 	TLSSkipVerify bool `yaml:"tlsSkipVerify,omitempty" json:"tlsSkipVerify,omitempty" default:"false"`
 
+	// Advanced setting: HTTP request timeout when downloading (part of) GeoPackage.
+	// +kubebuilder:default="2m"
+	// +optional
+	Timeout Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" validate:"required" default:"2m"`
+
 	// Advanced setting: Minimum delay to use when retrying HTTP request to download (part of) GeoPackage.
 	// +kubebuilder:default="1s"
 	// +optional

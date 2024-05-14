@@ -1,18 +1,20 @@
 package engine
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/failsafe-go/failsafe-go/failsafehttp"
+	"golang.org/x/sync/errgroup"
 )
+
+const bufferSize = 3 * 1024 * 1024 // 3MiB
 
 // Part piece of the file to download when HTTP Range Requests are supported
 type Part struct {
@@ -24,30 +26,34 @@ type Part struct {
 // Download downloads file from the given URL and stores the result in the given output location.
 // Will utilize multiple concurrent connections to increase transfer speed. The latter is only
 // possible when the remote server supports HTTP Range Requests, otherwise it falls back
-// to single connection download.
-func Download(url url.URL, outputFilepath string, workers int, tlsSkipVerify bool,
+// to a regular/single connection download. Additionally, failed requests will be retried according
+// to the given settings.
+func Download(url url.URL, outputFilepath string, workers int, tlsSkipVerify bool, timeout time.Duration,
 	retryDelay time.Duration, retryMaxDelay time.Duration, maxRetries int) (*time.Duration, error) {
 
-	client := createHTTPClient(tlsSkipVerify, retryDelay, retryMaxDelay, maxRetries)
+	client := createHTTPClient(tlsSkipVerify, timeout, retryDelay, retryMaxDelay, maxRetries)
 
-	outputFile, _ := os.OpenFile(outputFilepath, os.O_CREATE|os.O_RDWR, 0644)
+	outputFile, err := os.OpenFile(outputFilepath, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, err
+	}
 	defer outputFile.Close()
 
 	start := time.Now()
-	supportRanges, contentLength := checkRemoteFile(url, client)
+	supportRanges, contentLength, err := checkRemoteFile(url, client)
 	if supportRanges {
-		downloadWithMultipleConnections(url, outputFile, contentLength, workers, client)
+		err = downloadWithMultipleConnections(url, outputFile, contentLength, workers, client)
 	} else {
-		downloadWithSingleConnection(url, outputFile, client)
+		err = downloadWithSingleConnection(url, outputFile, client)
 	}
 	timeSpent := time.Since(start)
-	return &timeSpent, nil
+	return &timeSpent, err
 }
 
-func checkRemoteFile(url url.URL, client *http.Client) (supportRanges bool, contentLength int64) {
+func checkRemoteFile(url url.URL, client *http.Client) (supportRanges bool, contentLength int64, err error) {
 	res, err := client.Head(url.String())
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Error on get url %s: %q\n", url.String(), err))
+		return
 	}
 	defer res.Body.Close()
 
@@ -56,23 +62,24 @@ func checkRemoteFile(url url.URL, client *http.Client) (supportRanges bool, cont
 	return
 }
 
-func downloadWithSingleConnection(url url.URL, outputFile *os.File, client *http.Client) {
+func downloadWithSingleConnection(url url.URL, outputFile *os.File, client *http.Client) error {
 	res, err := client.Get(url.String())
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer res.Body.Close()
 
-	buf := make([]byte, 3*1024*1024)
-	io.CopyBuffer(outputFile, res.Body, buf)
+	buf := make([]byte, bufferSize)
+	_, err = io.CopyBuffer(outputFile, res.Body, buf)
+	return err
 }
 
-func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLength int64, workers int, client *http.Client) {
-	var wg sync.WaitGroup
+func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLength int64, workers int, client *http.Client) error {
 	parts := make([]Part, workers)
 	partSize := contentLength / int64(workers)
 	remainder := contentLength % int64(workers)
 
+	wg, _ := errgroup.WithContext(context.Background())
 	for i, part := range parts {
 		start := int64(i) * partSize
 		end := start + partSize
@@ -80,37 +87,39 @@ func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLe
 			end += remainder
 		}
 		part = Part{start, end, partSize}
-		wg.Add(1)
-		go downloadRange(client, url, outputFile.Name(), part, &wg)
+		wg.Go(func() error {
+			return downloadRange(client, url, outputFile.Name(), part)
+		})
 	}
-	wg.Wait()
+	return wg.Wait()
 }
 
-func downloadRange(client *http.Client, url url.URL, outputFilepath string, part Part, wg *sync.WaitGroup) {
-	defer wg.Done()
-	outputFile, _ := os.OpenFile(outputFilepath, os.O_RDWR, 0664)
+func downloadRange(client *http.Client, url url.URL, outputFilepath string, part Part) error {
+	outputFile, err := os.OpenFile(outputFilepath, os.O_RDWR, 0664)
 	defer outputFile.Close()
 	outputFile.Seek(part.Start, 0)
 
 	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	req.Header.Set(HeaderRange, fmt.Sprintf("bytes=%d-%d", part.Start, part.End-1))
 	res, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusPartialContent {
-		panic("Remote doesn't responded with the expected code: 206")
+		return fmt.Errorf("server advertises HTTP Range Request support "+
+			"but doesn't return status %d", http.StatusPartialContent)
 	}
 
-	buf := make([]byte, 3*1024*1024)
-	io.CopyBuffer(outputFile, res.Body, buf)
+	buf := make([]byte, bufferSize)
+	_, err = io.CopyBuffer(outputFile, res.Body, buf)
+	return err
 }
 
-func createHTTPClient(tlsSkipVerify bool, retryDelay time.Duration,
+func createHTTPClient(tlsSkipVerify bool, timeout time.Duration, retryDelay time.Duration,
 	retryMaxDelay time.Duration, maxRetries int) *http.Client {
 
 	transport := &http.Transport{
@@ -123,6 +132,7 @@ func createHTTPClient(tlsSkipVerify bool, retryDelay time.Duration,
 		WithMaxRetries(maxRetries).
 		Build()
 	return &http.Client{
+		Timeout:   timeout,
 		Transport: failsafehttp.NewRoundTripper(transport, retryPolicy),
 	}
 }
