@@ -14,7 +14,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-const bufferSize = 3 * 1024 * 1024 // 3MiB
+const bufferSize = 1 * 1024 * 1024 // 1MiB
 
 // Part piece of the file to download when HTTP Range Requests are supported
 type Part struct {
@@ -41,10 +41,16 @@ func Download(url url.URL, outputFilepath string, parallelism int, tlsSkipVerify
 	start := time.Now()
 
 	supportRanges, contentLength, err := checkRemoteFile(url, client)
+	if err != nil {
+		return nil, err
+	}
 	if supportRanges {
 		err = downloadWithMultipleConnections(url, outputFile, contentLength, int64(parallelism), client)
 	} else {
 		err = downloadWithSingleConnection(url, outputFile, client)
+	}
+	if err != nil {
+		return nil, err
 	}
 	err = assertFileValid(outputFile, contentLength)
 	if err != nil {
@@ -101,8 +107,14 @@ func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLe
 
 func downloadPart(client *http.Client, url url.URL, outputFilepath string, part Part) error {
 	outputFile, err := os.OpenFile(outputFilepath, os.O_RDWR, 0664)
+	if err != nil {
+		return err
+	}
 	defer outputFile.Close()
-	outputFile.Seek(part.Start, 0)
+	_, err = outputFile.Seek(part.Start, 0)
+	if err != nil {
+		return err
+	}
 
 	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
@@ -140,13 +152,14 @@ func createHTTPClient(tlsSkipVerify bool, timeout time.Duration, retryDelay time
 
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: tlsSkipVerify,
+			InsecureSkipVerify: tlsSkipVerify, //nolint:gosec // on purpose, default is false
 		},
 	}
+	//nolint:bodyclose // false positive
 	retryPolicy := failsafehttp.RetryPolicyBuilder().
-		WithBackoff(retryDelay, retryMaxDelay).
-		WithMaxRetries(maxRetries).
-		Build()
+		WithBackoff(retryDelay, retryMaxDelay). //nolint:bodyclose // false positive
+		WithMaxRetries(maxRetries).             //nolint:bodyclose // false positive
+		Build()                                 //nolint:bodyclose // false positive
 	return &http.Client{
 		Timeout:   timeout,
 		Transport: failsafehttp.NewRoundTripper(transport, retryPolicy),

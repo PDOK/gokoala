@@ -461,6 +461,7 @@ func (in *GeoSpatialCollectionMetadata) DeepCopy() *GeoSpatialCollectionMetadata
 func (in *InitDownload) DeepCopyInto(out *InitDownload) {
 	*out = *in
 	in.Download.DeepCopyInto(&out.Download)
+	in.Timeout.DeepCopyInto(&out.Timeout)
 	in.RetryDelay.DeepCopyInto(&out.RetryDelay)
 	in.RetryMaxDelay.DeepCopyInto(&out.RetryMaxDelay)
 }
