@@ -694,11 +694,12 @@ type InitDownload struct {
 	Download URL `yaml:"download" json:"download" validate:"required"`
 
 	// Advanced setting: Determines how many workers (goroutines) in parallel will download the specified GeoPackage.
+	// Setting this to 1 will disable concurrent downloads.
 	// +kubebuilder:default="4"
 	// +optional
 	Parallelism int `yaml:"parallelism,omitempty" json:"parallelism,omitempty" validate:"required,gte=1" default:"4"`
 
-	// Advanced setting: when true TLS certs are validated, false otherwise. Only use false for your own self-signed certificates!
+	// Advanced setting: when true TLS certs are NOT validated, false otherwise. Only use true for your own self-signed certificates!
 	// +kubebuilder:default="false"
 	// +optional
 	TLSSkipVerify bool `yaml:"tlsSkipVerify,omitempty" json:"tlsSkipVerify,omitempty" default:"false"`

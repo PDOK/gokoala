@@ -44,7 +44,7 @@ func Download(url url.URL, outputFilepath string, parallelism int, tlsSkipVerify
 	if err != nil {
 		return nil, err
 	}
-	if supportRanges {
+	if supportRanges && parallelism > 1 {
 		err = downloadWithMultipleConnections(url, outputFile, contentLength, int64(parallelism), client)
 	} else {
 		err = downloadWithSingleConnection(url, outputFile, client)
