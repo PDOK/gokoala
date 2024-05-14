@@ -28,11 +28,10 @@ type Part struct {
 // possible when the remote server supports HTTP Range Requests, otherwise it falls back
 // to a regular/single connection download. Additionally, failed requests will be retried according
 // to the given settings.
-func Download(url url.URL, outputFilepath string, workers int, tlsSkipVerify bool, timeout time.Duration,
+func Download(url url.URL, outputFilepath string, parallelism int, tlsSkipVerify bool, timeout time.Duration,
 	retryDelay time.Duration, retryMaxDelay time.Duration, maxRetries int) (*time.Duration, error) {
 
 	client := createHTTPClient(tlsSkipVerify, timeout, retryDelay, retryMaxDelay, maxRetries)
-
 	outputFile, err := os.OpenFile(outputFilepath, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return nil, err
@@ -40,12 +39,18 @@ func Download(url url.URL, outputFilepath string, workers int, tlsSkipVerify boo
 	defer outputFile.Close()
 
 	start := time.Now()
+
 	supportRanges, contentLength, err := checkRemoteFile(url, client)
 	if supportRanges {
-		err = downloadWithMultipleConnections(url, outputFile, contentLength, workers, client)
+		err = downloadWithMultipleConnections(url, outputFile, contentLength, int64(parallelism), client)
 	} else {
 		err = downloadWithSingleConnection(url, outputFile, client)
 	}
+	err = assertFileValid(outputFile, contentLength)
+	if err != nil {
+		return nil, err
+	}
+
 	timeSpent := time.Since(start)
 	return &timeSpent, err
 }
@@ -74,10 +79,10 @@ func downloadWithSingleConnection(url url.URL, outputFile *os.File, client *http
 	return err
 }
 
-func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLength int64, workers int, client *http.Client) error {
-	parts := make([]Part, workers)
-	partSize := contentLength / int64(workers)
-	remainder := contentLength % int64(workers)
+func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLength int64, parallelism int64, client *http.Client) error {
+	parts := make([]Part, parallelism)
+	partSize := contentLength / parallelism
+	remainder := contentLength % parallelism
 
 	wg, _ := errgroup.WithContext(context.Background())
 	for i, part := range parts {
@@ -88,13 +93,13 @@ func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLe
 		}
 		part = Part{start, end, partSize}
 		wg.Go(func() error {
-			return downloadRange(client, url, outputFile.Name(), part)
+			return downloadPart(client, url, outputFile.Name(), part)
 		})
 	}
 	return wg.Wait()
 }
 
-func downloadRange(client *http.Client, url url.URL, outputFilepath string, part Part) error {
+func downloadPart(client *http.Client, url url.URL, outputFilepath string, part Part) error {
 	outputFile, err := os.OpenFile(outputFilepath, os.O_RDWR, 0664)
 	defer outputFile.Close()
 	outputFile.Seek(part.Start, 0)
@@ -117,6 +122,17 @@ func downloadRange(client *http.Client, url url.URL, outputFilepath string, part
 	buf := make([]byte, bufferSize)
 	_, err = io.CopyBuffer(outputFile, res.Body, buf)
 	return err
+}
+
+func assertFileValid(outputFile *os.File, contentLength int64) error {
+	fi, err := outputFile.Stat()
+	if err != nil {
+		return err
+	}
+	if fi.Size() != contentLength {
+		return fmt.Errorf("invalid file, content-length %d and file size %d mismatch", contentLength, fi.Size())
+	}
+	return nil
 }
 
 func createHTTPClient(tlsSkipVerify bool, timeout time.Duration, retryDelay time.Duration,
