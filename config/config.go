@@ -678,12 +678,12 @@ type GeoPackageLocal struct {
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
 	// Location of GeoPackage on disk.
-	// You can place the GeoPackage here manually (out-of-band) or you can specify "init"
+	// You can place the GeoPackage here manually (out-of-band) or you can specify Download
 	// and let the application download the GeoPackage for you and store it at this location.
 	File string `yaml:"file" json:"file" validate:"required,omitempty,filepath"`
 
 	// Optional initialization task to download a GeoPackage during startup. GeoPackage will be
-	// downloaded to local disk and stored at the location specified in "file".
+	// downloaded to local disk and stored at the location specified in File.
 	// +optional
 	Download *GeoPackageDownload `yaml:"download,omitempty" json:"download,omitempty"`
 }
@@ -694,34 +694,34 @@ type GeoPackageDownload struct {
 	// during startup and stored at the location specified in "file".
 	From URL `yaml:"from" json:"from" validate:"required"`
 
-	// Advanced setting: Determines how many workers (goroutines) in parallel will download the specified GeoPackage.
+	// ADVANCED SETTING. Determines how many workers (goroutines) in parallel will download the specified GeoPackage.
 	// Setting this to 1 will disable concurrent downloads.
 	// +kubebuilder:default=4
 	// +kubebuilder:validation:Minimum=1
 	// +optional
 	Parallelism int `yaml:"parallelism,omitempty" json:"parallelism,omitempty" validate:"required,gte=1" default:"4"`
 
-	// Advanced setting: when true TLS certs are NOT validated, false otherwise. Only use true for your own self-signed certificates!
+	// ADVANCED SETTING. When true TLS certs are NOT validated, false otherwise. Only use true for your own self-signed certificates!
 	// +kubebuilder:default=false
 	// +optional
 	TLSSkipVerify bool `yaml:"tlsSkipVerify,omitempty" json:"tlsSkipVerify,omitempty" default:"false"`
 
-	// Advanced setting: HTTP request timeout when downloading (part of) GeoPackage.
+	// ADVANCED SETTING. HTTP request timeout when downloading (part of) GeoPackage.
 	// +kubebuilder:default="2m"
 	// +optional
 	Timeout Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" validate:"required" default:"2m"`
 
-	// Advanced setting: Minimum delay to use when retrying HTTP request to download (part of) GeoPackage.
+	// ADVANCED SETTING. Minimum delay to use when retrying HTTP request to download (part of) GeoPackage.
 	// +kubebuilder:default="1s"
 	// +optional
 	RetryDelay Duration `yaml:"retryDelay,omitempty" json:"retryDelay,omitempty" validate:"required" default:"1s"`
 
-	// Advanced setting: Maximum overall delay of the exponential backoff while retrying HTTP requests to download (part of) GeoPackage.
+	// ADVANCED SETTING. Maximum overall delay of the exponential backoff while retrying HTTP requests to download (part of) GeoPackage.
 	// +kubebuilder:default="30s"
 	// +optional
 	RetryMaxDelay Duration `yaml:"retryMaxDelay,omitempty" json:"retryMaxDelay,omitempty" validate:"required" default:"30s"`
 
-	// Advanced setting: Maximum number of retries when retrying HTTP requests to download (part of) GeoPackage.
+	// ADVANCED SETTING. Maximum number of retries when retrying HTTP requests to download (part of) GeoPackage.
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +optional
@@ -733,9 +733,8 @@ type GeoPackageCloud struct {
 	// GeoPackageCommon shared config between local and cloud GeoPackage
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
-	// Reference to the cloud storage (either azure or google at the moment), e.g:
-	// - azure?emulator=127.0.0.1:10000&sas=0
-	// - google
+	// Reference to the cloud storage (either azure or google at the moment).
+	// For example 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'
 	Connection string `yaml:"connection" json:"connection" validate:"required"`
 
 	// Username of the storage account, e.g: devstoreaccount1 when using Azurite
