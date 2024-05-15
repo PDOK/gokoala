@@ -653,13 +653,16 @@ type GeoPackageCommon struct {
 
 	// Sets the SQLite "cache_size" pragma which determines how many pages are cached in-memory.
 	// See https://sqlite.org/pragma.html#pragma_cache_size for details.
-	// Default in SQLite is 2000 pages, which equates to 2000KiB (2048000 bytes). We use 15MiB as default.
-	// +kubebuilder:default="15MiB"
+	// Default in SQLite is 2000 pages, which equates to 2000KiB (2048000 bytes).
 	// +optional
-	InMemoryCacheSize string `yaml:"inMemoryCacheSize,omitempty" json:"inMemoryCacheSize,omitempty" validate:"required" default:"15MiB"`
+	InMemoryCacheSize string `yaml:"inMemoryCacheSize,omitempty" json:"inMemoryCacheSize,omitempty"`
 }
 
+// InMemoryCacheSizeSqlite returns size in kibibytes or -1 when InMemoryCacheSize isn't set.
 func (common *GeoPackageCommon) InMemoryCacheSizeSqlite() (int64, error) {
+	if common.InMemoryCacheSize == "" {
+		return -1, nil
+	}
 	size, err := units.RAMInBytes(common.InMemoryCacheSize)
 	if err != nil {
 		return size, err

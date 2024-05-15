@@ -41,11 +41,13 @@ func newCloudBackedGeoPackage(gpkg *config.GeoPackageCloud) geoPackageBackend {
 	}
 	log.Printf("connected to %s\n", msg)
 
+	conn := fmt.Sprintf("/%s/%s?vfs=%s&mode=ro", gpkg.Container, gpkg.File, vfsName)
 	inMemCacheSize, err := gpkg.InMemoryCacheSizeSqlite()
 	if err != nil {
 		log.Fatalf("invalid in-memory cache size provided, error: %v", err)
+	} else if inMemCacheSize != -1 {
+		conn = fmt.Sprintf("%s&_cache_size=%d", conn, inMemCacheSize)
 	}
-	conn := fmt.Sprintf("/%s/%s?vfs=%s&mode=ro&_cache_size=%d", gpkg.Container, gpkg.File, vfsName, inMemCacheSize)
 	db, err := sqlx.Open(sqliteDriverName, conn)
 	if err != nil {
 		log.Fatalf("failed to open %s, error: %v", msg, err)
