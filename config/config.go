@@ -838,7 +838,7 @@ type Extent struct {
 	// Projection (SRS/CRS) to be used. When none is provided WGS84 (http://www.opengis.net/def/crs/OGC/1.3/CRS84) is used.
 	// +optional
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
-	Srs string `yaml:"srs" json:"srs" validate:"omitempty,startswith=EPSG:"`
+	Srs string `yaml:"srs,omitempty" json:"srs,omitempty" validate:"omitempty,startswith=EPSG:"`
 
 	// Geospatial extent
 	Bbox []string `yaml:"bbox" json:"bbox"`
