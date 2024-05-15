@@ -682,20 +682,22 @@ type GeoPackageLocal struct {
 	// and let the application download the GeoPackage for you and store it at this location.
 	File string `yaml:"file" json:"file" validate:"required,omitempty,filepath"`
 
-	// Optional initialization task to execute during startup, like downloading a GeoPackage
+	// Optional initialization task to download a GeoPackage during startup. GeoPackage will be
+	// downloaded to local disk and stored at the location specified in "file".
 	// +optional
-	Init *InitDownload `yaml:"init,omitempty" json:"init,omitempty"`
+	Download *GeoPackageDownload `yaml:"download,omitempty" json:"download,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
-type InitDownload struct {
-	// Location of GeoPackage on remote HTTP(S) URL, GeoPackage will be downloaded to local disk
+type GeoPackageDownload struct {
+	// Location of GeoPackage on remote HTTP(S) URL. GeoPackage will be downloaded to local disk
 	// during startup and stored at the location specified in "file".
-	Download URL `yaml:"download" json:"download" validate:"required"`
+	From URL `yaml:"from" json:"from" validate:"required"`
 
 	// Advanced setting: Determines how many workers (goroutines) in parallel will download the specified GeoPackage.
 	// Setting this to 1 will disable concurrent downloads.
-	// +kubebuilder:default="4"
+	// +kubebuilder:default=4
+	// +kubebuilder:validation:Minimum=1
 	// +optional
 	Parallelism int `yaml:"parallelism,omitempty" json:"parallelism,omitempty" validate:"required,gte=1" default:"4"`
 
@@ -720,7 +722,8 @@ type InitDownload struct {
 	RetryMaxDelay Duration `yaml:"retryMaxDelay,omitempty" json:"retryMaxDelay,omitempty" validate:"required" default:"30s"`
 
 	// Advanced setting: Maximum number of retries when retrying HTTP requests to download (part of) GeoPackage.
-	// +kubebuilder:default="5"
+	// +kubebuilder:default=5
+	// +kubebuilder:validation:Minimum=1
 	// +optional
 	MaxRetries int `yaml:"maxRetries,omitempty" json:"maxRetries,omitempty" validate:"required,gte=1" default:"5"`
 }
