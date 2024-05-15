@@ -29,7 +29,7 @@ func newAddressesGeoPackage() geoPackageBackend {
 			Fid:                       "feature_id",
 			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
 			MaxBBoxSizeToUseWithRTree: 30000,
-			InMemoryCacheSize:         "2000KiB",
+			InMemoryCacheSize:         -2000,
 		},
 		File: pwd + "/testdata/bag.gpkg",
 	})
@@ -42,7 +42,7 @@ func newTemporalAddressesGeoPackage() geoPackageBackend {
 			Fid:                       "feature_id",
 			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
 			MaxBBoxSizeToUseWithRTree: 30000,
-			InMemoryCacheSize:         "2000KiB",
+			InMemoryCacheSize:         -2000,
 		},
 		File: pwd + "/testdata/bag-temporal.gpkg",
 	})
@@ -65,7 +65,7 @@ func TestNewGeoPackage(t *testing.T) {
 					Local: &config.GeoPackageLocal{
 						GeoPackageCommon: config.GeoPackageCommon{
 							Fid:               "feature_id",
-							InMemoryCacheSize: "2000KiB",
+							InMemoryCacheSize: -2000,
 						},
 						File: pwd + "/testdata/bag.gpkg",
 					},
