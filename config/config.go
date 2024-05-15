@@ -737,7 +737,7 @@ type GeoPackageCloud struct {
 	// For example 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'
 	Connection string `yaml:"connection" json:"connection" validate:"required"`
 
-	// Username of the storage account, e.g: devstoreaccount1 when using Azurite
+	// Username of the storage account, like devstoreaccount1 when using Azurite
 	User string `yaml:"user" json:"user" validate:"required"`
 
 	// Some kind of credential like a password or key to authenticate with the storage backend, e.g:
