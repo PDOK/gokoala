@@ -16,7 +16,7 @@ type localGeoPackage struct {
 }
 
 func newLocalGeoPackage(gpkg *config.GeoPackageLocal) geoPackageBackend {
-	if gpkg.Init != nil {
+	if gpkg.Download != nil {
 		downloadGeoPackage(gpkg)
 	}
 	inMemCacheSize, err := gpkg.InMemoryCacheSizeSqlite()
@@ -34,10 +34,10 @@ func newLocalGeoPackage(gpkg *config.GeoPackageLocal) geoPackageBackend {
 }
 
 func downloadGeoPackage(gpkg *config.GeoPackageLocal) {
-	url := *gpkg.Init.Download.URL
+	url := *gpkg.Download.From.URL
 	log.Printf("start download of GeoPackage: %s", url.String())
-	downloadTime, err := engine.Download(url, gpkg.File, gpkg.Init.Parallelism, gpkg.Init.TLSSkipVerify,
-		gpkg.Init.Timeout.Duration, gpkg.Init.RetryDelay.Duration, gpkg.Init.RetryMaxDelay.Duration, gpkg.Init.MaxRetries)
+	downloadTime, err := engine.Download(url, gpkg.File, gpkg.Download.Parallelism, gpkg.Download.TLSSkipVerify,
+		gpkg.Download.Timeout.Duration, gpkg.Download.RetryDelay.Duration, gpkg.Download.RetryMaxDelay.Duration, gpkg.Download.MaxRetries)
 	if err != nil {
 		log.Fatalf("failed to download GeoPackage: %v", err)
 	}
