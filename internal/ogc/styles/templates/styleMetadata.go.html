@@ -14,6 +14,16 @@
     {{ markdown .Params.Metadata.Description }}
     <table class="table table-borderless table-sm w-100">
         <tbody>
+        {{ if .Params.Metadata.Keywords }}
+            <tr>
+                <td class="w-25 text-nowrap fw-bold">
+                    {{ i18n "Keywords" }}
+                </td>
+                <td>
+                    {{ .Params.Metadata.Keywords | join ", " }}
+                </td>
+            </tr>
+        {{ end }}
         {{ if .Params.Metadata.LastUpdated }}
             <tr>
                 <td class="w-25 text-nowrap fw-bold">
