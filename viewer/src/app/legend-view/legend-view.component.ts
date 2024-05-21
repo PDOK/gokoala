@@ -59,7 +59,6 @@ export class LegendViewComponent implements OnInit, OnChanges {
             const titlepart = this.titleItems.split(',')
             this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
           }
-
         } else {
           this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [])
         }

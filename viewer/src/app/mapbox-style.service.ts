@@ -134,8 +134,10 @@ export class MapboxStyleService {
       } else {
         let title = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'])
         this.pushItem(title, layer, names, p)
-
-        let paint = layer.paint['circle-color'] as FillPattern
+        let paint: FillPattern = {} as FillPattern
+        if (layer.type == LayerType.Circle) {
+          paint = layer.paint['circle-color'] as FillPattern
+        }
         if (layer.type == LayerType.Fill) {
           paint = layer.paint['fill-color'] as FillPattern
           if (!paint) {
