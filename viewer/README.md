@@ -41,7 +41,7 @@ Embed the webcomponent 'app-vectortile-view' in your web application
 
 <app-legend-view
   id="legendadminunit"
-  style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0-preprod/styles/bestuurlijkegebieden_standaardvisualisatie?f=json">
+  style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/styles/bestuurlijkegebieden_standaardvisualisatie?f=json">
 </app-legend-view>
 ```
 
