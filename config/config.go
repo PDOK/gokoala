@@ -425,6 +425,10 @@ type CollectionEntryFeatures struct {
 	// Filters available for this collection
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
+
+	// Downloads available for this collection
+	// +optional
+	Downloads *CollectionDownloads `yaml:"downloads,omitempty" json:"downloads,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -437,6 +441,65 @@ type FeatureFilters struct {
 
 	// OAF Part 3: add config for complex/CQL filters here
 	// <placeholder>
+}
+
+// +kubebuilder:object:generate=true
+type CollectionDownloads struct {
+	// Links to downloads of entire collection
+	// +optional
+	Links []DownloadLink `yaml:"links,omitempty" json:"links,omitempty" validate:"dive"`
+
+	// Configuration for downloads per map sheet
+	// +optional
+	MapSheets *DownloadMapSheets `yaml:"mapSheets,omitempty" json:"mapSheets,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type DownloadLink struct {
+	// Name of the provided download
+	Name string `yaml:"name" json:"name" validate:"required"`
+
+	// Full URL to the file to be downloaded
+	AssetURL *URL `yaml:"assetUrl" json:"assetUrl" validate:"required"`
+
+	// Approximate size of the file to be downloaded
+	// +optional
+	Size string `yaml:"size,omitempty" json:"size,omitempty"`
+
+	// Media type of the file to be downloaded
+	MediaType string `yaml:"mediaType" json:"mediaType" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type DownloadMapSheets struct {
+	// Properties that provide the download details per map sheet
+	Properties MapSheetProperties `yaml:"properties" json:"properties" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type MapSheetProperties struct {
+	// Property containing file download URL
+	AssetURL string `yaml:"assetUrl" json:"assetUrl" validate:"required"`
+
+	// Property containing file size
+	Size string `yaml:"size" json:"size" validate:"required"`
+
+	// Property containing file media type
+	MediaType string `yaml:"mediaType" json:"mediaType" validate:"required"`
+
+	// Any properties pertaining to temporal aspects
+	// +optional
+	Temporal *MapSheetTemporalProperties `yaml:"temporal,omitempty" json:"temporal,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type MapSheetTemporalProperties struct {
+	// Name of the temporal property
+	Name string `yaml:"name" json:"name" validate:"required"`
+
+	// Precision of the temporal property
+	// +optional
+	Precision string `yaml:"precision,omitempty" json:"precision,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -554,6 +617,26 @@ func (oaf *OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []P
 		}
 	}
 	return []PropertyFilter{}
+}
+
+func (oaf *OgcAPIFeatures) DownloadLinksForCollection(collectionID string) []DownloadLink {
+	for _, coll := range oaf.Collections {
+		if coll.ID == collectionID && coll.Features != nil && coll.Features.Downloads != nil &&
+			coll.Features.Downloads.Links != nil {
+			return coll.Features.Downloads.Links
+		}
+	}
+	return []DownloadLink{}
+}
+
+func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetProperties {
+	for _, coll := range oaf.Collections {
+		if coll.ID == collectionID && coll.Features != nil && coll.Features.Downloads != nil &&
+			coll.Features.Downloads.MapSheets != nil {
+			return &coll.Features.Downloads.MapSheets.Properties
+		}
+	}
+	return nil
 }
 
 // +kubebuilder:object:generate=true

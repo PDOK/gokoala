@@ -66,14 +66,23 @@
                                                                                                     aria-label="Features in {{ $srs}} {{ i18n "As" }} {{ $formatName }}">{{ $formatName }}</a></li>
                                 {{ end }}
                             {{ end }}
-                            {{/* TODO offer download link to GeoPackage, for example <li>Download {{ i18n "As" }} <a href="#" onclick="alert('TODO')">GeoPackage</a></li>*/}}
                         </ul>
                         <br/>
                         <div class="alert alert-primary" role="alert">
                             {{ i18n "FeaturesExplanation" }}
                         </div>
                     </li>
-
+                    {{ $downloadLinks := .Config.OgcAPI.Features.DownloadLinksForCollection .Params.ID }}
+                    {{ if not (empty $downloadLinks) }}
+                    <li class="list-group-item">
+                        <h3 class="card-title h5">Downloads</h3>
+                        <ul>
+                        {{- range $index, $link := $downloadLinks -}}
+                            <li><a href="{{ $link.AssetURL }}" target="_blank" aria-label="{{ $link.Name }}">{{ $link.Name }} ({{ $link.Size }})</a></li>
+                        {{ end }}
+                        </ul>
+                    </li>
+                    {{ end }}
                     {{ end }}
                 {{ end }}
             </ul>

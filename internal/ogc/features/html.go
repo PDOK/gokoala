@@ -43,28 +43,30 @@ func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
 type featureCollectionPage struct {
 	domain.FeatureCollection
 
-	CollectionID    string
-	Metadata        *config.GeoSpatialCollectionMetadata
-	Cursor          domain.Cursors
-	PrevLink        string
-	NextLink        string
-	Limit           int
-	ReferenceDate   *time.Time
-	PropertyFilters map[string]string
+	CollectionID       string
+	Metadata           *config.GeoSpatialCollectionMetadata
+	Cursor             domain.Cursors
+	PrevLink           string
+	NextLink           string
+	Limit              int
+	ReferenceDate      *time.Time
+	PropertyFilters    map[string]string
+	MapSheetProperties *config.MapSheetProperties
 }
 
 // featurePage enriched Feature for HTML representation.
 type featurePage struct {
 	domain.Feature
 
-	CollectionID string
-	FeatureID    int64
-	Metadata     *config.GeoSpatialCollectionMetadata
+	CollectionID       string
+	FeatureID          int64
+	Metadata           *config.GeoSpatialCollectionMetadata
+	MapSheetProperties *config.MapSheetProperties
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, fc *domain.FeatureCollection) {
+	propertyFilters map[string]string, mapSheetProperties *config.MapSheetProperties, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]
 
@@ -94,13 +96,15 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		limit,
 		referenceDate,
 		propertyFilters,
+		mapSheetProperties,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
 	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featuresKey, lang), pageContent, breadcrumbs)
 }
 
-func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string, feat *domain.Feature) {
+func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
+	mapSheetProperties *config.MapSheetProperties, feat *domain.Feature) {
 	collectionMetadata := collections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
@@ -120,11 +124,11 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	}...)
 
 	pageContent := &featurePage{
-
 		*feat,
 		collectionID,
 		feat.ID,
 		collectionMetadata,
+		mapSheetProperties,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)

@@ -39,11 +39,19 @@
             </tr>
             </thead>
             <tbody>
+            {{ $mapSheetProperties := .Params.MapSheetProperties }}
             {{ range $key, $value := .Params.Properties }}
+            {{ if and $mapSheetProperties (eq $key $mapSheetProperties.AssetURL) }}
+            <tr>
+                <td class="w-20 align-middle">{{ $key }}</td>
+                <td><a class="btn btn-primary" href="{{ $value }}">Download</a></td>
+            </tr>
+            {{ else }}
             <tr>
                 <td class="w-25">{{ $key }}</td>
                 <td>{{ $value }}</td>
             </tr>
+            {{ end }}
             {{ end }}
             </tbody>
         </table>

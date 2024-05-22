@@ -104,6 +104,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
+		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
@@ -154,7 +155,7 @@ func (f *Features) Features() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, fc)
+			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, mapSheetProperties, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
@@ -168,6 +169,8 @@ func (f *Features) Features() http.HandlerFunc {
 
 // Feature serves a single Feature
 func (f *Features) Feature() http.HandlerFunc {
+	cfg := f.engine.Config
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -191,6 +194,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
+		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
@@ -211,7 +215,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.feature(w, r, collectionID, feat)
+			f.html.feature(w, r, collectionID, mapSheetProperties, feat)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featureAsGeoJSON(w, r, collectionID, feat, url)
 		case engine.FormatJSONFG:

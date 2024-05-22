@@ -152,6 +152,7 @@
 
     <!-- results/features -->
     <div class="col-md-12">
+        {{ $mapSheetProperties := .Params.MapSheetProperties }}
         {{ range $feat := .Params.Features }}
         <table class="table table-striped">
             <thead>
@@ -161,10 +162,17 @@
             </thead>
             <tbody>
             {{ range $key, $value := $feat.Properties }}
+            {{ if and $mapSheetProperties (eq $key $mapSheetProperties.AssetURL) }}
+            <tr>
+                <td class="w-20 align-middle">{{ $key }}</td>
+                <td><a class="btn btn-primary" href="{{ $value }}">Download</a></td>
+            </tr>
+            {{ else }}
             <tr>
                 <td class="w-20">{{ $key }}</td>
                 <td>{{ $value }}</td>
             </tr>
+            {{ end }}
             {{ end }}
             </tbody>
         </table>
