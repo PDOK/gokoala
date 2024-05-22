@@ -143,7 +143,7 @@ func TestEngine_Start(t *testing.T) {
 
 			// Start the server in a separate goroutine
 			errChan := make(chan error, 1)
-			randomDebugPort := rand.IntN(9999-9000) + 9000
+			randomDebugPort := rand.IntN(9999-9000) + 9000 //nolint:gosec // random isn't used for security purposes
 			go func() {
 				errChan <- e.Start(tt.address, randomDebugPort, tt.shutdownDelay)
 			}()
