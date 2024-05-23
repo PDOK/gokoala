@@ -11,6 +11,7 @@ require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/elnormous/contenttype v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
