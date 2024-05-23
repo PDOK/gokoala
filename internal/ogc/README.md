@@ -1,15 +1,13 @@
 # OGC API
 
 OGC APIs are constructed by different building blocks. These building blocks
-are composed of the different [OGC API standards](https://ogcapi.ogc.org/) as
-defined by the OGC. Each OGC building block resides in its own Go package.
+are composed of the different [OGC API standards](https://ogcapi.ogc.org/). 
+Each OGC building block resides in its own Go package. 
+
+When coding we try to use the naming convention as used by the OGC, so it is clear
+which specification or part is referred to in code.
 
 ## Coding
-
-### Naming convention
-
-When coding we will try to use the naming convention as that is used by the OGC.
-So it is clean which specification or part is referred to in the code.
 
 ### Templates
 
@@ -32,7 +30,7 @@ flexible.
 
 #### IDE support
 
-See [README](../README.md) in the root.
+See [README](../../README.md) in the root.
 
 #### Tip: handling JSON
 

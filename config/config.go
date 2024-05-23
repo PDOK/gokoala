@@ -164,10 +164,12 @@ type Config struct {
 	BaseURL URL `yaml:"baseUrl" json:"baseUrl" validate:"required"`
 
 	// Optional reference to a catalog/portal/registry that lists all datasets, not just this one
-	DatasetCatalogURL URL `yaml:"datasetCatalogUrl" json:"datasetCatalogUrl"`
+	// +optional
+	DatasetCatalogURL URL `yaml:"datasetCatalogUrl,omitempty" json:"datasetCatalogUrl,omitempty"`
 
 	// The languages/translations to offer, valid options are Dutch (nl) and English (en). Dutch is the default.
-	AvailableLanguages []Language `yaml:"availableLanguages" json:"availableLanguages"`
+	// +optional
+	AvailableLanguages []Language `yaml:"availableLanguages,omitempty" json:"availableLanguages,omitempty"`
 
 	// Define which OGC API building blocks this API supports
 	OgcAPI OgcAPI `yaml:"ogcApi" json:"ogcApi" validate:"required"`

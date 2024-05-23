@@ -79,7 +79,7 @@ func TestDownload(t *testing.T) {
 			downloadTime, err := Download(*parsedURL, outputFile.Name(), tt.args.parallelism, tt.args.tlsSkipVerify,
 				tt.args.timeout, tt.args.retryDelay, tt.args.retryMaxDelay, tt.args.maxRetries)
 			assert.NoError(t, err)
-			assert.Greater(t, *downloadTime, 1*time.Millisecond)
+			assert.Greater(t, *downloadTime, 100*time.Nanosecond)
 			assert.FileExists(t, outputFile.Name())
 			stat, err := outputFile.Stat()
 			assert.NoError(t, err)

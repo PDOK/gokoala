@@ -350,6 +350,20 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output in default (WGS84) and bbox explicitly in WGS84 - with JSON response validation disabled",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_validation_disabled.yaml",
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_bbox_explicit_wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request WGS84 for collections with same backing feature table",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_collection_single_table.yaml",
@@ -592,6 +606,20 @@ func TestFeatures_Feature(t *testing.T) {
 			name: "Request output in WGS84 explicitly",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+				collectionID: "dutch-addresses",
+				featureID:    "10",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_feature_10_wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in WGS84 explicitly - with validation disabled",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_validation_disabled.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
 				collectionID: "dutch-addresses",
 				featureID:    "10",
