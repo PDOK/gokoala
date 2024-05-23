@@ -467,7 +467,7 @@ type DownloadLink struct {
 	Size string `yaml:"size,omitempty" json:"size,omitempty"`
 
 	// Media type of the file to be downloaded
-	MediaType string `yaml:"mediaType" json:"mediaType" validate:"required"`
+	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
@@ -485,7 +485,7 @@ type MapSheetProperties struct {
 	Size string `yaml:"size" json:"size" validate:"required"`
 
 	// Property containing file media type
-	MediaType string `yaml:"mediaType" json:"mediaType" validate:"required"`
+	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 
 	// Any properties pertaining to temporal aspects
 	// +optional

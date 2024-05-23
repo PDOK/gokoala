@@ -60,7 +60,7 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 		feat.Links = append(feat.Links, domain.Link{
 			Rel:   "enclosure",
 			Title: "Download feature",
-			Type:  mapSheetProperties.MediaType,
+			Type:  mapSheetProperties.MediaType.String(),
 			Href:  fmt.Sprintf("%v", feat.Properties[mapSheetProperties.AssetURL]),
 		})
 	}
@@ -120,7 +120,7 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 		fgF.Links = append(fgF.Links, domain.Link{
 			Rel:   "enclosure",
 			Title: "Download feature",
-			Type:  mapSheetProperties.MediaType,
+			Type:  mapSheetProperties.MediaType.String(),
 			Href:  fmt.Sprintf("%v", fgF.Properties[mapSheetProperties.AssetURL]),
 		})
 	}
@@ -266,7 +266,7 @@ func (jf *jsonFeatures) createFeatureDownloadLinks(collectionID string, fc *doma
 			links = append(links, domain.Link{
 				Rel:   "enclosure",
 				Title: "Download feature",
-				Type:  mapSheetProperties.MediaType,
+				Type:  mapSheetProperties.MediaType.String(),
 				Href:  fmt.Sprintf("%v", feature.Properties[mapSheetProperties.AssetURL]),
 			})
 			feature.Links = links
@@ -281,7 +281,7 @@ func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(collectionID string, fc
 			links = append(links, domain.Link{
 				Rel:   "enclosure",
 				Title: "Download feature",
-				Type:  mapSheetProperties.MediaType,
+				Type:  mapSheetProperties.MediaType.String(),
 				Href:  fmt.Sprintf("%v", feature.Properties[mapSheetProperties.AssetURL]),
 			})
 			feature.Links = links
