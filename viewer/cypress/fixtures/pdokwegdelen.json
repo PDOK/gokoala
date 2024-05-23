@@ -4,19 +4,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?f=json"
+      "href": "https://api.pdok.nl/lv/bgt/ogc/v1/collections/wegdelen/items?f=json"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?f=html"
+      "href": "https://api.pdok.nl/lv/bgt/ogc/v1/collections/wegdelen/items?f=html"
     },
     {
       "rel": "next",
       "title": "Next page",
       "type": "application/geo+json",
-      "href": "https://api.pdok.nl/lv/bgt/ogc/v1_0-preprod/collections/wegdelen/items?cursor=C3w&f=json"
+      "href": "https://api.pdok.nl/lv/bgt/ogc/v1/collections/wegdelen/items?cursor=C3w&f=json"
     }
   ],
   "numberReturned": 10,

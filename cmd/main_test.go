@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	gokoalaEngine "github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -73,7 +74,7 @@ func Test_newRouter(t *testing.T) {
 			// given
 			eng, err := gokoalaEngine.NewEngine(tt.configFile, "", false, true)
 			assert.NoError(t, err)
-			setupOGCBuildingBlocks(eng)
+			ogc.SetupBuildingBlocks(eng)
 
 			recorder := httptest.NewRecorder()
 			req, err := http.NewRequest(http.MethodGet, tt.apiCall, nil)
