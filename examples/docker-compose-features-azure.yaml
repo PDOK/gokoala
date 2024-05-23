@@ -33,7 +33,13 @@ services:
         rclone mkdir blobs:example
         echo "upload cloud-backed sqlite/geopackage files (pre-created with blockcachevfsd CLI)"
         rclone copy /examples/resources/addresses-cloudbacked-gpkg/ blobs:example
+        touch /tmp/finished
         echo "done"
+        sleep 300 # because docker-compose --exit-code-from implies --abort-on-container-exit
+    healthcheck:
+      test: stat /tmp/finished
+      interval: 1s
+      retries: 30
 
   gokoala:
     image: gokoala:local  # run local image if available (used in CI)
@@ -42,7 +48,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       azurite-seed:
-        condition: service_completed_successfully
+        condition: service_healthy
     command: "--config-file ./examples/config_features_azure.yaml"
     volumes:
       - ./:/examples
