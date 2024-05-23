@@ -11,6 +11,12 @@
       "type": "text/html",
       "title": "This document as HTML",
       "href": "http://localhost:8080/collections?f=html"
+    },
+    {
+      "rel": "license",
+      "type": "text/html",
+      "title": "CC0",
+      "href": "https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal"
     }
   ],
   "collections": [
