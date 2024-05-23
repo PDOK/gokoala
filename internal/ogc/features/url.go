@@ -68,6 +68,7 @@ type featureCollectionURL struct {
 	limit                     config.Limit
 	configuredPropertyFilters []config.PropertyFilter
 	supportsDatetime          bool
+	downloadPeriodParam       string
 }
 
 // parse the given URL to values required to delivery a set of Features
@@ -85,6 +86,7 @@ func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limi
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
 	referenceDate, dateTimeErr := parseDateTime(fc.params, fc.supportsDatetime)
+	parseDownloadPeriod(fc.downloadPeriodParam, fc.params, propertyFilters)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
@@ -161,6 +163,9 @@ func (fc featureCollectionURL) validateNoUnknownParams() error {
 	copyParams.Del(filterCrsParam)
 	for _, pf := range fc.configuredPropertyFilters {
 		copyParams.Del(pf.Name)
+	}
+	if fc.downloadPeriodParam != "" {
+		copyParams.Del(fc.downloadPeriodParam)
 	}
 	if len(copyParams) > 0 {
 		return fmt.Errorf("unknown query parameter(s) found: %v", copyParams.Encode())
@@ -333,6 +338,13 @@ func parsePropertyFilters(configuredPropertyFilters []config.PropertyFilter, par
 		}
 	}
 	return propertyFilters, nil
+}
+
+func parseDownloadPeriod(downloadPeriodParam string, params url.Values, propertyFilters map[string]string) {
+	downloadPeriod := params.Get(downloadPeriodParam)
+	if downloadPeriod != "" {
+		propertyFilters[downloadPeriodParam] = downloadPeriod
+	}
 }
 
 // Support filtering on datetime: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime

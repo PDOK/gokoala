@@ -86,8 +86,13 @@ func (f *Features) Features() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
+		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
+		downloadPeriodParam := ""
+		if mapSheetProperties != nil && mapSheetProperties.Temporal != nil {
+			downloadPeriodParam = mapSheetProperties.Temporal.Name
+		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), false}
+			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), false, downloadPeriodParam}
 		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
 			url.supportsDatetime = true
 		}
@@ -104,7 +109,6 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
-		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
