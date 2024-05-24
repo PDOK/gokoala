@@ -434,7 +434,7 @@ type CollectionEntryFeatures struct {
 
 	// Downloads available for this collection
 	// +optional
-	MapSheetDownloads *DownloadMapSheets `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
+	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -473,13 +473,13 @@ type DownloadLink struct {
 }
 
 // +kubebuilder:object:generate=true
-type DownloadMapSheets struct {
+type MapSheetDownloads struct {
 	// Properties that provide the download details per map sheet
-	Properties MapSheetProperties `yaml:"properties" json:"properties" validate:"required"`
+	Properties MapSheetDownloadProperties `yaml:"properties" json:"properties" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
-type MapSheetProperties struct {
+type MapSheetDownloadProperties struct {
 	// Property containing file download URL
 	AssetURL string `yaml:"assetUrl" json:"assetUrl" validate:"required"`
 
@@ -630,7 +630,7 @@ func (oaf *OgcAPIFeatures) DownloadLinksForCollection(collectionID string) []Dow
 	return []DownloadLink{}
 }
 
-func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetProperties {
+func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetDownloadProperties {
 	for _, coll := range oaf.Collections {
 		if coll.ID == collectionID && coll.Features != nil && coll.Features.MapSheetDownloads != nil {
 			return &coll.Features.MapSheetDownloads.Properties
