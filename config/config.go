@@ -294,6 +294,10 @@ type GeoSpatialCollection struct {
 	// +optional
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
 	// 3D GeoVolumes specific to this collection
 	// +optional
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline" json:",inline"`
@@ -430,7 +434,7 @@ type CollectionEntryFeatures struct {
 
 	// Downloads available for this collection
 	// +optional
-	Downloads *CollectionDownloads `yaml:"downloads,omitempty" json:"downloads,omitempty"`
+	MapSheetDownloads *DownloadMapSheets `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -446,14 +450,10 @@ type FeatureFilters struct {
 }
 
 // +kubebuilder:object:generate=true
-type CollectionDownloads struct {
+type CollectionLinks struct {
 	// Links to downloads of entire collection
 	// +optional
-	Links []DownloadLink `yaml:"links,omitempty" json:"links,omitempty" validate:"dive"`
-
-	// Configuration for downloads per map sheet
-	// +optional
-	MapSheets *DownloadMapSheets `yaml:"mapSheets,omitempty" json:"mapSheets,omitempty"`
+	Downloads []DownloadLink `yaml:"downloads,omitempty" json:"downloads,omitempty" validate:"dive"`
 }
 
 // +kubebuilder:object:generate=true
@@ -623,9 +623,8 @@ func (oaf *OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []P
 
 func (oaf *OgcAPIFeatures) DownloadLinksForCollection(collectionID string) []DownloadLink {
 	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features != nil && coll.Features.Downloads != nil &&
-			coll.Features.Downloads.Links != nil {
-			return coll.Features.Downloads.Links
+		if coll.ID == collectionID && coll.Links != nil && coll.Links.Downloads != nil {
+			return coll.Links.Downloads
 		}
 	}
 	return []DownloadLink{}
@@ -633,9 +632,8 @@ func (oaf *OgcAPIFeatures) DownloadLinksForCollection(collectionID string) []Dow
 
 func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetProperties {
 	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features != nil && coll.Features.Downloads != nil &&
-			coll.Features.Downloads.MapSheets != nil {
-			return &coll.Features.Downloads.MapSheets.Properties
+		if coll.ID == collectionID && coll.Features != nil && coll.Features.MapSheetDownloads != nil {
+			return &coll.Features.MapSheetDownloads.Properties
 		}
 	}
 	return nil
