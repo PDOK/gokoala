@@ -120,17 +120,15 @@
             <!-- download period filter -->
             {{ if and $mapSheetProperties $mapSheetProperties.Temporal }}
             <div class="row mb-2">
-                <label for="period-select" class="col-sm-3 col-form-label fw-bold">{{ $mapSheetProperties.Temporal.Name | title }}</label>
+                <label for="download-period-select" class="col-sm-3 col-form-label fw-bold">{{ $mapSheetProperties.Temporal.Name | title }}</label>
                 <div class="col-sm">
-                    <select id="period-select" class="form-select" aria-label="Period selection"
+                    <select id="download-period-select" class="form-select" aria-label="Download period selection"
                             onchange="updateQueryString('{{ $mapSheetProperties.Temporal.Name }}', this.value)">
-                        <!-- Default to empty value -->
-                        <!-- TODO: default to latest value? -->
+                        <!-- default to empty value -->
                         <option></option>
-                        <!-- TODO: populate options based on values present in table -->
-                        <option value="2018" {{if eq (index .Params.PropertyFilters $mapSheetProperties.Temporal.Name) "2018" }}selected{{end}}>2018</option>
-                        <option value="2019" {{if eq (index .Params.PropertyFilters $mapSheetProperties.Temporal.Name) "2019" }}selected{{end}}>2019</option>
-                        <option value="2020" {{if eq (index .Params.PropertyFilters $mapSheetProperties.Temporal.Name) "2020" }}selected{{end}}>2020</option>
+                        {{ range $value := .Params.DownloadPeriodValues }}
+                        <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $mapSheetProperties.Temporal.Name) $value }}selected{{end}}>{{ $value }}</option>
+                        {{ end }}
                     </select>
                 </div>
             </div>

@@ -43,15 +43,16 @@ func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
 type featureCollectionPage struct {
 	domain.FeatureCollection
 
-	CollectionID       string
-	Metadata           *config.GeoSpatialCollectionMetadata
-	Cursor             domain.Cursors
-	PrevLink           string
-	NextLink           string
-	Limit              int
-	ReferenceDate      *time.Time
-	PropertyFilters    map[string]string
-	MapSheetProperties *config.MapSheetProperties
+	CollectionID         string
+	Metadata             *config.GeoSpatialCollectionMetadata
+	Cursor               domain.Cursors
+	PrevLink             string
+	NextLink             string
+	Limit                int
+	ReferenceDate        *time.Time
+	PropertyFilters      map[string]string
+	MapSheetProperties   *config.MapSheetDownloadProperties
+	DownloadPeriodValues []string
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -61,12 +62,12 @@ type featurePage struct {
 	CollectionID       string
 	FeatureID          int64
 	Metadata           *config.GeoSpatialCollectionMetadata
-	MapSheetProperties *config.MapSheetProperties
+	MapSheetProperties *config.MapSheetDownloadProperties
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, mapSheetProperties *config.MapSheetProperties, fc *domain.FeatureCollection) {
+	propertyFilters map[string]string, mapSheetProperties *config.MapSheetDownloadProperties, downloadPeriodValues []string, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]
 
@@ -97,6 +98,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		referenceDate,
 		propertyFilters,
 		mapSheetProperties,
+		downloadPeriodValues,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
@@ -104,7 +106,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
-	mapSheetProperties *config.MapSheetProperties, feat *domain.Feature) {
+	mapSheetProperties *config.MapSheetDownloadProperties, feat *domain.Feature) {
 	collectionMetadata := collections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
