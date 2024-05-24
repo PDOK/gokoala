@@ -43,9 +43,15 @@ type DatasourceConfig struct {
 	ds          config.Datasource
 }
 
+type DownloadPeriodConfig struct {
+	paramName   string
+	paramValues []string
+}
+
 type Features struct {
-	engine      *engine.Engine
-	datasources map[DatasourceKey]ds.Datasource
+	engine          *engine.Engine
+	datasources     map[DatasourceKey]ds.Datasource
+	downloadPeriods map[string]DownloadPeriodConfig
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -54,14 +60,16 @@ type Features struct {
 func NewFeatures(e *engine.Engine) *Features {
 	collections = cacheCollectionsMetadata(e)
 	datasources := createDatasources(e)
+	downloadPeriods := createDownloadPeriods(e, datasources)
 
 	rebuildOpenAPIForFeatures(e, datasources)
 
 	f := &Features{
-		engine:      e,
-		datasources: datasources,
-		html:        newHTMLFeatures(e),
-		json:        newJSONFeatures(e),
+		engine:          e,
+		datasources:     datasources,
+		downloadPeriods: downloadPeriods,
+		html:            newHTMLFeatures(e),
+		json:            newJSONFeatures(e),
 	}
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
@@ -86,15 +94,10 @@ func (f *Features) Features() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
+		downloadPeriod := f.downloadPeriods[collectionID]
 		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
-		downloadPeriodParam := ""
-		downloadPeriodValues := []string{}
-		if mapSheetProperties != nil && mapSheetProperties.Temporal != nil {
-			downloadPeriodParam = mapSheetProperties.Temporal.Name
-			downloadPeriodValues = []string{"2018", "2019", "2020"} // TODO: populate from collection table
-		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), false, downloadPeriodParam}
+			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), false, downloadPeriod.paramName}
 		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
 			url.supportsDatetime = true
 		}
@@ -161,7 +164,7 @@ func (f *Features) Features() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, mapSheetProperties, downloadPeriodValues, fc)
+			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, mapSheetProperties, downloadPeriod, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
@@ -262,6 +265,23 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 		created[k] = newDatasource(e, cfg.collections, cfg.ds)
 	}
 	return created
+}
+
+func createDownloadPeriods(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource) map[string]DownloadPeriodConfig {
+	result := make(map[string]DownloadPeriodConfig)
+	for k, datasource := range datasources {
+		mapSheetConfig := e.Config.OgcAPI.Features.MapSheetPropertiesForCollection(k.collectionID)
+		if mapSheetConfig == nil || mapSheetConfig.Temporal == nil {
+			continue
+		}
+		// TODO: extract distinct values from temporal column
+		_, err := datasource.GetFeatureTableMetadata(k.collectionID)
+		if err != nil {
+			continue
+		}
+		result[k.collectionID] = DownloadPeriodConfig{mapSheetConfig.Temporal.Name, []string{"2018", "2019", "2020"}}
+	}
+	return result
 }
 
 func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
