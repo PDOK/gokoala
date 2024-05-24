@@ -88,8 +88,10 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 		downloadPeriodParam := ""
+		downloadPeriodValues := []string{}
 		if mapSheetProperties != nil && mapSheetProperties.Temporal != nil {
 			downloadPeriodParam = mapSheetProperties.Temporal.Name
+			downloadPeriodValues = []string{"2018", "2019", "2020"} // TODO: populate from collection table
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
 			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), false, downloadPeriodParam}
@@ -159,7 +161,7 @@ func (f *Features) Features() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, mapSheetProperties, fc)
+			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate, propertyFilters, mapSheetProperties, downloadPeriodValues, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
 		case engine.FormatJSONFG:
