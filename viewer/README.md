@@ -45,7 +45,17 @@ Embed the webcomponent 'app-vectortile-view' in your web application
 </app-legend-view>
 ```
 
-see [index.html](./src/index.html) for other samples used in the [demo](https://pdok.github.io/gokoala/)
+# Legend Parameters
+
+The legend has the following parameters:
+
+- **style-url**: This is the URL to the Mapbox style that serves as input for the legend.
+
+- **title-items**: By default, the source layer names are used to name legend items. However, this parameter can be used to split legend items based on different attributes.
+
+Default layers are used for legend items. Attributes can be specified to create distinct items. For example, for the Dutch BGT, `titleItems = "type,plus_type,functie,fysiek_voorkomen,openbareruimtetype"` can be used. When `titleItems = "id"` is used, the "id" for the layer (layer name) is used to name the legend items.
+
+Legend uses is shown in the [example directory](../examples/)
 
 ## Development server
 
