@@ -6,19 +6,19 @@ import (
 	"github.com/elnormous/contenttype"
 )
 
-// Language represents a BCP 47 language tag.
+// MediaType represents a IANA media type as described in RFC 6838. Media types were formerly known as MIME types.
 // +kubebuilder:validation:Type=string
 type MediaType struct {
 	contenttype.MediaType
 }
 
-// MarshalJSON turn language tag into JSON
+// MarshalJSON turn MediaType into JSON
 // Value instead of pointer receiver because only that way it can be used for both.
 func (m MediaType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.String())
 }
 
-// UnmarshalJSON turn JSON into Language
+// UnmarshalJSON turn JSON into MediaType
 func (m *MediaType) UnmarshalJSON(b []byte) error {
 	var s string
 	if err := json.Unmarshal(b, &s); err != nil {

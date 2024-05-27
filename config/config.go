@@ -451,9 +451,12 @@ type FeatureFilters struct {
 
 // +kubebuilder:object:generate=true
 type CollectionLinks struct {
-	// Links to downloads of entire collection
+	// Links to downloads of entire collection. These will be rendered as rel=enclosure links
 	// +optional
 	Downloads []DownloadLink `yaml:"downloads,omitempty" json:"downloads,omitempty" validate:"dive"`
+
+	// Links to documentation describing the collection. These will be rendered as rel=describedby links
+	// <placeholder>
 }
 
 // +kubebuilder:object:generate=true
