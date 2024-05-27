@@ -18,6 +18,7 @@ import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { DataUrl, defaultMapping, FeatureServiceService, ProjectionMapping } from '../feature-service.service'
 import { projectionSetMercator } from '../mapprojection'
 import { boxControl } from './boxcontrol'
+import { Color } from 'ol/color'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,6 +44,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private _projection: ProjectionMapping = defaultMapping
 
   @Input() backgroundMap: BackgroundMap = 'OSM'
+  @Input() fillColor: string = 'rgba(0,0,255)'
+  @Input() strokeColor: string = '#3399CC'
+
   @Input() set projection(value: ProjectionLike) {
     this._projection = this.featureService.getProjectionMapping(value)
   }
@@ -64,7 +68,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   constructor(
     private el: ElementRef,
     private featureService: FeatureServiceService
-  ) {}
+  ) { }
 
   private getMap(): OLMap {
     return new OLMap({
@@ -155,10 +159,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   getStyle() {
     const fill = new Fill({
-      color: 'rgba(0,0,255)',
+      color: this.fillColor,
     })
     const stroke = new Stroke({
-      color: '#3399CC',
+      color: this.strokeColor,
       width: 1.25,
     })
     return [
