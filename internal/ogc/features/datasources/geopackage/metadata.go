@@ -102,6 +102,31 @@ where
 	return result, nil
 }
 
+func readGpkgDownloadPeriods(collections config.GeoSpatialCollections, db *sqlx.DB) (map[string][]string, error) {
+	result := make(map[string][]string)
+
+	for _, collection := range collections {
+		if collection.Features != nil && collection.Features.MapSheetDownloads != nil && collection.Features.MapSheetDownloads.Properties.Temporal != nil {
+			var tableName string
+			if collection.Features.TableName != nil {
+				tableName = *collection.Features.TableName
+			} else {
+				tableName = collection.ID
+			}
+			// select distinct values from temporal column
+			query := fmt.Sprintf("select distinct ft.%s from %s ft", collection.Features.MapSheetDownloads.Properties.Temporal.Name, tableName)
+			var periods []string
+			err := db.Select(&periods, query)
+			if err != nil {
+				return nil, fmt.Errorf("failed to retrieve download periods using query: %v\n, error: %w", query, err)
+			}
+			result[collection.ID] = periods
+		}
+	}
+
+	return result, nil
+}
+
 func readFeatureTableInfo(db *sqlx.DB, table featureTable) error {
 	rows, err := db.Queryx(fmt.Sprintf("select name, type from pragma_table_info('%s')", table.TableName))
 	if err != nil {

@@ -274,12 +274,11 @@ func createDownloadPeriods(e *engine.Engine, datasources map[DatasourceKey]ds.Da
 		if mapSheetConfig == nil || mapSheetConfig.Temporal == nil {
 			continue
 		}
-		// TODO: extract distinct values from temporal column
-		_, err := datasource.GetFeatureTableMetadata(k.collectionID)
+		downloadPeriods, err := datasource.GetDownloadPeriods(k.collectionID)
 		if err != nil {
 			continue
 		}
-		result[k.collectionID] = DownloadPeriodConfig{mapSheetConfig.Temporal.Name, []string{"2018", "2019", "2020"}}
+		result[k.collectionID] = DownloadPeriodConfig{mapSheetConfig.Temporal.Name, downloadPeriods}
 	}
 	return result
 }

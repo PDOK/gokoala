@@ -27,6 +27,9 @@ type Datasource interface {
 	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
 	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
 
+	// GetDownloadPeriods returns the list of available periods when the collection has map sheet downloads
+	GetDownloadPeriods(collection string) ([]string, error)
+
 	// Close closes (connections to) the datasource gracefully
 	Close()
 }

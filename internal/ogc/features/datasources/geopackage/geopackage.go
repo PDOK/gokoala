@@ -74,10 +74,11 @@ type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
 
-	fidColumn                  string
-	featureTableByCollectionID map[string]*featureTable
-	queryTimeout               time.Duration
-	maxBBoxSizeToUseWithRTree  int
+	fidColumn                     string
+	featureTableByCollectionID    map[string]*featureTable
+	downloadPeriodsByCollectionID map[string][]string
+	queryTimeout                  time.Duration
+	maxBBoxSizeToUseWithRTree     int
 }
 
 func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
@@ -110,6 +111,10 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	log.Println(metadata)
 
 	g.featureTableByCollectionID, err = readGpkgContents(collections, g.backend.getDB())
+	if err != nil {
+		log.Fatal(err)
+	}
+	g.downloadPeriodsByCollectionID, err = readGpkgDownloadPeriods(collections, g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -260,6 +265,14 @@ func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.Fea
 	val, ok := g.featureTableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("no metadata for %s", collection)
+	}
+	return val, nil
+}
+
+func (g *GeoPackage) GetDownloadPeriods(collection string) ([]string, error) {
+	val, ok := g.downloadPeriodsByCollectionID[collection]
+	if !ok {
+		return nil, fmt.Errorf("no download periods for %s", collection)
 	}
 	return val, nil
 }
