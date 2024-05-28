@@ -287,7 +287,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       )
     })
 
-    this.map.on('moveend', e => {
+    this.map.on('moveend', () => {
       const size = this.map.getSize()
       const extent = this.map.getView().calculateExtent(size)
       const extent2 = extent // transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
