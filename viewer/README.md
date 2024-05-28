@@ -31,6 +31,17 @@ Embed the webcomponent 'app-vectortile-view' in your web application
   </app-vectortile-view>
   ```
 
+## Vector tile view parameters
+
+The view comnponent has the follwing parameters
+
+- **itemsUrl**: A OGC API url as dataset for the features to show
+- **backgroundMap**: Openstreetmap is used as default backgroundmap. Use value "BRT"to use Dutch "brt achtergrondkaart" as background
+- **fillColor**: fill color (hex or RBG) for the features If not specified  is used 'rgba(0,0,255)' use e.g. "rgba(0,0,255,0)" for a transparent fill
+- **strokeColor**: Stroke color of the feature default color is  '#3399CC'
+- **mode**: Operation mode is  'default' or  'auto'. If auto is used the bounding box of the view is used emitted as boundingbox.
+- **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
+
 ## Embedding a vectortile legend
 
 ```html
