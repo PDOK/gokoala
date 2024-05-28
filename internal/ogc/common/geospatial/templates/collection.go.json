@@ -111,6 +111,19 @@
       "title" : "The HTML representation of the {{ .Params.ID }} features served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=html"
     }
+    {{ $downloadLinks := .Config.OgcAPI.Features.DownloadLinksForCollection .Params.ID }}
+    {{ if not (empty $downloadLinks) }}
+    {{ range $link := $downloadLinks }}
+    ,
+    {
+      "rel" : "enclosure",
+      "type" : "{{ $link.MediaType }}",
+      "title" : "{{ $link.Name }}",
+      "href" : "{{ $link.AssetURL }}",
+      "length" : {{ fromhumansize $link.Size }}
+    }
+    {{ end }}
+    {{ end }}
     {{ end }}
   ]
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
