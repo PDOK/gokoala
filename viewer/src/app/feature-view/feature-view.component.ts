@@ -20,6 +20,8 @@ import { projectionSetMercator } from '../mapprojection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { boxControl, emitBox } from './boxcontrol'
 import { fullBoxControl } from './fullboxcontrol'
+import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
+
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,7 +76,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   constructor(
     private el: ElementRef,
     private featureService: FeatureServiceService
-  ) {}
+  ) { }
 
   private getMap(): OLMap {
     return new OLMap({
@@ -247,17 +249,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     })
 
     this.map.addOverlay(tooltip)
-
-    //const eventType = 'pointermove'
-
-    /*    *
-       /
-       this.map.on(eventTypechange, (evt: MapBrowserEvent<UIEvent>) => {
-   
-      
-       })
-       */
-    const eventType = 'click'
+    let eventType: BrowserEventType = 'pointermove'
+    if (this.labelField) {
+      eventType = 'click'
+    }
     this.map.on(eventType, (evt: MapBrowserEvent<UIEvent>) => {
       this.map.forEachFeatureAtPixel(
         evt.pixel,
@@ -292,7 +287,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       const extent = this.map.getView().calculateExtent(size)
       const extent2 = extent // transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
       const polygon = fromExtent(extent2) as Geometry
-
       if (this.emit) {
         emitBox(this.map, polygon, this.box)
       }
