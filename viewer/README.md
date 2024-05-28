@@ -31,7 +31,33 @@ Embed the webcomponent 'app-vectortile-view' in your web application
   </app-vectortile-view>
   ```
 
-## Vector tile view parameters
+## Parameters for vectortile view
+
+The vectortile view comnponent has the follwing parameters:
+
+- **tileUrl** : Url to OGC vector tile service
+- **styleUrl** Url to vector Mapbox tile style.
+- **id** id for map
+- **zoom** initial zoom level
+
+The following values are emitted:
+
+- **currentZoomLevel**
+- **activeFeature**
+- **activeTileUrl**
+- **centerX**
+- **centerY**
+
+## Embedding a OGC API feature view
+
+ <app-feature-view
+      id="featuresample"
+      mode="auto"
+      fill-color="rgba(0,0,255,0)"
+      items-url="https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items/1">
+      </app-feature-view>
+
+## Feature view parameters
 
 The view comnponent has the follwing parameters
 
@@ -41,8 +67,12 @@ The view comnponent has the follwing parameters
 - **strokeColor**: Stroke color of the feature default color is  '#3399CC'
 - **mode**: Operation mode is  'default' or  'auto'. If auto is used the bounding box of the view is used emitted as boundingbox.
 - **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
+- **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature
 
-## Embedding a vectortile legend
+The following values are emitted:
+
+- **box**
+- **activeFeature**
 
 ```html
 <link rel="stylesheet" type="text/css" href="view-component/styles.css" />
