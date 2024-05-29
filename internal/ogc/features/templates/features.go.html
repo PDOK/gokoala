@@ -106,30 +106,25 @@
                 </div>
             </div>
             <!-- property filters -->
-            {{- range $propFilter := $cfg.OgcAPI.Features.PropertyFiltersForCollection $.Params.CollectionID -}}
+            {{- range $propFilter, $allowedValues := .Params.EnrichedPropertyFilters -}}
             <div class="row mb-2">
-                <label for="{{ $propFilter.Name }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
-                       title="{{ $propFilter.Name | title }}">{{ $propFilter.Name | title }}</label>
+                <label for="{{ $propFilter }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
+                       title="{{ $propFilter | title }}">{{ $propFilter | title }}</label>
                 <div class="col-sm">
-                    <input id="{{ $propFilter.Name }}-input" type="text" class="form-control"
-                           value="{{ index $.Params.PropertyFilters $propFilter.Name }}"
-                           onchange="updateQueryString('{{ $propFilter.Name }}', this.value)">
-                </div>
-            </div>
-            {{ end }}
-            <!-- download period filter -->
-            {{ if and $mapSheetProperties $mapSheetProperties.Temporal }}
-            <div class="row mb-2">
-                <label for="download-period-select" class="col-sm-3 col-form-label fw-bold">{{ $mapSheetProperties.Temporal.Name | title }}</label>
-                <div class="col-sm">
-                    <select id="download-period-select" class="form-select" aria-label="Download period selection"
-                            onchange="updateQueryString('{{ $mapSheetProperties.Temporal.Name }}', this.value)">
+                    {{ if $allowedValues }}
+                    <select id="{{ $propFilter }}-input" class="form-select"
+                            onchange="updateQueryString('{{ $propFilter }}', this.value)">
                         <!-- default to empty value -->
                         <option></option>
-                        {{ range $value := .Params.DownloadPeriodValues }}
-                        <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $mapSheetProperties.Temporal.Name) $value }}selected{{end}}>{{ $value }}</option>
+                        {{ range $value := $allowedValues }}
+                            <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $propFilter) $value }}selected{{end}}>{{ $value }}</option>
                         {{ end }}
                     </select>
+					{{ else }}
+                    <input id="{{ $propFilter }}-input" type="text" class="form-control"
+                           value="{{ index $.Params.PropertyFilters $propFilter }}"
+                           onchange="updateQueryString('{{ $propFilter }}', this.value)">
+                    {{ end }}
                 </div>
             </div>
             {{ end }}

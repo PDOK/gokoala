@@ -491,20 +491,6 @@ type MapSheetDownloadProperties struct {
 
 	// Property containing file media type
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
-
-	// Any properties pertaining to temporal aspects
-	// +optional
-	Temporal *MapSheetTemporalProperties `yaml:"temporal,omitempty" json:"temporal,omitempty"`
-}
-
-// +kubebuilder:object:generate=true
-type MapSheetTemporalProperties struct {
-	// Name of the temporal property
-	Name string `yaml:"name" json:"name" validate:"required"`
-
-	// Precision of the temporal property
-	// +optional
-	Precision string `yaml:"precision,omitempty" json:"precision,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -732,7 +718,7 @@ type GeoPackageCommon struct {
 	// +optional
 	QueryTimeout Duration `yaml:"queryTimeout,omitempty" json:"queryTimeout,omitempty" validate:"required" default:"15s"`
 
-	// When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
+	// ADVANCED SETTING. When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
 	// +kubebuilder:default=30000
 	// +optional
 	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree,omitempty" json:"maxBBoxSizeToUseWithRTree,omitempty" validate:"required" default:"30000"`
@@ -827,7 +813,7 @@ type GeoPackageCloud struct {
 	// +optional
 	Cache GeoPackageCloudCache `yaml:"cache,omitempty" json:"cache,omitempty"`
 
-	// Only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
+	// ADVANCED SETTING. Only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
 	// +kubebuilder:default=false
 	// +optional
 	LogHTTPRequests bool `yaml:"logHttpRequests,omitempty" json:"logHttpRequests,omitempty" default:"false"`
@@ -883,6 +869,13 @@ type PropertyFilter struct {
 	// +kubebuilder:default=true
 	// +optional
 	IndexRequired *bool `yaml:"indexRequired,omitempty" json:"indexRequired,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+
+	// +optional
+	AllowedValues []string `yaml:"allowedValues,omitempty" json:"allowedValues,omitempty"`
+
+	// +kubebuilder:default=false
+	// +optional
+	DeriveAllowedValuesFromDatasource *bool `yaml:"deriveAllowedValuesFromDatasource,omitempty" json:"deriveAllowedValuesFromDatasource,omitempty" default:"false"`
 }
 
 // +kubebuilder:object:generate=true

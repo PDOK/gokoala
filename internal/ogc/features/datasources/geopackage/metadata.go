@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/jmoiron/sqlx"
 )
 
@@ -102,29 +101,43 @@ where
 	return result, nil
 }
 
-func readGpkgDownloadPeriods(collections config.GeoSpatialCollections, db *sqlx.DB) (map[string][]string, error) {
-	result := make(map[string][]string)
-
+func readEnrichedPropertyFilters(collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]map[string][]string, error) {
+	result := make(map[string]map[string][]string)
 	for _, collection := range collections {
-		if collection.Features != nil && collection.Features.MapSheetDownloads != nil && collection.Features.MapSheetDownloads.Properties.Temporal != nil {
-			var tableName string
-			if collection.Features.TableName != nil {
-				tableName = *collection.Features.TableName
-			} else {
-				tableName = collection.ID
+		if collection.Features != nil {
+			result[collection.ID] = make(map[string][]string)
+			tableName := getTableName(collection)
+			for _, pf := range collection.Features.Filters.Properties {
+				result[collection.ID][pf.Name] = []string{}
+				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
+					return nil, errors.New("allowedValues and deriveAllowedValuesFromDatasource are mutually exclusive")
+				}
+				if pf.AllowedValues != nil {
+					result[collection.ID][pf.Name] = pf.AllowedValues
+					continue
+				}
+				if *pf.DeriveAllowedValuesFromDatasource {
+					// select distinct values from given column
+					query := fmt.Sprintf("select distinct ft.%s from %s ft", pf.Name, tableName)
+					var values []string
+					err := db.Select(&values, query)
+					if err != nil {
+						return nil, fmt.Errorf("failed to derive unique column values using query: %v\n, error: %w", query, err)
+					}
+					result[collection.ID][pf.Name] = values
+					continue
+				}
 			}
-			// select distinct values from temporal column
-			query := fmt.Sprintf("select distinct ft.%s from %s ft", collection.Features.MapSheetDownloads.Properties.Temporal.Name, tableName)
-			var periods []string
-			err := db.Select(&periods, query)
-			if err != nil {
-				return nil, fmt.Errorf("failed to retrieve download periods using query: %v\n, error: %w", query, err)
-			}
-			result[collection.ID] = periods
 		}
 	}
-
 	return result, nil
+}
+
+func getTableName(collection config.GeoSpatialCollection) string {
+	if collection.Features.TableName != nil {
+		return *collection.Features.TableName
+	}
+	return collection.ID
 }
 
 func readFeatureTableInfo(db *sqlx.DB, table featureTable) error {

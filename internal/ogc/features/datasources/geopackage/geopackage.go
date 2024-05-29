@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -74,11 +73,11 @@ type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
 
-	fidColumn                     string
-	featureTableByCollectionID    map[string]*featureTable
-	downloadPeriodsByCollectionID map[string][]string
-	queryTimeout                  time.Duration
-	maxBBoxSizeToUseWithRTree     int
+	fidColumn                             string
+	featureTableByCollectionID            map[string]*featureTable
+	enrichedPropertyFiltersByCollectionID map[string]map[string][]string // collection -> property filter name -> allowed values
+	queryTimeout                          time.Duration
+	maxBBoxSizeToUseWithRTree             int
 }
 
 func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
@@ -114,7 +113,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.downloadPeriodsByCollectionID, err = readGpkgDownloadPeriods(collections, g.backend.getDB())
+	g.enrichedPropertyFiltersByCollectionID, err = readEnrichedPropertyFilters(collections, g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -269,12 +268,8 @@ func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.Fea
 	return val, nil
 }
 
-func (g *GeoPackage) GetDownloadPeriods(collection string) ([]string, error) {
-	val, ok := g.downloadPeriodsByCollectionID[collection]
-	if !ok {
-		return nil, fmt.Errorf("no download periods for %s", collection)
-	}
-	return val, nil
+func (g *GeoPackage) GetEnrichedPropertyFilters(collection string) map[string][]string {
+	return g.enrichedPropertyFiltersByCollectionID[collection]
 }
 
 // Build specific features queries based on the given options.

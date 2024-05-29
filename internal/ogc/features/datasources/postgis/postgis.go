@@ -45,7 +45,7 @@ func (pg PostGIS) GetFeatureTableMetadata(_ string) (datasources.FeatureTableMet
 	return nil, nil
 }
 
-func (pg PostGIS) GetDownloadPeriods(_ string) ([]string, error) {
+func (pg PostGIS) GetEnrichedPropertyFilters(_ string) map[string][]string {
 	log.Println("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
-	return []string{}, nil
+	return nil
 }
