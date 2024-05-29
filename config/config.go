@@ -101,18 +101,26 @@ func validate(config *Config) error {
 
 	// custom validations
 	if config.OgcAPI.Features != nil {
-		return validateCollectionsTemporalConfig(config.OgcAPI.Features.Collections)
+		return validateFeatureCollections(config.OgcAPI.Features.Collections)
 	}
 	return nil
 }
 
-func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error {
+func validateFeatureCollections(collections GeoSpatialCollections) error {
 	var errMessages []string
 	for _, collection := range collections {
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
 			(collection.Metadata.Extent == nil || collection.Metadata.Extent.Interval == nil) {
 			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
 				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
+		}
+		if collection.Features != nil && collection.Features.Filters.Properties != nil {
+			for _, pf := range collection.Features.Filters.Properties {
+				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
+					errMessages = append(errMessages, fmt.Sprintf("validation failed for property filter '%s'; "+
+						"field 'AllowedValues' and field 'DeriveAllowedValuesFromDatasource' are mutually exclusive\n", pf.Name))
+				}
+			}
 		}
 	}
 	if len(errMessages) > 0 {

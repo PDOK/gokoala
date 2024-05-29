@@ -73,11 +73,11 @@ type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
 
-	fidColumn                             string
-	featureTableByCollectionID            map[string]*featureTable
-	enrichedPropertyFiltersByCollectionID map[string]map[string][]string // collection -> property filter name -> allowed values
-	queryTimeout                          time.Duration
-	maxBBoxSizeToUseWithRTree             int
+	fidColumn                     string
+	featureTableByCollectionID    map[string]*featureTable
+	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
+	queryTimeout                  time.Duration
+	maxBBoxSizeToUseWithRTree     int
 }
 
 func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
@@ -113,7 +113,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.enrichedPropertyFiltersByCollectionID, err = readEnrichedPropertyFilters(collections, g.backend.getDB())
+	g.propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(g.featureTableByCollectionID, collections, g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -268,8 +268,8 @@ func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.Fea
 	return val, nil
 }
 
-func (g *GeoPackage) GetEnrichedPropertyFilters(collection string) map[string][]string {
-	return g.enrichedPropertyFiltersByCollectionID[collection]
+func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
+	return g.propertyFiltersByCollectionID[collection]
 }
 
 // Build specific features queries based on the given options.

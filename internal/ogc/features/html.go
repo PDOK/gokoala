@@ -43,16 +43,16 @@ func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
 type featureCollectionPage struct {
 	domain.FeatureCollection
 
-	CollectionID            string
-	Metadata                *config.GeoSpatialCollectionMetadata
-	Cursor                  domain.Cursors
-	PrevLink                string
-	NextLink                string
-	Limit                   int
-	ReferenceDate           *time.Time
-	PropertyFilters         map[string]string
-	EnrichedPropertyFilters map[string][]string
-	MapSheetProperties      *config.MapSheetDownloadProperties
+	CollectionID                    string
+	Metadata                        *config.GeoSpatialCollectionMetadata
+	Cursor                          domain.Cursors
+	PrevLink                        string
+	NextLink                        string
+	Limit                           int
+	ReferenceDate                   *time.Time
+	PropertyFilters                 map[string]string
+	PropertyFilersWithAllowedValues map[string][]string
+	MapSheetProperties              *config.MapSheetDownloadProperties
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -66,7 +66,7 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time, propertyFilters map[string]string, enrichedPropertyFilters map[string][]string,
+	featuresURL featureCollectionURL, limit int, referenceDate *time.Time, propertyFilters map[string]string, propertyFilersWithAllowedValues map[string][]string,
 	mapSheetProperties *config.MapSheetDownloadProperties, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]
@@ -97,7 +97,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		limit,
 		referenceDate,
 		propertyFilters,
-		enrichedPropertyFilters,
+		propertyFilersWithAllowedValues,
 		mapSheetProperties,
 	}
 

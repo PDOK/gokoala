@@ -44,9 +44,9 @@ type DatasourceConfig struct {
 }
 
 type Features struct {
-	engine                  *engine.Engine
-	datasources             map[DatasourceKey]ds.Datasource
-	enrichedPropertyFilters map[string]map[string][]string
+	engine                           *engine.Engine
+	datasources                      map[DatasourceKey]ds.Datasource
+	propertyFiltersWithAllowedValues map[string]ds.PropertyFiltersWithAllowedValues
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -55,16 +55,16 @@ type Features struct {
 func NewFeatures(e *engine.Engine) *Features {
 	collections = cacheCollectionsMetadata(e)
 	datasources := createDatasources(e)
-	enrichedPropertyFilters := getConfiguredPropertyFilters(datasources)
+	propertyFiltersWithAllowedValues := configurePropertyFiltersWithAllowedValues(datasources)
 
 	rebuildOpenAPIForFeatures(e, datasources)
 
 	f := &Features{
-		engine:                  e,
-		datasources:             datasources,
-		enrichedPropertyFilters: enrichedPropertyFilters,
-		html:                    newHTMLFeatures(e),
-		json:                    newJSONFeatures(e),
+		engine:                           e,
+		datasources:                      datasources,
+		propertyFiltersWithAllowedValues: propertyFiltersWithAllowedValues,
+		html:                             newHTMLFeatures(e),
+		json:                             newJSONFeatures(e),
 	}
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
@@ -158,7 +158,7 @@ func (f *Features) Features() http.HandlerFunc {
 		switch format {
 		case engine.FormatHTML:
 			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.enrichedPropertyFilters[collectionID],
+				propertyFilters, f.propertyFiltersWithAllowedValues[collectionID],
 				cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID), fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
@@ -262,10 +262,10 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 	return created
 }
 
-func getConfiguredPropertyFilters(datasources map[DatasourceKey]ds.Datasource) map[string]map[string][]string {
-	result := make(map[string]map[string][]string)
+func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource) map[string]ds.PropertyFiltersWithAllowedValues {
+	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
 	for k, datasource := range datasources {
-		result[k.collectionID] = datasource.GetEnrichedPropertyFilters(k.collectionID)
+		result[k.collectionID] = datasource.GetPropertyFiltersWithAllowedValues(k.collectionID)
 	}
 	return result
 }

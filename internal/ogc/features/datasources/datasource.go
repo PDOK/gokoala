@@ -27,8 +27,8 @@ type Datasource interface {
 	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
 	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
 
-	// GetEnrichedPropertyFilters returns unique values of the given column in the table associated with the given collection
-	GetEnrichedPropertyFilters(collection string) map[string][]string
+	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values
+	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
 
 	// Close closes (connections to) the datasource gracefully
 	Close()
@@ -74,3 +74,5 @@ type FeatureTableMetadata interface {
 	// Note: data types can be datasource specific.
 	ColumnsWithDataType() map[string]string
 }
+
+type PropertyFiltersWithAllowedValues map[string][]string

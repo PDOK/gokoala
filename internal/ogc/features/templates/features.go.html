@@ -106,7 +106,7 @@
                 </div>
             </div>
             <!-- property filters -->
-            {{- range $propFilter, $allowedValues := .Params.EnrichedPropertyFilters -}}
+            {{- range $propFilter, $allowedValues := .Params.PropertyFilersWithAllowedValues -}}
             <div class="row mb-2">
                 <label for="{{ $propFilter }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
                        title="{{ $propFilter | title }}">{{ $propFilter | title }}</label>
