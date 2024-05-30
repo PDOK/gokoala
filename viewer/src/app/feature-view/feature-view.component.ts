@@ -1,6 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
+import { defaults as defaultControls } from 'ol/control'
 
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
@@ -22,7 +23,6 @@ import { boxControl, emitBox } from './boxcontrol'
 import { fullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 
-
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function coerceBooleanProperty(value: any): boolean {
@@ -43,6 +43,22 @@ export type BackgroundMap = 'BRT' | 'OSM'
   standalone: true,
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
+  private _showBoundingBoxButton: boolean = true
+  @Input() set showBoundingBoxButton(showBox) {
+    this._showBoundingBoxButton = coerceBooleanProperty(showBox)
+    this.showbuttons()
+  }
+  get showBoundingBoxButton() {
+    return this._showBoundingBoxButton
+  }
+  private _showFillExtentButton: boolean = false
+  @Input() set showFillExtentButton(showBox) {
+    this._showFillExtentButton = coerceBooleanProperty(showBox)
+    this.showbuttons()
+  }
+  get showFillExtentButton() {
+    return this._showFillExtentButton
+  }
   @Input() itemsUrl!: string
   private _projection: ProjectionMapping = defaultMapping
 
@@ -53,18 +69,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   @Input() labelField = undefined
   isZooming: boolean = false
-  private emit: boolean = false
 
   @Input() set projection(value: ProjectionLike) {
     this._projection = this.featureService.getProjectionMapping(value)
   }
-  private _showBoundingBoxButton: boolean = true
-  @Input() set showBoundingBoxButton(showBox) {
-    this._showBoundingBoxButton = coerceBooleanProperty(showBox)
-  }
-  get showBoundingBoxButton() {
-    return this._showBoundingBoxButton
-  }
+
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
   mapHeight = 400
@@ -76,13 +85,14 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   constructor(
     private el: ElementRef,
     private featureService: FeatureServiceService
-  ) { }
+  ) {}
 
   private getMap(): OLMap {
     return new OLMap({
       view: new View({
         projection: this._projection.visualProjection,
       }),
+      controls: [],
     })
   }
 
@@ -100,20 +110,35 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         this.map.setLayerGroup(new Group())
         this.loadFeatures(this.features)
         this.loadBackground()
-        if (this.mode === 'auto') {
-          this.emit = true
-        }
       })
   }
 
   ngAfterViewInit() {
+    this.changemode()
+  }
+
+  changemode() {
+    this.features = []
+    this.showbuttons()
+    this.addFeatureEmit()
+  }
+
+  showbuttons() {
+    this.map.getControls().forEach(x => {
+      this.map.removeControl(x)
+    })
+    defaultControls({
+      attribution: false,
+      zoom: true,
+    }).forEach(x => this.map.addControl(x))
     if (this.mode === 'default') {
       if (this._showBoundingBoxButton) {
         this.map.addControl(new boxControl(this.box, {}))
       }
-      this.map.addControl(new fullBoxControl(this.box, {}))
+      if (this._showFillExtentButton) {
+        this.map.addControl(new fullBoxControl(this.box, {}))
+      }
     }
-    this.addFeatureEmit()
   }
 
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
@@ -123,6 +148,12 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     ) {
       if (changes.itemsUrl?.currentValue) {
         this.init()
+      }
+    }
+
+    if (changes.mode?.previousValue != changes.mode?.currentValue) {
+      if (changes.mode?.currentValue) {
+        this.changemode()
       }
     }
   }
@@ -161,7 +192,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       })
     )
     const ext = vsource.getExtent()
-    if (!this.emit) {
+    if (this.mode === 'default') {
       if (features.length > 0) {
         if (features.length < 3) {
           this.setViewExtent(ext, 10)
@@ -269,8 +300,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
               if (f) {
                 tooltip.setPosition(getCenter(f.getExtent()))
 
-                this.goToUrl(link)
-                if (!this.labelField) {
+                if (this.labelField) {
+                  this.goToUrl(link)
+                } else {
                   tooltipContainer.style.visibility = 'visible'
                 }
               }
@@ -287,7 +319,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       const extent = this.map.getView().calculateExtent(size)
       const extent2 = extent // transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
       const polygon = fromExtent(extent2) as Geometry
-      if (this.emit) {
+      if (this.mode === 'auto') {
         emitBox(this.map, polygon, this.box)
       }
     })
