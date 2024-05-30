@@ -10,7 +10,7 @@
         padding: 2px;
       }
     </style>
-  <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.0ed78ee638161a19.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.0ed78ee638161a19.css"></noscript></head>
+  <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.d0a2eaa73edc60ab.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.d0a2eaa73edc60ab.css"></noscript></head>
 
   <body onload="load()">
     <h2> OGC API BBOX sample</h2>
@@ -18,29 +18,39 @@
     <input type="url" id="itemurl" name="itemurl" title><br><br>
     <label for="itemprojection">projection:</label>
     <input type="string" id="itemprojection" name="itemprojection" title><br><br>
+
+    <div>
+      <br>
+      if selected auto mode fills view with features:
+      <input type="checkbox" id="modeCheck" onclick="setMode()">
+      <br>
+      Buttons on map : selectbox
+      <input type="checkbox" id="selectCheck" onclick="showMap()">
+      full fill box
+      <input type="checkbox" id="fullSelectCheck" onclick="showMap()">
+    </div>
+
     <label for="endpoints">or choose sample url:</label>
 
     <select name="endpoints" id="endpoints" onclick="fillDefault()">
+      <option value="https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items?&amp;limit=1000">BGT pand</option>
       <option value="https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&amp;limit=50">
         Adressen inVlaanderen
       </option>
       <option value="https://ri.ldproxy.net/vineyards/collections/vineyards/items?bbox=6.3021%2C49.0087%2C8.4179%2C50.6139">
         LDProxy Vineyards
       </option>
-      <option value="https://api.pdok.nl/lv/bgt/ogc/v1_0-demo/collections/wegdelen/items">BGT wegdelen</option>
     </select>
-
-    <input onclick="showMap()" type="button" value="Show">
 
     <div>show map for:</div>
     <a id="showurl">placeholdertext</a>
     <div id="bbox"></div>
-    <app-feature-view id="featuresample" items-url="https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&amp;limit=50"></app-feature-view>
-  <script src="runtime.735c6a055d4f787c.js" type="module"></script><script src="polyfills.da05a5a1c612cd73.js" type="module"></script><script src="main.fbfab8e4f719c87e.js" type="module"></script></body>
+
+    <app-feature-view id="featuresample" mode="default"></app-feature-view>
+  <script src="runtime.735c6a055d4f787c.js" type="module"></script><script src="polyfills.da05a5a1c612cd73.js" type="module"></script><script src="main.5d81df127e41c38f.js" type="module"></script></body>
   <script>
     function load() {
-      const showurl =
-        'https://geo.api.vlaanderen.be/Adressenregister/ogc/features/collections/Adres/items?f=application%2Fgeo%2Bjson&limit=50'
+      const showurl = 'https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items?&limit=1000'
       const showprojection = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
       itemurl.value = showurl
       itemurl.title = showurl
@@ -55,14 +65,8 @@
         url.searchParams.set('bbox', selectbox.detail)
         itemurl.value = url
         itemurl.title = url
-        showMap()
-      })
 
-      wegdelensample.addEventListener('box', selectbox => {
-        console.log('rdbox')
-        console.log(JSON.stringify(selectbox.detail))
-        bbox.innerHTML = selectbox.detail
-        const url = new URL(itemurl.value)
+        showMap()
       })
 
       showMap()
@@ -76,12 +80,33 @@
       const map = document.getElementById('featuresample')
       map.setAttribute('items-url', url)
       map.setAttribute('projection', p)
+      map.setAttribute('show-bounding-box-button', document.getElementById('selectCheck').checked)
+      map.setAttribute('show-fill-extent-button', document.getElementById('fullSelectCheck').checked)
     }
+
     function fillDefault() {
       const defaulturl = document.getElementById('endpoints').value
       itemurl.value = defaulturl
       itemurl.title = defaulturl
       showMap()
     }
+
+    function setMode() {
+      var checkBox = document.getElementById('modeCheck')
+      const map = document.getElementById('featuresample')
+
+      if (checkBox.checked) {
+        map.setAttribute('mode', 'auto')
+        document.getElementById('fullSelectCheck').disabled = true
+        document.getElementById('selectCheck').disabled = true
+      } else {
+        map.setAttribute('mode', 'default')
+        document.getElementById('fullSelectCheck').disabled = false
+        document.getElementById('selectCheck').disabled = false
+      }
+      showMap()
+    }
+    function setSelectBox() {}
+    function setFullSelectBox() {}
   </script>
 </html>
