@@ -13,6 +13,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/docker/go-units"
 	perfjson "github.com/goccy/go-json"
 )
 
@@ -132,6 +133,7 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 	}
 }
 
+//nolint:funlen
 func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL) []domain.Link {
 
@@ -206,6 +208,30 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 				Title: "Previous page",
 				Type:  engine.MediaTypeJSONFG,
 				Href:  featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatJSONFG),
+			})
+		}
+	}
+
+	for _, downloadLink := range jf.engine.Config.OgcAPI.Features.DownloadLinksForCollection(collectionID) {
+		if downloadLink.Size != "" {
+			size, err := units.FromHumanSize(downloadLink.Size)
+			if err != nil {
+				log.Printf("cannot parse size %s, omitting link", downloadLink.Size)
+				continue
+			}
+			links = append(links, domain.Link{
+				Rel:    "enclosure",
+				Title:  downloadLink.Name,
+				Type:   downloadLink.MediaType.String(),
+				Href:   fmt.Sprintf("%v", downloadLink.AssetURL),
+				Length: size,
+			})
+		} else {
+			links = append(links, domain.Link{
+				Rel:   "enclosure",
+				Title: downloadLink.Name,
+				Type:  downloadLink.MediaType.String(),
+				Href:  fmt.Sprintf("%v", downloadLink.AssetURL),
 			})
 		}
 	}
