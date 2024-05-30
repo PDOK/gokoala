@@ -44,9 +44,9 @@ type DatasourceConfig struct {
 }
 
 type Features struct {
-	engine                           *engine.Engine
-	datasources                      map[DatasourceKey]ds.Datasource
-	propertyFiltersWithAllowedValues map[string]ds.PropertyFiltersWithAllowedValues
+	engine                    *engine.Engine
+	datasources               map[DatasourceKey]ds.Datasource
+	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -55,16 +55,16 @@ type Features struct {
 func NewFeatures(e *engine.Engine) *Features {
 	collections = cacheCollectionsMetadata(e)
 	datasources := createDatasources(e)
-	propertyFiltersWithAllowedValues := configurePropertyFiltersWithAllowedValues(datasources)
+	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources)
 
 	rebuildOpenAPIForFeatures(e, datasources)
 
 	f := &Features{
-		engine:                           e,
-		datasources:                      datasources,
-		propertyFiltersWithAllowedValues: propertyFiltersWithAllowedValues,
-		html:                             newHTMLFeatures(e),
-		json:                             newJSONFeatures(e),
+		engine:                    e,
+		datasources:               datasources,
+		configuredPropertyFilters: configuredPropertyFilters,
+		html:                      newHTMLFeatures(e),
+		json:                      newJSONFeatures(e),
 	}
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
@@ -74,7 +74,9 @@ func NewFeatures(e *engine.Engine) *Features {
 
 // Features serve a FeatureCollection with the given collectionId
 //
-//nolint:cyclop
+// Beware: this is one of the most performance sensitive pieces of code in the system.
+// Try to do as much initialization work outside the hot path, and only do essential
+// operations inside this method.
 func (f *Features) Features() http.HandlerFunc {
 	cfg := f.engine.Config
 
@@ -85,18 +87,16 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
-		if _, ok := collections[collectionID]; !ok {
+		collection, ok := collections[collectionID]
+		if !ok {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), false}
-		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
-			url.supportsDatetime = true
-		}
+			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), hasDateTime(collection)}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
 		var temporalCriteria ds.TemporalCriteria
-		if collection := collections[collectionID]; collection != nil && collection.TemporalProperties != nil {
+		if hasDateTime(collection) {
 			temporalCriteria = ds.TemporalCriteria{
 				ReferenceDate:     referenceDate,
 				StartDateProperty: collection.TemporalProperties.StartDate,
@@ -158,7 +158,7 @@ func (f *Features) Features() http.HandlerFunc {
 		switch format {
 		case engine.FormatHTML:
 			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.propertyFiltersWithAllowedValues[collectionID],
+				propertyFilters, f.configuredPropertyFilters[collectionID],
 				cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID), fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
@@ -362,4 +362,8 @@ func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
 		int(input) == int(output) ||
 		(int(input) == undefinedSRID && int(output) == wgs84SRID) ||
 		(int(input) == wgs84SRID && int(output) == undefinedSRID)
+}
+
+func hasDateTime(collection *config.GeoSpatialCollectionMetadata) bool {
+	return collection != nil && collection.TemporalProperties != nil
 }

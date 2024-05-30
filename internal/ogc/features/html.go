@@ -43,16 +43,19 @@ func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
 type featureCollectionPage struct {
 	domain.FeatureCollection
 
-	CollectionID                     string
-	Metadata                         *config.GeoSpatialCollectionMetadata
-	Cursor                           domain.Cursors
-	PrevLink                         string
-	NextLink                         string
-	Limit                            int
-	ReferenceDate                    *time.Time
-	PropertyFilters                  map[string]string
-	PropertyFiltersWithAllowedValues map[string][]string
-	MapSheetProperties               *config.MapSheetDownloadProperties
+	CollectionID       string
+	Metadata           *config.GeoSpatialCollectionMetadata
+	Cursor             domain.Cursors
+	PrevLink           string
+	NextLink           string
+	Limit              int
+	ReferenceDate      *time.Time
+	MapSheetProperties *config.MapSheetDownloadProperties
+
+	// Property filters as supplied by the user in the URL (filter name + values)
+	PropertyFilters map[string]string
+	// Property filters as specified in the (YAML) config + enriched with allowed values
+	ConfiguredPropertyFilters map[string][]string
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -66,7 +69,8 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time, propertyFilters map[string]string, propertyFiltersWithAllowedValues map[string][]string,
+	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	propertyFilters map[string]string, configuredPropertyFilters map[string][]string,
 	mapSheetProperties *config.MapSheetDownloadProperties, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]
@@ -96,9 +100,9 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
 		limit,
 		referenceDate,
-		propertyFilters,
-		propertyFiltersWithAllowedValues,
 		mapSheetProperties,
+		propertyFilters,
+		configuredPropertyFilters,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
