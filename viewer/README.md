@@ -50,12 +50,12 @@ The following values are emitted:
 
 ## Embedding a OGC API feature view
 
- <app-feature-view
+<app-feature-view
       id="featuresample"
       mode="auto"
       fill-color="rgba(0,0,255,0)"
       items-url="https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items/1">
-      </app-feature-view>
+</app-feature-view>
 
 ## Feature view parameters
 
@@ -63,9 +63,11 @@ The view comnponent has the follwing parameters
 
 - **itemsUrl**: A OGC API url as dataset for the features to show
 - **backgroundMap**: Openstreetmap is used as default backgroundmap. Use value "BRT"to use Dutch "brt achtergrondkaart" as background
-- **fillColor**: fill color (hex or RBG) for the features If not specified  is used 'rgba(0,0,255)' use e.g. "rgba(0,0,255,0)" for a transparent fill
-- **strokeColor**: Stroke color of the feature default color is  '#3399CC'
-- **mode**: Operation mode is  'default' or  'auto'. If auto is used the bounding box of the view is used emitted as boundingbox.
+- **fillColor**: fill color (hex or RBG) for the features If not specified is used 'rgba(0,0,255)' use e.g. "rgba(0,0,255,0)" for a transparent fill
+- **strokeColor**: Stroke color of the feature default color is '#3399CC'
+- **mode**: Operation mode is 'default' or 'auto'. If 'auto' is used the bounding box of the view is emitted as boundingbox, and no buttons are visible.
+- **showBoundingBoxButton**: in default mode the boundingbox select button is showed, hide 'show-bounding-box-button' is needed
+- **showFillExtentButton**: in default mode the button to fill the view with features is not showed. Activate 'show-fill-extent-button' is needed
 - **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
 - **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature
 
