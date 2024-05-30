@@ -120,7 +120,7 @@
       "type" : "{{ $link.MediaType }}",
       "title" : "{{ $link.Name }}",
       "href" : "{{ $link.AssetURL }}",
-      "length" : {{ fromhumansize $link.Size }}
+      "length" : {{ bytessize $link.Size }}
     }
     {{ end }}
     {{ end }}

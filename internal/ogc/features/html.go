@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -52,10 +53,10 @@ type featureCollectionPage struct {
 	ReferenceDate      *time.Time
 	MapSheetProperties *config.MapSheetDownloadProperties
 
-	// Property filters as supplied by the user in the URL (filter name + values)
+	// Property filters as supplied by the user in the URL: filter name + value(s)
 	PropertyFilters map[string]string
-	// Property filters as specified in the (YAML) config + enriched with allowed values
-	ConfiguredPropertyFilters map[string][]string
+	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
+	ConfiguredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -70,7 +71,7 @@ type featurePage struct {
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, configuredPropertyFilters map[string][]string,
+	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
 	mapSheetProperties *config.MapSheetDownloadProperties, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]

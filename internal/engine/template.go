@@ -34,10 +34,10 @@ var (
 func init() {
 	customFuncs := texttemplate.FuncMap{
 		// custom template functions
-		"markdown":      markdown,
-		"unmarkdown":    unmarkdown,
-		"humansize":     humanSize,
-		"fromhumansize": fromHumanSize,
+		"markdown":   markdown,
+		"unmarkdown": unmarkdown,
+		"humansize":  humanSize,
+		"bytessize":  bytesSize,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -312,8 +312,8 @@ func humanSize(i int64) string {
 	return units.HumanSize(float64(i))
 }
 
-// fromHumanSize converts human-readable size to size in bytes (base-10, not base-2)
-func fromHumanSize(s string) int64 {
+// bytesSize converts human-readable size to size in bytes (base-10, not base-2)
+func bytesSize(s string) int64 {
 	i, err := units.FromHumanSize(s)
 	if err != nil {
 		log.Printf("cannot convert '%s' to bytes", s)

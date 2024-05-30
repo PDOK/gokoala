@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PDOK/gokoala/config"
 
@@ -57,7 +58,7 @@ func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources)
 
-	rebuildOpenAPIForFeatures(e, datasources)
+	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
 
 	f := &Features{
 		engine:                    e,
@@ -95,13 +96,6 @@ func (f *Features) Features() http.HandlerFunc {
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
 			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), hasDateTime(collection)}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
-		var temporalCriteria ds.TemporalCriteria
-		if hasDateTime(collection) {
-			temporalCriteria = ds.TemporalCriteria{
-				ReferenceDate:     referenceDate,
-				StartDateProperty: collection.TemporalProperties.StartDate,
-				EndDateProperty:   collection.TemporalProperties.EndDate}
-		}
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -119,7 +113,7 @@ func (f *Features) Features() http.HandlerFunc {
 				InputSRID:        inputSRID.GetOrDefault(),
 				OutputSRID:       outputSRID.GetOrDefault(),
 				Bbox:             bbox,
-				TemporalCriteria: temporalCriteria,
+				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
 			})
@@ -137,7 +131,7 @@ func (f *Features) Features() http.HandlerFunc {
 				InputSRID:        inputSRID.GetOrDefault(),
 				OutputSRID:       outputSRID.GetOrDefault(),
 				Bbox:             bbox,
-				TemporalCriteria: temporalCriteria,
+				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
 			})
@@ -362,6 +356,17 @@ func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
 		int(input) == int(output) ||
 		(int(input) == undefinedSRID && int(output) == wgs84SRID) ||
 		(int(input) == wgs84SRID && int(output) == undefinedSRID)
+}
+
+func getTemporalCriteria(collection *config.GeoSpatialCollectionMetadata, referenceDate time.Time) ds.TemporalCriteria {
+	var temporalCriteria ds.TemporalCriteria
+	if hasDateTime(collection) {
+		temporalCriteria = ds.TemporalCriteria{
+			ReferenceDate:     referenceDate,
+			StartDateProperty: collection.TemporalProperties.StartDate,
+			EndDateProperty:   collection.TemporalProperties.EndDate}
+	}
+	return temporalCriteria
 }
 
 func hasDateTime(collection *config.GeoSpatialCollectionMetadata) bool {

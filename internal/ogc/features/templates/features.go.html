@@ -106,24 +106,26 @@
                 </div>
             </div>
             <!-- property filters -->
-            {{- range $propFilter, $allowedValues := .Params.ConfiguredPropertyFilters -}}
+            {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
             <div class="row mb-2">
-                <label for="{{ $propFilter }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
-                       title="{{ $propFilter | title }}">{{ $propFilter | title }}</label>
+                <label for="{{ $pfName }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
+                       title="{{ $pfName | title }}">{{ $pfName | title }}</label>
                 <div class="col-sm">
-                    {{ if $allowedValues }}
-                    <select id="{{ $propFilter }}-input" class="form-select"
-                            onchange="updateQueryString('{{ $propFilter }}', this.value)">
+                    {{ if and $pf $pf.AllowedValues }}
+                    <select id="{{ $pfName }}-input" class="form-select"
+                            onchange="updateQueryString('{{ $pfName }}', this.value)">
                         <!-- default to empty value -->
                         <option></option>
-                        {{ range $value := $allowedValues }}
-                            <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $propFilter) $value }}selected{{end}}>{{ $value }}</option>
+                        {{ range $value := $pf.AllowedValues }}
+                            <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $pfName) $value }}selected{{end}}>{{ $value }}</option>
                         {{ end }}
                     </select>
 					{{ else }}
-                    <input id="{{ $propFilter }}-input" type="text" class="form-control"
-                           value="{{ index $.Params.PropertyFilters $propFilter }}"
-                           onchange="updateQueryString('{{ $propFilter }}', this.value)">
+                    <input id="{{ $pfName }}-input" type="text" class="form-control"
+                          {{/* get the actual value as supplied by the user from the PropertyFilters,
+                            not the ConfiguredPropertyFilters (which doesn't have this info) */}}
+                           value="{{ index $.Params.PropertyFilters $pfName }}"
+                           onchange="updateQueryString('{{ $pfName }}', this.value)">
                     {{ end }}
                 </div>
             </div>
@@ -201,7 +203,9 @@
             {{ end }}
             {{ end }}
             <tr>
-                <td colspan="2"><a class="btn btn-primary" href="{{ get $feat.Properties $mapSheetProperties.AssetURL }}">Download ({{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</a></td>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get $feat.Properties $mapSheetProperties.AssetURL }}" download>
+					Download
+				</a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
             </tr>
             <!-- For other collections, show all properties -->
             {{ else }}
