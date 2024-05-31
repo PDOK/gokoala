@@ -618,15 +618,6 @@ func (oaf *OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []P
 	return []PropertyFilter{}
 }
 
-func (oaf *OgcAPIFeatures) DownloadLinksForCollection(collectionID string) []DownloadLink {
-	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Links != nil && coll.Links.Downloads != nil {
-			return coll.Links.Downloads
-		}
-	}
-	return []DownloadLink{}
-}
-
 func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetDownloadProperties {
 	for _, coll := range oaf.Collections {
 		if coll.ID == collectionID && coll.Features != nil && coll.Features.MapSheetDownloads != nil {
