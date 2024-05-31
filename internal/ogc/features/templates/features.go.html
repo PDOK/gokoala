@@ -103,7 +103,7 @@
                             <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $pfName) $value }}selected{{end}}>{{ $value }}</option>
                         {{ end }}
                     </select>
-					{{ else }}
+                    {{ else }}
                     <input id="{{ $pfName }}-input" type="text" class="form-control"
                           {{/* get the actual value as supplied by the user from the PropertyFilters,
                             not the ConfiguredPropertyFilters (which doesn't have this info) */}}
@@ -187,8 +187,8 @@
             {{ end }}
             <tr>
                 <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get $feat.Properties $mapSheetProperties.AssetURL }}" download>
-					Download
-				</a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
+                    Download
+                </a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
             </tr>
             <!-- For other collections, show all properties -->
             {{ else }}
