@@ -1,0 +1,114 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json&limit=3&straatnaam=Westerdok&type=Ligplaats"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/foo/items?f=jsonfg&limit=3&straatnaam=Westerdok&type=Ligplaats"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items?f=html&limit=3&straatnaam=Westerdok&type=Ligplaats"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?cursor=FK4%7CSfXeZw&f=json&limit=3&straatnaam=Westerdok&type=Ligplaats"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121248.254,
+          488873.556
+        ]
+      },
+      "properties": {
+        "datum_doc": "2005-09-30",
+        "datum_eind": null,
+        "datum_strt": "2005-09-30",
+        "document": "GV00000403",
+        "huisletter": null,
+        "huisnummer": 79,
+        "nummer_id": "0363200000517234",
+        "postcode": "1013AZ",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000517234",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Westerdok",
+        "toevoeging": null,
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
+      },
+      "id": 5291
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121248.06,
+          488882.412
+        ]
+      },
+      "properties": {
+        "datum_doc": "2005-09-30",
+        "datum_eind": null,
+        "datum_strt": "2005-09-30",
+        "document": "GV00000403",
+        "huisletter": null,
+        "huisnummer": 81,
+        "nummer_id": "0363200000517235",
+        "postcode": "1013AZ",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000517235",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Westerdok",
+        "toevoeging": null,
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
+      },
+      "id": 5292
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121246.948,
+          488891.247
+        ]
+      },
+      "properties": {
+        "datum_doc": "2005-09-30",
+        "datum_eind": null,
+        "datum_strt": "2005-09-30",
+        "document": "GV00000403",
+        "huisletter": null,
+        "huisnummer": 83,
+        "nummer_id": "0363200000517236",
+        "postcode": "1013AZ",
+        "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000517236",
+        "status": "Naamgeving uitgegeven",
+        "straatnaam": "Westerdok",
+        "toevoeging": null,
+        "type": "Ligplaats",
+        "woonplaats": "Amsterdam"
+      },
+      "id": 5293
+    }
+  ],
+  "numberReturned": 3
+}
