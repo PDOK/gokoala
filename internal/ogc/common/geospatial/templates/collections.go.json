@@ -138,6 +138,19 @@
             {{/* placeholder for more links*/}}
           {{end}}
         {{end}}
+        {{ if and $coll.Links $coll.Links.Downloads }}
+          {{ range $link := $coll.Links.Downloads }}
+            ,
+            {
+              "rel" : "enclosure",
+              "type" : "{{ $link.MediaType }}",
+              "title" : "{{ $link.Name }}",
+              "href" : "{{ $link.AssetURL }}"{{ if $link.Size }},
+              "length" : {{ bytessize $link.Size }}
+              {{ end }}
+            }
+          {{ end }}
+        {{ end }}
       ],
       "content" : [
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
