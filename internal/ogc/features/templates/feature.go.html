@@ -52,7 +52,9 @@
             {{ end }}
             {{ end }}
             <tr>
-                <td colspan="2"><a class="btn btn-primary" href="{{ get .Params.Properties $mapSheetProperties.AssetURL }}">Download ({{ humansize (get .Params.Properties $mapSheetProperties.Size) }})</a></td>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get $feat.Properties $mapSheetProperties.AssetURL }}" download>
+					Download
+				</a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
             </tr>
             <!-- For other collections, show all properties -->
             {{ else }}
