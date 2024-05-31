@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -43,28 +44,35 @@ func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
 type featureCollectionPage struct {
 	domain.FeatureCollection
 
-	CollectionID    string
-	Metadata        *config.GeoSpatialCollectionMetadata
-	Cursor          domain.Cursors
-	PrevLink        string
-	NextLink        string
-	Limit           int
-	ReferenceDate   *time.Time
+	CollectionID       string
+	Metadata           *config.GeoSpatialCollectionMetadata
+	Cursor             domain.Cursors
+	PrevLink           string
+	NextLink           string
+	Limit              int
+	ReferenceDate      *time.Time
+	MapSheetProperties *config.MapSheetDownloadProperties
+
+	// Property filters as supplied by the user in the URL: filter name + value(s)
 	PropertyFilters map[string]string
+	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
+	ConfiguredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
 }
 
 // featurePage enriched Feature for HTML representation.
 type featurePage struct {
 	domain.Feature
 
-	CollectionID string
-	FeatureID    int64
-	Metadata     *config.GeoSpatialCollectionMetadata
+	CollectionID       string
+	FeatureID          int64
+	Metadata           *config.GeoSpatialCollectionMetadata
+	MapSheetProperties *config.MapSheetDownloadProperties
 }
 
-func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, fc *domain.FeatureCollection) {
+func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
+	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
+	mapSheetProperties *config.MapSheetDownloadProperties, fc *domain.FeatureCollection) {
 
 	collectionMetadata := collections[collectionID]
 
@@ -93,14 +101,17 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
 		limit,
 		referenceDate,
+		mapSheetProperties,
 		propertyFilters,
+		configuredPropertyFilters,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
 	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featuresKey, lang), pageContent, breadcrumbs)
 }
 
-func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string, feat *domain.Feature) {
+func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
+	mapSheetProperties *config.MapSheetDownloadProperties, feat *domain.Feature) {
 	collectionMetadata := collections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
@@ -120,11 +131,11 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	}...)
 
 	pageContent := &featurePage{
-
 		*feat,
 		collectionID,
 		feat.ID,
 		collectionMetadata,
+		mapSheetProperties,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)

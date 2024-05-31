@@ -11,6 +11,7 @@ import (
 	texttemplate "text/template"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/docker/go-units"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
 	sprig "github.com/go-task/slim-sprig"
@@ -35,6 +36,8 @@ func init() {
 		// custom template functions
 		"markdown":   markdown,
 		"unmarkdown": unmarkdown,
+		"humansize":  humanSize,
+		"bytessize":  bytesSize,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -302,4 +305,19 @@ func unmarkdown(s *string) string {
 	withoutMarkdown := stripmd.Strip(*s)
 	withoutLinebreaks := strings.ReplaceAll(withoutMarkdown, "\n", " ")
 	return withoutLinebreaks
+}
+
+// humanSize converts size in bytes to a human-readable size
+func humanSize(i int64) string {
+	return units.HumanSize(float64(i))
+}
+
+// bytesSize converts human-readable size to size in bytes (base-10, not base-2)
+func bytesSize(s string) int64 {
+	i, err := units.FromHumanSize(s)
+	if err != nil {
+		log.Printf("cannot convert '%s' to bytes", s)
+		return 0
+	}
+	return i
 }

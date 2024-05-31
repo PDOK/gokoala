@@ -44,3 +44,8 @@ func (pg PostGIS) GetFeatureTableMetadata(_ string) (datasources.FeatureTableMet
 	log.Println("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return nil, nil
 }
+
+func (pg PostGIS) GetPropertyFiltersWithAllowedValues(_ string) datasources.PropertyFiltersWithAllowedValues {
+	log.Println("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
+	return nil
+}

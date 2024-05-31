@@ -39,11 +39,31 @@
             </tr>
             </thead>
             <tbody>
+                <!-- For map sheets collection, skip properties pertaining to downloads, then add download button -->
+            {{ $mapSheetProperties := .Params.MapSheetProperties }}
+            {{ if $mapSheetProperties }}
+            {{ $skipKeys := list $mapSheetProperties.AssetURL $mapSheetProperties.Size }}
+            {{ range $key, $value := .Params.Properties }}
+            {{ if not (has $key $skipKeys) }}
+            <tr>
+                <td class="w-25">{{ $key }}</td>
+                <td>{{ $value }}</td>
+            </tr>
+            {{ end }}
+            {{ end }}
+            <tr>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get .Params.Properties $mapSheetProperties.AssetURL }}" download>
+					Download
+				</a> ({{ i18n "Size" }}: {{ humansize (get .Params.Properties $mapSheetProperties.Size) }})</td>
+            </tr>
+            <!-- For other collections, show all properties -->
+            {{ else }}
             {{ range $key, $value := .Params.Properties }}
             <tr>
                 <td class="w-25">{{ $key }}</td>
                 <td>{{ $value }}</td>
             </tr>
+            {{ end }}
             {{ end }}
             </tbody>
         </table>

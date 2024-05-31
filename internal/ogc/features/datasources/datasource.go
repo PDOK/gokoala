@@ -4,11 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-spatial/geom"
 )
 
 // Datasource holds all Features for a single object type in a specific projection.
+// This abstraction allows the rest of the system to stay datastore agnostic.
 type Datasource interface {
 
 	// GetFeatureIDs returns all IDs of Features matching the given criteria, as well as Cursors for pagination.
@@ -27,6 +29,9 @@ type Datasource interface {
 	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
 	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
 
+	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values
+	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
+
 	// Close closes (connections to) the datasource gracefully
 	Close()
 }
@@ -44,17 +49,18 @@ type FeaturesCriteria struct {
 	// filtering by bounding box
 	Bbox *geom.Extent
 
-	// filtering by reference date
+	// filtering by reference date/time
 	TemporalCriteria TemporalCriteria
 
-	// filtering by properties
+	// filtering by properties (OAF part 1)
 	PropertyFilters map[string]string
 
-	// filtering by CQL
+	// filtering by CQL (OAF part 3)
 	Filter     string
 	FilterLang string
 }
 
+// TemporalCriteria criteria to filter based on date/time
 type TemporalCriteria struct {
 	// reference date
 	ReferenceDate time.Time
@@ -71,3 +77,14 @@ type FeatureTableMetadata interface {
 	// Note: data types can be datasource specific.
 	ColumnsWithDataType() map[string]string
 }
+
+// PropertyFilterWithAllowedValues property filter as configured in the (YAML) config, but enriched with allowed values
+type PropertyFilterWithAllowedValues struct {
+	config.PropertyFilter
+
+	// static or dynamic values that are allowed in to be used in this property filter
+	AllowedValues []string
+}
+
+// PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name
+type PropertyFiltersWithAllowedValues map[string]PropertyFilterWithAllowedValues

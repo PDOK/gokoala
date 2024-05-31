@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/PDOK/gokoala/config"
-
+	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -98,6 +98,45 @@ where
 	if len(uniqueTables) != len(result) {
 		log.Printf("Warning: found %d unique table names for %d collections, "+
 			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
+	}
+	return result, nil
+}
+
+func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*featureTable,
+	collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+
+	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
+	for _, collection := range collections {
+		if collection.Features == nil {
+			continue
+		}
+		result[collection.ID] = make(map[string]ds.PropertyFilterWithAllowedValues)
+		featTable := featTableByCollection[collection.ID]
+
+		for _, pf := range collection.Features.Filters.Properties {
+			// result should contain ALL configured property filters, with or without allowed values.
+			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
+			result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
+			if pf.AllowedValues != nil {
+				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
+				continue
+			}
+			if *pf.DeriveAllowedValuesFromDatasource {
+				if !*pf.IndexRequired {
+					log.Printf("Warning: index is disabled for column %s, deriving allowed values "+
+						"from may take a long time. Index on this column is recommended", pf.Name)
+				}
+				// select distinct values from given column
+				query := fmt.Sprintf("select distinct ft.%s from %s ft", pf.Name, featTable.TableName)
+				var values []string
+				err := db.Select(&values, query)
+				if err != nil {
+					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
+				}
+				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
+				continue
+			}
+		}
 	}
 	return result, nil
 }

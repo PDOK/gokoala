@@ -58,6 +58,15 @@
                   "explode": false,
                   "schema": {
                     "type": "{{ $propFilter.DataType }}"
+                    {{/* only allow enum restriction for strings */}}
+                    {{ if and (eq $propFilter.DataType "string") (not (empty $propFilter.AllowedValues)) }}
+                    ,"enum": [
+                      {{- range $index, $allowedValue := $propFilter.AllowedValues -}}
+                        {{if $index}},{{end}}
+                        "{{ $allowedValue }}"
+                      {{- end -}}
+                    ]
+                    {{ end }}
                   }
                 }
                 {{ end }}

@@ -2,6 +2,7 @@
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
+{{ $mapSheetProperties := .Params.MapSheetProperties }}
 
 <script>
     {{- /* generic function to update query string parameters */ -}}
@@ -88,14 +89,27 @@
                 </div>
             </div>
             <!-- property filters -->
-            {{- range $propFilter := $cfg.OgcAPI.Features.PropertyFiltersForCollection $.Params.CollectionID -}}
+            {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
             <div class="row mb-2">
-                <label for="{{ $propFilter.Name }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
-                       title="{{ $propFilter.Name | title }}">{{ $propFilter.Name | title }}</label>
+                <label for="{{ $pfName }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
+                       title="{{ $pfName | title }}">{{ $pfName | title }}</label>
                 <div class="col-sm">
-                    <input id="{{ $propFilter.Name }}-input" type="text" class="form-control"
-                           value="{{ index $.Params.PropertyFilters $propFilter.Name }}"
-                           onchange="updateQueryString('{{ $propFilter.Name }}', this.value)">
+                    {{ if and $pf $pf.AllowedValues }}
+                    <select id="{{ $pfName }}-input" class="form-select"
+                            onchange="updateQueryString('{{ $pfName }}', this.value)">
+                        <!-- default to empty value -->
+                        <option></option>
+                        {{ range $value := $pf.AllowedValues }}
+                            <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $pfName) $value }}selected{{end}}>{{ $value }}</option>
+                        {{ end }}
+                    </select>
+                    {{ else }}
+                    <input id="{{ $pfName }}-input" type="text" class="form-control"
+                          {{/* get the actual value as supplied by the user from the PropertyFilters,
+                            not the ConfiguredPropertyFilters (which doesn't have this info) */}}
+                           value="{{ index $.Params.PropertyFilters $pfName }}"
+                           onchange="updateQueryString('{{ $pfName }}', this.value)">
+                    {{ end }}
                 </div>
             </div>
             {{ end }}
@@ -160,11 +174,30 @@
             </tr>
             </thead>
             <tbody>
+            <!-- For map sheets collection, skip properties pertaining to downloads, then add download button -->
+            {{ if $mapSheetProperties }}
+            {{ $skipKeys := list $mapSheetProperties.AssetURL $mapSheetProperties.Size }}
+            {{ range $key, $value := $feat.Properties }}
+            {{ if not (has $key $skipKeys) }}
+            <tr>
+                <td class="w-20">{{ $key }}</td>
+                <td>{{ $value }}</td>
+            </tr>
+            {{ end }}
+            {{ end }}
+            <tr>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get $feat.Properties $mapSheetProperties.AssetURL }}" download>
+                    Download
+                </a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
+            </tr>
+            <!-- For other collections, show all properties -->
+            {{ else }}
             {{ range $key, $value := $feat.Properties }}
             <tr>
                 <td class="w-20">{{ $key }}</td>
                 <td>{{ $value }}</td>
             </tr>
+            {{ end }}
             {{ end }}
             </tbody>
         </table>

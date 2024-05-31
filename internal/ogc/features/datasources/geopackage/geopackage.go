@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -74,10 +73,11 @@ type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
 
-	fidColumn                  string
-	featureTableByCollectionID map[string]*featureTable
-	queryTimeout               time.Duration
-	maxBBoxSizeToUseWithRTree  int
+	fidColumn                     string
+	featureTableByCollectionID    map[string]*featureTable
+	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
+	queryTimeout                  time.Duration
+	maxBBoxSizeToUseWithRTree     int
 }
 
 func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
@@ -110,6 +110,10 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	log.Println(metadata)
 
 	g.featureTableByCollectionID, err = readGpkgContents(collections, g.backend.getDB())
+	if err != nil {
+		log.Fatal(err)
+	}
+	g.propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(g.featureTableByCollectionID, collections, g.backend.getDB())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -262,6 +266,10 @@ func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.Fea
 		return nil, fmt.Errorf("no metadata for %s", collection)
 	}
 	return val, nil
+}
+
+func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
+	return g.propertyFiltersByCollectionID[collection]
 }
 
 // Build specific features queries based on the given options.

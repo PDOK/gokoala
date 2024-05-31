@@ -3,6 +3,7 @@ package features
 import (
 	"bytes"
 	stdjson "encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -36,11 +37,14 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 	}
 }
 
+// GeoJSON
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
 
 	fc.Timestamp = now().Format(time.RFC3339)
 	fc.Links = jf.createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL)
+
+	jf.createFeatureDownloadLinks(collectionID, fc)
 
 	if jf.validateResponse {
 		jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
@@ -49,10 +53,20 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// GeoJSON
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	feat *domain.Feature, url featureURL) {
 
 	feat.Links = jf.createFeatureLinks(engine.FormatGeoJSON, url, collectionID, feat.ID)
+	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+		feat.Links = append(feat.Links, domain.Link{
+			Rel:   "enclosure",
+			Title: "Download feature",
+			Type:  mapSheetProperties.MediaType.String(),
+			Href:  fmt.Sprintf("%v", feat.Properties[mapSheetProperties.AssetURL]),
+		})
+	}
+
 	if jf.validateResponse {
 		jf.serveAndValidateJSON(&feat, engine.MediaTypeGeoJSON, r, w)
 	} else {
@@ -60,6 +74,7 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 	}
 }
 
+// JSON-FG
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection, crs ContentCrs) {
 
@@ -83,6 +98,8 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSONFG, collectionID, cursor, featuresURL)
 
+	jf.createJSONFGFeatureDownloadLinks(collectionID, &fgFC)
+
 	if jf.validateResponse {
 		jf.serveAndValidateJSON(&fgFC, engine.MediaTypeJSONFG, r, w)
 	} else {
@@ -90,6 +107,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	}
 }
 
+// JSON-FG
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
 	f *domain.Feature, url featureURL, crs ContentCrs) {
 
@@ -102,6 +120,14 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 	}
 	setGeom(crs, &fgF, f)
 	fgF.Links = jf.createFeatureLinks(engine.FormatJSONFG, url, collectionID, fgF.ID)
+	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+		fgF.Links = append(fgF.Links, domain.Link{
+			Rel:   "enclosure",
+			Title: "Download feature",
+			Type:  mapSheetProperties.MediaType.String(),
+			Href:  fmt.Sprintf("%v", fgF.Properties[mapSheetProperties.AssetURL]),
+		})
+	}
 
 	if jf.validateResponse {
 		jf.serveAndValidateJSON(&fgF, engine.MediaTypeJSONFG, r, w)
@@ -235,6 +261,36 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 		Href:  url.toCollectionURL(collectionID, engine.FormatJSON),
 	})
 	return links
+}
+
+func (jf *jsonFeatures) createFeatureDownloadLinks(collectionID string, fc *domain.FeatureCollection) {
+	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+		for _, feature := range fc.Features {
+			links := make([]domain.Link, 0)
+			links = append(links, domain.Link{
+				Rel:   "enclosure",
+				Title: "Download feature",
+				Type:  mapSheetProperties.MediaType.String(),
+				Href:  fmt.Sprintf("%v", feature.Properties[mapSheetProperties.AssetURL]),
+			})
+			feature.Links = links
+		}
+	}
+}
+
+func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(collectionID string, fc *domain.JSONFGFeatureCollection) {
+	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+		for _, feature := range fc.Features {
+			links := make([]domain.Link, 0)
+			links = append(links, domain.Link{
+				Rel:   "enclosure",
+				Title: "Download feature",
+				Type:  mapSheetProperties.MediaType.String(),
+				Href:  fmt.Sprintf("%v", feature.Properties[mapSheetProperties.AssetURL]),
+			})
+			feature.Links = links
+		}
+	}
 }
 
 // serveAndValidateJSON serves JSON after performing OpenAPI response validation.

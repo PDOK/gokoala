@@ -101,18 +101,26 @@ func validate(config *Config) error {
 
 	// custom validations
 	if config.OgcAPI.Features != nil {
-		return validateCollectionsTemporalConfig(config.OgcAPI.Features.Collections)
+		return validateFeatureCollections(config.OgcAPI.Features.Collections)
 	}
 	return nil
 }
 
-func validateCollectionsTemporalConfig(collections GeoSpatialCollections) error {
+func validateFeatureCollections(collections GeoSpatialCollections) error {
 	var errMessages []string
 	for _, collection := range collections {
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
 			(collection.Metadata.Extent == nil || collection.Metadata.Extent.Interval == nil) {
 			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
 				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
+		}
+		if collection.Features != nil && collection.Features.Filters.Properties != nil {
+			for _, pf := range collection.Features.Filters.Properties {
+				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
+					errMessages = append(errMessages, fmt.Sprintf("validation failed for property filter '%s'; "+
+						"field 'AllowedValues' and field 'DeriveAllowedValuesFromDatasource' are mutually exclusive\n", pf.Name))
+				}
+			}
 		}
 	}
 	if len(errMessages) > 0 {
@@ -294,6 +302,10 @@ type GeoSpatialCollection struct {
 	// +optional
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
 	// 3D GeoVolumes specific to this collection
 	// +optional
 	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline" json:",inline"`
@@ -427,6 +439,10 @@ type CollectionEntryFeatures struct {
 	// Filters available for this collection
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
+
+	// Downloads available for this collection
+	// +optional
+	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -439,6 +455,50 @@ type FeatureFilters struct {
 
 	// OAF Part 3: add config for complex/CQL filters here
 	// <placeholder>
+}
+
+// +kubebuilder:object:generate=true
+type CollectionLinks struct {
+	// Links to downloads of entire collection. These will be rendered as rel=enclosure links
+	// +optional
+	Downloads []DownloadLink `yaml:"downloads,omitempty" json:"downloads,omitempty" validate:"dive"`
+
+	// Links to documentation describing the collection. These will be rendered as rel=describedby links
+	// <placeholder>
+}
+
+// +kubebuilder:object:generate=true
+type DownloadLink struct {
+	// Name of the provided download
+	Name string `yaml:"name" json:"name" validate:"required"`
+
+	// Full URL to the file to be downloaded
+	AssetURL *URL `yaml:"assetUrl" json:"assetUrl" validate:"required"`
+
+	// Approximate size of the file to be downloaded
+	// +optional
+	Size string `yaml:"size,omitempty" json:"size,omitempty"`
+
+	// Media type of the file to be downloaded
+	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type MapSheetDownloads struct {
+	// Properties that provide the download details per map sheet
+	Properties MapSheetDownloadProperties `yaml:"properties" json:"properties" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type MapSheetDownloadProperties struct {
+	// Property containing file download URL
+	AssetURL string `yaml:"assetUrl" json:"assetUrl" validate:"required"`
+
+	// Property containing file size
+	Size string `yaml:"size" json:"size" validate:"required"`
+
+	// Property containing file media type
+	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
@@ -558,6 +618,15 @@ func (oaf *OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []P
 	return []PropertyFilter{}
 }
 
+func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetDownloadProperties {
+	for _, coll := range oaf.Collections {
+		if coll.ID == collectionID && coll.Features != nil && coll.Features.MapSheetDownloads != nil {
+			return &coll.Features.MapSheetDownloads.Properties
+		}
+	}
+	return nil
+}
+
 // +kubebuilder:object:generate=true
 type OgcAPIProcesses struct {
 	// Enable to advertise dismiss operations on the conformance page
@@ -648,7 +717,7 @@ type GeoPackageCommon struct {
 	// +optional
 	QueryTimeout Duration `yaml:"queryTimeout,omitempty" json:"queryTimeout,omitempty" validate:"required" default:"15s"`
 
-	// When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
+	// ADVANCED SETTING. When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
 	// +kubebuilder:default=30000
 	// +optional
 	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree,omitempty" json:"maxBBoxSizeToUseWithRTree,omitempty" validate:"required" default:"30000"`
@@ -743,7 +812,7 @@ type GeoPackageCloud struct {
 	// +optional
 	Cache GeoPackageCloudCache `yaml:"cache,omitempty" json:"cache,omitempty"`
 
-	// Only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
+	// ADVANCED SETTING. Only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
 	// +kubebuilder:default=false
 	// +optional
 	LogHTTPRequests bool `yaml:"logHttpRequests,omitempty" json:"logHttpRequests,omitempty" default:"false"`
@@ -799,6 +868,17 @@ type PropertyFilter struct {
 	// +kubebuilder:default=true
 	// +optional
 	IndexRequired *bool `yaml:"indexRequired,omitempty" json:"indexRequired,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+
+	// Static list of allowed values to be used as input for this property filter. Will be enforced by OpenAPI spec.
+	// +optional
+	AllowedValues []string `yaml:"allowedValues,omitempty" json:"allowedValues,omitempty"`
+
+	// Derive list of allowed values for this property filter from the corresponding column in the datastore.
+	// Use with caution since it can increase startup time when used on large tables. Make sure an index in present.
+	//
+	// +kubebuilder:default=false
+	// +optional
+	DeriveAllowedValuesFromDatasource *bool `yaml:"deriveAllowedValuesFromDatasource,omitempty" json:"deriveAllowedValuesFromDatasource,omitempty" default:"false"`
 }
 
 // +kubebuilder:object:generate=true

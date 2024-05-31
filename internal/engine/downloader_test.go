@@ -93,6 +93,7 @@ func createMockServer() *httptest.Server {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Go's FileServer supports Range Requests
 	ts := httptest.NewUnstartedServer(http.FileServer(http.Dir("internal/ogc/features/datasources/geopackage/testdata")))
 	err = ts.Listener.Close()
 	if err != nil {
