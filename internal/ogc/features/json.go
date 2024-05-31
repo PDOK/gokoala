@@ -13,7 +13,6 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/docker/go-units"
 	perfjson "github.com/goccy/go-json"
 )
 
@@ -209,20 +208,6 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 				Href:  featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatJSONFG),
 			})
 		}
-	}
-
-	for _, downloadLink := range jf.engine.Config.OgcAPI.Features.DownloadLinksForCollection(collectionID) {
-		size, err := units.FromHumanSize(downloadLink.Size)
-		if err != nil {
-			log.Fatalf("unable to create link for '%s': %v", downloadLink.Name, err)
-		}
-		links = append(links, domain.Link{
-			Rel:    "enclosure",
-			Title:  downloadLink.Name,
-			Type:   downloadLink.MediaType.String(),
-			Href:   fmt.Sprintf("%v", downloadLink.AssetURL),
-			Length: size,
-		})
 	}
 	return links
 }

@@ -43,23 +43,6 @@
                     {{ markdown .Params.Metadata.Description }}
                 {{ end }}
             </div>
-            <ul class="list-group list-group-flush">
-            {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-            {{ if .Config.OgcAPI.Features.Collections.ContainsID .Params.CollectionID }}
-                {{ $downloadLinks := $cfg.OgcAPI.Features.DownloadLinksForCollection .Params.CollectionID }}
-                {{ if not (empty $downloadLinks) }}
-                <li class="list-group-item">
-                    <h3 class="card-title h5">Downloads</h3>
-                    <ul>
-                    {{- range $index, $link := $downloadLinks -}}
-                        <li><a href="{{ $link.AssetURL }}" target="_blank" aria-label="{{ $link.Name }}">{{ $link.Name }} ({{ $link.Size }})</a></li>
-                    {{ end }}
-                    </ul>
-                </li>
-                {{ end }}
-            {{ end }}
-            {{ end }}
-            </ul>
         </div>
 
         <!-- filters -->
