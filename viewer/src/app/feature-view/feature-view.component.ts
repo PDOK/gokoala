@@ -1,6 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
-import { Feature, Map as OLMap, MapBrowserEvent, Overlay, View } from 'ol'
+import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
+import { defaults as defaultControls } from 'ol/control'
+
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
 import { Extent, getCenter, getTopLeft } from 'ol/extent'
@@ -10,14 +12,17 @@ import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
 import TileLayer from 'ol/layer/Tile'
 import { Projection, ProjectionLike } from 'ol/proj'
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
-import { Circle, Fill, Stroke, Style } from 'ol/style'
+import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
-import { NgChanges } from '../vectortile-view/vectortile-view.component'
-import { DataUrl, defaultMapping, FeatureServiceService, ProjectionMapping } from '../feature-service.service'
+import { DataUrl, FeatureServiceService, ProjectionMapping, defaultMapping } from '../feature-service.service'
 import { projectionSetMercator } from '../mapprojection'
-import { boxControl } from './boxcontrol'
+import { NgChanges } from '../vectortile-view/vectortile-view.component'
+import { boxControl, emitBox } from './boxcontrol'
+import { fullBoxControl } from './fullboxcontrol'
+import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
+import { Options as TextOptions } from 'ol/style/Text'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,20 +44,38 @@ export type BackgroundMap = 'BRT' | 'OSM'
   standalone: true,
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
-  @Input() itemsUrl!: string
-  private _projection: ProjectionMapping = defaultMapping
-
-  @Input() backgroundMap: BackgroundMap = 'OSM'
-  @Input() set projection(value: ProjectionLike) {
-    this._projection = this.featureService.getProjectionMapping(value)
-  }
   private _showBoundingBoxButton: boolean = true
   @Input() set showBoundingBoxButton(showBox) {
     this._showBoundingBoxButton = coerceBooleanProperty(showBox)
+    this.showbuttons()
   }
   get showBoundingBoxButton() {
     return this._showBoundingBoxButton
   }
+  private _showFillExtentButton: boolean = false
+  @Input() set showFillExtentButton(showBox) {
+    this._showFillExtentButton = coerceBooleanProperty(showBox)
+    this.showbuttons()
+  }
+  get showFillExtentButton() {
+    return this._showFillExtentButton
+  }
+  @Input() itemsUrl!: string
+  private _projection: ProjectionMapping = defaultMapping
+
+  @Input() backgroundMap: BackgroundMap = 'OSM'
+  @Input() fillColor: string = 'rgba(0,0,255)'
+  @Input() strokeColor: string = '#3399CC'
+  @Input() mode: 'default' | 'auto' = 'default'
+
+  @Input() labelField = undefined
+  @Input() labelOptions: string | undefined = undefined
+  isZooming: boolean = false
+
+  @Input() set projection(value: ProjectionLike) {
+    this._projection = this.featureService.getProjectionMapping(value)
+  }
+
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
   mapHeight = 400
@@ -64,13 +87,14 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   constructor(
     private el: ElementRef,
     private featureService: FeatureServiceService
-  ) {}
+  ) { }
 
   private getMap(): OLMap {
     return new OLMap({
       view: new View({
         projection: this._projection.visualProjection,
       }),
+      controls: [],
     })
   }
 
@@ -92,10 +116,31 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this._showBoundingBoxButton) {
-      this.map.addControl(new boxControl(this.box, {}))
-    }
+    this.changemode()
+  }
+
+  changemode() {
+    this.features = []
+    this.showbuttons()
     this.addFeatureEmit()
+  }
+
+  showbuttons() {
+    this.map.getControls().forEach(x => {
+      this.map.removeControl(x)
+    })
+    defaultControls({
+      attribution: false,
+      zoom: true,
+    }).forEach(x => this.map.addControl(x))
+    if (this.mode === 'default') {
+      if (this._showBoundingBoxButton) {
+        this.map.addControl(new boxControl(this.box, {}))
+      }
+      if (this._showFillExtentButton) {
+        this.map.addControl(new fullBoxControl(this.box, {}))
+      }
+    }
   }
 
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
@@ -105,6 +150,12 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     ) {
       if (changes.itemsUrl?.currentValue) {
         this.init()
+      }
+    }
+
+    if (changes.mode?.previousValue != changes.mode?.currentValue) {
+      if (changes.mode?.currentValue) {
+        this.changemode()
       }
     }
   }
@@ -137,30 +188,45 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.map.addLayer(
       new VectorLayer({
         source: vsource,
-        style: this.getStyle(),
+        // eslint-disable-next-line prettier/prettier
+        style: feature => this.getStyle(feature),
         zIndex: 10,
       })
     )
     const ext = vsource.getExtent()
-    if (features.length > 0) {
-      if (features.length < 3) {
-        this.setViewExtent(ext, 10)
-      } else {
-        this.setViewExtent(ext, 1.05)
+    if (this.mode === 'default') {
+      if (features.length > 0) {
+        if (features.length < 3) {
+          this.setViewExtent(ext, 10)
+        } else {
+          this.setViewExtent(ext, 1.05)
+        }
       }
     }
 
     return ext
   }
 
-  getStyle() {
+  getStyle(feature: FeatureLike) {
     const fill = new Fill({
-      color: 'rgba(0,0,255)',
+      color: this.fillColor,
     })
     const stroke = new Stroke({
-      color: '#3399CC',
+      color: this.strokeColor,
       width: 1.25,
     })
+
+    let text = undefined
+    if (this.labelField) {
+      if (this.labelOptions != undefined) {
+        const opt = JSON.parse(this.labelOptions) as TextOptions
+        text = new Text(opt)
+        text.setText(feature.get(this.labelField))
+      } else {
+        text = new Text({ text: feature.get(this.labelField) })
+      }
+    }
+
     return [
       new Style({
         image: new Circle({
@@ -170,6 +236,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         }),
         fill: fill,
         stroke: stroke,
+        text: text,
       }),
     ]
   }
@@ -205,6 +272,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     })
   }
 
+  goToUrl(url: string) {
+    window.location.href = url
+  }
+
   addFeatureEmit() {
     const tooltipContainer = this.el.nativeElement.querySelector("[id='tooltip']")
     tooltipContainer.style.visibility = 'hidden'
@@ -217,8 +288,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     })
 
     this.map.addOverlay(tooltip)
-
-    this.map.on('pointermove', (evt: MapBrowserEvent<UIEvent>) => {
+    let eventType: BrowserEventType = 'pointermove'
+    if (this.labelField) {
+      eventType = 'click'
+    }
+    this.map.on(eventType, (evt: MapBrowserEvent<UIEvent>) => {
       this.map.forEachFeatureAtPixel(
         evt.pixel,
         (feature: FeatureLike) => {
@@ -228,21 +302,15 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
               const items = 'items'
               const itemsUrl = this.itemsUrl.toLowerCase()
               const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
-              tooltipContent.innerHTML =
-                '<a href="' +
-                currentUrl.protocol +
-                '//' +
-                currentUrl.host +
-                currentUrl.pathname +
-                '/' +
-                featureId +
-                '">' +
-                featureId +
-                '</a>'
+              const link = currentUrl.protocol + '//' + currentUrl.host + currentUrl.pathname + '/' + featureId
+              tooltipContent.innerHTML = '<a href="' + link + '">' + featureId + '</a>'
               const f = feature.getGeometry()
               if (f) {
                 tooltip.setPosition(getCenter(f.getExtent()))
-                tooltipContainer.style.visibility = 'visible'
+
+                if (!this.labelField) {
+                  tooltipContainer.style.visibility = 'visible'
+                }
               }
               this.activeFeature.emit(feature)
             }
@@ -250,6 +318,16 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         },
         { hitTolerance: 3 }
       )
+    })
+
+    this.map.on('moveend', () => {
+      const size = this.map.getSize()
+      const extent = this.map.getView().calculateExtent(size)
+      const extent2 = extent // transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
+      const polygon = fromExtent(extent2) as Geometry
+      if (this.mode === 'auto') {
+        emitBox(this.map, polygon, this.box)
+      }
     })
   }
 }

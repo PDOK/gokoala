@@ -31,7 +31,50 @@ Embed the webcomponent 'app-vectortile-view' in your web application
   </app-vectortile-view>
   ```
 
-## Embedding a vectortile legend
+## Parameters for vectortile view
+
+The vectortile view comnponent has the follwing parameters:
+
+- **tileUrl** : Url to OGC vector tile service
+- **styleUrl** Url to vector Mapbox tile style.
+- **id** id for map
+- **zoom** initial zoom level
+
+The following values are emitted:
+
+- **currentZoomLevel**
+- **activeFeature**
+- **activeTileUrl**
+- **centerX**
+- **centerY**
+
+## Embedding a OGC API feature view
+
+<app-feature-view
+      id="featuresample"
+      mode="auto"
+      fill-color="rgba(0,0,255,0)"
+      items-url="https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items/1">
+</app-feature-view>
+
+## Feature view parameters
+
+The view comnponent has the follwing parameters
+
+- **itemsUrl**: A OGC API url as dataset for the features to show
+- **backgroundMap**: Openstreetmap is used as default backgroundmap. Use value "BRT"to use Dutch "brt achtergrondkaart" as background
+- **fillColor**: fill color (hex or RBG) for the features If not specified is used 'rgba(0,0,255)' use e.g. "rgba(0,0,255,0)" for a transparent fill
+- **strokeColor**: Stroke color of the feature default color is '#3399CC'
+- **mode**: Operation mode is 'default' or 'auto'. If 'auto' is used the bounding box of the view is emitted as boundingbox, and no buttons are visible.
+- **showBoundingBoxButton**: in default mode the boundingbox select button is showed, hide 'show-bounding-box-button' is needed
+- **showFillExtentButton**: in default mode the button to fill the view with features is not showed. Activate 'show-fill-extent-button' is needed
+- **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
+- **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature
+
+The following values are emitted:
+
+- **box**
+- **activeFeature**
 
 ```html
 <link rel="stylesheet" type="text/css" href="view-component/styles.css" />
@@ -45,7 +88,17 @@ Embed the webcomponent 'app-vectortile-view' in your web application
 </app-legend-view>
 ```
 
-see [index.html](./src/index.html) for other samples used in the [demo](https://pdok.github.io/gokoala/)
+# Legend Parameters
+
+The legend has the following parameters:
+
+- **style-url**: This is the URL to the Mapbox style that serves as input for the legend.
+
+- **title-items**: By default, the source layer names are used to name legend items. However, this parameter can be used to split legend items based on different attributes.
+
+Default layers are used for legend items. Attributes can be specified to create distinct items. For example, for the Dutch BGT, `titleItems = "type,plus_type,functie,fysiek_voorkomen,openbareruimtetype"` can be used. When `titleItems = "id"` is used, the "id" for the layer (layer name) is used to name the legend items.
+
+Legend uses is shown in the [example directory](../examples/)
 
 ## Development server
 
