@@ -22,6 +22,7 @@ import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { boxControl, emitBox } from './boxcontrol'
 import { fullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
+import { Options as TextOptions } from 'ol/style/Text'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,6 +69,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() mode: 'default' | 'auto' = 'default'
 
   @Input() labelField = undefined
+  @Input() labelOptions: string | undefined = undefined
   isZooming: boolean = false
 
   @Input() set projection(value: ProjectionLike) {
@@ -85,7 +87,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   constructor(
     private el: ElementRef,
     private featureService: FeatureServiceService
-  ) {}
+  ) { }
 
   private getMap(): OLMap {
     return new OLMap({
@@ -216,7 +218,13 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
     let text = undefined
     if (this.labelField) {
-      text = new Text({ text: feature.get(this.labelField) })
+      if (this.labelOptions != undefined) {
+        const opt = JSON.parse(this.labelOptions) as TextOptions
+        text = new Text(opt)
+        text.setText(feature.get(this.labelField))
+      } else {
+        text = new Text({ text: feature.get(this.labelField) })
+      }
     }
 
     return [
@@ -264,10 +272,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     })
   }
 
-  goToUrl(url: string) {
-    window.location.href = url
-  }
-
   addFeatureEmit() {
     const tooltipContainer = this.el.nativeElement.querySelector("[id='tooltip']")
     tooltipContainer.style.visibility = 'hidden'
@@ -300,9 +304,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
               if (f) {
                 tooltip.setPosition(getCenter(f.getExtent()))
 
-                if (this.labelField) {
-                  this.goToUrl(link)
-                } else {
+                if (!this.labelField) {
                   tooltipContainer.style.visibility = 'visible'
                 }
               }
