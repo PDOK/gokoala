@@ -145,9 +145,11 @@
             updateQueryString("bbox", selectbox.detail)
           })
 
+          {{ if $mapSheetProperties }}
           viewer.addEventListener('activeFeature', activefeature => {
             updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activefeature.detail.get('{{ $mapSheetProperties.MapSheetID }}'))
           })
+          {{ end }}
         </script>
         <noscript>Enable Javascript to view features on a map</noscript>
     </div>
