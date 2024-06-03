@@ -122,7 +122,13 @@
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" class="card"></app-feature-view>
+        {{/* different viewer settings depending on whether features are map sheets or not */}}
+        {{ if $mapSheetProperties }}
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default" fill-color="rgba(0,0,255,0)" show-fill-extent-button="true"
+            show-bounding-box-button="false" label-field="{{ $mapSheetProperties.MapSheetID }}" class="card"></app-feature-view>
+        {{ else }}
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" class="card"></app-feature-view>
+        {{ end }}
         <script type="module">
           const url = new URL(window.location.href)
           url.searchParams.set('f','json');
@@ -137,6 +143,10 @@
 
           viewer.addEventListener('box', selectbox => {
             updateQueryString("bbox", selectbox.detail)
+          })
+
+          viewer.addEventListener('activeFeature', activefeature => {
+            updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activefeature.detail.get('{{ $mapSheetProperties.MapSheetID }}'))
           })
         </script>
         <noscript>Enable Javascript to view features on a map</noscript>
