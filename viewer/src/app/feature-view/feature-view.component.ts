@@ -48,7 +48,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   initial: boolean = true
   @Input() set showBoundingBoxButton(showBox) {
     this._showBoundingBoxButton = coerceBooleanProperty(showBox)
-    this.showbuttons()
+    this.showButtons()
   }
   get showBoundingBoxButton() {
     return this._showBoundingBoxButton
@@ -56,7 +56,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private _showFillExtentButton: boolean = false
   @Input() set showFillExtentButton(showBox) {
     this._showFillExtentButton = coerceBooleanProperty(showBox)
-    this.showbuttons()
+    this.showButtons()
   }
   get showFillExtentButton() {
     return this._showFillExtentButton
@@ -71,7 +71,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   @Input() labelField = undefined
   @Input() labelOptions: string | undefined = undefined
-  isZooming: boolean = false
 
   @Input() set projection(value: ProjectionLike) {
     this._projection = this.featureService.getProjectionMapping(value)
@@ -88,7 +87,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   constructor(
     private el: ElementRef,
     private featureService: FeatureServiceService
-  ) { }
+  ) {}
 
   private getMap(): OLMap {
     return new OLMap({
@@ -117,16 +116,16 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.changemode()
+    this.changeMode()
   }
 
-  changemode() {
+  changeMode() {
     this.features = []
-    this.showbuttons()
+    this.showButtons()
     this.addFeatureEmit()
   }
 
-  showbuttons() {
+  showButtons() {
     this.map.getControls().forEach(x => {
       this.map.removeControl(x)
     })
@@ -154,9 +153,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       }
     }
 
-    if (changes.mode?.previousValue != changes.mode?.currentValue) {
+    if (changes.mode?.previousValue && changes.mode?.previousValue != changes.mode?.currentValue) {
       if (changes.mode?.currentValue) {
-        this.changemode()
+        this.changeMode()
       }
     }
   }
@@ -189,23 +188,22 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.map.addLayer(
       new VectorLayer({
         source: vsource,
-        // eslint-disable-next-line prettier/prettier
         style: feature => this.getStyle(feature),
         zIndex: 10,
       })
     )
-    const ext = vsource.getExtent()
+    const extent = vsource.getExtent()
     if (this.mode === 'default') {
       if (features.length > 0) {
         if (features.length < 3) {
-          this.setViewExtent(ext, 10)
+          this.setViewExtent(extent, 10)
         } else {
-          this.setViewExtent(ext, 1.05)
+          this.setViewExtent(extent, 1.05)
         }
       }
     } else {
       if (this.initial) {
-        this.setViewExtent(ext, 1)
+        this.setViewExtent(extent, 1)
         this.initial = false
       }
     }
@@ -276,13 +274,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     })
   }
 
-  goToUrl(url: string) {
-    window.location.href = url
-  }
-
   addFeatureEmit() {
     const tooltipContainer = this.el.nativeElement.querySelector("[id='tooltip']")
-    tooltipContainer.style.visibility = 'hidden'
     const tooltipContent = this.el.nativeElement.querySelector("[id='tooltip-content']")
     const tooltip = new Overlay({
       element: tooltipContainer,
@@ -327,8 +320,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.map.on('moveend', () => {
       const size = this.map.getSize()
       const extent = this.map.getView().calculateExtent(size)
-      const extent2 = extent // transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
-      const polygon = fromExtent(extent2) as Geometry
+      const polygon = fromExtent(extent) as Geometry
       if (this.mode === 'auto') {
         emitBox(this.map, polygon, this.box)
       }

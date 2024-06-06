@@ -8,32 +8,9 @@ This viewer is available as a [WebComponent](https://developer.mozilla.org/en-US
 
 See [demo with samples](https://pdok.github.io/gokoala/).
 
-## Embedding a vectortile map
-
-Build the project and copy the style and javascript files into the application embedding the download component
-
-Embed the webcomponent 'app-vectortile-view' in your web application
-
-- load styles and javascript in your html
-
-  ```html
-  <link rel="stylesheet" type="text/css" href="view-component/styles.css" />
-  <script type="text/javascript" src="view-component/main.js"></script>
-  <script type="text/javascript" src="view-component/polyfills.js"></script>
-  <script type="text/javascript" src="view-component/runtime.js"></script>
-
-  <app-vectortile-view
-    style="width: 800px; height: 600px;"
-    tile-url="https://api.pdok.nl/lv/bag/ogc/v0_1/tiles/NetherlandsRDNewQuad"
-    zoom="12"
-    center-x="5.3896944"
-    center-y="52.1562499">
-  </app-vectortile-view>
-  ```
-
 ## Parameters for vectortile view
 
-The vectortile view comnponent has the follwing parameters:
+The vectortile view component has the following parameters:
 
 - **tileUrl** : Url to OGC vector tile service
 - **styleUrl** Url to vector Mapbox tile style.
@@ -48,18 +25,9 @@ The following values are emitted:
 - **centerX**
 - **centerY**
 
-## Embedding a OGC API feature view
-
-<app-feature-view
-      id="featuresample"
-      mode="auto"
-      fill-color="rgba(0,0,255,0)"
-      items-url="https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items/1">
-</app-feature-view>
-
 ## Feature view parameters
 
-The view comnponent has the follwing parameters
+The view component has the following parameters
 
 - **itemsUrl**: A OGC API url as dataset for the features to show
 - **backgroundMap**: Openstreetmap is used as default backgroundmap. Use value "BRT"to use Dutch "brt achtergrondkaart" as background
@@ -88,7 +56,7 @@ The following values are emitted:
 </app-legend-view>
 ```
 
-# Legend Parameters
+## Legend Parameters
 
 The legend has the following parameters:
 

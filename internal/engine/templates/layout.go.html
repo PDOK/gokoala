@@ -80,7 +80,7 @@
                         {{ end }}
                         {{ range $formatKey, $formatName := .AvailableFormats }}
                             <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}{{ $.QueryString $formatKey }}" target="_blank"
-                                                           aria-label="{{ i18n "SwitchFormat" }} {{ $formatName }}">{{ $formatName }}</a></li>
+                                                           aria-label="{{ i18n "SwitchFormat" }} {{ $formatName }}" id="format-{{ $formatKey }}">{{ $formatName }}</a></li>
                         {{ end }}
                     </ol>
                 </nav>

@@ -6,7 +6,7 @@
 
 <script>
     {{- /* generic function to update query string parameters */ -}}
-    function updateQueryString(name, value) {
+    function updateQueryString(name, value, skipReload) {
         const url = new URL(window.location.href);
         url.searchParams.delete('cursor'); // when filters change, we can't continue pagination.
         if (value) {
@@ -18,7 +18,13 @@
         } else {
           url.searchParams.delete(name);
         }
-        window.location.href = url.toString();
+
+		if (skipReload) {
+            window.history.pushState({}, "", url.toString()); // only change the url but don't reload the page
+        } else {
+            window.location.href = url.toString();
+        }
+		return url.toString()
     }
 
 </script>
@@ -124,10 +130,10 @@
         <script type="text/javascript" src="view-component/runtime.js"></script>
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default" fill-color="rgba(0,0,255,0)" show-fill-extent-button="true"
-            show-bounding-box-button="false" label-field="{{ $mapSheetProperties.MapSheetID }}" class="card"></app-feature-view>
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" fill-color="rgba(0,0,255,0)"
+            label-field="{{ $mapSheetProperties.MapSheetID }}" class="card"></app-feature-view>
         {{ else }}
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" class="card"></app-feature-view>
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default" class="card"></app-feature-view>
         {{ end }}
         <script type="module">
           const url = new URL(window.location.href)
@@ -141,14 +147,27 @@
             viewer.setAttribute('projection', crs)
           }
 
-          viewer.addEventListener('box', selectbox => {
-            updateQueryString("bbox", selectbox.detail)
-          })
-
           {{ if $mapSheetProperties }}
-          viewer.addEventListener('activeFeature', activefeature => {
-            updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activefeature.detail.get('{{ $mapSheetProperties.MapSheetID }}'))
+		  viewer.addEventListener('box', selectBox => {
+            let newUrl = new URL(updateQueryString("bbox", selectBox.detail, true))
+            // when moving the map to load additional sheets we don't want to do a full page reload (like we
+            // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
+            // on the page manually.
+            viewer.setAttribute('items-url', newUrl.toString())
+            {{ range $formatKey, $formatName := .AvailableFormats }}
+                if (document.getElementById("format-{{ $formatKey }}")) {
+                    newUrl.searchParams.set('f', '{{ $formatKey }}')
+                    document.getElementById("format-{{ $formatKey }}").setAttribute('href', newUrl.toString())
+                }
+            {{ end }}
           })
+          viewer.addEventListener('activeFeature', activeFeature => {
+            updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activeFeature.detail.get('{{ $mapSheetProperties.MapSheetID }}'))
+          })
+		  {{ else }}
+		  viewer.addEventListener('box', selectBox => {
+            updateQueryString("bbox", selectBox.detail)
+		  })
           {{ end }}
         </script>
         <noscript>Enable Javascript to view features on a map</noscript>
