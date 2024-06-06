@@ -7,26 +7,25 @@
 <script>
     {{- /* generic function to update query string parameters */ -}}
     function updateQueryString(name, value, skipReload) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('cursor'); // when filters change, we can't continue pagination.
-        if (value) {
-          if (name === 'datetime') {
-            url.searchParams.set(name, new Date(value).toISOString()); // input is %Y-%m-%d, but parameter value should be RFC3339
-          } else {
-            url.searchParams.set(name, value);
-          }
+      const url = new URL(window.location.href)
+      url.searchParams.delete('cursor') // when filters change, we can't continue pagination.
+      if (value) {
+        if (name === 'datetime') {
+          url.searchParams.set(name, new Date(value).toISOString()) // input is %Y-%m-%d, but parameter value should be RFC3339
         } else {
-          url.searchParams.delete(name);
+          url.searchParams.set(name, value)
         }
+      } else {
+        url.searchParams.delete(name)
+      }
 
-		if (skipReload) {
-            window.history.pushState({}, "", url.toString()); // only change the url but don't reload the page
-        } else {
-            window.location.href = url.toString();
-        }
-		return url.toString()
+      if (skipReload) {
+        window.history.pushState({}, '', url.toString()) // only change the url but don't reload the page
+      } else {
+        window.location.href = url.toString()
+      }
+      return url.toString()
     }
-
 </script>
 
 <hgroup>
@@ -137,37 +136,37 @@
         {{ end }}
         <script type="module">
           const url = new URL(window.location.href)
-          url.searchParams.set('f','json');
-          const viewer = document.getElementById('viewer');
-          viewer.setAttribute('items-url', url);
+          url.searchParams.set('f', 'json')
+          const viewer = document.getElementById('viewer')
+          viewer.setAttribute('items-url', url)
 
           if (url.searchParams.get('crs') !== null) {
-            let crs = url.searchParams.get('crs');
-            document.getElementById('srs-select').value = crs;
+            let crs = url.searchParams.get('crs')
+            document.getElementById('srs-select').value = crs
             viewer.setAttribute('projection', crs)
           }
 
           {{ if $mapSheetProperties }}
-		  viewer.addEventListener('box', selectBox => {
-            let newUrl = new URL(updateQueryString("bbox", selectBox.detail, true))
+          viewer.addEventListener('box', selectBox => {
+            let newUrl = new URL(updateQueryString('bbox', selectBox.detail, true))
             // when moving the map to load additional sheets we don't want to do a full page reload (like we
             // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
             // on the page manually.
             viewer.setAttribute('items-url', newUrl.toString())
-            {{ range $formatKey, $formatName := .AvailableFormats }}
-                if (document.getElementById("format-{{ $formatKey }}")) {
-                    newUrl.searchParams.set('f', '{{ $formatKey }}')
-                    document.getElementById("format-{{ $formatKey }}").setAttribute('href', newUrl.toString())
-                }
-            {{ end }}
+              {{ range $formatKey, $formatName := .AvailableFormats }}
+            if (document.getElementById("format-{{ $formatKey }}")) {
+              newUrl.searchParams.set('f', '{{ $formatKey }}')
+              document.getElementById("format-{{ $formatKey }}").setAttribute('href', newUrl.toString())
+            }
+              {{ end }}
           })
           viewer.addEventListener('activeFeature', activeFeature => {
             updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activeFeature.detail.get('{{ $mapSheetProperties.MapSheetID }}'))
           })
-		  {{ else }}
-		  viewer.addEventListener('box', selectBox => {
-            updateQueryString("bbox", selectBox.detail)
-		  })
+          {{ else }}
+          viewer.addEventListener('box', selectBox => {
+            updateQueryString('bbox', selectBox.detail)
+          })
           {{ end }}
         </script>
         <noscript>Enable Javascript to view features on a map</noscript>
