@@ -196,6 +196,47 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output with property filters with allowed values restriction, using allowed 'straatname' value",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag_allowed_values.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_straatnaam_silodam.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output with property filters with allowed values restriction, using not allowed 'straatnaam' value",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag_allowed_values.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=StreetNotInAllowedValues",
+				collectionID: "foo",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_straatnaam_not_allowed_value.json",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Request output with property filters with allowed values restriction, using allowed 'type' value",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag_allowed_values.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?type=Ligplaats&straatnaam=Westerdok&limit=3",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_type_ligplaats.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in WGS84 explicitly",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
@@ -396,6 +437,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// mock time
 			now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+			engine.Now = now
 
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
 			if err != nil {
@@ -717,6 +759,8 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 }
 
 func createRequest(url string, collectionID string, featureID string, format string) (*http.Request, error) {
+	url = strings.ReplaceAll(url, ":collectionId", collectionID)
+	url = strings.ReplaceAll(url, ":featureId", featureID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if req == nil || err != nil {
 		return req, err

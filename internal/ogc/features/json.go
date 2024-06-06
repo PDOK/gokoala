@@ -37,6 +37,7 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 	}
 }
 
+// GeoJSON
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
 
@@ -52,6 +53,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// GeoJSON
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	feat *domain.Feature, url featureURL) {
 
@@ -72,6 +74,7 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 	}
 }
 
+// JSON-FG
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
 	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection, crs ContentCrs) {
 
@@ -104,6 +107,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	}
 }
 
+// JSON-FG
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
 	f *domain.Feature, url featureURL, crs ContentCrs) {
 

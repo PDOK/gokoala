@@ -3,6 +3,7 @@ package features
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/PDOK/gokoala/internal/engine"
@@ -65,6 +66,9 @@ func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasour
 					"column '%s' doesn't exist in datasource attached to collection '%s'", fc.Name, k.collectionID)
 			}
 		}
+		slices.SortFunc(propertyFilters, func(a, b OpenAPIPropertyFilter) int {
+			return strings.Compare(a.Name, b.Name)
+		})
 		result[k.collectionID] = propertyFilters
 	}
 	return result, nil

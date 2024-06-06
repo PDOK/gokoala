@@ -872,9 +872,13 @@ type PropertyFilter struct {
 	// +optional
 	IndexRequired *bool `yaml:"indexRequired,omitempty" json:"indexRequired,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 
+	// Static list of allowed values to be used as input for this property filter. Will be enforced by OpenAPI spec.
 	// +optional
 	AllowedValues []string `yaml:"allowedValues,omitempty" json:"allowedValues,omitempty"`
 
+	// Derive list of allowed values for this property filter from the corresponding column in the datastore.
+	// Use with caution since it can increase startup time when used on large tables. Make sure an index in present.
+	//
 	// +kubebuilder:default=false
 	// +optional
 	DeriveAllowedValuesFromDatasource *bool `yaml:"deriveAllowedValuesFromDatasource,omitempty" json:"deriveAllowedValuesFromDatasource,omitempty" default:"false"`

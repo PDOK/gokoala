@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	timestampKey             = "timestamp"
+	timestampKey             = "timeStamp"
 	defaultMessageServerErr  = "An unexpected error has occurred, try again or contact support if the problem persists"
 	defaultMessageBadGateway = "Failed to proxy request, try again or contact support if the problem persists"
 )

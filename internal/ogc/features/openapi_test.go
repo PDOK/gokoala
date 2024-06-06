@@ -55,8 +55,8 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 				},
 			},
 			wantResult: map[string][]OpenAPIPropertyFilter{"foo": {
-				{Name: "straatnaam", Description: "Filter features by this property", DataType: "string"},
 				{Name: "postcode", Description: "Filter features by this property", DataType: "string", AllowedValues: []string{"1234AB", "5678XY"}},
+				{Name: "straatnaam", Description: "Filter features by this property", DataType: "string"},
 			}},
 			wantErr: false,
 		},

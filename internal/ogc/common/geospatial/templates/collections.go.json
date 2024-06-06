@@ -14,6 +14,12 @@
       "type" : "text/html",
       "title" : "This document as HTML",
       "href" : "{{ $baseUrl }}/collections?f=html"
+    },
+    {
+      "rel": "license",
+      "type": "text/html",
+      "title": "{{ $cfg.License.Name }}",
+      "href": "{{ $cfg.License.URL }}"
     }
   ],
   "collections" : [
