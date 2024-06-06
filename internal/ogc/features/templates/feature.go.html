@@ -76,9 +76,9 @@
         <script type="text/javascript" src="view-component/runtime.js"></script>
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default" fill-color="rgba(0,0,255,0)" show-bounding-box-button="false"></app-feature-view>
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" fill-color="rgba(0,0,255,0)"></app-feature-view>
         {{ else }}
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto"></app-feature-view>
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default"></app-feature-view>
         {{ end }}
         <script type="module">
             const url = new URL(window.location.href)
