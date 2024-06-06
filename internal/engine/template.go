@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	texttemplate "text/template"
+	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/docker/go-units"
@@ -38,6 +39,7 @@ func init() {
 		"unmarkdown": unmarkdown,
 		"humansize":  humanSize,
 		"bytessize":  bytesSize,
+		"isdate":     isDate,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -320,4 +322,11 @@ func bytesSize(s string) int64 {
 		return 0
 	}
 	return i
+}
+
+func isDate(v any) bool {
+	if _, ok := v.(time.Time); ok {
+		return true
+	}
+	return false
 }

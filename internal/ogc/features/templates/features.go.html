@@ -204,14 +204,18 @@
             </tr>
             </thead>
             <tbody>
-            <!-- For map sheets collection, skip properties pertaining to downloads, then add download button -->
+            {{/* for map sheets collection, skip some properties pertaining to downloads, then add download button */}}
             {{ if $mapSheetProperties }}
             {{ $skipKeys := list $mapSheetProperties.Size }}
             {{ range $key, $value := $feat.Properties }}
             {{ if not (has $key $skipKeys) }}
             <tr>
                 <td class="w-20">{{ $key }}</td>
+                {{ if isdate $value }}
+                <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
+                {{ else }}
                 <td>{{ $value }}</td>
+                {{ end }}
             </tr>
             {{ end }}
             {{ end }}
@@ -220,12 +224,16 @@
                     Download
                 </a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
             </tr>
-            <!-- For other collections, show all properties -->
+            {{/* for other collections, show all properties */}}
             {{ else }}
             {{ range $key, $value := $feat.Properties }}
             <tr>
                 <td class="w-20">{{ $key }}</td>
+                {{ if isdate $value }}
+                <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
+                {{ else }}
                 <td>{{ $value }}</td>
+                {{ end }}
             </tr>
             {{ end }}
             {{ end }}
