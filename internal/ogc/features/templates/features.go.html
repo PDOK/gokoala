@@ -206,7 +206,7 @@
             <tbody>
             <!-- For map sheets collection, skip properties pertaining to downloads, then add download button -->
             {{ if $mapSheetProperties }}
-            {{ $skipKeys := list $mapSheetProperties.AssetURL $mapSheetProperties.Size }}
+            {{ $skipKeys := list $mapSheetProperties.Size }}
             {{ range $key, $value := $feat.Properties }}
             {{ if not (has $key $skipKeys) }}
             <tr>
