@@ -45,6 +45,7 @@ export type BackgroundMap = 'BRT' | 'OSM'
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private _showBoundingBoxButton: boolean = true
+  initial: boolean = true
   @Input() set showBoundingBoxButton(showBox) {
     this._showBoundingBoxButton = coerceBooleanProperty(showBox)
     this.showbuttons()
@@ -202,9 +203,12 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
           this.setViewExtent(ext, 1.05)
         }
       }
+    } else {
+      if (this.initial) {
+        this.setViewExtent(ext, 1)
+        this.initial = false
+      }
     }
-
-    return ext
   }
 
   getStyle(feature: FeatureLike) {
