@@ -246,14 +246,28 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 		log.Fatal("no datasource(s) configured for OGC API Features, check config")
 	}
 
-	created := make(map[DatasourceKey]ds.Datasource, len(configured))
+	// now we have a mapping from collection+projection => desired datasource (the 'configured' map).
+	// but the actual datasource connection still needs to be CREATED and associated with these collections.
+	// this is what we'll going to do now, but in the process we need to make sure no duplicate datasources
+	// are instantiated, since multiple collection can point to the same datasource and we only what to have a single
+	// datasource/connection-pool serving those collections.
+	createdDatasources := make(map[config.Datasource]ds.Datasource)
+	result := make(map[DatasourceKey]ds.Datasource, len(configured))
 	for k, cfg := range configured {
 		if cfg == nil {
 			continue
 		}
-		created[k] = newDatasource(e, cfg.collections, cfg.ds)
+		existing, ok := createdDatasources[cfg.ds]
+		if !ok {
+			// make sure to only create a new datasource when it hasn't already been done before (for another collection)
+			created := newDatasource(e, cfg.collections, cfg.ds)
+			createdDatasources[cfg.ds] = created
+			result[k] = created
+		} else {
+			result[k] = existing
+		}
 	}
-	return created
+	return result
 }
 
 func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource) map[string]ds.PropertyFiltersWithAllowedValues {
