@@ -1,4 +1,5 @@
 import { Control } from 'ol/control.js'
+import { Map } from 'ol'
 import { Draw } from 'ol/interaction'
 import { createBox } from 'ol/interaction/Draw'
 import VectorSource from 'ol/source/Vector'
@@ -6,6 +7,19 @@ import VectorSource from 'ol/source/Vector'
 import { EventEmitter } from '@angular/core'
 import { Fill, Stroke, Style } from 'ol/style'
 import VectorLayer from 'ol/layer/Vector'
+import { Geometry } from 'ol/geom'
+
+export function emitBox(map: Map, geometry: Geometry, boxEmitter: EventEmitter<string>) {
+  if (map.getView().getProjection().getCode() === 'EPSG:3857') {
+    const box84 = geometry.transform(map.getView().getProjection(), 'EPSG:4326').getExtent()
+    const extString = box84.join(',')
+    boxEmitter.emit(extString)
+  } else {
+    const box = geometry.getExtent()
+    const extString = box.join(',')
+    boxEmitter.emit(extString)
+  }
+}
 
 export class boxControl extends Control {
   /**
@@ -49,16 +63,9 @@ export class boxControl extends Control {
       const map = this.getMap()!
       const bbox = e.feature //this is the feature fired the event
       const bboxGeometry = bbox.getGeometry()
+
       if (bboxGeometry) {
-        if (map.getView().getProjection().getCode() === 'EPSG:3857') {
-          const box84 = bboxGeometry.transform(map.getView().getProjection(), 'EPSG:4326').getExtent()
-          const extString = box84.join(',')
-          this.boxEmitter.emit(extString)
-        } else {
-          const box = bboxGeometry.getExtent()
-          const extString = box.join(',')
-          this.boxEmitter.emit(extString)
-        }
+        emitBox(map, bboxGeometry, this.boxEmitter)
 
         const bboxStyle = new Style({
           stroke: new Stroke({

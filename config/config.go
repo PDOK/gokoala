@@ -499,6 +499,9 @@ type MapSheetDownloadProperties struct {
 
 	// Property containing file media type
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
+
+	// Property containing the map sheet identifier
+	MapSheetID string `yaml:"mapSheetId" json:"mapSheetId" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true

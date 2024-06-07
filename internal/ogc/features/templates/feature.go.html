@@ -2,6 +2,7 @@
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
+{{ $mapSheetProperties := .Params.MapSheetProperties }}
 <script>
     function crsChange(value) {
         const url = new URL(window.location.href);
@@ -39,15 +40,18 @@
             </tr>
             </thead>
             <tbody>
-                <!-- For map sheets collection, skip properties pertaining to downloads, then add download button -->
-            {{ $mapSheetProperties := .Params.MapSheetProperties }}
+            {{/* for map sheets collection, skip some properties pertaining to downloads, then add download button */}}
             {{ if $mapSheetProperties }}
             {{ $skipKeys := list $mapSheetProperties.AssetURL $mapSheetProperties.Size }}
             {{ range $key, $value := .Params.Properties }}
             {{ if not (has $key $skipKeys) }}
             <tr>
                 <td class="w-25">{{ $key }}</td>
+                {{ if isdate $value }}
+                <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
+                {{ else }}
                 <td>{{ $value }}</td>
+                {{ end }}
             </tr>
             {{ end }}
             {{ end }}
@@ -56,12 +60,16 @@
 					Download
 				</a> ({{ i18n "Size" }}: {{ humansize (get .Params.Properties $mapSheetProperties.Size) }})</td>
             </tr>
-            <!-- For other collections, show all properties -->
+            {{/* for other collections, show all properties */}}
             {{ else }}
             {{ range $key, $value := .Params.Properties }}
             <tr>
                 <td class="w-25">{{ $key }}</td>
+                {{ if isdate $value }}
+                <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
+                {{ else }}
                 <td>{{ $value }}</td>
+                {{ end }}
             </tr>
             {{ end }}
             {{ end }}
@@ -74,7 +82,12 @@
         <script type="text/javascript" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
         <script type="text/javascript" src="view-component/runtime.js"></script>
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" show-bounding-box-button="false"></app-feature-view>
+        {{/* different viewer settings depending on whether features are map sheets or not */}}
+        {{ if $mapSheetProperties }}
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" fill-color="rgba(0,0,255,0)"></app-feature-view>
+        {{ else }}
+        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default" show-bounding-box-button="false"></app-feature-view>
+        {{ end }}
         <script type="module">
             const url = new URL(window.location.href)
             url.searchParams.set('f', 'json');

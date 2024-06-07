@@ -32,8 +32,7 @@ datasets? Spin up a separate instance/container.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. Serves features as HTML, GeoJSON or JSON-FG
   from GeoPackages in multiple projections. No on-the-fly re-projections are applied, separate GeoPackages should
   be configured ahead-of-time in each projection. Features can be served from local and/or
-  [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. Support for
-  property and temporal filter(s) is available.
+  [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. Support for property and temporal filter(s) is available.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
   of a vector tiles engine (like Trex, Tegola, Martin) of your choosing. Currently, 3 
   projections (RD, ETRS89 and WebMercator) are supported.
