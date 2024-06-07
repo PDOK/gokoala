@@ -276,6 +276,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   addFeatureEmit() {
     const tooltipContainer = this.el.nativeElement.querySelector("[id='tooltip']")
+    tooltipContainer.style.visibility = 'hidden'
     const tooltipContent = this.el.nativeElement.querySelector("[id='tooltip-content']")
     const tooltip = new Overlay({
       element: tooltipContainer,
