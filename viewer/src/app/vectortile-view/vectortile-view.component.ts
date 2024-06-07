@@ -79,7 +79,7 @@ export class VectortileViewComponent implements OnChanges {
   xyzSelector = '/{z}/{y}/{x}?f=mvt'
   private _showGrid = false
   private _showObjectInfo = false
-  vectorTileLayer: VectorTileLayer | undefined
+  vectorTileLayer: VectorTileLayer<FeatureLike> | undefined
   curFeature!: FeatureLike
   tileGrid: TileGrid | undefined
   minZoom?: number
@@ -346,7 +346,7 @@ export class VectortileViewComponent implements OnChanges {
     return { vectorTileLayer: vectorTileLayer, layers: layers }
   }
 
-  private setStyle(vectorTileLayer: VectorTileLayer) {
+  private setStyle(vectorTileLayer: VectorTileLayer<FeatureLike>) {
     if (this.styleUrl) {
       const projection = vectorTileLayer.getSource()?.getProjection()
       applyStyle(vectorTileLayer, this.styleUrl)
@@ -372,7 +372,7 @@ export class VectortileViewComponent implements OnChanges {
     }
   }
 
-  getVectorTileLayer(projection: Projection): VectorTileLayer {
+  getVectorTileLayer(projection: Projection): VectorTileLayer<FeatureLike> {
     return new VectorTileLayer({
       source: this.getVectorTileSource(projection, this.tileUrl),
       renderMode: 'hybrid',
