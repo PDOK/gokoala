@@ -37,7 +37,12 @@ The `<app-feature-view>` component has the following parameters
 - **showBoundingBoxButton**: in default mode the boundingbox select button is showed, hide 'show-bounding-box-button' is needed
 - **showFillExtentButton**: in default mode the button to fill the view with features is not showed. Activate 'show-fill-extent-button' is needed
 - **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
-- **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature
+- **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature -**label-options**: openlayers JSON string to do extra styling of label e.g:
+
+```Javascript
+   const optionstring = JSON.stringify({ font: 'bold 40px Arial, Verdana, Courier New' })
+   map.setAttribute('label-options', optionstring)
+```
 
 The following values are emitted:
 
