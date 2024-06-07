@@ -153,12 +153,12 @@
             // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
             // on the page manually.
             viewer.setAttribute('items-url', newUrl.toString())
-              {{ range $formatKey, $formatName := .AvailableFormats }}
+            {{ range $formatKey, $formatName := .AvailableFormats }}
             if (document.getElementById("format-{{ $formatKey }}")) {
               newUrl.searchParams.set('f', '{{ $formatKey }}')
               document.getElementById("format-{{ $formatKey }}").setAttribute('href', newUrl.toString())
             }
-              {{ end }}
+            {{ end }}
           })
           viewer.addEventListener('activeFeature', activeFeature => {
             updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activeFeature.detail.get('{{ $mapSheetProperties.MapSheetID }}'))
