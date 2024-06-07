@@ -1,7 +1,7 @@
 import { HttpClientModule } from '@angular/common/http'
 import { LoggerModule } from 'ngx-logger'
-import { environment } from 'src/environments/environment'
-import { VectortileViewComponent } from 'src/app/vectortile-view/vectortile-view.component'
+import { environment } from '../src/environments/environment'
+import { VectortileViewComponent } from '../src/app/vectortile-view/vectortile-view.component'
 
 describe('Vectortiled-view-test.cy.ts', () => {
   it.skip('Skipped unable to supply vectortile as feature yet, schould Write File Test', function () {

@@ -39,7 +39,12 @@ The `<app-feature-view>` component has the following parameters
 - **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
 - **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature
 - **minFitScale**: maximum initial zoom level, specified by scale denominator set when selecting small feature(s) defaults to 1000(= scale 1:1000)
-- **maxFitScale**: minimal initial zoom level, specified by scale denominator (not set by default)
+- **maxFitScale**: minimal initial zoom level, specified by scale denominator (not set by default) -**label-options**: openlayers JSON string to do extra styling of label e.g:
+
+```Javascript
+   const optionstring = JSON.stringify({ font: 'bold 40px Arial, Verdana, Courier New' })
+   map.setAttribute('label-options', optionstring)
+```
 
 The following values are emitted:
 

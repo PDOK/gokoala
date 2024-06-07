@@ -1,7 +1,7 @@
 import { HttpClientModule } from '@angular/common/http'
 import { LoggerModule } from 'ngx-logger'
-import { LegendViewComponent } from 'src/app/legend-view/legend-view.component'
-import { environment } from 'src/environments/environment'
+import { LegendViewComponent } from './../src/app/legend-view/legend-view.component'
+import { environment } from './../src/environments/environment'
 import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared'
 
 describe('Legend-view-test.cy.ts', () => {

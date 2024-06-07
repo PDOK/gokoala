@@ -1,12 +1,11 @@
 /* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
-  "baseUrl": "src",
   "compileOnSave": false,
   "compilerOptions": {
     "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitOverride": true,
@@ -15,7 +14,6 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
