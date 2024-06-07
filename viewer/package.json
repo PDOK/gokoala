@@ -11,7 +11,7 @@
     "lint": "ng lint",
     "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress open",
     "format": "npx prettier --write .",
-    "upgrade": "ng update @angular/cli @angular/core @angular-eslint/schematics angular-cli-ghpages @angular-devkit/build-angular && npm update && npm audit fix --force",
+    "upgrade": "ng update @angular/cli @angular/core @angular-eslint/schematics angular-cli-ghpages @angular-devkit/build-angular angular/elements && npm update && npm audit fix --force",
     "bundle-size": "ng build --configuration production --stats-json && webpack-bundle-analyzer dist/view-component/stats.json"
   },
   "private": true,
