@@ -14,6 +14,6 @@ echo "angular build"
 npm run build --prefix viewer
 
 echo "place viewer in assets"
-cp -r viewer/dist/view-component assets/
+cp -r viewer/dist/view-component/browser assets/view-component
 
 echo "done, now start GoKoala (go run main.go) and checkout the vectortile viewer"

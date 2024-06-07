@@ -371,7 +371,7 @@ export class VectortileViewComponent implements OnChanges {
     }
   }
 
-  private getVectorTileLayer(projection: Projection): VectorTileLayer<FeatureLike> {
+  getVectorTileLayer(projection: Projection): VectorTileLayer<FeatureLike> {
     return new VectorTileLayer({
       source: this.getVectorTileSource(projection, this.tileUrl),
       renderMode: 'hybrid',
