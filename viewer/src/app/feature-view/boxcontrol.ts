@@ -23,7 +23,7 @@ export function emitBox(map: Map, geometry: Geometry, boxEmitter: EventEmitter<s
 
 export class boxControl extends Control {
   /**
-   * @param boxEmitter Emitter o subscribe to bbox updates
+   * @param boxEmitter Emitter to subscribe to bbox updates
    * @param {Object} [opt_options] Control options.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
