@@ -34,8 +34,7 @@ export class fullBoxControl extends Control {
   addFullBox() {
     const map = this.getMap()!
     const extent = map.getView().calculateExtent(map.getSize())
-    const extent2 = extent // transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
-    const polygon = fromExtent(extent2) as Geometry
+    const polygon = fromExtent(extent) as Geometry
     emitBox(map, polygon, this.boxEmitter)
   }
 }
