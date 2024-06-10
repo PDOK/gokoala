@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	dario.cat/mergo v1.0.0
 	github.com/BurntSushi/toml v1.3.2
-	github.com/PDOK/go-cloud-sqlite-vfs v0.2.5
+	github.com/PDOK/go-cloud-sqlite-vfs v0.3.0
 	github.com/creasty/defaults v1.7.0
 	github.com/docker/go-units v0.5.0
 	github.com/elnormous/contenttype v1.0.4
