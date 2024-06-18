@@ -8,21 +8,23 @@ import { FitOptions } from 'ol/View'
 import { Extent, getCenter, getTopLeft } from 'ol/extent'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
-import { Group, Tile, Vector as VectorLayer } from 'ol/layer'
+import { Tile, Vector as VectorLayer } from 'ol/layer'
 import TileLayer from 'ol/layer/Tile'
-import { Projection, ProjectionLike } from 'ol/proj'
+import { Projection } from 'ol/proj'
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { DataUrl, FeatureServiceService, ProjectionMapping, defaultMapping } from '../feature-service.service'
-import { projectionSetMercator } from '../mapprojection'
+import { projectionSetRD } from '../mapprojection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { boxControl, emitBox } from './boxcontrol'
 import { fullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
+import { getPointResolution, get as getProjection, transform } from 'ol/proj'
+import { NGXLogger } from 'ngx-logger'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,6 +48,7 @@ export type BackgroundMap = 'BRT' | 'OSM'
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
+
   @Input() set showBoundingBoxButton(showBox) {
     this._showBoundingBoxButton = coerceBooleanProperty(showBox)
     this.showButtons()
@@ -72,7 +75,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() labelField = undefined
   @Input() labelOptions: string | undefined = undefined
 
-  @Input() set projection(value: ProjectionLike) {
+  @Input() set projection(value: string) {
     this._projection = this.featureService.getProjectionMapping(value)
   }
 
@@ -82,18 +85,22 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   mapWidth = 600
 
   map: OLMap = this.getMap()
+  private _view: View = new View({
+    projection: this._projection.visualProjection,
+    zoom: 1,
+  })
   features: FeatureLike[] = []
 
   constructor(
     private el: ElementRef,
-    private featureService: FeatureServiceService
+    private featureService: FeatureServiceService,
+    private logger: NGXLogger
   ) {}
 
   private getMap(): OLMap {
     return new OLMap({
-      view: new View({
-        projection: this._projection.visualProjection,
-      }),
+      view: this._view,
+
       controls: [],
     })
   }
@@ -109,9 +116,13 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       .pipe(take(1))
       .subscribe(data => {
         this.features = data
-        this.map.setLayerGroup(new Group())
+        //this.map.setLayerGroup(new Group())
+        this.changeView()
         this.loadFeatures(this.features)
+
         this.loadBackground()
+
+        this.logger.log(this.map.getView().getProjection())
       })
   }
 
@@ -170,7 +181,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         return
       }
       case 'BRT': {
-        this.map.addLayer(this.brtLayer(projectionSetMercator()))
+        this.map.addLayer(this.brtLayer(projectionSetRD()))
         return
       }
 
@@ -243,15 +254,43 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     ]
   }
 
+  changeView() {
+    const currentProjection = this._view.getProjection()
+    const newProjection = getProjection(this._projection.visualProjection)
+    if (!newProjection) {
+      throw new Error('Nieuwe projectie is niet gedefinieerd')
+    }
+    const throwUndefinedError = (msg: string) => {
+      throw new Error(msg)
+    }
+    const currentResolution = this._view.getResolution() ?? throwUndefinedError('Huidige resolutie is niet gedefinieerd')
+    const currentCenter = this._view.getCenter() ?? [0, 0]
+    const newCenter = transform(currentCenter, currentProjection, newProjection) ?? [0, 0]
+    const currentRotation = this._view.getRotation() ?? 0
+    const currentMPU = currentProjection?.getMetersPerUnit() ?? throwUndefinedError('Huidige MPU is niet gedefinieerd')
+    const newMPU = newProjection?.getMetersPerUnit() ?? throwUndefinedError('Nieuwe MPU is niet gedefinieerd')
+    const currentPointResolution = getPointResolution(currentProjection, 1 / currentMPU, currentCenter, 'm') * currentMPU
+    const newPointResolution = getPointResolution(newProjection, 1 / newMPU, newCenter, 'm') * newMPU
+    const newResolution = (currentResolution * currentPointResolution) / newPointResolution
+
+    this._view = new View({
+      center: newCenter,
+      resolution: newResolution,
+      rotation: currentRotation,
+      projection: newProjection,
+    })
+
+    this.map.setView(this._view)
+  }
+
   setViewExtent(extent: Extent, scale: number) {
-    const view = new View({})
     const fitOptions: FitOptions = {
       size: this.map.getSize(),
     }
     const geom = fromExtent(extent)
     geom.scale(scale)
-    view.fit(geom, fitOptions)
-    this.map.setView(view)
+    this._view.fit(geom, fitOptions)
+    this.map.setView(this._view)
   }
 
   brtLayer(p: { projection: Projection; resolutions: number[]; matrixIds: string[] }) {

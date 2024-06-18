@@ -1,6 +1,6 @@
 import { intercept, mountFeatureComponent, screenshot, tests as projectenTests } from './shared'
 
-function moveMap(x, y) {
+function moveMap(x: number, y: number) {
   // Trigger a pointerdown event to start the panning action
   cy.get('.ol-viewport').trigger('pointerdown', {
     eventConstructor: 'MouseEvent',
@@ -32,11 +32,11 @@ function moveMap(x, y) {
 }
 
 projectenTests
-  //.filter(e => e.code === 'EPSG:28992')
+  // .filter(e => e.code === 'EPSG:28992')
   .forEach(i => {
     describe(i.geofix + '-feature-view-grid', () => {
       it('It emits boundingbox when moveing map in automode grid' + i.geofix + 'on BRT', () => {
-        intercept('grid-' + i.geofix)
+        intercept('grid-' + i.geofix, true)
 
         const optionstring = JSON.stringify({
           font: 'bold 40px Arial, Verdana, Courier New',
@@ -49,16 +49,38 @@ projectenTests
         }
         mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
         cy.get('.innersvg').should('not.exist')
-        screenshot('BRT-bbox-auto-before-move' + i.code)
+        screenshot(i.code + '-1-auto-before-move')
         moveMap(-100, -100)
-        screenshot('BRT-bbox-auto-after-move' + i.code)
+        screenshot(i.code + '-2-auto-after-move')
+        cy.get('@boxSpy').should('have.been.calledTwice')
+      })
+    })
+
+    describe(i.geofix + '-feature-view-grid', () => {
+      it('It emits boundingbox when moveing map in automode grid' + i.geofix + 'on BRT', () => {
+        intercept('grid-' + i.geofix, true)
+
+        const optionstring = JSON.stringify({
+          font: 'bold 40px Arial, Verdana, Courier New',
+        })
+        const prop = {
+          labelField: 'label',
+          labelOptions: optionstring,
+          fillColor: 'rgba(0,0,255,0)',
+          itemsUrl: 'https://test/items',
+        }
+        mountFeatureComponent(i.projection, 'OSM', 'auto', prop)
+        cy.get('.innersvg').should('not.exist')
+        screenshot(i.code + '-1-auto-before-move-OSM')
+        moveMap(-100, -100)
+        screenshot(i.code + '-2-auto-after-move-OSM')
         cy.get('@boxSpy').should('have.been.calledTwice')
       })
     })
 
     it('It emits boundingbox when zoomin out in automode grid' + i.geofix + 'on BRT', () => {
       //  cy.intercept('GET', 'https://test*', generateRDSquareGrid(200000, 300000, 100, 1)).as('geo')
-      intercept('grid-' + i.geofix)
+      intercept('grid-' + i.geofix, true)
 
       const optionstring = JSON.stringify({
         font: 'bold 40px Arial, Verdana, Courier New',
@@ -71,9 +93,9 @@ projectenTests
       }
       mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
       cy.get('.innersvg').should('not.exist')
-      screenshot('BRT-bbox-auto-before-zoom' + i.code)
+      screenshot(i.code + '-3-BRT-bbox-auto-before-zoom')
       cy.get('.ol-zoom-out').click()
-      screenshot('BRT-bbox-auto-after-zoom' + i.code)
+      screenshot(i.code + '-4-BRT-bbox-auto-after-zoom')
       cy.get('@boxSpy').should('have.been.calledTwice')
     })
   })
