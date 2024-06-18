@@ -112,3 +112,4 @@ projectenTests
         cy.get('@boxSpy').should('have.been.calledTwice')
       })
     })
+  })
