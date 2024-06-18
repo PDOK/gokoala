@@ -52,12 +52,47 @@ projectenTests
         screenshot(i.code + '-1-auto-before-move')
         moveMap(-100, -100)
         screenshot(i.code + '-2-auto-after-move')
-        cy.get('@boxSpy').should('have.been.calledTwice')
+        cy.get('@boxSpy').should((spy: any) => {
+          const firstCallArgs = spy.getCall(0).args[0].split(',')
+          const secondCallArgs = spy.getCall(1).args[0].split(',')
+          expect(firstCallArgs[0]).to.match(/^4./)
+          expect(firstCallArgs[1]).to.match(/^52./)
+          expect(secondCallArgs[0]).to.match(/^4./)
+          expect(secondCallArgs[1]).to.match(/^52./)
+        })
       })
-    })
 
-    describe(i.geofix + '-feature-view-grid', () => {
-      it('It emits boundingbox when moveing map in automode grid' + i.geofix + 'on BRT', () => {
+      describe(i.geofix + '-feature-view-grid', () => {
+        it('It emits boundingbox when moveing map in automode grid' + i.geofix + 'on BRT', () => {
+          intercept('grid-' + i.geofix, true)
+
+          const optionstring = JSON.stringify({
+            font: 'bold 40px Arial, Verdana, Courier New',
+          })
+          const prop = {
+            labelField: 'label',
+            labelOptions: optionstring,
+            fillColor: 'rgba(0,0,255,0)',
+            itemsUrl: 'https://test/items',
+          }
+          mountFeatureComponent(i.projection, 'OSM', 'auto', prop)
+          cy.get('.innersvg').should('not.exist')
+          screenshot(i.code + '-1-auto-before-move-OSM')
+          moveMap(-100, -100)
+          screenshot(i.code + '-2-auto-after-move-OSM')
+          cy.get('@boxSpy').should((spy: any) => {
+            const firstCallArgs = spy.getCall(0).args[0].split(',')
+            const secondCallArgs = spy.getCall(1).args[0].split(',')
+            expect(firstCallArgs[0]).to.match(/^4./)
+            expect(firstCallArgs[1]).to.match(/^52./)
+            expect(secondCallArgs[0]).to.match(/^4./)
+            expect(secondCallArgs[1]).to.match(/^52./)
+          })
+        })
+      })
+
+      it('It emits boundingbox when zoomin out in automode grid' + i.geofix + 'on BRT', () => {
+        //  cy.intercept('GET', 'https://test*', generateRDSquareGrid(200000, 300000, 100, 1)).as('geo')
         intercept('grid-' + i.geofix, true)
 
         const optionstring = JSON.stringify({
@@ -69,33 +104,11 @@ projectenTests
           fillColor: 'rgba(0,0,255,0)',
           itemsUrl: 'https://test/items',
         }
-        mountFeatureComponent(i.projection, 'OSM', 'auto', prop)
+        mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
         cy.get('.innersvg').should('not.exist')
-        screenshot(i.code + '-1-auto-before-move-OSM')
-        moveMap(-100, -100)
-        screenshot(i.code + '-2-auto-after-move-OSM')
+        screenshot(i.code + '-3-BRT-bbox-auto-before-zoom')
+        cy.get('.ol-zoom-out').click()
+        screenshot(i.code + '-4-BRT-bbox-auto-after-zoom')
         cy.get('@boxSpy').should('have.been.calledTwice')
       })
     })
-
-    it('It emits boundingbox when zoomin out in automode grid' + i.geofix + 'on BRT', () => {
-      //  cy.intercept('GET', 'https://test*', generateRDSquareGrid(200000, 300000, 100, 1)).as('geo')
-      intercept('grid-' + i.geofix, true)
-
-      const optionstring = JSON.stringify({
-        font: 'bold 40px Arial, Verdana, Courier New',
-      })
-      const prop = {
-        labelField: 'label',
-        labelOptions: optionstring,
-        fillColor: 'rgba(0,0,255,0)',
-        itemsUrl: 'https://test/items',
-      }
-      mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
-      cy.get('.innersvg').should('not.exist')
-      screenshot(i.code + '-3-BRT-bbox-auto-before-zoom')
-      cy.get('.ol-zoom-out').click()
-      screenshot(i.code + '-4-BRT-bbox-auto-after-zoom')
-      cy.get('@boxSpy').should('have.been.calledTwice')
-    })
-  })
