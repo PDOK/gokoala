@@ -113,7 +113,7 @@ export class FeatureServiceService {
   constructor(
     private logger: NGXLogger,
     private http: HttpClient
-  ) {}
+  ) { }
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.log(JSON.stringify(url))
@@ -138,7 +138,7 @@ export class FeatureServiceService {
         }
         if (value.toLowerCase().startsWith('http://www.opengis.net/def/crs/epsg/')) {
           const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
-          if (projection === 'EPSG:3035') {
+          if (projection === 'EPSG:3035' || projection === 'EPSG:4258') {
             return { dataProjection: projection, visualProjection: 'EPSG:3857' }
           } else return { dataProjection: projection, visualProjection: projection }
         }
