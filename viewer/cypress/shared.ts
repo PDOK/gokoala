@@ -34,7 +34,7 @@ export function intercept(geofix: string, realmaps: boolean = Cypress.env('realm
 }
 
 interface Prop {
-  [key: string]: string
+  [key: string]: string | number
 }
 
 export function mountFeatureComponent(

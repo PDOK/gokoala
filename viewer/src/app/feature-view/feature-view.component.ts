@@ -68,8 +68,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private _projection: ProjectionMapping = defaultMapping
 
   @Input() backgroundMap: BackgroundMap = 'OSM'
-  @Input() minFitResolution: number = 0.1
-  @Input() maxFitResolution: number | undefined = undefined
+  @Input() minFitScale: number = 1000
+  @Input() maxFitScale: number | undefined = undefined
   @Input() fillColor: string = 'rgba(0,0,255)'
   @Input() strokeColor: string = '#3399CC'
   @Input() mode: 'default' | 'auto' = 'default'
@@ -287,14 +287,14 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   setViewExtent(extent: Extent, scale: number) {
     const fitOptions: FitOptions = {
       size: this.map.getSize(),
-      minResolution: this.minFitResolution,
+      minResolution: this.getResolutionForScale(this.minFitScale),
     }
 
     const geom = fromExtent(extent)
     geom.scale(scale)
     this._view.fit(geom, fitOptions)
-    if (this.maxFitResolution) {
-      const res = Math.min(this._view.getResolution()!, this.maxFitResolution)
+    if (this.maxFitScale) {
+      const res = Math.min(this._view.getResolution()!, this.getResolutionForScale(this.maxFitScale))
       this._view.setResolution(res)
     }
     this.map.setView(this._view)
@@ -372,5 +372,18 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         emitBox(this.map, polygon, this.box)
       }
     })
+  }
+
+  getResolutionForScale(scale: number): number {
+    const view = this.map.getView()
+    const dpi = 96
+    const inchesPerMeter = 39.3701
+    const center = view.getCenter()
+    if (!center) {
+      throw new Error('No centre for view')
+    }
+    const pointResolution = getPointResolution(view.getProjection(), 1, center)
+    const resolution = scale / (pointResolution * inchesPerMeter * dpi)
+    return parseFloat(resolution.toFixed(6))
   }
 }
