@@ -68,6 +68,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private _projection: ProjectionMapping = defaultMapping
 
   @Input() backgroundMap: BackgroundMap = 'OSM'
+  @Input() minFitResolution: number = 0.1
+  @Input() maxFitResolution: number | undefined = undefined
   @Input() fillColor: string = 'rgba(0,0,255)'
   @Input() strokeColor: string = '#3399CC'
   @Input() mode: 'default' | 'auto' = 'default'
@@ -119,10 +121,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         //this.map.setLayerGroup(new Group())
         this.changeView()
         this.loadFeatures(this.features)
-
         this.loadBackground()
-
         this.logger.log(this.map.getView().getProjection())
+        this.logger.log('resolution' + this.map.getView().getResolution())
       })
   }
 
@@ -286,10 +287,16 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   setViewExtent(extent: Extent, scale: number) {
     const fitOptions: FitOptions = {
       size: this.map.getSize(),
+      minResolution: this.minFitResolution,
     }
+
     const geom = fromExtent(extent)
     geom.scale(scale)
     this._view.fit(geom, fitOptions)
+    if (this.maxFitResolution) {
+      const res = Math.min(this._view.getResolution()!, this.maxFitResolution)
+      this._view.setResolution(res)
+    }
     this.map.setView(this._view)
   }
 

@@ -113,7 +113,7 @@ export class FeatureServiceService {
   constructor(
     private logger: NGXLogger,
     private http: HttpClient
-  ) { }
+  ) {}
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.log(JSON.stringify(url))
