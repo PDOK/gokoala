@@ -47,19 +47,7 @@ The following values are emitted:
 - **box**
 - **activeFeature**
 
-```html
-<link rel="stylesheet" type="text/css" href="view-component/styles.css" />
-<script type="text/javascript" src="view-component/main.js"></script>
-<script type="text/javascript" src="view-component/polyfills.js"></script>
-<script type="text/javascript" src="view-component/runtime.js"></script>
-
-<app-legend-view
-  id="legendadminunit"
-  style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/styles/bestuurlijkegebieden_standaardvisualisatie?f=json">
-</app-legend-view>
-```
-
-## Legend Parameters
+## Legend view parameters
 
 The `<app-legend-view>` component has the following parameters:
 

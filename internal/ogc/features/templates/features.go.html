@@ -149,6 +149,7 @@
           {{ if $mapSheetProperties }}
           viewer.addEventListener('box', selectBox => {
             let newUrl = new URL(updateQueryString('bbox', selectBox.detail, true))
+            newUrl.searchParams.set('f', 'json')
             // when moving the map to load additional sheets we don't want to do a full page reload (like we
             // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
             // on the page manually.
