@@ -715,7 +715,8 @@ type GeoPackageCommon struct {
 	// +optional
 	Fid string `yaml:"fid,omitempty" json:"fid,omitempty" validate:"required" default:"fid"`
 
-	// ExternalFid (UUID) column name
+	// External feature id column name. When specified this ID column will be exposed to clients instead of the regular FID column.
+	// It allows one to offer a more stable ID to clients instead of an auto-generated FID. External FID column should contain UUIDs.
 	// +optional
 	ExternalFid string `yaml:"externalFid" json:"externalFid"`
 
