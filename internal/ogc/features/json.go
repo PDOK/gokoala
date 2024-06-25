@@ -217,7 +217,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 }
 
 func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
-	collectionID string, featureID int64) []domain.Link {
+	collectionID string, featureID string) []domain.Link {
 
 	links := make([]domain.Link, 0)
 	switch currentFormat {

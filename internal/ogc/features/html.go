@@ -2,7 +2,6 @@ package features
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
@@ -64,7 +63,7 @@ type featurePage struct {
 	domain.Feature
 
 	CollectionID       string
-	FeatureID          int64
+	FeatureID          string
 	Metadata           *config.GeoSpatialCollectionMetadata
 	MapSheetProperties *config.MapSheetDownloadProperties
 }
@@ -125,8 +124,8 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 			Path: collectionsCrumb + collectionID + "/items",
 		},
 		{
-			Name: strconv.FormatInt(feat.ID, 10),
-			Path: collectionsCrumb + collectionID + "/items/" + strconv.FormatInt(feat.ID, 10),
+			Name: feat.ID,
+			Path: collectionsCrumb + collectionID + "/items/" + feat.ID,
 		},
 	}...)
 

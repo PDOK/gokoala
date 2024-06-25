@@ -26,6 +26,9 @@ type JSONFGFeatureCollection struct {
 }
 
 type JSONFGFeature struct {
+	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
+	// since we use it for cursor-based pagination.
+	ID   string      `json:"id"`
 	Type featureType `json:"type"`
 	Time any         `json:"time"`
 	// we don't implement the JSON-FG "3D" conformance class. So Place only
@@ -36,7 +39,4 @@ type JSONFGFeature struct {
 	CoordRefSys string         `json:"coordRefSys,omitempty"`
 	Links       []Link         `json:"links,omitempty"`
 	ConformsTo  []string       `json:"conformsTo,omitempty"`
-	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
-	// since we use it for cursor-based pagination.
-	ID int64 `json:"id"`
 }

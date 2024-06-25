@@ -19,7 +19,7 @@ func TestNewCursor(t *testing.T) {
 		{
 			name: "test first page",
 			args: args{
-				features: []*Feature{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}},
+				features: []*Feature{{ID: "1"}, {ID: "2"}, {ID: "3"}, {ID: "4"}},
 				id: PrevNextFID{
 					Prev: 0,
 					Next: 4,
@@ -35,7 +35,7 @@ func TestNewCursor(t *testing.T) {
 		{
 			name: "test last page",
 			args: args{
-				features: []*Feature{{ID: 5}, {ID: 6}, {ID: 7}, {ID: 8}},
+				features: []*Feature{{ID: "5"}, {ID: "6"}, {ID: "7"}, {ID: "8"}},
 				id: PrevNextFID{
 					Prev: 4,
 					Next: 0,
@@ -51,7 +51,7 @@ func TestNewCursor(t *testing.T) {
 		{
 			name: "test middle page",
 			args: args{
-				features: []*Feature{{ID: 3}, {ID: 4}, {ID: 5}, {ID: 6}},
+				features: []*Feature{{ID: "3"}, {ID: "4"}, {ID: "5"}, {ID: "6"}},
 				id: PrevNextFID{
 					Prev: 2,
 					Next: 7,

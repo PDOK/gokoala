@@ -1,23 +1,23 @@
 {
-  "id": 10,
+  "id": "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
   "links": [
     {
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items/10?f=json"
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=json"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items/10?f=jsonfg"
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=jsonfg"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/dutch-addresses/items/10?f=html"
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=html"
     },
     {
       "rel": "collection",

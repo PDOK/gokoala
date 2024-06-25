@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/google/uuid"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -180,10 +181,15 @@ func (f *Features) Feature() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
-		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
+		var featureID any
+		featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
 		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, "feature ID must be a number")
-			return
+			// fallback to numerical feature id
+			featureID, err = strconv.ParseInt(chi.URLParam(r, "featureId"), 10, 0)
+			if err != nil {
+				engine.RenderProblem(engine.ProblemBadRequest, w, "feature ID must be a UUID or number")
+				return
+			}
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		outputSRID, contentCrs, err := url.parse()
@@ -195,16 +201,16 @@ func (f *Features) Feature() http.HandlerFunc {
 		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
+		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID)
 		if err != nil {
 			// log error, but sent generic message to client to prevent possible information leakage from datasource
-			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)
+			msg := fmt.Sprintf("failed to retrieve feature %v in collection %s", featureID, collectionID)
 			log.Printf("%s, error: %v\n", msg, err)
 			engine.RenderProblem(engine.ProblemServerError, w, msg)
 			return
 		}
 		if feat == nil {
-			msg := fmt.Sprintf("the requested feature with id: %d does not exist in collection '%s'", featureID, collectionID)
+			msg := fmt.Sprintf("the requested feature with id: %v does not exist in collection '%s'", featureID, collectionID)
 			log.Println(msg)
 			engine.RenderProblem(engine.ProblemNotFound, w, msg)
 			return
