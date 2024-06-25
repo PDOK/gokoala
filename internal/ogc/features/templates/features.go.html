@@ -130,7 +130,7 @@
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
         <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" fill-color="rgba(0,0,255,0)"
-            label-field="{{ $mapSheetProperties.MapSheetID }}" class="card"></app-feature-view>
+            label-field="{{ $mapSheetProperties.MapSheetID }}" max-fit-scale="500000" class="card"></app-feature-view>
         {{ else }}
         <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default" class="card"></app-feature-view>
         {{ end }}
@@ -144,6 +144,8 @@
             let crs = url.searchParams.get('crs')
             document.getElementById('srs-select').value = crs
             viewer.setAttribute('projection', crs)
+          } else {
+            viewer.setAttribute('projection', 'http://www.opengis.net/def/crs/OGC/1.3/CRS84')
           }
 
           {{ if $mapSheetProperties }}

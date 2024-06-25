@@ -18,10 +18,10 @@ export class LegendViewComponent implements OnInit, OnChanges {
   mapboxStyle!: MapboxStyle
   // URL to a Mapbox style JSON endpoint
   @Input() styleUrl!: string
-  /* 
+  /*
   This input is used to specify the attributes for legend items. By default, layers are used for legend items.
-  Attributes can be specified to create distinct items. For example, for the Dutch BGT, you can use 
-  titleItems = "type,plus_type,functie,fysiek_voorkomen,openbareruimtetype". 
+  Attributes can be specified to create distinct items. For example, for the Dutch BGT, you can use
+  titleItems = "type,plus_type,functie,fysiek_voorkomen,openbareruimtetype".
   Refer to: https://github.com/PDOK/vectortile-demo-viewer/blob/a8b49378bcdeef7196aabd1d34402d409421121f/projects/vectortile-demo/src/app/mapstyler/mapstyler.component.ts#L159C15-L159C75
   If titleItems = "id" is used, the "id" (i.e., the layer name from the style JSON) is used.
   */
@@ -56,7 +56,7 @@ export class LegendViewComponent implements OnInit, OnChanges {
     this.generateLegend()
   }
 
-  generateLegend() {
+  private generateLegend() {
     if (this.styleUrl) {
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe(style => {
         this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)

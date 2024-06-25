@@ -8,7 +8,7 @@ This viewer is available as a [WebComponent](https://developer.mozilla.org/en-US
 
 See [demo with samples](https://pdok.github.io/gokoala/).
 
-## Parameters for vectortile view
+## Vectortile view parameters
 
 The `<app-vectortile-view>` component has the following parameters:
 
@@ -38,6 +38,8 @@ The `<app-feature-view>` component has the following parameters
 - **showFillExtentButton**: in default mode the button to fill the view with features is not showed. Activate 'show-fill-extent-button' is needed
 - **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
 - **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature
+- **minFitScale**: maximum initial zoom level, specified by scale denominator set when selecting small feature(s) defaults to 1000(= scale 1:1000)
+- **maxFitScale**: minimal initial zoom level, specified by scale denominator (not set by default)
 
 The following values are emitted:
 

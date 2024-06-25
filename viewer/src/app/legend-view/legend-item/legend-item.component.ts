@@ -97,7 +97,7 @@ export class LegendItemComponent implements OnInit {
       })
   }
 
-  newFeature(item: LegendItem): Feature {
+  private newFeature(item: LegendItem): Feature {
     switch (item.geoType) {
       case LayerType.Fill: {
         const ageom = fromExtent(this.extent)
