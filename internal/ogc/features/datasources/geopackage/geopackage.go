@@ -3,7 +3,6 @@ package geopackage
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"maps"
@@ -253,12 +252,15 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	case int64:
 		if g.externalFidColumn != "" {
 			// Features should be retrieved by UUID
+			log.Println("feature requested by int while external fid column is defined")
 			return nil, nil
 		}
 		fidColumn = g.fidColumn
 	case uuid.UUID:
 		if g.externalFidColumn == "" {
-			return nil, errors.New("external fid column not defined")
+			// Features should be retrieved by int64
+			log.Println("feature requested by UUID while external fid column is not defined")
+			return nil, nil
 		}
 		fidColumn = g.externalFidColumn
 	}
