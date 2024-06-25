@@ -13,7 +13,6 @@ import { NGXLogger } from 'ngx-logger'
   imports: [CommonModule, LegendItemComponent],
   standalone: true,
   encapsulation: ViewEncapsulation.Emulated,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LegendViewComponent implements OnInit, OnChanges {
   mapboxStyle!: MapboxStyle
