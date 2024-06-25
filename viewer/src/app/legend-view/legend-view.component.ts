@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
+import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { LegendItemComponent } from './legend-item/legend-item.component'
