@@ -186,11 +186,11 @@ func (f featureURL) parse() (srid SRID, contentCrs ContentCrs, err error) {
 	return
 }
 
-func (f featureURL) toSelfURL(collectionID string, featureID int64, format string) string {
+func (f featureURL) toSelfURL(collectionID string, featureID string, format string) string {
 	newParams := url.Values{}
 	newParams.Set(engine.FormatParam, format)
 
-	result := f.baseURL.JoinPath("collections", collectionID, "items", strconv.FormatInt(featureID, 10))
+	result := f.baseURL.JoinPath("collections", collectionID, "items", featureID)
 	result.RawQuery = newParams.Encode()
 	return result.String()
 }
