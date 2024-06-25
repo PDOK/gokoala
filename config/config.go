@@ -715,6 +715,10 @@ type GeoPackageCommon struct {
 	// +optional
 	Fid string `yaml:"fid,omitempty" json:"fid,omitempty" validate:"required" default:"fid"`
 
+	// ExternalFid (UUID) column name
+	// +optional
+	ExternalFid string `yaml:"externalFid" json:"externalFid"`
+
 	// Optional timeout after which queries are canceled
 	// +kubebuilder:default="15s"
 	// +optional
