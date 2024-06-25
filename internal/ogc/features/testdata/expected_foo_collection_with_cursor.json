@@ -36,7 +36,7 @@
   "type": "FeatureCollection",
   "features": [
     {
-      "id": 3838,
+      "id": "3838",
       "type": "Feature",
       "geometry": {
         "type": "Point",
@@ -63,7 +63,7 @@
       }
     },
     {
-      "id": 3839,
+      "id": "3839",
       "type": "Feature",
       "geometry": {
         "type": "Point",

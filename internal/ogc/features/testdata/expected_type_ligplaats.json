@@ -53,7 +53,7 @@
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       },
-      "id": 5291
+      "id": "5291"
     },
     {
       "type": "Feature",
@@ -80,7 +80,7 @@
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       },
-      "id": 5292
+      "id": "5292"
     },
     {
       "type": "Feature",
@@ -107,7 +107,7 @@
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       },
-      "id": 5293
+      "id": "5293"
     }
   ],
   "numberReturned": 3
