@@ -38,5 +38,5 @@ type JSONFGFeature struct {
 	ConformsTo  []string       `json:"conformsTo,omitempty"`
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
-	ID int64 `json:"id"`
+	ID string `json:"id"`
 }

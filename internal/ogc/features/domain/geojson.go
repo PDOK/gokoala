@@ -29,7 +29,7 @@ type Feature struct {
 
 	// we overwrite ID since we want to make it a required attribute. We also expect feature ids to be
 	// auto-incrementing integers (which is the default in geopackages) since we use it for cursor-based pagination.
-	ID int64 `json:"id"`
+	ID string `json:"id"`
 }
 
 // Link according to RFC 8288, https://datatracker.ietf.org/doc/html/rfc8288
