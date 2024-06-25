@@ -15,19 +15,19 @@ export function emitBox(map: Map, geometry: Geometry, boxEmitter: EventEmitter<s
   boxEmitter.emit(extString)
 }
 
-export class boxControl extends Control {
+export class BoxControl extends Control {
   /**
    * @param boxEmitter Emitter to subscribe to bbox updates
-   * @param {Object} [opt_options] Control options.
+   * @param {Object} [optionalOptions] Control options.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(
     public boxEmitter: EventEmitter<string>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    opt_options: any
+    optionalOptions: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) {
-    const options = opt_options || {}
+    const options = optionalOptions || {}
 
     const button = document.createElement('button')
 

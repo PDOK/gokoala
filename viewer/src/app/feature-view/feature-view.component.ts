@@ -17,10 +17,10 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { DataUrl, FeatureServiceService, ProjectionMapping, defaultMapping } from '../feature-service.service'
-import { projectionSetRD } from '../mapprojection'
+import { getRijksdriehoek } from '../map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
-import { boxControl, emitBox } from './boxcontrol'
-import { fullBoxControl } from './fullboxcontrol'
+import { BoxControl, emitBox } from './boxControl'
+import { FullBoxControl } from './fullBoxControl'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { getPointResolution, get as getProjection, transform } from 'ol/proj'
@@ -147,10 +147,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     }).forEach(x => this.map.addControl(x))
     if (this.mode === 'default') {
       if (this._showBoundingBoxButton) {
-        this.map.addControl(new boxControl(this.box, {}))
+        this.map.addControl(new BoxControl(this.box, {}))
       }
       if (this._showFillExtentButton) {
-        this.map.addControl(new fullBoxControl(this.box, {}))
+        this.map.addControl(new FullBoxControl(this.box, {}))
       }
     }
   }
@@ -182,7 +182,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         return
       }
       case 'BRT': {
-        this.map.addLayer(this.brtLayer(projectionSetRD()))
+        this.map.addLayer(this.brtLayer(getRijksdriehoek()))
         return
       }
 
@@ -259,17 +259,17 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     const currentProjection = this._view.getProjection()
     const newProjection = getProjection(this._projection.visualProjection)
     if (!newProjection) {
-      throw new Error('Nieuwe projectie is niet gedefinieerd')
+      throw new Error('New projection is not defined')
     }
     const throwUndefinedError = (msg: string) => {
       throw new Error(msg)
     }
-    const currentResolution = this._view.getResolution() ?? throwUndefinedError('Huidige resolutie is niet gedefinieerd')
+    const currentResolution = this._view.getResolution() ?? throwUndefinedError('Current resolution is not defined')
     const currentCenter = this._view.getCenter() ?? [0, 0]
     const newCenter = transform(currentCenter, currentProjection, newProjection) ?? [0, 0]
     const currentRotation = this._view.getRotation() ?? 0
-    const currentMPU = currentProjection?.getMetersPerUnit() ?? throwUndefinedError('Huidige MPU is niet gedefinieerd')
-    const newMPU = newProjection?.getMetersPerUnit() ?? throwUndefinedError('Nieuwe MPU is niet gedefinieerd')
+    const currentMPU = currentProjection?.getMetersPerUnit() ?? throwUndefinedError('Current meters-per-unit is not defined')
+    const newMPU = newProjection?.getMetersPerUnit() ?? throwUndefinedError('New meters-per-unit is not defined')
     const currentPointResolution = getPointResolution(currentProjection, 1 / currentMPU, currentCenter, 'm') * currentMPU
     const newPointResolution = getPointResolution(newProjection, 1 / newMPU, newCenter, 'm') * newMPU
     const newResolution = (currentResolution * currentPointResolution) / newPointResolution

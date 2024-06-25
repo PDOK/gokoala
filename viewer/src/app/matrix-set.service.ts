@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable } from 'rxjs'
+import { Link } from './link'
 
 export interface MatrixSet {
   links: Link[]
@@ -32,14 +33,6 @@ export interface Matrix {
   tileMatrixSetLimits: TileMatrixSetLimit[]
 }
 
-export interface Link {
-  rel: string
-  type: string
-  title: string
-  href: string
-  templated?: boolean
-}
-
 export interface TileMatrixSetLimit {
   tileMatrix: string
   minTileRow: number
@@ -51,7 +44,7 @@ export interface TileMatrixSetLimit {
 @Injectable({
   providedIn: 'root',
 })
-export class MatrixsetService {
+export class MatrixSetService {
   constructor(private http: HttpClient) {}
   getMatrixSet(url: string): Observable<MatrixSet> {
     return this.http.get<MatrixSet>(url)
