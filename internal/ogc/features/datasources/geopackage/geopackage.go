@@ -251,6 +251,10 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	var fidColumn string
 	switch featureID.(type) {
 	case int64:
+		if g.externalFidColumn != "" {
+			// Features should be retrieved by UUID
+			return nil, nil
+		}
 		fidColumn = g.fidColumn
 	case uuid.UUID:
 		if g.externalFidColumn == "" {
