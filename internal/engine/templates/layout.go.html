@@ -51,7 +51,7 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         {{ if .Config.DatasetCatalogURL.URL }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.DatasetCatalogURL }}" target="_blank" aria-label="{{ i18n "To" }} Datasets">Datasets</a></li>
+                            <li class="breadcrumb-item"><a href="{{ .Config.DatasetCatalogURL }}" aria-label="{{ i18n "To" }} Datasets">Datasets</a></li>
                         {{ end }}
                         {{ if .Breadcrumbs }}
                             <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}" aria-label="{{ i18n "To" }} {{ .Config.ServiceIdentifier }}">{{ .Config.ServiceIdentifier }}</a></li>
