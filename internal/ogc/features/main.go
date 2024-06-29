@@ -1,6 +1,8 @@
 package features
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -367,8 +369,12 @@ func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 // log error, but send generic message to client to prevent possible information leakage from datasource
 func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
 	msg := "failed to retrieve feature collection " + collectionID
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		// provide more context when user hits the query timeout
+		msg += ": querying the features took too long (timeout encountered). Simplify your request and try again, or contact support"
+	}
 	log.Printf("%s, error: %v\n", msg, err)
-	engine.RenderProblem(engine.ProblemServerError, w, msg)
+	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
 }
 
 func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
