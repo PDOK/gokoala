@@ -13,9 +13,8 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-spatial/geom"
 )
 
@@ -37,30 +36,6 @@ var (
 	checksumExcludedParams = []string{engine.FormatParam, cursorParam} // don't include these in checksum
 )
 
-// SRID Spatial Reference System Identifier: a unique value to unambiguously identify a spatial coordinate system.
-// For example '28992' in https://www.opengis.net/def/crs/EPSG/0/28992
-type SRID int
-
-func (s SRID) GetOrDefault() int {
-	val := int(s)
-	if val <= 0 {
-		return wgs84SRID
-	}
-	return val
-}
-
-// ContentCrs the coordinate reference system (represented as a URI) of the content/output to return.
-type ContentCrs string
-
-// ToLink returns link target conforming to RFC 8288
-func (c ContentCrs) ToLink() string {
-	return fmt.Sprintf("<%s>", c)
-}
-
-func (c ContentCrs) IsWGS84() bool {
-	return string(c) == wgs84CrsURI
-}
-
 // URL to a page in a collection of features
 type featureCollectionURL struct {
 	baseURL                   url.URL
@@ -71,14 +46,14 @@ type featureCollectionURL struct {
 }
 
 // parse the given URL to values required to delivery a set of Features
-func (fc featureCollectionURL) parse() (encodedCursor domain.EncodedCursor, limit int, inputSRID SRID, outputSRID SRID,
-	contentCrs ContentCrs, bbox *geom.Extent, referenceDate time.Time, propertyFilters map[string]string, err error) {
+func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int, inputSRID d.SRID, outputSRID d.SRID,
+	contentCrs d.ContentCrs, bbox *geom.Extent, referenceDate time.Time, propertyFilters map[string]string, err error) {
 
 	err = fc.validateNoUnknownParams()
 	if err != nil {
 		return
 	}
-	encodedCursor = domain.EncodedCursor(fc.params.Get(cursorParam))
+	encodedCursor = d.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := parseLimit(fc.params, fc.limit)
 	outputSRID, outputSRIDErr := parseCrsToSRID(fc.params, crsParam)
 	contentCrs = parseCrsToContentCrs(fc.params)
@@ -137,7 +112,7 @@ func (fc featureCollectionURL) toSelfURL(collectionID string, format string) str
 	return result.String()
 }
 
-func (fc featureCollectionURL) toPrevNextURL(collectionID string, cursor domain.EncodedCursor, format string) string {
+func (fc featureCollectionURL) toPrevNextURL(collectionID string, cursor d.EncodedCursor, format string) string {
 	copyParams := clone(fc.params)
 	copyParams.Set(engine.FormatParam, format)
 	copyParams.Set(cursorParam, cursor.String())
@@ -175,7 +150,7 @@ type featureURL struct {
 }
 
 // parse the given URL to values required to delivery a specific Feature
-func (f featureURL) parse() (srid SRID, contentCrs ContentCrs, err error) {
+func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, err error) {
 	err = f.validateNoUnknownParams()
 	if err != nil {
 		return
@@ -223,12 +198,12 @@ func clone(params url.Values) url.Values {
 	return copyParams
 }
 
-func consolidateSRIDs(bboxSRID SRID, filterSRID SRID) (inputSRID SRID, err error) {
-	if bboxSRID != undefinedSRID && filterSRID != undefinedSRID && bboxSRID != filterSRID {
+func consolidateSRIDs(bboxSRID d.SRID, filterSRID d.SRID) (inputSRID d.SRID, err error) {
+	if bboxSRID != d.UndefinedSRID && filterSRID != d.UndefinedSRID && bboxSRID != filterSRID {
 		return 0, errors.New("bbox-crs and filter-crs need to be equal. " +
 			"Can't use more than one CRS as input, but input and output CRS may differ")
 	}
-	if bboxSRID != undefinedSRID || filterSRID != undefinedSRID {
+	if bboxSRID != d.UndefinedSRID || filterSRID != d.UndefinedSRID {
 		inputSRID = bboxSRID // or filterCrs, both the same
 	}
 	return inputSRID, err
@@ -254,14 +229,14 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	return limit, err
 }
 
-func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
+func parseBbox(params url.Values) (*geom.Extent, d.SRID, error) {
 	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
 	if err != nil {
-		return nil, undefinedSRID, err
+		return nil, d.UndefinedSRID, err
 	}
 
 	if params.Get(bboxParam) == "" {
-		return nil, undefinedSRID, nil
+		return nil, d.UndefinedSRID, nil
 	}
 	bboxValues := strings.Split(params.Get(bboxParam), ",")
 	if len(bboxValues) != 4 {
@@ -280,35 +255,35 @@ func parseBbox(params url.Values) (*geom.Extent, SRID, error) {
 	return &extent, bboxSRID, nil
 }
 
-func parseCrsToContentCrs(params url.Values) ContentCrs {
+func parseCrsToContentCrs(params url.Values) d.ContentCrs {
 	param := params.Get(crsParam)
 	if param == "" {
-		return wgs84CrsURI
+		return d.WGS84CrsURI
 	}
-	return ContentCrs(param)
+	return d.ContentCrs(param)
 }
 
-func parseCrsToSRID(params url.Values, paramName string) (SRID, error) {
+func parseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
-		return undefinedSRID, nil
+		return d.UndefinedSRID, nil
 	}
 	param = strings.TrimSpace(param)
-	if !strings.HasPrefix(param, crsURIPrefix) {
-		return undefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, crsURIPrefix, param)
+	if !strings.HasPrefix(param, d.CrsURIPrefix) {
+		return d.UndefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, d.CrsURIPrefix, param)
 	}
-	var srid SRID
+	var srid d.SRID
 	lastIndex := strings.LastIndex(param, "/")
 	if lastIndex != -1 {
 		crsCode := param[lastIndex+1:]
-		if crsCode == wgs84CodeOGC {
-			return wgs84SRID, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
+		if crsCode == d.WGS84CodeOGC {
+			return d.WGS84SRID, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
 		}
 		val, err := strconv.Atoi(crsCode)
 		if err != nil {
 			return 0, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
 		}
-		srid = SRID(val)
+		srid = d.SRID(val)
 	}
 	return srid, nil
 }
@@ -350,7 +325,7 @@ func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error)
 	return time.Time{}, nil
 }
 
-func parseFilter(params url.Values) (filter string, filterSRID SRID, err error) {
+func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error) {
 	filter = params.Get(filterParam)
 	filterSRID, _ = parseCrsToSRID(params, filterCrsParam)
 

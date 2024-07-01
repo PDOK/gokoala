@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
@@ -24,12 +23,7 @@ import (
 )
 
 const (
-	templatesDir  = "internal/ogc/features/templates/"
-	crsURIPrefix  = "http://www.opengis.net/def/crs/"
-	undefinedSRID = 0
-	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
-	wgs84CodeOGC  = "CRS84"
-	wgs84CrsURI   = crsURIPrefix + "OGC/1.3/" + wgs84CodeOGC
+	templatesDir = "internal/ogc/features/templates/"
 )
 
 var (
@@ -183,7 +177,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
-		featureID, err := getFeatureID(r)
+		featureID, err := parseFeatureID(r)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -223,7 +217,7 @@ func (f *Features) Feature() http.HandlerFunc {
 	}
 }
 
-func getFeatureID(r *http.Request) (any, error) {
+func parseFeatureID(r *http.Request) (any, error) {
 	var featureID any
 	featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
 	if err != nil {
@@ -296,7 +290,7 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 	}
 	var defaultDS *DatasourceConfig
 	for _, coll := range cfg.Collections {
-		key := DatasourceKey{srid: wgs84SRID, collectionID: coll.ID}
+		key := DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
 		if result[key] == nil {
 			if defaultDS == nil {
 				defaultDS = &DatasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84}
@@ -307,11 +301,11 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 
 	for _, additional := range cfg.Datasources.Additional {
 		for _, coll := range cfg.Collections {
-			srid, err := epsgToSrid(additional.Srs)
+			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
-			key := DatasourceKey{srid: srid, collectionID: coll.ID}
+			key := DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
 			if result[key] == nil {
 				result[key] = &DatasourceConfig{cfg.Collections, additional.Datasource}
 			}
@@ -326,15 +320,15 @@ func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*
 			continue
 		}
 		defaultDS := &DatasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84}
-		result[DatasourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
+		result[DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
 
 		for _, additional := range coll.Features.Datasources.Additional {
-			srid, err := epsgToSrid(additional.Srs)
+			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
 			additionalDS := &DatasourceConfig{cfg.Collections, additional.Datasource}
-			result[DatasourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
+			result[DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
 		}
 	}
 }
@@ -348,19 +342,6 @@ func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig
 	}
 	e.RegisterShutdownHook(datasource.Close)
 	return datasource
-}
-
-func epsgToSrid(srs string) (int, error) {
-	prefix := "EPSG:"
-	srsCode, found := strings.CutPrefix(srs, prefix)
-	if !found {
-		return -1, fmt.Errorf("expected configured SRS to start with '%s', got %s", prefix, srs)
-	}
-	srid, err := strconv.Atoi(srsCode)
-	if err != nil {
-		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
-	}
-	return srid, nil
 }
 
 func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
@@ -397,11 +378,11 @@ func handleFeatureQueryError(w http.ResponseWriter, collectionID string, feature
 	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
 }
 
-func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
+func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Extent) bool {
 	return bbox == nil ||
 		int(input) == int(output) ||
-		(int(input) == undefinedSRID && int(output) == wgs84SRID) ||
-		(int(input) == wgs84SRID && int(output) == undefinedSRID)
+		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||
+		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
 }
 
 func getTemporalCriteria(collection *config.GeoSpatialCollectionMetadata, referenceDate time.Time) ds.TemporalCriteria {
