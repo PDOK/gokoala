@@ -68,12 +68,10 @@
             <!-- property filters -->
             {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
             <div class="row mb-2">
-                <label for="{{ $pfName }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
-                       title="{{ $pfName | title }}">{{ $pfName | title }}</label>
+                <label for="{{ $pfName }}-input" class="col-sm-3 col-form-label fw-bold text-truncate" title="{{ $pfName | title }}">{{ $pfName | title }}</label>
                 <div class="col-sm">
                     {{ if and $pf $pf.AllowedValues }}
-                    <select id="{{ $pfName }}-input" class="form-select"
-                            onchange="updateQueryString('{{ $pfName }}', this.value)">
+                    <select id="{{ $pfName }}-input" name="{{ $pfName }}" class="form-select">
                         <!-- default to empty value -->
                         <option></option>
                         {{ range $value := $pf.AllowedValues }}
@@ -81,16 +79,13 @@
                         {{ end }}
                     </select>
                     {{ else }}
-                    <input id="{{ $pfName }}-input" type="text" class="form-control"
-                          {{/* get the actual value as supplied by the user from the PropertyFilters,
-                            not the ConfiguredPropertyFilters (which doesn't have this info) */}}
-                           value="{{ index $.Params.PropertyFilters $pfName }}"
-                           onchange="updateQueryString('{{ $pfName }}', this.value)">
+                    <input id="{{ $pfName }}-input" name="{{ $pfName }}" type="text" class="form-control"
+                          value="{{ index $.Params.PropertyFilters $pfName }}">
                     {{ end }}
                 </div>
             </div>
             <button type="submit" class="btn btn-primary mt-2"> {{ i18n "ApplyFilters" }}</button>
-            <button type="submit" class="btn btn-secondary mt-2">{{ i18n "ResetFilter" }}</button>
+            <button type="button" id="reset-button" class="btn btn-secondary mt-2">{{ i18n "ResetFilter" }}</button>
             {{ end }}
         </form>
     </div>
@@ -240,23 +235,46 @@
         }
         return url.toString()
     }
-
+</script>
+<script>
     function logSubmit(event) {
-        event.preventDefault(); // Prevent the default form submission
+        event.preventDefault();
 
         const fd = new FormData(event.target);
         const srsValue = fd.get("srs");
         const datetimeValue = fd.get("datetime");
         const limitValue = fd.get("limit");
+        // Iterate over property filters
+        const propertyFilters = {};
+        {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
+        propertyFilters["{{ $pfName }}"] = fd.get("{{ $pfName }}");
+        {{- end }}
 
         updateQueryString('crs', srsValue, true);
         updateQueryString('datetime', datetimeValue, true);
-        updateQueryString('limit', limitValue, false);
+        updateQueryString('limit', limitValue, true);
 
-        const log = document.getElementById("log");
-        // log.textContent = `Form Submitted! Value of srs: ${srsValue}, Value of datetime: ${datetimeValue}, Value of limit: ${limitValue}`;
+        // Update query string for each property filter
+        for (const [key, value] of Object.entries(propertyFilters)) {
+            updateQueryString(key, value, false); // Reload for each property filter
+        }
+    }
+</script>
+    document.getElementById("form").addEventListener("submit", logSubmit);
+<script>
+    function resetForm() {
+        document.getElementById("form").reset();
+        updateQueryString('crs', '', true);
+        updateQueryString('datetime', '', true);
+        updateQueryString('limit', '', true);
+
+        // Clear the property filters
+        {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
+        updateQueryString('{{ $pfName }}', '', false); // Clear each property filter and reload
+        {{- end }}
     }
 
     document.getElementById("form").addEventListener("submit", logSubmit);
+    document.getElementById("reset-button").addEventListener("click", resetForm);
 </script>
 {{end}}
