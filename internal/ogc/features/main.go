@@ -177,7 +177,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
-		featureID, err := getFeatureID(r)
+		featureID, err := parseFeatureID(r)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -217,7 +217,7 @@ func (f *Features) Feature() http.HandlerFunc {
 	}
 }
 
-func getFeatureID(r *http.Request) (any, error) {
+func parseFeatureID(r *http.Request) (any, error) {
 	var featureID any
 	featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
 	if err != nil {
