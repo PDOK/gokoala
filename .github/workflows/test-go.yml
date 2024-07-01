@@ -42,7 +42,7 @@ jobs:
       # we don't (yet) fail on benchmark results, these are just to make sure
       # the benchmarks keep working
       - name: Benchmark
-        run: go test -v ./... -bench=. -run=^# -benchmem -count=5
+        run: go test -v ./... -bench=. -run=^# -benchmem -count=1
 
       - name: Update coverage report
         uses: ncruces/go-coverage-report@v0
