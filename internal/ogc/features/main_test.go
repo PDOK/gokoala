@@ -101,6 +101,20 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request unsupported format (DOCX)",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				collectionID: "foo",
+				format:       "docx",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotAcceptable,
+			},
+		},
+		{
 			name: "Request with unknown query params",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
@@ -192,6 +206,20 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_straatnaam_and_postcode.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request empty feature collection (zero results)'",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=doesnotexist",
+				collectionID: "foo",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_empty_feature_collection.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -432,6 +460,34 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request slow response, hitting query timeout",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + wgs84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_query_timeout_features.json",
+				statusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "Request slow response, hitting query timeout with different. With bbox in WGS84 and output in RD",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&limit=2",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_query_timeout_features.json",
+				statusCode: http.StatusInternalServerError,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -617,6 +673,20 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 		},
 		{
+			name: "Request non existing collection",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "does-not-exist",
+				featureID:    "9999999999",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotFound,
+			},
+		},
+		{
 			name: "Request with unknown query params",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
@@ -628,6 +698,34 @@ func TestFeatures_Feature(t *testing.T) {
 			want: want{
 				body:       "",
 				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Request with invalid FID",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "foo",
+				featureID:    "thisisnotaUUIDorINTEGER",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Request unsupported format (DOCX) for feature 4030",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "foo",
+				featureID:    "4030",
+				format:       "docx",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotAcceptable,
 			},
 		},
 		{
@@ -687,6 +785,20 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output in unsupported CRS explicitly",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/EPSG:3812131313131314141",
+				collectionID: "dutch-addresses",
+				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
 			name: "Request non existing feature",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
@@ -698,6 +810,20 @@ func TestFeatures_Feature(t *testing.T) {
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_feature_404.json",
 				statusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "Request slow response, hitting query timeout",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "dutch-addresses",
+				featureID:    "4030",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_query_timeout_feature.json",
+				statusCode: http.StatusInternalServerError,
 			},
 		},
 	}

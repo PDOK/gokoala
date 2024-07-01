@@ -160,6 +160,9 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, domain.Cursors{}, queryCtx.Err()
+	}
 
 	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(rows)
 	if err != nil {
@@ -195,6 +198,9 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 		return nil, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, queryCtx.Err()
+	}
 
 	fc := domain.FeatureCollection{}
 	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
@@ -224,6 +230,9 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, domain.Cursors{}, queryCtx.Err()
+	}
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
@@ -271,6 +280,9 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, queryCtx.Err()
+	}
 
 	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {

@@ -1,6 +1,8 @@
 package features
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -119,7 +121,7 @@ func (f *Features) Features() http.HandlerFunc {
 				// Add filter, filter-lang
 			})
 			if err != nil {
-				handleFeatureCollectionError(w, collectionID, err)
+				handleFeaturesQueryError(w, collectionID, err)
 				return
 			}
 		} else {
@@ -141,7 +143,7 @@ func (f *Features) Features() http.HandlerFunc {
 				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
 			}
 			if err != nil {
-				handleFeatureCollectionError(w, collectionID, err)
+				handleFeaturesQueryError(w, collectionID, err)
 				return
 			}
 		}
@@ -181,15 +183,10 @@ func (f *Features) Feature() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
-		var featureID any
-		featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
+		featureID, err := getFeatureID(r)
 		if err != nil {
-			// fallback to numerical feature id
-			featureID, err = strconv.ParseInt(chi.URLParam(r, "featureId"), 10, 0)
-			if err != nil {
-				engine.RenderProblem(engine.ProblemBadRequest, w, "feature ID must be a UUID or number")
-				return
-			}
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			return
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
 		outputSRID, contentCrs, err := url.parse()
@@ -203,16 +200,11 @@ func (f *Features) Feature() http.HandlerFunc {
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID)
 		if err != nil {
-			// log error, but sent generic message to client to prevent possible information leakage from datasource
-			msg := fmt.Sprintf("failed to retrieve feature %v in collection %s", featureID, collectionID)
-			log.Printf("%s, error: %v\n", msg, err)
-			engine.RenderProblem(engine.ProblemServerError, w, msg)
+			handleFeatureQueryError(w, collectionID, featureID, err)
 			return
 		}
 		if feat == nil {
-			msg := fmt.Sprintf("the requested feature with id: %v does not exist in collection '%s'", featureID, collectionID)
-			log.Println(msg)
-			engine.RenderProblem(engine.ProblemNotFound, w, msg)
+			handleFeatureNotFound(w, collectionID, featureID)
 			return
 		}
 
@@ -229,6 +221,19 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func getFeatureID(r *http.Request) (any, error) {
+	var featureID any
+	featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
+	if err != nil {
+		// fallback to numerical feature id
+		featureID, err = strconv.ParseInt(chi.URLParam(r, "featureId"), 10, 0)
+		if err != nil {
+			return nil, errors.New("feature ID must be a UUID or number")
+		}
+	}
+	return featureID, nil
 }
 
 func cacheCollectionsMetadata(e *engine.Engine) map[string]*config.GeoSpatialCollectionMetadata {
@@ -364,11 +369,32 @@ func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }
 
+func handleFeatureNotFound(w http.ResponseWriter, collectionID string, featureID any) {
+	msg := fmt.Sprintf("the requested feature with id: %v does not exist in collection '%v'", featureID, collectionID)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotFound, w, msg)
+}
+
 // log error, but send generic message to client to prevent possible information leakage from datasource
-func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
+func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err error) {
 	msg := "failed to retrieve feature collection " + collectionID
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		// provide more context when user hits the query timeout
+		msg += ": querying the features took too long (timeout encountered). Simplify your request and try again, or contact support"
+	}
 	log.Printf("%s, error: %v\n", msg, err)
-	engine.RenderProblem(engine.ProblemServerError, w, msg)
+	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
+}
+
+// log error, but sent generic message to client to prevent possible information leakage from datasource
+func handleFeatureQueryError(w http.ResponseWriter, collectionID string, featureID any, err error) {
+	msg := fmt.Sprintf("failed to retrieve feature %v in collection %s", featureID, collectionID)
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		// provide more context when user hits the query timeout
+		msg += ": querying the feature took too long (timeout encountered). Try again, or contact support"
+	}
+	log.Printf("%s, error: %v\n", msg, err)
+	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
 }
 
 func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
