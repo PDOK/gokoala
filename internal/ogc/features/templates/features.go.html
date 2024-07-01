@@ -4,30 +4,6 @@
 {{ $baseUrl := $cfg.BaseURL }}
 {{ $mapSheetProperties := .Params.MapSheetProperties }}
 
-<script>
-    {{- /* generic function to update query string parameters */ -}}
-    function updateQueryString(name, value, skipReload) {
-      const url = new URL(window.location.href)
-      url.searchParams.delete('cursor') // when filters change, we can't continue pagination.
-      if (value) {
-        if (name === 'datetime') {
-          url.searchParams.set(name, new Date(value).toISOString()) // input is %Y-%m-%d, but parameter value should be RFC3339
-        } else {
-          url.searchParams.set(name, value)
-        }
-      } else {
-        url.searchParams.delete(name)
-      }
-
-      if (skipReload) {
-        window.history.pushState({}, '', url.toString()) // only change the url but don't reload the page
-      } else {
-        window.location.href = url.toString()
-      }
-      return url.toString()
-    }
-</script>
-
 <hgroup>
     <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
 </hgroup>
@@ -51,12 +27,12 @@
         </div>
 
         <!-- filters -->
-        <form class="col-12 mt-4">
+        <form id="form" class="col-12 mt-4">
             <!-- projection -->
             <div class="row mb-2">
                 <label for="srs-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Projection" }}</label>
                 <div class="col-sm">
-                    <select id="srs-select" class="form-select" onchange="updateQueryString('crs', this.value)">
+                    <select id="srs-select" name="srs" class="form-select">
                         <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
                             http://www.opengis.net/def/crs/OGC/1.3/CRS84
                         </option>
@@ -67,13 +43,11 @@
                 </div>
             </div>
             {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
-            <!-- datetime -->
             <div class="row mb-2">
                 <label for="referencedate-input" class="col-sm-3 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
                 <div class="col-sm">
-                    <input id="referencedate-input" type="date" class="form-control"
-                           value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}"
-                           onchange="updateQueryString('datetime', this.value)">
+                    <input id="referencedate-input" name="datetime" type="date" class="form-control"
+                           value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}">
                 </div>
             </div>
             {{ end }}
@@ -81,14 +55,12 @@
             <div class="row mb-2">
                 <label for="limit-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Limit" }}</label>
                 <div class="col-sm">
-                    <select id="limit-select" class="form-select" aria-label="Limit selection"
-                            onchange="updateQueryString('limit', this.value)">
+                    <select id="limit-select" name="limit" class="form-select" aria-label="Limit selection">
                         <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }}</option>
                         <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option>
                         {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
-                        <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit
-                                $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>{{ $cfg.OgcAPI.Features.Limit.Max }} {{
-                            i18n "Items" }} ({{ i18n "Max" }})
+                        <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>
+                            {{ $cfg.OgcAPI.Features.Limit.Max }} {{ i18n "Items" }} ({{ i18n "Max" }})
                         </option>
                     </select>
                 </div>
@@ -245,4 +217,46 @@
         {{ end }}
     </div>
 </section>
+<!-- Script -->
+<script>
+    {{- /* generic function to update query string parameters */ -}}
+    function updateQueryString(name, value, skipReload) {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('cursor') // when filters change, we can't continue pagination.
+        if (value) {
+            if (name === 'datetime') {
+                url.searchParams.set(name, new Date(value).toISOString()) // input is %Y-%m-%d, but parameter value should be RFC3339
+            } else {
+                url.searchParams.set(name, value)
+            }
+        } else {
+            url.searchParams.delete(name)
+        }
+
+        if (skipReload) {
+            window.history.pushState({}, '', url.toString()) // only change the url but don't reload the page
+        } else {
+            window.location.href = url.toString()
+        }
+        return url.toString()
+    }
+
+    function logSubmit(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const fd = new FormData(event.target);
+        const srsValue = fd.get("srs");
+        const datetimeValue = fd.get("datetime");
+        const limitValue = fd.get("limit");
+
+        updateQueryString('crs', srsValue, true);
+        updateQueryString('datetime', datetimeValue, true);
+        updateQueryString('limit', limitValue, false);
+
+        const log = document.getElementById("log");
+        // log.textContent = `Form Submitted! Value of srs: ${srsValue}, Value of datetime: ${datetimeValue}, Value of limit: ${limitValue}`;
+    }
+
+    document.getElementById("form").addEventListener("submit", logSubmit);
+</script>
 {{end}}
