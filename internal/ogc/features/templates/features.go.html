@@ -42,7 +42,9 @@
                     </select>
                 </div>
             </div>
-            {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
+
+        {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
+            <!-- datetime -->
             <div class="row mb-2">
                 <label for="referencedate-input" class="col-sm-3 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
                 <div class="col-sm">
@@ -84,9 +86,9 @@
                     {{ end }}
                 </div>
             </div>
+        {{ end }}
             <button type="submit" class="btn btn-primary mt-2"> {{ i18n "ApplyFilters" }}</button>
             <button type="button" id="reset-button" class="btn btn-secondary mt-2">{{ i18n "ResetFilter" }}</button>
-            {{ end }}
         </form>
     </div>
 
@@ -254,9 +256,9 @@
         updateQueryString('datetime', datetimeValue, true);
         updateQueryString('limit', limitValue, true);
 
-        // Update query string for each property filter
+        // Update query string for each property filter and reload
         for (const [key, value] of Object.entries(propertyFilters)) {
-            updateQueryString(key, value, false); // Reload for each property filter
+            updateQueryString(key, value, false);
         }
     }
 </script>
@@ -268,9 +270,9 @@
         updateQueryString('datetime', '', true);
         updateQueryString('limit', '', true);
 
-        // Clear the property filters
+        // Clear the property filters and reload
         {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
-        updateQueryString('{{ $pfName }}', '', false); // Clear each property filter and reload
+        updateQueryString('{{ $pfName }}', '', false);
         {{- end }}
     }
 
