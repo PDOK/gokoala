@@ -60,19 +60,14 @@ ogcApi:
               queryTimeout: 10s
     collections:
       - id: dutch-addresses
-        tableName: addresses
-        filters:
-          properties:
-            - name: fid
-              indexRequired: false
-              description: BRO ID is de identificatiecode die een object heeft binnen een (lokaal) registratie.# name of the feature table (optional), when omitted collection ID is used.
+        tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           title: Dutch Addresses
           description: These are example addresses
           keywords:
             - Building
             - Address
-          thumbnail: 3d.png
+          thumbnail: old.png
           lastUpdated: "2030-01-02T12:00:00Z"
           temporalProperties:
             startDate: validfrom
