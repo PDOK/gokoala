@@ -32,7 +32,7 @@ func NewConfig(configFile string) (*Config, error) {
 	}
 
 	// expand environment variables
-	yamlData = []byte(os.ExpandEnv(string(yamlData)))
+	yamlData = []byte(util.ExpandEnv(string(yamlData)))
 
 	var config *Config
 	err = yaml.Unmarshal(yamlData, &config)
@@ -76,6 +76,9 @@ func setDefaults(config *Config) error {
 	// custom default logic
 	if len(config.AvailableLanguages) == 0 {
 		config.AvailableLanguages = append(config.AvailableLanguages, Language{language.Dutch}) // default to Dutch only
+	}
+	if config.OgcAPI.Features != nil {
+		extractFeatureRelations(config.OgcAPI.Features)
 	}
 	return nil
 }
@@ -122,6 +125,13 @@ func validateFeatureCollections(collections GeoSpatialCollections) error {
 				}
 			}
 		}
+		if collection.Features != nil && collection.Features.Schema.Content != nil {
+			_, err := json.Marshal(collection.Features.Schema.Content)
+			if err != nil {
+				errMessages = append(errMessages, fmt.Sprintf("invalid feature schema specified; "+
+					"failed to parse as JSON Schema: %v", err))
+			}
+		}
 	}
 	if len(errMessages) > 0 {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
@@ -149,6 +159,15 @@ func validateLocalPaths(config *Config) error {
 func isExistingLocalDir(path string) bool {
 	fileInfo, err := os.Stat(path)
 	return err == nil && fileInfo.IsDir()
+}
+
+func extractFeatureRelations(feats *OgcAPIFeatures) {
+	feats.featureRelationsByCollectionID = make(map[string]map[string]string)
+	for _, collection := range feats.Collections {
+		if collection.Features != nil && collection.Features.Schema.Content != nil {
+			feats.featureRelationsByCollectionID[collection.ID] = collection.Features.Schema.ParseRelations()
+		}
+	}
 }
 
 // +kubebuilder:object:generate=true
@@ -440,7 +459,11 @@ type CollectionEntryFeatures struct {
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
 
-	// Downloads available for this collection
+	// OAF Part 5: Schema of the features/items in this collection of geospatial data.
+	// Should be a JSON Schema as specified in https://docs.ogc.org/DRAFTS/23-058r1.html#rc_schemas
+	Schema JSONSchema `yaml:"schema,omitempty" json:"schema,omitempty"`
+
+	// Downloads available for this collection, organized per "map sheet" (= slice/part of a map).
 	// +optional
 	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
 }
@@ -485,7 +508,7 @@ type DownloadLink struct {
 
 // +kubebuilder:object:generate=true
 type MapSheetDownloads struct {
-	// Properties that provide the download details per map sheet
+	// Properties/columns in datasource that provide the download details per map sheet
 	Properties MapSheetDownloadProperties `yaml:"properties" json:"properties" validate:"required"`
 }
 
@@ -586,6 +609,14 @@ type OgcAPIFeatures struct {
 	// +kubebuilder:default=true
 	// +optional
 	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+
+	// -- PRIVATE --
+	// Relations between collections, inferred from Schema (JSON schema) and stored here to improve lookup speed.
+	featureRelationsByCollectionID map[string]map[string]string
+}
+
+func (oaf *OgcAPIFeatures) FeatureRelationsForCollection(collectionID string) map[string]string {
+	return oaf.featureRelationsByCollectionID[collectionID]
 }
 
 func (oaf *OgcAPIFeatures) ProjectionsForCollections() []string {

@@ -75,6 +75,7 @@ func (in *CollectionEntryFeatures) DeepCopyInto(out *CollectionEntryFeatures) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.Filters.DeepCopyInto(&out.Filters)
+	in.Schema.DeepCopyInto(&out.Schema)
 	if in.MapSheetDownloads != nil {
 		in, out := &in.MapSheetDownloads, &out.MapSheetDownloads
 		*out = new(MapSheetDownloads)
@@ -679,6 +680,24 @@ func (in *OgcAPIFeatures) DeepCopyInto(out *OgcAPIFeatures) {
 		in, out := &in.ValidateResponses, &out.ValidateResponses
 		*out = new(bool)
 		**out = **in
+	}
+	if in.featureRelationsByCollectionID != nil {
+		in, out := &in.featureRelationsByCollectionID, &out.featureRelationsByCollectionID
+		*out = make(map[string]map[string]string, len(*in))
+		for key, val := range *in {
+			var outVal map[string]string
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				inVal := (*in)[key]
+				in, out := &inVal, &outVal
+				*out = make(map[string]string, len(*in))
+				for key, val := range *in {
+					(*out)[key] = val
+				}
+			}
+			(*out)[key] = outVal
+		}
 	}
 }
 

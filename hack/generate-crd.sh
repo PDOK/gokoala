@@ -14,12 +14,12 @@ then
     docker build -f hack/crd/Dockerfile -t gokoala-controller-tools .
 
     # Run against GoKoala
-    docker run -v `pwd`/:/gokoala gokoala-controller-tools crd paths="/gokoala/hack/crd/..." output:dir="/gokoala/hack/tmp"
+    docker run -v `pwd`/:/gokoala gokoala-controller-tools crd:ignoreUnexportedFields=true paths="/gokoala/hack/crd/..." output:dir="/gokoala/hack/tmp"
 else
    echo "controller-gen found, using this local install instead of Docker container"
 
    # Run against GoKoala config
-   controller-gen crd paths="$(pwd)/hack/crd/..." output:dir="$(pwd)/hack/tmp"
+   controller-gen crd:ignoreUnexportedFields=true paths="$(pwd)/hack/crd/..." output:dir="$(pwd)/hack/tmp"
 fi
 
 # Assertions

@@ -80,13 +80,7 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 
 		switch columnName {
 		case fidColumn:
-			// Assumes that `fid` column is first column in the table
 			feature.ID = fmt.Sprint(columnValue)
-
-		case externalFidColum:
-			// If externalFidColumn is configured, overwrite feature ID and drop column from feature
-			feature.ID = fmt.Sprint(columnValue)
-			delete(feature.Properties, columnName)
 
 		case geomColumn:
 			if columnValue == nil {
@@ -145,5 +139,18 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 			}
 		}
 	}
+
+	for i, columnName := range columns {
+		columnValue := values[i]
+		if columnName == externalFidColum {
+			// When externalFidColumn is configured, overwrite feature ID and drop externalFidColumn.
+			//
+			// Note: This happens in a second pass over the feature, since we want to overwrite the
+			// feature ID irrespective of the order of columns in the table
+			feature.ID = fmt.Sprint(columnValue)
+			delete(feature.Properties, columnName)
+		}
+	}
+
 	return &prevNextID, nil
 }

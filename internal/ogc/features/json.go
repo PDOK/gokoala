@@ -44,6 +44,20 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 	fc.Timestamp = now().Format(time.RFC3339)
 	fc.Links = jf.createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL)
 
+	relations := jf.engine.Config.OgcAPI.Features.FeatureRelationsForCollection(collectionID)
+	if relations != nil {
+		for _, feature := range fc.Features {
+			for propertyName := range feature.Properties {
+				targetCollection := relations[propertyName]
+				if targetCollection != "" {
+					externalFidRef := feature.Properties[targetCollection+"_external_fid"].(string)
+					feature.Properties[propertyName+".href"] = "http://localhost:8080/collections/" + targetCollection + "/items/" + externalFidRef + "?f=json"
+					delete(feature.Properties, targetCollection+"_external_fid")
+				}
+			}
+		}
+	}
+
 	jf.createFeatureDownloadLinks(collectionID, fc)
 
 	if jf.validateResponse {
