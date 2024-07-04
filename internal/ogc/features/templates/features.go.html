@@ -258,7 +258,7 @@
 
         // Update query string for each property filter and reload
         for (const [key, value] of Object.entries(propertyFilters)) {
-            updateQueryString(key, value, false);
+            updateQueryString(key, value, false);// Reload for each property filter
         }
     }
 </script>
@@ -272,7 +272,7 @@
 
         // Clear the property filters and reload
         {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
-        updateQueryString('{{ $pfName }}', '', false);
+        updateQueryString('{{ $pfName }}', '', false);// Clear each property filter and reload
         {{- end }}
     }
 
