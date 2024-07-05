@@ -1,31 +1,111 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{define "content"}}
+
+<script>
+  function gotoFeatures(format, selectId) {
+    const crs = document.getElementById(selectId).value;
+    const baseURL = "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items";
+    let url;
+    if (crs === "https://www.opengis.net/def/crs/OGC/1.3/CRS84") {
+      // Use the static URL for WGS84
+      url = `${baseURL}?f=${format}`;
+    } else {
+      url = `${baseURL}?f=${format}&crs=${crs}`;
+    }
+
+    if (event.ctrlKey) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
+    }
+  }
+</script>
+
 <hgroup>
     <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}</h1>
 </hgroup>
 
-<section class="row py-3">
-    <div class="col-md-8 col-sm-12">
-        <div class="card h-100">
-            <h2 class="card-header h5">
-                {{ if and .Params.Metadata .Params.Metadata.Title }}
-                    {{ .Params.Metadata.Title }}
-                {{ else }}
-                    {{ .Params.ID }}
+<div class="row py-3">
+    {{ if and .Params.Metadata .Params.Metadata.Thumbnail }}
+    <div class="col-md-8">
+    {{ else }}
+    <div class="col-md-12">
+    {{ end }}
+        {{ if and .Params.Metadata .Params.Metadata.Description }}
+            {{ markdown .Params.Metadata.Description }}
+        {{ end }}
+        <table class="table table-borderless table-sm w-100">
+            <caption class="visually-hidden">Collection details</caption>
+            <tbody>
+                {{ if and .Params.Metadata .Params.Metadata.Keywords }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "Keywords" }}:
+                    </td>
+                    <td>
+                        {{ .Params.Metadata.Keywords | join ", " }}
+                    </td>
+                </tr>
                 {{ end }}
-            </h2>
-            <div class="card-body">
-                {{ if and .Params.Metadata .Params.Metadata.Description }}
-                    {{ markdown .Params.Metadata.Description }}
+                {{ if and .Params.Metadata .Params.Metadata.LastUpdated }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "LastUpdated" }}:
+                    </td>
+                    <td>
+                        {{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}
+                    </td>
+                </tr>
                 {{ end }}
-            </div>
+                {{ if and .Params.Metadata .Params.Metadata.Extent }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "GeographicExtent" }}
+                        {{ if .Params.Metadata.Extent.Srs }}
+                            (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}" target="_blank"
+                                aria-label="{{ i18n "To" }} {{ .Params.Metadata.Extent.Srs }} {{ i18n "Definition" }}">{{ .Params.Metadata.Extent.Srs }}</a>):
+                        {{ else }}
+                            (<a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84" target="_blank"
+                                aria-label="{{ i18n "To" }} CRS84 {{ i18n "Definition" }}">CRS84</a>):
+                        {{ end }}
+                    </td>
+                    <td>
+                        {{ .Params.Metadata.Extent.Bbox | join ", " }}
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if and .Params.Metadata .Params.Metadata.Extent .Params.Metadata.Extent.Interval }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "TemporalExtent" }} (<a href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian" target="_blank" aria-label="{{ i18n "To" }} ISO-8601 {{ i18n "Definition" }}">ISO-8601</a>):
+                    </td>
+                    <td>
+                        {{ toDate "2006-01-02T15:04:05Z" ((first .Params.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }} /
+                        {{ if not (contains "null" (last .Params.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last .Params.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
+                    </td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    {{ if and .Params.Metadata .Params.Metadata.Thumbnail }}
+    <div class="col-md-4">
+        <img src="resources/{{ .Params.Metadata.Thumbnail }}" class="img-fluid" alt="{{ .Params.ID }} Thumbnail"/>
+    </div>
+    {{ end }}
+</div>
 
-            <!-- start specific part per OGC spec -->
-            <ul class="list-group list-group-flush">
-                {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-                    {{ if .Config.OgcAPI.GeoVolumes.Collections.ContainsID .Params.ID }}
-                    <li class="list-group-item">
-                        <h3 class="card-title h5">3D GeoVolumes</h3>
+<!-- start specific part per OGC spec -->
+<div class="row row-cols-md-4 g-4">
+
+    {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
+        {{ if .Config.OgcAPI.GeoVolumes.Collections.ContainsID .Params.ID }}
+            <div class="col-md-4 col-sm-12">
+                <div class="card h-100">
+                    <h2 class="card-header h5">
+                        3D GeoVolumes
+                    </h2>
+                    <div class="card-body">
                         <ul>
                             {{ if and .Params.GeoVolumes .Params.GeoVolumes.Has3DTiles }}
                                 <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles" aria-label="{{ i18n "GoTo"}} 3D Tiles">3D Tiles</a></li>
@@ -34,96 +114,86 @@
                                 <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/quantized-mesh" aria-label="{{ i18n "GoTo"}} Quantized Mesh DTM">Quantized Mesh DTM</a></li>
                             {{ end }}
                             {{ if and .Params.GeoVolumes .Params.GeoVolumes.URL3DViewer }}
-                            <li>{{ i18n "ViewIn" }} <a href="{{ .Params.GeoVolumes.URL3DViewer }}" target="_blank" aria-label="{{ i18n "ViewIn" }} 3D Viewer">3D Viewer</a></li>
+                                <li>{{ i18n "ViewIn" }} <a href="{{ .Params.GeoVolumes.URL3DViewer }}" target="_blank" aria-label="{{ i18n "ViewIn" }} 3D Viewer">3D Viewer</a></li>
                             {{ end }}
                         </ul>
-                    </li>
-                    {{ end }}
-                {{ end }}
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+    {{ end }}
 
-                {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
-                    {{ if .Config.OgcAPI.Tiles.Collections.ContainsID .Params.ID }}
-                    <li class="list-group-item">
-                        <h3 class="card-title h5">Tiles</h3>
-                        <ul>
-                            <li>TODO (placeholder)</li>
-                        </ul>
-                    </li>
-                    {{ end }}
-                {{ end }}
+    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
+        {{ if .Config.OgcAPI.Tiles.Collections.ContainsID .Params.ID }}
+            <div class="col-md-4 col-sm-12">
+                <div class="card h-100">
+                    <h2 class="card-header h5">
+                        <a href="#" aria-label="{{ i18n "To" }} Tiles">Tiles</a>
+                    </h2>
+                    <div class="card-body">
+                        <p>
+                            TODO (placeholder)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+    {{ end }}
 
-                {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-                    {{ if .Config.OgcAPI.Features.Collections.ContainsID .Params.ID }}
-                    <li class="list-group-item">
-                        <h3 class="card-title h5">Features</h3>
-                        <ul>
-                            <li><strong>{{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items" aria-label="{{ i18n "Browse" }} Features">Features</a></strong></li>
-                            <li>{{ i18n "GoTo" }} features in WGS84 {{ i18n "As" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json" aria-label="Features in WGS84 {{ i18n "As" }} GeoJSON">GeoJSON</a></li>
-                            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection .Params.ID }}
-                                {{ range $formatKey, $formatName := $.AvailableFormatsFeatures }}
+    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
+        {{ if .Config.OgcAPI.Features.Collections.ContainsID .Params.ID }}
+            <div class="col-md-4 col-sm-12">
+                <div class="card h-100">
+                    <h2 class="card-header h5">
+                        <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items" aria-label="{{ i18n "Browse" }} Features">Features</a>
+                    </h2>
+                    <div class="card-body">
+                        <p>
+                            {{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items" aria-label="{{ i18n "Browse" }} Features">Features</a> {{ i18n "BrowseSuffix" }}:
+                        </p>
+                        <p>
+                            <ul>
+                        {{ range $formatKey, $formatName := $.AvailableFormatsFeatures }}
+                           <li> <label for="select{{ $formatKey }}" class="visually-hidden">{{ i18n "To" }} Features in</label>
+                            <select id="select{{ $formatKey }}">
+                                <option value="https://www.opengis.net/def/crs/OGC/1.3/CRS84">WGS84</option>
+                                {{ range $index, $srs := $.Config.OgcAPI.Features.ProjectionsForCollection $.Params.ID }}
                                     {{ $crs := printf "http://www.opengis.net/def/crs/EPSG/0/%s" (trimPrefix "EPSG:" $srs) }}
-                                    <li>{{ i18n "GoTo" }} features in {{ $srs }} {{ i18n "As" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.ID }}/items?f={{ $formatKey }}&crs={{ $crs }}"
-                                                                                                    aria-label="Features in {{ $srs}} {{ i18n "As" }} {{ $formatName }}">{{ $formatName }}</a></li>
+                                    <option value="{{ $crs }}">{{ $srs }}</option>
                                 {{ end }}
-                            {{ end }}
+                            </select>
+                            {{ i18n "As" }}
+                            <a href="#" onclick="gotoFeatures('{{ $formatKey }}', 'select{{ $formatKey }}'); return false;">{{ $formatName }}</a>.
+                           </li>
+                        {{ end }}
                         </ul>
-                        <br/>
+                        </p>
                         <div class="alert alert-primary" role="alert">
-                            {{ i18n "FeaturesExplanation" }}
+                            <small>{{ i18n "FeaturesExplanation" }}</small>
                         </div>
-                    </li>
-                    {{ end }}
-                {{ end }}
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+    {{ end }}
 
-                {{ if and .Params.Links .Params.Links.Downloads }}
-                    <li class="list-group-item">
-                        <h3 class="card-title h5">Downloads</h3>
-                        <ul>
+    {{ if and .Params.Links .Params.Links.Downloads }}
+        <div class="col-md-4 col-sm-12">
+            <div class="card h-100">
+                <h2 class="card-header h5">
+                    Downloads
+                </h2>
+                <div class="card-body">
+                    <ul>
                         {{- range $link := .Params.Links.Downloads -}}
                             <li><a href="{{ $link.AssetURL }}" target="_blank" aria-label="{{ $link.Name }}">{{ $link.Name }}{{ if $link.Size }} ({{ $link.Size }}){{ end }}</a></li>
                         {{ end }}
-                        </ul>
-                    </li>
-                {{ end }}
-            </ul>
-            <!-- end specific part per OGC spec -->
-
-            <ul class="list-group list-group-flush">
-                {{ if and .Params.Metadata .Params.Metadata.Keywords }}
-                    <li class="list-group-item">
-                        <strong>{{ i18n "Keywords" }}</strong>: {{ .Params.Metadata.Keywords | join ", " }}
-                    </li>
-                {{ end }}
-                {{/* <li class="list-group-item"><strong>Schema</strong>: TODO link to collection schema</li> */}}
-                {{ if and .Params.Metadata .Params.Metadata.LastUpdated }}
-                    <li class="list-group-item">
-                        <strong>{{ i18n "LastUpdated" }}</strong>:
-                        {{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}
-                    </li>
-                {{ end }}
-                {{ if and .Params.Metadata .Params.Metadata.Extent }}
-					<li class="list-group-item">
-                        <strong>{{ i18n "GeographicExtent" }}</strong>
-                        {{ if .Params.Metadata.Extent.Srs }}
-                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}" target="_blank"
-                            aria-label="{{ i18n "To" }} {{ .Params.Metadata.Extent.Srs }} {{ i18n "Definition" }}">{{ .Params.Metadata.Extent.Srs }}</a>):
-                        {{ else }}
-                        (<a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84" target="_blank"
-                            aria-label="{{ i18n "To" }} CRS84 {{ i18n "Definition" }}">CRS84</a>):
-                        {{ end }}
-                        {{ .Params.Metadata.Extent.Bbox | join ", " }}
-                    </li>
-                {{ end }}
-                {{ if and .Params.Metadata .Params.Metadata.Extent .Params.Metadata.Extent.Interval }}
-                <li class="list-group-item">
-                    <strong>{{ i18n "TemporalExtent" }}</strong>
-                    (<a href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian" target="_blank" aria-label="{{ i18n "To" }} ISO-8601 {{ i18n "Definition" }}">ISO-8601</a>):
-                    {{ toDate "2006-01-02T15:04:05Z" ((first .Params.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }} /
-                    {{ if not (contains "null" (last .Params.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last .Params.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
-                </li>
-                {{ end }}
-            </ul>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    {{ end }}
+
+</div>
+<!-- end specific part per OGC spec -->
 {{end}}
