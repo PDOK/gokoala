@@ -6,8 +6,8 @@
 
 <script>
     {{- /* generic function to update query string parameters */ -}}
-    function updateQueryString(name, value, skipReload) {
-      const url = new URL(window.location.href)
+    function updateQueryString(name, value, existingUrl) {
+      const url = existingUrl ? new URL(existingUrl) : new URL(window.location.href)
       url.searchParams.delete('cursor') // when filters change, we can't continue pagination.
       if (value) {
         if (name === 'datetime') {
@@ -18,14 +18,49 @@
       } else {
         url.searchParams.delete(name)
       }
-
-      if (skipReload) {
-        window.history.pushState({}, '', url.toString()) // only change the url but don't reload the page
-      } else {
-        window.location.href = url.toString()
-      }
       return url.toString()
     }
+
+    function callUrl(url, skipReload) {
+      if (skipReload) {
+        window.history.pushState({}, '', url) // only change the url but don't reload the page
+      } else {
+        window.location.href = url
+      }
+    }
+
+    function submitForm(event) {
+      event.preventDefault()
+
+      // Gather form values
+      const fd = new FormData(event.target)
+      const srsValue = fd.get('srs')
+      const datetimeValue = fd.get('datetime')
+      const limitValue = fd.get('limit')
+      const propertyFilters = {}
+      {{ range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
+      propertyFilters["{{ $pfName }}"] = fd.get("{{ $pfName }}")
+      {{ end }}
+
+      // Build url with form values
+      let url = updateQueryString('crs', srsValue)
+      url = updateQueryString('datetime', datetimeValue, url)
+      url = updateQueryString('limit', limitValue, url)
+      for (const [key, value] of Object.entries(propertyFilters)) {
+        url = updateQueryString(key, value, url)
+      }
+
+      callUrl(url)
+    }
+
+    function resetForm() {
+      callUrl("{{ $baseUrl }}/collections/{{ .Params.CollectionID }}/items")
+    }
+
+    window.addEventListener("load", function() {
+      document.getElementById('form').addEventListener('submit', submitForm)
+      document.getElementById('form').addEventListener('reset', resetForm)
+    });
 </script>
 
 <hgroup>
@@ -51,12 +86,12 @@
         </div>
 
         <!-- filters -->
-        <form class="col-12 mt-4">
+        <form id="form" class="col-12 mt-4">
             <!-- projection -->
             <div class="row mb-2">
                 <label for="srs-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Projection" }}</label>
                 <div class="col-sm">
-                    <select id="srs-select" class="form-select" onchange="updateQueryString('crs', this.value)">
+                    <select id="srs-select" name="srs" class="form-select">
                         <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
                             http://www.opengis.net/def/crs/OGC/1.3/CRS84
                         </option>
@@ -71,9 +106,8 @@
             <div class="row mb-2">
                 <label for="referencedate-input" class="col-sm-3 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
                 <div class="col-sm">
-                    <input id="referencedate-input" type="date" class="form-control"
-                           value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}"
-                           onchange="updateQueryString('datetime', this.value)">
+                    <input id="referencedate-input" name="datetime" type="date" class="form-control"
+                           value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}">
                 </div>
             </div>
             {{ end }}
@@ -81,8 +115,7 @@
             <div class="row mb-2">
                 <label for="limit-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Limit" }}</label>
                 <div class="col-sm">
-                    <select id="limit-select" class="form-select" aria-label="Limit selection"
-                            onchange="updateQueryString('limit', this.value)">
+                    <select id="limit-select" name="limit" class="form-select" aria-label="Limit selection">
                         <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }}</option>
                         <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option>
                         {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
@@ -100,8 +133,7 @@
                        title="{{ $pfName | title }}">{{ $pfName | title }}</label>
                 <div class="col-sm">
                     {{ if and $pf $pf.AllowedValues }}
-                    <select id="{{ $pfName }}-input" class="form-select"
-                            onchange="updateQueryString('{{ $pfName }}', this.value)">
+                    <select id="{{ $pfName }}-input" name="{{ $pfName }}" class="form-select">
                         <!-- default to empty value -->
                         <option></option>
                         {{ range $value := $pf.AllowedValues }}
@@ -109,15 +141,16 @@
                         {{ end }}
                     </select>
                     {{ else }}
-                    <input id="{{ $pfName }}-input" type="text" class="form-control"
+                    <input id="{{ $pfName }}-input" name="{{ $pfName }}" type="text" class="form-control"
                           {{/* get the actual value as supplied by the user from the PropertyFilters,
                             not the ConfiguredPropertyFilters (which doesn't have this info) */}}
-                           value="{{ index $.Params.PropertyFilters $pfName }}"
-                           onchange="updateQueryString('{{ $pfName }}', this.value)">
+                           value="{{ index $.Params.PropertyFilters $pfName }}">
                     {{ end }}
                 </div>
             </div>
             {{ end }}
+            <button type="submit" class="btn btn-primary mt-2"> {{ i18n "ApplyFilters" }}</button>
+            <button type="reset" class="btn btn-secondary mt-2">{{ i18n "ResetFilter" }}</button>
         </form>
     </div>
 
@@ -150,11 +183,13 @@
 
           {{ if $mapSheetProperties }}
           viewer.addEventListener('box', selectBox => {
-            let newUrl = new URL(updateQueryString('bbox', selectBox.detail, true))
-            newUrl.searchParams.set('f', 'json')
+            let newUrl = new URL(updateQueryString('bbox', selectBox.detail))
+            callUrl(newUrl.toString(), true)
+
             // when moving the map to load additional sheets we don't want to do a full page reload (like we
             // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
             // on the page manually.
+            newUrl.searchParams.set('f', 'json')
             viewer.setAttribute('items-url', newUrl.toString())
             {{ range $formatKey, $formatName := .AvailableFormats }}
             if (document.getElementById("format-{{ $formatKey }}")) {
@@ -164,11 +199,11 @@
             {{ end }}
           })
           viewer.addEventListener('activeFeature', activeFeature => {
-            updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activeFeature.detail.get('{{ $mapSheetProperties.MapSheetID }}'))
+            callUrl(updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activeFeature.detail.get('{{ $mapSheetProperties.MapSheetID }}')))
           })
           {{ else }}
           viewer.addEventListener('box', selectBox => {
-            updateQueryString('bbox', selectBox.detail)
+            callUrl(updateQueryString('bbox', selectBox.detail))
           })
           {{ end }}
         </script>
