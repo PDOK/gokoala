@@ -18,20 +18,25 @@
 </h2>
 <div class="card-body">
 <p>
-<label for="selectjson">Ga naar de features in</label>
+Blader door de <a href="http://localhost:8180/collections/NewYork/items" aria-label="Blader door de Features">Features</a> of ga direct naar de features in:
+</p>
+<p>
+<ul>
+<li> <label for="selectjson" class="visually-hidden">Ga naar Features in</label>
 <select id="selectjson">
 <option value="https://www.opengis.net/def/crs/OGC/1.3/CRS84">WGS84</option>
 <option value="http://www.opengis.net/def/crs/EPSG/0/28992">EPSG:28992</option>
 </select>
 als
-<a href="#" onclick="gotoFeatures('json', 'selectjson'); return false;">GeoJSON</a>
-</p>
-<p>
-<label for="selectjsonfg">Ga naar de features in</label>
+<a href="#" onclick="gotoFeatures('json', 'selectjson'); return false;">GeoJSON</a>.
+</li>
+<li> <label for="selectjsonfg" class="visually-hidden">Ga naar Features in</label>
 <select id="selectjsonfg">
 <option value="https://www.opengis.net/def/crs/OGC/1.3/CRS84">WGS84</option>
 <option value="http://www.opengis.net/def/crs/EPSG/0/28992">EPSG:28992</option>
 </select>
 als
-<a href="#" onclick="gotoFeatures('jsonfg', 'selectjsonfg'); return false;">JSON-FG</a>
+<a href="#" onclick="gotoFeatures('jsonfg', 'selectjsonfg'); return false;">JSON-FG</a>.
+</li>
+</ul>
 </p>

@@ -148,9 +148,13 @@
                         <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items" aria-label="{{ i18n "Browse" }} Features">Features</a>
                     </h2>
                     <div class="card-body">
-                        {{ range $formatKey, $formatName := $.AvailableFormatsFeatures }}
                         <p>
-                            <label for="select{{ $formatKey }}">{{ i18n "GoTo" }} features in</label>
+                            {{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items" aria-label="{{ i18n "Browse" }} Features">Features</a> {{ i18n "BrowseSuffix" }}:
+                        </p>
+                        <p>
+                            <ul>
+                        {{ range $formatKey, $formatName := $.AvailableFormatsFeatures }}
+                           <li> <label for="select{{ $formatKey }}" class="visually-hidden">{{ i18n "To" }} Features in</label>
                             <select id="select{{ $formatKey }}">
                                 <option value="https://www.opengis.net/def/crs/OGC/1.3/CRS84">WGS84</option>
                                 {{ range $index, $srs := $.Config.OgcAPI.Features.ProjectionsForCollection $.Params.ID }}
@@ -159,9 +163,11 @@
                                 {{ end }}
                             </select>
                             {{ i18n "As" }}
-                            <a href="#" onclick="gotoFeatures('{{ $formatKey }}', 'select{{ $formatKey }}'); return false;">{{ $formatName }}</a>
-                        </p>
+                            <a href="#" onclick="gotoFeatures('{{ $formatKey }}', 'select{{ $formatKey }}'); return false;">{{ $formatName }}</a>.
+                           </li>
                         {{ end }}
+                        </ul>
+                        </p>
                         <div class="alert alert-primary" role="alert">
                             <small>{{ i18n "FeaturesExplanation" }}</small>
                         </div>
