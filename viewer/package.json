@@ -11,7 +11,7 @@
     "build": "npm run format && npm run lint && ng build --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress info && npx cypress run --component",
-    "deploy": "npm run format && npm run lint  && ng deploy --repo=https://PDOK@github.com/PDOK/gokoala.git --base-href=https://pdok.github.io/gokoala/ --name=PDOK --email=beheerpdok@kadaster.nl",
+    "deploy": "npm run format && npm run lint  && ng deploy --repo=https://PDOK@github.com/PDOK/gokoala.git --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
     "lint": "ng lint",
     "lintc": "eslint . --ext .ts",
     "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress open",
