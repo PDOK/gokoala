@@ -47,7 +47,7 @@
     "@types/proj4": "2.5.5",
     "@typescript-eslint/eslint-plugin": "^7.12.0",
     "@typescript-eslint/parser": "^7.12.0",
-    "angular-cli-ghpages": "2.0.1",
+    "angular-cli-ghpages": "1.0.7",
     "axe-core": "^4.9.1",
     "cypress": "^13.13.0",
     "cypress-axe": "^1.5.0",
