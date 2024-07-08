@@ -38,7 +38,7 @@
           "rel": "alternate",
           "type": "text/html",
           "title": "Information about the ligplaatsen collection as HTML",
-          "href": "http://localhost:8080/collections/ligplaatsen?f=json"
+          "href": "http://localhost:8080/collections/ligplaatsen?f=html"
         },
         {
           "rel": "items",
@@ -79,7 +79,7 @@
           "rel": "alternate",
           "type": "text/html",
           "title": "Information about the standplaatsen collection as HTML",
-          "href": "http://localhost:8080/collections/standplaatsen?f=json"
+          "href": "http://localhost:8080/collections/standplaatsen?f=html"
         },
         {
           "rel": "items",
