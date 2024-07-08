@@ -40,7 +40,7 @@ func MapRowsToFeatureIDs(rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevN
 }
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
-func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
+func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn string, geomColumn string,
 	geomMapper func([]byte) (geom.Geometry, error)) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
@@ -58,7 +58,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 		}
 
 		feature := &Feature{Feature: geojson.Feature{Properties: make(map[string]any)}}
-		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, geomColumn, geomMapper)
+		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, externalFidColumn, geomColumn, geomMapper)
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
@@ -71,8 +71,8 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, geomColumn string,
 }
 
 //nolint:cyclop,funlen
-func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []any,
-	fidColumn string, geomColumn string, geomMapper func([]byte) (geom.Geometry, error)) (*PrevNextFID, error) {
+func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []any, fidColumn string,
+	externalFidColum string, geomColumn string, geomMapper func([]byte) (geom.Geometry, error)) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
@@ -80,7 +80,13 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 
 		switch columnName {
 		case fidColumn:
-			feature.ID = columnValue.(int64)
+			// Assumes that `fid` column is first column in the table
+			feature.ID = fmt.Sprint(columnValue)
+
+		case externalFidColum:
+			// If externalFidColumn is configured, overwrite feature ID and drop column from feature
+			feature.ID = fmt.Sprint(columnValue)
+			delete(feature.Properties, columnName)
 
 		case geomColumn:
 			if columnValue == nil {

@@ -1,17 +1,17 @@
 import { Control } from 'ol/control.js'
 
 import { EventEmitter } from '@angular/core'
-import { emitBox } from './boxcontrol'
+import { emitBox } from './boxControl'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 
-export class fullBoxControl extends Control {
+export class FullBoxControl extends Control {
   constructor(
     public boxEmitter: EventEmitter<string>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    opt_options: any
+    optionalOptions: any
   ) {
-    const options = opt_options || {}
+    const options = optionalOptions || {}
 
     const button = document.createElement('button')
 
@@ -34,8 +34,7 @@ export class fullBoxControl extends Control {
   addFullBox() {
     const map = this.getMap()!
     const extent = map.getView().calculateExtent(map.getSize())
-    const extent2 = extent // transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
-    const polygon = fromExtent(extent2) as Geometry
+    const polygon = fromExtent(extent) as Geometry
     emitBox(map, polygon, this.boxEmitter)
   }
 }

@@ -76,7 +76,7 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 
 // JSON-FG
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection, crs ContentCrs) {
+	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
 	fgFC := domain.JSONFGFeatureCollection{}
 	fgFC.ConformsTo = []string{domain.ConformanceJSONFGCore}
@@ -109,7 +109,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 
 // JSON-FG
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
-	f *domain.Feature, url featureURL, crs ContentCrs) {
+	f *domain.Feature, url featureURL, crs domain.ContentCrs) {
 
 	fgF := domain.JSONFGFeature{
 		ID:          f.ID,
@@ -217,7 +217,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 }
 
 func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
-	collectionID string, featureID int64) []domain.Link {
+	collectionID string, featureID string) []domain.Link {
 
 	links := make([]domain.Link, 0)
 	switch currentFormat {
@@ -338,7 +338,7 @@ func handleJSONEncodingFailure(err error, w http.ResponseWriter) {
 	engine.RenderProblem(engine.ProblemServerError, w, "Failed to write JSON response")
 }
 
-func setGeom(crs ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature *domain.Feature) {
+func setGeom(crs domain.ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature *domain.Feature) {
 	if crs.IsWGS84() {
 		jsonfgFeature.Geometry = feature.Geometry
 	} else {

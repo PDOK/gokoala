@@ -14,7 +14,6 @@ import { environment } from 'src/environments/environment'
   bootstrap: [],
   imports: [
     BrowserModule,
-    VectortileViewComponent,
     LoggerModule.forRoot({
       serverLoggingUrl: '/api/logs',
       level: environment.loglevel,

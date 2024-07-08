@@ -23,8 +23,8 @@ type Datasource interface {
 	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
 	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria) (*domain.FeatureCollection, domain.Cursors, error)
 
-	// GetFeature returns a specific Feature
-	GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error)
+	// GetFeature returns a specific Feature, based on its feature id
+	GetFeature(ctx context.Context, collection string, featureID any) (*domain.Feature, error)
 
 	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
 	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)

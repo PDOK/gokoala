@@ -18,6 +18,7 @@ import (
 	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/gpkg"
 	"github.com/go-spatial/geom/encoding/wkt"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/qustavo/sqlhooks/v2"
@@ -74,6 +75,7 @@ type GeoPackage struct {
 	preparedStmtCache *PreparedStatementCache
 
 	fidColumn                     string
+	externalFidColumn             string
 	featureTableByCollectionID    map[string]*featureTable
 	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	queryTimeout                  time.Duration
@@ -91,11 +93,13 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
 		g.fidColumn = gpkgConfig.Local.Fid
+		g.externalFidColumn = gpkgConfig.Local.ExternalFid
 		g.queryTimeout = gpkgConfig.Local.QueryTimeout.Duration
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
 		g.fidColumn = gpkgConfig.Cloud.Fid
+		g.externalFidColumn = gpkgConfig.Cloud.ExternalFid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout.Duration
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 		warmUp = gpkgConfig.Cloud.Cache.WarmUp
@@ -156,6 +160,9 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, domain.Cursors{}, queryCtx.Err()
+	}
 
 	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(rows)
 	if err != nil {
@@ -191,9 +198,12 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 		return nil, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, queryCtx.Err()
+	}
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, err
 	}
@@ -220,10 +230,13 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, domain.Cursors{}, queryCtx.Err()
+	}
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -234,7 +247,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	return &fc, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), nil
 }
 
-func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID int64) (*domain.Feature, error) {
+func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any) (*domain.Feature, error) {
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
 		return nil, err
@@ -243,14 +256,35 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	query := fmt.Sprintf("select * from %s f where f.%s = :fid limit 1", table.TableName, g.fidColumn)
+	var fidColumn string
+	switch featureID.(type) {
+	case int64:
+		if g.externalFidColumn != "" {
+			// Features should be retrieved by UUID
+			log.Println("feature requested by int while external fid column is defined")
+			return nil, nil
+		}
+		fidColumn = g.fidColumn
+	case uuid.UUID:
+		if g.externalFidColumn == "" {
+			// Features should be retrieved by int64
+			log.Println("feature requested by UUID while external fid column is not defined")
+			return nil, nil
+		}
+		fidColumn = g.externalFidColumn
+	}
+
+	query := fmt.Sprintf("select * from %s f where f.%s = :fid limit 1", table.TableName, fidColumn)
 	rows, err := g.backend.getDB().NamedQueryContext(queryCtx, query, map[string]any{"fid": featureID})
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
+	if queryCtx.Err() != nil {
+		return nil, queryCtx.Err()
+	}
 
-	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, table.GeometryColumnName, readGpkgGeometry)
+	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
 	if err != nil {
 		return nil, err
 	}

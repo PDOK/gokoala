@@ -1,14 +1,16 @@
 package features
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/google/uuid"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -21,12 +23,7 @@ import (
 )
 
 const (
-	templatesDir  = "internal/ogc/features/templates/"
-	crsURIPrefix  = "http://www.opengis.net/def/crs/"
-	undefinedSRID = 0
-	wgs84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
-	wgs84CodeOGC  = "CRS84"
-	wgs84CrsURI   = crsURIPrefix + "OGC/1.3/" + wgs84CodeOGC
+	templatesDir = "internal/ogc/features/templates/"
 )
 
 var (
@@ -118,7 +115,7 @@ func (f *Features) Features() http.HandlerFunc {
 				// Add filter, filter-lang
 			})
 			if err != nil {
-				handleFeatureCollectionError(w, collectionID, err)
+				handleFeaturesQueryError(w, collectionID, err)
 				return
 			}
 		} else {
@@ -140,7 +137,7 @@ func (f *Features) Features() http.HandlerFunc {
 				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
 			}
 			if err != nil {
-				handleFeatureCollectionError(w, collectionID, err)
+				handleFeaturesQueryError(w, collectionID, err)
 				return
 			}
 		}
@@ -180,9 +177,9 @@ func (f *Features) Feature() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
-		featureID, err := strconv.Atoi(chi.URLParam(r, "featureId"))
+		featureID, err := parseFeatureID(r)
 		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, "feature ID must be a number")
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
@@ -195,18 +192,13 @@ func (f *Features) Feature() http.HandlerFunc {
 		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, int64(featureID))
+		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID)
 		if err != nil {
-			// log error, but sent generic message to client to prevent possible information leakage from datasource
-			msg := fmt.Sprintf("failed to retrieve feature %d in collection %s", featureID, collectionID)
-			log.Printf("%s, error: %v\n", msg, err)
-			engine.RenderProblem(engine.ProblemServerError, w, msg)
+			handleFeatureQueryError(w, collectionID, featureID, err)
 			return
 		}
 		if feat == nil {
-			msg := fmt.Sprintf("the requested feature with id: %d does not exist in collection '%s'", featureID, collectionID)
-			log.Println(msg)
-			engine.RenderProblem(engine.ProblemNotFound, w, msg)
+			handleFeatureNotFound(w, collectionID, featureID)
 			return
 		}
 
@@ -223,6 +215,19 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func parseFeatureID(r *http.Request) (any, error) {
+	var featureID any
+	featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
+	if err != nil {
+		// fallback to numerical feature id
+		featureID, err = strconv.ParseInt(chi.URLParam(r, "featureId"), 10, 0)
+		if err != nil {
+			return nil, errors.New("feature ID must be a UUID or number")
+		}
+	}
+	return featureID, nil
 }
 
 func cacheCollectionsMetadata(e *engine.Engine) map[string]*config.GeoSpatialCollectionMetadata {
@@ -285,7 +290,7 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 	}
 	var defaultDS *DatasourceConfig
 	for _, coll := range cfg.Collections {
-		key := DatasourceKey{srid: wgs84SRID, collectionID: coll.ID}
+		key := DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
 		if result[key] == nil {
 			if defaultDS == nil {
 				defaultDS = &DatasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84}
@@ -296,11 +301,11 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 
 	for _, additional := range cfg.Datasources.Additional {
 		for _, coll := range cfg.Collections {
-			srid, err := epsgToSrid(additional.Srs)
+			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
-			key := DatasourceKey{srid: srid, collectionID: coll.ID}
+			key := DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
 			if result[key] == nil {
 				result[key] = &DatasourceConfig{cfg.Collections, additional.Datasource}
 			}
@@ -315,15 +320,15 @@ func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*
 			continue
 		}
 		defaultDS := &DatasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84}
-		result[DatasourceKey{srid: wgs84SRID, collectionID: coll.ID}] = defaultDS
+		result[DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
 
 		for _, additional := range coll.Features.Datasources.Additional {
-			srid, err := epsgToSrid(additional.Srs)
+			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
 			additionalDS := &DatasourceConfig{cfg.Collections, additional.Datasource}
-			result[DatasourceKey{srid: srid, collectionID: coll.ID}] = additionalDS
+			result[DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
 		}
 	}
 }
@@ -339,37 +344,45 @@ func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig
 	return datasource
 }
 
-func epsgToSrid(srs string) (int, error) {
-	prefix := "EPSG:"
-	srsCode, found := strings.CutPrefix(srs, prefix)
-	if !found {
-		return -1, fmt.Errorf("expected configured SRS to start with '%s', got %s", prefix, srs)
-	}
-	srid, err := strconv.Atoi(srsCode)
-	if err != nil {
-		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
-	}
-	return srid, nil
-}
-
 func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
 	log.Println(msg)
 	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }
 
-// log error, but send generic message to client to prevent possible information leakage from datasource
-func handleFeatureCollectionError(w http.ResponseWriter, collectionID string, err error) {
-	msg := "failed to retrieve feature collection " + collectionID
-	log.Printf("%s, error: %v\n", msg, err)
-	engine.RenderProblem(engine.ProblemServerError, w, msg)
+func handleFeatureNotFound(w http.ResponseWriter, collectionID string, featureID any) {
+	msg := fmt.Sprintf("the requested feature with id: %v does not exist in collection '%v'", featureID, collectionID)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }
 
-func querySingleDatasource(input SRID, output SRID, bbox *geom.Extent) bool {
+// log error, but send generic message to client to prevent possible information leakage from datasource
+func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err error) {
+	msg := "failed to retrieve feature collection " + collectionID
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		// provide more context when user hits the query timeout
+		msg += ": querying the features took too long (timeout encountered). Simplify your request and try again, or contact support"
+	}
+	log.Printf("%s, error: %v\n", msg, err)
+	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
+}
+
+// log error, but sent generic message to client to prevent possible information leakage from datasource
+func handleFeatureQueryError(w http.ResponseWriter, collectionID string, featureID any, err error) {
+	msg := fmt.Sprintf("failed to retrieve feature %v in collection %s", featureID, collectionID)
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		// provide more context when user hits the query timeout
+		msg += ": querying the feature took too long (timeout encountered). Try again, or contact support"
+	}
+	log.Printf("%s, error: %v\n", msg, err)
+	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
+}
+
+func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Extent) bool {
 	return bbox == nil ||
 		int(input) == int(output) ||
-		(int(input) == undefinedSRID && int(output) == wgs84SRID) ||
-		(int(input) == wgs84SRID && int(output) == undefinedSRID)
+		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||
+		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
 }
 
 func getTemporalCriteria(collection *config.GeoSpatialCollectionMetadata, referenceDate time.Time) ds.TemporalCriteria {

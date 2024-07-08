@@ -46,17 +46,20 @@ ogcApi:
         geopackage:
           local:
             file: ./examples/resources/addresses-crs84.gpkg
+            externalFid: external_fid
             queryTimeout: 5s
       additional:
         - srs: EPSG:28992
           geopackage:
             local:
               file: ./examples/resources/addresses-rd.gpkg
+              externalFid: external_fid
         - srs: EPSG:3035
           geopackage:
             local:
               file: ./examples/resources/addresses-etrs89.gpkg
               fid: fid
+              externalFid: external_fid
               queryTimeout: 10s
     collections:
       - id: dutch-addresses

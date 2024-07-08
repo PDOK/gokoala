@@ -10,29 +10,24 @@ import VectorLayer from 'ol/layer/Vector'
 import { Geometry } from 'ol/geom'
 
 export function emitBox(map: Map, geometry: Geometry, boxEmitter: EventEmitter<string>) {
-  if (map.getView().getProjection().getCode() === 'EPSG:3857') {
-    const box84 = geometry.transform(map.getView().getProjection(), 'EPSG:4326').getExtent()
-    const extString = box84.join(',')
-    boxEmitter.emit(extString)
-  } else {
-    const box = geometry.getExtent()
-    const extString = box.join(',')
-    boxEmitter.emit(extString)
-  }
+  const box84 = geometry.transform(map.getView().getProjection(), 'EPSG:4326').getExtent()
+  const extString = box84.join(',')
+  boxEmitter.emit(extString)
 }
 
-export class boxControl extends Control {
+export class BoxControl extends Control {
   /**
-   * @param {Object} [opt_options] Control options.
+   * @param boxEmitter Emitter to subscribe to bbox updates
+   * @param {Object} [optionalOptions] Control options.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(
     public boxEmitter: EventEmitter<string>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    opt_options: any
+    optionalOptions: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) {
-    const options = opt_options || {}
+    const options = optionalOptions || {}
 
     const button = document.createElement('button')
 

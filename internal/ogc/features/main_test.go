@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -51,7 +52,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -65,7 +66,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -79,7 +80,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv4%7CNwyr1Q&limit=2",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -98,6 +99,20 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			want: want{
 				body:       "",
 				statusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "Request unsupported format (DOCX)",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				collectionID: "foo",
+				format:       "docx",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotAcceptable,
 			},
 		},
 		{
@@ -145,7 +160,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "html",
 			},
 			want: want{
@@ -159,7 +174,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -173,7 +188,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "html",
 			},
 			want: want{
@@ -187,11 +202,25 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Zandhoek&postcode=1104MM",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_straatnaam_and_postcode.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request empty feature collection (zero results)'",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=doesnotexist",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_empty_feature_collection.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -201,7 +230,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag_allowed_values.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -228,7 +257,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag_allowed_values.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?type=Ligplaats&straatnaam=Westerdok&limit=3",
 				collectionID: "foo",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -242,7 +271,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&limit=2",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -270,7 +299,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%7C9YRHSw&f=json&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -284,7 +313,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%7C9YRHSw&f=jsonfg&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -312,7 +341,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -326,7 +355,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs_multiple_levels.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -340,7 +369,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -382,7 +411,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -396,7 +425,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_validation_disabled.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -410,7 +439,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_collection_single_table.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
 				collectionID: "dutch-addresses",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
@@ -424,12 +453,40 @@ func TestFeatures_CollectionContent(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_bag_temporal.yaml",
 				url:          "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00:00:00Z&limit=10",
 				collectionID: "standplaatsen",
-				contentCrs:   "<" + wgs84CrsURI + ">",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_temporal.json",
 				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request slow response, hitting query timeout",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_query_timeout_features.json",
+				statusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "Request slow response, hitting query timeout with different. With bbox in WGS84 and output in RD",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&limit=2",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<http://www.opengis.net/def/crs/EPSG/0/28992>",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_query_timeout_features.json",
+				statusCode: http.StatusInternalServerError,
 			},
 		},
 	}
@@ -617,6 +674,20 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 		},
 		{
+			name: "Request non existing collection",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "does-not-exist",
+				featureID:    "9999999999",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotFound,
+			},
+		},
+		{
 			name: "Request with unknown query params",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
@@ -628,6 +699,34 @@ func TestFeatures_Feature(t *testing.T) {
 			want: want{
 				body:       "",
 				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Request with invalid FID",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "foo",
+				featureID:    "thisisnotaUUIDorINTEGER",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Request unsupported format (DOCX) for feature 4030",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "foo",
+				featureID:    "4030",
+				format:       "docx",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotAcceptable,
 			},
 		},
 		{
@@ -650,11 +749,11 @@ func TestFeatures_Feature(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
 				collectionID: "dutch-addresses",
-				featureID:    "10",
+				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
 				format:       "json",
 			},
 			want: want{
-				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_feature_10_wgs84.json",
+				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_feature_b29c12b1_wgs84.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -664,11 +763,11 @@ func TestFeatures_Feature(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_validation_disabled.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
 				collectionID: "dutch-addresses",
-				featureID:    "10",
+				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
 				format:       "json",
 			},
 			want: want{
-				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_feature_10_wgs84.json",
+				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_feature_b29c12b1_wgs84.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -678,12 +777,26 @@ func TestFeatures_Feature(t *testing.T) {
 				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 				collectionID: "dutch-addresses",
-				featureID:    "10",
+				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
 				format:       "json",
 			},
 			want: want{
-				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_feature_10_rd.json",
+				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_feature_b29c12b1_rd.json",
 				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request output in unsupported CRS explicitly",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/EPSG:3812131313131314141",
+				collectionID: "dutch-addresses",
+				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -698,6 +811,20 @@ func TestFeatures_Feature(t *testing.T) {
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_feature_404.json",
 				statusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "Request slow response, hitting query timeout",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "dutch-addresses",
+				featureID:    "4030",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_query_timeout_feature.json",
+				statusCode: http.StatusInternalServerError,
 			},
 		},
 	}

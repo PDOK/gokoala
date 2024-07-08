@@ -1,0 +1,112 @@
+---
+# General usage
+ViewAs: Bekijk als
+AvailableIn: De pagina is zowel in HTML als JSON beschikbaar.
+LastUpdated: Bijgewerkt tot
+UpdatedBy: Bijgewerkt door
+Keywords: Trefwoorden
+License: Licentie
+Support: Support
+Projection: Projectie
+Limit: Limiet
+Max: max
+ViewInThe: Bekijk in het
+SubjectToChange: naam/definitie kan in toekomst mogelijk wijzigen
+LinkToExternalWebsite: link naar externe website
+Description: Omschrijving
+None: Geen
+Example: Voorbeeld
+"On": op
+As: als
+Of: van
+To: Ga naar
+For: voor
+
+# Layout frame
+ToMain: Naar hoofdinhoud
+Logo: 'Logo PDOK: Ga naar de landingspagina'
+SwitchLanguage: Change language to
+LanguageSwitchLabel: English
+LanguageSwitchCode: en
+SwitchFormat: Deze pagina als
+FooterLogo: Logo van het Kadaster
+
+# Landing page
+Specification: specification
+SpecificationText: De specificatie in OpenAPI v3 formaat beschrijft deze API op een manier dat zowel mensen als computers de mogelijkheden kunnen verkennen. Het toont zowel in- als output mogelijkheden en helpt om snel een eerste werkende API call te genereren met het gewenste resultaat.
+Conformance: Conformance
+ConformanceText: De conformance beschrijft welke OGC standaarden deze API implementeert.
+Collections: Collections
+CollectionsText: Deze API biedt één of meerdere collecties waarmee onderscheid gemaakt wordt in verschillende object typen, die bijvoorbeeld als <i>features</i> of <i>tiles</i> separaat aangeroepen kunnen worden.
+Tiles: Tiles
+TilesTextHTML: Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er &eacute;&eacute;n of meerdere <a href="styles" aria-label="Ga naar styles">styles</a> beschikbaar gesteld.
+TilesTextPlain: Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er één of meerdere styles beschikbaar gesteld.
+Styles: Styles
+StylesText: Betreft één of meerdere officiële styles van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld in het Mapbox formaat.
+TileMatrixSets: Tile Matrix Sets
+TileMatrixSetsText: |-
+  Beschrijving van de Tile Matrix Sets die via deze API worden ontsloten. Merk op dat alle zoomniveaus
+  van de tile matrix zijn beschreven. Zie de <i>Tile Matrix Set Limits</i> op de <a href="tiles" aria-label="Ga naar tiles">Tiles</a>
+  pagina's om te zien welke zoomniveaus door deze API worden ondersteund.
+
+# Conformance page
+ConformanceAbstract: Hieronder staan verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet. <br/>De statuskolom geeft aan of de betreffende specificatie reeds tot officiële standaard is verklaard door het OGC.
+Standard: Standaard
+Draft: Concept
+
+# Tile/TileMatrixSet page
+NetherlandsRDNewQuadAbstract: |-
+  De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
+  <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
+  tile volgens het <a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="Ga naar tile matrix set NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
+  In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson" aria-label="Ga naar NetherlandsRDNewQuad als TileJSON">TileJSON</a>
+  in te laden.
+WebMercatorQuadAbstract: |-
+  De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
+  <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
+  tile volgens het <a href="tileMatrixSets/WebMercatorQuad" aria-label="Ga naar tile matrix set WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
+  In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson" aria-label="Ga naar WebMercatorQuad als TileJSON">TileJSON</a>
+  in te laden.
+EuropeanETRS89_LAEAQuadAbstract: |-
+  De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
+  <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
+  tile volgens het <a href="tileMatrixSets/EuropeanETRS89_LAEAQuad" aria-label="Ga naar tile matrix set EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
+  In sommige tools is het ook mogelijk om dit via <a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson" aria-label="Ga naar EuropeanETRS89_LAEAQuad als TileJSON">TileJSON</a>
+  in te laden.
+AvailableZoomLevels: De tiles zijn beschikbaar op de volgende zoomniveaus
+ZoomLevel: Zoomniveau
+MinimumValue: Minimale waarde
+MaximumValue: Maximale waarde
+View: Bekijk
+
+# Styles/Style/StyleMetadata page
+StylingExample: Voorbeeld styling
+StyleMetadata: Bekijk metadata
+AdditionalLinks: Aanvullende links
+LayerExample: Laag voorbeeld
+LayerName: Laagnaam
+Format: Formaat
+Version: Versie
+Legend: legenda
+
+# Collections/Collection page
+ViewCollectionAs: Bekijk collectie als
+Collection: Collectie
+Definition: definitie
+GeographicExtent: Geografische begrenzing
+TemporalExtent: Temporele begrenzing
+GoTo: Ga naar de
+ViewIn: Bekijk in de
+Browse: Blader door de
+FeaturesExplanation: GeoJSON is een open en breed geaccepteerd formaat voor feature data en voor veel (web)toepassingen de eerste keus. Formeel ondersteunt het echter alleen de WGS84 projectie. JSON-FG is een uitbreiding op GeoJSON en biedt officiële ondersteuning voor andere projecties. Aangezien JSON-FG een recente ontwikkeling is wordt er vanuit compatibiliteit oogpunt vooralsnog ook GeoJSON in andere projecties aangeboden.
+
+# Features page
+Geometry: geometrie
+Prev: Vorige
+Next: Volgende
+Items: items
+ReferenceDate: Peildatum
+Size: omvang
+ApplyFilters: Filters toepassen
+ResetFilter: Filters wissen
+BrowseSuffix: of ga direct naar de features in

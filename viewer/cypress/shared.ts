@@ -6,13 +6,23 @@ import 'cypress-network-idle'
 import { LoggerModule } from 'ngx-logger'
 import { environment } from 'src/environments/environment'
 
+export type ProjectionTest = { code: string; projection: string; geofix: string }
+
+export const tests: ProjectionTest[] = [
+  { code: 'CRS84', projection: 'https://www.opengis.net/def/crs/OGC/1.3/CRS84', geofix: 'amsterdam-wgs84.json' },
+  { code: 'EPSG:4258', projection: 'http://www.opengis.net/def/crs/EPSG/0/4258', geofix: 'amsterdam-epsg4258.json' },
+  { code: 'EPSG:28992', projection: 'http://www.opengis.net/def/crs/EPSG/0/28992', geofix: 'amsterdam-epgs28992.json' },
+  { code: 'EPSG:3035', projection: 'http://www.opengis.net/def/crs/EPSG/0/3035', geofix: 'amsterdam-epgs3035.json' },
+]
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getTestTitle = (test: Mocha.Suite = (Cypress as any).mocha.getRunner().suite.ctx.test): string =>
   test.parent?.title ? `${getTestTitle(test.parent)} -- ${test.title}` : test.title
-export function intercept(geofix: string) {
+export function intercept(geofix: string, realmaps: boolean = Cypress.env('realmaps'), url: string = 'https://test/items*') {
   cy.viewport(550, 750)
-  cy.intercept('GET', 'https://test*', { fixture: geofix }).as('geo')
-  if (Cypress.env('realmaps')) {
+  cy.intercept('GET', url, { fixture: geofix }).as('geo')
+
+  if (realmaps) {
     cy.log('realmaps')
     cy.intercept('GET', '*grijs*').as('BRTbackground')
     cy.intercept('GET', 'https://tile.openstreetmap.org/*/*/*.png').as('OSMbackground')
@@ -23,7 +33,26 @@ export function intercept(geofix: string) {
   }
 }
 
-export function mountFeatureComponent(aprojection: string, abackground: 'OSM' | 'BRT' | undefined = 'OSM') {
+interface Prop {
+  [key: string]: string | number
+}
+
+export function mountFeatureComponent(
+  aprojection: string,
+  abackground: 'OSM' | 'BRT' | undefined = 'OSM',
+  amode: 'auto' | 'default' | undefined = 'default',
+  aprop: Prop = { itemsUrl: 'https://test/items' }
+) {
+  const prop: Prop = {
+    box: createOutputSpy('boxSpy'),
+    backgroundMap: abackground,
+    projection: aprojection,
+    mode: amode,
+  }
+
+  const allprop = { ...prop, ...aprop }
+  cy.log(JSON.stringify(allprop))
+
   cy.mount(FeatureViewComponent, {
     imports: [
       HttpClientModule,
@@ -31,22 +60,18 @@ export function mountFeatureComponent(aprojection: string, abackground: 'OSM' | 
         level: environment.loglevel,
       }),
     ],
-    componentProperties: {
-      itemsUrl: 'https://test/',
-      box: createOutputSpy('boxSpy'),
-      backgroundMap: abackground,
-      projection: aprojection,
-    },
+    componentProperties: allprop,
   }).then(comp1 => {
     const map = comp1.component.map as OLMap
     map.addEventListener('loadend', cy.stub().as('MapLoaded'))
+
     const viewport = map.getViewport()
     const position = viewport.getBoundingClientRect()
     cy.log(`left: ${position.left}, top: ${position.top}, width: ${position.width}, height: ${position.height}`)
+    cy.log(JSON.stringify(comp1.component.itemsUrl))
   })
 
   cy.wait('@geo')
-
   cy.get('@MapLoaded').should('have.been.calledOnce')
 }
 
@@ -56,6 +81,9 @@ export function idle() {
   }
 }
 export function screenshot(aname: string = '') {
+  Cypress.Screenshot.defaults({
+    overwrite: true,
+  })
   cy.screenshot(aname)
 }
 

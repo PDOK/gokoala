@@ -15,6 +15,7 @@ ogcApi:
         geopackage:
           local:
             file: ./examples/resources/addresses-crs84.gpkg
+            externalFid: external_fid
     collections:
       - id: dutch-addresses
         tableName: addresses

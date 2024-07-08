@@ -20,13 +20,21 @@ tests.forEach(i => {
       screenshot('OSM-' + i.code)
       logAccessibility('body')
     })
-
     it('It can draw and emit boundingbox in ' + i.geofix + 'on BRT', () => {
       intercept(i.geofix)
       mountFeatureComponent(i.projection, 'BRT')
       cy.get('.innersvg').click()
-      cy.get('.ol-viewport').click(100, 100).click(200, 200)
+      cy.get('.ol-viewport').click(100, 100)
+      cy.get('.ol-viewport').click(200, 200)
       screenshot('BRT-bbox' + i.code)
+      cy.get('@boxSpy')
+        .should('have.been.calledOnce')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .should((spy: any) => {
+          const firstCallArgs = spy.getCall(0).args[0].split(',')
+          expect(firstCallArgs[0]).to.match(/^4.8/)
+          expect(firstCallArgs[1]).to.match(/^52.37/)
+        })
     })
   })
 })

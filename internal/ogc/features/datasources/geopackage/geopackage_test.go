@@ -336,7 +336,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				featureID:  3837,
 			},
 			want: &domain.Feature{
-				ID:    0,
+				ID:    "0",
 				Links: nil,
 				Feature: geojson.Feature{
 					Properties: map[string]any{

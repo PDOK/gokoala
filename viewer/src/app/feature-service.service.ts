@@ -4,45 +4,9 @@ import { map, Observable } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
-import { initProj4 } from './mapprojection'
+import { initProj4 } from './map-projection'
 import { FeatureLike } from 'ol/Feature'
-
-export type link = {
-  /**
-   * Supplies the URI to a remote resource (or resource fragment).
-   */
-  href: string
-  /**
-   * A hint indicating what the language of the result of dereferencing the link should be.
-   */
-  hreflang?: string
-  length?: number
-  /**
-   * The type or semantics of the relation.
-   */
-  rel: string
-  /**
-   * Use `true` if the `href` property contains a URI template with variables that needs to be substituted by values to get a URI
-   */
-  templated?: boolean
-  /**
-   * Used to label the destination of a link such that it can be used as a human-readable identifier.
-   */
-  title?: string
-  /**
-   * A hint indicating what the media type of the result of dereferencing the link should be.
-   */
-  type?: string
-  /**
-   * Without this parameter you should repeat a link for each media type the resource is offered.
-   * Adding this parameter allows listing alternative media types that you can use for this resource. The value in the `type` parameter becomes the recommended media type.
-   */
-  types?: Array<string>
-  /**
-   * A base path to retrieve semantic information about the variables used in URL template.
-   */
-  varBase?: string
-}
+import { Link } from './link'
 
 export type pointGeoJSON = {
   coordinates: Array<number>
@@ -84,14 +48,14 @@ export type geometryGeoJSON =
 export type featureGeoJSON = {
   geometry: geometryGeoJSON
   id?: string | number
-  links?: Array<link>
+  links?: Array<Link>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties: Record<string, any> | null
 }
 
 export type featureCollectionGeoJSON = {
   features: Array<featureGeoJSON>
-  links?: Array<link>
+  links?: Array<Link>
   numberReturned?: number
 }
 
@@ -127,25 +91,21 @@ export class FeatureServiceService {
     )
   }
 
-  getProjectionMapping(value: ProjectionLike = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
+  getProjectionMapping(value: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
     initProj4()
 
     if (value) {
-      if (typeof value === 'string') {
-        if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
-          //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
-          return defaultMapping
-        }
-        if (value.toLowerCase().startsWith('http://www.opengis.net/def/crs/epsg/')) {
-          const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
-          return { dataProjection: projection, visualProjection: 'EPSG:3857' }
-        }
-        return { dataProjection: value, visualProjection: value }
-      } else {
-        this.logger.error('wrong value:')
-        this.logger.error(value)
-        return value as unknown as ProjectionMapping
+      if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
+        //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
+        return defaultMapping
       }
+      if (value.toLowerCase().startsWith('http://www.opengis.net/def/crs/epsg/')) {
+        const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
+        if (projection === 'EPSG:3035' || projection === 'EPSG:4258') {
+          return { dataProjection: projection, visualProjection: 'EPSG:3857' }
+        } else return { dataProjection: projection, visualProjection: projection }
+      }
+      return { dataProjection: value, visualProjection: value }
     }
     return { dataProjection: value, visualProjection: value }
   }

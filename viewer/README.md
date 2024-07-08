@@ -8,7 +8,7 @@ This viewer is available as a [WebComponent](https://developer.mozilla.org/en-US
 
 See [demo with samples](https://pdok.github.io/gokoala/).
 
-## Parameters for vectortile view
+## Vectortile view parameters
 
 The `<app-vectortile-view>` component has the following parameters:
 
@@ -37,31 +37,23 @@ The `<app-feature-view>` component has the following parameters
 - **showBoundingBoxButton**: in default mode the boundingbox select button is showed, hide 'show-bounding-box-button' is needed
 - **showFillExtentButton**: in default mode the button to fill the view with features is not showed. Activate 'show-fill-extent-button' is needed
 - **projection**: projection in opengis style e.g. '<http://www.opengis.net/def/crs/EPSG/0/4258>'
-- **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature -**label-options**: openlayers JSON string to do extra styling of label e.g:
+- **labelField**: field is show as label and feature is clickable. if not specified a popup is shown when hovering over feature
+- **label-options**: openlayers JSON string to do extra styling of label e.g:
 
 ```Javascript
    const optionstring = JSON.stringify({ font: 'bold 40px Arial, Verdana, Courier New' })
    map.setAttribute('label-options', optionstring)
 ```
 
+- **minFitScale**: maximum initial zoom level, specified by scale denominator set when selecting small feature(s) defaults to 1000(= scale 1:1000)
+- **maxFitScale**: minimal initial zoom level, specified by scale denominator (not set by default)
+
 The following values are emitted:
 
 - **box**
 - **activeFeature**
 
-```html
-<link rel="stylesheet" type="text/css" href="view-component/styles.css" />
-<script type="text/javascript" src="view-component/main.js"></script>
-<script type="text/javascript" src="view-component/polyfills.js"></script>
-<script type="text/javascript" src="view-component/runtime.js"></script>
-
-<app-legend-view
-  id="legendadminunit"
-  style-url="https://api.pdok.nl/kadaster/bestuurlijkegebieden/ogc/v1_0/styles/bestuurlijkegebieden_standaardvisualisatie?f=json">
-</app-legend-view>
-```
-
-## Legend Parameters
+## Legend view parameters
 
 The `<app-legend-view>` component has the following parameters:
 

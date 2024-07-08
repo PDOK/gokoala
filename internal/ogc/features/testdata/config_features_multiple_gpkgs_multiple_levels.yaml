@@ -14,11 +14,13 @@ ogcApi:
         geopackage:
           local:
             file: ./examples/resources/addresses-crs84.gpkg
+            externalFid: external_fid
       additional:
         - srs: EPSG:28992
           geopackage:
             local:
               file: ./examples/resources/addresses-rd.gpkg
+              externalFid: external_fid
     collections:
       - id: dutch-addresses
         datasources:
@@ -26,11 +28,13 @@ ogcApi:
             geopackage:
               local:
                 file: ./examples/resources/addresses-crs84.gpkg
+                externalFid: external_fid
           additional:
             - srs: EPSG:3035
               geopackage:
                 local:
                   file: ./examples/resources/addresses-etrs89.gpkg
+                  externalFid: external_fid
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           description: addresses

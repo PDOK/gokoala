@@ -14,7 +14,7 @@ import TileDebug from 'ol/source/TileDebug.js'
 import VectorTileSource from 'ol/source/VectorTile.js'
 import View from 'ol/View'
 import { Subject } from 'rxjs'
-import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../mapprojection'
+import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../map-projection'
 import { ObjectInfoComponent } from '../object-info/object-info.component'
 
 import { CommonModule } from '@angular/common'
@@ -35,7 +35,8 @@ import { useGeographic } from 'ol/proj'
 import Projection from 'ol/proj/Projection'
 import { Fill, Stroke, Style } from 'ol/style'
 import TileGrid from 'ol/tilegrid/TileGrid'
-import { Link, Matrix, MatrixsetService } from '../matrixset.service'
+import { Matrix, MatrixSetService } from '../matrix-set.service'
+import { Link } from '../link'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,10 +65,8 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './vectortile-view.component.html',
   styleUrls: ['./vectortile-view.component.css'],
-  //encapsulation: ViewEncapsulation.ShadowDom,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-
   imports: [CommonModule, ObjectInfoComponent],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
@@ -128,7 +127,7 @@ export class VectortileViewComponent implements OnChanges {
   constructor(
     private logger: NGXLogger,
     private elementRef: ElementRef,
-    private matrixsetService: MatrixsetService,
+    private matrixsetService: MatrixSetService,
     private cdf: ChangeDetectorRef
   ) {
     //empty constructor
@@ -159,14 +158,14 @@ export class VectortileViewComponent implements OnChanges {
     //  this.logger.log('url: ' + this.tileUrl)
     this.matrixsetService.getMatrix(this.tileUrl).subscribe({
       next: tile => {
-        const linkUrl = this.FindMatrixUrl(tile.links)
+        const linkUrl = this.findMatrixUrl(tile.links)
         if (linkUrl) {
           matrixUrl = linkUrl
         } else {
           this.logger.log('tileurl :' + this.tileUrl + 'not found')
         }
         this.drawFromMatrixUrl(tile, matrixUrl)
-        this.SetZoomLevel(tile)
+        this.setZoomLevel(tile)
         this.cdf.detectChanges()
       },
       error: msg => {
@@ -175,7 +174,7 @@ export class VectortileViewComponent implements OnChanges {
     })
   }
 
-  private SetZoomLevel(tile: Matrix) {
+  private setZoomLevel(tile: Matrix) {
     tile.tileMatrixSetLimits.forEach(limit => {
       if (!this.minZoom) {
         this.minZoom = parseFloat(limit.tileMatrix) + 0.01
@@ -185,7 +184,7 @@ export class VectortileViewComponent implements OnChanges {
     })
   }
 
-  private FindMatrixUrl(links: Link[]) {
+  private findMatrixUrl(links: Link[]) {
     let matrixUrl = undefined
     links.forEach(link => {
       if (link.rel == 'http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme') {
@@ -268,7 +267,7 @@ export class VectortileViewComponent implements OnChanges {
       }
     })
 
-    this.SetZoomLevel(tile)
+    this.setZoomLevel(tile)
     const mapElm: HTMLElement = this.elementRef.nativeElement.querySelector("[id='map']")
     this.mapWidth = this.elementRef.nativeElement.offsetWidth
     this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
@@ -293,7 +292,7 @@ export class VectortileViewComponent implements OnChanges {
     } else this.logger.log('center-y=' + this.centerY)
   }
 
-  getMap() {
+  private getMap() {
     useGeographic()
     const l = this.generateLayers()
     const layers = l.layers
@@ -407,7 +406,7 @@ export class VectortileViewComponent implements OnChanges {
     return source
   }
 
-  isFullURL(url: string): boolean {
+  private isFullURL(url: string): boolean {
     return url.toLowerCase().startsWith('http://') || url.toLowerCase().startsWith('https://')
   }
 }
