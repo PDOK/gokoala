@@ -83,7 +83,7 @@
           "rel" : "alternate",
           "type" : "text/html",
           "title" : "Information about the {{ $coll.ID }} collection as HTML",
-          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=html"
         }
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
