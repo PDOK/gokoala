@@ -9,6 +9,7 @@ const tests: ProjectionTest[] = [
   { code: 'EPSG:3035', projection: 'http://www.opengis.net/def/crs/EPSG/0/3035', geofix: 'amsterdam-epgs3035.json' },
 ]
 
+
 tests.forEach(i => {
   describe(i.geofix + '-feature view', () => {
     it('It shows Point from url on OSM ', () => {
