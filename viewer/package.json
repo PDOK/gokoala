@@ -11,7 +11,7 @@
     "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress info && npx cypress run --component",
-    "deploy": "ng build --configuration production --verbose && npm run ghpage",
+    "deploy": "npm run format && npm run lint  && ng deploy --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
     "ghpage": "angular-cli-ghpages --dir=dist/view-component/browser",
     "lint": "ng lint",
     "lintc": "eslint . --ext .ts",
