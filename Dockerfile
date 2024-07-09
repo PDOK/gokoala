@@ -55,11 +55,8 @@ COPY --from=build-env /gokoala /
 COPY --from=build-env /go/src/service/assets/ /assets/
 COPY --from=build-env /go/src/service/internal/ /internal/
 
-# include view-component webcomponent as asset
-COPY --from=build-component /usr/src/app/dist/view-component/styles.css  /assets/view-component/styles.css
-COPY --from=build-component /usr/src/app/dist/view-component/main.js  /assets/view-component/main.js
-COPY --from=build-component /usr/src/app/dist/view-component/polyfills.js  /assets/view-component/polyfills.js
-COPY --from=build-component /usr/src/app/dist/view-component/runtime.js  /assets/view-component/runtime.js
+# include viewer as asset
+COPY --from=build-component /usr/src/app/dist/view-component/browser/  /assets/view-component/
 COPY --from=build-component /usr/src/app/dist/view-component/3rdpartylicenses.txt /assets/view-component/3rdpartylicenses.txt
 
 # run as non-root
