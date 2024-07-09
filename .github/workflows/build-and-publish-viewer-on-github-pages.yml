@@ -29,6 +29,6 @@ jobs:
           cache-dependency-path: "./viewer/package-lock.json"
       - run: npm ci
       - name: Deploy
-        run: npm run deploy
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npm run deploy
