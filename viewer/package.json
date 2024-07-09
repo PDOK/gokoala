@@ -11,7 +11,7 @@
     "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress info && npx cypress run --component",
-    "deploy": "npm run format && npm run lint  && npm run ghpage",
+    "deploy": "ng build --configuration production --verbose && npm run ghpage",
     "ghpage": "angular-cli-ghpages --dir=dist/view-component/browser",
     "lint": "ng lint",
     "lintc": "eslint . --ext .ts",
