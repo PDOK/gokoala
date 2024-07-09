@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run format && npm run lint && ng build --output-hashing none",
+    "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress info && npx cypress run --component",
     "deploy": "npm run format && npm run lint  && ng deploy --repo=https://PDOK@github.com/PDOK/gokoala.git --base-href=https://pdok.github.io/gokoala/ --name=JLSchaap --email=John.Schaap@Kadaster.nl",
