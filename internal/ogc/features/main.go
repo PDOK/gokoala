@@ -45,6 +45,7 @@ type Features struct {
 	engine                    *engine.Engine
 	datasources               map[DatasourceKey]ds.Datasource
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
+	defaultProfile            domain.Profile
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -61,6 +62,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		engine:                    e,
 		datasources:               datasources,
 		configuredPropertyFilters: configuredPropertyFilters,
+		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL),
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}
@@ -113,7 +115,7 @@ func (f *Features) Features() http.HandlerFunc {
 				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
-			})
+			}, f.defaultProfile)
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
 				return
@@ -134,7 +136,7 @@ func (f *Features) Features() http.HandlerFunc {
 			})
 			if err == nil && fids != nil {
 				datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
+				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.defaultProfile)
 			}
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
@@ -192,7 +194,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID)
+		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.defaultProfile)
 		if err != nil {
 			handleFeatureQueryError(w, collectionID, featureID, err)
 			return
