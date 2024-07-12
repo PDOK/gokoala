@@ -157,9 +157,8 @@
     <!-- map viewer -->
     <div class="col-md-6 col-sm-12">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
-        <script type="text/javascript" src="view-component/main.js"></script>
+        <script type="module" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
-        <script type="text/javascript" src="view-component/runtime.js"></script>
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
         <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" fill-color="rgba(0,0,255,0)"

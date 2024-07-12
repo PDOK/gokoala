@@ -101,10 +101,9 @@
         </tbody>
       </table>
       <link rel="stylesheet" type="text/css" href="view-component/styles.css">
-      <script type="text/javascript" src="view-component/main.js"></script>
+      <script type="module" src="view-component/main.js"></script>
       <script type="text/javascript" src="view-component/polyfills.js"></script>
-      <script type="text/javascript" src="view-component/runtime.js"></script>
-      <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
+       <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
         center-x="5.3896944" center-y="52.1562499"
