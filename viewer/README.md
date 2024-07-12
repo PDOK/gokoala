@@ -6,8 +6,6 @@ This viewer is available as a [WebComponent](https://developer.mozilla.org/en-US
 - display GeoJSON features on a map
 - render a legend of a Mapbox style
 
-See [demo with samples](https://pdok.github.io/gokoala/).
-
 ## Vectortile view parameters
 
 The `<app-vectortile-view>` component has the following parameters:
