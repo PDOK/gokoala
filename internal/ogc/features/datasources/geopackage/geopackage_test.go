@@ -285,7 +285,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			}
 			g.preparedStmtCache = NewCache()
 			url, _ := neturl.Parse("http://example.com")
-			p := domain.NewProfile(domain.RelAsLink, *url)
+			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
 			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, p)
 			if err != nil {
 				if !tt.wantErr {
@@ -391,7 +391,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				queryTimeout:               tt.fields.queryTimeout,
 			}
 			url, _ := neturl.Parse("http://example.com")
-			p := domain.NewProfile(domain.RelAsLink, *url)
+			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
 			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, p)
 			if err != nil {
 				if !tt.wantErr {

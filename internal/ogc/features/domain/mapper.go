@@ -167,9 +167,8 @@ func mapExternalFid(columns []string, values []any, externalFidColumn string, fe
 			feature.ID = fmt.Sprint(columnValue)
 			delete(feature.Properties, columnName)
 		case strings.Contains(columnName, externalFidColumn):
-			// When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat it as a relation
-			// to another feature. In that case, map relation using the given profile (from OAF Part 5 spec) and drop
-			// the raw column.
+			// When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat
+			// it as a relation to another feature.
 			newColumnName, newColumnValue := mapRel(columnName, columnValue, externalFidColumn)
 			if newColumnName != "" {
 				feature.Properties[newColumnName] = newColumnValue

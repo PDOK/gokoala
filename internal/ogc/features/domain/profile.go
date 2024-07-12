@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 const regexRemoveSeparators = "[^a-z0-9]?"
@@ -20,14 +21,16 @@ const (
 
 // Profile from OAF Part 5, used to express relations between features
 type Profile struct {
-	profileName ProfileName
-	baseURL     string
+	profileName     ProfileName
+	baseURL         string
+	collectionNames []string
 }
 
-func NewProfile(profileName ProfileName, baseURL url.URL) Profile {
+func NewProfile(profileName ProfileName, baseURL url.URL, collectionNames []string) Profile {
 	return Profile{
-		profileName: profileName,
-		baseURL:     baseURL.String(),
+		profileName:     profileName,
+		baseURL:         baseURL.String(),
+		collectionNames: collectionNames,
 	}
 }
 
@@ -35,9 +38,10 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
 	switch p.profileName {
 	case RelAsLink:
-		collectionName := regex.ReplaceAllString(columnName, "")
-		newColumnName = collectionName + ".href"
-		if columnValue != nil {
+		newColumnName = regex.ReplaceAllString(columnName, "")
+		collectionName := p.findCollectionWithPrefix(newColumnName)
+		newColumnName += ".href"
+		if columnValue != nil && collectionName != "" {
 			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
 		}
 	case RelAsKey:
@@ -51,4 +55,13 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 		}
 	}
 	return
+}
+
+func (p *Profile) findCollectionWithPrefix(prefix string) string {
+	for _, collName := range p.collectionNames {
+		if strings.HasPrefix(prefix, collName) {
+			return collName
+		}
+	}
+	return ""
 }

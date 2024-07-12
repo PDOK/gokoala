@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/google/uuid"
 
 	"github.com/PDOK/gokoala/internal/engine"
@@ -62,7 +63,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		engine:                    e,
 		datasources:               datasources,
 		configuredPropertyFilters: configuredPropertyFilters,
-		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL),
+		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL, util.Keys(collections)),
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}

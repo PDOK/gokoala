@@ -36,6 +36,15 @@ func TestMapRelationUsingProfile(t *testing.T) {
 			expectedColVal:  nil,
 		},
 		{
+			name:            "RelAsLink with infix in column name",
+			profile:         RelAsLink,
+			columnName:      "another_collection_some_infix_external_fid",
+			columnValue:     "123",
+			externalFidCol:  "external_fid",
+			expectedColName: "another_collection_some_infix.href",
+			expectedColVal:  "http://example.com/collections/another_collection/items/123",
+		},
+		{
 			name:            "RelAsKey",
 			profile:         RelAsKey,
 			columnName:      "another_collection_external_fid",
@@ -77,7 +86,7 @@ func TestMapRelationUsingProfile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			url, err := neturl.Parse("http://example.com")
 			assert.NoError(t, err)
-			profile := NewProfile(tt.profile, *url)
+			profile := NewProfile(tt.profile, *url, []string{"some_collection", "another_collection", "foo", "bar"})
 			newColName, newColVal := profile.MapRelationUsingProfile(tt.columnName, tt.columnValue, tt.externalFidCol)
 			assert.Equal(t, tt.expectedColName, newColName)
 			assert.Equal(t, tt.expectedColVal, newColVal)
