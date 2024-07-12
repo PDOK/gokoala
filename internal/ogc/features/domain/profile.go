@@ -48,10 +48,11 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 		newColumnName = regex.ReplaceAllString(columnName, "")
 		newColumnValue = columnValue
 	case RelAsURI:
-		// almost identical to rel-as-link except that there's no ".href" suffix
+		// almost identical to rel-as-link except that there's no ".href" suffix (and potentially a title in the future)
 		newColumnName = regex.ReplaceAllString(columnName, "")
+		collectionName := p.findCollectionWithPrefix(newColumnName)
 		if columnValue != nil {
-			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, newColumnName, columnValue)
+			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
 		}
 	}
 	return
