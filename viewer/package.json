@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "vbuild": "vite build",
-    "preview": "vite preview",
     "ng": "ng",
     "start": "ng serve",
     "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none",
