@@ -2,12 +2,19 @@ package domain
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/geojson"
 	"github.com/jmoiron/sqlx"
 )
+
+// MapRelation abstract function type to map feature relations
+type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName string, newColumnValue any)
+
+// MapGeom abstract function type to map geometry from bytes to Geometry
+type MapGeom func([]byte) (geom.Geometry, error)
 
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
 func MapRowsToFeatureIDs(rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
@@ -41,7 +48,7 @@ func MapRowsToFeatureIDs(rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevN
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
 func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn string, geomColumn string,
-	geomMapper func([]byte) (geom.Geometry, error)) ([]*Feature, *PrevNextFID, error) {
+	mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -58,7 +65,8 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 		}
 
 		feature := &Feature{Feature: geojson.Feature{Properties: make(map[string]any)}}
-		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, externalFidColumn, geomColumn, geomMapper)
+		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, externalFidColumn,
+			geomColumn, mapGeom, mapRel)
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
@@ -72,7 +80,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 
 //nolint:cyclop,funlen
 func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []any, fidColumn string,
-	externalFidColum string, geomColumn string, geomMapper func([]byte) (geom.Geometry, error)) (*PrevNextFID, error) {
+	externalFidColumn string, geomColumn string, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
@@ -80,13 +88,7 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 
 		switch columnName {
 		case fidColumn:
-			// Assumes that `fid` column is first column in the table
 			feature.ID = fmt.Sprint(columnValue)
-
-		case externalFidColum:
-			// If externalFidColumn is configured, overwrite feature ID and drop column from feature
-			feature.ID = fmt.Sprint(columnValue)
-			delete(feature.Properties, columnName)
 
 		case geomColumn:
 			if columnValue == nil {
@@ -97,7 +99,7 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 			if !ok {
 				return nil, fmt.Errorf("failed to read geometry from %s column in datasource", geomColumn)
 			}
-			mappedGeom, err := geomMapper(rawGeom)
+			mappedGeom, err := mapGeom(rawGeom)
 			if err != nil {
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
@@ -145,5 +147,33 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 			}
 		}
 	}
+
+	mapExternalFid(columns, values, externalFidColumn, feature, mapRel)
 	return &prevNextID, nil
+}
+
+// mapExternalFid run a second pass over columns to map external feature ID, including relations to other features
+func mapExternalFid(columns []string, values []any, externalFidColumn string, feature *Feature, mapRel MapRelation) {
+	for i, columnName := range columns {
+		columnValue := values[i]
+
+		switch {
+		case externalFidColumn == "":
+			continue
+		case columnName == externalFidColumn:
+			// When externalFidColumn is configured, overwrite feature ID and drop externalFidColumn.
+			// Note: This happens in a second pass over the feature, since we want to overwrite the
+			// feature ID irrespective of the order of columns in the table
+			feature.ID = fmt.Sprint(columnValue)
+			delete(feature.Properties, columnName)
+		case strings.Contains(columnName, externalFidColumn):
+			// When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat
+			// it as a relation to another feature.
+			newColumnName, newColumnValue := mapRel(columnName, columnValue, externalFidColumn)
+			if newColumnName != "" {
+				feature.Properties[newColumnName] = newColumnValue
+				delete(feature.Properties, columnName)
+			}
+		}
+	}
 }

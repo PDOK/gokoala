@@ -253,6 +253,8 @@
                 <td class="w-20">{{ $key }}</td>
                 {{ if isdate $value }}
                 <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
+                {{ else if hasSuffix ".href" $key }}
+                <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
                 {{ else }}
                 <td>{{ $value }}</td>
                 {{ end }}

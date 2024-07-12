@@ -294,7 +294,6 @@ func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(collectionID string, fc
 }
 
 // serveAndValidateJSON serves JSON after performing OpenAPI response validation.
-// Note: this requires reading first marshalling to the result to JSON in-memory.
 func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *http.Request, w http.ResponseWriter) {
 	json := &bytes.Buffer{}
 	if err := getEncoder(json).Encode(input); err != nil {

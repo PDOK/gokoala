@@ -18,13 +18,13 @@ type Datasource interface {
 	GetFeatureIDs(ctx context.Context, collection string, criteria FeaturesCriteria) ([]int64, domain.Cursors, error)
 
 	// GetFeaturesByID returns a collection of Features with the given IDs. To be used in concert with GetFeatureIDs
-	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64) (*domain.FeatureCollection, error)
+	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, profile domain.Profile) (*domain.FeatureCollection, error)
 
 	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
-	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria) (*domain.FeatureCollection, domain.Cursors, error)
+	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
 
 	// GetFeature returns a specific Feature, based on its feature id
-	GetFeature(ctx context.Context, collection string, featureID any) (*domain.Feature, error)
+	GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error)
 
 	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
 	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
