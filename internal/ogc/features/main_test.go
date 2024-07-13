@@ -29,7 +29,7 @@ func init() {
 	}
 }
 
-func TestFeatures_CollectionContent(t *testing.T) {
+func TestFeatures(t *testing.T) {
 	type fields struct {
 		configFile   string
 		url          string
@@ -78,7 +78,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
-				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv4%7CNwyr1Q&limit=2",
+				url:          "http://localhost:8080/collections/tunneldelen/items?cursor=Dv4%7CNwyr1Q&limit=2",
 				collectionID: "foo",
 				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
@@ -458,6 +458,34 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_temporal.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request mapsheets as JSON",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_mapsheets.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
+				collectionID: "example_mapsheets",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_mapsheets.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request mapsheets as HTML",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_mapsheets.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
+				collectionID: "example_mapsheets",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_mapsheets.html",
 				statusCode: http.StatusOK,
 			},
 		},

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 	texttemplate "text/template"
 	"time"
@@ -310,8 +311,19 @@ func unmarkdown(s *string) string {
 }
 
 // humanSize converts size in bytes to a human-readable size
-func humanSize(i int64) string {
-	return units.HumanSize(float64(i))
+func humanSize(a any) string {
+	if i, ok := a.(int64); ok {
+		return units.HumanSize(float64(i))
+	} else if f, ok := a.(float64); ok {
+		return units.HumanSize(f)
+	} else if s, ok := a.(string); ok {
+		fs, err := strconv.ParseFloat(s, 64)
+		if err == nil {
+			return units.HumanSize(fs)
+		}
+	}
+	log.Printf("cannot convert '%v' to float", a)
+	return "0"
 }
 
 // bytesSize converts human-readable size to size in bytes (base-10, not base-2)
