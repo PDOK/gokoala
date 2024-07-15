@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -27,6 +28,9 @@ type Profile struct {
 }
 
 func NewProfile(profileName ProfileName, baseURL url.URL, collectionNames []string) Profile {
+	sort.Slice(collectionNames, func(i, j int) bool {
+		return len(collectionNames[i]) > len(collectionNames[j])
+	})
 	return Profile{
 		profileName:     profileName,
 		baseURL:         baseURL.String(),
@@ -39,7 +43,7 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 	switch p.profileName {
 	case RelAsLink:
 		newColumnName = regex.ReplaceAllString(columnName, "")
-		collectionName := p.findCollectionWithPrefix(newColumnName)
+		collectionName := p.findCollection(newColumnName)
 		newColumnName += ".href"
 		if columnValue != nil && collectionName != "" {
 			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
@@ -50,7 +54,7 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 	case RelAsURI:
 		// almost identical to rel-as-link except that there's no ".href" suffix (and potentially a title in the future)
 		newColumnName = regex.ReplaceAllString(columnName, "")
-		collectionName := p.findCollectionWithPrefix(newColumnName)
+		collectionName := p.findCollection(newColumnName)
 		if columnValue != nil {
 			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
 		}
@@ -58,9 +62,16 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 	return
 }
 
-func (p *Profile) findCollectionWithPrefix(prefix string) string {
+func (p *Profile) findCollection(name string) string {
+	// prefer exact matches first
 	for _, collName := range p.collectionNames {
-		if strings.HasPrefix(prefix, collName) {
+		if name == collName {
+			return collName
+		}
+	}
+	// then prefer fuzzy match (to support infix)
+	for _, collName := range p.collectionNames {
+		if strings.HasPrefix(name, collName) {
 			return collName
 		}
 	}

@@ -476,6 +476,20 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request mapsheets as JSON-FG",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_mapsheets.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=2&f=jsonfg",
+				collectionID: "example_mapsheets",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_mapsheets_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request mapsheets as HTML",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_mapsheets.yaml",
