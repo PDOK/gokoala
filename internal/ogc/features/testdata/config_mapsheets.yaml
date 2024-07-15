@@ -1,0 +1,37 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Example config to test mapsheet
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./internal/ogc/features/datasources/geopackage/testdata/bag.gpkg
+            fid: feature_id
+    collections:
+      - id: example_mapsheets
+        tableName: ligplaatsen
+        mapSheetDownloads:
+          properties:
+            # this gpgk doesn't actually contain mapsheets, we just (mis)use some columns
+            # in order to test the mapsheet functionality
+            assetUrl: rdf_seealso
+            size: nummer_id
+            mediaType: application/octet-stream
+            mapSheetId: nummer_id
+        metadata:
+          title: Dummy mapsheets
+          description: Map sheets test
+        links:
+          downloads:
+            - name: Full download
+              assetUrl: https://example.com/awesome.zip
+              size: 123MB
+              mediaType: application/zip
