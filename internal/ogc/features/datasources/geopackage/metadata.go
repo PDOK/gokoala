@@ -52,8 +52,7 @@ select
 from
 	gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
 where
-	c.data_type = 'features' and
-	c.min_x is not null`
+	c.data_type = 'features'`
 
 	rows, err := db.Queryx(query)
 	if err != nil {
@@ -89,7 +88,7 @@ where
 		return nil, err
 	}
 	if len(result) == 0 {
-		return nil, errors.New("no records found in gpkg_contents, can't serve features")
+		return nil, errors.New("no records for 'features' found in gpkg_contents and/or gpkg_geometry_columns")
 	}
 	uniqueTables := make(map[string]struct{})
 	for _, table := range result {
