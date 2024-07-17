@@ -251,7 +251,9 @@ func parseBbox(params url.Values) (*geom.Extent, d.SRID, error) {
 			return nil, bboxSRID, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
 		}
 	}
-
+	if extent.Area() <= 0 {
+		return nil, bboxSRID, errors.New("bbox has no surface area")
+	}
 	return &extent, bboxSRID, nil
 }
 
