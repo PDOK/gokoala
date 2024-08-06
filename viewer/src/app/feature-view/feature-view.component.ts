@@ -118,7 +118,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       .pipe(take(1))
       .subscribe(data => {
         this.features = data
-        //this.map.setLayerGroup(new Group())
         this.changeView()
         this.loadFeatures(this.features)
         this.loadBackground()

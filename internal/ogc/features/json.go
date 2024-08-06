@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	perfjson "github.com/goccy/go-json"
@@ -38,13 +39,13 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 }
 
 // GeoJSON
-func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
+func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
+	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection) {
 
 	fc.Timestamp = now().Format(time.RFC3339)
 	fc.Links = jf.createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL)
 
-	jf.createFeatureDownloadLinks(collectionID, fc)
+	jf.createFeatureDownloadLinks(configuredFC, fc)
 
 	if jf.validateResponse {
 		jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
@@ -55,10 +56,10 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 
 // GeoJSON
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
-	feat *domain.Feature, url featureURL) {
+	configuredFC *config.CollectionEntryFeatures, feat *domain.Feature, url featureURL) {
 
 	feat.Links = jf.createFeatureLinks(engine.FormatGeoJSON, url, collectionID, feat.ID)
-	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		feat.Links = append(feat.Links, domain.Link{
 			Rel:   "enclosure",
 			Title: "Download feature",
@@ -75,8 +76,8 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 }
 
 // JSON-FG
-func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
-	cursor domain.Cursors, featuresURL featureCollectionURL, fc *domain.FeatureCollection, crs domain.ContentCrs) {
+func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
+	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
 	fgFC := domain.JSONFGFeatureCollection{}
 	fgFC.ConformsTo = []string{domain.ConformanceJSONFGCore}
@@ -98,7 +99,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSONFG, collectionID, cursor, featuresURL)
 
-	jf.createJSONFGFeatureDownloadLinks(collectionID, &fgFC)
+	jf.createJSONFGFeatureDownloadLinks(configuredFC, &fgFC)
 
 	if jf.validateResponse {
 		jf.serveAndValidateJSON(&fgFC, engine.MediaTypeJSONFG, r, w)
@@ -109,7 +110,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 
 // JSON-FG
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
-	f *domain.Feature, url featureURL, crs domain.ContentCrs) {
+	configuredFC *config.CollectionEntryFeatures, f *domain.Feature, url featureURL, crs domain.ContentCrs) {
 
 	fgF := domain.JSONFGFeature{
 		ID:          f.ID,
@@ -120,7 +121,7 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 	}
 	setGeom(crs, &fgF, f)
 	fgF.Links = jf.createFeatureLinks(engine.FormatJSONFG, url, collectionID, fgF.ID)
-	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		fgF.Links = append(fgF.Links, domain.Link{
 			Rel:   "enclosure",
 			Title: "Download feature",
@@ -263,8 +264,8 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 	return links
 }
 
-func (jf *jsonFeatures) createFeatureDownloadLinks(collectionID string, fc *domain.FeatureCollection) {
-	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+func (jf *jsonFeatures) createFeatureDownloadLinks(configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection) {
+	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		for _, feature := range fc.Features {
 			links := make([]domain.Link, 0)
 			links = append(links, domain.Link{
@@ -278,8 +279,8 @@ func (jf *jsonFeatures) createFeatureDownloadLinks(collectionID string, fc *doma
 	}
 }
 
-func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(collectionID string, fc *domain.JSONFGFeatureCollection) {
-	if mapSheetProperties := jf.engine.Config.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID); mapSheetProperties != nil {
+func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(configuredFC *config.CollectionEntryFeatures, fc *domain.JSONFGFeatureCollection) {
+	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		for _, feature := range fc.Features {
 			links := make([]domain.Link, 0)
 			links = append(links, domain.Link{
@@ -343,4 +344,11 @@ func setGeom(crs domain.ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature
 	} else {
 		jsonfgFeature.Place = feature.Geometry
 	}
+}
+
+func getMapSheetProperties(configuredFC *config.CollectionEntryFeatures) *config.MapSheetDownloadProperties {
+	if configuredFC != nil && configuredFC.MapSheetDownloads != nil {
+		return &configuredFC.MapSheetDownloads.Properties
+	}
+	return nil
 }

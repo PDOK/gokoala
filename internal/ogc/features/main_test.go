@@ -559,6 +559,20 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request features for collection with specific web/viewer configuration, to make sure this is reflected in the HTML output",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
+				collectionID: "ligplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_webconfig_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -979,7 +993,10 @@ func normalize(s string) string {
 }
 
 func printActual(rr *httptest.ResponseRecorder) {
-	log.Print("\n==> ACTUAL JSON RESPONSE (copy/paste and compare with response in file):")
+	log.Print("\n===========================\n")
+	log.Print("\n==> ACTUAL RESPONSE BELOW. Copy/paste and compare with response in file. " +
+		"Note that In the case of HTML output we only compare a relevant snippet instead of the whole file.")
+	log.Print("\n===========================\n")
 	log.Print(rr.Body.String()) // to ease debugging & updating expected results
-	log.Print("\n=========\n")
+	log.Print("\n===========================\n")
 }

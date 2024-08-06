@@ -51,6 +51,7 @@ type featureCollectionPage struct {
 	Limit              int
 	ReferenceDate      *time.Time
 	MapSheetProperties *config.MapSheetDownloadProperties
+	WebConfig          *config.WebConfigFeatures
 
 	// Property filters as supplied by the user in the URL: filter name + value(s)
 	PropertyFilters map[string]string
@@ -69,16 +70,16 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
-	mapSheetProperties *config.MapSheetDownloadProperties, fc *domain.FeatureCollection) {
+	featuresURL featureCollectionURL, limit int, referenceDate *time.Time, propertyFilters map[string]string,
+	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues, configuredFC *config.CollectionEntryFeatures,
+	fc *domain.FeatureCollection) {
 
-	collectionMetadata := collections[collectionID]
+	collection := configuredCollections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collectionID, collectionMetadata),
+			Name: getCollectionTitle(collectionID, collection.Metadata),
 			Path: collectionsCrumb + collectionID,
 		},
 		{
@@ -90,17 +91,26 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	if referenceDate.IsZero() {
 		referenceDate = nil
 	}
+	var mapSheetProps *config.MapSheetDownloadProperties
+	var wc *config.WebConfigFeatures
+	if configuredFC != nil {
+		if configuredFC.MapSheetDownloads != nil {
+			mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+		}
+		wc = configuredFC.Web
+	}
 
 	pageContent := &featureCollectionPage{
 		*fc,
 		collectionID,
-		collectionMetadata,
+		collection.Metadata,
 		cursor,
 		featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatHTML),
 		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
 		limit,
 		referenceDate,
-		mapSheetProperties,
+		mapSheetProps,
+		wc,
 		propertyFilters,
 		configuredPropertyFilters,
 	}
@@ -110,13 +120,13 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
-	mapSheetProperties *config.MapSheetDownloadProperties, feat *domain.Feature) {
-	collectionMetadata := collections[collectionID]
+	configuredFC *config.CollectionEntryFeatures, feat *domain.Feature) {
+	collection := configuredCollections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collectionID, collectionMetadata),
+			Name: getCollectionTitle(collectionID, collection.Metadata),
 			Path: collectionsCrumb + collectionID,
 		},
 		{
@@ -129,12 +139,17 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 		},
 	}...)
 
+	var mapSheetProps *config.MapSheetDownloadProperties
+	if configuredFC != nil && configuredFC.MapSheetDownloads != nil {
+		mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+	}
+
 	pageContent := &featurePage{
 		*feat,
 		collectionID,
 		feat.ID,
-		collectionMetadata,
-		mapSheetProperties,
+		collection.Metadata,
+		mapSheetProps,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)

@@ -3,6 +3,7 @@
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
 {{ $mapSheetProperties := .Params.MapSheetProperties }}
+{{ $webConfig := .Params.WebConfig }}
 
 <script>
     {{- /* generic function to update query string parameters */ -}}
@@ -159,13 +160,42 @@
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="module" src="view-component/main.js"></script>
         <script type="text/javascript" src="view-component/polyfills.js"></script>
+
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="auto" fill-color="rgba(0,0,255,0)"
-            label-field="{{ $mapSheetProperties.MapSheetID }}" max-fit-scale="500000" class="card"></app-feature-view>
+        <app-feature-view
+                id="viewer"
+                background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
+                mode="auto"
+                fill-color="rgba(0,0,255,0)"
+                label-field="{{ $mapSheetProperties.MapSheetID }}"
+                class="card"
+                {{ if $webConfig }}
+                    min-fit-scale="{{ $webConfig.ViewerMinFitScale }}"
+                    {{ if $webConfig.ViewerMaxFitScale }}
+                    max-fit-scale="{{ $webConfig.ViewerMaxFitScale }}"
+                    {{ end }}
+                {{ else }}
+                    max-fit-scale="500000"
+                {{ end }}
+                >
+        </app-feature-view>
         {{ else }}
-        <app-feature-view id="viewer" background-map="{{ $cfg.OgcAPI.Features.Basemap }}" mode="default" class="card"></app-feature-view>
+        <app-feature-view
+                id="viewer"
+                background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
+                mode="default"
+                class="card"
+                {{ if $webConfig }}
+                    min-fit-scale="{{ $webConfig.ViewerMinFitScale }}"
+                    {{ if $webConfig.ViewerMaxFitScale }}
+                    max-fit-scale="{{ $webConfig.ViewerMaxFitScale }}"
+                    {{ end }}
+                {{ end }}
+                >
+        </app-feature-view>
         {{ end }}
+
         <script type="module">
           const url = new URL(window.location.href)
           url.searchParams.set('f', 'json')
@@ -247,18 +277,18 @@
             {{ $skipKeys = append $skipKeys $mapSheetProperties.Size }}
             {{ end }}
             {{ range $key, $value := $feat.Properties }}
-            {{ if not (has $key $skipKeys) }}
-            <tr>
-                <td class="w-20">{{ $key }}</td>
-                {{ if isdate $value }}
-                <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
-                {{ else if hasSuffix ".href" $key }}
-                <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
-                {{ else }}
-                <td>{{ $value }}</td>
+                {{ if not (has $key $skipKeys) }}
+                <tr>
+                    <td class="w-20">{{ $key }}</td>
+                    {{ if isdate $value }}
+                    <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
+                    {{ else if hasSuffix ".href" $key }}
+                    <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+                    {{ else }}
+                    <td>{{ $value }}</td>
+                    {{ end }}
+                </tr>
                 {{ end }}
-            </tr>
-            {{ end }}
             {{ end }}
             {{/* for map sheets collection, add download button */}}
             {{ if $mapSheetProperties }}
