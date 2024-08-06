@@ -14,7 +14,7 @@ jobs:
         with:
           driver: docker
       - name: Verify Docker install
-        run: docker-compose --version
+        run: docker compose --version
       - name: Build test image
         uses: docker/build-push-action@v5
         with:
@@ -24,9 +24,9 @@ jobs:
       # E2E Test
       - name: E2E Test => OGC API Features with Azure GeoPackage
         run: |
-          docker-compose -f ./examples/docker-compose-features-azure.yaml pull \
+          docker compose --compatibility -f ./examples/docker-compose-features-azure.yaml pull \
           && \
-          docker-compose -f ./examples/docker-compose-features-azure.yaml up \
+          docker compose --compatibility -f ./examples/docker-compose-features-azure.yaml up \
             --no-build --exit-code-from smoketest
 
       - name: Start GoKoala test instance
