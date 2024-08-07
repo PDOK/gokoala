@@ -911,6 +911,20 @@ func TestFeatures_Feature(t *testing.T) {
 				statusCode: http.StatusInternalServerError,
 			},
 		},
+		{
+			name: "Request feature with specific web/viewer configuration, and make sure this is reflected in the HTML output",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=html",
+				collectionID: "ligplaatsen",
+				featureID:    "4030",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_webconfig_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

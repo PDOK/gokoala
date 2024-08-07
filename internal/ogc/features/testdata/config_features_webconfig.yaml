@@ -22,5 +22,8 @@ ogcApi:
           description: |
             Focus of this test is on this 'web' part in this configfile, and how it reflects in the HTML rendering
         web:
-          viewerMinFitScale: 3000
-          viewerMaxFitScale: 40000
+          featuresViewer:
+            minScale: 3000
+            maxScale: 40000
+          featureViewer:
+            minScale: 22

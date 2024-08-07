@@ -51,7 +51,7 @@ type featureCollectionPage struct {
 	Limit              int
 	ReferenceDate      *time.Time
 	MapSheetProperties *config.MapSheetDownloadProperties
-	WebConfig          *config.WebConfigFeatures
+	WebConfig          *config.WebConfig
 
 	// Property filters as supplied by the user in the URL: filter name + value(s)
 	PropertyFilters map[string]string
@@ -67,6 +67,7 @@ type featurePage struct {
 	FeatureID          string
 	Metadata           *config.GeoSpatialCollectionMetadata
 	MapSheetProperties *config.MapSheetDownloadProperties
+	WebConfig          *config.WebConfig
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
@@ -92,7 +93,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 		referenceDate = nil
 	}
 	var mapSheetProps *config.MapSheetDownloadProperties
-	var wc *config.WebConfigFeatures
+	var wc *config.WebConfig
 	if configuredFC != nil {
 		if configuredFC.MapSheetDownloads != nil {
 			mapSheetProps = &configuredFC.MapSheetDownloads.Properties
@@ -140,8 +141,12 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	}...)
 
 	var mapSheetProps *config.MapSheetDownloadProperties
-	if configuredFC != nil && configuredFC.MapSheetDownloads != nil {
-		mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+	var wc *config.WebConfig
+	if configuredFC != nil {
+		if configuredFC.MapSheetDownloads != nil {
+			mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+		}
+		wc = configuredFC.Web
 	}
 
 	pageContent := &featurePage{
@@ -150,6 +155,7 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 		feat.ID,
 		collection.Metadata,
 		mapSheetProps,
+		wc,
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)

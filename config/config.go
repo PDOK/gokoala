@@ -445,9 +445,9 @@ type CollectionEntryFeatures struct {
 	// +optional
 	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
 
-	// Configuration specifically related to the HTML/Web representation of features
+	// Configuration specifically related to HTML/Web representation
 	// +optional
-	Web *WebConfigFeatures `yaml:"web,omitempty" json:"web,omitempty"`
+	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -511,15 +511,27 @@ type MapSheetDownloadProperties struct {
 }
 
 // +kubebuilder:object:generate=true
-type WebConfigFeatures struct {
-	// Maximum initial zoom level of the viewer when rendering features, specified by scale denominator set
-	// when selecting small feature(s). Defaults to 1000 (= scale 1:1000).
+type WebConfig struct {
+	// Viewer config for displaying multiple features on a map
 	// +optional
-	ViewerMinFitScale int `yaml:"viewerMinFitScale,omitempty" json:"viewerMinFitScale,omitempty" validate:"gt=0" default:"1000"`
+	FeaturesViewer *FeaturesViewer `yaml:"featuresViewer,omitempty" json:"featuresViewer,omitempty"`
 
-	// Minimal initial zoom level of the viewer when rendering features, specified by scale denominator (not set by default).
+	// Viewer config for displaying a single feature on a map
 	// +optional
-	ViewerMaxFitScale *int `yaml:"viewerMaxFitScale,omitempty" json:"viewerMaxFitScale,omitempty" validate:"gt=0"`
+	FeatureViewer *FeaturesViewer `yaml:"featureViewer,omitempty" json:"featureViewer,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type FeaturesViewer struct {
+	// Maximum initial zoom level of the viewer when rendering features, specified by scale denominator.
+	// Defaults to 1000 (= scale 1:1000).
+	// +optional
+	MinScale int `yaml:"minScale,omitempty" json:"minScale,omitempty" validate:"gt=0" default:"1000"`
+
+	// Minimal initial zoom level of the viewer when rendering features, specified by scale denominator
+	// (not set by default).
+	// +optional
+	MaxScale *int `yaml:"maxScale,omitempty" json:"maxScale,omitempty" validate:"omitempty,gt=0,gtefield=MinScale"`
 }
 
 // +kubebuilder:object:generate=true

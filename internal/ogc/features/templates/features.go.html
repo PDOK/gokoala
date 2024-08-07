@@ -170,10 +170,10 @@
                 fill-color="rgba(0,0,255,0)"
                 label-field="{{ $mapSheetProperties.MapSheetID }}"
                 class="card"
-                {{ if $webConfig }}
-                    min-fit-scale="{{ $webConfig.ViewerMinFitScale }}"
-                    {{ if $webConfig.ViewerMaxFitScale }}
-                    max-fit-scale="{{ $webConfig.ViewerMaxFitScale }}"
+                {{ if and $webConfig $webConfig.FeaturesViewer }}
+                    min-fit-scale="{{ $webConfig.FeaturesViewer.MinScale }}"
+                    {{ if $webConfig.FeaturesViewer.MaxScale }}
+                    max-fit-scale="{{ $webConfig.FeaturesViewer.MaxScale }}"
                     {{ end }}
                 {{ else }}
                     max-fit-scale="500000"
@@ -186,10 +186,10 @@
                 background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
                 mode="default"
                 class="card"
-                {{ if $webConfig }}
-                    min-fit-scale="{{ $webConfig.ViewerMinFitScale }}"
-                    {{ if $webConfig.ViewerMaxFitScale }}
-                    max-fit-scale="{{ $webConfig.ViewerMaxFitScale }}"
+                {{ if and $webConfig $webConfig.FeaturesViewer }}
+                    min-fit-scale="{{ $webConfig.FeaturesViewer.MinScale }}"
+                    {{ if $webConfig.FeaturesViewer.MaxScale }}
+                    max-fit-scale="{{ $webConfig.FeaturesViewer.MaxScale }}"
                     {{ end }}
                 {{ end }}
                 >
