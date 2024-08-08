@@ -1,6 +1,4 @@
 ---
-version: "3"
-
 services:
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:3.29.0
@@ -42,7 +40,6 @@ services:
       retries: 30
 
   gokoala:
-    image: gokoala:local  # run local image if available (used in CI)
     build:
       context: ../
       dockerfile: Dockerfile
