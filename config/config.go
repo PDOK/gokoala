@@ -440,9 +440,14 @@ type CollectionEntryFeatures struct {
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
 
-	// Downloads available for this collection
+	// Downloads available for this collection through map sheets. Note that 'map sheets' refer to a map
+	// divided in rectangle areas that can be downloaded individually.
 	// +optional
 	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
+
+	// Configuration specifically related to HTML/Web representation
+	// +optional
+	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -485,23 +490,48 @@ type DownloadLink struct {
 
 // +kubebuilder:object:generate=true
 type MapSheetDownloads struct {
-	// Properties that provide the download details per map sheet
+	// Properties that provide the download details per map sheet. Note that 'map sheets' refer to a map
+	// divided in rectangle areas that can be downloaded individually.
 	Properties MapSheetDownloadProperties `yaml:"properties" json:"properties" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
 type MapSheetDownloadProperties struct {
-	// Property containing file download URL
+	// Property/column containing file download URL
 	AssetURL string `yaml:"assetUrl" json:"assetUrl" validate:"required"`
 
-	// Property containing file size
+	// Property/column containing file size
 	Size string `yaml:"size" json:"size" validate:"required"`
 
-	// Property containing file media type
+	// The actual media type (not a property/column) of the download, like application/zip.
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 
-	// Property containing the map sheet identifier
+	// Property/column containing the map sheet identifier
 	MapSheetID string `yaml:"mapSheetId" json:"mapSheetId" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type WebConfig struct {
+	// Viewer config for displaying multiple features on a map
+	// +optional
+	FeaturesViewer *FeaturesViewer `yaml:"featuresViewer,omitempty" json:"featuresViewer,omitempty"`
+
+	// Viewer config for displaying a single feature on a map
+	// +optional
+	FeatureViewer *FeaturesViewer `yaml:"featureViewer,omitempty" json:"featureViewer,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type FeaturesViewer struct {
+	// Maximum initial zoom level of the viewer when rendering features, specified by scale denominator.
+	// Defaults to 1000 (= scale 1:1000).
+	// +optional
+	MinScale int `yaml:"minScale,omitempty" json:"minScale,omitempty" validate:"gt=0" default:"1000"`
+
+	// Minimal initial zoom level of the viewer when rendering features, specified by scale denominator
+	// (not set by default).
+	// +optional
+	MaxScale *int `yaml:"maxScale,omitempty" json:"maxScale,omitempty" validate:"omitempty,gt=0,gtefield=MinScale"`
 }
 
 // +kubebuilder:object:generate=true
@@ -610,24 +640,6 @@ func (oaf *OgcAPIFeatures) ProjectionsForCollection(collectionID string) []strin
 	result := util.Keys(uniqueSRSs)
 	slices.Sort(result)
 	return result
-}
-
-func (oaf *OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []PropertyFilter {
-	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features != nil && coll.Features.Filters.Properties != nil {
-			return coll.Features.Filters.Properties
-		}
-	}
-	return []PropertyFilter{}
-}
-
-func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetDownloadProperties {
-	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features != nil && coll.Features.MapSheetDownloads != nil {
-			return &coll.Features.MapSheetDownloads.Properties
-		}
-	}
-	return nil
 }
 
 // +kubebuilder:object:generate=true
