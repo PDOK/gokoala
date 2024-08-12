@@ -101,7 +101,7 @@
                       "title": "this document"
                     },
                     {
-                      "href": "http://data.example.com/collections/buildings/items.html",
+                      "href": "http://data.example.com/collections/buildings/items?f=html",
                       "rel": "alternate",
                       "type": "text/html",
                       "title": "this document as HTML"
@@ -167,7 +167,7 @@
                       "title": "this document"
                     },
                     {
-                      "href": "http://data.example.com/collections/buildings/items.html",
+                      "href": "http://data.example.com/collections/buildings/items?f=html",
                       "rel": "alternate",
                       "type": "text/html",
                       "title": "this document as HTML"
