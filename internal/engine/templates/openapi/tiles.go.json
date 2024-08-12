@@ -141,20 +141,6 @@
   },
   "components": {
     "schemas": {
-      "confClasses": {
-        "type": "object",
-        "required": [
-          "conformsTo"
-        ],
-        "properties": {
-          "conformsTo": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
       "link": {
         "type": "object",
         "required": [
