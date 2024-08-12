@@ -171,7 +171,8 @@
       "collection": {
         "type": "object",
         "required": [
-          "id"
+          "id",
+          "links"
         ],
         "properties": {
           "id": {
@@ -217,6 +218,26 @@
               "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
               "http://www.opengis.net/def/crs/EPSG/0/4326"
             ]
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            },
+            "example": [
+              {
+                "href": "http://example.com/collections/buildings?f=json",
+                "rel": "item",
+                "type": "application/json",
+                "title": "this document"
+              },
+              {
+                "href": "http://example.com/concepts/buildings?f=html",
+                "rel": "it",
+                "type": "text/html",
+                "title": "this document as HTML"
+              }
+            ]
           }
           {{- if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections -}}
           ,"storageCrs": {
@@ -242,32 +263,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/link"
-            },
-            "example": [
-              {
-                "href": "http://example.com/collections/buildings?f=json",
-                "rel": "item",
-                "type": "application/json",
-                "title": "CollectionId path description in the OpenAPI"
-              },
-              {
-                "href": "http://example.com/concepts/buildings.html",
-                "rel": "describedby",
-                "type": "text/html'"
-              },
-              {
-                "href": "https://creativecommons.org/publicdomain/zero/1.0/",
-                "rel": "license",
-                "type": "text/html",
-                "title": "CC0-1.0"
-              },
-              {
-                "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
-                "rel": "license",
-                "type": "application/rdf+xml",
-                "title": "CC0-1.0"
-              }
-            ]
+            }
           }
         }
       },
@@ -324,24 +320,6 @@
                 }
               ]
             }
-          }
-        }
-      },
-      "confClasses": {
-        "type": "object",
-        "required": [
-          "conformsTo"
-        ],
-        "properties": {
-          "conformsTo": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            },
-            "example": [
-              "http://www.opengis.net/spec/ogcapi-common-1/1.0/req/core"
-            ]
           }
         }
       },
