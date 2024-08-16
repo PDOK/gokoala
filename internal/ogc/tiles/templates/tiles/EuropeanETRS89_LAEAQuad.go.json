@@ -40,7 +40,7 @@
   "tileMatrixSetId": "EuropeanETRS89_LAEAQuad",
   "tileMatrixSetLimits": [
     {{ $first := true }}
-    {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+    {{ range $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
       {{ if eq $type.Srs "EPSG:3035" }}
         {{ if eq $type.ZoomLevelRange.Start 0 }}
         {{ if not $first }}{{else}} {{$first = false}} {{end}}

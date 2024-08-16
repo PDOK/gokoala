@@ -19,7 +19,7 @@
     }
   ],
   "tilesets": [
-    {{range $index, $type := .Config.OgcAPI.Tiles.SupportedSrs}}
+    {{range $index, $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs}}
       {{ if (eq $type.Srs "EPSG:28992") }}
         {
           "links": [

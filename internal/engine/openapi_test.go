@@ -56,7 +56,9 @@ func Test_newOpenAPI(t *testing.T) {
 					BaseURL:  gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: gokoalaconfig.OgcAPI{
 						Tiles: &gokoalaconfig.OgcAPITiles{
-							TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							DatasetTiles: &gokoalaconfig.Tiles{
+								TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							},
 						},
 					},
 				},
@@ -128,7 +130,9 @@ func Test_newOpenAPI(t *testing.T) {
 					BaseURL:  gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: gokoalaconfig.OgcAPI{
 						Tiles: &gokoalaconfig.OgcAPITiles{
-							TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							DatasetTiles: &gokoalaconfig.Tiles{
+								TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							},
 						},
 					},
 				},
@@ -161,7 +165,9 @@ func Test_newOpenAPI(t *testing.T) {
 							},
 						},
 						Tiles: &gokoalaconfig.OgcAPITiles{
-							TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							DatasetTiles: &gokoalaconfig.Tiles{
+								TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "tiles.foobar.example", Path: "/somedataset"}},
+							},
 						},
 						Styles: &gokoalaconfig.OgcAPIStyles{},
 						Features: &gokoalaconfig.OgcAPIFeatures{

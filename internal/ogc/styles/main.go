@@ -47,10 +47,10 @@ func NewStyles(e *engine.Engine) *Styles {
 		engine.NewTemplateKey(templatesDir+"styles.go.html"))
 
 	projections := map[string]string{"EPSG:28992": "NetherlandsRDNewQuad", "EPSG:3035": "EuropeanETRS89_LAEAQuad", "EPSG:3857": "WebMercatorQuad"}
-	defaultProjection = strings.ToLower(projections[e.Config.OgcAPI.Tiles.SupportedSrs[0].Srs])
+	defaultProjection = strings.ToLower(projections[e.Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs[0].Srs])
 
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
-		for _, supportedSrs := range e.Config.OgcAPI.Tiles.SupportedSrs {
+		for _, supportedSrs := range e.Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs {
 			projection := projections[supportedSrs.Srs]
 			zoomLevelRange := supportedSrs.ZoomLevelRange
 			styleInstanceID := style.ID + projectionDelimiter + strings.ToLower(projection)

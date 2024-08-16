@@ -12,13 +12,13 @@
   </div>
   <div class="row">
     {{ $baseUrl := .Config.BaseURL }}
-    {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
+    {{ $defaultSrs := (index .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs 0)}}
     {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
     <div class="col-md-5">
       <table class="table table-borderless table-sm w-auto">
         <tbody>
         <tr>
-        {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
+        {{ if eq (len .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs) 1 }}
           <td class="w-auto text-nowrap fw-bold">
             Tile Matrix Set
           </td>
@@ -31,7 +31,7 @@
           </td>
           <td class="w-auto px-2">
             <select id="srs" class="form-select">
-              {{ range $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
+              {{ range $srs := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
               <option value="{{ $srs.Srs }}">{{ get $projections (index $srs).Srs }}</option>
               {{ end }}
             </select>
@@ -57,7 +57,7 @@
             Type
           </td>
           <td id="field-type" class="w-auto px-2">
-            {{ (index .Config.OgcAPI.Tiles.Types 0) | toString | title }}
+            {{ (index .Config.OgcAPI.Tiles.DatasetTiles.Types 0) | toString | title }}
           </td>
         </tr>
         <tr>
@@ -120,7 +120,7 @@
       // update table fields
       const selectedSrs = event.target.value
       let tileset;
-      {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
+      {{ range $index, $srs := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
       {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
         tileset = '{{ get $projections $srs.Srs }}'
       }{{ end }}

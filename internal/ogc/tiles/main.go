@@ -51,7 +51,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 	renderTemplatesForSrs(e, "NetherlandsRDNewQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 	renderTemplatesForSrs(e, "WebMercatorQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
 
-	_, err := url.ParseRequestURI(e.Config.OgcAPI.Tiles.TileServer.String())
+	_, err := url.ParseRequestURI(e.Config.OgcAPI.Tiles.DatasetTiles.TileServer.String())
 	if err != nil {
 		log.Fatalf("invalid tileserver url provided: %v", err)
 	}
@@ -154,12 +154,12 @@ func (t *Tiles) Tile() http.HandlerFunc {
 		// ogc spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
 		replacer := strings.NewReplacer("{tms}", tileMatrixSetID, "{z}", tileMatrix, "{x}", tileCol, "{y}", tileRow)
 		tilesTmpl := defaultTilesTmpl
-		if t.engine.Config.OgcAPI.Tiles.URITemplateTiles != nil {
-			tilesTmpl = *t.engine.Config.OgcAPI.Tiles.URITemplateTiles
+		if t.engine.Config.OgcAPI.Tiles.DatasetTiles.URITemplateTiles != nil {
+			tilesTmpl = *t.engine.Config.OgcAPI.Tiles.DatasetTiles.URITemplateTiles
 		}
 		path, _ := url.JoinPath("/", replacer.Replace(tilesTmpl))
 
-		target, err := url.Parse(t.engine.Config.OgcAPI.Tiles.TileServer.String() + path)
+		target, err := url.Parse(t.engine.Config.OgcAPI.Tiles.DatasetTiles.TileServer.String() + path)
 		if err != nil {
 			log.Printf("invalid target url, can't proxy tiles: %v", err)
 			engine.RenderProblem(engine.ProblemServerError, w)

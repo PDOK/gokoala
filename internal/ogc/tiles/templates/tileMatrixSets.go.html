@@ -16,7 +16,7 @@
                 </tr>
             </thead>
             <tbody>
-            {{range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+            {{range $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
                 {{ if (eq $type.Srs "EPSG:28992") }}
                     <tr>
                         <td><a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="{{ i18n "To" }} NetherlandsRDNewQuad">NetherlandsRDNewQuad</a></td>

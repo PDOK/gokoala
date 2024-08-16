@@ -17,7 +17,7 @@
     }
   ],
   "tileMatrixSets": [
-    {{range $index, $type := .Config.OgcAPI.Tiles.SupportedSrs}}
+    {{range $index, $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs}}
       {{ if (eq $type.Srs "EPSG:28992") }}
         {
           "title": "Amersfoort / RD New scheme for the Netherlands",

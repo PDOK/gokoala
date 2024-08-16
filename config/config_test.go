@@ -362,6 +362,81 @@ func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
 	}
 }
 
+func TestOgcAPITiles_HasType(t *testing.T) {
+	tests := []struct {
+		name      string
+		tiles     OgcAPITiles
+		tilesType TilesType
+		expected  bool
+	}{
+		{
+			name: "Has type in DatasetTiles",
+			tiles: OgcAPITiles{
+				DatasetTiles: &Tiles{
+					Types: []TilesType{"raster", "vector"},
+				},
+			},
+			tilesType: "raster",
+			expected:  true,
+		},
+		{
+			name: "Does not have type in DatasetTiles",
+			tiles: OgcAPITiles{
+				DatasetTiles: &Tiles{
+					Types: []TilesType{"raster", "vector"},
+				},
+			},
+			tilesType: "some-other-type",
+			expected:  false,
+		},
+		{
+			name: "Has type in Collections",
+			tiles: OgcAPITiles{
+				Collections: GeoSpatialCollections{
+					GeoSpatialCollection{
+						Tiles: &CollectionEntryTiles{
+							GeoDataTiles: Tiles{
+								Types: []TilesType{"raster", "vector"},
+							},
+						},
+					},
+				},
+			},
+			tilesType: "raster",
+			expected:  true,
+		},
+		{
+			name: "Does not have type in Collections",
+			tiles: OgcAPITiles{
+				Collections: GeoSpatialCollections{
+					GeoSpatialCollection{
+						Tiles: &CollectionEntryTiles{
+							GeoDataTiles: Tiles{
+								Types: []TilesType{"raster", "vector"},
+							},
+						},
+					},
+				},
+			},
+			tilesType: "some-other-type",
+			expected:  false,
+		},
+		{
+			name:      "No DatasetTiles and Collections",
+			tiles:     OgcAPITiles{},
+			tilesType: "raster",
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.tiles.HasType(tt.tilesType)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func ptrTo[T any](val T) *T {
 	return &val
 }

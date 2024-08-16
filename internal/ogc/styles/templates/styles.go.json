@@ -2,7 +2,7 @@
 {
   {{ if .Config.OgcAPI.Styles }}
   {{ $baseUrl := .Config.BaseURL }}
-  {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
+  {{ $supportedSrs := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
   {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
   "links": [
     {

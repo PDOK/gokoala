@@ -24,7 +24,7 @@
                 </tr>
           </thead>
           <tbody>
-          {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+          {{ range $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
               {{ if eq $type.Srs "EPSG:3857" }}
                   {{ if eq $type.ZoomLevelRange.Start 0 }}
                       <tr>

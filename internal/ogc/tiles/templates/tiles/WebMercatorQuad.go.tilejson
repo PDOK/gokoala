@@ -9,7 +9,7 @@
   "tiles": [
     "{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt"
   ],
-  {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+  {{ range $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
   {{ if eq $type.Srs "EPSG:3857" }}
   "minzoom": {{ $type.ZoomLevelRange.Start }},
   "maxzoom": {{ $type.ZoomLevelRange.End }},
@@ -20,7 +20,7 @@
 {{/*  "extent": [0, 0, 0, 0],*/}}
   "tile_matrix": [
     {{ $first := true }}
-    {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+    {{ range $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
     {{ if eq $type.Srs "EPSG:3857" }}
     {{ if eq $type.ZoomLevelRange.Start 0 }}
     {{ if not $first }}{{else}} {{$first = false}} {{end}}
