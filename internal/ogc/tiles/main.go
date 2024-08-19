@@ -1,13 +1,15 @@
 package tiles
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
+	g "github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -20,85 +22,70 @@ const (
 	defaultTilesTmpl        = "{tms}/{z}/{x}/{y}." + engine.FormatMVTAlternative
 )
 
-type Tiles struct {
-	engine *engine.Engine
-}
-
-func NewTiles(e *engine.Engine) *Tiles {
-	tilesBreadcrumbs := []engine.Breadcrumb{
+var (
+	tilesBreadcrumbs = []engine.Breadcrumb{
 		{
 			Name: "Tiles",
 			Path: "tiles",
 		},
 	}
-	tileMatrixSetsBreadcrumbs := []engine.Breadcrumb{
+	tileMatrixSetsBreadcrumbs = []engine.Breadcrumb{
 		{
 			Name: "Tile Matrix Sets",
 			Path: "tileMatrixSets",
 		},
 	}
+)
 
-	e.RenderTemplates(tilesPath,
-		tilesBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+"tiles.go.json"),
-		engine.NewTemplateKey(templatesDir+"tiles.go.html"))
-	e.RenderTemplates(tileMatrixSetsPath,
-		tileMatrixSetsBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
-		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
+type tilesTemplateData struct {
+	// Tiles top-level or collection-level tiles config
+	config.Tiles
 
-	renderTemplatesForSrs(e, "EuropeanETRS89_LAEAQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
-	renderTemplatesForSrs(e, "NetherlandsRDNewQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
-	renderTemplatesForSrs(e, "WebMercatorQuad", tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
-
-	_, err := url.ParseRequestURI(e.Config.OgcAPI.Tiles.DatasetTiles.TileServer.String())
-	if err != nil {
-		log.Fatalf("invalid tileserver url provided: %v", err)
-	}
-	tiles := &Tiles{
-		engine: e,
-	}
-
-	e.Router.Get(tileMatrixSetsPath, tiles.TileMatrixSets())
-	e.Router.Get(tileMatrixSetsPath+"/{tileMatrixSetId}", tiles.TileMatrixSet())
-	e.Router.Get(tilesPath, tiles.TilesetsList())
-	e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
-	e.Router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
-	e.Router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
-	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/tiles", tiles.TilesCollection())
-
-	return tiles
+	// baseURL part of the url prefixing /tiles
+	BaseURL string
 }
 
-func renderTemplatesForSrs(e *engine.Engine, srs string, tilesBreadcrumbs []engine.Breadcrumb, tileMatrixSetsBreadcrumbs []engine.Breadcrumb) {
-	tilesSrsBreadcrumbs := tilesBreadcrumbs
-	tilesSrsBreadcrumbs = append(tilesSrsBreadcrumbs, []engine.Breadcrumb{
-		{
-			Name: srs,
-			Path: tilesLocalPath + srs,
-		},
-	}...)
-	tileMatrixSetsSrsBreadcrumbs := tileMatrixSetsBreadcrumbs
-	tileMatrixSetsSrsBreadcrumbs = append(tileMatrixSetsSrsBreadcrumbs, []engine.Breadcrumb{
-		{
-			Name: srs,
-			Path: tileMatrixSetsLocalPath + srs,
-		},
-	}...)
+type Tiles struct {
+	engine *engine.Engine
+}
 
-	e.RenderTemplates(tileMatrixSetsPath+"/"+srs,
-		tileMatrixSetsSrsBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+srs+".go.json"),
-		engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+srs+".go.html"))
+func NewTiles(e *engine.Engine) *Tiles {
+	tiles := &Tiles{engine: e}
 
-	e.RenderTemplates(tilesPath+"/"+srs,
-		tilesSrsBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.json"),
-		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.html"))
+	// TileMatrixSets
+	e.Router.Get(tileMatrixSetsPath, tiles.TileMatrixSets())
+	e.Router.Get(tileMatrixSetsPath+"/{tileMatrixSetId}", tiles.TileMatrixSet())
 
-	e.RenderTemplates(tilesPath+"/"+srs,
-		tilesSrsBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.tilejson"))
+	// Top-level tiles
+	if e.Config.OgcAPI.Tiles.DatasetTiles != nil {
+		templateData := tilesTemplateData{
+			*e.Config.OgcAPI.Tiles.DatasetTiles,
+			e.Config.BaseURL.String(),
+		}
+		renderTilesTemplates(e, templateData, tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+
+		e.Router.Get(tilesPath, tiles.TilesetsList())
+		e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
+		e.Router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
+		e.Router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
+	}
+	// Collection-level tiles
+	for _, coll := range e.Config.OgcAPI.Tiles.Collections {
+		if coll.Tiles == nil {
+			continue
+		}
+		templateData := tilesTemplateData{
+			coll.Tiles.GeoDataTiles,
+			fmt.Sprintf("%s/%s/%s", e.Config.BaseURL.String(), g.CollectionsPath, coll.ID),
+		}
+		renderTilesTemplates(e, templateData, tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+
+		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath, tiles.TilesCollection())
+		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}", tiles.TilesCollection())
+		e.Router.Head(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
+		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile())
+	}
+	return tiles
 }
 
 func (t *Tiles) TileMatrixSets() http.HandlerFunc {
@@ -131,7 +118,7 @@ func (t *Tiles) Tileset() http.HandlerFunc {
 	}
 }
 
-// Tile reverse proxy to Azure Blob, assumes blob bucket/container is public
+// Tile reverse proxy to tileserver/object storage. Assumes the backing resources is publicly accessible.
 func (t *Tiles) Tile() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
@@ -141,7 +128,7 @@ func (t *Tiles) Tile() http.HandlerFunc {
 
 		// We support content negotiation using Accept header and ?f= param, but also
 		// using the .pbf extension. This is for backwards compatibility.
-		if !strings.HasSuffix(tileCol, ".pbf") {
+		if !strings.HasSuffix(tileCol, "."+engine.FormatMVTAlternative) {
 			// if no format is specified, default to mvt
 			if format := strings.Replace(t.engine.CN.NegotiateFormat(r), engine.FormatJSON, engine.FormatMVT, 1); format != engine.FormatMVT && format != engine.FormatMVTAlternative {
 				engine.RenderProblem(engine.ProblemBadRequest, w, "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported")
@@ -176,4 +163,59 @@ func (t *Tiles) TilesCollection(_ ...any) http.HandlerFunc {
 		// TODO: not implemented, since we don't (yet) support tile collections
 		log.Printf("TODO: return tiles for collection %s", collectionID)
 	}
+}
+
+func renderTilesTemplates(e *engine.Engine, data tilesTemplateData,
+	tilesBreadcrumbs []engine.Breadcrumb, tileMatrixSetsBreadcrumbs []engine.Breadcrumb) {
+
+	e.RenderTemplatesWithParamsAndValidate(tilesPath,
+		data,
+		tilesBreadcrumbs,
+		engine.NewTemplateKey(templatesDir+"tiles.go.json"),
+		engine.NewTemplateKey(templatesDir+"tiles.go.html"))
+	e.RenderTemplatesWithParamsAndValidate(tileMatrixSetsPath,
+		data,
+		tileMatrixSetsBreadcrumbs,
+		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
+		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
+
+	renderTilesTemplatesForSrs(e, "EuropeanETRS89_LAEAQuad", data, tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+	renderTilesTemplatesForSrs(e, "NetherlandsRDNewQuad", data, tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+	renderTilesTemplatesForSrs(e, "WebMercatorQuad", data, tilesBreadcrumbs, tileMatrixSetsBreadcrumbs)
+}
+
+func renderTilesTemplatesForSrs(e *engine.Engine, srs string, data tilesTemplateData,
+	tilesBreadcrumbs []engine.Breadcrumb, tileMatrixSetsBreadcrumbs []engine.Breadcrumb) {
+
+	tilesSrsBreadcrumbs := tilesBreadcrumbs
+	tilesSrsBreadcrumbs = append(tilesSrsBreadcrumbs, []engine.Breadcrumb{
+		{
+			Name: srs,
+			Path: tilesLocalPath + srs,
+		},
+	}...)
+	tileMatrixSetsSrsBreadcrumbs := tileMatrixSetsBreadcrumbs
+	tileMatrixSetsSrsBreadcrumbs = append(tileMatrixSetsSrsBreadcrumbs, []engine.Breadcrumb{
+		{
+			Name: srs,
+			Path: tileMatrixSetsLocalPath + srs,
+		},
+	}...)
+
+	e.RenderTemplatesWithParamsAndValidate(tileMatrixSetsPath+"/"+srs,
+		data,
+		tileMatrixSetsSrsBreadcrumbs,
+		engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+srs+".go.json"),
+		engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+srs+".go.html"))
+
+	e.RenderTemplatesWithParamsAndValidate(tilesPath+"/"+srs,
+		data,
+		tilesSrsBreadcrumbs,
+		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.json"),
+		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.html"))
+
+	e.RenderTemplatesWithParamsAndValidate(tilesPath+"/"+srs,
+		data,
+		tilesSrsBreadcrumbs,
+		engine.NewTemplateKey(templatesDir+tilesLocalPath+srs+".go.tilejson"))
 }

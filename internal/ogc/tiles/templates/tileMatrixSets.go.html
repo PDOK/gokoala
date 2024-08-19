@@ -16,25 +16,23 @@
                 </tr>
             </thead>
             <tbody>
-            {{range $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
-                {{ if (eq $type.Srs "EPSG:28992") }}
-                    <tr>
-                        <td><a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="{{ i18n "To" }} NetherlandsRDNewQuad">NetherlandsRDNewQuad</a></td>
-                        <td>Amersfoort / RD New scheme for the Netherlands</td>
-                    </tr>
-                {{end}}
-                {{ if (eq $type.Srs "EPSG:3035") }}
-                    <tr>
-                        <td><a href="tileMatrixSets/EuropeanETRS89_LAEAQuad" aria-label="{{ i18n "To" }} EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a></td>
-                        <td>Lambert Azimuthal Equal Area ETRS89 for Europe</td>
-                    </tr>
-                {{end}}
-                {{ if (eq $type.Srs "EPSG:3857") }}
-                    <tr>
-                        <td><a href="tileMatrixSets/WebMercatorQuad" aria-label="{{ i18n "To" }} WebMercatorQuad">WebMercatorQuad</a></td>
-                        <td>Google Maps Compatible for the World</td>
-                    </tr>
-                {{end}}
+            {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:28992" }}
+                <tr>
+                    <td><a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="{{ i18n "To" }} NetherlandsRDNewQuad">NetherlandsRDNewQuad</a></td>
+                    <td>Amersfoort / RD New scheme for the Netherlands</td>
+                </tr>
+            {{end}}
+            {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3035" }}
+                <tr>
+                    <td><a href="tileMatrixSets/EuropeanETRS89_LAEAQuad" aria-label="{{ i18n "To" }} EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a></td>
+                    <td>Lambert Azimuthal Equal Area ETRS89 for Europe</td>
+                </tr>
+            {{end}}
+            {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3857" }}
+                <tr>
+                    <td><a href="tileMatrixSets/WebMercatorQuad" aria-label="{{ i18n "To" }} WebMercatorQuad">WebMercatorQuad</a></td>
+                    <td>Google Maps Compatible for the World</td>
+                </tr>
             {{end}}
             </tbody>
         </table>

@@ -583,6 +583,27 @@ func (o *OgcAPITiles) HasType(t TilesType) bool {
 	return false
 }
 
+func (o *OgcAPITiles) HasProjection(srs string) bool {
+	if o.DatasetTiles != nil {
+		for _, supportedSrs := range o.DatasetTiles.SupportedSrs {
+			if supportedSrs.Srs == srs {
+				return true
+			}
+		}
+	}
+	for _, coll := range o.Collections {
+		if coll.Tiles == nil {
+			continue
+		}
+		for _, supportedSrs := range coll.Tiles.GeoDataTiles.SupportedSrs {
+			if supportedSrs.Srs == srs {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // +kubebuilder:object:generate=true
 type OgcAPIStyles struct {
 	// ID of the style to use a default

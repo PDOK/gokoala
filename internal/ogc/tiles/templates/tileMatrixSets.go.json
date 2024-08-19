@@ -1,13 +1,12 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {
   {{ if .Config.OgcAPI.Tiles }}
-  {{$baseUrl := .Config.BaseURL}}
   "links": [
     {
       "rel": "self",
       "type": "application/json",
       "title": "List of tileMatrixSets implemented by this API in JSON",
-      "href": "{{ $baseUrl }}/tileMatrixSets?f=json"
+      "href": "{{ .Config.BaseURL }}/tileMatrixSets?f=json"
     },
     {
       "rel": "alternate",
@@ -17,49 +16,49 @@
     }
   ],
   "tileMatrixSets": [
-    {{range $index, $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs}}
-      {{ if (eq $type.Srs "EPSG:28992") }}
+      {{ $first := true }}
+      {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:28992" }}
+        {{if not $first}}{{else}} {{$first = false}} {{end}}
         {
           "title": "Amersfoort / RD New scheme for the Netherlands",
           "links": [
             {
               "rel": "self",
               "title": "Tile matrix set 'NetherlandsRDNewQuad'",
-              "href": "{{ $baseUrl }}/tileMatrixSets/NetherlandsRDNewQuad"
+              "href": "{{ .Config.BaseURL }}/tileMatrixSets/NetherlandsRDNewQuad"
             }
           ],
           "id": "NetherlandsRDNewQuad"
         }
       {{end}}
-      {{ if (eq $type.Srs "EPSG:3035") }}
-        {{if $index}},{{end}}
+      {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3035" }}
+        {{if not $first}}, {{else}} {{$first = false}} {{end}}
         {
           "title": "Lambert Azimuthal Equal Area ETRS89 for Europe",
           "links": [
             {
               "rel": "self",
               "title": "Tile matrix set 'EuropeanETRS89_LAEAQuad'",
-              "href": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
+              "href": "{{ .Config.BaseURL }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
             }
           ],
           "id": "EuropeanETRS89_LAEAQuad"
         }
       {{end}}
-      {{ if (eq $type.Srs "EPSG:3857") }}
-        {{if $index}},{{end}}
+      {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3857" }}
+        {{if not $first}}, {{else}} {{$first = false}} {{end}}
         {
           "title": "Google Maps Compatible for the World",
           "links": [
             {
               "rel": "self",
               "title": "Tile matrix set 'WebMercatorQuad'",
-              "href": "{{ $baseUrl }}/tileMatrixSets/WebMercatorQuad"
+              "href": "{{ .Config.BaseURL }}/tileMatrixSets/WebMercatorQuad"
             }
           ],
           "id": "WebMercatorQuad"
         }
       {{end}}
-    {{end}}
   ]
   {{end}}
 }
