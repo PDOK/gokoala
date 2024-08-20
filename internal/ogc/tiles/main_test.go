@@ -252,7 +252,7 @@ func TestTiles_Tile(t *testing.T) {
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
 			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
-			handler := tiles.Tile()
+			handler := tiles.Tile(*newEngine.Config.OgcAPI.Tiles.DatasetTiles)
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)

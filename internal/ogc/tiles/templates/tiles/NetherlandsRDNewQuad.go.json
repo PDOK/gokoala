@@ -7,25 +7,25 @@
       "rel": "self",
       "type": "application/json",
       "title": "NetherlandsRDNewQuad",
-      "href": "{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad?f=json"
+      "href": "{{ .Params.BaseURL }}/tiles/NetherlandsRDNewQuad?f=json"
     },
     {
       "rel": "alternate",
       "type": "text/html",
       "title": "NetherlandsRDNewQuad as HTML",
-      "href": "{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad?f=html"
+      "href": "{{ .Params.BaseURL }}/tiles/NetherlandsRDNewQuad?f=html"
     },
     {
       "rel": "alternate",
       "type": "application/vnd.mapbox.tile+json",
       "title": "NetherlandsRDNewQuad as TileJSON",
-      "href": "{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad?f=tilejson"
+      "href": "{{ .Params.BaseURL }}/tiles/NetherlandsRDNewQuad?f=tilejson"
     },
     {
       "rel": "item",
       "type": "application/vnd.mapbox-vector-tile",
       "title": "Mapbox vector tiles; the link is a URI template where {tileMatrix}/{tileRow}/{tileCol} is the tile in the tiling scheme 'NetherlandsRDNewQuad'",
-      "href": "{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt",
+      "href": "{{ .Params.BaseURL }}/tiles/NetherlandsRDNewQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt",
       "templated": true
      },
      {
@@ -40,7 +40,7 @@
   "tileMatrixSetId": "NetherlandsRDNewQuad",
   "tileMatrixSetLimits": [
     {{ $first := true }}
-    {{ range $type := .Config.OgcAPI.Tiles.DatasetTiles.SupportedSrs }}
+    {{ range $type := .Params.SupportedSrs }}
       {{ if eq $type.Srs "EPSG:28992" }}
         {{ if eq $type.ZoomLevelRange.Start 0 }}
         {{ if not $first }}{{else}} {{$first = false}} {{end}}

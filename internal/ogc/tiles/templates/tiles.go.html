@@ -13,7 +13,7 @@
   <div class="row">
     {{ $baseUrlTiles := .Params.BaseURL }}
     {{ $defaultSrs := (index .Params.SupportedSrs 0)}}
-    {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
+    {{ $projections := .Params.AllProjections }}
     <div class="col-md-5">
       <table class="table table-borderless table-sm w-auto">
         <tbody>
