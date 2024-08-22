@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	// When adding a new project also add corresponding templates
+	// When adding a new projection also add corresponding templates
 	allProjections = map[string]string{
 		"EPSG:28992": "NetherlandsRDNewQuad",
 		"EPSG:3035":  "EuropeanETRS89_LAEAQuad",
@@ -190,8 +190,8 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
 
 	for _, projection := range allProjections {
-		tileMatrixSetsSrsBreadcrumbs := tileMatrixSetsBreadcrumbs
-		tileMatrixSetsSrsBreadcrumbs = append(tileMatrixSetsSrsBreadcrumbs, []engine.Breadcrumb{
+		breadcrumbs := tileMatrixSetsBreadcrumbs
+		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 			{
 				Name: projection,
 				Path: tileMatrixSetsLocalPath + projection,
@@ -199,7 +199,7 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 		}...)
 
 		e.RenderTemplates(tileMatrixSetsPath+"/"+projection,
-			tileMatrixSetsSrsBreadcrumbs,
+			breadcrumbs,
 			engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+projection+".go.json"),
 			engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+projection+".go.html"))
 	}
@@ -213,8 +213,8 @@ func renderTilesTemplates(e *engine.Engine, collectionID string, data templateDa
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.html", collectionID))
 
 	for _, projection := range allProjections {
-		tilesSrsBreadcrumbs := tilesBreadcrumbs
-		tilesSrsBreadcrumbs = append(tilesSrsBreadcrumbs, []engine.Breadcrumb{
+		breadcrumbs := tilesBreadcrumbs
+		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 			{
 				Name: projection,
 				Path: tilesLocalPath + projection,
@@ -227,12 +227,12 @@ func renderTilesTemplates(e *engine.Engine, collectionID string, data templateDa
 		}
 		e.RenderTemplatesWithParamsAndValidate(path,
 			data,
-			tilesSrsBreadcrumbs,
+			breadcrumbs,
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.json", collectionID),
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.html", collectionID))
 		e.RenderTemplatesWithParamsAndValidate(path,
 			data,
-			tilesSrsBreadcrumbs,
+			breadcrumbs,
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.tilejson", collectionID))
 	}
 }

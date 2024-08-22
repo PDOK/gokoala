@@ -39,8 +39,10 @@ ConformanceText: The conformance describes which OGC standards this API implemen
 Collections: Collections
 CollectionsText: This API offers one or more collections that divide the dataset in various object types, which can be called separately through for instance <i>features</i> or <i>tiles</i>.
 Tiles: Tiles
-TilesTextHTML: This entire dataset is available as vector tiles in multiple projections. One or more <a href="styles" aria-label="Go to styles">styles</a> are also available.
-TilesTextPlain: This entire dataset is available as vector tiles in multiple projections. One or more styles are also available.
+TilesTextHTML: This entire dataset is available as vector tiles in multiple projections.
+TilesTextPlain: This entire dataset is available as vector tiles in multiple projections.
+WithStylesHTML: One or more <a href="styles" aria-label="Go to styles">styles</a> are also available.
+WithStylesPlain: One or more styles are also available.
 Styles: Styles
 StylesText: One or more official styles as specified by the supplier. Styles are made available in the Mapbox format.
 TileMatrixSets: Tile Matrix Sets
@@ -97,6 +99,8 @@ GoTo: Go to the
 ViewIn: View in the
 Browse: Browse through the
 FeaturesExplanation: GeoJSON is an open and widely accepted format for feature data and the first choice for many (web) applications. However, it formally only supports the WGS84 projection. JSON-FG is an extension of GeoJSON and does offer official support for other projections. Since JSON-FG is a recent development, from a compatibility point of view GeoJSON is also offered in other projections for the time being.
+CollectionTilesHTML: This collection is available as vector tiles in one or multiple projections.
+CollectionTilesPlain: This collection is available as vector tiles in one or multiple projections.
 
 # Features page
 Geometry: geometry

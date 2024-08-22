@@ -6,7 +6,7 @@
   <div class="row py-3">
     <div class="col-md-12">
       <p>
-        {{ i18n "TilesTextHTML" }}
+        {{ i18n "TilesTextHTML" }} {{ if .Config.OgcAPI.Styles }}{{ i18n "WithStylesHTML" }}{{ end }}
       </p>
     </div>
   </div>

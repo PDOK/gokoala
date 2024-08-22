@@ -39,8 +39,10 @@ ConformanceText: De conformance beschrijft welke OGC standaarden deze API implem
 Collections: Collections
 CollectionsText: Deze API biedt één of meerdere collecties waarmee onderscheid gemaakt wordt in verschillende object typen, die bijvoorbeeld als <i>features</i> of <i>tiles</i> separaat aangeroepen kunnen worden.
 Tiles: Tiles
-TilesTextHTML: Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er &eacute;&eacute;n of meerdere <a href="styles" aria-label="Ga naar styles">styles</a> beschikbaar gesteld.
-TilesTextPlain: Deze dataset wordt beschikbaar gesteld als vector tiles in meerdere projecties. Ook worden er één of meerdere styles beschikbaar gesteld.
+TilesTextHTML: Deze dataset wordt beschikbaar gesteld als vector tiles in &eacute;&eacute;n of meerdere projecties.
+TilesTextPlain: Deze dataset wordt beschikbaar gesteld als vector tiles in één of meerdere projecties.
+WithStylesHTML: Ook worden er <a href="styles" aria-label="Ga naar styles">styles</a> beschikbaar gesteld.
+WithStylesPlain: Ook worden er styles beschikbaar gesteld.
 Styles: Styles
 StylesText: Betreft één of meerdere officiële styles van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld in het Mapbox formaat.
 TileMatrixSets: Tile Matrix Sets
@@ -99,6 +101,8 @@ GoTo: Ga naar de
 ViewIn: Bekijk in de
 Browse: Blader door de
 FeaturesExplanation: GeoJSON is een open en breed geaccepteerd formaat voor feature data en voor veel (web)toepassingen de eerste keus. Formeel ondersteunt het echter alleen de WGS84 projectie. JSON-FG is een uitbreiding op GeoJSON en biedt officiële ondersteuning voor andere projecties. Aangezien JSON-FG een recente ontwikkeling is wordt er vanuit compatibiliteit oogpunt vooralsnog ook GeoJSON in andere projecties aangeboden.
+CollectionTilesHTML: Deze collectie wordt beschikbaar gesteld als vector tiles in &eacute;&eacute;n of meerdere projecties.
+CollectionTilesPlain: Deze collectie wordt beschikbaar gesteld als vector tiles in één of meerdere projecties.
 
 # Features page
 Geometry: geometrie

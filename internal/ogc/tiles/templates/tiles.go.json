@@ -3,7 +3,7 @@
   {{ if .Config.OgcAPI.Tiles }}
   {{ $baseUrlTiles := .Params.BaseURL }}
   "title": "{{ .Config.Title }} - Tiles",
-  "description": "{{ i18n "TilesTextPlain" }}",
+  "description": "{{ i18n "TilesTextPlain" }} {{ if .Config.OgcAPI.Styles }}{{ i18n "WithStylesPlain" }}{{ end }}",
   "links": [
     {
       "rel": "self",
