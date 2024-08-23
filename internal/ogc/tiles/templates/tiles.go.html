@@ -132,7 +132,7 @@
       urlTemplateField.textContent = '{{ $baseUrlTiles }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
 
       const metadataHref = document.getElementById('href-metadata');
-      metadataHref.setAttribute('href', 'tiles/' + tileset);
+      metadataHref.setAttribute('href', '{{ $baseUrlTiles }}/tiles/' + tileset);
 
       // update tile-url and zoom in app-vectortile-view
       const viewer = document.getElementById('vectortileviewer');

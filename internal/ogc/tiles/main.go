@@ -20,6 +20,8 @@ const (
 	tileMatrixSetsPath      = "/tileMatrixSets"
 	tileMatrixSetsLocalPath = "tileMatrixSets/"
 	defaultTilesTmpl        = "{tms}/{z}/{x}/{y}." + engine.FormatMVTAlternative
+	collectionsCrumb        = "collections/"
+	tilesCrumbTitle         = "Tiles"
 )
 
 var (
@@ -32,7 +34,7 @@ var (
 
 	tilesBreadcrumbs = []engine.Breadcrumb{
 		{
-			Name: "Tiles",
+			Name: tilesCrumbTitle,
 			Path: "tiles",
 		},
 	}
@@ -40,6 +42,12 @@ var (
 		{
 			Name: "Tile Matrix Sets",
 			Path: "tileMatrixSets",
+		},
+	}
+	collectionsBreadcrumb = []engine.Breadcrumb{
+		{
+			Name: "Collections",
+			Path: "collections",
 		},
 	}
 )
@@ -67,9 +75,9 @@ func NewTiles(e *engine.Engine) *Tiles {
 	e.Router.Get(tileMatrixSetsPath, tiles.TileMatrixSets())
 	e.Router.Get(tileMatrixSetsPath+"/{tileMatrixSetId}", tiles.TileMatrixSet())
 
-	// Top-level tiles
+	// Top-level tiles (dataset tiles in OGC spec)
 	if e.Config.OgcAPI.Tiles.DatasetTiles != nil {
-		renderTilesTemplates(e, "", templateData{
+		renderTilesTemplates(e, nil, templateData{
 			*e.Config.OgcAPI.Tiles.DatasetTiles,
 			e.Config.BaseURL.String(),
 			util.Cast(allProjections),
@@ -80,12 +88,12 @@ func NewTiles(e *engine.Engine) *Tiles {
 		e.Router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(*e.Config.OgcAPI.Tiles.DatasetTiles))
 	}
 
-	// Collection-level tiles
+	// Collection-level tiles (geodata tiles in OGC spec)
 	for _, coll := range e.Config.OgcAPI.Tiles.Collections {
 		if coll.Tiles == nil {
 			continue
 		}
-		renderTilesTemplates(e, coll.ID, templateData{
+		renderTilesTemplates(e, &coll, templateData{
 			coll.Tiles.GeoDataTiles,
 			e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
 			util.Cast(allProjections),
@@ -205,16 +213,38 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 	}
 }
 
-func renderTilesTemplates(e *engine.Engine, collectionID string, data templateData) {
+func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollection, data templateData) {
+
+	var breadcrumbs []engine.Breadcrumb
+	collectionID := ""
+	if collection != nil {
+		collectionID = collection.ID
+
+		breadcrumbs = collectionsBreadcrumb
+		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
+			{
+				Name: getCollectionTitle(collectionID, collection.Metadata),
+				Path: collectionsCrumb + collectionID,
+			},
+			{
+				Name: tilesCrumbTitle,
+				Path: collectionsCrumb + collectionID + tilesPath,
+			},
+		}...)
+	} else {
+		breadcrumbs = tilesBreadcrumbs
+	}
+
 	e.RenderTemplatesWithParamsAndValidate(tilesPath,
 		data,
-		tilesBreadcrumbs,
+		breadcrumbs,
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.json", collectionID),
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.html", collectionID))
 
+	// Now render metadata bout tiles per projection/SRS.
 	for _, projection := range allProjections {
-		breadcrumbs := tilesBreadcrumbs
-		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
+		projectionBreadcrumbs := breadcrumbs
+		projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
 			{
 				Name: projection,
 				Path: tilesLocalPath + projection,
@@ -222,17 +252,24 @@ func renderTilesTemplates(e *engine.Engine, collectionID string, data templateDa
 		}...)
 
 		path := tilesPath + "/" + projection
-		if collectionID != "" {
+		if collection != nil {
 			path = "/" + collectionID + tilesPath + "/" + projection
 		}
 		e.RenderTemplatesWithParamsAndValidate(path,
 			data,
-			breadcrumbs,
+			projectionBreadcrumbs,
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.json", collectionID),
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.html", collectionID))
 		e.RenderTemplatesWithParamsAndValidate(path,
 			data,
-			breadcrumbs,
+			projectionBreadcrumbs,
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.tilejson", collectionID))
 	}
+}
+
+func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollectionMetadata) string {
+	if metadata != nil && metadata.Title != nil {
+		return *metadata.Title
+	}
+	return collectionID
 }

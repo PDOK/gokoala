@@ -424,7 +424,7 @@ func (gv *CollectionEntry3dGeoVolumes) HasDTM() bool {
 // +kubebuilder:object:generate=true
 type CollectionEntryTiles struct {
 
-	// Tiles specific to this collection
+	// Tiles specific to this collection. Called geodata tiles in OGC spec.
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
 }
 
