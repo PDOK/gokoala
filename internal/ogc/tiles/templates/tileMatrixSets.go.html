@@ -6,7 +6,11 @@
 <div class="row py-3">
     <div class="col-md-12">
         <p>
-            {{ i18n "TileMatrixSetsText" }}
+            {{ if .Config.OgcAPI.Tiles.DatasetTiles }}
+                {{ i18n "TileMatrixSetsDatasetText" }}
+            {{ else if .Config.OgcAPI.Tiles.Collections }}
+                {{ i18n "TileMatrixSetsCollectionText" }}
+            {{ end }}
         </p>
         <table class="table table-striped">
             <thead>

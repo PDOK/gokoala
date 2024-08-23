@@ -153,7 +153,11 @@
             </h2>
             <div class="card-body">
                 <p>
-                    {{ i18n "TileMatrixSetsText" }}
+                    {{ if .Config.OgcAPI.Tiles.DatasetTiles }}
+                        {{ i18n "TileMatrixSetsDatasetText" }}
+                    {{ else if .Config.OgcAPI.Tiles.Collections }}
+                        {{ i18n "TileMatrixSetsCollectionText" }}
+                    {{ end }}
                     {{ i18n "AvailableIn" }}
                 </p>
                 <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tileMatrixSets?f=json" target="_blank" aria-label="{{ i18n "TileMatrixSets" }} {{ i18n "As" }} JSON">JSON</a></small>

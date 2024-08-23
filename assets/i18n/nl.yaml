@@ -46,10 +46,14 @@ WithStylesPlain: Ook worden er styles beschikbaar gesteld.
 Styles: Styles
 StylesText: Betreft één of meerdere officiële styles van/door de aanbieder gespecificeerd. Styles worden beschikbaar gesteld in het Mapbox formaat.
 TileMatrixSets: Tile Matrix Sets
-TileMatrixSetsText: |-
+TileMatrixSetsDatasetText: |-
   Beschrijving van de Tile Matrix Sets die via deze API worden ontsloten. Merk op dat alle zoomniveaus
   van de tile matrix zijn beschreven. Zie de <i>Tile Matrix Set Limits</i> op de <a href="tiles" aria-label="Ga naar tiles">Tiles</a>
   pagina's om te zien welke zoomniveaus door deze API worden ondersteund.
+TileMatrixSetsCollectionText: |-
+  Beschrijving van de Tile Matrix Sets die via deze API worden ontsloten. Merk op dat alle zoomniveaus
+  van de tile matrix zijn beschreven. Zie de <i>Tile Matrix Set Limits</i> op de Tiles pagina's 
+  (binnen de <a href="collections" aria-label="Ga naar collections">collections</a>) om te zien welke zoomniveaus door deze API worden ondersteund.
 
 # Conformance page
 ConformanceAbstract: Hieronder staan verwijzingen naar de OGC API conformiteitsklassen waaraan deze service voldoet. <br/>De statuskolom geeft aan of de betreffende specificatie reeds tot officiële standaard is verklaard door het OGC.
@@ -61,20 +65,17 @@ NetherlandsRDNewQuadAbstract: |-
   De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
   <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
   tile volgens het <a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="Ga naar tile matrix set NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme.
-  In sommige tools is het ook mogelijk om dit via <a href="tiles/NetherlandsRDNewQuad?f=tilejson" aria-label="Ga naar NetherlandsRDNewQuad als TileJSON">TileJSON</a>
-  in te laden.
+  In sommige tools is het ook mogelijk om dit in te laden via
 WebMercatorQuadAbstract: |-
   De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
   <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
   tile volgens het <a href="tileMatrixSets/WebMercatorQuad" aria-label="Ga naar tile matrix set WebMercatorQuad">WebMercatorQuad</a> tiling scheme.
-  In sommige tools is het ook mogelijk om dit via <a href="tiles/WebMercatorQuad?f=tilejson" aria-label="Ga naar WebMercatorQuad als TileJSON">TileJSON</a>
-  in te laden.
+  In sommige tools is het ook mogelijk om dit in te laden via
 EuropeanETRS89_LAEAQuadAbstract: |-
   De tiles zijn op te vragen via onderstaande URL-template. Daarbij is
   <small><code>{z}/{y}/{x}</code></small> een verwijzing naar een
   tile volgens het <a href="tileMatrixSets/EuropeanETRS89_LAEAQuad" aria-label="Ga naar tile matrix set EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
-  In sommige tools is het ook mogelijk om dit via <a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson" aria-label="Ga naar EuropeanETRS89_LAEAQuad als TileJSON">TileJSON</a>
-  in te laden.
+  In sommige tools is het ook mogelijk om dit in te laden via
 AvailableZoomLevels: De tiles zijn beschikbaar op de volgende zoomniveaus
 ZoomLevel: Zoomniveau
 MinimumValue: Minimale waarde
