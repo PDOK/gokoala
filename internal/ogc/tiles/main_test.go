@@ -137,7 +137,7 @@ func TestTiles_Tile(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad/0/0/0?f=mvt",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "0",
@@ -152,7 +152,7 @@ func TestTiles_Tile(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad/5/10/15?f=mvt",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "5",
@@ -167,7 +167,7 @@ func TestTiles_Tile(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad/5/10/15?f=pbf",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=pbf",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "5",
@@ -182,7 +182,7 @@ func TestTiles_Tile(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad/5/10/15",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "5",
@@ -197,7 +197,7 @@ func TestTiles_Tile(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad/5/10/15.pbf",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "5",
@@ -212,7 +212,7 @@ func TestTiles_Tile(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad/5/10/15?f=tilejson",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=tilejson",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "5",
@@ -227,7 +227,7 @@ func TestTiles_Tile(t *testing.T) {
 		{
 			name: "different uriTemplateTiles",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles_2.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_urltemplate.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				tileMatrix:      "5",
@@ -261,6 +261,136 @@ func TestTiles_Tile(t *testing.T) {
 	}
 }
 
+func TestTiles_TileForCollection(t *testing.T) {
+	type fields struct {
+		configFile      string
+		url             string
+		tileMatrixSetID string
+		tileMatrix      string
+		tileRow         string
+		tileCol         string
+	}
+	type want struct {
+		body       string
+		statusCode int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "example/NetherlandsRDNewQuad/0/0/0?f=mvt",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/example/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "0",
+				tileRow:         "0",
+				tileCol:         "0",
+			},
+			want: want{
+				body:       "/NetherlandsRDNewQuad/0/0/0.pbf",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "example/NetherlandsRDNewQuad/5/10/15?f=mvt",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/example/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+			},
+			want: want{
+				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "example/NetherlandsRDNewQuad/5/10/15?f=pbf",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/example/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=pbf",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+			},
+			want: want{
+				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "example/NetherlandsRDNewQuad/5/10/15",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/example/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+			},
+			want: want{
+				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "example/NetherlandsRDNewQuad/5/10/15.pbf",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/example/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15.pbf",
+			},
+			want: want{
+				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "example/NetherlandsRDNewQuad/5/10/15?f=tilejson",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/example/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=tilejson",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+			},
+			want: want{
+				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createTileRequest(tt.fields.url, tt.fields.tileMatrixSetID, tt.fields.tileMatrix, tt.fields.tileRow, tt.fields.tileCol)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
+			tiles := NewTiles(newEngine)
+			handler := tiles.Tile(newEngine.Config.OgcAPI.Tiles.Collections[0].Tiles.GeoDataTiles)
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.Contains(t, rr.Body.String(), tt.want.body)
+		})
+	}
+}
+
 func TestTile_TilesetsList(t *testing.T) {
 	type fields struct {
 		configFile string
@@ -278,7 +408,7 @@ func TestTile_TilesetsList(t *testing.T) {
 		{
 			name: "test NetherlandsRDNewQuad present",
 			fields: fields{
-				configFile: "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:        "http://localhost:8080/tiles",
 			},
 			want: want{
@@ -289,7 +419,7 @@ func TestTile_TilesetsList(t *testing.T) {
 		{
 			name: "test EuropeanETRS89_LAEAQuad present",
 			fields: fields{
-				configFile: "internal/ogc/tiles/testdata/config_minimal_tiles_2.yaml",
+				configFile: "internal/ogc/tiles/testdata/config_tiles_urltemplate.yaml",
 				url:        "http://localhost:8080/tiles",
 			},
 			want: want{
@@ -319,6 +449,55 @@ func TestTile_TilesetsList(t *testing.T) {
 	}
 }
 
+func TestTile_TilesetsListForCollection(t *testing.T) {
+	type fields struct {
+		configFile string
+		url        string
+		collection string
+	}
+	type want struct {
+		bodyContains string
+		statusCode   int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "test NetherlandsRDNewQuad present",
+			fields: fields{
+				configFile: "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:        "http://localhost:8080/collections/:collection/tiles",
+				collection: "example",
+			},
+			want: want{
+				bodyContains: "NetherlandsRDNewQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createTilesetsListRequest(tt.fields.url, tt.fields.collection)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
+			tiles := NewTiles(newEngine)
+			handler := tiles.TilesetsListForCollection()
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.Contains(t, rr.Body.String(), tt.want.bodyContains)
+		})
+	}
+}
+
 func TestTile_Tileset(t *testing.T) {
 	type fields struct {
 		configFile      string
@@ -337,7 +516,7 @@ func TestTile_Tileset(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/NetherlandsRDNewQuad",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 			},
@@ -349,7 +528,7 @@ func TestTile_Tileset(t *testing.T) {
 		{
 			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/EuropeanETRS89_LAEAQuad",
 				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
 			},
@@ -361,7 +540,7 @@ func TestTile_Tileset(t *testing.T) {
 		{
 			name: "WebMercatorQuad",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/WebMercatorQuad",
 				tileMatrixSetID: "WebMercatorQuad",
 			},
@@ -373,7 +552,7 @@ func TestTile_Tileset(t *testing.T) {
 		{
 			name: "Invalid",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tiles/Invalid",
 				tileMatrixSetID: "Invalid",
 			},
@@ -404,6 +583,96 @@ func TestTile_Tileset(t *testing.T) {
 	}
 }
 
+func TestTile_TilesetForCollection(t *testing.T) {
+	type fields struct {
+		configFile      string
+		url             string
+		tileMatrixSetID string
+		collection      string
+	}
+	type want struct {
+		bodyContains string
+		statusCode   int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "NetherlandsRDNewQuad",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/collections/:collection/tiles/NetherlandsRDNewQuad",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				collection:      "example",
+			},
+			want: want{
+				bodyContains: "NetherlandsRDNewQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "EuropeanETRS89_LAEAQuad",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/collections/:collection/tiles/EuropeanETRS89_LAEAQuad",
+				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
+				collection:      "example",
+			},
+			want: want{
+				bodyContains: "EuropeanETRS89_LAEAQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "WebMercatorQuad",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/collections/:collection/tiles/WebMercatorQuad",
+				tileMatrixSetID: "WebMercatorQuad",
+				collection:      "example",
+			},
+			want: want{
+				bodyContains: "WebMercatorQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
+		//{
+		//	name: "Invalid",
+		//	fields: fields{
+		//		configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+		//		url:             "http://localhost:8080/collections/:collection/tiles/Invalid",
+		//		tileMatrixSetID: "Invalid",
+		//		collection:      "example",
+		//	},
+		//	want: want{
+		//		bodyContains: "request doesn't conform to OpenAPI spec: parameter \\\"tileMatrixSetId\\\" in path has an error: value is not one of the allowed values",
+		//		statusCode:   http.StatusBadRequest,
+		//	},
+		//},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createTilesetRequest(tt.fields.url, tt.fields.tileMatrixSetID, tt.fields.collection)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
+			tiles := NewTiles(newEngine)
+			handler := tiles.TilesetForCollection()
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.Contains(t, rr.Body.String(), tt.want.bodyContains)
+		})
+	}
+}
+
 func TestTile_TilematrixSet(t *testing.T) {
 	type fields struct {
 		configFile      string
@@ -422,7 +691,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tileMatrixSets/NetherlandsRDNewQuad",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 			},
@@ -434,7 +703,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 		{
 			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tileMatrixSets/EuropeanETRS89_LAEAQuad",
 				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
 			},
@@ -446,7 +715,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 		{
 			name: "WebMercatorQuad",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tileMatrixSets/WebMercatorQuad",
 				tileMatrixSetID: "WebMercatorQuad",
 			},
@@ -458,7 +727,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 		{
 			name: "Invalid",
 			fields: fields{
-				configFile:      "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:             "http://localhost:8080/tileMatrixSets/Invalid",
 				tileMatrixSetID: "Invalid",
 			},
@@ -506,7 +775,7 @@ func TestTile_TilematrixSets(t *testing.T) {
 		{
 			name: "NetherlandsRDNewQuad",
 			fields: fields{
-				configFile: "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:        "http://localhost:8080/tileMatrixSets",
 			},
 			want: want{
@@ -517,7 +786,7 @@ func TestTile_TilematrixSets(t *testing.T) {
 		{
 			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
-				configFile: "internal/ogc/tiles/testdata/config_minimal_tiles_2.yaml",
+				configFile: "internal/ogc/tiles/testdata/config_tiles_urltemplate.yaml",
 				url:        "http://localhost:8080/tileMatrixSets",
 			},
 			want: want{
@@ -528,7 +797,7 @@ func TestTile_TilematrixSets(t *testing.T) {
 		{
 			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
-				configFile: "internal/ogc/tiles/testdata/config_minimal_tiles.yaml",
+				configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
 				url:        "http://localhost:8080/tileMatrixSets",
 			},
 			want: want{
@@ -585,18 +854,24 @@ func createTileRequest(url string, tileMatrixSetID string, tileMatrix string, ti
 	return req, err
 }
 
-func createTilesetsListRequest(url string) (*http.Request, error) {
+func createTilesetsListRequest(url string, collectionID ...string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
+	for _, id := range collectionID {
+		rctx.URLParams.Add("collectionId", id)
+	}
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err
 }
 
-func createTilesetRequest(url string, tileMatrixSetID string) (*http.Request, error) {
+func createTilesetRequest(url string, tileMatrixSetID string, collectionID ...string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("tileMatrixSetId", tileMatrixSetID)
+	for _, id := range collectionID {
+		rctx.URLParams.Add("collectionId", id)
+	}
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 	return req, err

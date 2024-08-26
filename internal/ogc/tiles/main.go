@@ -154,7 +154,7 @@ func (t *Tiles) TilesetForCollection() http.HandlerFunc {
 	}
 }
 
-// Tile reverse proxy to tileserver/object storage. Assumes the backing resources is publicly accessible.
+// Tile reverse proxy to configured tileserver/object storage. Assumes the backing resources is publicly accessible.
 func (t *Tiles) Tile(tileConfig config.Tiles) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
