@@ -59,8 +59,89 @@
           {{block "problems" . }}{{end}}
         }
       }
+    }
+   {{- range $index, $coll := .Config.OgcAPI.Tiles.Collections -}}
+   ,"/collections/{{ $coll.ID }}/tiles": {
+      "get": {
+        "tags": [
+          "Vector Tiles"
+        ],
+        "summary": "Retrieve a list of available vector tilesets for the dataset",
+        "operationId": "{{ $coll.ID }}.getVectorTiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f-metadata"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TileSetsList"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
     },
-    "/tiles": {
+    "/collections/{{ $coll.ID }}/tiles/{tileMatrixSetId}": {
+      "get": {
+        "tags": [
+          "Vector Tiles"
+        ],
+        "summary": "Retrieve the vector tileset metadata for the whole dataset and the specified tiling scheme (tile matrix set)",
+        "operationId": "{{ $coll.ID }}.getVectorTilesMetadata",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tileMatrixSetId"
+          },
+          {
+            "$ref": "#/components/parameters/f-metadata"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/TileSet"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/collections/{{ $coll.ID }}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}": {
+      "get": {
+        "tags": [
+          "Vector Tiles"
+        ],
+        "summary": "Retrieve a vector tile including one or more collections from the dataset.",
+        "operationId": "{{ $coll.ID }}.getTile",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tileMatrix"
+          },
+          {
+            "$ref": "#/components/parameters/tileRow"
+          },
+          {
+            "$ref": "#/components/parameters/tileCol"
+          },
+          {
+            "$ref": "#/components/parameters/tileMatrixSetId"
+          },
+          {
+            "$ref": "#/components/parameters/f-vectorTile"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/VectorTile"
+          },
+          "204": {
+            "$ref": "#/components/responses/EmptyTile"
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    }
+   {{- end -}}
+   {{- if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles -}}
+    ,"/tiles": {
       "get": {
         "tags": [
           "Vector Tiles"
@@ -138,6 +219,7 @@
         }
       }
     }
+    {{- end -}}
   },
   "components": {
     "schemas": {
