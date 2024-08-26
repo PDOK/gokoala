@@ -94,7 +94,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		MediaTypeSLD:         FormatSLD,
 	}
 
-	mediaTypesByFormat := util.ReverseMap(formatsByMediaType)
+	mediaTypesByFormat := util.Inverse(formatsByMediaType)
 
 	languageTags := make([]language.Tag, 0, len(availableLanguages))
 	for _, availableLanguage := range availableLanguages {

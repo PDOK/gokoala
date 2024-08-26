@@ -25,8 +25,9 @@ const (
 )
 
 var (
-	// When adding a new projection also add corresponding templates
-	allProjections = map[string]string{
+	// AllProjections supported by GoKoala for serving (vector) tiles.
+	// When adding a new projection also add corresponding HTML/JSON templates.
+	AllProjections = map[string]string{
 		"EPSG:28992": "NetherlandsRDNewQuad",
 		"EPSG:3035":  "EuropeanETRS89_LAEAQuad",
 		"EPSG:3857":  "WebMercatorQuad",
@@ -59,7 +60,7 @@ type templateData struct {
 	// BaseURL part of the url prefixing "/tiles"
 	BaseURL string
 
-	// All supported projections for (vector) tiles by GoKoala
+	// All supported projections by GoKoala (for tiles)
 	AllProjections map[string]any
 }
 
@@ -80,7 +81,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 		renderTilesTemplates(e, nil, templateData{
 			*e.Config.OgcAPI.Tiles.DatasetTiles,
 			e.Config.BaseURL.String(),
-			util.Cast(allProjections),
+			util.Cast(AllProjections),
 		})
 		e.Router.Get(tilesPath, tiles.TilesetsList())
 		e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
@@ -96,7 +97,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 		renderTilesTemplates(e, &coll, templateData{
 			coll.Tiles.GeoDataTiles,
 			e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
-			util.Cast(allProjections),
+			util.Cast(AllProjections),
 		})
 		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath, tiles.TilesetsListForCollection())
 		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}", tiles.TilesetForCollection())
@@ -197,7 +198,7 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
 
-	for _, projection := range allProjections {
+	for _, projection := range AllProjections {
 		breadcrumbs := tileMatrixSetsBreadcrumbs
 		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 			{
@@ -242,7 +243,7 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.html", collectionID))
 
 	// Now render metadata bout tiles per projection/SRS.
-	for _, projection := range allProjections {
+	for _, projection := range AllProjections {
 		projectionBreadcrumbs := breadcrumbs
 		projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
 			{

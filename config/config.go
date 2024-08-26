@@ -424,7 +424,7 @@ func (gv *CollectionEntry3dGeoVolumes) HasDTM() bool {
 // +kubebuilder:object:generate=true
 type CollectionEntryTiles struct {
 
-	// Tiles specific to this collection. Called geodata tiles in OGC spec.
+	// Tiles specific to this collection. Called 'geodata tiles' in OGC spec.
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
 }
 
@@ -584,11 +584,19 @@ func (o *OgcAPITiles) HasType(t TilesType) bool {
 }
 
 func (o *OgcAPITiles) HasProjection(srs string) bool {
+	for _, projection := range o.GetProjections() {
+		if projection.Srs == srs {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *OgcAPITiles) GetProjections() []SupportedSrs {
+	supportedSrsSet := map[SupportedSrs]struct{}{}
 	if o.DatasetTiles != nil {
 		for _, supportedSrs := range o.DatasetTiles.SupportedSrs {
-			if supportedSrs.Srs == srs {
-				return true
-			}
+			supportedSrsSet[supportedSrs] = struct{}{}
 		}
 	}
 	for _, coll := range o.Collections {
@@ -596,12 +604,10 @@ func (o *OgcAPITiles) HasProjection(srs string) bool {
 			continue
 		}
 		for _, supportedSrs := range coll.Tiles.GeoDataTiles.SupportedSrs {
-			if supportedSrs.Srs == srs {
-				return true
-			}
+			supportedSrsSet[supportedSrs] = struct{}{}
 		}
 	}
-	return false
+	return util.Keys(supportedSrsSet)
 }
 
 // +kubebuilder:object:generate=true
