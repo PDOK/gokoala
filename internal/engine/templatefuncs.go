@@ -3,7 +3,6 @@ package engine
 import (
 	htmltemplate "html/template"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
 	texttemplate "text/template"
@@ -31,7 +30,6 @@ func init() {
 		"humansize":  humanSize,
 		"bytessize":  bytesSize,
 		"isdate":     isDate,
-		"hasfield":   hasField,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -112,15 +110,4 @@ func isDate(v any) bool {
 		return true
 	}
 	return false
-}
-
-func hasField(v interface{}, name string) bool {
-	rv := reflect.ValueOf(v)
-	if rv.Kind() == reflect.Ptr {
-		rv = rv.Elem()
-	}
-	if rv.Kind() != reflect.Struct {
-		return false
-	}
-	return rv.FieldByName(name).IsValid()
 }
