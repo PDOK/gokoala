@@ -145,11 +145,11 @@
         "schema": {
           "type": "string",
           "enum": [
-            "application/json",
-            "text/html"
+            "json",
+            "html"
           ]
         },
-        "example": "application/json"
+        "example": "json"
       },
       "f-json": {
         "name": "f",
@@ -161,10 +161,10 @@
         "schema": {
           "type": "string",
           "enum": [
-            "application/json"
+            "json"
           ]
         },
-        "example": "application/json"
+        "example": "json"
       }
     },
     "schemas": {
