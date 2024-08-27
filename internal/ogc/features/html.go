@@ -163,9 +163,8 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 }
 
 func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollectionMetadata) string {
-	title := collectionID
 	if metadata != nil && metadata.Title != nil {
-		title = *metadata.Title
+		return *metadata.Title
 	}
-	return title
+	return collectionID
 }

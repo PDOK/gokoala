@@ -198,33 +198,28 @@
                         <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets" target="_blank" aria-label="{{ i18n "To" }} conf/dataset-tilesets {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
-{{/*  Enable the classes below once we support tiles inside collections */}}
-{{/*                        <tr>*/}}
-{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets" target="_blank" aria-label="{{ i18n "To" }} conf/geodata-tilesets {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</a></td>*/}}
-{{/*                            <td>{{ i18n "Standard" }}</td>*/}}
-{{/*                        </tr>*/}}
-{{/*                        <tr>*/}}
-{{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection" target="_blank" aria-label="{{ i18n "To" }} conf/geodata-selection {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-selection</a></td>*/}}
-{{/*                            <td>{{ i18n "Standard" }}</td>*/}}
-{{/*                        </tr>*/}}
-                    {{range $type := .Config.OgcAPI.Tiles.Types}}
-                        {{ if (eq $type "raster") }}
+                    {{ if .Config.OgcAPI.Tiles.Collections }}
+                        <tr>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets" target="_blank" aria-label="{{ i18n "To" }} conf/geodata-tilesets {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</a></td>
+                            <td>{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Tiles.HasType "raster" }}
 {{/*                                <tr>*/}}
 {{/*                                    <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg" target="_blank" aria-label="{{ i18n "To" }} conf/jpeg {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg</a></td>*/}}
 {{/*                                    <td>{{ i18n "Standard" }}</td>*/}}
 {{/*                                </tr>*/}}
-                            <tr>
-                                <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png" target="_blank" aria-label="{{ i18n "To" }} conf/png {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png</a></td>
-                                <td>{{ i18n "Standard" }}</td>
-                            </tr>
-                        {{ end }}
-                        {{ if (eq $type "vector") }}
-                            <tr>
-                                <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt" target="_blank" aria-label="{{ i18n "To" }} conf/mvt {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt</a></td>
-                                <td>{{ i18n "Standard" }}</td>
-                            </tr>
-                        {{ end }}
-                    {{end}}
+                        <tr>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png" target="_blank" aria-label="{{ i18n "To" }} conf/png {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png</a></td>
+                            <td>{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Tiles.HasType "vector" }}
+                        <tr>
+                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt" target="_blank" aria-label="{{ i18n "To" }} conf/mvt {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt</a></td>
+                            <td>{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
 {{/*                        <tr>*/}}
 {{/*                            <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson" target="_blank" aria-label="{{ i18n "To" }} conf/geojson {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geojson</a></td>*/}}
 {{/*                            <td>{{ i18n "Standard" }}</td>*/}}

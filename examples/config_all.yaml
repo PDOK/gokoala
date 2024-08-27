@@ -1,4 +1,17 @@
 ---
+# reusable piece of metadata used for geovolumes, features and tiles.
+metadata: &addressMetadata
+  title: Addresses
+  description: These are example addresses
+  extent:
+    bbox:
+      - 50.2129
+      - 2.52713
+      - 55.7212
+      - 7.37403
+  storageCrs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+
+
 version: 1.0.0
 title: Demo of all OGC specs in one API
 # shortened title, used in breadcrumb path
@@ -44,9 +57,8 @@ availableLanguages:
   - en
 ogcApi:
   tiles:
-    title: BGT
-    abstract: BGT multi-layer vector tiles
-    tileServer: https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
+    # dataset tiles
+    tileServer: https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles
     types:
       - vector
     supportedSrs:
@@ -58,6 +70,22 @@ ogcApi:
         zoomLevelRange:
           start: 14
           end: 14
+    collections:
+      # geodata tiles (collection-level tiles)
+      - id: addresses  # same collection as the geovolumes/features
+        metadata: *addressMetadata
+        tileServer: https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
+        types:
+          - vector
+        supportedSrs:
+          - srs: EPSG:28992
+            zoomLevelRange:
+              start: 12
+              end: 12
+          - srs: EPSG:3035
+            zoomLevelRange:
+              start: 14
+              end: 14
 
   features:
     datasources:
@@ -66,25 +94,18 @@ ogcApi:
           local:
             file: ./examples/resources/addresses-crs84.gpkg
     collections:
-      - id: addresses  # same collection as the geovolumes
-        metadata:
-          title: Addresses
-          description: These are example addresses
-          extent:
-            bbox:
-              - 50.2129
-              - 2.52713
-              - 55.7212
-              - 7.37403
-          storageCrs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+      - id: addresses  # same collection as the geovolumes/tiles
+        metadata: *addressMetadata
+      - id: addresses2
+        tableName: addresses
 
   3dgeovolumes:
     tileServer: https://maps.ecere.com/3DAPI/collections/
     collections:
-      - id: addresses  # same collection as the tiles
+      - id: addresses  # same collection as the tiles/features
+        metadata: *addressMetadata
         tileServerPath: "NewYork/3DTiles"
         uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
-
   styles:
     default: dummy-style
     stylesDir: ./examples/resources

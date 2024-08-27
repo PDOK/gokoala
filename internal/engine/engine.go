@@ -188,10 +188,19 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 }
 
 // RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
-// This method does not perform OpenAPI validation of the rendered template (will be done during runtime).
-func (e *Engine) RenderTemplatesWithParams(params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
+func (e *Engine) RenderTemplatesWithParams(urlPath string, params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
+
+		// we already perform OpenAPI validation here during startup to catch
+		// issues early on, in addition to runtime OpenAPI response validation
+		// all templates are created in all available languages, hence all are checked
+		for lang := range e.Templates.localizers {
+			key.Language = lang
+			if err := e.validateStaticResponse(key, urlPath); err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 }
 

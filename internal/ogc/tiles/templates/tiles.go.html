@@ -6,19 +6,19 @@
   <div class="row py-3">
     <div class="col-md-12">
       <p>
-        {{ i18n "TilesTextHTML" }}
+        {{ i18n "TilesTextHTML" }} {{ if .Config.OgcAPI.Styles }}{{ i18n "WithStylesHTML" }}{{ end }}
       </p>
     </div>
   </div>
   <div class="row">
-    {{ $baseUrl := .Config.BaseURL }}
-    {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
-    {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
+    {{ $baseUrlTiles := .Params.BaseURL }}
+    {{ $defaultSrs := (index .Params.SupportedSrs 0)}}
+    {{ $projections := .Params.AllProjections }}
     <div class="col-md-5">
       <table class="table table-borderless table-sm w-auto">
         <tbody>
         <tr>
-        {{ if eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1 }}
+        {{ if eq (len .Params.SupportedSrs) 1 }}
           <td class="w-auto text-nowrap fw-bold">
             Tile Matrix Set
           </td>
@@ -31,7 +31,7 @@
           </td>
           <td class="w-auto px-2">
             <select id="srs" class="form-select">
-              {{ range $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
+              {{ range $srs := .Params.SupportedSrs }}
               <option value="{{ $srs.Srs }}">{{ get $projections (index $srs).Srs }}</option>
               {{ end }}
             </select>
@@ -57,7 +57,7 @@
             Type
           </td>
           <td id="field-type" class="w-auto px-2">
-            {{ (index .Config.OgcAPI.Tiles.Types 0) | toString | title }}
+            {{ (index .Params.Types 0) | toString | title }}
           </td>
         </tr>
         <tr>
@@ -73,7 +73,7 @@
             Metadata
           </td>
           <td id="field-metadata" class="w-auto px-2">
-            <a id="href-metadata" href="tiles/{{ get $projections $defaultSrs.Srs }}" aria-label="{{ i18n "View" }} tile matrix set metadata">{{ i18n "View" }} metadata</a>
+            <a id="href-metadata" href="{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}" aria-label="{{ i18n "View" }} tile matrix set metadata">{{ i18n "View" }} metadata</a>
           </td>
         </tr>
         </tbody>
@@ -87,7 +87,7 @@
               URL template
             </td>
             <td class="w-auto px-2">
-              <code id="field-url-template">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt</code>
+              <code id="field-url-template">{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt</code>
             </td>
           </tr>
           <tr>
@@ -95,7 +95,7 @@
               {{ i18n "Example" }} URL
             </td>
             <td class="w-auto px-2">
-              <code id="field-url-example">{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/2047/2048?f=mvt</code>
+              <code id="field-url-example">{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/2047/2048?f=mvt</code>
             </td>
           </tr>
         </tbody>
@@ -104,8 +104,8 @@
       <script type="module" src="view-component/main.js"></script>
       <script type="text/javascript" src="view-component/polyfills.js"></script>
        <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
-        tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"
-        {{ if .Config.OgcAPI.Styles }}style-url="{{ $baseUrl }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
+        tile-url="{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+        {{ if .Config.OgcAPI.Styles }}style-url="{{ $.Config.BaseURL }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
         center-x="5.3896944" center-y="52.1562499"
         show-grid="false" show-object-info="true">
       </app-vectortile-view>
@@ -120,7 +120,7 @@
       // update table fields
       const selectedSrs = event.target.value
       let tileset;
-      {{ range $index, $srs := .Config.OgcAPI.Tiles.SupportedSrs }}
+      {{ range $index, $srs := .Params.SupportedSrs }}
       {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
         tileset = '{{ get $projections $srs.Srs }}'
       }{{ end }}
@@ -129,14 +129,14 @@
       srsField.textContent = selectedSrs;
 
       const urlTemplateField = document.getElementById('field-url-template');
-      urlTemplateField.textContent = '{{ $baseUrl }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
+      urlTemplateField.textContent = '{{ $baseUrlTiles }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
 
       const metadataHref = document.getElementById('href-metadata');
-      metadataHref.setAttribute('href', 'tiles/' + tileset);
+      metadataHref.setAttribute('href', '{{ $baseUrlTiles }}/tiles/' + tileset);
 
       // update tile-url and zoom in app-vectortile-view
       const viewer = document.getElementById('vectortileviewer');
-      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + tileset);
+      viewer.setAttribute('tile-url', '{{ $baseUrlTiles }}/tiles/' + tileset);
     }, false);
 
     vectortileviewer.addEventListener('activeTileUrl', activeUrl => {

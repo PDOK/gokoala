@@ -7,25 +7,25 @@
       "rel": "self",
       "type": "application/json",
       "title": "WebMercatorQuad",
-      "href": "{{ .Config.BaseURL }}/tiles/WebMercatorQuad?f=json"
+      "href": "{{ .Params.BaseURL }}/tiles/WebMercatorQuad?f=json"
     },
     {
       "rel": "alternate",
       "type": "text/html",
       "title": "WebMercatorQuad as HTML",
-      "href": "{{ .Config.BaseURL }}/tiles/WebMercatorQuad?f=html"
+      "href": "{{ .Params.BaseURL }}/tiles/WebMercatorQuad?f=html"
     },
     {
       "rel": "alternate",
       "type": "application/vnd.mapbox.tile+json",
       "title": "WebMercatorQuad as TileJSON",
-      "href": "{{ .Config.BaseURL }}/tiles/WebMercatorQuad?f=tilejson"
+      "href": "{{ .Params.BaseURL }}/tiles/WebMercatorQuad?f=tilejson"
     },
     {
       "rel": "item",
       "type": "application/vnd.mapbox-vector-tile",
       "title": "Mapbox vector tiles; the link is a URI template where {tileMatrix}/{tileRow}/{tileCol} is the tile in the tiling scheme 'WebMercatorQuad'",
-      "href": "{{ .Config.BaseURL }}/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt",
+      "href": "{{ .Params.BaseURL }}/tiles/WebMercatorQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt",
       "templated": true
     },
     {
@@ -40,7 +40,7 @@
   "tileMatrixSetId": "WebMercatorQuad",
   "tileMatrixSetLimits": [
     {{ $first := true }}
-    {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+    {{ range $type := .Params.SupportedSrs }}
       {{ if eq $type.Srs "EPSG:3857" }}
         {{ if eq $type.ZoomLevelRange.Start 0 }}
         {{ if not $first }}{{else}} {{$first = false}} {{end}}

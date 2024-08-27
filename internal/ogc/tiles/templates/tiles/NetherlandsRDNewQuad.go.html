@@ -6,10 +6,10 @@
 <div class="row py-3">
     <div class="col-md-12">
         <p>
-            {{ i18n "NetherlandsRDNewQuadAbstract" }}
+            {{ i18n "NetherlandsRDNewQuadAbstract" }} <a href="{{ .Params.BaseURL }}/tiles/NetherlandsRDNewQuad?f=tilejson" aria-label="Open TileJSON">TileJSON</a>.
         </p>
         <p>
-            URL template: <code>{{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt</code>
+            URL template: <code>{{ .Params.BaseURL }}/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt</code>
         </p>
         <h2>Tile matrix set limits</h2>
         {{ i18n "AvailableZoomLevels" }}:
@@ -24,7 +24,7 @@
             </tr>
             </thead>
             <tbody>
-            {{ range $type := .Config.OgcAPI.Tiles.SupportedSrs }}
+            {{ range $type := .Params.SupportedSrs }}
                 {{ if eq $type.Srs "EPSG:28992" }}
                     {{ if eq $type.ZoomLevelRange.Start 0 }}
                         <tr>

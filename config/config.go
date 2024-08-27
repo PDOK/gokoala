@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -423,7 +424,9 @@ func (gv *CollectionEntry3dGeoVolumes) HasDTM() bool {
 
 // +kubebuilder:object:generate=true
 type CollectionEntryTiles struct {
-	// placeholder
+
+	// Tiles specific to this collection. Called 'geodata tiles' in OGC spec.
+	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
@@ -560,22 +563,56 @@ const (
 
 // +kubebuilder:object:generate=true
 type OgcAPITiles struct {
-	// Reference to the server (or object storage) hosting the tiles
-	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
-
-	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
-	Types []TilesType `yaml:"types" json:"types" validate:"required"`
-
-	// Specifies in what projections (SRS/CRS) the tiles are offered
-	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
-
-	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
+	// Tiles for the entire dataset, these are hosted at the root of the API (/tiles endpoint).
 	// +optional
-	URITemplateTiles *string `yaml:"uriTemplateTiles,omitempty" json:"uriTemplateTiles,omitempty"`
+	DatasetTiles *Tiles `yaml:",inline" json:",inline" validate:"required_without_all=Collections"`
 
-	// The collections to offer as tiles. When no collection is specified the tiles are hosted at the root of the API (/tiles endpoint).
+	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
 	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty"`
+}
+
+func (o *OgcAPITiles) HasType(t TilesType) bool {
+	if o.DatasetTiles != nil && slices.Contains(o.DatasetTiles.Types, t) {
+		return true
+	}
+	for _, coll := range o.Collections {
+		if coll.Tiles != nil && slices.Contains(coll.Tiles.GeoDataTiles.Types, t) {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *OgcAPITiles) HasProjection(srs string) bool {
+	for _, projection := range o.GetProjections() {
+		if projection.Srs == srs {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *OgcAPITiles) GetProjections() []SupportedSrs {
+	supportedSrsSet := map[SupportedSrs]struct{}{}
+	if o.DatasetTiles != nil {
+		for _, supportedSrs := range o.DatasetTiles.SupportedSrs {
+			supportedSrsSet[supportedSrs] = struct{}{}
+		}
+	}
+	for _, coll := range o.Collections {
+		if coll.Tiles == nil {
+			continue
+		}
+		for _, supportedSrs := range coll.Tiles.GeoDataTiles.SupportedSrs {
+			supportedSrsSet[supportedSrs] = struct{}{}
+		}
+	}
+	result := util.Keys(supportedSrsSet)
+	sort.Slice(result, func(i, j int) bool {
+		return len(result[i].Srs) > len(result[j].Srs)
+	})
+	return result
 }
 
 // +kubebuilder:object:generate=true
@@ -899,6 +936,22 @@ type PropertyFilter struct {
 	// +kubebuilder:default=false
 	// +optional
 	DeriveAllowedValuesFromDatasource *bool `yaml:"deriveAllowedValuesFromDatasource,omitempty" json:"deriveAllowedValuesFromDatasource,omitempty" default:"false"`
+}
+
+// +kubebuilder:object:generate=true
+type Tiles struct {
+	// Reference to the server (or object storage) hosting the tiles
+	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
+
+	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
+	Types []TilesType `yaml:"types" json:"types" validate:"required"`
+
+	// Specifies in what projections (SRS/CRS) the tiles are offered
+	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
+
+	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
+	// +optional
+	URITemplateTiles *string `yaml:"uriTemplateTiles,omitempty" json:"uriTemplateTiles,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
