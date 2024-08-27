@@ -603,7 +603,7 @@ func TestTile_TilesetForCollection(t *testing.T) {
 			name: "NetherlandsRDNewQuad",
 			fields: fields{
 				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
-				url:             "http://localhost:8080/collections/:collection/tiles/NetherlandsRDNewQuad",
+				url:             "http://localhost:8080/collections/example/tiles/NetherlandsRDNewQuad",
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 				collection:      "example",
 			},
@@ -616,7 +616,7 @@ func TestTile_TilesetForCollection(t *testing.T) {
 			name: "EuropeanETRS89_LAEAQuad",
 			fields: fields{
 				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
-				url:             "http://localhost:8080/collections/:collection/tiles/EuropeanETRS89_LAEAQuad",
+				url:             "http://localhost:8080/collections/example/tiles/EuropeanETRS89_LAEAQuad",
 				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
 				collection:      "example",
 			},
@@ -629,7 +629,7 @@ func TestTile_TilesetForCollection(t *testing.T) {
 			name: "WebMercatorQuad",
 			fields: fields{
 				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
-				url:             "http://localhost:8080/collections/:collection/tiles/WebMercatorQuad",
+				url:             "http://localhost:8080/collections/example/tiles/WebMercatorQuad",
 				tileMatrixSetID: "WebMercatorQuad",
 				collection:      "example",
 			},
@@ -638,19 +638,19 @@ func TestTile_TilesetForCollection(t *testing.T) {
 				statusCode:   http.StatusOK,
 			},
 		},
-		//{
-		//	name: "Invalid",
-		//	fields: fields{
-		//		configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
-		//		url:             "http://localhost:8080/collections/:collection/tiles/Invalid",
-		//		tileMatrixSetID: "Invalid",
-		//		collection:      "example",
-		//	},
-		//	want: want{
-		//		bodyContains: "request doesn't conform to OpenAPI spec: parameter \\\"tileMatrixSetId\\\" in path has an error: value is not one of the allowed values",
-		//		statusCode:   http.StatusBadRequest,
-		//	},
-		//},
+		{
+			name: "Invalid",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/collections/example/tiles/Invalid",
+				tileMatrixSetID: "Invalid",
+				collection:      "example",
+			},
+			want: want{
+				bodyContains: "request doesn't conform to OpenAPI spec: parameter \\\"tileMatrixSetId\\\" in path has an error: value is not one of the allowed values",
+				statusCode:   http.StatusBadRequest,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
