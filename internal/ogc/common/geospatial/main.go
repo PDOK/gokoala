@@ -43,11 +43,9 @@ func NewCollections(e *engine.Engine) *Collections {
 					Path: "collections/" + coll.ID,
 				},
 			}...)
-			e.RenderTemplatesWithParams(coll,
-				nil,
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, coll, nil,
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.json", coll.ID))
-			e.RenderTemplatesWithParams(coll,
-				collectionBreadcrumbs,
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, coll, collectionBreadcrumbs,
 				engine.NewTemplateKeyWithName(templatesDir+"collection.go.html", coll.ID))
 		}
 	}

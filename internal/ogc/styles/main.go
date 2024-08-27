@@ -69,7 +69,7 @@ func NewStyles(e *engine.Engine) *Styles {
 	}
 	defaultProjection = strings.ToLower(tiles.AllProjections[supportedProjections[0].Srs])
 
-	e.RenderTemplatesWithParamsAndValidate(stylesPath,
+	e.RenderTemplatesWithParams(stylesPath,
 		&stylesTemplateData{defaultProjection, supportedProjections, allProjections},
 		stylesBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"styles.go.json"),
@@ -87,7 +87,8 @@ func NewStyles(e *engine.Engine) *Styles {
 			data := &stylesMetadataTemplateData{style, projection}
 
 			// Render metadata template (JSON)
-			e.RenderTemplatesWithParams(data, nil,
+			path := stylesPath + "/" + styleInstanceID + "/metadata"
+			e.RenderTemplatesWithParams(path, data, nil,
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", styleInstanceID))
 
 			// Render metadata template (HTML)
@@ -99,7 +100,7 @@ func NewStyles(e *engine.Engine) *Styles {
 					Path: stylesCrumb + styleInstanceID + "/metadata",
 				},
 			}...)
-			e.RenderTemplatesWithParams(data, styleMetadataBreadcrumbs,
+			e.RenderTemplatesWithParams(path, data, styleMetadataBreadcrumbs,
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", styleInstanceID))
 
 			// Add existing style definitions to rendered templates
@@ -111,9 +112,10 @@ func NewStyles(e *engine.Engine) *Styles {
 					Format:       styleFormat.Format,
 					InstanceName: styleInstanceID + "." + styleFormat.Format,
 				}
+				path = stylesPath + "/" + styleInstanceID
 
 				// Render template (JSON)
-				e.RenderTemplatesWithParams(struct {
+				e.RenderTemplatesWithParams(path, struct {
 					Projection     string
 					ZoomLevelRange config.ZoomLevelRange
 				}{Projection: projection, ZoomLevelRange: zoomLevelRange}, nil, styleKey)
@@ -121,7 +123,7 @@ func NewStyles(e *engine.Engine) *Styles {
 				// Render template (HTML)
 				styleBreadCrumbs := stylesBreadcrumbs
 				styleBreadCrumbs = append(styleBreadCrumbs, styleProjectionBreadcrumb)
-				e.RenderTemplatesWithParams(style, styleBreadCrumbs,
+				e.RenderTemplatesWithParams(path, style, styleBreadCrumbs,
 					engine.NewTemplateKeyWithName(templatesDir+"style.go.html", styleInstanceID))
 			}
 		}

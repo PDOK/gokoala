@@ -236,7 +236,7 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 		breadcrumbs = tilesBreadcrumbs
 	}
 
-	e.RenderTemplatesWithParamsAndValidate(tilesPath,
+	e.RenderTemplatesWithParams(tilesPath,
 		data,
 		breadcrumbs,
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.json", collectionID),
@@ -254,14 +254,14 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 
 		path := tilesPath + "/" + projection
 		if collection != nil {
-			path = "/" + collectionID + tilesPath + "/" + projection
+			path = g.CollectionsPath + "/" + collectionID + tilesPath + "/" + projection
 		}
-		e.RenderTemplatesWithParamsAndValidate(path,
+		e.RenderTemplatesWithParams(path,
 			data,
 			projectionBreadcrumbs,
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.json", collectionID),
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.html", collectionID))
-		e.RenderTemplatesWithParamsAndValidate(path,
+		e.RenderTemplatesWithParams(path,
 			data,
 			projectionBreadcrumbs,
 			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.tilejson", collectionID))

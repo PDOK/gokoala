@@ -187,8 +187,8 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 	}
 }
 
-// TODO rename method
-func (e *Engine) RenderTemplatesWithParamsAndValidate(urlPath string, params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
+// RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
+func (e *Engine) RenderTemplatesWithParams(urlPath string, params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	for _, key := range keys {
 		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
 
@@ -201,14 +201,6 @@ func (e *Engine) RenderTemplatesWithParamsAndValidate(urlPath string, params any
 				log.Fatal(err)
 			}
 		}
-	}
-}
-
-// RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
-// This method does not perform OpenAPI validation of the rendered template (will be done during runtime).
-func (e *Engine) RenderTemplatesWithParams(params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
-	for _, key := range keys {
-		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
 	}
 }
 
