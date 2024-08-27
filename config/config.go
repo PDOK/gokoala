@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -607,7 +608,11 @@ func (o *OgcAPITiles) GetProjections() []SupportedSrs {
 			supportedSrsSet[supportedSrs] = struct{}{}
 		}
 	}
-	return util.Keys(supportedSrsSet)
+	result := util.Keys(supportedSrsSet)
+	sort.Slice(result, func(i, j int) bool {
+		return len(result[i].Srs) > len(result[j].Srs)
+	})
+	return result
 }
 
 // +kubebuilder:object:generate=true
