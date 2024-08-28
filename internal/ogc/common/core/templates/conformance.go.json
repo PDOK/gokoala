@@ -53,7 +53,9 @@
       ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core"
       ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset"
       ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list"
+      {{ if .Config.OgcAPI.Tiles.DatasetTiles }}
       ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets"
+      {{ end }}
       {{ if .Config.OgcAPI.Tiles.Collections }}
         ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets"
       {{ end }}

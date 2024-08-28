@@ -940,13 +940,19 @@ type PropertyFilter struct {
 
 // +kubebuilder:object:generate=true
 type Tiles struct {
-	// Reference to the server (or object storage) hosting the tiles
+	// Reference to the server (or object storage) hosting the tiles.
+	// Note: Only marked as optional in CRD to support top-level OR collection-level tiles
+	// +optional
 	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
 
 	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
+	// Note: Only marked as optional in CRD to support top-level OR collection-level tiles
+	// +optional
 	Types []TilesType `yaml:"types" json:"types" validate:"required"`
 
 	// Specifies in what projections (SRS/CRS) the tiles are offered
+	// Note: Only marked as optional in CRD to support top-level OR collection-level tiles
+	// +optional
 	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
 
 	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.

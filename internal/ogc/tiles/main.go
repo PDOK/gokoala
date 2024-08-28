@@ -217,9 +217,11 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollection, data templateData) {
 
 	var breadcrumbs []engine.Breadcrumb
+	path := tilesPath
 	collectionID := ""
 	if collection != nil {
 		collectionID = collection.ID
+		path = g.CollectionsPath + "/" + collectionID + tilesPath
 
 		breadcrumbs = collectionsBreadcrumb
 		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
@@ -236,7 +238,7 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 		breadcrumbs = tilesBreadcrumbs
 	}
 
-	e.RenderTemplatesWithParams(tilesPath,
+	e.RenderTemplatesWithParams(path,
 		data,
 		breadcrumbs,
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.json", collectionID),
@@ -252,7 +254,7 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 			},
 		}...)
 
-		path := tilesPath + "/" + projection
+		path = tilesPath + "/" + projection
 		if collection != nil {
 			path = g.CollectionsPath + "/" + collectionID + tilesPath + "/" + projection
 		}
