@@ -111,7 +111,7 @@
     </div>
     {{ end }}
 
-    {{ if .Config.OgcAPI.Tiles }}
+    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles }}
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">

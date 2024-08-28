@@ -194,10 +194,12 @@
                         <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list" target="_blank" aria-label="{{ i18n "To" }} conf/tilesets-list {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
+                    {{ if .Config.OgcAPI.Tiles.DatasetTiles }}
                     <tr>
                         <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets" target="_blank" aria-label="{{ i18n "To" }} conf/dataset-tilesets {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets</a></td>
                         <td>{{ i18n "Standard" }}</td>
                     </tr>
+                    {{ end }}
                     {{ if .Config.OgcAPI.Tiles.Collections }}
                         <tr>
                             <td><a href="http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets" target="_blank" aria-label="{{ i18n "To" }} conf/geodata-tilesets {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets</a></td>

@@ -49,7 +49,7 @@
       "href": "{{ .Config.BaseURL }}/styles"
     }
     {{ end }}
-    {{ if .Config.OgcAPI.Tiles }}
+    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles }}
     ,
     {
       "rel": "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector",
