@@ -66,6 +66,18 @@ The `<app-legend-view>` component has the following parameters:
 Default layers are used for legend items. Attributes can be specified to create distinct items. For example, for the Dutch BGT, `titleItems = "type,plus_type,functie,fysiek_voorkomen,openbareruimtetype"` can be used. When `titleItems = "id"` is used, the "id" for the layer (layer name) is used to name the legend items.
 Legend uses is shown in the [example directory](./examples)
 
+The parameter **title-items** can also be defined in the Mapbox style input. Add "gokoala:title-items" to the metadata section as follows:
+```Json
+{
+  "version": 8,
+  "name": "teststyle",
+  "id": "test style id",
+  "metadata": {
+      "gokoala:title-items": "id"
+  },
+}
+```
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
