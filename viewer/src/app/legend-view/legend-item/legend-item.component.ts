@@ -58,6 +58,7 @@ export class LegendItemComponent implements OnInit {
 
   ngOnInit() {
     const feature = this.newFeature(this.item)
+
     this.map = new OLMap({
       controls: [],
       interactions: [],

@@ -20,12 +20,18 @@ export type LegendItem = {
 
 export interface MapboxStyle {
   version: number
+  metadata?: Metadata
   name: string
   id: string
   sprite: string
   glyphs: string
   layers: Layer[]
   sources: NonNullable<unknown>
+}
+
+export interface Metadata {
+  'ol:webfonts'?: string
+  'gokoala:title-items'?: string
 }
 
 export interface Layer {
