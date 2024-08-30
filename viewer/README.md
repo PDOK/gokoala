@@ -68,6 +68,7 @@ Default layers are used for legend items. Attributes can be specified to create 
 Legend uses is shown in the [example directory](./examples)
 
 The parameter **title-items** can also be defined in the Mapbox style input. Add "gokoala:title-items" to the metadata section as follows:
+
 ```Json
 {
   "version": 8,

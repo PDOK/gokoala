@@ -7,16 +7,12 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none",
-    "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress info && npx cypress run --component",
-    "ghpage": "angular-cli-ghpages --dir=dist/view-component/browser",
     "ghpage": "angular-cli-ghpages --dir=dist/view-component/browser",
     "lint": "ng lint",
     "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress open",
     "format": "npx prettier --write .",
-    "upgrade": "ng update @angular/cli @angular/core angular-cli-ghpages @angular-devkit/build-angular @angular/elements @angular-eslint/eslint-plugin @angular-eslint/eslint-plugin-template @angular-eslint/schematics --force && npm update && npm audit fix --force",
-    "bundle-size": "ng build && esbuild-visualizer --metadata ./dist/view-component/stats.json"
     "upgrade": "ng update @angular/cli @angular/core angular-cli-ghpages @angular-devkit/build-angular @angular/elements @angular-eslint/eslint-plugin @angular-eslint/eslint-plugin-template @angular-eslint/schematics --force && npm update && npm audit fix --force",
     "bundle-size": "ng build && esbuild-visualizer --metadata ./dist/view-component/stats.json"
   },
