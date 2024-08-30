@@ -1,7 +1,7 @@
 import { Control } from 'ol/control.js'
 
 import { EventEmitter } from '@angular/core'
-import { emitBox } from './boxControl'
+import { emitBox } from './boxcontrol'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 

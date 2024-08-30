@@ -1,44 +1,44 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {
   {{ if .Config.OgcAPI.Tiles }}
-  {{$baseUrl := .Config.BaseURL}}
+  {{ $baseUrlTiles := .Params.BaseURL }}
   "title": "{{ .Config.Title }} - Tiles",
-  "description": "{{ i18n "TilesTextPlain" }}",
+  "description": "{{ i18n "TilesTextPlain" }} {{ if .Config.OgcAPI.Styles }}{{ i18n "WithStylesPlain" }}{{ end }}",
   "links": [
     {
       "rel": "self",
       "type": "application/json",
       "title": "Tiles",
-      "href": "{{ $baseUrl }}/tiles?f=json"
+      "href": "{{ $baseUrlTiles }}/tiles?f=json"
     },
     {
       "rel": "alternate",
       "type": "text/html",
       "title": "Tiles as HTML",
-      "href": "{{ .Config.BaseURL }}/tiles?f=html"
+      "href": "{{ $baseUrlTiles }}/tiles?f=html"
     }
   ],
   "tilesets": [
-    {{range $index, $type := .Config.OgcAPI.Tiles.SupportedSrs}}
+    {{range $index, $type := .Params.SupportedSrs}}
       {{ if (eq $type.Srs "EPSG:28992") }}
         {
           "links": [
             {
               "rel": "self",
               "title": "Access the data as tiles in the tile matrix set 'NetherlandsRDNewQuad'",
-              "href": "{{ $baseUrl }}/tiles/NetherlandsRDNewQuad"
+              "href": "{{ $baseUrlTiles }}/tiles/NetherlandsRDNewQuad"
             },
             {
               "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
               "type": "application/json",
               "title": "Definition of NetherlandsRDNewQuad TileMatrixSet",
-              "href": "{{ $baseUrl }}/tileMatrixSets/NetherlandsRDNewQuad"
+              "href": "{{ $.Config.BaseURL }}/tileMatrixSets/NetherlandsRDNewQuad"
             }
           ],
           "dataType": "vector",
           "crs": "https://www.opengis.net/def/crs/EPSG/0/28992",
           "tileMatrixSetId": "NetherlandsRDNewQuad",
-          "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/NetherlandsRDNewQuad"
+          "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/NetherlandsRDNewQuad"
         }
       {{end}}
       {{ if (eq $type.Srs "EPSG:3035") }}
@@ -48,19 +48,19 @@
             {
               "rel": "self",
               "title": "Access the data as tiles in the tile matrix set 'EuropeanETRS89_LAEAQuad'",
-              "href": "{{ $baseUrl }}/tiles/EuropeanETRS89_LAEAQuad"
+              "href": "{{ $baseUrlTiles }}/tiles/EuropeanETRS89_LAEAQuad"
             },
             {
               "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
               "type": "application/json",
               "title": "Definition of EuropeanETRS89_LAEAQuad TileMatrixSet",
-              "href": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
+              "href": "{{ $.Config.BaseURL }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
             }
           ],
           "dataType": "vector",
           "crs": "https://www.opengis.net/def/crs/EPSG/0/3035",
           "tileMatrixSetId": "EuropeanETRS89_LAEAQuad",
-          "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
+          "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/EuropeanETRS89_LAEAQuad"
         }
       {{end}}
       {{ if (eq $type.Srs "EPSG:3857") }}
@@ -70,19 +70,19 @@
             {
               "rel": "self",
               "title": "Access the data as tiles in the tile matrix set 'WebMercatorQuad'",
-              "href": "{{ $baseUrl }}/tiles/WebMercatorQuad"
+              "href": "{{ $baseUrlTiles }}/tiles/WebMercatorQuad"
             },
             {
               "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
               "type": "application/json",
               "title": "Definition of WebMercatorQuad TileMatrixSet",
-              "href": "{{ $baseUrl }}/tileMatrixSets/WebMercatorQuad"
+              "href": "{{ $.Config.BaseURL }}/tileMatrixSets/WebMercatorQuad"
             }
           ],
           "dataType": "vector",
           "crs": "https://www.opengis.net/def/crs/EPSG/0/3857",
           "tileMatrixSetId": "WebMercatorQuad",
-          "tileMatrixSetDefinition": "{{ $baseUrl }}/tileMatrixSets/WebMercatorQuad"
+          "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/WebMercatorQuad"
         }
       {{end}}
     {{end}}

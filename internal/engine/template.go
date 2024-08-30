@@ -9,41 +9,16 @@ import (
 	"path/filepath"
 	"strings"
 	texttemplate "text/template"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/docker/go-units"
-
 	"github.com/PDOK/gokoala/internal/engine/util"
-	sprig "github.com/go-task/slim-sprig"
-	gomarkdown "github.com/gomarkdown/markdown"
-	gomarkdownhtml "github.com/gomarkdown/markdown/html"
-	gomarkdownparser "github.com/gomarkdown/markdown/parser"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	stripmd "github.com/writeas/go-strip-markdown/v2"
 	"golang.org/x/text/language"
 )
 
 const (
 	layoutFile = "layout.go.html"
 )
-
-var (
-	globalTemplateFuncs texttemplate.FuncMap
-)
-
-func init() {
-	customFuncs := texttemplate.FuncMap{
-		// custom template functions
-		"markdown":   markdown,
-		"unmarkdown": unmarkdown,
-		"humansize":  humanSize,
-		"bytessize":  bytesSize,
-		"isdate":     isDate,
-	}
-	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
-	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
-}
 
 // TemplateKey unique key to register and lookup Go templates
 type TemplateKey struct {
@@ -264,69 +239,4 @@ func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]any {
 			return htmltemplate.HTML(translated) //nolint:gosec // since we trust our language files
 		},
 	})
-}
-
-// combine given FuncMaps
-func combineFuncMaps(funcMaps ...map[string]any) map[string]any {
-	result := make(map[string]any)
-	for _, funcMap := range funcMaps {
-		for k, v := range funcMap {
-			result[k] = v
-		}
-	}
-	return result
-}
-
-// markdown turn Markdown into HTML
-func markdown(s *string) htmltemplate.HTML {
-	if s == nil {
-		return ""
-	}
-	// always normalize newlines, this library only supports Unix LF newlines
-	md := gomarkdown.NormalizeNewlines([]byte(*s))
-
-	// create Markdown parser
-	extensions := gomarkdownparser.CommonExtensions
-	parser := gomarkdownparser.NewWithExtensions(extensions)
-
-	// parse Markdown into AST tree
-	doc := parser.Parse(md)
-
-	// create HTML renderer
-	htmlFlags := gomarkdownhtml.CommonFlags | gomarkdownhtml.HrefTargetBlank | gomarkdownhtml.SkipHTML
-	renderer := gomarkdownhtml.NewRenderer(gomarkdownhtml.RendererOptions{Flags: htmlFlags})
-
-	return htmltemplate.HTML(gomarkdown.Render(doc, renderer)) //nolint:gosec
-}
-
-// unmarkdown remove Markdown, so we can use the given string in non-HTML (JSON) output
-func unmarkdown(s *string) string {
-	if s == nil {
-		return ""
-	}
-	withoutMarkdown := stripmd.Strip(*s)
-	withoutLinebreaks := strings.ReplaceAll(withoutMarkdown, "\n", " ")
-	return withoutLinebreaks
-}
-
-// humanSize converts size in bytes to a human-readable size
-func humanSize(i int64) string {
-	return units.HumanSize(float64(i))
-}
-
-// bytesSize converts human-readable size to size in bytes (base-10, not base-2)
-func bytesSize(s string) int64 {
-	i, err := units.FromHumanSize(s)
-	if err != nil {
-		log.Printf("cannot convert '%s' to bytes", s)
-		return 0
-	}
-	return i
-}
-
-func isDate(v any) bool {
-	if _, ok := v.(time.Time); ok {
-		return true
-	}
-	return false
 }

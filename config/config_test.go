@@ -362,6 +362,165 @@ func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
 	}
 }
 
+func TestOgcAPITiles_HasType(t *testing.T) {
+	tests := []struct {
+		name      string
+		tiles     OgcAPITiles
+		tilesType TilesType
+		expected  bool
+	}{
+		{
+			name: "Has type in DatasetTiles",
+			tiles: OgcAPITiles{
+				DatasetTiles: &Tiles{
+					Types: []TilesType{"raster", "vector"},
+				},
+			},
+			tilesType: "raster",
+			expected:  true,
+		},
+		{
+			name: "Does not have type in DatasetTiles",
+			tiles: OgcAPITiles{
+				DatasetTiles: &Tiles{
+					Types: []TilesType{"raster", "vector"},
+				},
+			},
+			tilesType: "some-other-type",
+			expected:  false,
+		},
+		{
+			name: "Has type in Collections",
+			tiles: OgcAPITiles{
+				Collections: GeoSpatialCollections{
+					GeoSpatialCollection{
+						Tiles: &CollectionEntryTiles{
+							GeoDataTiles: Tiles{
+								Types: []TilesType{"raster", "vector"},
+							},
+						},
+					},
+				},
+			},
+			tilesType: "raster",
+			expected:  true,
+		},
+		{
+			name: "Does not have type in Collections",
+			tiles: OgcAPITiles{
+				Collections: GeoSpatialCollections{
+					GeoSpatialCollection{
+						Tiles: &CollectionEntryTiles{
+							GeoDataTiles: Tiles{
+								Types: []TilesType{"raster", "vector"},
+							},
+						},
+					},
+				},
+			},
+			tilesType: "some-other-type",
+			expected:  false,
+		},
+		{
+			name:      "No DatasetTiles and Collections",
+			tiles:     OgcAPITiles{},
+			tilesType: "raster",
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.tiles.HasType(tt.tilesType)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestOgcAPITiles_HasProjection(t *testing.T) {
+	tests := []struct {
+		name        string
+		ogcAPITiles OgcAPITiles
+		srs         string
+		expected    bool
+	}{
+		{
+			name: "SRS found in Top-level Tiles",
+			ogcAPITiles: OgcAPITiles{
+				DatasetTiles: &Tiles{
+					SupportedSrs: []SupportedSrs{
+						{Srs: "EPSG:4326"},
+						{Srs: "EPSG:3857"},
+					},
+				},
+				Collections: []GeoSpatialCollection{},
+			},
+			srs:      "EPSG:4326",
+			expected: true,
+		},
+		{
+			name: "SRS found in a Collection Tiles",
+			ogcAPITiles: OgcAPITiles{
+				DatasetTiles: nil,
+				Collections: []GeoSpatialCollection{
+					{
+						Tiles: &CollectionEntryTiles{
+							GeoDataTiles: Tiles{
+								SupportedSrs: []SupportedSrs{
+									{Srs: "EPSG:28992"},
+								},
+							},
+						},
+					},
+				},
+			},
+			srs:      "EPSG:28992",
+			expected: true,
+		},
+		{
+			name: "SRS not found",
+			ogcAPITiles: OgcAPITiles{
+				DatasetTiles: &Tiles{
+					SupportedSrs: []SupportedSrs{
+						{Srs: "EPSG:4326"},
+					},
+				},
+				Collections: []GeoSpatialCollection{},
+			},
+			srs:      "EPSG:9999",
+			expected: false,
+		},
+		{
+			name: "Empty Top-level tiles and Collections",
+			ogcAPITiles: OgcAPITiles{
+				DatasetTiles: nil,
+				Collections:  []GeoSpatialCollection{},
+			},
+			srs:      "EPSG:4326",
+			expected: false,
+		},
+		{
+			name: "Handle nil",
+			ogcAPITiles: OgcAPITiles{
+				DatasetTiles: nil,
+				Collections: []GeoSpatialCollection{
+					{
+						Tiles: nil,
+					},
+				},
+			},
+			srs:      "EPSG:4326",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.ogcAPITiles.HasProjection(tt.srs))
+		})
+	}
+}
+
 func ptrTo[T any](val T) *T {
 	return &val
 }

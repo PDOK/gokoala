@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -423,7 +424,9 @@ func (gv *CollectionEntry3dGeoVolumes) HasDTM() bool {
 
 // +kubebuilder:object:generate=true
 type CollectionEntryTiles struct {
-	// placeholder
+
+	// Tiles specific to this collection. Called 'geodata tiles' in OGC spec.
+	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
@@ -440,9 +443,14 @@ type CollectionEntryFeatures struct {
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
 
-	// Downloads available for this collection
+	// Downloads available for this collection through map sheets. Note that 'map sheets' refer to a map
+	// divided in rectangle areas that can be downloaded individually.
 	// +optional
 	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
+
+	// Configuration specifically related to HTML/Web representation
+	// +optional
+	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -485,23 +493,48 @@ type DownloadLink struct {
 
 // +kubebuilder:object:generate=true
 type MapSheetDownloads struct {
-	// Properties that provide the download details per map sheet
+	// Properties that provide the download details per map sheet. Note that 'map sheets' refer to a map
+	// divided in rectangle areas that can be downloaded individually.
 	Properties MapSheetDownloadProperties `yaml:"properties" json:"properties" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
 type MapSheetDownloadProperties struct {
-	// Property containing file download URL
+	// Property/column containing file download URL
 	AssetURL string `yaml:"assetUrl" json:"assetUrl" validate:"required"`
 
-	// Property containing file size
+	// Property/column containing file size
 	Size string `yaml:"size" json:"size" validate:"required"`
 
-	// Property containing file media type
+	// The actual media type (not a property/column) of the download, like application/zip.
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 
-	// Property containing the map sheet identifier
+	// Property/column containing the map sheet identifier
 	MapSheetID string `yaml:"mapSheetId" json:"mapSheetId" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type WebConfig struct {
+	// Viewer config for displaying multiple features on a map
+	// +optional
+	FeaturesViewer *FeaturesViewer `yaml:"featuresViewer,omitempty" json:"featuresViewer,omitempty"`
+
+	// Viewer config for displaying a single feature on a map
+	// +optional
+	FeatureViewer *FeaturesViewer `yaml:"featureViewer,omitempty" json:"featureViewer,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type FeaturesViewer struct {
+	// Maximum initial zoom level of the viewer when rendering features, specified by scale denominator.
+	// Defaults to 1000 (= scale 1:1000).
+	// +optional
+	MinScale int `yaml:"minScale,omitempty" json:"minScale,omitempty" validate:"gt=0" default:"1000"`
+
+	// Minimal initial zoom level of the viewer when rendering features, specified by scale denominator
+	// (not set by default).
+	// +optional
+	MaxScale *int `yaml:"maxScale,omitempty" json:"maxScale,omitempty" validate:"omitempty,gt=0,gtefield=MinScale"`
 }
 
 // +kubebuilder:object:generate=true
@@ -530,22 +563,56 @@ const (
 
 // +kubebuilder:object:generate=true
 type OgcAPITiles struct {
-	// Reference to the server (or object storage) hosting the tiles
-	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
-
-	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
-	Types []TilesType `yaml:"types" json:"types" validate:"required"`
-
-	// Specifies in what projections (SRS/CRS) the tiles are offered
-	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
-
-	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
+	// Tiles for the entire dataset, these are hosted at the root of the API (/tiles endpoint).
 	// +optional
-	URITemplateTiles *string `yaml:"uriTemplateTiles,omitempty" json:"uriTemplateTiles,omitempty"`
+	DatasetTiles *Tiles `yaml:",inline" json:",inline" validate:"required_without_all=Collections"`
 
-	// The collections to offer as tiles. When no collection is specified the tiles are hosted at the root of the API (/tiles endpoint).
+	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
 	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty"`
+}
+
+func (o *OgcAPITiles) HasType(t TilesType) bool {
+	if o.DatasetTiles != nil && slices.Contains(o.DatasetTiles.Types, t) {
+		return true
+	}
+	for _, coll := range o.Collections {
+		if coll.Tiles != nil && slices.Contains(coll.Tiles.GeoDataTiles.Types, t) {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *OgcAPITiles) HasProjection(srs string) bool {
+	for _, projection := range o.GetProjections() {
+		if projection.Srs == srs {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *OgcAPITiles) GetProjections() []SupportedSrs {
+	supportedSrsSet := map[SupportedSrs]struct{}{}
+	if o.DatasetTiles != nil {
+		for _, supportedSrs := range o.DatasetTiles.SupportedSrs {
+			supportedSrsSet[supportedSrs] = struct{}{}
+		}
+	}
+	for _, coll := range o.Collections {
+		if coll.Tiles == nil {
+			continue
+		}
+		for _, supportedSrs := range coll.Tiles.GeoDataTiles.SupportedSrs {
+			supportedSrsSet[supportedSrs] = struct{}{}
+		}
+	}
+	result := util.Keys(supportedSrsSet)
+	sort.Slice(result, func(i, j int) bool {
+		return len(result[i].Srs) > len(result[j].Srs)
+	})
+	return result
 }
 
 // +kubebuilder:object:generate=true
@@ -610,24 +677,6 @@ func (oaf *OgcAPIFeatures) ProjectionsForCollection(collectionID string) []strin
 	result := util.Keys(uniqueSRSs)
 	slices.Sort(result)
 	return result
-}
-
-func (oaf *OgcAPIFeatures) PropertyFiltersForCollection(collectionID string) []PropertyFilter {
-	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features != nil && coll.Features.Filters.Properties != nil {
-			return coll.Features.Filters.Properties
-		}
-	}
-	return []PropertyFilter{}
-}
-
-func (oaf *OgcAPIFeatures) MapSheetPropertiesForCollection(collectionID string) *MapSheetDownloadProperties {
-	for _, coll := range oaf.Collections {
-		if coll.ID == collectionID && coll.Features != nil && coll.Features.MapSheetDownloads != nil {
-			return &coll.Features.MapSheetDownloads.Properties
-		}
-	}
-	return nil
 }
 
 // +kubebuilder:object:generate=true
@@ -887,6 +936,28 @@ type PropertyFilter struct {
 	// +kubebuilder:default=false
 	// +optional
 	DeriveAllowedValuesFromDatasource *bool `yaml:"deriveAllowedValuesFromDatasource,omitempty" json:"deriveAllowedValuesFromDatasource,omitempty" default:"false"`
+}
+
+// +kubebuilder:object:generate=true
+type Tiles struct {
+	// Reference to the server (or object storage) hosting the tiles.
+	// Note: Only marked as optional in CRD to support top-level OR collection-level tiles
+	// +optional
+	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
+
+	// Could be 'vector' and/or 'raster' to indicate the types of tiles offered
+	// Note: Only marked as optional in CRD to support top-level OR collection-level tiles
+	// +optional
+	Types []TilesType `yaml:"types" json:"types" validate:"required"`
+
+	// Specifies in what projections (SRS/CRS) the tiles are offered
+	// Note: Only marked as optional in CRD to support top-level OR collection-level tiles
+	// +optional
+	SupportedSrs []SupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
+
+	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
+	// +optional
+	URITemplateTiles *string `yaml:"uriTemplateTiles,omitempty" json:"uriTemplateTiles,omitempty"`
 }
 
 // +kubebuilder:object:generate=true

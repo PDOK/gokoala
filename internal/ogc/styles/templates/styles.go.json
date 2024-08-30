@@ -2,8 +2,8 @@
 {
   {{ if .Config.OgcAPI.Styles }}
   {{ $baseUrl := .Config.BaseURL }}
-  {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
-  {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
+  {{ $supportedSrs := .Params.SupportedProjections }}
+  {{ $projections := .Params.AllProjections }}
   "links": [
     {
       "rel": "self",

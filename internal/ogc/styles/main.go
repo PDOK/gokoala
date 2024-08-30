@@ -8,6 +8,8 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/tiles"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -21,62 +23,84 @@ const (
 
 var (
 	defaultProjection = ""
+
+	stylesBreadcrumbs = []engine.Breadcrumb{
+		{
+			Name: "Styles",
+			Path: "styles",
+		},
+	}
 )
+
+type stylesTemplateData struct {
+	// Projection used by default
+	DefaultProjection string
+
+	// All supported projections for this dataset
+	SupportedProjections []config.SupportedSrs
+
+	// All supported projections by GoKoala (for tiles)
+	AllProjections map[string]any
+}
+
+type stylesMetadataTemplateData struct {
+	// Metadata about this style
+	Metadata config.Style
+
+	// Projection used by this style
+	Projection string
+}
 
 type Styles struct {
 	engine *engine.Engine
 }
 
 func NewStyles(e *engine.Engine) *Styles {
-	// default style must be the first entry in supportedstyles
+	// default style must be the first entry in supported styles
 	if e.Config.OgcAPI.Styles.Default != e.Config.OgcAPI.Styles.SupportedStyles[0].ID {
 		log.Fatalf("default style must be first entry in supported styles. '%s' does not match '%s'",
 			e.Config.OgcAPI.Styles.SupportedStyles[0].ID, e.Config.OgcAPI.Styles.Default)
 	}
 
-	stylesBreadcrumbs := []engine.Breadcrumb{
-		{
-			Name: "Styles",
-			Path: "styles",
-		},
+	allProjections := util.Cast(tiles.AllProjections)
+	supportedProjections := e.Config.OgcAPI.Tiles.GetProjections()
+	if len(supportedProjections) == 0 {
+		log.Fatalf("failed to setup OGC API Styles, no supported projections (SRS) found in OGC API Tiles")
 	}
+	defaultProjection = strings.ToLower(tiles.AllProjections[supportedProjections[0].Srs])
 
-	e.RenderTemplates(stylesPath,
+	e.RenderTemplatesWithParams(stylesPath,
+		&stylesTemplateData{defaultProjection, supportedProjections, allProjections},
 		stylesBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"styles.go.json"),
 		engine.NewTemplateKey(templatesDir+"styles.go.html"))
 
-	projections := map[string]string{"EPSG:28992": "NetherlandsRDNewQuad", "EPSG:3035": "EuropeanETRS89_LAEAQuad", "EPSG:3857": "WebMercatorQuad"}
-	defaultProjection = strings.ToLower(projections[e.Config.OgcAPI.Tiles.SupportedSrs[0].Srs])
-
 	for _, style := range e.Config.OgcAPI.Styles.SupportedStyles {
-		for _, supportedSrs := range e.Config.OgcAPI.Tiles.SupportedSrs {
-			projection := projections[supportedSrs.Srs]
+		for _, supportedSrs := range supportedProjections {
+			projection := tiles.AllProjections[supportedSrs.Srs]
 			zoomLevelRange := supportedSrs.ZoomLevelRange
 			styleInstanceID := style.ID + projectionDelimiter + strings.ToLower(projection)
-			// Render metadata templates
-			e.RenderTemplatesWithParams(struct {
-				Metadata   config.Style
-				Projection string
-			}{Metadata: style, Projection: projection},
-				nil,
+			styleProjectionBreadcrumb := engine.Breadcrumb{
+				Name: style.Title + " (" + projection + ")",
+				Path: stylesCrumb + styleInstanceID,
+			}
+			data := &stylesMetadataTemplateData{style, projection}
+
+			// Render metadata template (JSON)
+			path := stylesPath + "/" + styleInstanceID + "/metadata"
+			e.RenderTemplatesWithParams(path, data, nil,
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.json", styleInstanceID))
+
+			// Render metadata template (HTML)
 			styleMetadataBreadcrumbs := stylesBreadcrumbs
 			styleMetadataBreadcrumbs = append(styleMetadataBreadcrumbs, []engine.Breadcrumb{
-				{
-					Name: style.Title + " (" + projection + ")",
-					Path: stylesCrumb + styleInstanceID,
-				},
+				styleProjectionBreadcrumb,
 				{
 					Name: "Metadata",
 					Path: stylesCrumb + styleInstanceID + "/metadata",
 				},
 			}...)
-			e.RenderTemplatesWithParams(struct {
-				Metadata   config.Style
-				Projection string
-			}{Metadata: style, Projection: projection},
-				styleMetadataBreadcrumbs,
+			e.RenderTemplatesWithParams(path, data, styleMetadataBreadcrumbs,
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", styleInstanceID))
 
 			// Add existing style definitions to rendered templates
@@ -88,19 +112,18 @@ func NewStyles(e *engine.Engine) *Styles {
 					Format:       styleFormat.Format,
 					InstanceName: styleInstanceID + "." + styleFormat.Format,
 				}
-				e.RenderTemplatesWithParams(struct {
+				path = stylesPath + "/" + styleInstanceID
+
+				// Render template (JSON)
+				e.RenderTemplatesWithParams(path, struct {
 					Projection     string
 					ZoomLevelRange config.ZoomLevelRange
 				}{Projection: projection, ZoomLevelRange: zoomLevelRange}, nil, styleKey)
+
+				// Render template (HTML)
 				styleBreadCrumbs := stylesBreadcrumbs
-				styleBreadCrumbs = append(styleBreadCrumbs, []engine.Breadcrumb{
-					{
-						Name: style.Title + " (" + projection + ")",
-						Path: stylesCrumb + styleInstanceID,
-					},
-				}...)
-				e.RenderTemplatesWithParams(style,
-					styleBreadCrumbs,
+				styleBreadCrumbs = append(styleBreadCrumbs, styleProjectionBreadcrumb)
+				e.RenderTemplatesWithParams(path, style, styleBreadCrumbs,
 					engine.NewTemplateKeyWithName(templatesDir+"style.go.html", styleInstanceID))
 			}
 		}
@@ -109,11 +132,9 @@ func NewStyles(e *engine.Engine) *Styles {
 	styles := &Styles{
 		engine: e,
 	}
-
 	e.Router.Get(stylesPath, styles.Styles())
 	e.Router.Get(stylesPath+"/{style}", styles.Style())
 	e.Router.Get(stylesPath+"/{style}/metadata", styles.StyleMetadata())
-
 	return styles
 }
 

@@ -2,6 +2,7 @@ package geopackage
 
 import (
 	"context"
+	neturl "net/url"
 	"path"
 	"runtime"
 	"testing"
@@ -283,8 +284,9 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				queryTimeout:               tt.fields.queryTimeout,
 			}
 			g.preparedStmtCache = NewCache()
-
-			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams)
+			url, _ := neturl.Parse("http://example.com")
+			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
+			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeatures, error %v, wantErr %v", err, tt.wantErr)
@@ -388,7 +390,9 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				featureTableByCollectionID: tt.fields.featureTableByID,
 				queryTimeout:               tt.fields.queryTimeout,
 			}
-			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID)
+			url, _ := neturl.Parse("http://example.com")
+			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
+			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeature, error %v, wantErr %v", err, tt.wantErr)

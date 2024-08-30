@@ -63,6 +63,18 @@ func Test_newRouter(t *testing.T) {
 			wantBody:   "internal/ogc/features/testdata/expected_multiple_feature_tables_single_geopackage.json",
 		},
 		{
+			name:       "Serve top-level OGC API Tiles",
+			configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel_and_collectionlevel.yaml",
+			apiCall:    "http://localhost:8180/tiles?f=json",
+			wantBody:   "internal/ogc/tiles/testdata/expected_top_level_tiles.json",
+		},
+		{
+			name:       "Serve collection-level OGC API Tiles",
+			configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel_and_collectionlevel.yaml",
+			apiCall:    "http://localhost:8180/collections/example2/tiles?f=json",
+			wantBody:   "internal/ogc/tiles/testdata/expected_collection_level_tiles.json",
+		},
+		{
 			name:       "Check conformance of OGC API Processes",
 			configFile: "internal/engine/testdata/config_processes.yaml",
 			apiCall:    "http://localhost:8181/conformance?f=html",

@@ -44,7 +44,8 @@ The `<app-feature-view>` component has the following parameters
 ```
 
 - **minFitScale**: maximum initial zoom level, specified by scale denominator set when selecting small feature(s) defaults to 1000(= scale 1:1000)
-- **maxFitScale**: minimal initial zoom level, specified by scale denominator (not set by default) -**label-options**: openlayers JSON string to do extra styling of label e.g:
+- **maxFitScale**: minimal initial zoom level, specified by scale denominator (not set by default)
+- **label-options**: openlayers JSON string to do extra styling of label e.g:
 
 ```Javascript
    const optionstring = JSON.stringify({ font: 'bold 40px Arial, Verdana, Courier New' })

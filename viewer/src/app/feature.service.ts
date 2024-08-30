@@ -68,12 +68,13 @@ export type DataUrl = {
   url: string
   dataMapping: ProjectionMapping
 }
+
 export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857' }
 
 @Injectable({
   providedIn: 'root',
 })
-export class FeatureServiceService {
+export class FeatureService {
   constructor(
     private logger: NGXLogger,
     private http: HttpClient

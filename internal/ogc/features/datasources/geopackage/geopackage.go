@@ -49,19 +49,20 @@ type geoPackageBackend interface {
 	close()
 }
 
+// featureTable according to spec https://www.geopackage.org/spec121/index.html#_contents
 type featureTable struct {
-	TableName          string    `db:"table_name"`
-	DataType           string    `db:"data_type"` // always 'features'
-	Identifier         string    `db:"identifier"`
-	Description        string    `db:"description"`
-	GeometryColumnName string    `db:"column_name"`
-	GeometryType       string    `db:"geometry_type_name"`
-	LastChange         time.Time `db:"last_change"`
-	MinX               float64   `db:"min_x"` // bbox
-	MinY               float64   `db:"min_y"` // bbox
-	MaxX               float64   `db:"max_x"` // bbox
-	MaxY               float64   `db:"max_y"` // bbox
-	SRS                int64     `db:"srs_id"`
+	TableName          string          `db:"table_name"`
+	DataType           string          `db:"data_type"` // always 'features'
+	Identifier         string          `db:"identifier"`
+	Description        string          `db:"description"`
+	GeometryColumnName string          `db:"column_name"`
+	GeometryType       string          `db:"geometry_type_name"`
+	LastChange         time.Time       `db:"last_change"`
+	MinX               sql.NullFloat64 `db:"min_x"` // bbox
+	MinY               sql.NullFloat64 `db:"min_y"` // bbox
+	MaxX               sql.NullFloat64 `db:"max_x"` // bbox
+	MaxY               sql.NullFloat64 `db:"max_y"` // bbox
+	SRS                sql.NullInt64   `db:"srs_id"`
 
 	ColumnsWithDateType map[string]string
 }
@@ -174,7 +175,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	return featureIDs, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), nil
 }
 
-func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64) (*domain.FeatureCollection, error) {
+func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, profile domain.Profile) (*domain.FeatureCollection, error) {
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
 		return nil, err
@@ -203,7 +204,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	}
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
+	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +212,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	return &fc, nil
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria) (*domain.FeatureCollection, domain.Cursors, error) {
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
 		return nil, domain.Cursors{}, err
@@ -236,7 +237,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -247,7 +248,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	return &fc, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), nil
 }
 
-func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any) (*domain.Feature, error) {
+func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error) {
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
 		return nil, err
@@ -284,7 +285,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		return nil, queryCtx.Err()
 	}
 
-	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, readGpkgGeometry)
+	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +434,7 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 	return table, nil
 }
 
-func readGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
+func mapGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
 	geometry, err := gpkg.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err

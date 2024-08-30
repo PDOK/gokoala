@@ -39,15 +39,22 @@ ConformanceText: The conformance describes which OGC standards this API implemen
 Collections: Collections
 CollectionsText: This API offers one or more collections that divide the dataset in various object types, which can be called separately through for instance <i>features</i> or <i>tiles</i>.
 Tiles: Tiles
-TilesTextHTML: This entire dataset is available as vector tiles in multiple projections. One or more <a href="styles" aria-label="Go to styles">styles</a> are also available.
-TilesTextPlain: This entire dataset is available as vector tiles in multiple projections. One or more styles are also available.
+TilesTextHTML: This entire dataset is available as vector tiles in multiple projections.
+TilesTextPlain: This entire dataset is available as vector tiles in multiple projections.
+WithStylesHTML: One or more <a href="styles" aria-label="Go to styles">styles</a> are also available.
+WithStylesPlain: One or more styles are also available.
 Styles: Styles
 StylesText: One or more official styles as specified by the supplier. Styles are made available in the Mapbox format.
 TileMatrixSets: Tile Matrix Sets
-TileMatrixSetsText: |-
+TileMatrixSetsDatasetText: |-
   Description of the Tile Matrix Sets that are made available via this API. Note that all zoom levels
   of the tile matrix are described. See the <i>Tile Matrix Set Limits</i> on the <a href="tiles" aria-label="Go to tiles">Tiles</a>
   pages to see what zoom levels are supported by this API.
+TileMatrixSetsCollectionText: |-
+  Description of the Tile Matrix Sets that are made available via this API. Note that all zoom levels
+  of the tile matrix are described. See the <i>Tile Matrix Set Limits</i> on the Tiles pages 
+  (within the <a href="collections" aria-label="Go to collections">collections</a>) to see what zoom levels are supported by this API.
+
 
 # Conformance page
 ConformanceAbstract: Below are references to OGC API conformance classes to which this service conforms. <br/>The status column indicates whether the given specification is deemed an official standard by the OGC.
@@ -58,19 +65,18 @@ Draft: Draft
 NetherlandsRDNewQuadAbstract: |-
   The tiles can be requested via the URL template below, where
   <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
-  <a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="Go to tile matrix set NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme. In some tools it is
-  also possible to load this through <a href="tiles/NetherlandsRDNewQuad?f=tilejson" aria-label="Go to NetherlandsRDNewQuad as TileJSON">TileJSON</a>.
+  <a href="tileMatrixSets/NetherlandsRDNewQuad" aria-label="Go to tile matrix set NetherlandsRDNewQuad">NetherlandsRDNewQuad</a> tiling scheme. 
+  In some tools it is also possible to load this through
 WebMercatorQuadAbstract: |-
   The tiles can be requested via the URL template below, where
   <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
   <a href="tileMatrixSets/WebMercatorQuad" aria-label="Go to tile matrix set WebMercatorQuad">WebMercatorQuad</a> tiling scheme. In some tools it is
-  also possible to load this through <a href="tiles/WebMercatorQuad?f=tilejson" aria-label="Go to WebMercatorQuad as TileJSON">TileJSON</a>.
+  In some tools it is also possible to load this through
 EuropeanETRS89_LAEAQuadAbstract: |-
   The tiles can be requested via the URL template below, where
   <small><code>{z}/{y}/{x}</code></small> is a reference to a tile according to the
   <a href="tileMatrixSets/EuropeanETRS89_LAEAQuad" aria-label="Go to tile matrix set EuropeanETRS89_LAEAQuad">EuropeanETRS89_LAEAQuad</a> tiling scheme.
   In some tools it is also possible to load this through
-  <a href="tiles/EuropeanETRS89_LAEAQuad?f=tilejson" aria-label="Go to EuropeanETRS89_LAEAQuad as TileJSON">TileJSON</a>.
 AvailableZoomLevels: The tiles are available at the following zoomlevels
 ZoomLevel: Zoom level
 MinimumValue: Minimum value
@@ -97,6 +103,8 @@ GoTo: Go to the
 ViewIn: View in the
 Browse: Browse through the
 FeaturesExplanation: GeoJSON is an open and widely accepted format for feature data and the first choice for many (web) applications. However, it formally only supports the WGS84 projection. JSON-FG is an extension of GeoJSON and does offer official support for other projections. Since JSON-FG is a recent development, from a compatibility point of view GeoJSON is also offered in other projections for the time being.
+CollectionTilesHTML: This collection is available as vector tiles in one or multiple projections.
+CollectionTilesPlain: This collection is available as vector tiles in one or multiple projections.
 
 # Features page
 Geometry: geometry

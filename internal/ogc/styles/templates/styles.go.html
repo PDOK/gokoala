@@ -14,13 +14,13 @@
   <div class="row">
     <div class="col-md-6">
       {{ $baseUrl := .Config.BaseURL }}
-      {{ $defaultSrs := (index .Config.OgcAPI.Tiles.SupportedSrs 0)}}
-      {{ $projections := dict "EPSG:28992" "NetherlandsRDNewQuad" "EPSG:3035" "EuropeanETRS89_LAEAQuad" "EPSG:3857" "WebMercatorQuad" }}
+      {{ $defaultSrs := (index .Params.SupportedProjections 0)}}
+      {{ $projections := .Params.AllProjections }}
       {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}
       <table class="table table-borderless table-sm w-auto">
         <tbody>
           <tr>
-          {{ if and (eq (len .Config.OgcAPI.Styles.SupportedStyles) 1) (eq (len .Config.OgcAPI.Tiles.SupportedSrs) 1) }}
+          {{ if and (eq (len .Config.OgcAPI.Styles.SupportedStyles) 1) (eq (len .Params.SupportedProjections) 1) }}
             <td class="w-auto text-nowrap fw-bold">
               Style
             </td>
@@ -32,7 +32,7 @@
               <label for="styles" class="col-form-label fw-bold">Style</label>
             </td>
             <td class="w-auto px-2">
-              {{ $supportedSrs := .Config.OgcAPI.Tiles.SupportedSrs }}
+              {{ $supportedSrs := .Params.SupportedProjections }}
               <select id="styles" class="form-select">
                 {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
                 {{ range $srs := $supportedSrs }}

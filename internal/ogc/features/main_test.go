@@ -29,7 +29,7 @@ func init() {
 	}
 }
 
-func TestFeatures_CollectionContent(t *testing.T) {
+func TestFeatures(t *testing.T) {
 	type fields struct {
 		configFile   string
 		url          string
@@ -78,7 +78,7 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
-				url:          "http://localhost:8080/collections/tunneldelen/items?f=json&cursor=Dv4%7CNwyr1Q&limit=2",
+				url:          "http://localhost:8080/collections/tunneldelen/items?cursor=Dv4%7CNwyr1Q&limit=2",
 				collectionID: "foo",
 				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
@@ -462,6 +462,48 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			},
 		},
 		{
+			name: "Request mapsheets as JSON",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_mapsheets.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
+				collectionID: "example_mapsheets",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_mapsheets.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request mapsheets as JSON-FG",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_mapsheets.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=2&f=jsonfg",
+				collectionID: "example_mapsheets",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_mapsheets_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request mapsheets as HTML",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_mapsheets.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
+				collectionID: "example_mapsheets",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_mapsheets.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request slow response, hitting query timeout",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
@@ -487,6 +529,48 @@ func TestFeatures_CollectionContent(t *testing.T) {
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_query_timeout_features.json",
 				statusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "Request features with relation to other feature (href based on external FID)",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "standplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_with_rel_as_link.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features with relation to other feature (href based on external FID) as HTML hyperlink",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "standplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_with_rel_as_link_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features for collection with specific web/viewer configuration, to make sure this is reflected in the HTML output",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
+				collectionID: "ligplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_webconfig_snippet.html",
+				statusCode: http.StatusOK,
 			},
 		},
 	}
@@ -827,6 +911,20 @@ func TestFeatures_Feature(t *testing.T) {
 				statusCode: http.StatusInternalServerError,
 			},
 		},
+		{
+			name: "Request feature with specific web/viewer configuration, and make sure this is reflected in the HTML output",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=html",
+				collectionID: "ligplaatsen",
+				featureID:    "4030",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_webconfig_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -909,7 +1007,10 @@ func normalize(s string) string {
 }
 
 func printActual(rr *httptest.ResponseRecorder) {
-	log.Print("\n==> ACTUAL JSON RESPONSE (copy/paste and compare with response in file):")
+	log.Print("\n===========================\n")
+	log.Print("\n==> ACTUAL RESPONSE BELOW. Copy/paste and compare with response in file. " +
+		"Note that In the case of HTML output we only compare a relevant snippet instead of the whole file.")
+	log.Print("\n===========================\n")
 	log.Print(rr.Body.String()) // to ease debugging & updating expected results
-	log.Print("\n=========\n")
+	log.Print("\n===========================\n")
 }

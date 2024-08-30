@@ -79,13 +79,13 @@
     {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
     ,
     {
-      "rel" : "items",
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector",
       "type" : "application/json",
       "title" : "The JSON representation of the {{ .Params.ID }} tiles served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/tiles?f=json"
     },
     {
-      "rel" : "alternate",
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector",
       "type" : "text/html",
       "title" : "The HTML representation of the {{ .Params.ID }} tiles served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/tiles?f=html"

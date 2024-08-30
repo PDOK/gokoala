@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/google/uuid"
 
 	"github.com/PDOK/gokoala/internal/engine"
@@ -27,7 +28,7 @@ const (
 )
 
 var (
-	collections            map[string]*config.GeoSpatialCollectionMetadata
+	configuredCollections  map[string]config.GeoSpatialCollection
 	emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 )
 
@@ -45,13 +46,14 @@ type Features struct {
 	engine                    *engine.Engine
 	datasources               map[DatasourceKey]ds.Datasource
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
+	defaultProfile            domain.Profile
 
 	html *htmlFeatures
 	json *jsonFeatures
 }
 
 func NewFeatures(e *engine.Engine) *Features {
-	collections = cacheCollectionsMetadata(e)
+	configuredCollections = cacheConfiguredFeatureCollections(e)
 	datasources := createDatasources(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources)
 
@@ -61,6 +63,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		engine:                    e,
 		datasources:               datasources,
 		configuredPropertyFilters: configuredPropertyFilters,
+		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL, util.Keys(configuredCollections)),
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}
@@ -85,13 +88,13 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := collections[collectionID]
+		collection, ok := configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			cfg.OgcAPI.Features.PropertyFiltersForCollection(collectionID), hasDateTime(collection)}
+			getConfiguredPropertyFilters(collection), hasDateTime(collection)}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -113,7 +116,7 @@ func (f *Features) Features() http.HandlerFunc {
 				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
-			})
+			}, f.defaultProfile)
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
 				return
@@ -134,7 +137,7 @@ func (f *Features) Features() http.HandlerFunc {
 			})
 			if err == nil && fids != nil {
 				datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids)
+				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.defaultProfile)
 			}
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
@@ -149,12 +152,11 @@ func (f *Features) Features() http.HandlerFunc {
 		switch format {
 		case engine.FormatHTML:
 			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.configuredPropertyFilters[collectionID],
-				cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID), fc)
+				propertyFilters, f.configuredPropertyFilters[collectionID], collection.Features, fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, fc)
+			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
 		case engine.FormatJSONFG:
-			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, fc, contentCrs)
+			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, collection.Features, fc, contentCrs)
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return
@@ -164,8 +166,6 @@ func (f *Features) Features() http.HandlerFunc {
 
 // Feature serves a single Feature
 func (f *Features) Feature() http.HandlerFunc {
-	cfg := f.engine.Config
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -173,7 +173,8 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
-		if _, ok := collections[collectionID]; !ok {
+		collection, ok := configuredCollections[collectionID]
+		if !ok {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
@@ -189,10 +190,9 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
-		mapSheetProperties := cfg.OgcAPI.Features.MapSheetPropertiesForCollection(collectionID)
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID)
+		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.defaultProfile)
 		if err != nil {
 			handleFeatureQueryError(w, collectionID, featureID, err)
 			return
@@ -205,11 +205,11 @@ func (f *Features) Feature() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.feature(w, r, collectionID, mapSheetProperties, feat)
+			f.html.feature(w, r, collectionID, collection.Features, feat)
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, r, collectionID, feat, url)
+			f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
 		case engine.FormatJSONFG:
-			f.json.featureAsJSONFG(w, r, collectionID, feat, url, contentCrs)
+			f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return
@@ -230,10 +230,10 @@ func parseFeatureID(r *http.Request) (any, error) {
 	return featureID, nil
 }
 
-func cacheCollectionsMetadata(e *engine.Engine) map[string]*config.GeoSpatialCollectionMetadata {
-	result := make(map[string]*config.GeoSpatialCollectionMetadata)
+func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {
+	result := make(map[string]config.GeoSpatialCollection)
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
-		result[collection.ID] = collection.Metadata
+		result[collection.ID] = collection
 	}
 	return result
 }
@@ -385,17 +385,24 @@ func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Ext
 		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
 }
 
-func getTemporalCriteria(collection *config.GeoSpatialCollectionMetadata, referenceDate time.Time) ds.TemporalCriteria {
+func getConfiguredPropertyFilters(collection config.GeoSpatialCollection) []config.PropertyFilter {
+	if collection.Features != nil && collection.Features.Filters.Properties != nil {
+		return collection.Features.Filters.Properties
+	}
+	return []config.PropertyFilter{}
+}
+
+func getTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {
 	var temporalCriteria ds.TemporalCriteria
 	if hasDateTime(collection) {
 		temporalCriteria = ds.TemporalCriteria{
 			ReferenceDate:     referenceDate,
-			StartDateProperty: collection.TemporalProperties.StartDate,
-			EndDateProperty:   collection.TemporalProperties.EndDate}
+			StartDateProperty: collection.Metadata.TemporalProperties.StartDate,
+			EndDateProperty:   collection.Metadata.TemporalProperties.EndDate}
 	}
 	return temporalCriteria
 }
 
-func hasDateTime(collection *config.GeoSpatialCollectionMetadata) bool {
-	return collection != nil && collection.TemporalProperties != nil
+func hasDateTime(collection config.GeoSpatialCollection) bool {
+	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
