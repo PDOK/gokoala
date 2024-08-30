@@ -26,7 +26,7 @@
     "@angular/platform-browser-dynamic": "18.0.6",
     "ngx-logger": "^5.0.12",
     "ol": "^9.2.4",
-    "ol-mapbox-style": "^12.3.4",
+    "ol-mapbox-style": "^12.3.5",
     "proj4": "^2.11.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.6.3"
