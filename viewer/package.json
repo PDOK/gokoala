@@ -2,7 +2,6 @@
   "name": "view-component",
   "version": "1.0.0",
   "type": "module",
-  "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
