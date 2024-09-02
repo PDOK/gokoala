@@ -1,8 +1,11 @@
 {
   "version": 8,
   "name": "teststyle",
-  "id": "test style no metadata",
-
+  "id": "test style id",
+  "metadata": {
+    "ol:webfonts": "https://test/resources/fonts/{font-family}/{fontweight}{-fontstyle}.css",
+    "gokoala:title-items": "id"
+  },
   "layers": [
     {
       "id": "Area print border",
@@ -24,14 +27,12 @@
       },
       "layout": {
         "symbol-placement": "point",
-
         "text-field": "{name}",
         "text-size": 12
       },
       "source": "test",
       "source-layer": "testArea"
     },
-
     {
       "id": "line",
       "type": "line",
@@ -41,9 +42,19 @@
       },
       "source": "test",
       "source-layer": "testline"
+    },
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "test",
+      "source-layer": "testpoint",
+      "paint": {
+        "circle-color": "#B5DF0A",
+        "circle-radius": 4.3,
+        "circle-stroke-color": "#000000"
+      }
     }
   ],
-
   "sources": {
     "test": {
       "type": "vector",
