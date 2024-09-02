@@ -60,6 +60,9 @@ export class LegendViewComponent implements OnInit, OnChanges {
     if (this.styleUrl) {
       this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe(style => {
         this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)
+        if (this.mapboxStyle.metadata?.['gokoala:title-items']) {
+          this.titleItems = this.mapboxStyle.metadata?.['gokoala:title-items']
+        }
         if (this.titleItems) {
           if (this.titleItems.toLocaleLowerCase() === 'id') {
             this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, [])

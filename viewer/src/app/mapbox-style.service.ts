@@ -20,12 +20,18 @@ export type LegendItem = {
 
 export interface MapboxStyle {
   version: number
+  metadata?: Metadata
   name: string
   id: string
   sprite: string
   glyphs: string
   layers: Layer[]
   sources: NonNullable<unknown>
+}
+
+export interface Metadata {
+  'ol:webfonts'?: string
+  'gokoala:title-items'?: string
 }
 
 export interface Layer {
@@ -115,12 +121,8 @@ export class MapboxStyleService {
     return (paint as FillPattern).stops !== undefined
   }
 
-  getItems(
-    style: MapboxStyle,
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    titleFunction: Function,
-    customTitlePart: string[]
-  ): LegendItem[] {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  getItems(style: MapboxStyle, titleFunction: Function, customTitlePart: string[]): LegendItem[] {
     const names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
       const p: IProperties = extractPropertiesFromFilter({}, layer.filter)
