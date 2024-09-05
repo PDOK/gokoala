@@ -220,7 +220,7 @@ func TestTiles_Tile(t *testing.T) {
 				tileCol:         "15",
 			},
 			want: want{
-				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
+				body:       "specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -252,7 +252,7 @@ func TestTiles_Tile(t *testing.T) {
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
 			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
-			handler := tiles.Tile(newEngine.Config.OgcAPI.Tiles.DatasetTiles, nil)
+			handler := tiles.Tile(*newEngine.Config.OgcAPI.Tiles.DatasetTiles)
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
@@ -372,7 +372,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 				collection:      "example",
 			},
 			want: want{
-				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
+				body:       "specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -390,7 +390,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			geoDataTiles := map[string]config.Tiles{newEngine.Config.OgcAPI.Tiles.Collections[0].ID: newEngine.Config.OgcAPI.Tiles.Collections[0].Tiles.GeoDataTiles}
-			handler := tiles.Tile(nil, geoDataTiles)
+			handler := tiles.TileForCollection(geoDataTiles)
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
