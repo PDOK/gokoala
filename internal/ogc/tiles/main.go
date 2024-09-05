@@ -85,11 +85,12 @@ func NewTiles(e *engine.Engine) *Tiles {
 		})
 		e.Router.Get(tilesPath, tiles.TilesetsList())
 		e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
-		e.Router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(*e.Config.OgcAPI.Tiles.DatasetTiles))
-		e.Router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(*e.Config.OgcAPI.Tiles.DatasetTiles))
+		e.Router.Head(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(e.Config.OgcAPI.Tiles.DatasetTiles, nil))
+		e.Router.Get(tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(e.Config.OgcAPI.Tiles.DatasetTiles, nil))
 	}
 
 	// Collection-level tiles (geodata tiles in OGC spec)
+	geoDataTiles := map[string]config.Tiles{}
 	for _, coll := range e.Config.OgcAPI.Tiles.Collections {
 		if coll.Tiles == nil {
 			continue
@@ -99,11 +100,15 @@ func NewTiles(e *engine.Engine) *Tiles {
 			e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
 			util.Cast(AllProjections),
 		})
+		geoDataTiles[coll.ID] = coll.Tiles.GeoDataTiles
+	}
+	if len(geoDataTiles) != 0 {
 		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath, tiles.TilesetsListForCollection())
 		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}", tiles.TilesetForCollection())
-		e.Router.Head(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(coll.Tiles.GeoDataTiles))
-		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(coll.Tiles.GeoDataTiles))
+		e.Router.Head(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(nil, geoDataTiles))
+		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(nil, geoDataTiles))
 	}
+
 	return tiles
 }
 
@@ -155,7 +160,7 @@ func (t *Tiles) TilesetForCollection() http.HandlerFunc {
 }
 
 // Tile reverse proxy to configured tileserver/object storage. Assumes the backing resources is publicly accessible.
-func (t *Tiles) Tile(tileConfig config.Tiles) http.HandlerFunc {
+func (t *Tiles) Tile(datasetTilesCfg *config.Tiles, tilesCfgPerCollection map[string]config.Tiles) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
 		tileMatrix := chi.URLParam(r, "tileMatrix")
@@ -174,15 +179,28 @@ func (t *Tiles) Tile(tileConfig config.Tiles) http.HandlerFunc {
 			tileCol = tileCol[:len(tileCol)-4] // remove .pbf extension
 		}
 
-		// ogc spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
+		// Get tiles config, either for top-level (dataset) or collection-level (geodata) tiles.
+		var tilesCfg config.Tiles
+		switch {
+		case datasetTilesCfg != nil:
+			tilesCfg = *datasetTilesCfg
+		case chi.URLParam(r, "collectionId") != "":
+			tilesCfg = tilesCfgPerCollection[chi.URLParam(r, "collectionId")]
+		default:
+			log.Printf("invalid tiles configuration: either dataset tiles or geodata tiles should be configured")
+			engine.RenderProblem(engine.ProblemServerError, w)
+			return
+		}
+
+		// OGC spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
 		replacer := strings.NewReplacer("{tms}", tileMatrixSetID, "{z}", tileMatrix, "{x}", tileCol, "{y}", tileRow)
 		tilesTmpl := defaultTilesTmpl
-		if tileConfig.URITemplateTiles != nil {
-			tilesTmpl = *tileConfig.URITemplateTiles
+		if tilesCfg.URITemplateTiles != nil {
+			tilesTmpl = *tilesCfg.URITemplateTiles
 		}
 		path, _ := url.JoinPath("/", replacer.Replace(tilesTmpl))
 
-		target, err := url.Parse(tileConfig.TileServer.String() + path)
+		target, err := url.Parse(tilesCfg.TileServer.String() + path)
 		if err != nil {
 			log.Printf("invalid target url, can't proxy tiles: %v", err)
 			engine.RenderProblem(engine.ProblemServerError, w)
@@ -215,7 +233,6 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 }
 
 func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollection, data templateData) {
-
 	var breadcrumbs []engine.Breadcrumb
 	path := tilesPath
 	collectionID := ""
