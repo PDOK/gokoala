@@ -1,7 +1,8 @@
 package tiles
 
 import (
-	"log"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -90,6 +91,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 	}
 
 	// Collection-level tiles (geodata tiles in OGC spec)
+	geoDataTiles := map[string]config.Tiles{}
 	for _, coll := range e.Config.OgcAPI.Tiles.Collections {
 		if coll.Tiles == nil {
 			continue
@@ -99,11 +101,15 @@ func NewTiles(e *engine.Engine) *Tiles {
 			e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
 			util.Cast(AllProjections),
 		})
+		geoDataTiles[coll.ID] = coll.Tiles.GeoDataTiles
+	}
+	if len(geoDataTiles) != 0 {
 		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath, tiles.TilesetsListForCollection())
 		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}", tiles.TilesetForCollection())
-		e.Router.Head(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(coll.Tiles.GeoDataTiles))
-		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.Tile(coll.Tiles.GeoDataTiles))
+		e.Router.Head(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.TileForCollection(geoDataTiles))
+		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath+"/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", tiles.TileForCollection(geoDataTiles))
 	}
+
 	return tiles
 }
 
@@ -154,42 +160,88 @@ func (t *Tiles) TilesetForCollection() http.HandlerFunc {
 	}
 }
 
-// Tile reverse proxy to configured tileserver/object storage. Assumes the backing resources is publicly accessible.
-func (t *Tiles) Tile(tileConfig config.Tiles) http.HandlerFunc {
+// Tile reverse proxy to configured tileserver/object storage. Assumes the backing resource is publicly accessible.
+func (t *Tiles) Tile(tilesConfig config.Tiles) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
 		tileMatrix := chi.URLParam(r, "tileMatrix")
 		tileRow := chi.URLParam(r, "tileRow")
-		tileCol := chi.URLParam(r, "tileCol")
-
-		// We support content negotiation using Accept header and ?f= param, but also
-		// using the .pbf extension. This is for backwards compatibility.
-		if !strings.HasSuffix(tileCol, "."+engine.FormatMVTAlternative) {
-			// if no format is specified, default to mvt
-			if format := strings.Replace(t.engine.CN.NegotiateFormat(r), engine.FormatJSON, engine.FormatMVT, 1); format != engine.FormatMVT && format != engine.FormatMVTAlternative {
-				engine.RenderProblem(engine.ProblemBadRequest, w, "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported")
-				return
-			}
-		} else {
-			tileCol = tileCol[:len(tileCol)-4] // remove .pbf extension
-		}
-
-		// ogc spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
-		replacer := strings.NewReplacer("{tms}", tileMatrixSetID, "{z}", tileMatrix, "{x}", tileCol, "{y}", tileRow)
-		tilesTmpl := defaultTilesTmpl
-		if tileConfig.URITemplateTiles != nil {
-			tilesTmpl = *tileConfig.URITemplateTiles
-		}
-		path, _ := url.JoinPath("/", replacer.Replace(tilesTmpl))
-
-		target, err := url.Parse(tileConfig.TileServer.String() + path)
+		tileCol, err := getTileColumn(r, t.engine.CN.NegotiateFormat(r))
 		if err != nil {
-			log.Printf("invalid target url, can't proxy tiles: %v", err)
-			engine.RenderProblem(engine.ProblemServerError, w)
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+			return
+		}
+
+		target, err := createTilesURL(tileMatrixSetID, tileMatrix, tileCol, tileRow, tilesConfig)
+		if err != nil {
+			engine.RenderProblemAndLog(engine.ProblemServerError, w, err)
 			return
 		}
 		t.engine.ReverseProxy(w, r, target, true, engine.MediaTypeMVT)
 	}
+}
+
+// TileForCollection reverse proxy to configured tileserver/object storage for tiles within a given collection.
+// Assumes the backing resource is publicly accessible.
+func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tiles) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		collectionID := chi.URLParam(r, "collectionId")
+		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
+		tileMatrix := chi.URLParam(r, "tileMatrix")
+		tileRow := chi.URLParam(r, "tileRow")
+		tileCol, err := getTileColumn(r, t.engine.CN.NegotiateFormat(r))
+		if err != nil {
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+			return
+		}
+
+		tilesConfig, ok := tilesConfigByCollection[collectionID]
+		if !ok {
+			err = fmt.Errorf("no tiles available for collection: %s", collectionID)
+			engine.RenderProblemAndLog(engine.ProblemNotFound, w, err, err.Error())
+			return
+		}
+		target, err := createTilesURL(tileMatrixSetID, tileMatrix, tileCol, tileRow, tilesConfig)
+		if err != nil {
+			engine.RenderProblemAndLog(engine.ProblemServerError, w, err)
+			return
+		}
+		t.engine.ReverseProxy(w, r, target, true, engine.MediaTypeMVT)
+	}
+}
+
+func getTileColumn(r *http.Request, format string) (string, error) {
+	tileCol := chi.URLParam(r, "tileCol")
+
+	// We support content negotiation using Accept header and ?f= param, but also
+	// using the .pbf extension. This is for backwards compatibility.
+	if !strings.HasSuffix(tileCol, "."+engine.FormatMVTAlternative) {
+		// if no format is specified, default to mvt
+		if f := strings.Replace(format, engine.FormatJSON, engine.FormatMVT, 1); f != engine.FormatMVT && f != engine.FormatMVTAlternative {
+			return "", errors.New("specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported")
+		}
+	} else {
+		tileCol = tileCol[:len(tileCol)-4] // remove .pbf extension
+	}
+	return tileCol, nil
+}
+
+func createTilesURL(tileMatrixSetID string, tileMatrix string, tileCol string,
+	tileRow string, tilesCfg config.Tiles) (*url.URL, error) {
+
+	tilesTmpl := defaultTilesTmpl
+	if tilesCfg.URITemplateTiles != nil {
+		tilesTmpl = *tilesCfg.URITemplateTiles
+	}
+	// OGC spec is (default) z/row/col but tileserver is z/col/row (z/x/y)
+	replacer := strings.NewReplacer("{tms}", tileMatrixSetID, "{z}", tileMatrix, "{x}", tileCol, "{y}", tileRow)
+	path, _ := url.JoinPath("/", replacer.Replace(tilesTmpl))
+
+	target, err := url.Parse(tilesCfg.TileServer.String() + path)
+	if err != nil {
+		return nil, fmt.Errorf("invalid target url, can't proxy tiles: %w", err)
+	}
+	return target, nil
 }
 
 func renderTileMatrixTemplates(e *engine.Engine) {
@@ -215,7 +267,6 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 }
 
 func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollection, data templateData) {
-
 	var breadcrumbs []engine.Breadcrumb
 	path := tilesPath
 	collectionID := ""

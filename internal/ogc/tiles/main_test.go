@@ -220,7 +220,7 @@ func TestTiles_Tile(t *testing.T) {
 				tileCol:         "15",
 			},
 			want: want{
-				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
+				body:       "specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -269,6 +269,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 		tileMatrix      string
 		tileRow         string
 		tileCol         string
+		collection      string
 	}
 	type want struct {
 		body       string
@@ -288,6 +289,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 				tileMatrix:      "0",
 				tileRow:         "0",
 				tileCol:         "0",
+				collection:      "example",
 			},
 			want: want{
 				body:       "/NetherlandsRDNewQuad/0/0/0.pbf",
@@ -303,6 +305,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 				tileMatrix:      "5",
 				tileRow:         "10",
 				tileCol:         "15",
+				collection:      "example",
 			},
 			want: want{
 				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
@@ -318,6 +321,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 				tileMatrix:      "5",
 				tileRow:         "10",
 				tileCol:         "15",
+				collection:      "example",
 			},
 			want: want{
 				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
@@ -333,6 +337,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 				tileMatrix:      "5",
 				tileRow:         "10",
 				tileCol:         "15",
+				collection:      "example",
 			},
 			want: want{
 				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
@@ -348,6 +353,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 				tileMatrix:      "5",
 				tileRow:         "10",
 				tileCol:         "15.pbf",
+				collection:      "example",
 			},
 			want: want{
 				body:       "/NetherlandsRDNewQuad/5/15/10.pbf",
@@ -363,16 +369,33 @@ func TestTiles_TileForCollection(t *testing.T) {
 				tileMatrix:      "5",
 				tileRow:         "10",
 				tileCol:         "15",
+				collection:      "example",
 			},
 			want: want{
-				body:       "Specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
+				body:       "specify tile format. Currently only Mapbox Vector Tiles (?f=mvt) tiles are supported",
 				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "invalid/NetherlandsRDNewQuad/5/10/15?=pbf",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/invalid/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=pbf",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+				collection:      "invalid",
+			},
+			want: want{
+				body:       "no tiles available for collection: invalid",
+				statusCode: http.StatusNotFound,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := createTileRequest(tt.fields.url, tt.fields.tileMatrixSetID, tt.fields.tileMatrix, tt.fields.tileRow, tt.fields.tileCol)
+			req, err := createTileRequest(tt.fields.url, tt.fields.tileMatrixSetID, tt.fields.tileMatrix, tt.fields.tileRow, tt.fields.tileCol, tt.fields.collection)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -382,7 +405,8 @@ func TestTiles_TileForCollection(t *testing.T) {
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
 			assert.NoError(t, err)
 			tiles := NewTiles(newEngine)
-			handler := tiles.Tile(newEngine.Config.OgcAPI.Tiles.Collections[0].Tiles.GeoDataTiles)
+			geoDataTiles := map[string]config.Tiles{newEngine.Config.OgcAPI.Tiles.Collections[0].ID: newEngine.Config.OgcAPI.Tiles.Collections[0].Tiles.GeoDataTiles}
+			handler := tiles.TileForCollection(geoDataTiles)
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
@@ -842,9 +866,13 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	return rr, ts
 }
 
-func createTileRequest(url string, tileMatrixSetID string, tileMatrix string, tileRow string, tileCol string) (*http.Request, error) {
+func createTileRequest(url string, tileMatrixSetID string, tileMatrix string, tileRow string, tileCol string, collectionID ...string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
+	for _, id := range collectionID {
+		rctx.URLParams.Add("collectionId", id)
+	}
+
 	rctx.URLParams.Add("tileMatrixSetId", tileMatrixSetID)
 	rctx.URLParams.Add("tileMatrix", tileMatrix)
 	rctx.URLParams.Add("tileRow", tileRow)

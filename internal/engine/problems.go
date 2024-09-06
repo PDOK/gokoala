@@ -46,3 +46,9 @@ func RenderProblem(kind ProblemKind, w http.ResponseWriter, details ...string) {
 		log.Printf("failed to write response: %v", err)
 	}
 }
+
+// RenderProblemAndLog writes RFC 7807 (https://tools.ietf.org/html/rfc7807) problem to client + logs message to stdout.
+func RenderProblemAndLog(kind ProblemKind, w http.ResponseWriter, err error, details ...string) {
+	log.Printf("%v", err.Error())
+	RenderProblem(kind, w, details...)
+}
