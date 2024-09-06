@@ -11,7 +11,7 @@ metadata: &addressMetadata
       - 7.37403
   storageCrs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
 
-
+# main config
 version: 1.0.0
 title: Demo of all OGC specs in one API
 # shortened title, used in breadcrumb path
@@ -96,6 +96,8 @@ ogcApi:
     collections:
       - id: addresses  # same collection as the geovolumes/tiles
         metadata: *addressMetadata
+        web:
+          urlAsHyperlink: true
       - id: addresses2
         tableName: addresses
 
@@ -106,6 +108,7 @@ ogcApi:
         metadata: *addressMetadata
         tileServerPath: "NewYork/3DTiles"
         uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+
   styles:
     default: dummy-style
     stylesDir: ./examples/resources

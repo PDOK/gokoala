@@ -529,6 +529,10 @@ type WebConfig struct {
 	// Viewer config for displaying a single feature on a map
 	// +optional
 	FeatureViewer *FeaturesViewer `yaml:"featureViewer,omitempty" json:"featureViewer,omitempty"`
+
+	// Whether URLs (to external resources) in the HTML representation of features should be rendered as hyperlinks.
+	// +optional
+	URLAsHyperlink bool `yaml:"urlAsHyperlink,omitempty" json:"urlAsHyperlink,omitempty"`
 }
 
 // +kubebuilder:object:generate=true

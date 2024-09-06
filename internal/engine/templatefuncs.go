@@ -3,6 +3,7 @@ package engine
 import (
 	htmltemplate "html/template"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 	texttemplate "text/template"
@@ -19,6 +20,7 @@ import (
 
 var (
 	globalTemplateFuncs texttemplate.FuncMap
+	linkRegex           = regexp.MustCompile(`https?://\S+`)
 )
 
 // Initialize functions to be used in html/json/etc templates
@@ -30,6 +32,7 @@ func init() {
 		"humansize":  humanSize,
 		"bytessize":  bytesSize,
 		"isdate":     isDate,
+		"islink":     isLink,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -108,6 +111,14 @@ func bytesSize(s string) int64 {
 func isDate(v any) bool {
 	if _, ok := v.(time.Time); ok {
 		return true
+	}
+	return false
+}
+
+// isLink true when given input is an HTTP(s) URL, false otherwise
+func isLink(v any) bool {
+	if text, ok := v.(string); ok {
+		return linkRegex.MatchString(text)
 	}
 	return false
 }

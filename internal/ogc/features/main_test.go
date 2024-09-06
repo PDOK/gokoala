@@ -560,7 +560,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features for collection with specific web/viewer configuration, to make sure this is reflected in the HTML output",
+			name: "Request features for collection with specific viewer configuration, to make sure this is reflected in the HTML output",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
@@ -570,6 +570,20 @@ func TestFeatures(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_features_webconfig_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features for collection with specific web configuration, and make sure URLs are rendered as hyperlinks in HTML output",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
+				collectionID: "ligplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_webconfig_hyperlink_snippet.html",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -922,6 +936,20 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_feature_webconfig_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request feature with specific web configuration, and make sure URLs are rendered as hyperlinks in HTML output",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=html",
+				collectionID: "ligplaatsen",
+				featureID:    "4030",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_webconfig_hyperlink_snippet.html",
 				statusCode: http.StatusOK,
 			},
 		},
