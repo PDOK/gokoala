@@ -572,7 +572,7 @@ const (
 type OgcAPITiles struct {
 	// Tiles for the entire dataset, these are hosted at the root of the API (/tiles endpoint).
 	// +optional
-	DatasetTiles *Tiles `yaml:",inline" json:",inline" validate:"required_without_all=Collections"`
+	DatasetTiles *Tiles `yaml:",inline" json:",inline"`
 
 	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
