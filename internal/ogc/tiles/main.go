@@ -195,7 +195,13 @@ func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tile
 			return
 		}
 
-		target, err := createTilesURL(tileMatrixSetID, tileMatrix, tileCol, tileRow, tilesConfigByCollection[collectionID])
+		tilesConfig, ok := tilesConfigByCollection[collectionID]
+		if !ok {
+			err = fmt.Errorf("no tiles available for collection: %s", collectionID)
+			engine.RenderProblemAndLog(engine.ProblemNotFound, w, err, err.Error())
+			return
+		}
+		target, err := createTilesURL(tileMatrixSetID, tileMatrix, tileCol, tileRow, tilesConfig)
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemServerError, w, err)
 			return

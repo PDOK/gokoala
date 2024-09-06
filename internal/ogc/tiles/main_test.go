@@ -376,6 +376,22 @@ func TestTiles_TileForCollection(t *testing.T) {
 				statusCode: http.StatusBadRequest,
 			},
 		},
+		{
+			name: "invalid/NetherlandsRDNewQuad/5/10/15?=pbf",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/invalid/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=pbf",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+				collection:      "invalid",
+			},
+			want: want{
+				body:       "no tiles available for collection: invalid",
+				statusCode: http.StatusNotFound,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
