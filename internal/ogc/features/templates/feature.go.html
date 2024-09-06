@@ -48,18 +48,26 @@
             {{ $skipKeys = append $skipKeys $mapSheetProperties.Size }}
             {{ end }}
             {{ range $key, $value := .Params.Properties }}
-                {{ if not (has $key $skipKeys) }}
+                {{- if not (has $key $skipKeys) -}}
                 <tr>
                     <td class="w-25">{{ $key }}</td>
-                    {{ if isdate $value }}
+
+                    {{- if isdate $value -}}
                     <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
-                    {{ else if hasSuffix ".href" $key }}
+
+                    {{- else if hasSuffix ".href" $key -}}
+                    {{- /* render links for relations between features (OGC API part 5) */ -}}
                     <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
-                    {{ else }}
+
+                    {{- else if and $webConfig $webConfig.URLAsHyperlink (islink $value) -}}
+                    {{- /* render links to arbitray (external) URLs */ -}}
+                    <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+
+                    {{- else -}}
                     <td>{{ $value }}</td>
-                    {{ end }}
+                    {{- end -}}
                 </tr>
-                {{ end }}
+                {{- end -}}
             {{ end }}
             {{/* for map sheets collection, add download button */}}
             {{ if $mapSheetProperties }}

@@ -27,3 +27,4 @@ ogcApi:
             maxScale: 40000
           featureViewer:
             minScale: 22
+          urlAsHyperlink: true
