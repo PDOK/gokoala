@@ -40,8 +40,8 @@ ConformanceText: The conformance describes which OGC standards this API implemen
 Collections: Collections
 CollectionsText: This API offers one or more collections that divide the dataset in various object types, which can be called separately through for instance <i>features</i> or <i>tiles</i>.
 Tiles: Tiles
-TilesTextHTML: This entire dataset is available as vector tiles in multiple projections.
-TilesTextPlain: This entire dataset is available as vector tiles in multiple projections.
+TilesTextHTML: This dataset is available as vector tiles in one or multiple projections.
+TilesTextPlain: This dataset is available as vector tiles in one or multiple projections.
 WithStylesHTML: One or more <a href="styles" aria-label="Go to styles">styles</a> are also available.
 WithStylesPlain: One or more styles are also available.
 Styles: Styles
