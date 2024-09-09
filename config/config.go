@@ -104,14 +104,6 @@ func validate(config *Config) error {
 	if config.OgcAPI.Features != nil {
 		return validateFeatureCollections(config.OgcAPI.Features.Collections)
 	}
-	if config.OgcAPI.Tiles != nil && len(config.OgcAPI.Tiles.Collections) > 0 {
-		for _, coll := range config.OgcAPI.Tiles.Collections {
-			if coll.Tiles == nil {
-				return fmt.Errorf("invalid tiles config provided: no tileserver(s) "+
-					"configured for collection-level tiles. Collection: %s", coll.ID)
-			}
-		}
-	}
 	return nil
 }
 
@@ -329,8 +321,10 @@ type GeoSpatialCollection struct {
 }
 
 type GeoSpatialCollectionJSON struct {
+	// Keep this in sync with the GeoSpatialCollection struct!
 	ID                           string                        `json:"id"`
 	Metadata                     *GeoSpatialCollectionMetadata `json:"metadata,omitempty"`
+	Links                        *CollectionLinks              `json:"links,omitempty"`
 	*CollectionEntry3dGeoVolumes `json:",inline"`
 	*CollectionEntryTiles        `json:",inline"`
 	*CollectionEntryFeatures     `json:",inline"`
@@ -342,6 +336,7 @@ func (c GeoSpatialCollection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(GeoSpatialCollectionJSON{
 		ID:                          c.ID,
 		Metadata:                    c.Metadata,
+		Links:                       c.Links,
 		CollectionEntry3dGeoVolumes: c.GeoVolumes,
 		CollectionEntryTiles:        c.Tiles,
 		CollectionEntryFeatures:     c.Features,

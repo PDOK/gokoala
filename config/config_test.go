@@ -53,14 +53,6 @@ func TestNewConfig(t *testing.T) {
 			wantErr:    true,
 			wantErrMsg: "validation for 'Version' failed on the 'semver' tag",
 		},
-		{
-			name: "fail on invalid config file for geodata tiles (collection-level tiles)",
-			args: args{
-				configFile: "internal/engine/testdata/config_invalid_geodatatiles.yaml",
-			},
-			wantErr:    true,
-			wantErrMsg: "invalid tiles config provided: no tileserver(s) configured for collection-level tiles",
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
