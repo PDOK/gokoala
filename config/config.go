@@ -107,7 +107,8 @@ func validate(config *Config) error {
 	if config.OgcAPI.Tiles != nil && len(config.OgcAPI.Tiles.Collections) > 0 {
 		for _, coll := range config.OgcAPI.Tiles.Collections {
 			if coll.Tiles == nil {
-				return errors.New("invalid tiles config provided: no tileserver(s) configured for collection-level tiles")
+				return fmt.Errorf("invalid tiles config provided: no tileserver(s) "+
+					"configured for collection-level tiles. Collection: %s", coll.ID)
 			}
 		}
 	}
