@@ -121,6 +121,22 @@ type CollectionLinks struct {
 	// <placeholder>
 }
 
+// +kubebuilder:object:generate=true
+type DownloadLink struct {
+	// Name of the provided download
+	Name string `yaml:"name" json:"name" validate:"required"`
+
+	// Full URL to the file to be downloaded
+	AssetURL *URL `yaml:"assetUrl" json:"assetUrl" validate:"required"`
+
+	// Approximate size of the file to be downloaded
+	// +optional
+	Size string `yaml:"size,omitempty" json:"size,omitempty"`
+
+	// Media type of the file to be downloaded
+	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
+}
+
 // Unique lists all unique GeoSpatialCollections (no duplicate IDs),
 // return results in alphabetic order
 func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
