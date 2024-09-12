@@ -43,14 +43,17 @@
                 <td class="w-auto text-nowrap fw-bold">
                   {{ i18n "UpdatedBy" }} {{ .Config.LastUpdatedBy }} {{ i18n "On" }}
                 </td>
-            {{ else }}
+                <td id="field-updated" class="w-auto px-2">
+                  {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+                </td>
+            {{ else if .Config.LastUpdated}}
                 <td class="w-auto text-nowrap fw-bold">
                   {{ i18n "LastUpdated" }}
                 </td>
+                <td id="field-updated" class="w-auto px-2">
+                  {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+                </td>
             {{ end }}
-            <td id="field-updated" class="w-auto px-2">
-              {{ if .Config.LastUpdated}}{{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}{{ end }}
-            </td>
         </tr>
         <tr>
           <td class="w-auto text-nowrap fw-bold">
