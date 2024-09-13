@@ -67,105 +67,92 @@ func TestNewConfig(t *testing.T) {
 	}
 }
 
-func TestGeoSpatialCollections_Unique(t *testing.T) {
+func TestGeoSpatialCollections_Ordering(t *testing.T) {
+	type args struct {
+		configFile     string
+		expectedOrder  []string
+		expectedTitles bool // ids are default, when true titles are used
+	}
 	tests := []struct {
 		name string
-		g    GeoSpatialCollections
-		want []GeoSpatialCollection
+		args args
 	}{
 		{
-			name: "empty input",
-			g:    nil,
-			want: []GeoSpatialCollection{},
-		},
-		{
-			name: "no dups, sorted by id",
-			g: []GeoSpatialCollection{
-				{
-					ID: "3",
-				},
-				{
-					ID: "1",
-				},
-				{
-					ID: "1",
-				},
-				{
-					ID: "2",
-				},
-			},
-			want: []GeoSpatialCollection{
-				{
-					ID: "1",
-				},
-				{
-					ID: "2",
-				},
-				{
-					ID: "3",
-				},
+			name: "should return collections in default order (alphabetic)",
+			args: args{
+				configFile:    "internal/engine/testdata/config_collections_order_alphabetic.yaml",
+				expectedOrder: []string{"A", "B", "C", "Z", "Z"},
 			},
 		},
 		{
-			name: "no dups, sorted by title",
-			g: []GeoSpatialCollection{
-				{
-					ID: "3",
-					Metadata: &GeoSpatialCollectionMetadata{
-						Title:         ptrTo("a"),
-						LastUpdatedBy: "",
-					},
-				},
-				{
-					ID: "1",
-					Metadata: &GeoSpatialCollectionMetadata{
-						Title:         ptrTo("c"),
-						LastUpdatedBy: "",
-					},
-				},
-				{
-					ID: "3",
-					Metadata: &GeoSpatialCollectionMetadata{
-						Title:         ptrTo("a"),
-						LastUpdatedBy: "",
-					},
-				},
-				{
-					ID: "2",
-					Metadata: &GeoSpatialCollectionMetadata{
-						Title:         ptrTo("b"),
-						LastUpdatedBy: "",
-					},
-				},
+			name: "should return collections in default order (alphabetic) - by title",
+			args: args{
+				configFile:    "internal/engine/testdata/config_collections_order_alphabetic_titles.yaml",
+				expectedOrder: []string{"B", "C", "Z", "Z", "A"},
 			},
-			want: []GeoSpatialCollection{
-				{
-					ID: "3",
-					Metadata: &GeoSpatialCollectionMetadata{
-						Title:         ptrTo("a"),
-						LastUpdatedBy: "",
-					},
-				},
-				{
-					ID: "2",
-					Metadata: &GeoSpatialCollectionMetadata{
-						Title:         ptrTo("b"),
-						LastUpdatedBy: "",
-					},
-				},
-				{
-					ID: "1",
-					Metadata: &GeoSpatialCollectionMetadata{
-						Title:         ptrTo("c"),
-						LastUpdatedBy: "",
-					},
-				},
+		},
+		{
+			name: "should return collections in default order (alphabetic) - extra test",
+			args: args{
+				configFile:    "internal/engine/testdata/config_collections_unique.yaml",
+				expectedOrder: []string{"BarCollection", "FooCollection", "FooCollection"},
+			},
+		},
+		{
+			name: "should return collections in explicit / literal order",
+			args: args{
+				configFile:    "internal/engine/testdata/config_collections_order_literal.yaml",
+				expectedOrder: []string{"Z", "Z", "C", "A", "B"},
+			},
+		},
+		{
+			name: "should not error when no collections",
+			args: args{
+				configFile:    "internal/engine/testdata/config_minimal.yaml",
+				expectedOrder: []string{},
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, tt.g.Unique(), "Unique()")
+			config, err := NewConfig(tt.args.configFile)
+			assert.NoError(t, err)
+			var actual []string
+			if tt.args.expectedTitles {
+				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return *item.Metadata.Title })
+			} else {
+				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return item.ID })
+			}
+			assert.ElementsMatch(t, actual, tt.args.expectedOrder)
+		})
+	}
+}
+
+func TestGeoSpatialCollections_Unique(t *testing.T) {
+	type args struct {
+		configFile            string
+		nrOfCollections       int
+		nrOfUniqueCollections int
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "should filter duplicate collections when calling Unique()",
+			args: args{
+				configFile:            "internal/engine/testdata/config_collections_unique.yaml",
+				nrOfCollections:       3,
+				nrOfUniqueCollections: 2,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config, err := NewConfig(tt.args.configFile)
+			assert.NoError(t, err)
+			assert.Len(t, config.AllCollections(), tt.args.nrOfCollections)
+			assert.Len(t, config.AllCollections().Unique(), tt.args.nrOfUniqueCollections)
 		})
 	}
 }
@@ -523,4 +510,12 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 
 func ptrTo[T any](val T) *T {
 	return &val
+}
+
+func Map[T, V any](collection []T, fn func(T) V) []V {
+	result := make([]V, len(collection))
+	for i, t := range collection {
+		result[i] = fn(t)
+	}
+	return result
 }

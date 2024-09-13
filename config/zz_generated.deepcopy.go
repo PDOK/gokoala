@@ -149,6 +149,11 @@ func (in *Config) DeepCopyInto(out *Config) {
 		}
 	}
 	in.OgcAPI.DeepCopyInto(&out.OgcAPI)
+	if in.OgcAPICollectionOrder != nil {
+		in, out := &in.OgcAPICollectionOrder, &out.OgcAPICollectionOrder
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.Thumbnail != nil {
 		in, out := &in.Thumbnail, &out.Thumbnail
 		*out = new(string)

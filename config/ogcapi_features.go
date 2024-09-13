@@ -14,108 +14,6 @@ import (
 )
 
 // +kubebuilder:object:generate=true
-type CollectionEntryFeatures struct {
-	// Optional way to explicitly map a collection ID to the underlying table in the datasource.
-	// +optional
-	TableName *string `yaml:"tableName,omitempty" json:"tableName,omitempty"`
-
-	// Optional collection specific datasources. Mutually exclusive with top-level defined datasources.
-	// +optional
-	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
-
-	// Filters available for this collection
-	// +optional
-	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
-
-	// Downloads available for this collection through map sheets. Note that 'map sheets' refer to a map
-	// divided in rectangle areas that can be downloaded individually.
-	// +optional
-	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
-
-	// Configuration specifically related to HTML/Web representation
-	// +optional
-	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
-}
-
-// +kubebuilder:object:generate=true
-type FeatureFilters struct {
-	// OAF Part 1: filter on feature properties
-	// https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
-	//
-	// +optional
-	Properties []PropertyFilter `yaml:"properties,omitempty" json:"properties,omitempty" validate:"dive"`
-
-	// OAF Part 3: add config for complex/CQL filters here
-	// <placeholder>
-}
-
-// +kubebuilder:object:generate=true
-type DownloadLink struct {
-	// Name of the provided download
-	Name string `yaml:"name" json:"name" validate:"required"`
-
-	// Full URL to the file to be downloaded
-	AssetURL *URL `yaml:"assetUrl" json:"assetUrl" validate:"required"`
-
-	// Approximate size of the file to be downloaded
-	// +optional
-	Size string `yaml:"size,omitempty" json:"size,omitempty"`
-
-	// Media type of the file to be downloaded
-	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
-}
-
-// +kubebuilder:object:generate=true
-type MapSheetDownloads struct {
-	// Properties that provide the download details per map sheet. Note that 'map sheets' refer to a map
-	// divided in rectangle areas that can be downloaded individually.
-	Properties MapSheetDownloadProperties `yaml:"properties" json:"properties" validate:"required"`
-}
-
-// +kubebuilder:object:generate=true
-type MapSheetDownloadProperties struct {
-	// Property/column containing file download URL
-	AssetURL string `yaml:"assetUrl" json:"assetUrl" validate:"required"`
-
-	// Property/column containing file size
-	Size string `yaml:"size" json:"size" validate:"required"`
-
-	// The actual media type (not a property/column) of the download, like application/zip.
-	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
-
-	// Property/column containing the map sheet identifier
-	MapSheetID string `yaml:"mapSheetId" json:"mapSheetId" validate:"required"`
-}
-
-// +kubebuilder:object:generate=true
-type WebConfig struct {
-	// Viewer config for displaying multiple features on a map
-	// +optional
-	FeaturesViewer *FeaturesViewer `yaml:"featuresViewer,omitempty" json:"featuresViewer,omitempty"`
-
-	// Viewer config for displaying a single feature on a map
-	// +optional
-	FeatureViewer *FeaturesViewer `yaml:"featureViewer,omitempty" json:"featureViewer,omitempty"`
-
-	// Whether URLs (to external resources) in the HTML representation of features should be rendered as hyperlinks.
-	// +optional
-	URLAsHyperlink bool `yaml:"urlAsHyperlink,omitempty" json:"urlAsHyperlink,omitempty"`
-}
-
-// +kubebuilder:object:generate=true
-type FeaturesViewer struct {
-	// Maximum initial zoom level of the viewer when rendering features, specified by scale denominator.
-	// Defaults to 1000 (= scale 1:1000).
-	// +optional
-	MinScale int `yaml:"minScale,omitempty" json:"minScale,omitempty" validate:"gt=0" default:"1000"`
-
-	// Minimal initial zoom level of the viewer when rendering features, specified by scale denominator
-	// (not set by default).
-	// +optional
-	MaxScale *int `yaml:"maxScale,omitempty" json:"maxScale,omitempty" validate:"omitempty,gt=0,gtefield=MinScale"`
-}
-
-// +kubebuilder:object:generate=true
 type OgcAPIFeatures struct {
 	// Basemap to use in embedded viewer on the HTML pages.
 	// +kubebuilder:default="OSM"
@@ -168,18 +66,27 @@ func (oaf *OgcAPIFeatures) ProjectionsForCollection(collectionID string) []strin
 }
 
 // +kubebuilder:object:generate=true
-type Limit struct {
-	// Number of features to return by default.
-	// +kubebuilder:default=10
-	// +kubebuilder:validation:Minimum=2
+type CollectionEntryFeatures struct {
+	// Optional way to explicitly map a collection ID to the underlying table in the datasource.
 	// +optional
-	Default int `yaml:"default,omitempty" json:"default,omitempty" validate:"gt=1" default:"10"`
+	TableName *string `yaml:"tableName,omitempty" json:"tableName,omitempty"`
 
-	// Max number of features to return. Should be larger than 100 since the HTML interface always offers a 100 limit option.
-	// +kubebuilder:default=1000
-	// +kubebuilder:validation:Minimum=100
+	// Optional collection specific datasources. Mutually exclusive with top-level defined datasources.
 	// +optional
-	Max int `yaml:"max,omitempty" json:"max,omitempty" validate:"gte=100" default:"1000"`
+	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
+
+	// Filters available for this collection
+	// +optional
+	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
+
+	// Downloads available for this collection through map sheets. Note that 'map sheets' refer to a map
+	// divided in rectangle areas that can be downloaded individually.
+	// +optional
+	MapSheetDownloads *MapSheetDownloads `yaml:"mapSheetDownloads,omitempty" json:"mapSheetDownloads,omitempty"`
+
+	// Configuration specifically related to HTML/Web representation
+	// +optional
+	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -386,6 +293,83 @@ func (cache *GeoPackageCloudCache) MaxSizeAsBytes() (int64, error) {
 }
 
 // +kubebuilder:object:generate=true
+type FeatureFilters struct {
+	// OAF Part 1: filter on feature properties
+	// https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
+	//
+	// +optional
+	Properties []PropertyFilter `yaml:"properties,omitempty" json:"properties,omitempty" validate:"dive"`
+
+	// OAF Part 3: add config for complex/CQL filters here
+	// <placeholder>
+}
+
+// +kubebuilder:object:generate=true
+type MapSheetDownloads struct {
+	// Properties that provide the download details per map sheet. Note that 'map sheets' refer to a map
+	// divided in rectangle areas that can be downloaded individually.
+	Properties MapSheetDownloadProperties `yaml:"properties" json:"properties" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type MapSheetDownloadProperties struct {
+	// Property/column containing file download URL
+	AssetURL string `yaml:"assetUrl" json:"assetUrl" validate:"required"`
+
+	// Property/column containing file size
+	Size string `yaml:"size" json:"size" validate:"required"`
+
+	// The actual media type (not a property/column) of the download, like application/zip.
+	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
+
+	// Property/column containing the map sheet identifier
+	MapSheetID string `yaml:"mapSheetId" json:"mapSheetId" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type WebConfig struct {
+	// Viewer config for displaying multiple features on a map
+	// +optional
+	FeaturesViewer *FeaturesViewer `yaml:"featuresViewer,omitempty" json:"featuresViewer,omitempty"`
+
+	// Viewer config for displaying a single feature on a map
+	// +optional
+	FeatureViewer *FeaturesViewer `yaml:"featureViewer,omitempty" json:"featureViewer,omitempty"`
+
+	// Whether URLs (to external resources) in the HTML representation of features should be rendered as hyperlinks.
+	// +optional
+	URLAsHyperlink bool `yaml:"urlAsHyperlink,omitempty" json:"urlAsHyperlink,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
+type FeaturesViewer struct {
+	// Maximum initial zoom level of the viewer when rendering features, specified by scale denominator.
+	// Defaults to 1000 (= scale 1:1000).
+	// +optional
+	MinScale int `yaml:"minScale,omitempty" json:"minScale,omitempty" validate:"gt=0" default:"1000"`
+
+	// Minimal initial zoom level of the viewer when rendering features, specified by scale denominator
+	// (not set by default).
+	// +optional
+	MaxScale *int `yaml:"maxScale,omitempty" json:"maxScale,omitempty" validate:"omitempty,gt=0,gtefield=MinScale"`
+}
+
+// +kubebuilder:object:generate=true
+type Limit struct {
+	// Number of features to return by default.
+	// +kubebuilder:default=10
+	// +kubebuilder:validation:Minimum=2
+	// +optional
+	Default int `yaml:"default,omitempty" json:"default,omitempty" validate:"gt=1" default:"10"`
+
+	// Max number of features to return. Should be larger than 100 since the HTML interface always offers a 100 limit option.
+	// +kubebuilder:default=1000
+	// +kubebuilder:validation:Minimum=100
+	// +optional
+	Max int `yaml:"max,omitempty" json:"max,omitempty" validate:"gte=100" default:"1000"`
+}
+
+// +kubebuilder:object:generate=true
 type PropertyFilter struct {
 	// Needs to match with a column name in the feature table (in the configured datasource)
 	Name string `yaml:"name" json:"name" validate:"required"`
@@ -421,4 +405,27 @@ type TemporalProperties struct {
 
 	// Name of field in datasource to be used in temporal queries as the end date
 	EndDate string `yaml:"endDate" json:"endDate" validate:"required"`
+}
+
+func validateFeatureCollections(collections GeoSpatialCollections) error {
+	var errMessages []string
+	for _, collection := range collections {
+		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
+			(collection.Metadata.Extent == nil || collection.Metadata.Extent.Interval == nil) {
+			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
+				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
+		}
+		if collection.Features != nil && collection.Features.Filters.Properties != nil {
+			for _, pf := range collection.Features.Filters.Properties {
+				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
+					errMessages = append(errMessages, fmt.Sprintf("validation failed for property filter '%s'; "+
+						"field 'AllowedValues' and field 'DeriveAllowedValuesFromDatasource' are mutually exclusive\n", pf.Name))
+				}
+			}
+		}
+	}
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+	return nil
 }
