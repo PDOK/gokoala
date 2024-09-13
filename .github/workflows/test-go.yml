@@ -44,6 +44,13 @@ jobs:
       - name: Benchmark
         run: go test -v ./... -bench=. -run=^# -benchmem -count=1
 
+      - name: Fail when coverage below threshold
+        uses: vladopajic/go-test-coverage@v2
+        with:
+          profile: cover.out
+          local-prefix: github.com/PDOK/gokoala
+          threshold-total: 80  # 80% overall coverage is the minimum
+
       - name: Update coverage report
         uses: ncruces/go-coverage-report@v0
         with:
