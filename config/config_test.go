@@ -85,6 +85,13 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 			},
 		},
 		{
+			name: "should return collections in default order (alphabetic) - by title",
+			args: args{
+				configFile:    "internal/engine/testdata/config_collections_order_alphabetic_titles.yaml",
+				expectedOrder: []string{"B", "C", "Z", "Z", "A"},
+			},
+		},
+		{
 			name: "should return collections in default order (alphabetic) - extra test",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_unique.yaml",
@@ -96,6 +103,13 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_order_literal.yaml",
 				expectedOrder: []string{"Z", "Z", "C", "A", "B"},
+			},
+		},
+		{
+			name: "should not error when no collections",
+			args: args{
+				configFile:    "internal/engine/testdata/config_minimal.yaml",
+				expectedOrder: []string{},
 			},
 		},
 	}
