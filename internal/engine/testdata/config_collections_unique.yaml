@@ -1,0 +1,21 @@
+---
+version: 1.0.0
+title: FooBarBaz
+serviceIdentifier: Foo
+abstract: >-
+  This API offers a collection containing both features and 3D tiles.
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+baseUrl: http://localhost:8181
+ogcApi:
+  3dgeovolumes:
+    tileServer: https://example.com
+    collections:
+      - id: FooCollection
+  tiles:
+    collections:
+      - id: BarCollection
+        tileServer: https://example.com
+      - id: FooCollection
+        tileServer: https://example.com

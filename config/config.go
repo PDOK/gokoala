@@ -69,6 +69,11 @@ type Config struct {
 	// Define which OGC API building blocks this API supports
 	OgcAPI OgcAPI `yaml:"ogcApi" json:"ogcApi" validate:"required"`
 
+	// Order in which collections (containing features, tiles, 3d tiles, etc.) should be returned.
+	// When not specified collections are returned in alphabetic order.
+	// +optional
+	OgcAPICollectionOrder []string `yaml:"collectionOrder,omitempty" json:"collectionOrder,omitempty"`
+
 	// Reference to a PNG image to use a thumbnail on the landing page.
 	// The full path is constructed by appending Resources + Thumbnail.
 	// +optional
@@ -124,24 +129,6 @@ func (c *Config) UnmarshalJSON(b []byte) error {
 
 func (c *Config) CookieMaxAge() int {
 	return CookieMaxAge
-}
-
-func (c *Config) HasCollections() bool {
-	return c.AllCollections() != nil
-}
-
-func (c *Config) AllCollections() GeoSpatialCollections {
-	var result GeoSpatialCollections
-	if c.OgcAPI.GeoVolumes != nil {
-		result = append(result, c.OgcAPI.GeoVolumes.Collections...)
-	}
-	if c.OgcAPI.Tiles != nil {
-		result = append(result, c.OgcAPI.Tiles.Collections...)
-	}
-	if c.OgcAPI.Features != nil {
-		result = append(result, c.OgcAPI.Features.Collections...)
-	}
-	return result
 }
 
 // +kubebuilder:object:generate=true

@@ -154,30 +154,45 @@ type DownloadLink struct {
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 }
 
-// Unique lists all unique GeoSpatialCollections (no duplicate IDs),
-// return results in alphabetic order
-func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
-	collectionsByID := g.toMap()
-	flattened := make([]GeoSpatialCollection, 0, len(collectionsByID))
-	for _, v := range collectionsByID {
-		flattened = append(flattened, v)
-	}
-	sort.Slice(flattened, func(i, j int) bool {
-		icomp := flattened[i].ID
-		jcomp := flattened[j].ID
-		// prefer to sort by title when available, collection ID otherwise
-		if flattened[i].Metadata != nil && flattened[i].Metadata.Title != nil {
-			icomp = *flattened[i].Metadata.Title
-		}
-		if flattened[j].Metadata != nil && flattened[j].Metadata.Title != nil {
-			jcomp = *flattened[j].Metadata.Title
-		}
-		return icomp < jcomp
-	})
-	return flattened
+// HasCollections does this API offer collections with for example features, tiles, 3d tiles, etc
+func (c *Config) HasCollections() bool {
+	return c.AllCollections() != nil
 }
 
-// ContainsID check if given collection - by ID - exists
+// AllCollections get all collections - with  for example features, tiles, 3d tiles - offered through this OGC API.
+// Results are returned in alphabetic or literal order.
+func (c *Config) AllCollections() GeoSpatialCollections {
+	var result GeoSpatialCollections
+	if c.OgcAPI.GeoVolumes != nil {
+		result = append(result, c.OgcAPI.GeoVolumes.Collections...)
+	}
+	if c.OgcAPI.Tiles != nil {
+		result = append(result, c.OgcAPI.Tiles.Collections...)
+	}
+	if c.OgcAPI.Features != nil {
+		result = append(result, c.OgcAPI.Features.Collections...)
+	}
+
+	// sort
+	if len(c.OgcAPICollectionOrder) > 0 {
+		sortByLiteralOrder(result, c.OgcAPICollectionOrder)
+	} else {
+		sortByAlphabet(result)
+	}
+	return result
+}
+
+// Unique lists all unique GeoSpatialCollections (no duplicate IDs)
+func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
+	collectionsByID := g.toMap()
+	result := make([]GeoSpatialCollection, 0, len(collectionsByID))
+	for _, v := range collectionsByID {
+		result = append(result, v)
+	}
+	return result
+}
+
+// ContainsID check if given collection - by ID - exists.
 func (g GeoSpatialCollections) ContainsID(id string) bool {
 	_, ok := g.toMap()[id]
 	return ok
@@ -198,4 +213,30 @@ func (g GeoSpatialCollections) toMap() map[string]GeoSpatialCollection {
 		}
 	}
 	return collectionsByID
+}
+
+func sortByAlphabet(collection []GeoSpatialCollection) {
+	sort.Slice(collection, func(i, j int) bool {
+		iName := collection[i].ID
+		jName := collection[j].ID
+		// prefer to sort by title when available, collection ID otherwise
+		if collection[i].Metadata != nil && collection[i].Metadata.Title != nil {
+			iName = *collection[i].Metadata.Title
+		}
+		if collection[j].Metadata != nil && collection[j].Metadata.Title != nil {
+			jName = *collection[j].Metadata.Title
+		}
+		return iName < jName
+	})
+}
+
+func sortByLiteralOrder(collections []GeoSpatialCollection, literalOrder []string) {
+	collectionOrderIndex := make(map[string]int)
+	for i, id := range literalOrder {
+		collectionOrderIndex[id] = i
+	}
+	sort.Slice(collections, func(i, j int) bool {
+		// sort according to the explict/literal order specified in OgcAPICollectionOrder
+		return collectionOrderIndex[collections[i].ID] < collectionOrderIndex[collections[j].ID]
+	})
 }
