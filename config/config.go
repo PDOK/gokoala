@@ -145,6 +145,29 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 }
 
 // +kubebuilder:object:generate=true
+type OgcAPI struct {
+	// Enable when this API should offer OGC API 3D GeoVolumes. This includes OGC 3D Tiles.
+	// +optional
+	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes,omitempty" json:"3dgeovolumes,omitempty"`
+
+	// Enable when this API should offer OGC API Tiles. This also requires OGC API Styles.
+	// +optional
+	Tiles *OgcAPITiles `yaml:"tiles,omitempty" json:"tiles,omitempty" validate:"required_with=Styles"`
+
+	// Enable when this API should offer OGC API Styles.
+	// +optional
+	Styles *OgcAPIStyles `yaml:"styles,omitempty" json:"styles,omitempty"`
+
+	// Enable when this API should offer OGC API Features.
+	// +optional
+	Features *OgcAPIFeatures `yaml:"features,omitempty" json:"features,omitempty"`
+
+	// Enable when this API should offer OGC API Processes.
+	// +optional
+	Processes *OgcAPIProcesses `yaml:"processes,omitempty" json:"processes,omitempty"`
+}
+
+// +kubebuilder:object:generate=true
 type Support struct {
 	// Name of the support organization
 	Name string `yaml:"name" json:"name" validate:"required"`
@@ -176,46 +199,6 @@ type Resources struct {
 	// // Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if URL is set
 	// +optional
 	Directory *string `yaml:"directory,omitempty" json:"directory,omitempty" validate:"required_without=URL,omitempty,dirpath|filepath"`
-}
-
-// +kubebuilder:object:generate=true
-type OgcAPI struct {
-	// Enable when this API should offer OGC API 3D GeoVolumes. This includes OGC 3D Tiles.
-	// +optional
-	GeoVolumes *OgcAPI3dGeoVolumes `yaml:"3dgeovolumes,omitempty" json:"3dgeovolumes,omitempty"`
-
-	// Enable when this API should offer OGC API Tiles. This also requires OGC API Styles.
-	// +optional
-	Tiles *OgcAPITiles `yaml:"tiles,omitempty" json:"tiles,omitempty" validate:"required_with=Styles"`
-
-	// Enable when this API should offer OGC API Styles.
-	// +optional
-	Styles *OgcAPIStyles `yaml:"styles,omitempty" json:"styles,omitempty"`
-
-	// Enable when this API should offer OGC API Features.
-	// +optional
-	Features *OgcAPIFeatures `yaml:"features,omitempty" json:"features,omitempty"`
-
-	// Enable when this API should offer OGC API Processes.
-	// +optional
-	Processes *OgcAPIProcesses `yaml:"processes,omitempty" json:"processes,omitempty"`
-}
-
-// +kubebuilder:object:generate=true
-type Extent struct {
-	// Projection (SRS/CRS) to be used. When none is provided WGS84 (http://www.opengis.net/def/crs/OGC/1.3/CRS84) is used.
-	// +optional
-	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
-	Srs string `yaml:"srs,omitempty" json:"srs,omitempty" validate:"omitempty,startswith=EPSG:"`
-
-	// Geospatial extent
-	Bbox []string `yaml:"bbox" json:"bbox"`
-
-	// Temporal extent
-	// +optional
-	// +kubebuilder:validation:MinItems=2
-	// +kubebuilder:validation:MaxItems=2
-	Interval []string `yaml:"interval,omitempty" json:"interval,omitempty" validate:"omitempty,len=2"`
 }
 
 // +kubebuilder:object:generate=true
@@ -262,29 +245,6 @@ func validate(config *Config) error {
 	// custom validations
 	if config.OgcAPI.Features != nil {
 		return validateFeatureCollections(config.OgcAPI.Features.Collections)
-	}
-	return nil
-}
-
-func validateFeatureCollections(collections GeoSpatialCollections) error {
-	var errMessages []string
-	for _, collection := range collections {
-		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
-			(collection.Metadata.Extent == nil || collection.Metadata.Extent.Interval == nil) {
-			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
-				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
-		}
-		if collection.Features != nil && collection.Features.Filters.Properties != nil {
-			for _, pf := range collection.Features.Filters.Properties {
-				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
-					errMessages = append(errMessages, fmt.Sprintf("validation failed for property filter '%s'; "+
-						"field 'AllowedValues' and field 'DeriveAllowedValuesFromDatasource' are mutually exclusive\n", pf.Name))
-				}
-			}
-		}
-	}
-	if len(errMessages) > 0 {
-		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
 	return nil
 }

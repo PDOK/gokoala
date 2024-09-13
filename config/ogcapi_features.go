@@ -406,3 +406,26 @@ type TemporalProperties struct {
 	// Name of field in datasource to be used in temporal queries as the end date
 	EndDate string `yaml:"endDate" json:"endDate" validate:"required"`
 }
+
+func validateFeatureCollections(collections GeoSpatialCollections) error {
+	var errMessages []string
+	for _, collection := range collections {
+		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
+			(collection.Metadata.Extent == nil || collection.Metadata.Extent.Interval == nil) {
+			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
+				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
+		}
+		if collection.Features != nil && collection.Features.Filters.Properties != nil {
+			for _, pf := range collection.Features.Filters.Properties {
+				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
+					errMessages = append(errMessages, fmt.Sprintf("validation failed for property filter '%s'; "+
+						"field 'AllowedValues' and field 'DeriveAllowedValuesFromDatasource' are mutually exclusive\n", pf.Name))
+				}
+			}
+		}
+	}
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+	return nil
+}

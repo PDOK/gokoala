@@ -112,6 +112,23 @@ type GeoSpatialCollectionMetadata struct {
 }
 
 // +kubebuilder:object:generate=true
+type Extent struct {
+	// Projection (SRS/CRS) to be used. When none is provided WGS84 (http://www.opengis.net/def/crs/OGC/1.3/CRS84) is used.
+	// +optional
+	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
+	Srs string `yaml:"srs,omitempty" json:"srs,omitempty" validate:"omitempty,startswith=EPSG:"`
+
+	// Geospatial extent
+	Bbox []string `yaml:"bbox" json:"bbox"`
+
+	// Temporal extent
+	// +optional
+	// +kubebuilder:validation:MinItems=2
+	// +kubebuilder:validation:MaxItems=2
+	Interval []string `yaml:"interval,omitempty" json:"interval,omitempty" validate:"omitempty,len=2"`
+}
+
+// +kubebuilder:object:generate=true
 type CollectionLinks struct {
 	// Links to downloads of entire collection. These will be rendered as rel=enclosure links
 	// +optional
