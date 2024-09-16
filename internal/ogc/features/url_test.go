@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-spatial/geom"
@@ -472,14 +473,14 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
-				configuredPropertyFilters: []config.PropertyFilter{
-					{
-						Name:        "foo",
-						Description: "awesome foo property to filter on",
+				configuredPropertyFilters: map[string]datasources.PropertyFilterWithAllowedValues{
+					"foo": {
+						PropertyFilter: config.PropertyFilter{Name: "foo", Description: "awesome foo property to filter on"},
+						AllowedValues:  nil,
 					},
-					{
-						Name:        "bar",
-						Description: "even more awesome bar property to filter on",
+					"bar": {
+						PropertyFilter: config.PropertyFilter{Name: "bar", Description: "even more awesome bar property to filter on"},
+						AllowedValues:  nil,
 					},
 				},
 				supportsDatetime: tt.fields.dtSupport,
