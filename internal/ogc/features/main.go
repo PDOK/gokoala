@@ -279,22 +279,21 @@ func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.
 	collections map[string]config.GeoSpatialCollection) map[string]ds.PropertyFiltersWithAllowedValues {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
-	nrOfFilters := 0
 	for k, datasource := range datasources {
-		filters := datasource.GetPropertyFiltersWithAllowedValues(k.collectionID)
-		result[k.collectionID] = filters
-		nrOfFilters += len(filters)
+		result[k.collectionID] = datasource.GetPropertyFiltersWithAllowedValues(k.collectionID)
 	}
 
 	// sanity check to make sure datasources return all configured property filters.
-	nrOfExpectedFilters := 0
 	for _, collection := range collections {
+		actual := len(result[collection.ID])
 		if collection.Features != nil && collection.Features.Filters.Properties != nil {
-			nrOfExpectedFilters += len(collection.Features.Filters.Properties)
+			expected := len(collection.Features.Filters.Properties)
+			if expected != actual {
+				log.Fatalf("number of property filters received from datasource for collection '%s' does not "+
+					"match the number of configured property filters. Expected filters: %d, got from datasource: %d",
+					collection.ID, expected, actual)
+			}
 		}
-	}
-	if nrOfExpectedFilters != nrOfFilters {
-		log.Fatal("number of property filters received from datasource does not match the number of configured property filters")
 	}
 	return result
 }
