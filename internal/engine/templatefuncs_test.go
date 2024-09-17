@@ -99,6 +99,70 @@ func TestIsDate(t *testing.T) {
 	}
 }
 
+func TestIsLink(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    any
+		expected bool
+	}{
+		{
+			name:     "Valid HTTP URL",
+			input:    "http://example.com",
+			expected: true,
+		},
+		{
+			name:     "Valid HTTPS URL",
+			input:    "https://example.com",
+			expected: true,
+		},
+		{
+			name:     "Invalid URL without scheme",
+			input:    "example.com",
+			expected: false,
+		},
+		{
+			name:     "Invalid string with no URL",
+			input:    "not a url",
+			expected: false,
+		},
+		{
+			name:     "Non-string input (integer)",
+			input:    12345,
+			expected: false,
+		},
+		{
+			name:     "Non-string input (struct)",
+			input:    struct{}{},
+			expected: false,
+		},
+		{
+			name:     "Empty string",
+			input:    "",
+			expected: false,
+		},
+		{
+			name:     "URL with trailing characters",
+			input:    "http://example.com foo bar",
+			expected: false,
+		},
+		{
+			name:     "URL with leading characters",
+			input:    "foo bar http://example.com",
+			expected: false,
+		},
+		{
+			name:     "URL with special characters",
+			input:    "http://example.com/path?query=param#fragment",
+			expected: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, isLink(tt.input))
+		})
+	}
+}
+
 func ptrTo(s string) *string {
 	return &s
 }
