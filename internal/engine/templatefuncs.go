@@ -20,7 +20,7 @@ import (
 
 var (
 	globalTemplateFuncs texttemplate.FuncMap
-	linkRegex           = regexp.MustCompile(`https?://\S+`)
+	linkRegex           = regexp.MustCompile(`^https?://\S+$`)
 )
 
 // Initialize functions to be used in html/json/etc templates
@@ -115,7 +115,7 @@ func isDate(v any) bool {
 	return false
 }
 
-// isLink true when given input is an HTTP(s) URL, false otherwise
+// isLink true when given input is an HTTP(s) URL (without any additional text), false otherwise
 func isLink(v any) bool {
 	if text, ok := v.(string); ok {
 		return linkRegex.MatchString(text)
