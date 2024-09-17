@@ -9,7 +9,7 @@ import (
 	"github.com/go-spatial/geom"
 )
 
-// Datasource holds all Features for a single object type in a specific projection.
+// Datasource holds all Features for a single object type in a specific projection/CRS.
 // This abstraction allows the rest of the system to stay datastore agnostic.
 type Datasource interface {
 
@@ -29,7 +29,8 @@ type Datasource interface {
 	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
 	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
 
-	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values
+	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values.
+	// When enrichments don't apply the returned result should still contain all property filters as specified in the (YAML) config.
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
 
 	// Close closes (connections to) the datasource gracefully

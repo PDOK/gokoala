@@ -53,9 +53,9 @@ type Features struct {
 }
 
 func NewFeatures(e *engine.Engine) *Features {
-	configuredCollections = cacheConfiguredFeatureCollections(e)
 	datasources := createDatasources(e)
-	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources)
+	configuredCollections = cacheConfiguredFeatureCollections(e)
+	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
 	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
 
@@ -94,7 +94,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			getConfiguredPropertyFilters(collection), hasDateTime(collection)}
+			f.configuredPropertyFilters[collectionID], hasDateTime(collection)}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -275,10 +275,26 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 	return result
 }
 
-func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource) map[string]ds.PropertyFiltersWithAllowedValues {
+func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource,
+	collections map[string]config.GeoSpatialCollection) map[string]ds.PropertyFiltersWithAllowedValues {
+
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
+	nrOfFilters := 0
 	for k, datasource := range datasources {
-		result[k.collectionID] = datasource.GetPropertyFiltersWithAllowedValues(k.collectionID)
+		filters := datasource.GetPropertyFiltersWithAllowedValues(k.collectionID)
+		result[k.collectionID] = filters
+		nrOfFilters += len(filters)
+	}
+
+	// sanity check to make sure datasources return all configured property filters.
+	nrOfExpectedFilters := 0
+	for _, collection := range collections {
+		if collection.Features != nil && collection.Features.Filters.Properties != nil {
+			nrOfExpectedFilters += len(collection.Features.Filters.Properties)
+		}
+	}
+	if nrOfExpectedFilters != nrOfFilters {
+		log.Fatal("number of property filters received from datasource does not match the number of configured property filters")
 	}
 	return result
 }
@@ -383,13 +399,6 @@ func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Ext
 		int(input) == int(output) ||
 		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||
 		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
-}
-
-func getConfiguredPropertyFilters(collection config.GeoSpatialCollection) []config.PropertyFilter {
-	if collection.Features != nil && collection.Features.Filters.Properties != nil {
-		return collection.Features.Filters.Properties
-	}
-	return []config.PropertyFilter{}
 }
 
 func getTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {

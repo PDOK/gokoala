@@ -14,6 +14,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-spatial/geom"
 )
@@ -41,7 +42,7 @@ type featureCollectionURL struct {
 	baseURL                   url.URL
 	params                    url.Values
 	limit                     config.Limit
-	configuredPropertyFilters []config.PropertyFilter
+	configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
 	supportsDatetime          bool
 }
 
@@ -134,8 +135,8 @@ func (fc featureCollectionURL) validateNoUnknownParams() error {
 	copyParams.Del(bboxCrsParam)
 	copyParams.Del(filterParam)
 	copyParams.Del(filterCrsParam)
-	for _, pf := range fc.configuredPropertyFilters {
-		copyParams.Del(pf.Name)
+	for pf := range fc.configuredPropertyFilters {
+		copyParams.Del(pf)
 	}
 	if len(copyParams) > 0 {
 		return fmt.Errorf("unknown query parameter(s) found: %v", copyParams.Encode())
@@ -291,22 +292,22 @@ func parseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 }
 
 // Support simple filtering on properties: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
-func parsePropertyFilters(configuredPropertyFilters []config.PropertyFilter, params url.Values) (map[string]string, error) {
+func parsePropertyFilters(configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues, params url.Values) (map[string]string, error) {
 	propertyFilters := make(map[string]string)
-	for _, cpf := range configuredPropertyFilters {
-		pf := params.Get(cpf.Name)
+	for name := range configuredPropertyFilters {
+		pf := params.Get(name)
 		if pf != "" {
 			if len(pf) > propertyFilterMaxLength {
 				return nil, fmt.Errorf("property filter %s is too large, "+
-					"value is limited to %d characters", cpf.Name, propertyFilterMaxLength)
+					"value is limited to %d characters", name, propertyFilterMaxLength)
 			}
 			if strings.Contains(pf, propertyFilterWildcard) {
 				// if/when we choose to support wildcards in the future, make sure wildcards are
 				// only allowed at the END (suffix) of the filter
 				return nil, fmt.Errorf("property filter %s contains a wildcard (%s), "+
-					"wildcard filtering is not allowed", cpf.Name, propertyFilterWildcard)
+					"wildcard filtering is not allowed", name, propertyFilterWildcard)
 			}
-			propertyFilters[cpf.Name] = pf
+			propertyFilters[name] = pf
 		}
 	}
 	return propertyFilters, nil
