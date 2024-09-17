@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"dario.cat/mergo"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -182,37 +183,40 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	return result
 }
 
-// Unique lists all unique GeoSpatialCollections (no duplicate IDs)
+// Unique lists all unique GeoSpatialCollections (no duplicate IDs).
+// Don't use in hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 	collectionsByID := g.toMap()
-	result := make([]GeoSpatialCollection, 0, len(collectionsByID))
-	for _, v := range collectionsByID {
-		result = append(result, v)
+	result := make([]GeoSpatialCollection, 0, collectionsByID.Len())
+	for pair := collectionsByID.Oldest(); pair != nil; pair = pair.Next() {
+		result = append(result, pair.Value)
 	}
 	return result
 }
 
 // ContainsID check if given collection - by ID - exists.
+// Don't use in hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) ContainsID(id string) bool {
-	_, ok := g.toMap()[id]
+	collectionsByID := g.toMap()
+	_, ok := collectionsByID.Get(id)
 	return ok
 }
 
-func (g GeoSpatialCollections) toMap() map[string]GeoSpatialCollection {
-	collectionsByID := make(map[string]GeoSpatialCollection)
+func (g GeoSpatialCollections) toMap() orderedmap.OrderedMap[string, GeoSpatialCollection] {
+	collectionsByID := orderedmap.New[string, GeoSpatialCollection]()
 	for _, current := range g {
-		existing, ok := collectionsByID[current.ID]
+		existing, ok := collectionsByID.Get(current.ID)
 		if ok {
 			err := mergo.Merge(&existing, current)
 			if err != nil {
 				log.Fatalf("failed to merge 2 collections with the same name '%s': %v", current.ID, err)
 			}
-			collectionsByID[current.ID] = existing
+			collectionsByID.Set(current.ID, existing)
 		} else {
-			collectionsByID[current.ID] = current
+			collectionsByID.Set(current.ID, current)
 		}
 	}
-	return collectionsByID
+	return *collectionsByID
 }
 
 func sortByAlphabet(collection []GeoSpatialCollection) {
