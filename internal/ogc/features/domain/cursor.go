@@ -55,8 +55,8 @@ func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 	return EncodedCursor(base64.RawURLEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.RawURLEncoding.EncodeToString(filtersChecksum))
 }
 
-// Decode turns encoded cursor into DecodedCursor and verifies the
-// that the checksum of query params that act as filters hasn't changed
+// Decode turns encoded cursor into DecodedCursor and verifies that
+// the checksum of query params that act as filters hasn't changed
 func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 	value, err := neturl.QueryUnescape(string(c))
 	if err != nil || value == "" {
