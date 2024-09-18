@@ -154,7 +154,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, nil, table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, g.propertiesByCollectionID[collection], table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
