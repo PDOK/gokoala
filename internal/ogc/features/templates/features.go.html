@@ -276,11 +276,13 @@
             {{ if $mapSheetProperties }}
             {{ $skipKeys = append $skipKeys $mapSheetProperties.Size }}
             {{ end }}
-            {{ range $key, $value := $feat.Properties }}
+
+            {{ range $key := $feat.Keys }}
                 {{- if not (has $key $skipKeys) -}}
                 <tr>
-                    <td class="w-20">{{ $key }}</td>
+                    <td class="w-25">{{ $key }}</td>
 
+                    {{ $value := $feat.Properties.Value $key }}
                     {{- if isdate $value -}}
                     <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
 
@@ -299,11 +301,11 @@
                 {{- end -}}
             {{ end }}
             {{/* for map sheets collection, add download button */}}
-            {{ if $mapSheetProperties }}
+            {{ if and $mapSheetProperties $feat.Properties }}
             <tr>
-                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get $feat.Properties $mapSheetProperties.AssetURL }}" download>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ $feat.Properties.Value $mapSheetProperties.AssetURL }}" download>
                     Download
-                </a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
+                </a> ({{ i18n "Size" }}: {{ humansize ($feat.Properties.Value $mapSheetProperties.Size) }})</td>
             </tr>
             {{ end }}
             </tbody>

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/PDOK/gokoala/internal/engine"
 )
 
