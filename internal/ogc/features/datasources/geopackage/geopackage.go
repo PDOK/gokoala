@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -79,6 +80,7 @@ type GeoPackage struct {
 	externalFidColumn             string
 	featureTableByCollectionID    map[string]*featureTable
 	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
+	propertiesByCollectionID      map[string]*config.FeatureProperties
 	queryTimeout                  time.Duration
 	maxBBoxSizeToUseWithRTree     int
 }
@@ -88,6 +90,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 
 	g := &GeoPackage{}
 	g.preparedStmtCache = NewCache()
+	g.propertiesByCollectionID = cacheFeatureProperties(collections)
 	warmUp := false
 
 	switch {
@@ -151,7 +154,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, nil, table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -204,7 +207,8 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	}
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, mapGpkgGeometry, profile.MapRelationUsingProfile)
+	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +225,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, table, false, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, g.propertiesByCollectionID[collection], table, false, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -237,7 +241,8 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, mapGpkgGeometry, profile.MapRelationUsingProfile)
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -285,7 +290,8 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		return nil, queryCtx.Err()
 	}
 
-	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, mapGpkgGeometry, profile.MapRelationUsingProfile)
+	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -309,24 +315,38 @@ func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) data
 
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
-func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, table *featureTable, onlyFIDs bool,
-	criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
+func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *featureTable,
+	onlyFIDs bool, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
+	selectClause := g.makeSelectClause(onlyFIDs, propConfig, table)
 	// make query
 	if criteria.Bbox != nil {
-		query, queryArgs, err = g.makeBboxQuery(table, onlyFIDs, criteria)
+		query, queryArgs, err = g.makeBboxQuery(table, selectClause, criteria)
 		if err != nil {
 			return
 		}
 	} else {
-		query, queryArgs = g.makeDefaultQuery(table, criteria)
+		query, queryArgs = g.makeDefaultQuery(table, selectClause, criteria)
 	}
 	// lookup prepared statement for given query, or create new one
 	stmt, err = g.preparedStmtCache.Lookup(ctx, g.backend.getDB(), query)
 	return
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *featureTable, criteria datasources.FeaturesCriteria) (string, map[string]any) {
+func (g *GeoPackage) makeSelectClause(onlyFIDs bool, propConfig *config.FeatureProperties, table *featureTable) string {
+	if onlyFIDs {
+		return "\"" + g.fidColumn + "\", prevfid, nextfid"
+	} else if propConfig != nil && propConfig.Properties != nil {
+		clause := "\"" + g.fidColumn + "\", prevfid, nextfid, \"" + table.GeometryColumnName + "\", " + strings.Join(propConfig.Properties, ",")
+		if *propConfig.PropertiesIncludeUnknown {
+			clause += ", *"
+		}
+		return clause
+	}
+	return "*"
+}
+
+func (g *GeoPackage) makeDefaultQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
 	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria)
 
@@ -336,8 +356,8 @@ with
     prev as (select * from "%[1]s" where "%[2]s" < :fid %[3]s %[4]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as prevfid, lead("%[2]s", :limit) over (order by "%[2]s") as nextfid from nextprev)
-select * from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
-`, table.TableName, g.fidColumn, temporalClause, pfClause) // don't add user input here, use named params for user input!
+select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
+`, table.TableName, g.fidColumn, temporalClause, pfClause, selectClause) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
@@ -348,12 +368,7 @@ select * from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
 	return defaultQuery, namedParams
 }
 
-func (g *GeoPackage) makeBboxQuery(table *featureTable, onlyFIDs bool, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
-	selectClause := "*"
-	if onlyFIDs {
-		selectClause = "\"" + g.fidColumn + "\", prevfid, nextfid"
-	}
-
+func (g *GeoPackage) makeBboxQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.TableName)
 
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
@@ -467,4 +482,15 @@ func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria) (sql s
 		sql = fmt.Sprintf(" and \"%[1]s\" <= :referenceDate and (\"%[2]s\" >= :referenceDate or \"%[2]s\" is null)", startDate, endDate)
 	}
 	return sql, namedParams
+}
+
+func cacheFeatureProperties(collections config.GeoSpatialCollections) map[string]*config.FeatureProperties {
+	result := make(map[string]*config.FeatureProperties)
+	for _, collection := range collections {
+		if collection.Features == nil {
+			continue
+		}
+		result[collection.ID] = collection.Features.FeatureProperties
+	}
+	return result
 }

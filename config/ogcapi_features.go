@@ -79,6 +79,10 @@ type CollectionEntryFeatures struct {
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
 
+	// Optional way to exclude feature properties and/or determine the ordering of properties in the response.
+	// +optional
+	FeatureProperties *FeatureProperties `yaml:",inline" json:",inline"`
+
 	// Downloads available for this collection through map sheets. Note that 'map sheets' refer to a map
 	// divided in rectangle areas that can be downloaded individually.
 	// +optional
@@ -302,6 +306,26 @@ type FeatureFilters struct {
 
 	// OAF Part 3: add config for complex/CQL filters here
 	// <placeholder>
+}
+
+// +kubebuilder:object:generate=true
+type FeatureProperties struct {
+	// Properties of features in this collection that should be included in the output, in the given order.
+	//
+	// This setting controls two things:
+	//
+	// A) allows one to exclude certain properties (only when propertiesIncludeUnknown=false)
+	// B) allows one sort the properties irrespective of their order in the datastore
+	//
+	// When not set all available properties are returned in API responses.
+	// +optional
+	Properties []string `yaml:"properties,omitempty" json:"properties,omitempty"`
+
+	// When true (default) properties not listed under 'properties' are still available API responses. When false
+	// unlisted properties are excluded from API responses.
+	// +optional
+	// +kubebuilder:default=true
+	PropertiesIncludeUnknown *bool `yaml:"propertiesIncludeUnknown,omitempty" json:"propertiesIncludeUnknown,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
 // +kubebuilder:object:generate=true

@@ -88,7 +88,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 			expectedPrevNext: &PrevNextFID{},
 		},
 		{
-			name:          "Test unexpected yype",
+			name:          "Test unexpected type",
 			feature:       &Feature{Feature: geojson.Feature{Properties: make(map[string]any)}},
 			columns:       []string{"str_col", "unexpected_col"},
 			values:        []any{"str", []complex128{complex(1, 2)}},

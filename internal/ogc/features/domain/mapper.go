@@ -8,6 +8,7 @@ import (
 	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/geojson"
 	"github.com/jmoiron/sqlx"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 // MapRelation abstract function type to map feature relations
@@ -64,7 +65,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 			return result, nil, err
 		}
 
-		feature := &Feature{Feature: geojson.Feature{Properties: make(map[string]any)}}
+		feature := &Feature{Feature: geojson.Feature{}, Properties: *orderedmap.New[string, any]()}
 		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, externalFidColumn,
 			geomColumn, mapGeom, mapRel)
 		if err != nil {
@@ -92,7 +93,7 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 
 		case geomColumn:
 			if columnValue == nil {
-				feature.Properties[columnName] = nil
+				feature.Properties.Set(columnName, nil)
 				continue
 			}
 			rawGeom, ok := columnValue.([]byte)
@@ -123,7 +124,7 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 
 		default:
 			if columnValue == nil {
-				feature.Properties[columnName] = nil
+				feature.Properties.Set(columnName, nil)
 				continue
 			}
 			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a tag
@@ -131,17 +132,17 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 			case []uint8:
 				asBytes := make([]byte, len(v))
 				copy(asBytes, v)
-				feature.Properties[columnName] = string(asBytes)
+				feature.Properties.Set(columnName, string(asBytes))
 			case int64:
-				feature.Properties[columnName] = v
+				feature.Properties.Set(columnName, v)
 			case float64:
-				feature.Properties[columnName] = v
+				feature.Properties.Set(columnName, v)
 			case time.Time:
-				feature.Properties[columnName] = v
+				feature.Properties.Set(columnName, v)
 			case string:
-				feature.Properties[columnName] = v
+				feature.Properties.Set(columnName, v)
 			case bool:
-				feature.Properties[columnName] = v
+				feature.Properties.Set(columnName, v)
 			default:
 				return nil, fmt.Errorf("unexpected type for sqlite column data: %v: %T", columns[i], v)
 			}
@@ -165,14 +166,14 @@ func mapExternalFid(columns []string, values []any, externalFidColumn string, fe
 			// Note: This happens in a second pass over the feature, since we want to overwrite the
 			// feature ID irrespective of the order of columns in the table
 			feature.ID = fmt.Sprint(columnValue)
-			delete(feature.Properties, columnName)
+			feature.Properties.Delete(columnName)
 		case strings.Contains(columnName, externalFidColumn):
 			// When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat
 			// it as a relation to another feature.
 			newColumnName, newColumnValue := mapRel(columnName, columnValue, externalFidColumn)
 			if newColumnName != "" {
-				feature.Properties[newColumnName] = newColumnValue
-				delete(feature.Properties, columnName)
+				feature.Properties.Set(newColumnName, newColumnValue)
+				feature.Properties.Delete(columnName)
 			}
 		}
 	}

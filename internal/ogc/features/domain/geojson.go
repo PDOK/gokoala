@@ -2,6 +2,7 @@ package domain
 
 import (
 	"github.com/go-spatial/geom/encoding/geojson"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 // featureCollectionType allows the GeoJSON type to be automatically set during json marshalling
@@ -30,6 +31,16 @@ type Feature struct {
 	// auto-incrementing integers (which is the default in geopackages) since we use it for cursor-based pagination.
 	ID    string `json:"id"`
 	Links []Link `json:"links,omitempty"`
+
+	Properties orderedmap.OrderedMap[string, any] `json:"properties"`
+}
+
+func (f *Feature) Keys() []string {
+	result := make([]string, 0, f.Properties.Len())
+	for pair := f.Properties.Oldest(); pair != nil; pair = pair.Next() {
+		result = append(result, pair.Key)
+	}
+	return result
 }
 
 // Link according to RFC 8288, https://datatracker.ietf.org/doc/html/rfc8288

@@ -47,11 +47,13 @@
             {{ if $mapSheetProperties }}
             {{ $skipKeys = append $skipKeys $mapSheetProperties.Size }}
             {{ end }}
-            {{ range $key, $value := .Params.Properties }}
+
+            {{ range $key := .Params.Keys }}
                 {{- if not (has $key $skipKeys) -}}
                 <tr>
                     <td class="w-25">{{ $key }}</td>
 
+                    {{ $value := $.Params.Properties.Value $key }}
                     {{- if isdate $value -}}
                     <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
 

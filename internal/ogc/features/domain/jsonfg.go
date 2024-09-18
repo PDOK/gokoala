@@ -2,6 +2,7 @@ package domain
 
 import (
 	"github.com/go-spatial/geom"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 const (
@@ -33,10 +34,10 @@ type JSONFGFeature struct {
 	Time any         `json:"time"`
 	// we don't implement the JSON-FG "3D" conformance class. So Place only
 	// supports simple/2D geometries, no 3D geometries like Polyhedron, Prism, etc.
-	Place       geom.Geometry  `json:"place"`    // may only contain non-WGS84 geometries
-	Geometry    geom.Geometry  `json:"geometry"` // may only contain WGS84 geometries
-	Properties  map[string]any `json:"properties"`
-	CoordRefSys string         `json:"coordRefSys,omitempty"`
-	Links       []Link         `json:"links,omitempty"`
-	ConformsTo  []string       `json:"conformsTo,omitempty"`
+	Place       geom.Geometry                      `json:"place"`    // may only contain non-WGS84 geometries
+	Geometry    geom.Geometry                      `json:"geometry"` // may only contain WGS84 geometries
+	Properties  orderedmap.OrderedMap[string, any] `json:"properties"`
+	CoordRefSys string                             `json:"coordRefSys,omitempty"`
+	Links       []Link                             `json:"links,omitempty"`
+	ConformsTo  []string                           `json:"conformsTo,omitempty"`
 }
