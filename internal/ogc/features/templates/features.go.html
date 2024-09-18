@@ -280,7 +280,7 @@
             {{ range $key := $feat.Keys }}
                 {{- if not (has $key $skipKeys) -}}
                 <tr>
-                    <td class="w-20">{{ $key }}</td>
+                    <td class="w-25">{{ $key }}</td>
 
                     {{ $value := $feat.Properties.Value $key }}
                     {{- if isdate $value -}}

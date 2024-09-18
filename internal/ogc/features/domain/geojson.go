@@ -35,6 +35,10 @@ type Feature struct {
 	Properties orderedmap.OrderedMap[string, any] `json:"properties"`
 }
 
+// Keys of the Feature properties.
+//
+// Note: In the future we might replace this with Go 1.23 iterators (range-over-func) however at the moment this
+// isn't supported in Go templates: https://github.com/golang/go/pull/68329
 func (f *Feature) Keys() []string {
 	result := make([]string, 0, f.Properties.Len())
 	for pair := f.Properties.Oldest(); pair != nil; pair = pair.Next() {
