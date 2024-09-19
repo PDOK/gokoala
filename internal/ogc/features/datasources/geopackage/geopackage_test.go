@@ -12,7 +12,6 @@ import (
 
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/go-spatial/geom/encoding/geojson"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -129,20 +128,16 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				NumberReturned: 2,
 				Features: []*domain.Feature{
 					{
-						Feature: geojson.Feature{
-							Properties: map[string]any{
-								"straatnaam": "Van Diemenkade",
-								"nummer_id":  "0363200000454013",
-							},
-						},
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"straatnaam": "Van Diemenkade",
+							"nummer_id":  "0363200000454013",
+						}),
 					},
 					{
-						Feature: geojson.Feature{
-							Properties: map[string]any{
-								"straatnaam": "Realengracht",
-								"nummer_id":  "0363200000398886",
-							},
-						},
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"straatnaam": "Realengracht",
+							"nummer_id":  "0363200000398886",
+						}),
 					},
 				},
 			},
@@ -175,28 +170,23 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				NumberReturned: 3,
 				Features: []*domain.Feature{
 					{
-						Feature: geojson.Feature{
-							Properties: map[string]any{
-								"straatnaam": "Realengracht",
-								"nummer_id":  "0363200000398887",
-							},
-						},
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"straatnaam": "Realengracht",
+							"nummer_id":  "0363200000398887",
+						}),
 					},
 					{
-						Feature: geojson.Feature{
-							Properties: map[string]any{
-								"straatnaam": "Realengracht",
-								"nummer_id":  "0363200000398888",
-							},
-						},
+
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"straatnaam": "Realengracht",
+							"nummer_id":  "0363200000398888",
+						}),
 					},
 					{
-						Feature: geojson.Feature{
-							Properties: map[string]any{
-								"straatnaam": "Realengracht",
-								"nummer_id":  "0363200000398889",
-							},
-						},
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"straatnaam": "Realengracht",
+							"nummer_id":  "0363200000398889",
+						}),
 					},
 				},
 			},
@@ -231,20 +221,16 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				NumberReturned: 2,
 				Features: []*domain.Feature{
 					{
-						Feature: geojson.Feature{
-							Properties: map[string]any{
-								"straatnaam": "Van Diemenkade",
-								"nummer_id":  "0363200000454013",
-							},
-						},
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"straatnaam": "Van Diemenkade",
+							"nummer_id":  "0363200000454013",
+						}),
 					},
 					{
-						Feature: geojson.Feature{
-							Properties: map[string]any{
-								"straatnaam": "Realengracht",
-								"nummer_id":  "0363200000398886",
-							},
-						},
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"straatnaam": "Realengracht",
+							"nummer_id":  "0363200000398886",
+						}),
 					},
 				},
 			},
@@ -296,8 +282,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			assert.Equal(t, tt.wantFC.NumberReturned, fc.NumberReturned)
 			assert.Equal(t, len(tt.wantFC.Features), fc.NumberReturned)
 			for i, wantedFeature := range tt.wantFC.Features {
-				assert.Equal(t, wantedFeature.Properties["straatnaam"], fc.Features[i].Properties["straatnaam"])
-				assert.Equal(t, wantedFeature.Properties["nummer_id"], fc.Features[i].Properties["nummer_id"])
+				assert.Equal(t, wantedFeature.Properties.Value("straatnaam"), fc.Features[i].Properties.Value("straatnaam"))
+				assert.Equal(t, wantedFeature.Properties.Value("nummer_id"), fc.Features[i].Properties.Value("nummer_id"))
 			}
 			assert.Equal(t, tt.wantCursor.Prev, cursor.Prev)
 			assert.Equal(t, tt.wantCursor.Next, cursor.Next)
@@ -340,12 +326,10 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 			want: &domain.Feature{
 				ID:    "0",
 				Links: nil,
-				Feature: geojson.Feature{
-					Properties: map[string]any{
-						"straatnaam": "Realengracht",
-						"nummer_id":  "0363200000398886",
-					},
-				},
+				Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+					"straatnaam": "Realengracht",
+					"nummer_id":  "0363200000398886",
+				}),
 			},
 			wantErr: false,
 		},
@@ -400,8 +384,8 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				return
 			}
 			if tt.want != nil {
-				assert.Equal(t, tt.want.Properties["straatnaam"], got.Properties["straatnaam"])
-				assert.Equal(t, tt.want.Properties["nummer_id"], got.Properties["nummer_id"])
+				assert.Equal(t, tt.want.Properties.Value("straatnaam"), got.Properties.Value("straatnaam"))
+				assert.Equal(t, tt.want.Properties.Value("nummer_id"), got.Properties.Value("nummer_id"))
 			}
 		})
 	}

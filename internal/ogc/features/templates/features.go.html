@@ -301,11 +301,11 @@
                 {{- end -}}
             {{ end }}
             {{/* for map sheets collection, add download button */}}
-            {{ if $mapSheetProperties }}
+            {{ if and $mapSheetProperties $feat.Properties }}
             <tr>
-                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get $feat.Properties $mapSheetProperties.AssetURL }}" download>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ $feat.Properties.Value $mapSheetProperties.AssetURL }}" download>
                     Download
-                </a> ({{ i18n "Size" }}: {{ humansize (get $feat.Properties $mapSheetProperties.Size) }})</td>
+                </a> ({{ i18n "Size" }}: {{ humansize ($feat.Properties.Value $mapSheetProperties.Size) }})</td>
             </tr>
             {{ end }}
             </tbody>

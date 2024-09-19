@@ -72,11 +72,11 @@
                 {{- end -}}
             {{ end }}
             {{/* for map sheets collection, add download button */}}
-            {{ if $mapSheetProperties }}
+            {{ if and $mapSheetProperties .Params.Properties }}
             <tr>
-                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ get .Params.Properties $mapSheetProperties.AssetURL }}" download>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ .Params.Properties.Value $mapSheetProperties.AssetURL }}" download>
 					Download
-				</a> ({{ i18n "Size" }}: {{ humansize (get .Params.Properties $mapSheetProperties.Size) }})</td>
+				</a> ({{ i18n "Size" }}: {{ humansize (.Params.Properties.Value $mapSheetProperties.Size) }})</td>
             </tr>
             {{ end }}
             </tbody>

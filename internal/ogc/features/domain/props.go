@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"slices"
+
 	"github.com/PDOK/gokoala/internal/engine/util"
 	perfjson "github.com/goccy/go-json"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
@@ -67,7 +69,9 @@ func (p *FeatureProperties) Delete(key string) {
 // isn't supported in Go templates: https://github.com/golang/go/pull/68329
 func (p *FeatureProperties) Keys() []string {
 	if p.unordered != nil {
-		return util.Keys(p.unordered)
+		keys := util.Keys(p.unordered)
+		slices.Sort(keys) // preserve alphabetical order
+		return keys
 	}
 	result := make([]string, 0, p.ordered.Len())
 	for pair := p.ordered.Oldest(); pair != nil; pair = pair.Next() {
