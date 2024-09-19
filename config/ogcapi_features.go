@@ -310,23 +310,23 @@ type FeatureFilters struct {
 
 // +kubebuilder:object:generate=true
 type FeatureProperties struct {
-	// Properties of features in this collection. This setting controls two things:
+	// Properties/fields of features in this collection. This setting controls two things:
 	//
-	// A) allows one to exclude certain properties, when propertiesIncludeUnknown=false
+	// A) allows one to exclude certain properties, when propertiesExcludeUnknown=true
 	// B) allows one sort the properties in the given order, when propertiesInSpecificOrder=true
 	//
 	// When not set all available properties are returned in API responses, in alphabetical order.
 	// +optional
 	Properties []string `yaml:"properties,omitempty" json:"properties,omitempty"`
 
-	// When true (default) properties not listed under 'properties' are still available API responses. When false
-	// unlisted properties are excluded from API responses.
+	// When true properties not listed under 'properties' are excluded from API responses. When false
+	// unlisted properties are also included in API responses.
 	// +optional
 	// +kubebuilder:default=false
 	PropertiesExcludeUnknown bool `yaml:"propertiesExcludeUnknown,omitempty" json:"propertiesExcludeUnknown,omitempty" default:"false"`
 
-	// When true properties are returned according to the specific ordering specified in the "properties" setting.
-	// When false properties are returned in alphabetical order.
+	// When true properties are returned according to the ordering specified under 'properties'. When false
+	// properties are returned in alphabetical order.
 	// +optional
 	// +kubebuilder:default=false
 	PropertiesInSpecificOrder bool `yaml:"propertiesInSpecificOrder,omitempty" json:"propertiesInSpecificOrder,omitempty" default:"false"`

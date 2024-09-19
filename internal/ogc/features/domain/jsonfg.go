@@ -8,6 +8,8 @@ const (
 	ConformanceJSONFGCore = "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
 )
 
+// JSONFGFeatureCollection FeatureCollection according to the JSON-FG standard
+// Note: fields in this struct are sorted for optimal memory usage (field alignment)
 type JSONFGFeatureCollection struct {
 	Type           featureCollectionType `json:"type"`
 	Timestamp      string                `json:"timeStamp,omitempty"`
@@ -18,13 +20,15 @@ type JSONFGFeatureCollection struct {
 	NumberReturned int                   `json:"numberReturned"`
 }
 
+// JSONFGFeature Feature according to the JSON-FG standard
+// Note: fields in this struct are sorted for optimal memory usage (field alignment)
 type JSONFGFeature struct {
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
 	ID   string      `json:"id"`
 	Type featureType `json:"type"`
 	Time any         `json:"time"`
-	// we don't implement the JSON-FG "3D" conformance class. So Place only
+	// We don't implement the JSON-FG "3D" conformance class. So Place only
 	// supports simple/2D geometries, no 3D geometries like Polyhedron, Prism, etc.
 	Place       geom.Geometry     `json:"place"`    // may only contain non-WGS84 geometries
 	Geometry    geom.Geometry     `json:"geometry"` // may only contain WGS84 geometries
