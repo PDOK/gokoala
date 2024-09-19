@@ -310,22 +310,26 @@ type FeatureFilters struct {
 
 // +kubebuilder:object:generate=true
 type FeatureProperties struct {
-	// Properties of features in this collection that should be included in the output, in the given order.
+	// Properties of features in this collection. This setting controls two things:
 	//
-	// This setting controls two things:
+	// A) allows one to exclude certain properties, when propertiesIncludeUnknown=false
+	// B) allows one sort the properties in the given order, when propertiesInSpecificOrder=true
 	//
-	// A) allows one to exclude certain properties (only when propertiesIncludeUnknown=false)
-	// B) allows one sort the properties irrespective of their order in the datastore
-	//
-	// When not set all available properties are returned in API responses.
+	// When not set all available properties are returned in API responses, in alphabetical order.
 	// +optional
 	Properties []string `yaml:"properties,omitempty" json:"properties,omitempty"`
 
 	// When true (default) properties not listed under 'properties' are still available API responses. When false
 	// unlisted properties are excluded from API responses.
 	// +optional
-	// +kubebuilder:default=true
-	PropertiesIncludeUnknown *bool `yaml:"propertiesIncludeUnknown,omitempty" json:"propertiesIncludeUnknown,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+	// +kubebuilder:default=false
+	PropertiesExcludeUnknown bool `yaml:"propertiesExcludeUnknown,omitempty" json:"propertiesExcludeUnknown,omitempty" default:"false"`
+
+	// When true properties are returned according to the specific ordering specified in the "properties" setting.
+	// When false properties are returned in alphabetical order.
+	// +optional
+	// +kubebuilder:default=false
+	PropertiesInSpecificOrder bool `yaml:"propertiesInSpecificOrder,omitempty" json:"propertiesInSpecificOrder,omitempty" default:"false"`
 }
 
 // +kubebuilder:object:generate=true

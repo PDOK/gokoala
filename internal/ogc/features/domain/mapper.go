@@ -5,10 +5,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
+
 	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/geojson"
 	"github.com/jmoiron/sqlx"
-	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 // MapRelation abstract function type to map feature relations
@@ -49,7 +50,7 @@ func MapRowsToFeatureIDs(rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevN
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
 func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn string, geomColumn string,
-	mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
+	propConfig *config.FeatureProperties, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -57,6 +58,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 		return result, nil, err
 	}
 
+	orderProps := propConfig != nil && propConfig.PropertiesInSpecificOrder
 	firstRow := true
 	var prevNextID *PrevNextFID
 	for rows.Next() {
@@ -64,8 +66,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 		if values, err = rows.SliceScan(); err != nil {
 			return result, nil, err
 		}
-
-		feature := &Feature{Feature: geojson.Feature{}, Properties: *orderedmap.New[string, any]()}
+		feature := &Feature{Properties: NewFeatureProperties(orderProps)}
 		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, externalFidColumn,
 			geomColumn, mapGeom, mapRel)
 		if err != nil {

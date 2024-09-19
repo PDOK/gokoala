@@ -2,19 +2,11 @@ package domain
 
 import (
 	"github.com/go-spatial/geom"
-	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 const (
 	ConformanceJSONFGCore = "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
 )
-
-// featureType allows the type for Feature to be automatically set during json Marshalling
-type featureType struct{}
-
-func (ft *featureType) MarshalJSON() ([]byte, error) {
-	return []byte(`"Feature"`), nil
-}
 
 type JSONFGFeatureCollection struct {
 	Type           featureCollectionType `json:"type"`
@@ -34,10 +26,10 @@ type JSONFGFeature struct {
 	Time any         `json:"time"`
 	// we don't implement the JSON-FG "3D" conformance class. So Place only
 	// supports simple/2D geometries, no 3D geometries like Polyhedron, Prism, etc.
-	Place       geom.Geometry                      `json:"place"`    // may only contain non-WGS84 geometries
-	Geometry    geom.Geometry                      `json:"geometry"` // may only contain WGS84 geometries
-	Properties  orderedmap.OrderedMap[string, any] `json:"properties"`
-	CoordRefSys string                             `json:"coordRefSys,omitempty"`
-	Links       []Link                             `json:"links,omitempty"`
-	ConformsTo  []string                           `json:"conformsTo,omitempty"`
+	Place       geom.Geometry     `json:"place"`    // may only contain non-WGS84 geometries
+	Geometry    geom.Geometry     `json:"geometry"` // may only contain WGS84 geometries
+	Properties  FeatureProperties `json:"properties"`
+	CoordRefSys string            `json:"coordRefSys,omitempty"`
+	Links       []Link            `json:"links,omitempty"`
+	ConformsTo  []string          `json:"conformsTo,omitempty"`
 }

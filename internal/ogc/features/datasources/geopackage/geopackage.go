@@ -208,7 +208,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 
 	fc := domain.FeatureCollection{}
 	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		mapGpkgGeometry, profile.MapRelationUsingProfile)
+		g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
 	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		mapGpkgGeometry, profile.MapRelationUsingProfile)
+		g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -291,7 +291,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 
 	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		mapGpkgGeometry, profile.MapRelationUsingProfile)
+		g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +338,7 @@ func (g *GeoPackage) makeSelectClause(onlyFIDs bool, propConfig *config.FeatureP
 		return "\"" + g.fidColumn + "\", prevfid, nextfid"
 	} else if propConfig != nil && propConfig.Properties != nil {
 		clause := "\"" + g.fidColumn + "\", prevfid, nextfid, \"" + table.GeometryColumnName + "\", " + strings.Join(propConfig.Properties, ",")
-		if *propConfig.PropertiesIncludeUnknown {
+		if !propConfig.PropertiesExcludeUnknown {
 			clause += ", *"
 		}
 		return clause
