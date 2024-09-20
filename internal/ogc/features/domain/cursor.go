@@ -9,7 +9,12 @@ import (
 	"strings"
 )
 
-const separator = '|'
+const (
+	PrevFid = "prevfid"
+	NextFid = "nextfid"
+
+	separator = '|'
+)
 
 // Cursors holds next and previous cursor. Note that we use
 // 'cursor-based pagination' as opposed to 'offset-based pagination'

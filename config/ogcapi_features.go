@@ -79,6 +79,10 @@ type CollectionEntryFeatures struct {
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
 
+	// Optional way to exclude feature properties and/or determine the ordering of properties in the response.
+	// +optional
+	FeatureProperties *FeatureProperties `yaml:",inline" json:",inline"`
+
 	// Downloads available for this collection through map sheets. Note that 'map sheets' refer to a map
 	// divided in rectangle areas that can be downloaded individually.
 	// +optional
@@ -302,6 +306,30 @@ type FeatureFilters struct {
 
 	// OAF Part 3: add config for complex/CQL filters here
 	// <placeholder>
+}
+
+// +kubebuilder:object:generate=true
+type FeatureProperties struct {
+	// Properties/fields of features in this collection. This setting controls two things:
+	//
+	// A) allows one to exclude certain properties, when propertiesExcludeUnknown=true
+	// B) allows one sort the properties in the given order, when propertiesInSpecificOrder=true
+	//
+	// When not set all available properties are returned in API responses, in alphabetical order.
+	// +optional
+	Properties []string `yaml:"properties,omitempty" json:"properties,omitempty"`
+
+	// When true properties not listed under 'properties' are excluded from API responses. When false
+	// unlisted properties are also included in API responses.
+	// +optional
+	// +kubebuilder:default=false
+	PropertiesExcludeUnknown bool `yaml:"propertiesExcludeUnknown,omitempty" json:"propertiesExcludeUnknown,omitempty" default:"false"`
+
+	// When true properties are returned according to the ordering specified under 'properties'. When false
+	// properties are returned in alphabetical order.
+	// +optional
+	// +kubebuilder:default=false
+	PropertiesInSpecificOrder bool `yaml:"propertiesInSpecificOrder,omitempty" json:"propertiesInSpecificOrder,omitempty" default:"false"`
 }
 
 // +kubebuilder:object:generate=true

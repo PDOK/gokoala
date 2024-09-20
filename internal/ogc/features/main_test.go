@@ -587,6 +587,48 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request features where certain properties are excluded",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_properties_exclude.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_properties_exclude.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features where properties are in a specific order",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_properties_order.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_properties_order.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features where properties are in a specific order and certain properties are excluded",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_properties_order_exclude.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_properties_order_exclude.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
