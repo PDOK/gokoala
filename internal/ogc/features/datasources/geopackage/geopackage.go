@@ -453,10 +453,11 @@ func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProp
 	if !slices.Contains(clause, table.GeometryColumnName) {
 		clause = append(clause, table.GeometryColumnName)
 	}
+	result := columnsToSQL(clause)
 	if !propConfig.PropertiesExcludeUnknown {
-		clause = append(clause, selectAll)
+		result += ", " + selectAll
 	}
-	return columnsToSQL(clause)
+	return result
 }
 
 func mapGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {

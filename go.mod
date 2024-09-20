@@ -29,7 +29,7 @@ require (
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/sync v0.8.0
-	golang.org/x/text v0.17.0
+	golang.org/x/text v0.18.0
 	gopkg.in/yaml.v3 v3.0.1
 	schneider.vip/problem v1.9.1
 )
