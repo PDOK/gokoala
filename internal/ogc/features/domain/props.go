@@ -22,7 +22,8 @@ func NewFeatureProperties(order bool) FeatureProperties {
 
 func NewFeaturePropertiesWithData(order bool, data map[string]any) FeatureProperties {
 	if order {
-		ordered := *orderedmap.New[string, any]()
+		// properties are allowed to contain anything, including for example XML/GML
+		ordered := *orderedmap.New[string, any](orderedmap.WithDisableHTMLEscape[string, any]())
 		for k, v := range data {
 			ordered.Set(k, v)
 		}

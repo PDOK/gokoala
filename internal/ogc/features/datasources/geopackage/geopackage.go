@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -29,6 +30,7 @@ import (
 
 const (
 	sqliteDriverName = "sqlite3_with_extensions"
+	selectAll        = "*"
 )
 
 var once sync.Once
@@ -83,6 +85,7 @@ type GeoPackage struct {
 	propertiesByCollectionID      map[string]*config.FeatureProperties
 	queryTimeout                  time.Duration
 	maxBBoxSizeToUseWithRTree     int
+	selectClauseFids              []string
 }
 
 func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
@@ -110,6 +113,8 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	default:
 		log.Fatal("unknown GeoPackage config encountered")
 	}
+
+	g.selectClauseFids = []string{g.fidColumn, "prevfid", "nextfid"}
 
 	metadata, err := readDriverMetadata(g.backend.getDB())
 	if err != nil {
@@ -318,7 +323,13 @@ func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) data
 func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *featureTable,
 	onlyFIDs bool, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
-	selectClause := g.makeSelectClause(onlyFIDs, propConfig, table)
+	selectClause := selectAll
+	if onlyFIDs {
+		selectClause = columnsToSQL(g.selectClauseFids)
+	} else if propConfig != nil && propConfig.Properties != nil {
+		selectClause = g.selectSpecificColumnsInOrder(propConfig, table)
+	}
+
 	// make query
 	if criteria.Bbox != nil {
 		query, queryArgs, err = g.makeBboxQuery(table, selectClause, criteria)
@@ -331,19 +342,6 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	// lookup prepared statement for given query, or create new one
 	stmt, err = g.preparedStmtCache.Lookup(ctx, g.backend.getDB(), query)
 	return
-}
-
-func (g *GeoPackage) makeSelectClause(onlyFIDs bool, propConfig *config.FeatureProperties, table *featureTable) string {
-	if onlyFIDs {
-		return "\"" + g.fidColumn + "\", prevfid, nextfid"
-	} else if propConfig != nil && propConfig.Properties != nil {
-		clause := "\"" + g.fidColumn + "\", prevfid, nextfid, \"" + table.GeometryColumnName + "\", " + strings.Join(propConfig.Properties, ",")
-		if !propConfig.PropertiesExcludeUnknown {
-			clause += ", *"
-		}
-		return clause
-	}
-	return "*"
 }
 
 func (g *GeoPackage) makeDefaultQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
@@ -449,6 +447,18 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 	return table, nil
 }
 
+func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProperties, table *featureTable) string {
+	clause := g.selectClauseFids
+	clause = append(clause, propConfig.Properties...)
+	if !slices.Contains(clause, table.GeometryColumnName) {
+		clause = append(clause, table.GeometryColumnName)
+	}
+	if !propConfig.PropertiesExcludeUnknown {
+		clause = append(clause, selectAll)
+	}
+	return columnsToSQL(clause)
+}
+
 func mapGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
 	geometry, err := gpkg.DecodeGeometry(rawGeom)
 	if err != nil {
@@ -493,4 +503,8 @@ func cacheFeatureProperties(collections config.GeoSpatialCollections) map[string
 		result[collection.ID] = collection.Features.FeatureProperties
 	}
 	return result
+}
+
+func columnsToSQL(columns []string) string {
+	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
 }
