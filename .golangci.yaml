@@ -43,6 +43,9 @@ linters-settings:
     forbid:
       - http\.NotFound.*  # return RFC 7807 problem details instead
       - http\.Error.*  # return RFC 7807 problem details instead
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/wk8/go-ordered-map/v2
 
 linters:
   disable-all: true
@@ -66,7 +69,7 @@ linters:
     - errname  # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
     - errorlint  # finds code that will cause problems with the error wrapping scheme introduced in Go 1.13
     - exhaustive  # checks exhaustiveness of enum switch statements
-    - exportloopref  # checks for pointers to enclosing loop variables
+    - copyloopvar  # checks for pointers to enclosing loop variables
     - forbidigo  # forbids identifiers
     - funlen  # tool for detection of long functions
     - gocheckcompilerdirectives  # validates go compiler directive comments (//go:)
