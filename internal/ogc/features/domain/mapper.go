@@ -58,7 +58,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 		return result, nil, err
 	}
 
-	orderProps := propConfig != nil && propConfig.PropertiesInSpecificOrder
+	propertiesOrder := propConfig != nil && propConfig.PropertiesInSpecificOrder
 	firstRow := true
 	var prevNextID *PrevNextFID
 	for rows.Next() {
@@ -66,7 +66,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 		if values, err = rows.SliceScan(); err != nil {
 			return result, nil, err
 		}
-		feature := &Feature{Properties: NewFeatureProperties(orderProps)}
+		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
 		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, externalFidColumn,
 			geomColumn, mapGeom, mapRel)
 		if err != nil {
@@ -173,7 +173,8 @@ func mapExternalFid(columns []string, values []any, externalFidColumn string, fe
 			// it as a relation to another feature.
 			newColumnName, newColumnValue := mapRel(columnName, columnValue, externalFidColumn)
 			if newColumnName != "" {
-				feature.Properties.Set(newColumnName, newColumnValue)
+				columnNameWithoutExternalFID := strings.ReplaceAll(columnName, externalFidColumn, "")
+				feature.Properties.SetRelation(newColumnName, newColumnValue, columnNameWithoutExternalFID)
 				feature.Properties.Delete(columnName)
 			}
 		}

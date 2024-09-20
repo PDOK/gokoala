@@ -2,14 +2,15 @@ package domain
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
 	perfjson "github.com/goccy/go-json"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
-// FeatureProperties the properties of a GeoJSON Feature
-// Either unordered (= default, and has the best performance) or in a specific order when configured as such.
+// FeatureProperties the properties of a GeoJSON Feature. Properties are either unordered
+// (default, and has the best performance!) or ordered in a specific way as described in the config.
 type FeatureProperties struct {
 	unordered map[string]any
 	ordered   orderedmap.OrderedMap[string, any]
@@ -34,18 +35,9 @@ func NewFeaturePropertiesWithData(order bool, data map[string]any) FeatureProper
 func (p *FeatureProperties) MarshalJSON() ([]byte, error) {
 	if p.unordered != nil {
 		// properties are allowed to contain anything, including for example XML/GML.
-		b, e := perfjson.MarshalWithOption(p.unordered, perfjson.DisableHTMLEscape())
-		return b, e
+		return perfjson.MarshalWithOption(p.unordered, perfjson.DisableHTMLEscape())
 	}
 	return p.ordered.MarshalJSON()
-}
-
-func (p *FeatureProperties) Set(key string, value any) {
-	if p.unordered != nil {
-		p.unordered[key] = value
-	} else {
-		p.ordered.Set(key, value)
-	}
 }
 
 func (p *FeatureProperties) Value(key string) any {
@@ -60,6 +52,37 @@ func (p *FeatureProperties) Delete(key string) {
 		delete(p.unordered, key)
 	} else {
 		p.ordered.Delete(key)
+	}
+}
+
+func (p *FeatureProperties) Set(key string, value any) {
+	if p.unordered != nil {
+		p.unordered[key] = value
+	} else {
+		p.ordered.Set(key, value)
+	}
+}
+
+func (p *FeatureProperties) SetRelation(key string, value any, existingKeyPrefix string) {
+	p.Set(key, value)
+	p.moveKeyBeforePrefix(key, existingKeyPrefix)
+}
+
+// moveKeyBeforePrefix best-effort algorithm to place the feature relation BEFORE any similarly named keys.
+// For example, places "building.href" before "building_fk" or "building_fid".
+func (p *FeatureProperties) moveKeyBeforePrefix(key string, keyPrefix string) {
+	if p.unordered != nil {
+		return
+	}
+	var existingKey string
+	for pair := p.ordered.Oldest(); pair != nil; pair = pair.Next() {
+		if strings.HasPrefix(pair.Key, keyPrefix) {
+			existingKey = pair.Key
+			break
+		}
+	}
+	if existingKey != "" {
+		_ = p.ordered.MoveBefore(key, existingKey)
 	}
 }
 
