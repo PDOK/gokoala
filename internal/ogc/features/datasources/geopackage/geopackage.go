@@ -114,7 +114,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		log.Fatal("unknown GeoPackage config encountered")
 	}
 
-	g.selectClauseFids = []string{g.fidColumn, "prevfid", "nextfid"}
+	g.selectClauseFids = []string{g.fidColumn, domain.PrevFid, domain.NextFid}
 
 	metadata, err := readDriverMetadata(g.backend.getDB())
 	if err != nil {
@@ -353,9 +353,9 @@ with
     next as (select * from "%[1]s" where "%[2]s" >= :fid %[3]s %[4]s order by %[2]s asc limit :limit + 1),
     prev as (select * from "%[1]s" where "%[2]s" < :fid %[3]s %[4]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
-    nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as prevfid, lead("%[2]s", :limit) over (order by "%[2]s") as nextfid from nextprev)
+    nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as %[6]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[7]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
-`, table.TableName, g.fidColumn, temporalClause, pfClause, selectClause) // don't add user input here, use named params for user input!
+`, table.TableName, g.fidColumn, temporalClause, pfClause, selectClause, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
@@ -415,10 +415,10 @@ with
                          limit (select iif(bbox_size == 'big', :limit, 0) from bbox_size)),
      prev as (select * from prev_bbox_rtree union all select * from prev_bbox_btree),
      nextprev as (select * from next union all select * from prev),
-     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by "%[2]s") as prevfid, lead("%[2]s", :limit) over (order by "%[2]s") as nextfid from nextprev)
+     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by "%[2]s") as %[9]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[10]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
 `, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
-		selectClause, temporalClause, pfClause, btreeIndexHint) // don't add user input here, use named params for user input!
+		selectClause, temporalClause, pfClause, btreeIndexHint, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
 	if err != nil {

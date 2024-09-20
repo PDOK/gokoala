@@ -111,13 +111,13 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 			// Skip these columns used for bounding box and zoom filtering
 			continue
 
-		case "prevfid":
+		case PrevFid:
 			// Only the first row in the result set contains the previous feature id
 			if firstRow && columnValue != nil {
 				prevNextID.Prev = columnValue.(int64)
 			}
 
-		case "nextfid":
+		case NextFid:
 			// Only the first row in the result set contains the next feature id
 			if firstRow && columnValue != nil {
 				prevNextID.Next = columnValue.(int64)

@@ -66,7 +66,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 			name:             "Test prevfid and nextfid",
 			firstRow:         true,
 			feature:          &Feature{Properties: NewFeatureProperties(false)},
-			columns:          []string{"prevfid", "nextfid"},
+			columns:          []string{PrevFid, NextFid},
 			values:           []any{int64(1), int64(2)},
 			expectedFeature:  &Feature{Properties: NewFeatureProperties(false)},
 			expectedPrevNext: &PrevNextFID{Prev: int64(1), Next: int64(2)},
