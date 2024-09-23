@@ -297,15 +297,16 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 
 	// Now render metadata bout tiles per projection/SRS.
 	for _, projection := range AllProjections {
+		path = tilesPath + "/" + projection
+
 		projectionBreadcrumbs := breadcrumbs
 		projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
 			{
 				Name: projection,
-				Path: tilesLocalPath + projection,
+				Path: collectionsCrumb + collectionID + path,
 			},
 		}...)
 
-		path = tilesPath + "/" + projection
 		if collection != nil {
 			path = g.CollectionsPath + "/" + collectionID + tilesPath + "/" + projection
 		}
