@@ -10,7 +10,10 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc"
 	"github.com/urfave/cli/v2"
 
+	// Set GOMAXPROCS to match Linux container CPU quota.
 	_ "go.uber.org/automaxprocs"
+	// Sets GOMEMLIMIT to 90% of cgroup's memory limit.
+	_ "github.com/KimMachineGun/automemlimit"
 )
 
 var (
