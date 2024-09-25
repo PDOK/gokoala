@@ -11,20 +11,11 @@ import (
 
 // Serve static assets either from local storage or through reverse proxy
 func newResourcesEndpoint(e *Engine) {
-	resourcesDir := ""
-	if e.Config.Resources.Directory != nil {
-		resourcesDir = *e.Config.Resources.Directory
-	}
-	resourcesURL := ""
-	if e.Config.Resources.URL != nil {
-		resourcesURL = e.Config.Resources.URL.String()
-	}
-
-	if resourcesDir != "" {
-		resourcesPath := strings.TrimSuffix(resourcesDir, "/resources")
+	if e.Config.Resources.Directory != nil && *e.Config.Resources.Directory != "" {
+		resourcesPath := strings.TrimSuffix(*e.Config.Resources.Directory, "/resources")
 		e.Router.Handle("/resources/*", http.FileServer(http.Dir(resourcesPath)))
-	} else if resourcesURL != "" {
-		e.Router.Get("/resources/*", proxy(e.ReverseProxy, resourcesURL))
+	} else if e.Config.Resources.URL != nil && e.Config.Resources.URL.String() != "" {
+		e.Router.Get("/resources/*", proxy(e.ReverseProxy, e.Config.Resources.URL.String()))
 	}
 }
 
