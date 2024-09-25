@@ -175,12 +175,12 @@ func renderStylesPerProjection(e *engine.Engine, supportedProjections []config.S
 				engine.NewTemplateKeyWithName(templatesDir+"styleMetadata.go.html", styleInstanceID))
 
 			// Add existing style definitions to rendered templates
-			renderStylePerFormat(e, style, styleInstanceID, path, projection, zoomLevelRange, styleProjectionBreadcrumb)
+			renderStylePerFormat(e, style, styleInstanceID, projection, zoomLevelRange, styleProjectionBreadcrumb)
 		}
 	}
 }
 
-func renderStylePerFormat(e *engine.Engine, style config.Style, styleInstanceID string, path string,
+func renderStylePerFormat(e *engine.Engine, style config.Style, styleInstanceID string,
 	projection string, zoomLevelRange config.ZoomLevelRange, styleProjectionBreadcrumb engine.Breadcrumb) {
 
 	for _, styleFormat := range style.Formats {
@@ -191,7 +191,7 @@ func renderStylePerFormat(e *engine.Engine, style config.Style, styleInstanceID 
 			Format:       styleFormat.Format,
 			InstanceName: styleInstanceID + "." + styleFormat.Format,
 		}
-		path = stylesPath + "/" + styleInstanceID
+		path := stylesPath + "/" + styleInstanceID
 
 		// Render template (JSON)
 		e.RenderTemplatesWithParams(path, struct {
