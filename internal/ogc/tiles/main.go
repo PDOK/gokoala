@@ -26,14 +26,6 @@ const (
 )
 
 var (
-	// AllProjections supported by GoKoala for serving (vector) tiles.
-	// When adding a new projection also add corresponding HTML/JSON templates.
-	AllProjections = map[string]string{
-		"EPSG:28992": "NetherlandsRDNewQuad",
-		"EPSG:3035":  "EuropeanETRS89_LAEAQuad",
-		"EPSG:3857":  "WebMercatorQuad",
-	}
-
 	tilesBreadcrumbs = []engine.Breadcrumb{
 		{
 			Name: tilesCrumbTitle,
@@ -82,7 +74,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 		renderTilesTemplates(e, nil, templateData{
 			*e.Config.OgcAPI.Tiles.DatasetTiles,
 			e.Config.BaseURL.String(),
-			util.Cast(AllProjections),
+			util.Cast(config.AllTileProjections),
 		})
 		e.Router.Get(tilesPath, tiles.TilesetsList())
 		e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
@@ -99,7 +91,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 		renderTilesTemplates(e, &coll, templateData{
 			coll.Tiles.GeoDataTiles,
 			e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
-			util.Cast(AllProjections),
+			util.Cast(config.AllTileProjections),
 		})
 		geoDataTiles[coll.ID] = coll.Tiles.GeoDataTiles
 	}
@@ -250,7 +242,7 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
 
-	for _, projection := range AllProjections {
+	for _, projection := range config.AllTileProjections {
 		breadcrumbs := tileMatrixSetsBreadcrumbs
 		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 			{
@@ -296,7 +288,7 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.html", collectionID))
 
 	// Now render metadata bout tiles per projection/SRS.
-	for _, projection := range AllProjections {
+	for _, projection := range config.AllTileProjections {
 		path = tilesPath + "/" + projection
 
 		projectionBreadcrumbs := breadcrumbs
