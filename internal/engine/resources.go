@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Serve static assets either from local storage or through reverse proxy
 func newResourcesEndpoint(e *Engine) {
-	// Serve static assets either from local storage or through reverse proxy
 	resourcesDir := ""
 	if e.Config.Resources.Directory != nil {
 		resourcesDir = *e.Config.Resources.Directory
@@ -28,9 +28,9 @@ func newResourcesEndpoint(e *Engine) {
 	}
 }
 
-func proxy(reverseProxy func(w http.ResponseWriter, r *http.Request, target *url.URL, prefer204 bool, overwrite string),
-	resourcesURL string) func(w http.ResponseWriter, r *http.Request) {
+type reverseProxy func(w http.ResponseWriter, r *http.Request, target *url.URL, prefer204 bool, overwrite string)
 
+func proxy(rp reverseProxy, resourcesURL string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resourcePath, _ := url.JoinPath("/", chi.URLParam(r, "*"))
 		target, err := url.ParseRequestURI(resourcesURL + resourcePath)
@@ -39,6 +39,6 @@ func proxy(reverseProxy func(w http.ResponseWriter, r *http.Request, target *url
 			RenderProblem(ProblemServerError, w)
 			return
 		}
-		reverseProxy(w, r, target, true, "")
+		rp(w, r, target, true, "")
 	}
 }
