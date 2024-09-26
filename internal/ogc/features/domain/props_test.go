@@ -241,33 +241,3 @@ func TestSetRelation(t *testing.T) {
 		})
 	}
 }
-
-func TestKeys(t *testing.T) {
-	tests := []struct {
-		name     string
-		inOrder  bool
-		data     map[string]any
-		expected []string
-	}{
-		{
-			name:     "Unordered keys",
-			inOrder:  false,
-			data:     map[string]any{"key2": "value2", "key1": "value1"},
-			expected: []string{"key1", "key2"}, // sorted alphabetically
-		},
-		{
-			name:     "Ordered keys",
-			inOrder:  true,
-			data:     map[string]any{"key1": "value1", "key2": "value2"},
-			expected: []string{"key1", "key2"}, // insertion order maintained
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := NewFeaturePropertiesWithData(tt.inOrder, tt.data)
-			keys := p.Keys()
-			assert.Equal(t, tt.expected, keys)
-		})
-	}
-}

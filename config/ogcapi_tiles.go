@@ -45,6 +45,15 @@ func (o *OgcAPITiles) HasType(t TilesType) bool {
 	return false
 }
 
+// AllTileProjections projections supported by GoKoala for serving (vector) tiles, regardless of the dataset.
+// When adding a new projection also add corresponding HTML/JSON templates.
+var AllTileProjections = map[string]string{
+	"EPSG:28992": "NetherlandsRDNewQuad",
+	"EPSG:3035":  "EuropeanETRS89_LAEAQuad",
+	"EPSG:3857":  "WebMercatorQuad",
+}
+
+// HasProjection true when the given projection is supported for this dataset
 func (o *OgcAPITiles) HasProjection(srs string) bool {
 	for _, projection := range o.GetProjections() {
 		if projection.Srs == srs {
@@ -54,6 +63,7 @@ func (o *OgcAPITiles) HasProjection(srs string) bool {
 	return false
 }
 
+// GetProjections projections supported for this dataset
 func (o *OgcAPITiles) GetProjections() []SupportedSrs {
 	supportedSrsSet := map[SupportedSrs]struct{}{}
 	if o.DatasetTiles != nil {
