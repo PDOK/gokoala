@@ -15,6 +15,7 @@ const (
 	languageParam = "lang"
 
 	MediaTypeJSON          = "application/json"
+	MediaTypeXML           = "application/xml"
 	MediaTypeHTML          = "text/html"
 	MediaTypeTileJSON      = "application/vnd.mapbox.tile+json"
 	MediaTypeMVT           = "application/vnd.mapbox-vector-tile"
@@ -26,6 +27,7 @@ const (
 	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
 
 	FormatHTML           = "html"
+	FormatXML            = "xml"
 	FormatJSON           = "json"
 	FormatTileJSON       = "tilejson"
 	FormatMVT            = "mvt"
@@ -74,6 +76,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 	availableMediaTypes := []contenttype.MediaType{
 		// in order
 		contenttype.NewMediaType(MediaTypeJSON),
+		contenttype.NewMediaType(MediaTypeXML),
 		contenttype.NewMediaType(MediaTypeHTML),
 		contenttype.NewMediaType(MediaTypeTileJSON),
 		contenttype.NewMediaType(MediaTypeGeoJSON),
@@ -85,6 +88,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 
 	formatsByMediaType := map[string]string{
 		MediaTypeJSON:        FormatJSON,
+		MediaTypeXML:         FormatXML,
 		MediaTypeHTML:        FormatHTML,
 		MediaTypeTileJSON:    FormatTileJSON,
 		MediaTypeGeoJSON:     FormatGeoJSON,

@@ -9,19 +9,23 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Serve static assets either from local storage or through reverse proxy
+// Resources endpoint to serve static assets, either from local storage or through reverse proxy
 func newResourcesEndpoint(e *Engine) {
-	if e.Config.Resources.Directory != nil && *e.Config.Resources.Directory != "" {
-		resourcesPath := strings.TrimSuffix(*e.Config.Resources.Directory, "/resources")
+	res := e.Config.Resources
+	if res == nil {
+		return
+	}
+	if res.Directory != nil && *res.Directory != "" {
+		resourcesPath := strings.TrimSuffix(*res.Directory, "/resources")
 		e.Router.Handle("/resources/*", http.FileServer(http.Dir(resourcesPath)))
-	} else if e.Config.Resources.URL != nil && e.Config.Resources.URL.String() != "" {
-		e.Router.Get("/resources/*", proxy(e.ReverseProxy, e.Config.Resources.URL.String()))
+	} else if res.URL != nil && res.URL.String() != "" {
+		e.Router.Get("/resources/*", proxy(e.ReverseProxy, res.URL.String()))
 	}
 }
 
-type reverseProxy func(w http.ResponseWriter, r *http.Request, target *url.URL, prefer204 bool, overwrite string)
+type revProxy func(w http.ResponseWriter, r *http.Request, target *url.URL, prefer204 bool, overwrite string)
 
-func proxy(rp reverseProxy, resourcesURL string) func(w http.ResponseWriter, r *http.Request) {
+func proxy(revProxy revProxy, resourcesURL string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resourcePath, _ := url.JoinPath("/", chi.URLParam(r, "*"))
 		target, err := url.ParseRequestURI(resourcesURL + resourcePath)
@@ -30,6 +34,6 @@ func proxy(rp reverseProxy, resourcesURL string) func(w http.ResponseWriter, r *
 			RenderProblem(ProblemServerError, w)
 			return
 		}
-		rp(w, r, target, true, "")
+		revProxy(w, r, target, true, "")
 	}
 }

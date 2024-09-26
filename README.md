@@ -173,6 +173,7 @@ already being taken care of when building the Docker container image.
   - `"*.go.html"`
   - `"*.go.json"`
   - `"*.go.tilejson"`
+  - `"*.go.xml"`
 - Now add template language support by running the
   [setup-jetbrains-gotemplates.sh](hack/setup-jetbrains-gotemplates.sh) script.
 - Reopen the project (or restart IDE). Now you'll have full IDE support in the GoKoala templates.
@@ -190,7 +191,8 @@ Also:
   - `"*.go.html"`
   - `"*.go.json"`
   - `"*.go.tilejson"`
-- Also add `html` and `json` to the list of Go template languages.
+  - `"*.go.xml"`
+- Also add `html`, `json` and `xml` to the list of Go template languages.
 - Now you'll have IDE support in the GoKoala templates.
 
 ### OGC compliance validation
