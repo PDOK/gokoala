@@ -37,7 +37,7 @@ func downloadGeoPackage(gpkg *config.GeoPackageLocal) {
 	if err != nil {
 		log.Fatalf("failed to download GeoPackage: %v", err)
 	}
-	log.Printf("succesfully downloaded GeoPackage to %s in %s", gpkg.File, downloadTime.Round(time.Second))
+	log.Printf("successfully downloaded GeoPackage to %s in %s", gpkg.File, downloadTime.Round(time.Second))
 }
 
 func (g *localGeoPackage) getDB() *sqlx.DB {
