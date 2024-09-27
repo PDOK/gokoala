@@ -1,7 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https: //www.example.com/foo.html</loc>
-        <lastmod>2022-06-04</lastmod>
+        <loc>{{ .Config.BaseURL}}/</loc>
     </url>
+    <url>
+        <loc>{{ .Config.BaseURL}}/api</loc>
+    </url>
+    <url>
+        <loc>{{ .Config.BaseURL}}/conformance</loc>
+    </url>
+    {{ if .Config.HasCollections }}
+    <url>
+        <loc>{{ .Config.BaseURL}}/collections</loc>
+    </url>
+    {{ end }}
+    {{ range $index, $coll := .Config.AllCollections.Unique }}
+    <url>
+        <loc>{{ $.Config.BaseURL}}/collections/{{ $coll.ID }}</loc>
+    </url>
+        {{ if and $.Config.OgcAPI.Tiles $.Config.OgcAPI.Tiles.Collections ($.Config.OgcAPI.Tiles.Collections.ContainsID $coll.ID) }}
+    <url>
+        <loc>{{ $.Config.BaseURL}}/collections/{{ $coll.ID }}/tiles</loc>
+    </url>
+        {{ end }}
+        {{ if and $.Config.OgcAPI.Features $.Config.OgcAPI.Features.Collections ($.Config.OgcAPI.Features.Collections.ContainsID $coll.ID) }}
+    <url>
+        <loc>{{ $.Config.BaseURL}}/collections/{{ $coll.ID }}/items</loc>
+    </url>
+        {{ end }}
+        {{/* don't list /collections/<name>/3dtiles since it has no HTML representation */}}
+    {{ end }}
+    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles }}
+    <url>
+        <loc>{{ .Config.BaseURL}}/tiles</loc>
+    </url>
+        {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:28992" }}
+        <url>
+            <loc>{{ .Config.BaseURL}}/tiles/NetherlandsRDNewQuad</loc>
+        </url>
+        {{ end }}
+        {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3035" }}
+        <url>
+            <loc>{{ .Config.BaseURL}}/tiles/EuropeanETRS89_LAEAQuad</loc>
+        </url>
+        {{ end }}
+        {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3857" }}
+        <url>
+            <loc>{{ .Config.BaseURL}}/tiles/WebMercatorQuad</loc>
+        </url>
+        {{ end }}
+    {{ end }}
+    {{ if .Config.OgcAPI.Tiles }}
+    <url>
+        <loc>{{ .Config.BaseURL}}/tileMatrixSets</loc>
+    </url>
+        {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:28992" }}
+    <url>
+        <loc>{{ .Config.BaseURL}}/tileMatrixSets/NetherlandsRDNewQuad</loc>
+    </url>
+        {{ end }}
+        {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3035" }}
+    <url>
+        <loc>{{ .Config.BaseURL}}/tileMatrixSets/EuropeanETRS89_LAEAQuad</loc>
+    </url>
+        {{ end }}
+        {{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3857" }}
+    <url>
+        <loc>{{ .Config.BaseURL}}/tileMatrixSets/WebMercatorQuad</loc>
+    </url>
+        {{ end }}
+    {{ end }}
+    {{ if and .Config.OgcAPI.Styles .Config.OgcAPI.Tiles }}
+        <url>
+            <loc>{{ .Config.BaseURL}}/styles</loc>
+        </url>
+    {{ end }}
 </urlset>
