@@ -47,23 +47,49 @@
             <!-- top navigation -->
             <div class="container">
                 {{ $lastcrumb := last .Breadcrumbs }}
+                {{ $schemaOrgPosition := 0 }}
 
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
+                    <ol class="breadcrumb" vocab="https://schema.org/" typeof="BreadcrumbList">
                         {{ if .Config.DatasetCatalogURL.URL }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.DatasetCatalogURL }}" aria-label="{{ i18n "To" }} Datasets">Datasets</a></li>
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
+                            <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
+                                <a href="{{ .Config.DatasetCatalogURL }}" aria-label="{{ i18n "To" }} Datasets" property="item" typeof="WebPage">
+                                    <span property="name">Datasets</span>
+                                </a>
+                                <meta property="position" content="{{ $schemaOrgPosition }}">
+                            </li>
                         {{ end }}
                         {{ if .Breadcrumbs }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}" aria-label="{{ i18n "To" }} {{ .Config.ServiceIdentifier }}">{{ .Config.ServiceIdentifier }}</a></li>
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
+                            <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
+                                <a href="{{ .Config.BaseURL }}" aria-label="{{ i18n "To" }} {{ .Config.ServiceIdentifier }}" property="item" typeof="WebPage">
+                                    <span property="name">{{ .Config.ServiceIdentifier }}</span>
+                                </a>
+                                <meta property="position" content="{{ $schemaOrgPosition }}">
+                            </li>
                         {{ else }}
-                            <li class="breadcrumb-item active">{{ .Config.ServiceIdentifier }}</li>
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
+                            <li class="breadcrumb-item active" property="itemListElement" typeof="ListItem">
+                                <span property="name">{{ .Config.ServiceIdentifier }}</span>
+                                <meta property="position" content="{{ $schemaOrgPosition }}">
+                            </li>
                         {{ end }}
 
                         {{ range $breadcrumb := .Breadcrumbs }}
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
                             {{ if ne $breadcrumb.Name $lastcrumb.Name }}
-                                <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}" aria-label="{{ i18n "To" }} {{ $breadcrumb.Name }}">{{ $breadcrumb.Name }}</a></li>
+                                <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
+                                    <a href="{{ $breadcrumb.Path }}" aria-label="{{ i18n "To" }} {{ $breadcrumb.Name }}" property="item" typeof="WebPage">
+                                        <span property="name">{{ $breadcrumb.Name }}</span>
+                                    </a>
+                                    <meta property="position" content="{{ $schemaOrgPosition }}">
+                                </li>
                             {{ else }}
-                                <li class="breadcrumb-item active">{{ $breadcrumb.Name }}</li>
+                                <li class="breadcrumb-item active" property="itemListElement" typeof="ListItem">
+                                    <span property="name">{{ $breadcrumb.Name }}</span>
+                                    <meta property="position" content="{{ $schemaOrgPosition }}">
+                                </li>
                             {{ end }}
                         {{ end }}
                     </ol>
