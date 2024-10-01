@@ -33,12 +33,6 @@
     {{- end -}}
     "license": "{{ .Config.License.URL }}",
     "isAccessibleForFree": true
-    {{- if .Config.Support }}
-    ,"creator":{
-        "@type":"Organization",
-        "name":"{{ .Config.Support.Name }}"
-    }
-    {{- end }}
     {{- if and .Params.Metadata .Params.Metadata.Thumbnail }}
     ,"thumbnail": "resources/{{ .Params.Metadata.Thumbnail }}",
     {{- end }}

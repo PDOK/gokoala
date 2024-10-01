@@ -4,9 +4,5 @@
   "isPartOf": "http:\/\/localhost:8080?f=html",
   "name": "Demo of all OGC specs in one API - Addresses",
   "url": "http:\/\/localhost:8080/collections/addresses?f=html","license": "https:\/\/creativecommons.org\/publicdomain\/zero\/1.0\/deed.nl",
-  "isAccessibleForFree": true,
-  "creator":{
-    "@type":"Organization",
-    "name":"Example Support"
-  }
+  "isAccessibleForFree": true
 }

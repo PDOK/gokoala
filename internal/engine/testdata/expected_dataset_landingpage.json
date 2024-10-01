@@ -7,10 +7,6 @@
   "keywords": ["keyword1, keyword2"],
   "license": "https:\/\/creativecommons.org\/publicdomain\/zero\/1.0\/deed.nl",
   "isAccessibleForFree": true,
-  "creator":{
-    "@type":"Organization",
-    "name":"Example Support"
-  },
   "hasPart": [
     {
       "@type": "URL",
