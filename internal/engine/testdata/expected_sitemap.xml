@@ -3,48 +3,48 @@
         <loc>http://localhost:8080/</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/api</loc>
+        <loc>http://localhost:8080/api?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/conformance</loc>
+        <loc>http://localhost:8080/conformance?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/collections</loc>
+        <loc>http://localhost:8080/collections?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/collections/addresses</loc>
+        <loc>http://localhost:8080/collections/addresses?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/collections/addresses/tiles</loc>
+        <loc>http://localhost:8080/collections/addresses/tiles?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/collections/addresses/items</loc>
+        <loc>http://localhost:8080/collections/addresses/items?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/collections/addresses2</loc>
+        <loc>http://localhost:8080/collections/addresses2?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/collections/addresses2/items</loc>
+        <loc>http://localhost:8080/collections/addresses2/items?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/tiles</loc>
+        <loc>http://localhost:8080/tiles?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/tiles/NetherlandsRDNewQuad</loc>
+        <loc>http://localhost:8080/tiles/NetherlandsRDNewQuad?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/tiles/EuropeanETRS89_LAEAQuad</loc>
+        <loc>http://localhost:8080/tiles/EuropeanETRS89_LAEAQuad?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/tileMatrixSets</loc>
+        <loc>http://localhost:8080/tileMatrixSets?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/tileMatrixSets/NetherlandsRDNewQuad</loc>
+        <loc>http://localhost:8080/tileMatrixSets/NetherlandsRDNewQuad?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/tileMatrixSets/EuropeanETRS89_LAEAQuad</loc>
+        <loc>http://localhost:8080/tileMatrixSets/EuropeanETRS89_LAEAQuad?f=html</loc>
     </url>
     <url>
-        <loc>http://localhost:8080/styles</loc>
+        <loc>http://localhost:8080/styles?f=html</loc>
     </url>
 </urlset>
