@@ -6,6 +6,11 @@ describe('OGC API Common tests', () => {
     cy.checkA11y()
   })
 
+  it("landing page should have valid HTML", () => {
+    cy.visit("/");
+    cy.htmlvalidate();
+  })
+
   it('landing page should have headings for all expected children (openapi, conformance, etc)', () => {
     cy.visit('/')
     cy.get('.card-header.h5').should("have.length", 6)
@@ -18,10 +23,20 @@ describe('OGC API Common tests', () => {
     cy.checkA11y()
   })
 
+  it("openapi page should have valid HTML", () => {
+    cy.visit("/api");
+    cy.htmlvalidate();
+  })
+
   it('conformance page should have no a11y violations', () => {
     cy.visit('/conformance')
     cy.injectAxe()
     cy.checkA11y()
+  })
+
+  it("conformance page should have valid HTML", () => {
+    cy.visit("/conformance");
+    cy.htmlvalidate();
   })
 
   it('collections page should have no a11y violations', () => {
@@ -30,9 +45,19 @@ describe('OGC API Common tests', () => {
     cy.checkA11y()
   })
 
+  it("collections page should have valid HTML", () => {
+    cy.visit("/collections");
+    cy.htmlvalidate();
+  })
+
   it('collection page should have no a11y violations', () => {
     cy.visit('/collections/addresses')
     cy.injectAxe()
     cy.checkA11y()
+  })
+
+  it("collection page should have valid HTML", () => {
+    cy.visit("/collections/addresses");
+    cy.htmlvalidate();
   })
 })

@@ -159,7 +159,7 @@
     <div class="col-md-6 col-sm-12">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="module" src="view-component/main.js"></script>
-        <script type="text/javascript" src="view-component/polyfills.js"></script>
+        <script src="view-component/polyfills.js"></script>
 
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
@@ -267,7 +267,7 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th colspan="2"><a href="{{ $baseUrl }}/collections/{{ $.Params.CollectionID }}/items/{{ $feat.ID }}" aria-label="{{ i18n "To" }} feature {{ $feat.ID }}">{{ $feat.ID }}</a></th>
+                <th colspan="2" scope="row"><a href="{{ $baseUrl }}/collections/{{ $.Params.CollectionID }}/items/{{ $feat.ID }}" aria-label="{{ i18n "To" }} feature {{ $feat.ID }}">{{ $feat.ID }}</a></th>
             </tr>
             </thead>
             <tbody>
