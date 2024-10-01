@@ -16,6 +16,32 @@
   }
 </script>
 
+{{/* structed data for this collection, see https://developers.google.com/search/docs/appearance/structured-data/dataset.
+  test any changes using https://search.google.com/test/rich-results */}}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "isPartOf": "{{ .Config.BaseURL }}?f=html",
+    "name": "{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}",
+    {{- if and .Params.Metadata .Params.Metadata.Description (gt (len .Params.Metadata.Description) 50) }}
+    "description": "{{ unmarkdown .Params.Metadata.Description  }}",
+    {{- end }}
+    "url": "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}?f=html",
+    {{- if and .Params.Metadata .Params.Metadata.Keywords -}}
+    "keywords": ["{{ .Params.Metadata.Keywords | join ", " }}"],
+    {{- end -}}
+    "license": "{{ .Config.License.URL }}",
+    "isAccessibleForFree": true,
+    {{- if .Config.Support }}
+    "creator":{
+        "@type":"Organization",
+        "name":"{{ .Config.Support.Name }}"
+    }
+    {{- end }}
+}
+</script>
+
 <hgroup>
     <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}</h1>
 </hgroup>
