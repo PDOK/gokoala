@@ -1,0 +1,24 @@
+{
+  "@context": "https://schema.org/",
+  "@type": "Dataset",
+  "name": "Demo of all OGC specs in one API (OGC API)",
+  "description": "This is example combines features, 3D and vector tiles in one API. Usually this would encompass one dataset but this demo uses data from various sources. So don\u0027t pay too much attention to the actual data. It\u0027s just an example\/demo of GoKoala\u0027s capabilities.",
+  "url": "http:\/\/localhost:8080?f=html",
+  "keywords": ["keyword1, keyword2"],
+  "license": "https:\/\/creativecommons.org\/publicdomain\/zero\/1.0\/deed.nl",
+  "isAccessibleForFree": true,
+  "creator":{
+    "@type":"Organization",
+    "name":"Example Support"
+  },
+  "hasPart": [
+    {
+      "@type": "URL",
+      "url": "http:\/\/localhost:8080/collections/addresses"
+    },
+    {
+      "@type": "URL",
+      "url": "http:\/\/localhost:8080/collections/addresses2"
+    }
+  ]
+}

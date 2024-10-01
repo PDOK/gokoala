@@ -14,13 +14,13 @@
     "keywords": ["{{ .Config.Keywords | join ", " }}"],
     {{- end }}
     "license": "{{ .Config.License.URL }}",
-    "isAccessibleForFree": true,
+    "isAccessibleForFree": true
     {{- if .Config.Support }}
-    "creator":{
+    ,"creator":{
         "@type":"Organization",
         "name":"{{ .Config.Support.Name }}"
-    },
-    "hasPart": [
+    }
+    ,"hasPart": [
     {{- range $index, $coll := .Config.AllCollections.Unique }}
       {{- if $index }},{{ end }}
        {
