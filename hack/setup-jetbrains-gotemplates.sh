@@ -23,6 +23,11 @@ traverse_templates() {
     echo "Processing file: $file"
     echo "<file url=\"file://\$PROJECT_DIR\$/$file\" dialect=\"JSON\" />" >> ".idea/templateLanguages.xml"
   done
+  # XML templates
+  find * -type f -iname "*.go.xml" -print0 | while IFS= read -r -d '' file; do
+    echo "Processing file: $file"
+    echo "<file url=\"file://\$PROJECT_DIR\$/$file\" dialect=\"XML\" />" >> ".idea/templateLanguages.xml"
+  done
 }
 
 mkdir -p ".idea/"

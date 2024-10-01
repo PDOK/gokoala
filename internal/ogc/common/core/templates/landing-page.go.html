@@ -1,5 +1,32 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{define "content"}}
+
+{{/* see https://developers.google.com/search/docs/appearance/structured-data/dataset,
+  test any changes using https://search.google.com/test/rich-results */}}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "{{ .Config.Title }} (OGC API)",
+    "description": "{{ unmarkdown .Config.Abstract }}",
+    "url": "{{ .Config.BaseURL }}?f=html",
+    {{- if .Config.Keywords }}
+    "keywords": ["{{ .Config.Keywords | join ", " }}"],
+    {{- end }}
+    "license": "{{ .Config.License.URL }}",
+    "isAccessibleForFree": true
+    ,"hasPart": [
+    {{- range $index, $coll := .Config.AllCollections.Unique }}
+      {{- if $index }},{{ end }}
+       {
+        "@type": "URL",
+        "url": "{{ $.Config.BaseURL }}/collections/{{ $coll.ID }}"
+       }
+    {{- end }}
+    ]
+}
+</script>
+
 <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} (OGC API)</h1>
 </hgroup>

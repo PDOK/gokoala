@@ -8,13 +8,31 @@
 
     <title>{{ .Config.Title }} (OGC API)</title>
 
+    <!-- canonical -->
+    <link rel="canonical" href="{{ .Config.BaseURL }}" />
+    {{ range $lang := .Config.AvailableLanguages }}
+        <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?lang={{ $lang }}" />
+    {{ end }}
+
+    <!-- css -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <link href="css/gokoala.css" rel="stylesheet">
 
+    <!-- favicons -->
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
     <link rel="shortcut icon" href="img/favicon.ico">
+
+    <!-- open graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ .Config.BaseURL }}" />
+    <meta property="og:title" content="{{ .Config.Title }} (OGC API)" />
+    <meta property="og:description" content="{{ unmarkdown .Config.Abstract }}" />
+    <meta property="og:image" content="img/logo-opengraph.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="{{ i18n "Logo" }}" />
+
     <script type="text/javascript">
         // match window title to page title
         window.addEventListener("load", (event) => {
@@ -47,23 +65,51 @@
             <!-- top navigation -->
             <div class="container">
                 {{ $lastcrumb := last .Breadcrumbs }}
+                {{ $schemaOrgPosition := 0 }}
 
+                {{/* the breadcrumbs are annotated with https://developers.google.com/search/docs/appearance/structured-data/breadcrumb#rdfa,
+                    test any changes using https://search.google.com/test/rich-results */}}
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
+                    <ol class="breadcrumb" vocab="https://schema.org/" typeof="BreadcrumbList">
                         {{ if .Config.DatasetCatalogURL.URL }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.DatasetCatalogURL }}" aria-label="{{ i18n "To" }} Datasets">Datasets</a></li>
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
+                            <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
+                                <a href="{{ .Config.DatasetCatalogURL }}" aria-label="{{ i18n "To" }} Datasets" property="item" typeof="WebPage">
+                                    <span property="name">Datasets</span>
+                                </a>
+                                <meta property="position" content="{{ $schemaOrgPosition }}">
+                            </li>
                         {{ end }}
                         {{ if .Breadcrumbs }}
-                            <li class="breadcrumb-item"><a href="{{ .Config.BaseURL }}" aria-label="{{ i18n "To" }} {{ .Config.ServiceIdentifier }}">{{ .Config.ServiceIdentifier }}</a></li>
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
+                            <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
+                                <a href="{{ .Config.BaseURL }}" aria-label="{{ i18n "To" }} {{ .Config.ServiceIdentifier }}" property="item" typeof="WebPage">
+                                    <span property="name">{{ .Config.ServiceIdentifier }}</span>
+                                </a>
+                                <meta property="position" content="{{ $schemaOrgPosition }}">
+                            </li>
                         {{ else }}
-                            <li class="breadcrumb-item active">{{ .Config.ServiceIdentifier }}</li>
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
+                            <li class="breadcrumb-item active" property="itemListElement" typeof="ListItem">
+                                <span property="name">{{ .Config.ServiceIdentifier }}</span>
+                                <meta property="position" content="{{ $schemaOrgPosition }}">
+                            </li>
                         {{ end }}
 
                         {{ range $breadcrumb := .Breadcrumbs }}
+                            {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
                             {{ if ne $breadcrumb.Name $lastcrumb.Name }}
-                                <li class="breadcrumb-item"><a href="{{ $breadcrumb.Path }}" aria-label="{{ i18n "To" }} {{ $breadcrumb.Name }}">{{ $breadcrumb.Name }}</a></li>
+                                <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
+                                    <a href="{{ $breadcrumb.Path }}" aria-label="{{ i18n "To" }} {{ $breadcrumb.Name }}" property="item" typeof="WebPage">
+                                        <span property="name">{{ $breadcrumb.Name }}</span>
+                                    </a>
+                                    <meta property="position" content="{{ $schemaOrgPosition }}">
+                                </li>
                             {{ else }}
-                                <li class="breadcrumb-item active">{{ $breadcrumb.Name }}</li>
+                                <li class="breadcrumb-item active" property="itemListElement" typeof="ListItem">
+                                    <span property="name">{{ $breadcrumb.Name }}</span>
+                                    <meta property="position" content="{{ $schemaOrgPosition }}">
+                                </li>
                             {{ end }}
                         {{ end }}
                     </ol>
@@ -90,7 +136,7 @@
     <!-- main content -->
     <main id="main">
         <div class="container py-3">
-            <!-- Include content -->
+            <!-- include content -->
             {{block "content" .}}{{end}}
         </div>
     </main>

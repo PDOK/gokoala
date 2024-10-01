@@ -80,6 +80,24 @@ func Test_newRouter(t *testing.T) {
 			apiCall:    "http://localhost:8181/conformance?f=html",
 			wantBody:   "internal/engine/testdata/expected_processes_conformance.html",
 		},
+		{
+			name:       "Should have valid sitemap XML",
+			configFile: "examples/config_all.yaml",
+			apiCall:    "http://localhost:8181/sitemap.xml",
+			wantBody:   "internal/engine/testdata/expected_sitemap.xml",
+		},
+		{
+			name:       "Should have valid structured data of type 'Dataset' on landing page",
+			configFile: "examples/config_all.yaml",
+			apiCall:    "http://localhost:8181?f=html",
+			wantBody:   "internal/engine/testdata/expected_dataset_landingpage.json",
+		},
+		{
+			name:       "Should have valid structured data of type 'Dataset' on (each) collection page",
+			configFile: "examples/config_all.yaml",
+			apiCall:    "http://localhost:8181/collections/addresses?f=html",
+			wantBody:   "internal/engine/testdata/expected_dataset_collection.json",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -107,7 +125,7 @@ func Test_newRouter(t *testing.T) {
 			switch {
 			case strings.HasSuffix(tt.apiCall, "json"):
 				assert.JSONEq(t, recorder.Body.String(), string(expectedBody))
-			case strings.HasSuffix(tt.apiCall, "html"):
+			case strings.HasSuffix(tt.apiCall, "html") || strings.HasSuffix(tt.apiCall, "xml"):
 				assert.Contains(t, normalize(recorder.Body.String()), normalize(string(expectedBody)))
 			default:
 				log.Fatalf("implement support to test format: %s", tt.apiCall)

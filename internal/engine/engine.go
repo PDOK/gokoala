@@ -77,12 +77,10 @@ func NewEngineWithConfig(config *config.Config, openAPIFile string, enableTraili
 		Router:    router,
 	}
 
-	if config.Resources != nil {
-		newResourcesEndpoint(engine) // Resources endpoint to serve static assets
-	}
-	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
-		SafeWrite(w.Write, []byte("OK")) // Health endpoint
-	})
+	// Default (non-OGC) endpoints
+	newSitemap(engine)
+	newHealthEndpoint(engine)
+	newResourcesEndpoint(engine)
 	return engine
 }
 
@@ -172,42 +170,37 @@ func (e *Engine) ParseTemplate(key TemplateKey) {
 // This method also performs OpenAPI validation of the rendered template, therefore we also need the URL path.
 // The rendered templates are stored in the engine for future serving using ServePage.
 func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
-	for _, key := range keys {
-		e.Templates.renderAndSaveTemplate(key, breadcrumbs, nil)
-
-		// we already perform OpenAPI validation here during startup to catch
-		// issues early on, in addition to runtime OpenAPI response validation
-		// all templates are created in all available languages, hence all are checked
-		for lang := range e.Templates.localizers {
-			key.Language = lang
-			if err := e.validateStaticResponse(key, urlPath); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
+	e.renderTemplates(urlPath, nil, breadcrumbs, true, keys...)
 }
 
 // RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
 func (e *Engine) RenderTemplatesWithParams(urlPath string, params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
+	e.renderTemplates(urlPath, params, breadcrumbs, true, keys...)
+}
+
+func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Breadcrumb, validate bool, keys ...TemplateKey) {
 	for _, key := range keys {
 		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
 
-		// we already perform OpenAPI validation here during startup to catch
-		// issues early on, in addition to runtime OpenAPI response validation
-		// all templates are created in all available languages, hence all are checked
-		for lang := range e.Templates.localizers {
-			key.Language = lang
-			if err := e.validateStaticResponse(key, urlPath); err != nil {
-				log.Fatal(err)
+		if validate {
+			// we already perform OpenAPI validation here during startup to catch
+			// issues early on, in addition to runtime OpenAPI response validation
+			// all templates are created in all available languages, hence all are checked
+			for lang := range e.Templates.localizers {
+				key.Language = lang
+				if err := e.validateStaticResponse(key, urlPath); err != nil {
+					log.Fatal(err)
+				}
 			}
 		}
 	}
 }
 
-// RenderAndServePage renders an already parsed HTML or non-HTML template and renders it on-the-fly depending
+// RenderAndServePage renders an already parsed HTML or non-HTML template on-the-fly depending
 // on the format in the given TemplateKey. The result isn't store in engine, it's served directly to the client.
 //
-// NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a backing store).
+// NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a datastore),
+// otherwise use ServePage for pre-rendered pages.
 func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key TemplateKey,
 	params any, breadcrumbs []Breadcrumb) {
 
@@ -242,49 +235,22 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 		RenderProblem(ProblemServerError, w, err.Error())
 		return
 	}
-
-	// return response output to client
-	if contentType != "" {
-		w.Header().Set(HeaderContentType, contentType)
-	}
-	SafeWrite(w.Write, output)
+	writeResponse(w, contentType, output)
 }
 
 // ServePage serves a pre-rendered template while also validating against the OpenAPI spec
 func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
-	// validate request
-	if err := e.OpenAPI.ValidateRequest(r); err != nil {
-		log.Printf("%v", err.Error())
-		RenderProblem(ProblemBadRequest, w, err.Error())
-		return
-	}
-
-	// render output
-	output, err := e.Templates.getRenderedTemplate(templateKey)
-	if err != nil {
-		log.Printf("%v", err.Error())
-		RenderProblem(ProblemNotFound, w)
-		return
-	}
-	contentType := e.CN.formatToMediaType(templateKey.Format)
-
-	// validate response
-	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
-		log.Printf("%v", err.Error())
-		RenderProblem(ProblemServerError, w, err.Error())
-		return
-	}
-
-	// return response output to client
-	if contentType != "" {
-		w.Header().Set(HeaderContentType, contentType)
-	}
-	SafeWrite(w.Write, output)
+	e.serve(w, r, &templateKey, true, true, "", nil)
 }
 
-// ServeResponse serves the given response (arbitrary bytes) while also validating against the OpenAPI spec
-func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
-	validateRequest bool, validateResponse bool, contentType string, response []byte) {
+// Serve serves the given response (arbitrary bytes) while also validating against the OpenAPI spec
+func (e *Engine) Serve(w http.ResponseWriter, r *http.Request,
+	validateRequest bool, validateResponse bool, contentType string, output []byte) {
+	e.serve(w, r, nil, validateRequest, validateResponse, contentType, output)
+}
+
+func (e *Engine) serve(w http.ResponseWriter, r *http.Request, templateKey *TemplateKey,
+	validateRequest bool, validateResponse bool, contentType string, output []byte) {
 
 	if validateRequest {
 		if err := e.OpenAPI.ValidateRequest(r); err != nil {
@@ -294,19 +260,26 @@ func (e *Engine) ServeResponse(w http.ResponseWriter, r *http.Request,
 		}
 	}
 
+	if templateKey != nil {
+		// render output
+		var err error
+		output, err = e.Templates.getRenderedTemplate(*templateKey)
+		if err != nil {
+			log.Printf("%v", err.Error())
+			RenderProblem(ProblemNotFound, w)
+			return
+		}
+		contentType = e.CN.formatToMediaType(templateKey.Format)
+	}
+
 	if validateResponse {
-		if err := e.OpenAPI.ValidateResponse(contentType, response, r); err != nil {
+		if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemServerError, w, err.Error())
 			return
 		}
 	}
-
-	// return response output to client
-	if contentType != "" {
-		w.Header().Set(HeaderContentType, contentType)
-	}
-	SafeWrite(w.Write, response)
+	writeResponse(w, contentType, output)
 }
 
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
@@ -359,7 +332,7 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			if err != nil {
 				return err
 			}
-			e.ServeResponse(w, r, false, true, contentType, res)
+			e.Serve(w, r, false, true, contentType, res)
 		}
 		return nil
 	}
@@ -392,6 +365,14 @@ func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) error {
 		return fmt.Errorf("validation of template %s failed: %w", key.Name, err)
 	}
 	return nil
+}
+
+// return response output to client
+func writeResponse(w http.ResponseWriter, contentType string, output []byte) {
+	if contentType != "" {
+		w.Header().Set(HeaderContentType, contentType)
+	}
+	SafeWrite(w.Write, output)
 }
 
 // SafeWrite executes the given http.ResponseWriter.Write while logging errors

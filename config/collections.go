@@ -240,7 +240,7 @@ func sortByLiteralOrder(collections []GeoSpatialCollection, literalOrder []strin
 		collectionOrderIndex[id] = i
 	}
 	sort.Slice(collections, func(i, j int) bool {
-		// sort according to the explict/literal order specified in OgcAPICollectionOrder
+		// sort according to the explicit/literal order specified in OgcAPICollectionOrder
 		return collectionOrderIndex[collections[i].ID] < collectionOrderIndex[collections[j].ID]
 	})
 }

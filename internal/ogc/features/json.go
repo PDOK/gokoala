@@ -301,7 +301,7 @@ func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *h
 		handleJSONEncodingFailure(err, w)
 		return
 	}
-	jf.engine.ServeResponse(w, r, false /* performed earlier */, jf.validateResponse, contentType, json.Bytes())
+	jf.engine.Serve(w, r, false /* performed earlier */, jf.validateResponse, contentType, json.Bytes())
 }
 
 // serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream
