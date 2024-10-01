@@ -67,7 +67,8 @@
                 {{ $lastcrumb := last .Breadcrumbs }}
                 {{ $schemaOrgPosition := 0 }}
 
-                {{/* the breadcrumbs are annotated with https://developers.google.com/search/docs/appearance/structured-data/breadcrumb#rdfa */}}
+                {{/* the breadcrumbs are annotated with https://developers.google.com/search/docs/appearance/structured-data/breadcrumb#rdfa,
+                    test any changes using https://search.google.com/test/rich-results */}}
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb" vocab="https://schema.org/" typeof="BreadcrumbList">
                         {{ if .Config.DatasetCatalogURL.URL }}
