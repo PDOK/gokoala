@@ -38,7 +38,7 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th colspan="2">{{ .Params.FeatureID }}</th>
+                <th colspan="2" scope="row">{{ .Params.FeatureID }}</th>
             </tr>
             </thead>
             <tbody>
@@ -86,7 +86,7 @@
     <div class="col-md-4 col-sm-12">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="module" src="view-component/main.js"></script>
-        <script type="text/javascript" src="view-component/polyfills.js"></script>
+        <script src="view-component/polyfills.js"></script>
 
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}

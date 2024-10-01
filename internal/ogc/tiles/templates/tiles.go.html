@@ -105,7 +105,7 @@
       </table>
       <link rel="stylesheet" type="text/css" href="view-component/styles.css">
       <script type="module" src="view-component/main.js"></script>
-      <script type="text/javascript" src="view-component/polyfills.js"></script>
+      <script src="view-component/polyfills.js"></script>
        <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
         tile-url="{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         {{ if .Config.OgcAPI.Styles }}style-url="{{ $.Config.BaseURL }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
