@@ -36,8 +36,14 @@
     {{- if .Config.Support }}
     "creator":{
         "@type":"Organization",
-        "name":"{{ .Config.Support.Name }}"
-    }
+        "name":"haha {{ .Config.Support.Name }}"
+    },
+    {{- end }}
+    {{- if and .Params.Metadata .Params.Metadata.Thumbnail }}
+    "thumbnail": "resources/{{ .Params.Metadata.Thumbnail }}",
+    {{- end }}
+    {{- if and .Params.Metadata .Params.Metadata.LastUpdated }}
+    "version": "{{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}"
     {{- end }}
 }
 </script>
