@@ -34,7 +34,7 @@
     "license": "{{ .Config.License.URL }}",
     "isAccessibleForFree": true
     {{- if and .Params.Metadata .Params.Metadata.Thumbnail }}
-    ,"thumbnail": "resources/{{ .Params.Metadata.Thumbnail }}",
+    ,"thumbnail": "{{ .Config.BaseURL }}/resources/{{ .Params.Metadata.Thumbnail }}"
     {{- end }}
     {{- if and .Params.Metadata .Params.Metadata.LastUpdated }}
     ,"version": "{{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}"
