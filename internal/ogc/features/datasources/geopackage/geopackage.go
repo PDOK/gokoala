@@ -169,18 +169,15 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
-	if queryCtx.Err() != nil {
-		return nil, domain.Cursors{}, queryCtx.Err()
-	}
 
-	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(rows)
+	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(queryCtx, rows)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
 	if prevNext == nil {
 		return nil, domain.Cursors{}, nil
 	}
-	return featureIDs, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), nil
+	return featureIDs, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
 func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, profile domain.Profile) (*domain.FeatureCollection, error) {
@@ -207,18 +204,14 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 		return nil, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
-	if queryCtx.Err() != nil {
-		return nil, queryCtx.Err()
-	}
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
+	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
 	fc.NumberReturned = len(fc.Features)
-	return &fc, nil
+	return &fc, queryCtx.Err()
 }
 
 func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
@@ -240,13 +233,10 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
-	if queryCtx.Err() != nil {
-		return nil, domain.Cursors{}, queryCtx.Err()
-	}
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
 		g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
@@ -255,7 +245,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 		return nil, domain.Cursors{}, nil
 	}
 	fc.NumberReturned = len(fc.Features)
-	return &fc, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), nil
+	return &fc, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error) {
@@ -291,19 +281,15 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
-	if queryCtx.Err() != nil {
-		return nil, queryCtx.Err()
-	}
 
-	features, _, err := domain.MapRowsToFeatures(rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
+	features, _, err := domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
 	if len(features) != 1 {
 		return nil, nil
 	}
-	return features[0], nil
+	return features[0], queryCtx.Err()
 }
 
 func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.FeatureTableMetadata, error) {
