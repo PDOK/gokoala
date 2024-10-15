@@ -161,10 +161,10 @@ type GeoPackageCommon struct {
 	// +optional
 	QueryTimeout Duration `yaml:"queryTimeout,omitempty" json:"queryTimeout,omitempty" validate:"required" default:"15s"`
 
-	// ADVANCED SETTING. When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index
-	// +kubebuilder:default=30000
+	// ADVANCED SETTING. When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index.
+	// +kubebuilder:default=8000
 	// +optional
-	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree,omitempty" json:"maxBBoxSizeToUseWithRTree,omitempty" validate:"required" default:"30000"`
+	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree,omitempty" json:"maxBBoxSizeToUseWithRTree,omitempty" validate:"required" default:"8000"`
 
 	// ADVANCED SETTING. Sets the SQLite "cache_size" pragma which determines how many pages are cached in-memory.
 	// See https://sqlite.org/pragma.html#pragma_cache_size for details.
