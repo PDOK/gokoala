@@ -66,6 +66,11 @@ func (c *GeoSpatialCollection) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }
 
+// HasDateTime true when collection has temporal support, false otherwise
+func (c *GeoSpatialCollection) HasDateTime() bool {
+	return c.Metadata != nil && c.Metadata.TemporalProperties != nil
+}
+
 // +kubebuilder:object:generate=true
 type GeoSpatialCollectionMetadata struct {
 	// Human friendly title of this collection. When no title is specified the collection ID is used.
