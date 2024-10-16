@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ type MapRelation func(columnName string, columnValue any, externalFidColumn stri
 type MapGeom func([]byte) (geom.Geometry, error)
 
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
-func MapRowsToFeatureIDs(rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
+func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
 	firstRow := true
 	for rows.Next() {
 		var values []any
@@ -45,12 +46,15 @@ func MapRowsToFeatureIDs(rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevN
 			firstRow = false
 		}
 	}
+	if ctx.Err() != nil {
+		err = ctx.Err()
+	}
 	return
 }
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
-func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn string, geomColumn string,
-	propConfig *config.FeatureProperties, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
+func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, externalFidColumn string,
+	geomColumn string, propConfig *config.FeatureProperties, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -67,7 +71,7 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 			return result, nil, err
 		}
 		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
-		np, err := mapColumnsToFeature(firstRow, feature, columns, values, fidColumn, externalFidColumn,
+		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn, externalFidColumn,
 			geomColumn, mapGeom, mapRel)
 		if err != nil {
 			return result, nil, err
@@ -77,12 +81,12 @@ func MapRowsToFeatures(rows *sqlx.Rows, fidColumn string, externalFidColumn stri
 		}
 		result = append(result, feature)
 	}
-	return result, prevNextID, nil
+	return result, prevNextID, ctx.Err()
 }
 
 //nolint:cyclop,funlen
-func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, values []any, fidColumn string,
-	externalFidColumn string, geomColumn string, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
+func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any,
+	fidColumn string, externalFidColumn string, geomColumn string, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
@@ -151,7 +155,7 @@ func mapColumnsToFeature(firstRow bool, feature *Feature, columns []string, valu
 	}
 
 	mapExternalFid(columns, values, externalFidColumn, feature, mapRel)
-	return &prevNextID, nil
+	return &prevNextID, ctx.Err()
 }
 
 // mapExternalFid run a second pass over columns to map external feature ID, including relations to other features

@@ -94,7 +94,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			f.configuredPropertyFilters[collectionID], hasDateTime(collection)}
+			f.configuredPropertyFilters[collectionID], collection.HasDateTime()}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -402,15 +402,11 @@ func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Ext
 
 func getTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {
 	var temporalCriteria ds.TemporalCriteria
-	if hasDateTime(collection) {
+	if collection.HasDateTime() {
 		temporalCriteria = ds.TemporalCriteria{
 			ReferenceDate:     referenceDate,
 			StartDateProperty: collection.Metadata.TemporalProperties.StartDate,
 			EndDateProperty:   collection.Metadata.TemporalProperties.EndDate}
 	}
 	return temporalCriteria
-}
-
-func hasDateTime(collection config.GeoSpatialCollection) bool {
-	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
