@@ -16,11 +16,11 @@ _Cloud Native OGC APIs server, written in Go._
 
 ## Description
 
-This server implements modern OGC APIs such as Common, Tiles, Styles, Features and GeoVolumes in a cloud-native way.
-It contains a complete implementation of OGC API Features (part 1 and 2). With respect to OGC API Tiles, Styles, 
-GeoVolumes the goal is to keep a narrow focus and not implement every aspect of these APIs. Meaning complex logic is 
-delegated to other implementations. For example vector tile hosting may be delegated to a vector tile engine, 
-3D tile hosting to object storage, raster map hosting to a WMS server, etc.
+This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes 
+in a cloud-native way. It contains a complete implementation of OGC API Features (part 1 and 2). With respect to 
+OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other 
+implementations. For example vector tile hosting may be delegated to a vector tile engine, 3D tile hosting to object storage, 
+raster map hosting to a WMS server, etc.
 
 This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
 datasets? Spin up a separate instance/container.
@@ -29,19 +29,21 @@ datasets? Spin up a separate instance/container.
 
 - [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves 
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
-- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. Serves features as HTML, GeoJSON or JSON-FG
-  from GeoPackages in multiple projections. No on-the-fly re-projections are applied, separate GeoPackages should
-  be configured ahead-of-time in each projection. Features can be served from local and/or
-  [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. Support for property and temporal filter(s) is available.
+- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. 
+  - Serves features as HTML, GeoJSON and JSON-FG
+  - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
+  - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
+  - Supports property and temporal filtering.
+  - Uses cursor-based pagination in order to support browsing large datasets.
+  - Offers the ability to serve features representing "map sheets", allowing users to download a certain 
+    geographic area in an arbitrary format like zip, gpkg, etc.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
-  of a vector tiles engine (like Trex, Tegola, Martin) of your choosing. Currently, 3 
-  projections (RD, ETRS89 and WebMercator) are supported.
+  of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing. 
+  Currently, 3 projections (RD, ETRS89 and WebMercator) are supported.
 - [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends - 
   and JSON representation of supported (Mapbox) styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
-- [OGC API Processes](https://ogcapi.ogc.org/processes/) act as a passthrough proxy to an OGC API Processes
-  implementation of your choosing, but enables the use of GoKoala's OGC API Common functionality.
 
 ## Build
 
@@ -95,6 +97,33 @@ ogcApi:
     tileServer: https://${MY_SERVER}/foo/bar
 ```
 
+### GeoPackage requirements
+
+GoKoala has a few requirements regarding GeoPackages backing an OGC API Features:
+- Each feature table must contain a [RTree](https://www.geopackage.org/guidance/extensions/rtree_spatial_indexes.html) index.
+- Each feature table must contain a BTree spatial index:
+```
+select load_extension('/path/to/mod_spatialite');
+alter table "<table>" add minx numeric;
+alter table "<table>" add maxx numeric;
+alter table "<table>" add miny numeric;
+alter table "<table>" add maxy numeric;
+update "<table>" set minx = st_minx('geom'), maxx = st_maxx('geom'), miny = st_miny('geom'), maxy = st_maxy('geom');
+create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy);
+```
+- When enabling temporal filtering (using `datetime` query param) the temporal fields should be indexed and the spatial index should be expanded to include the temporal fields.
+```
+create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy, start_date, end_date);
+create index "<table>_temporal_idx" on "<table>"(start_date, end_date);
+```
+- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the config.
+- Feature IDs (fid) in the GeoPackage should be contiguous and auto-incrementing.
+
+This is in addition to some of the requirements set forth by the PDOK [GeoPackage validator](https://github.com/PDOK/geopackage-validator).
+Some of the requirements stated above can be automatically applied with help of the PDOK [GeoPackage optimizer](https://github.com/PDOK/geopackage-optimizer-go).
+
+When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend a local cache that is able to hold the spatial index, see by `maxSize` in the config.
+
 ### OpenAPI spec
 
 GoKoala ships with OGC OpenAPI support out of the box, see [OpenAPI
@@ -129,7 +158,7 @@ A similar flow can be used to profile memory issues.
 
 Set `LOG_SQL=true` environment variable to enable logging of all SQL queries to stdout for debug purposes. 
 Only applies to OGC API Features. Set e.g. `SLOW_QUERY_TIME=10s` to change the definition of a
-slow query. Slow queries are always logged, unless they exceed the HTTP request timeout (which is currently 15s).
+slow query. Slow queries are always logged, unless they exceed the request timeout (which is currently 15s).
 
 ## Develop
 
@@ -149,6 +178,19 @@ Design principles:
 - Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
 - Document your changes to [OGC OpenAPI example specs](engine/templates/openapi/README.md).
+
+### Build/run as Go application
+
+Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), `openssl` and `curl` are installed. 
+Also make sure `gcc` or similar is available since the application uses cgo.
+
+```
+go build -o gokoala cmd/main.go
+./gokoala
+```
+
+To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also happens there.
+Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn't found.
 
 ### Linting
 

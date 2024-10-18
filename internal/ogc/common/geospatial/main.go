@@ -74,7 +74,7 @@ func (c *Collections) Collections() http.HandlerFunc {
 // For example in:
 // - OGC API Features you would have: /collections/{collectionId}/items
 // - OGC API Tiles could have: /collections/{collectionId}/tiles
-// - OGC API Maps could have: /collections/{collectionId}/maps
+// - OGC API Maps could have: /collections/{collectionId}/map
 // - OGC API 3d GeoVolumes would have: /collections/{collectionId}/3dtiles
 func (c *Collections) Collection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
