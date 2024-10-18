@@ -1,4 +1,5 @@
 //go:generate ../hack/generate-deepcopy.sh
+//go:generate ../hack/generate-config-docs.sh
 package config
 
 import (
