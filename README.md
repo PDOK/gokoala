@@ -187,6 +187,7 @@ Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), `ope
 Also make sure `gcc` or similar is available since the application uses cgo.
 
 ```
+go generate ./...
 go build -o gokoala cmd/main.go
 ./gokoala
 ```
