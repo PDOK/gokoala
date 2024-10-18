@@ -81,9 +81,11 @@ docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-fi
 
 Now open <http://localhost:8080>. See [examples](examples) for more details.
 
-### Configuration file
+## Config
 
-The configuration file consists of a general section and a section
+See the full **[Configuration Reference](./docs/README.md)** for available options.
+
+The configuration YAML file consists of a general section and a section
 per OGC API building block (tiles, styles, etc). See [example configuration
 files](examples/) for details. You can reference environment variables in the
 configuration file. For example to use the `MY_SERVER` env var:
