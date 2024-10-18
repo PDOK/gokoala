@@ -120,6 +120,7 @@ create index "<table>_temporal_idx" on "<table>"(start_date, end_date);
 - Feature IDs (fid) in the GeoPackage should be contiguous and auto-incrementing.
 
 This is in addition to some of the requirements set forth by the PDOK [GeoPackage validator](https://github.com/PDOK/geopackage-validator).
+Some of the requirements stated above can be automatically applied with help of the PDOK [GeoPackage optimizer](https://github.com/PDOK/geopackage-optimizer-go).
 
 When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend a local cache that is able to hold the spatial index, see by `maxSize` in the config.
 
