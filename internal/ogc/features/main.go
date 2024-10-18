@@ -213,6 +213,20 @@ func (f *Features) Feature() http.HandlerFunc {
 	}
 }
 
+func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
+	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Extent, time.Time, map[string]string, error) {
+
+	url := featureCollectionURL{
+		*f.engine.Config.BaseURL.URL,
+		r.URL.Query(),
+		f.engine.Config.OgcAPI.Features.Limit,
+		f.configuredPropertyFilters[collection.ID],
+		collection.HasDateTime(),
+	}
+	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
+	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err
+}
+
 func parseFeatureID(r *http.Request) (any, error) {
 	var featureID any
 	featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
@@ -353,20 +367,6 @@ func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig
 	}
 	e.RegisterShutdownHook(datasource.Close)
 	return datasource
-}
-
-func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
-	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Extent, time.Time, map[string]string, error) {
-
-	url := featureCollectionURL{
-		*f.engine.Config.BaseURL.URL,
-		r.URL.Query(),
-		f.engine.Config.OgcAPI.Features.Limit,
-		f.configuredPropertyFilters[collection.ID],
-		collection.HasDateTime(),
-	}
-	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
-	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err
 }
 
 func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Extent) bool {
