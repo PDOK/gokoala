@@ -83,7 +83,7 @@ type FeatureTableMetadata interface {
 type PropertyFilterWithAllowedValues struct {
 	config.PropertyFilter
 
-	// static or dynamic values that are allowed in to be used in this property filter
+	// static or dynamic values that are allowed to be used in this property filter
 	AllowedValues []string
 }
 

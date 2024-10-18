@@ -1,7 +1,6 @@
 package features
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -79,8 +78,6 @@ func NewFeatures(e *engine.Engine) *Features {
 // Try to do as much initialization work outside the hot path, and only do essential
 // operations inside this method.
 func (f *Features) Features() http.HandlerFunc {
-	cfg := f.engine.Config
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -93,9 +90,8 @@ func (f *Features) Features() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
-		url := featureCollectionURL{*cfg.BaseURL.URL, r.URL.Query(), cfg.OgcAPI.Features.Limit,
-			f.configuredPropertyFilters[collectionID], collection.HasDateTime()}
-		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
+		url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
+			referenceDate, propertyFilters, err := f.parseFeaturesURL(r, collection)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -215,6 +211,20 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
+	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Extent, time.Time, map[string]string, error) {
+
+	url := featureCollectionURL{
+		*f.engine.Config.BaseURL.URL,
+		r.URL.Query(),
+		f.engine.Config.OgcAPI.Features.Limit,
+		f.configuredPropertyFilters[collection.ID],
+		collection.HasDateTime(),
+	}
+	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
+	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err
 }
 
 func parseFeatureID(r *http.Request) (any, error) {
@@ -357,40 +367,6 @@ func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig
 	}
 	e.RegisterShutdownHook(datasource.Close)
 	return datasource
-}
-
-func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
-	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
-	log.Println(msg)
-	engine.RenderProblem(engine.ProblemNotFound, w, msg)
-}
-
-func handleFeatureNotFound(w http.ResponseWriter, collectionID string, featureID any) {
-	msg := fmt.Sprintf("the requested feature with id: %v does not exist in collection '%v'", featureID, collectionID)
-	log.Println(msg)
-	engine.RenderProblem(engine.ProblemNotFound, w, msg)
-}
-
-// log error, but send generic message to client to prevent possible information leakage from datasource
-func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err error) {
-	msg := "failed to retrieve feature collection " + collectionID
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		// provide more context when user hits the query timeout
-		msg += ": querying the features took too long (timeout encountered). Simplify your request and try again, or contact support"
-	}
-	log.Printf("%s, error: %v\n", msg, err)
-	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
-}
-
-// log error, but sent generic message to client to prevent possible information leakage from datasource
-func handleFeatureQueryError(w http.ResponseWriter, collectionID string, featureID any, err error) {
-	msg := fmt.Sprintf("failed to retrieve feature %v in collection %s", featureID, collectionID)
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		// provide more context when user hits the query timeout
-		msg += ": querying the feature took too long (timeout encountered). Try again, or contact support"
-	}
-	log.Printf("%s, error: %v\n", msg, err)
-	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
 }
 
 func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Extent) bool {
