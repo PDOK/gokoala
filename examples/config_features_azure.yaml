@@ -52,7 +52,8 @@ ogcApi:
             file: addresses.gpkg
             fid: fid
             cache:
-              warmUp: true
+              warmUp: true    # pre-warm by downloading the spatial index
+              maxSize: 100Mb  # ideally the spatial index should fit within the cache
     collections:
       - id: dutch-addresses
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.

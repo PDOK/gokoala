@@ -43,10 +43,8 @@ ogcApi:
   tiles:
     title: BGT
     abstract: BGT multi-layer vector tiles
-    # base URL to webserver or object storage (e.g. azure blob or S3)
-    # which hosts the tiles.
-    tileServer: https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
-    # vector tiles and/or raster tiles
+    # base URL to webserver or object storage (e.g. azure blob or S3) which hosts the tiles.
+    tileServer: https://api.pdok.nl/lv/bgt/ogc/v1/tiles/
     types:
       - vector
     supportedSrs:
