@@ -32,7 +32,7 @@ datasets? Spin up a separate instance/container.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. 
   - Serves features as HTML, GeoJSON and JSON-FG
   - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
-  - No on-the-fly re-projections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
+  - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
   - Supports property and temporal filtering.
   - Uses cursor-based pagination in order to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain 
