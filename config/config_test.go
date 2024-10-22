@@ -84,27 +84,6 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 				expectedOrder: []string{"B", "C", "Z", "Z", "A"},
 			},
 		},
-		{
-			name: "should return collections in default order (alphabetic) - extra test",
-			args: args{
-				configFile:    "internal/engine/testdata/config_collections_unique.yaml",
-				expectedOrder: []string{"BarCollection", "FooCollection", "FooCollection"},
-			},
-		},
-		{
-			name: "should return collections in explicit / literal order",
-			args: args{
-				configFile:    "internal/engine/testdata/config_collections_order_literal.yaml",
-				expectedOrder: []string{"Z", "Z", "C", "A", "B"},
-			},
-		},
-		{
-			name: "should not error when no collections",
-			args: args{
-				configFile:    "internal/engine/testdata/config_minimal.yaml",
-				expectedOrder: []string{},
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,35 +96,6 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return item.ID })
 			}
 			assert.ElementsMatch(t, actual, tt.args.expectedOrder)
-		})
-	}
-}
-
-func TestGeoSpatialCollections_Unique(t *testing.T) {
-	type args struct {
-		configFile            string
-		nrOfCollections       int
-		nrOfUniqueCollections int
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "should filter duplicate collections when calling Unique()",
-			args: args{
-				configFile:            "internal/engine/testdata/config_collections_unique.yaml",
-				nrOfCollections:       3,
-				nrOfUniqueCollections: 2,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			config, err := NewConfig(tt.args.configFile)
-			assert.NoError(t, err)
-			assert.Len(t, config.AllCollections(), tt.args.nrOfCollections)
-			assert.Len(t, config.AllCollections().Unique(), tt.args.nrOfUniqueCollections)
 		})
 	}
 }
@@ -197,106 +147,6 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	}
 }
 
-func TestProjectionsForCollections(t *testing.T) {
-	oaf := OgcAPIFeatures{
-		Datasources: &Datasources{
-			DefaultWGS84: Datasource{},
-			Additional: []AdditionalDatasource{
-				{Srs: "EPSG:4355"},
-			},
-		},
-		Collections: GeoSpatialCollections{
-			GeoSpatialCollection{
-				ID: "coll1",
-				Features: &CollectionEntryFeatures{
-					Datasources: &Datasources{
-						DefaultWGS84: Datasource{},
-						Additional: []AdditionalDatasource{
-							{Srs: "EPSG:4326"},
-							{Srs: "EPSG:3857"},
-							{Srs: "EPSG:3857"},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	expected := []string{"EPSG:3857", "EPSG:4326", "EPSG:4355"}
-	assert.Equal(t, expected, oaf.ProjectionsForCollections())
-}
-
-func TestCacheDir(t *testing.T) {
-	tests := []struct {
-		name    string
-		gc      GeoPackageCloud
-		wantErr bool
-	}{
-		{
-			name: "With explicit cache path provided",
-			gc: GeoPackageCloud{
-				File: "test.gpkg",
-				Cache: GeoPackageCloudCache{
-					Path: ptrTo("/tmp"),
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Without explicit cache path provided",
-			gc: GeoPackageCloud{
-				File: "test.gpkg",
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.gc.CacheDir()
-			if (err != nil) != tt.wantErr {
-				assert.Fail(t, "error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.gc.Cache.Path == nil {
-				assert.DirExists(t, got)
-			} else {
-				assert.Contains(t, got, *tt.gc.Cache.Path+"/test-")
-			}
-		})
-	}
-}
-
-func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
-	tests := []struct {
-		coll    GeoSpatialCollection
-		want    string
-		wantErr assert.ErrorAssertionFunc
-	}{
-		{
-			coll: GeoSpatialCollection{
-				ID: "test i",
-				Metadata: &GeoSpatialCollectionMetadata{
-					Description: ptrTo("test d"),
-				},
-				GeoVolumes: &CollectionEntry3dGeoVolumes{
-					TileServerPath: ptrTo("test p"),
-				},
-			},
-			// language=json
-			want:    `{"id": "test i", "metadata": {"description": "test d"}, "tileServerPath":  "test p"}`,
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run("", func(t *testing.T) {
-			marshalled, err := json.Marshal(tt.coll)
-			if !tt.wantErr(t, err, errors.New("json.Marshal")) {
-				return
-			}
-			assert.JSONEqf(t, tt.want, string(marshalled), "json.Marshal")
-		})
-	}
-}
-
 type TestEmbeddedGeoSpatialCollection struct {
 	C GeoSpatialCollection `json:"C"`
 }
@@ -314,9 +164,6 @@ func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
 				ID: "test i",
 				Metadata: &GeoSpatialCollectionMetadata{
 					Description: ptrTo("test d"),
-				},
-				GeoVolumes: &CollectionEntry3dGeoVolumes{
-					TileServerPath: ptrTo("test p"),
 				},
 			},
 			wantErr: assert.NoError,
@@ -338,165 +185,6 @@ func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
 				return
 			}
 			assert.EqualValuesf(t, &TestEmbeddedGeoSpatialCollection{C: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
-		})
-	}
-}
-
-func TestOgcAPITiles_HasType(t *testing.T) {
-	tests := []struct {
-		name      string
-		tiles     OgcAPITiles
-		tilesType TilesType
-		expected  bool
-	}{
-		{
-			name: "Has type in DatasetTiles",
-			tiles: OgcAPITiles{
-				DatasetTiles: &Tiles{
-					Types: []TilesType{"raster", "vector"},
-				},
-			},
-			tilesType: "raster",
-			expected:  true,
-		},
-		{
-			name: "Does not have type in DatasetTiles",
-			tiles: OgcAPITiles{
-				DatasetTiles: &Tiles{
-					Types: []TilesType{"raster", "vector"},
-				},
-			},
-			tilesType: "some-other-type",
-			expected:  false,
-		},
-		{
-			name: "Has type in Collections",
-			tiles: OgcAPITiles{
-				Collections: GeoSpatialCollections{
-					GeoSpatialCollection{
-						Tiles: &CollectionEntryTiles{
-							GeoDataTiles: Tiles{
-								Types: []TilesType{"raster", "vector"},
-							},
-						},
-					},
-				},
-			},
-			tilesType: "raster",
-			expected:  true,
-		},
-		{
-			name: "Does not have type in Collections",
-			tiles: OgcAPITiles{
-				Collections: GeoSpatialCollections{
-					GeoSpatialCollection{
-						Tiles: &CollectionEntryTiles{
-							GeoDataTiles: Tiles{
-								Types: []TilesType{"raster", "vector"},
-							},
-						},
-					},
-				},
-			},
-			tilesType: "some-other-type",
-			expected:  false,
-		},
-		{
-			name:      "No DatasetTiles and Collections",
-			tiles:     OgcAPITiles{},
-			tilesType: "raster",
-			expected:  false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := tt.tiles.HasType(tt.tilesType)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
-
-func TestOgcAPITiles_HasProjection(t *testing.T) {
-	tests := []struct {
-		name        string
-		ogcAPITiles OgcAPITiles
-		srs         string
-		expected    bool
-	}{
-		{
-			name: "SRS found in Top-level Tiles",
-			ogcAPITiles: OgcAPITiles{
-				DatasetTiles: &Tiles{
-					SupportedSrs: []SupportedSrs{
-						{Srs: "EPSG:4326"},
-						{Srs: "EPSG:3857"},
-					},
-				},
-				Collections: []GeoSpatialCollection{},
-			},
-			srs:      "EPSG:4326",
-			expected: true,
-		},
-		{
-			name: "SRS found in a Collection Tiles",
-			ogcAPITiles: OgcAPITiles{
-				DatasetTiles: nil,
-				Collections: []GeoSpatialCollection{
-					{
-						Tiles: &CollectionEntryTiles{
-							GeoDataTiles: Tiles{
-								SupportedSrs: []SupportedSrs{
-									{Srs: "EPSG:28992"},
-								},
-							},
-						},
-					},
-				},
-			},
-			srs:      "EPSG:28992",
-			expected: true,
-		},
-		{
-			name: "SRS not found",
-			ogcAPITiles: OgcAPITiles{
-				DatasetTiles: &Tiles{
-					SupportedSrs: []SupportedSrs{
-						{Srs: "EPSG:4326"},
-					},
-				},
-				Collections: []GeoSpatialCollection{},
-			},
-			srs:      "EPSG:9999",
-			expected: false,
-		},
-		{
-			name: "Empty Top-level tiles and Collections",
-			ogcAPITiles: OgcAPITiles{
-				DatasetTiles: nil,
-				Collections:  []GeoSpatialCollection{},
-			},
-			srs:      "EPSG:4326",
-			expected: false,
-		},
-		{
-			name: "Handle nil",
-			ogcAPITiles: OgcAPITiles{
-				DatasetTiles: nil,
-				Collections: []GeoSpatialCollection{
-					{
-						Tiles: nil,
-					},
-				},
-			},
-			srs:      "EPSG:4326",
-			expected: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, tt.ogcAPITiles.HasProjection(tt.srs))
 		})
 	}
 }

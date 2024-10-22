@@ -16,7 +16,7 @@ const (
 	CookieMaxAge = 60 * 60 * 24
 )
 
-// NewConfig read YAML config file, required to start GoKoala
+// NewConfig read YAML config file, required to start Gomagpie
 func NewConfig(configFile string) (*Config, error) {
 	yamlData, err := os.ReadFile(configFile)
 	if err != nil {

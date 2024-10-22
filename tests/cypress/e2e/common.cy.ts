@@ -13,7 +13,7 @@ describe('OGC API Common tests', () => {
 
   it('landing page should have headings for all expected children (openapi, conformance, etc)', () => {
     cy.visit('/')
-    cy.get('.card-header.h5').should("have.length", 6)
+    cy.get('.card-header.h5').should("have.length", 3)
   })
 
   // disabled since it has two violations in the 3rd party swagger-ui component (outside our control)

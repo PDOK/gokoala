@@ -1,4 +1,4 @@
-{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{- /*gotype: github.com/PDOK/gomagpie/internal/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - OpenAPI {{ i18n "Specification" }}</h1>
@@ -58,7 +58,7 @@
             }
 
             // Create plugin to wire the redefined components
-            const GoKoalaLayoutPlugin = () => {
+            const GomagpieLayoutPlugin = () => {
                 return {
                     // See https://github.com/swagger-api/swagger-ui/blob/master/src/core/components/layouts/base.jsx
                     // for the components used in Swagger BaseLayout
@@ -79,7 +79,7 @@
                         SwaggerUIStandalonePreset
                     ],
                     plugins: [
-                        GoKoalaLayoutPlugin,
+                        GomagpieLayoutPlugin,
                         SwaggerUIBundle.plugins.DownloadUrl
                     ],
                     layout: "BaseLayout"

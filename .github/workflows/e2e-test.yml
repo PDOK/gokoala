@@ -17,22 +17,15 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: false
-          tags: gokoala:local
+          tags: gomagpie:local
 
-      # E2E Test (Docker Compose V2 can't unfortunately re-use image, so build it again).
-      - name: E2E Test => OGC API Features with Azure GeoPackage
-        run: |
-          docker compose -f ./examples/docker-compose-features-azure.yaml build gokoala && \
-          docker compose -f ./examples/docker-compose-features-azure.yaml up \
-            --exit-code-from smoketest
-
-      - name: Start GoKoala test instance
+      - name: Start gomagpie test instance
         run: |
           docker run \
             -v `pwd`/examples:/examples \
             --rm --detach -p 8080:8080 \
-            --name gokoala \
-            gokoala:local --config-file /examples/config_all.yaml
+            --name gomagpie \
+            gomagpie:local --config-file /examples/config.yaml
 
       # E2E Test
       - name: E2E Test => Cypress
@@ -41,18 +34,6 @@ jobs:
           working-directory: ./tests
           browser: chrome
 
-      # E2E Test
-      - name: E2E Test => OGC API Features Conformance Validation
+      - name: Stop gomagpie test instance
         run: |
-          sleep 5
-          docker run --net=host -t -v "$(pwd):/mnt" \
-            docker.io/pdok/ets-ogcapi-features10-docker:latest \
-            http://localhost:8080 \
-            --generateHtmlReport true \
-            --outputDir /mnt/output \
-            --exitOnFail \
-            --prettyPrint
-
-      - name: Stop GoKoala test instance
-        run: |
-          docker stop gokoala
+          docker stop gomagpie

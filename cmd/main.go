@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	eng "github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc"
+	eng "github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gomagpie/internal/ogc"
 	"github.com/urfave/cli/v2"
 
 	_ "go.uber.org/automaxprocs"
@@ -17,14 +17,14 @@ var (
 	cliFlags = []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
-			Usage:    "bind host for OGC server",
+			Usage:    "bind host",
 			Value:    "0.0.0.0",
 			Required: false,
 			EnvVars:  []string{"HOST"},
 		},
 		&cli.IntFlag{
 			Name:     "port",
-			Usage:    "bind port for OGC server",
+			Usage:    "bind port",
 			Value:    8080,
 			Required: false,
 			EnvVars:  []string{"PORT"},
@@ -49,12 +49,6 @@ var (
 			Required: true,
 			EnvVars:  []string{"CONFIG_FILE"},
 		},
-		&cli.StringFlag{
-			Name:     "openapi-file",
-			Usage:    "reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API",
-			Required: false,
-			EnvVars:  []string{"OPENAPI_FILE"},
-		},
 		&cli.BoolFlag{
 			Name:     "enable-trailing-slash",
 			Usage:    "allow API calls to URLs with a trailing slash.",
@@ -74,8 +68,8 @@ var (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "GoKoala"
-	app.Usage = "Cloud Native OGC APIs server, written in Go"
+	app.Name = "Gomagpie"
+	app.Usage = "Location search and geocoding API"
 	app.Flags = cliFlags
 	app.Action = func(c *cli.Context) error {
 		log.Printf("%s - %s\n", app.Name, app.Usage)
@@ -84,12 +78,11 @@ func main() {
 		debugPort := c.Int("debug-port")
 		shutdownDelay := c.Int("shutdown-delay")
 		configFile := c.String("config-file")
-		openAPIFile := c.String("openapi-file")
 		trailingSlash := c.Bool("enable-trailing-slash")
 		cors := c.Bool("enable-cors")
 
-		// Engine encapsulates shared non-OGC API specific logic
-		engine, err := eng.NewEngine(configFile, openAPIFile, trailingSlash, cors)
+		// Engine encapsulates shared logic
+		engine, err := eng.NewEngine(configFile, trailingSlash, cors)
 		if err != nil {
 			return err
 		}

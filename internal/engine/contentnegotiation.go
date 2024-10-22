@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gomagpie/config"
+	"github.com/PDOK/gomagpie/internal/engine/util"
 	"github.com/elnormous/contenttype"
 	"golang.org/x/text/language"
 )

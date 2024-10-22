@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gomagpie/config"
 	"github.com/go-chi/chi/v5"
 
 	"github.com/stretchr/testify/assert"
@@ -30,7 +30,7 @@ func init() {
 
 func TestEngine_ServePage_LandingPage(t *testing.T) {
 	// given
-	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "", false, true)
+	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", false, true)
 	assert.NoError(t, err)
 
 	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json")
@@ -169,7 +169,7 @@ func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
 	cfg := &config.Config{
 		BaseURL: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 	}
-	openAPI := newOpenAPI(cfg, []string{""}, nil)
+	openAPI := newOpenAPI(cfg)
 	engine := &Engine{
 		Config:  cfg,
 		OpenAPI: openAPI,

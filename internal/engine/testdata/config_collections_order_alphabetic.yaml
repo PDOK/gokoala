@@ -8,16 +8,11 @@ license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
 baseUrl: http://localhost:8181
-ogcApi:
-  3dgeovolumes:
-    tileServer: https://example.com
-    collections:
-      - id: B
-      - id: Z
-      - id: C
-  tiles:
-    collections:
-      - id: Z
-        tileServer: https://example.com
-      - id: A
-        tileServer: https://example.com
+database:
+  connectionString: abc
+collections:
+  - id: B
+  - id: Z
+  - id: C
+  - id: Z
+  - id: A

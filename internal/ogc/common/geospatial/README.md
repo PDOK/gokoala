@@ -1,7 +1,7 @@
 # Geospatial data resources / collections.
 
-For GoKoala devs: If you want to implement collections support in one of the OGC building blocks 
-in GoKoala (see `ogc` package) you'll need to perform the following tasks:
+For Gomagpie devs: If you want to implement collections support in one of the OGC building blocks 
+in Gomagpie (see `ogc` package) you'll need to perform the following tasks:
 
 Config:
 - Expand / add yaml tag in `engine.Config.OgcAPI` to allow users to configure collections

@@ -10,24 +10,19 @@ import (
 
 type GeoSpatialCollections []GeoSpatialCollection
 
-// +kubebuilder:object:generate=true
 type GeoSpatialCollection struct {
 	// Unique ID of the collection
 	ID string `yaml:"id" validate:"required" json:"id"`
 
 	// Metadata describing the collection contents
-	// +optional
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
 	// Links pertaining to this collection (e.g., downloads, documentation)
-	// +optional
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
 }
 
-// +kubebuilder:object:generate=true
 type GeoSpatialCollectionMetadata struct {
 	// Human friendly title of this collection. When no title is specified the collection ID is used.
-	// +optional
 	Title *string `yaml:"title,omitempty" json:"title,omitempty"`
 
 	// Describes the content of this collection
@@ -39,47 +34,31 @@ type GeoSpatialCollectionMetadata struct {
 	Thumbnail *string `yaml:"thumbnail,omitempty" json:"thumbnail,omitempty"`
 
 	// Keywords to make this collection beter discoverable
-	// +optional
 	Keywords []string `yaml:"keywords,omitempty" json:"keywords,omitempty"`
 
 	// Moment in time when the collection was last updated
-	//
-	// +optional
-	// +kubebuilder:validation:Type=string
-	// +kubebuilder:validation:Format="date-time"
 	LastUpdated *string `yaml:"lastUpdated,omitempty" json:"lastUpdated,omitempty" validate:"omitempty,datetime=2006-01-02T15:04:05Z"`
 
 	// Who updated this collection
-	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy,omitempty" json:"lastUpdatedBy,omitempty"`
 
 	// Extent of the collection, both geospatial and/or temporal
-	// +optional
 	Extent *Extent `yaml:"extent,omitempty" json:"extent,omitempty"`
 
 	// The CRS identifier which the features are originally stored, meaning no CRS transformations are applied when features are retrieved in this CRS.
 	// WGS84 is the default storage CRS.
-	//
-	// +kubebuilder:default="http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-	// +kubebuilder:validation:Pattern=`^http:\/\/www\.opengis\.net\/def\/crs\/.*$`
-	// +optional
 	StorageCrs *string `yaml:"storageCrs,omitempty" json:"storageCrs,omitempty" default:"http://www.opengis.net/def/crs/OGC/1.3/CRS84" validate:"startswith=http://www.opengis.net/def/crs"`
 }
 
 // +kubebuilder:object:generate=true
 type Extent struct {
 	// Projection (SRS/CRS) to be used. When none is provided WGS84 (http://www.opengis.net/def/crs/OGC/1.3/CRS84) is used.
-	// +optional
-	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	Srs string `yaml:"srs,omitempty" json:"srs,omitempty" validate:"omitempty,startswith=EPSG:"`
 
 	// Geospatial extent
 	Bbox []string `yaml:"bbox" json:"bbox"`
 
 	// Temporal extent
-	// +optional
-	// +kubebuilder:validation:MinItems=2
-	// +kubebuilder:validation:MaxItems=2
 	Interval []string `yaml:"interval,omitempty" json:"interval,omitempty" validate:"omitempty,len=2"`
 }
 

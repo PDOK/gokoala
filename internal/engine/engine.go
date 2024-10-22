@@ -18,7 +18,7 @@ import (
 	texttemplate "text/template"
 	"time"
 
-	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gomagpie/config"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -52,19 +52,19 @@ type Engine struct {
 }
 
 // NewEngine builds a new Engine
-func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
+func NewEngine(configFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
 	cfg, err := config.NewConfig(configFile)
 	if err != nil {
 		return nil, err
 	}
-	return NewEngineWithConfig(cfg, openAPIFile, enableTrailingSlash, enableCORS), nil
+	return NewEngineWithConfig(cfg, enableTrailingSlash, enableCORS), nil
 }
 
 // NewEngineWithConfig builds a new Engine
-func NewEngineWithConfig(config *config.Config, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
+func NewEngineWithConfig(config *config.Config, enableTrailingSlash bool, enableCORS bool) *Engine {
 	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
 	templates := newTemplates(config)
-	openAPI := newOpenAPI(config, []string{openAPIFile}, nil)
+	openAPI := newOpenAPI(config)
 	router := newRouter(config.Version, enableTrailingSlash, enableCORS)
 
 	engine := &Engine{
@@ -149,13 +149,6 @@ func (e *Engine) startServer(name string, address string, shutdownDelay int, rou
 // RegisterShutdownHook register a func to execute during graceful shutdown, e.g. to clean up resources.
 func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
-}
-
-// RebuildOpenAPI rebuild the full OpenAPI spec with the newly given parameters.
-// Use only once during bootstrap for specific use cases! For example: when you want to expand a
-// specific part of the OpenAPI spec with data outside the configuration file (e.g. from a database).
-func (e *Engine) RebuildOpenAPI(openAPIParams any) {
-	e.OpenAPI = newOpenAPI(e.Config, e.OpenAPI.extraOpenAPIFiles, openAPIParams)
 }
 
 // ParseTemplate parses both HTML and non-HTML templates depending on the format given in the TemplateKey and

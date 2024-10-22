@@ -10,8 +10,8 @@ import (
 	"strings"
 	texttemplate "text/template"
 
-	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gomagpie/config"
+	"github.com/PDOK/gomagpie/internal/engine/util"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 )
@@ -44,7 +44,7 @@ type TemplateData struct {
 	// Config set during startup based on the given config file
 	Config *config.Config
 
-	// Params optional parameters not part of GoKoala's config file. You can use
+	// Params optional parameters not part of Gomagpie's config file. You can use
 	// this to provide extra data to a template at rendering time.
 	Params any
 
@@ -57,15 +57,7 @@ type TemplateData struct {
 
 // AvailableFormats returns the output formats available for the current page
 func (td *TemplateData) AvailableFormats() map[string]string {
-	if td.url != nil && strings.Contains(td.url.Path, "/items") {
-		return td.AvailableFormatsFeatures()
-	}
 	return OutputFormatDefault
-}
-
-// AvailableFormatsFeatures convenience function
-func (td *TemplateData) AvailableFormatsFeatures() map[string]string {
-	return OutputFormatFeatures
 }
 
 // QueryString returns ?=foo=a&bar=b style query string of the current page

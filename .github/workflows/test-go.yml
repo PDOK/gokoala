@@ -13,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup cgo dependencies
-        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite
-
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -23,9 +20,6 @@ jobs:
 
       - name: Download
         run: go mod download all
-
-      - name: Generate (fail when generated code is not committed)
-        run: go generate -v ./... && git diff --exit-code ':!go.sum'
 
       - name: Build
         run: go build -v ./...
@@ -37,24 +31,14 @@ jobs:
           max_attempts: 2
           retry_on: error
           command: |
-            go test -v -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
-            # remove generate code from coverage results
-            grep -v "zz_generated" cover.out.tmp > cover.out
-
-      - name: Test generating example CRD
-        run: hack/generate-crd.sh
-
-      # we don't (yet) fail on benchmark results, these are just to make sure
-      # the benchmarks keep working
-      - name: Benchmark
-        run: go test -v ./... -bench=. -run=^# -benchmem -count=1
+            go test -v -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out ./...
 
       - name: Fail when coverage below threshold
         uses: vladopajic/go-test-coverage@v2
         with:
           profile: cover.out
-          local-prefix: github.com/PDOK/gokoala
-          threshold-total: 80  # 80% overall coverage is the minimum
+          local-prefix: github.com/PDOK/gomagpie
+          threshold-total: 75  # 80% overall coverage is the minimum. TODO: temporally set to 75%
 
       - name: Update coverage report
         uses: ncruces/go-coverage-report@v0

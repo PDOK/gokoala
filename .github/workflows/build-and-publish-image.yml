@@ -1,7 +1,7 @@
 ---
 name: build
 env:
-  image: pdok/gokoala
+  image: pdok/gomagpie
 on:
   push:
     tags:

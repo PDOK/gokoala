@@ -4,15 +4,14 @@ import (
 	"net/url"
 	"testing"
 
-	gokoalaconfig "github.com/PDOK/gokoala/config"
+	gomagpieconfig "github.com/PDOK/gomagpie/config"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_newOpenAPI(t *testing.T) {
 	type args struct {
-		config      *gokoalaconfig.Config
-		openAPIFile string
+		config *gomagpieconfig.Config
 	}
 	tests := []struct {
 		name                         string
@@ -22,11 +21,11 @@ func Test_newOpenAPI(t *testing.T) {
 		{
 			name: "Test render OpenAPI spec with MINIMAL config",
 			args: args{
-				config: &gokoalaconfig.Config{
+				config: &gomagpieconfig.Config{
 					Version:  "2.3.0",
 					Title:    "Test API",
 					Abstract: "Test API description",
-					BaseURL:  gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					BaseURL:  gomagpieconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 				},
 			},
 			expectedStringsInOpenAPISpec: []string{
@@ -38,7 +37,7 @@ func Test_newOpenAPI(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			openAPI := newOpenAPI(test.args.config, []string{test.args.openAPIFile}, nil)
+			openAPI := newOpenAPI(test.args.config)
 			assert.NotNil(t, openAPI)
 
 			// verify resulting OpenAPI spec contains expected strings (keywords, paths, etc)

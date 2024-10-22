@@ -7,44 +7,10 @@
     </url>
     <url>
         <loc>http://localhost:8080/conformance?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/collections?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/collections/addresses?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/collections/addresses/tiles?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/collections/addresses/items?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/collections/addresses2?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/collections/addresses2/items?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/tiles?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/tiles/NetherlandsRDNewQuad?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/tiles/EuropeanETRS89_LAEAQuad?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/tileMatrixSets?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/tileMatrixSets/NetherlandsRDNewQuad?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/tileMatrixSets/EuropeanETRS89_LAEAQuad?f=html</loc>
-    </url>
-    <url>
-        <loc>http://localhost:8080/styles?f=html</loc>
-    </url>
-</urlset>
+    </url><url>
+    <loc>http://localhost:8080/collections?f=html</loc>
+</url><url>
+    <loc>http://localhost:8080/collections/addresses?f=html</loc>
+</url><url>
+    <loc>http://localhost:8080/collections/buildings?f=html</loc>
+</url></urlset>

@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gomagpie/internal/engine"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -59,7 +59,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 				url:        "http://localhost:8080/?f=html",
 			},
 			want: want{
-				body:       "<title>Minimal OGC API (OGC API)</title>",
+				body:       "<title>Minimal OGC API</title>",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -73,7 +73,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, false, true)
 			assert.NoError(t, err)
 			core := NewCommonCore(newEngine)
 			handler := core.LandingPage()
@@ -102,7 +102,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 		{
 			name: "conformance as JSON",
 			fields: fields{
-				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_minimal.yaml",
 				url:        "http://localhost:8080/conformance?f=json",
 			},
 			want: want{
@@ -113,7 +113,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 		{
 			name: "conformance as HTML",
 			fields: fields{
-				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_minimal.yaml",
 				url:        "http://localhost:8080/conformance?f=html",
 			},
 			want: want{
@@ -131,7 +131,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, false, true)
 			assert.NoError(t, err)
 			core := NewCommonCore(newEngine)
 			handler := core.Conformance()
@@ -160,7 +160,7 @@ func TestCommonCore_API(t *testing.T) {
 		{
 			name: "OpenAPI as JSON",
 			fields: fields{
-				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_minimal.yaml",
 				url:        "http://localhost:8080/api?f=json",
 			},
 			want: want{
@@ -171,11 +171,11 @@ func TestCommonCore_API(t *testing.T) {
 		{
 			name: "OpenAPI as HTML",
 			fields: fields{
-				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				configFile: "internal/engine/testdata/config_minimal.yaml",
 				url:        "http://localhost:8080/api?f=html",
 			},
 			want: want{
-				body:       "GoKoalaLayoutPlugin", // exists on swagger page, this to make sure we get HTML
+				body:       "GomagpieLayoutPlugin", // exists on swagger page, this to make sure we get HTML
 				statusCode: http.StatusOK,
 			},
 		},
@@ -189,7 +189,7 @@ func TestCommonCore_API(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, false, true)
 			assert.NoError(t, err)
 			core := NewCommonCore(newEngine)
 			handler := core.API()

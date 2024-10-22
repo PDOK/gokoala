@@ -1,9 +1,9 @@
 package ogc
 
 import (
-	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/common/core"
-	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
+	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gomagpie/internal/ogc/common/core"
+	"github.com/PDOK/gomagpie/internal/ogc/common/geospatial"
 )
 
 func SetupBuildingBlocks(engine *engine.Engine) {

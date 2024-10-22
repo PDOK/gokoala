@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gomagpie/config"
 	"golang.org/x/text/language"
 )
 

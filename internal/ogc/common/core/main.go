@@ -3,7 +3,7 @@ package core
 import (
 	"net/http"
 
-	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gomagpie/internal/engine"
 )
 
 const (

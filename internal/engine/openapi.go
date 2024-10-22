@@ -15,10 +15,10 @@ import (
 	"strings"
 	texttemplate "text/template"
 
-	gokoalaconfig "github.com/PDOK/gokoala/config"
+	gomagpieconfig "github.com/PDOK/gomagpie/config"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 
-	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gomagpie/internal/engine/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
@@ -30,10 +30,6 @@ const (
 	preamble          = specPath + "preamble.go.json"
 	problems          = specPath + "problems.go.json"
 	commonCollections = specPath + "common-collections.go.json"
-	featuresSpec      = specPath + "features.go.json"
-	tilesSpec         = specPath + "tiles.go.json"
-	stylesSpec        = specPath + "styles.go.json"
-	geoVolumesSpec    = specPath + "3dgeovolumes.go.json"
 	commonSpec        = specPath + "common.go.json"
 	HTMLRegex         = `<[/]?([a-zA-Z]+).*?>`
 )
@@ -42,12 +38,11 @@ type OpenAPI struct {
 	spec     *openapi3.T
 	SpecJSON []byte
 
-	config            *gokoalaconfig.Config
-	router            routers.Router
-	extraOpenAPIFiles []string
+	config *gomagpieconfig.Config
+	router routers.Router
 }
 
-func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAPIParams any) *OpenAPI {
+func newOpenAPI(config *gomagpieconfig.Config) *OpenAPI {
 	setupRequestResponseValidation()
 	ctx := context.Background()
 
@@ -59,11 +54,9 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 
 	// add preamble first
 	openAPIFiles := []string{preamble}
-	// add extra spec(s) thereafter, to allow it to override default openapi specs
-	openAPIFiles = append(openAPIFiles, extraOpenAPIFiles...)
 	openAPIFiles = append(openAPIFiles, defaultOpenAPIFiles...)
 
-	resultSpec, resultSpecJSON := mergeSpecs(ctx, config, openAPIFiles, openAPIParams)
+	resultSpec, resultSpecJSON := mergeSpecs(ctx, config, openAPIFiles, nil)
 	validateSpec(ctx, resultSpec, resultSpecJSON)
 
 	for _, server := range resultSpec.Servers {
@@ -71,11 +64,10 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	}
 
 	return &OpenAPI{
-		config:            config,
-		spec:              resultSpec,
-		SpecJSON:          util.PrettyPrintJSON(resultSpecJSON, ""),
-		router:            newOpenAPIRouter(resultSpec),
-		extraOpenAPIFiles: extraOpenAPIFiles,
+		config:   config,
+		spec:     resultSpec,
+		SpecJSON: util.PrettyPrintJSON(resultSpecJSON, ""),
+		router:   newOpenAPIRouter(resultSpec),
 	}
 }
 
@@ -119,7 +111,7 @@ func setupRequestResponseValidation() {
 //
 // The OpenAPI spec optionally provided through the CLI should be the second (after preamble) item in the
 // `files` slice since it allows the user to override other/default specs.
-func mergeSpecs(ctx context.Context, config *gokoalaconfig.Config, files []string, params any) (*openapi3.T, []byte) {
+func mergeSpecs(ctx context.Context, config *gomagpieconfig.Config, files []string, params any) (*openapi3.T, []byte) {
 	loader := &openapi3.Loader{Context: ctx, IsExternalRefsAllowed: false}
 
 	if len(files) < 1 {
@@ -194,7 +186,7 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 	return openAPIRouter
 }
 
-func renderOpenAPITemplate(config *gokoalaconfig.Config, fileName string, params any) []byte {
+func renderOpenAPITemplate(config *gomagpieconfig.Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
 	files := []string{problems, file} // add problems template too since it's an "include" template
 	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(files...))
@@ -269,12 +261,12 @@ func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.Re
 // requests against the OpenAPI spec. This involves:
 //
 //   - striping the context root (path) from the base URL. If you use a context root we expect
-//     you to have a proxy fronting GoKoala, therefore we also  need to strip it from the base
+//     you to have a proxy fronting Gomagpie, therefore we also  need to strip it from the base
 //     URL used during OpenAPI validation
 //
-//   - replacing HTTPS scheme with HTTP. Since GoKoala doesn't support HTTPS we always perform
-//     OpenAPI validation against HTTP requests. Note: it's possible to offer GoKoala over HTTPS, but you'll
-//     need to take care of that in your proxy server (or loadbalancer/service mesh/etc) fronting GoKoala.
+//   - replacing HTTPS scheme with HTTP. Since Gomagpie doesn't support HTTPS we always perform
+//     OpenAPI validation against HTTP requests. Note: it's possible to offer Gomagpie over HTTPS, but you'll
+//     need to take care of that in your proxy server (or loadbalancer/service mesh/etc) fronting Gomagpie.
 func normalizeBaseURL(baseURL string) string {
 	serverURL, _ := url.Parse(baseURL)
 	result := strings.Replace(baseURL, serverURL.Scheme, "http", 1)

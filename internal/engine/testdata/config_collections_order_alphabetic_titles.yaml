@@ -8,26 +8,26 @@ license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
 baseUrl: http://localhost:8181
-ogcApi:
-  3dgeovolumes:
-    tileServer: https://example.com
-    collections:
-      - id: B
-        metadata:
-          title: Bear
-      - id: Z
-        metadata:
-          title: Chicken
-      - id: C
-        metadata:
-          title: Bird
-  tiles:
-    collections:
-      - id: Z
-        tileServer: https://example.com
-        metadata:
-          title: Chicken
-      - id: A
-        tileServer: https://example.com
-        metadata:
-          title: Horse
+database:
+  connectionString: abc
+collections:
+  - id: B
+    metadata:
+      title: Bear
+      description: abc
+  - id: Z
+    metadata:
+      title: Chicken
+      description: abc
+  - id: C
+    metadata:
+      title: Bird
+      description: abc
+  - id: Z
+    metadata:
+      title: Chicken
+      description: abc
+  - id: A
+    metadata:
+      title: Horse
+      description: abc
