@@ -56,18 +56,6 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	if config.AllCollections() != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, commonCollections)
 	}
-	if config.OgcAPI.Tiles != nil {
-		defaultOpenAPIFiles = append(defaultOpenAPIFiles, tilesSpec)
-	}
-	if config.OgcAPI.Features != nil {
-		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSpec)
-	}
-	if config.OgcAPI.Styles != nil {
-		defaultOpenAPIFiles = append(defaultOpenAPIFiles, stylesSpec)
-	}
-	if config.OgcAPI.GeoVolumes != nil {
-		defaultOpenAPIFiles = append(defaultOpenAPIFiles, geoVolumesSpec)
-	}
 
 	// add preamble first
 	openAPIFiles := []string{preamble}

@@ -1,11 +1,13 @@
-# gomagpie
-![Alt text](img/gomagpie.jpeg)
+<p align="center">
+<img src="docs/gomagpie.jpeg" alt="Gomagpie" title="Gomagpie" width="300" />
+</p>
 
-_Cloud Native OGC APIs server, written in Go._
+# Gomagpie
+
+_Location search and geocoding API. To be used in concert with OGC APIs.
 
 [![Build](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/build-and-publish-image.yml)
 [![Lint (go)](https://github.com/PDOK/gokoala/actions/workflows/lint-go.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint-go.yml)
-[![Lint (ts)](https://github.com/PDOK/gokoala/actions/workflows/lint-ts.yml/badge.svg)](https://github.com/PDOK/gokoala/actions/workflows/lint-ts.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/PDOK/gokoala)](https://goreportcard.com/report/github.com/PDOK/gokoala)
 [![Coverage (go)](https://github.com/PDOK/gokoala/wiki/coverage.svg)](https://raw.githack.com/wiki/PDOK/gokoala/coverage.html)
 [![GitHub license](https://img.shields.io/github/license/PDOK/gokoala)](https://github.com/PDOK/gokoala/blob/master/LICENSE)
@@ -13,34 +15,7 @@ _Cloud Native OGC APIs server, written in Go._
 
 ## Description
 
-This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes 
-in a cloud-native way. It contains a complete implementation of OGC API Features (part 1 and 2). With respect to 
-OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other 
-implementations. For example vector tile hosting may be delegated to a vector tile engine, 3D tile hosting to object storage, 
-raster map hosting to a WMS server, etc.
-
-This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
-datasets? Spin up a separate instance/container.
-
-## Features
-
-- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves 
-  OpenAPI specification and interactive Swagger UI. Multilingual support available.
-- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. 
-  - Serves features as HTML, GeoJSON and JSON-FG
-  - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
-  - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
-  - Supports property and temporal filtering.
-  - Uses cursor-based pagination in order to support browsing large datasets.
-  - Offers the ability to serve features representing "map sheets", allowing users to download a certain 
-    geographic area in an arbitrary format like zip, gpkg, etc.
-- [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
-  of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing. 
-  Currently, 3 projections (RD, ETRS89 and WebMercator) are supported.
-- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends - 
-  and JSON representation of supported (Mapbox) styles.
-- [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
-  in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
+This application offers location search and geocoding.
 
 ## Build
 
@@ -80,53 +55,6 @@ docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-fi
 
 Now open <http://localhost:8080>. See [examples](examples) for more details.
 
-### Configuration file
-
-The configuration file consists of a general section and a section
-per OGC API building block (tiles, styles, etc). See [example configuration
-files](examples/) for details. You can reference environment variables in the
-configuration file. For example to use the `MY_SERVER` env var:
-
-```yaml
-ogcApi:
-  tiles:
-    title: My Dataset
-    tileServer: https://${MY_SERVER}/foo/bar
-```
-
-### GeoPackage requirements
-
-GoKoala has a few requirements regarding GeoPackages backing an OGC API Features:
-- Each feature table must contain a [RTree](https://www.geopackage.org/guidance/extensions/rtree_spatial_indexes.html) index.
-- Each feature table must contain a BTree spatial index:
-```
-select load_extension('/path/to/mod_spatialite');
-alter table "<table>" add minx numeric;
-alter table "<table>" add maxx numeric;
-alter table "<table>" add miny numeric;
-alter table "<table>" add maxy numeric;
-update "<table>" set minx = st_minx('geom'), maxx = st_maxx('geom'), miny = st_miny('geom'), maxy = st_maxy('geom');
-create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy);
-```
-- When enabling temporal filtering (using `datetime` query param) the temporal fields should be indexed and the spatial index should be expanded to include the temporal fields.
-```
-create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy, start_date, end_date);
-create index "<table>_temporal_idx" on "<table>"(start_date, end_date);
-```
-- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the config.
-- Feature IDs (fid) in the GeoPackage should be contiguous and auto-incrementing.
-
-This is in addition to some of the requirements set forth by the PDOK [GeoPackage validator](https://github.com/PDOK/geopackage-validator).
-Some of the requirements stated above can be automatically applied with help of the PDOK [GeoPackage optimizer](https://github.com/PDOK/geopackage-optimizer-go).
-
-When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend a local cache that is able to hold the spatial index, see by `maxSize` in the config.
-
-### OpenAPI spec
-
-GoKoala ships with OGC OpenAPI support out of the box, see [OpenAPI
-specs](engine/templates/openapi) for details. You can overwrite or extend
-the defaults by providing your own spec using the `openapi-file` CLI flag.
-
 ### Observability
 
 #### Health checks
@@ -151,30 +79,7 @@ file>`
 
 A similar flow can be used to profile memory issues.
 
-#### SQL query logging
-
-Set `LOG_SQL=true` environment variable to enable logging of all SQL queries to stdout for debug purposes. 
-Only applies to OGC API Features. Set e.g. `SLOW_QUERY_TIME=10s` to change the definition of a
-slow query. Slow queries are always logged, unless they exceed the request timeout (which is currently 15s).
-
 ## Develop
-
-Design principles:
-
-- Performance and scalability are key!
-- Be opinionated when you can, only make stuff configurable when you must.
-- The `ogc` [package](internal/ogc/README.md) contains logic per specific OGC API
-  building block.
-- The `engine` package should contain general logic. `ogc` may reference
-  `engine`.
-  > :warning: The other way around is not allowed!
-- Geospatial related configuration is done through the config file, technical
-  configuration (host/port/etc) is done through CLI flags/env variables.
-- Fail fast, fail hard: do as much pre-processing/validation on startup instead
-  of during request handling.
-- Assets/templates/etc should be explicitly included in the Docker image, see COPY
-  commands in [Dockerfile](Dockerfile).
-- Document your changes to [OGC OpenAPI example specs](engine/templates/openapi/README.md).
 
 ### Build/run as Go application
 
@@ -193,16 +98,6 @@ Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn
 
 Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
 from the root.
-
-### Viewer
-
-GoKoala includes a [viewer](viewer) which is available
-as a [Web Component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for embedding in HTML pages. 
-To use the viewer locally when running GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will 
-build the viewer and add it to the GoKoala assets.
-
-Note this is only required for local development. When running GoKoala as a container this is
-already being taken care of when building the Docker container image.
 
 ### IntelliJ / GoLand
 
@@ -233,10 +128,6 @@ Also:
   - `"*.go.xml"`
 - Also add `html`, `json` and `xml` to the list of Go template languages.
 - Now you'll have IDE support in the GoKoala templates.
-
-### OGC compliance validation
-
-See our [end-to-end tests](tests/README.md).
 
 ## Misc
 

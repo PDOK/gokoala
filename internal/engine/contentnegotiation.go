@@ -14,41 +14,29 @@ const (
 	FormatParam   = "f"
 	languageParam = "lang"
 
-	MediaTypeJSON          = "application/json"
-	MediaTypeXML           = "application/xml"
-	MediaTypeHTML          = "text/html"
-	MediaTypeTileJSON      = "application/vnd.mapbox.tile+json"
-	MediaTypeMVT           = "application/vnd.mapbox-vector-tile"
-	MediaTypeMapboxStyle   = "application/vnd.mapbox.style+json"
-	MediaTypeSLD           = "application/vnd.ogc.sld+xml;version=1.0"
-	MediaTypeOpenAPI       = "application/vnd.oai.openapi+json;version=3.0"
-	MediaTypeGeoJSON       = "application/geo+json"
-	MediaTypeJSONFG        = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
-	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
+	MediaTypeJSON    = "application/json"
+	MediaTypeXML     = "application/xml"
+	MediaTypeHTML    = "text/html"
+	MediaTypeOpenAPI = "application/vnd.oai.openapi+json;version=3.0"
+	MediaTypeGeoJSON = "application/geo+json"
+	MediaTypeJSONFG  = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
 
-	FormatHTML           = "html"
-	FormatXML            = "xml"
-	FormatJSON           = "json"
-	FormatTileJSON       = "tilejson"
-	FormatMVT            = "mvt"
-	FormatMVTAlternative = "pbf"
-	FormatMapboxStyle    = "mapbox"
-	FormatSLD            = "sld10"
-	FormatGeoJSON        = "geojson" // ?=json should also work for geojson
-	FormatJSONFG         = "jsonfg"
-	FormatGzip           = "gzip"
+	FormatHTML    = "html"
+	FormatXML     = "xml"
+	FormatJSON    = "json"
+	FormatGeoJSON = "geojson" // ?=json should also work for geojson
+	FormatJSONFG  = "jsonfg"
+	FormatGzip    = "gzip"
 )
 
 var (
-	MediaTypeJSONFamily    = []string{MediaTypeTileJSON, MediaTypeMapboxStyle, MediaTypeGeoJSON, MediaTypeJSONFG}
+	MediaTypeJSONFamily    = []string{MediaTypeGeoJSON, MediaTypeJSONFG}
 	OutputFormatDefault    = map[string]string{FormatJSON: "JSON"}
 	OutputFormatFeatures   = map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
 	CompressibleMediaTypes = []string{
 		MediaTypeJSON,
 		MediaTypeGeoJSON,
 		MediaTypeJSONFG,
-		MediaTypeTileJSON,
-		MediaTypeMapboxStyle,
 		MediaTypeOpenAPI,
 		MediaTypeHTML,
 		// common web media types
@@ -57,10 +45,6 @@ var (
 		"text/javascript",
 		"application/javascript",
 		"image/svg+xml",
-	}
-	StyleFormatExtension = map[string]string{
-		FormatMapboxStyle: ".json",
-		FormatSLD:         ".sld",
 	}
 )
 
@@ -78,24 +62,16 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeJSON),
 		contenttype.NewMediaType(MediaTypeXML),
 		contenttype.NewMediaType(MediaTypeHTML),
-		contenttype.NewMediaType(MediaTypeTileJSON),
 		contenttype.NewMediaType(MediaTypeGeoJSON),
 		contenttype.NewMediaType(MediaTypeJSONFG),
-		contenttype.NewMediaType(MediaTypeMVT),
-		contenttype.NewMediaType(MediaTypeMapboxStyle),
-		contenttype.NewMediaType(MediaTypeSLD),
 	}
 
 	formatsByMediaType := map[string]string{
-		MediaTypeJSON:        FormatJSON,
-		MediaTypeXML:         FormatXML,
-		MediaTypeHTML:        FormatHTML,
-		MediaTypeTileJSON:    FormatTileJSON,
-		MediaTypeGeoJSON:     FormatGeoJSON,
-		MediaTypeJSONFG:      FormatJSONFG,
-		MediaTypeMVT:         FormatMVT,
-		MediaTypeMapboxStyle: FormatMapboxStyle,
-		MediaTypeSLD:         FormatSLD,
+		MediaTypeJSON:    FormatJSON,
+		MediaTypeXML:     FormatXML,
+		MediaTypeHTML:    FormatHTML,
+		MediaTypeGeoJSON: FormatGeoJSON,
+		MediaTypeJSONFG:  FormatJSONFG,
 	}
 
 	mediaTypesByFormat := util.Inverse(formatsByMediaType)
@@ -111,17 +87,6 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		formatsByMediaType:  formatsByMediaType,
 		mediaTypesByFormat:  mediaTypesByFormat,
 	}
-}
-
-func (cn *ContentNegotiation) GetSupportedStyleFormats() []string {
-	return []string{FormatMapboxStyle, FormatSLD}
-}
-
-func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
-	if extension, exists := StyleFormatExtension[format]; exists {
-		return extension
-	}
-	return ""
 }
 
 // NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param)

@@ -9,9 +9,6 @@
   {{ if and .Params.Metadata .Params.Metadata.Description }}
   "description" : "{{ unmarkdown .Params.Metadata.Description }}",
   {{ end }}
-  {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-  "collectionType" : "3d-container",
-  {{ end }}
   {{ if and .Params.Metadata .Params.Metadata.Extent }}
   "extent" : {
     "spatial": {
@@ -30,19 +27,10 @@
     {{- end -}}
   },
   {{ end }}
-  {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-  "crs" : [
-    "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-    {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection .Params.ID }}
-    ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
-    {{ end }}
-  ],
-  {{ if and .Params.Metadata .Params.Metadata.StorageCrs }}
-  "storageCrs" : "{{ .Params.Metadata.StorageCrs }}",
-  {{ else }}
-  "storageCrs" : "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
-  {{ end }}
-  {{ end }}
+{{/*  "crs" : [*/}}
+{{/*    "http://www.opengis.net/def/crs/OGC/1.3/CRS84"*/}}
+{{/*  ],*/}}
+{{/*  "storageCrs" : "{{ .Params.Metadata.StorageCrs }}",*/}}
   "links" : [
     {
       "rel" : "self",
@@ -56,96 +44,5 @@
       "title" : "This document as HTML",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}?f=html"
     }
-    {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-      {{ if and .Params.GeoVolumes .Params.GeoVolumes.Has3DTiles }}
-      ,
-      {
-        "rel" : "items",
-        "type" : "application/json+3dtiles",
-        "title" : "Tileset definition of collection {{ .Params.ID }} according to the OGC 3D Tiles specification",
-        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles?f=json"
-      }
-      {{ end }}
-      {{ if and .Params.GeoVolumes .Params.GeoVolumes.HasDTM }}
-      ,
-      {
-        "rel" : "items",
-        "type" : "application/json",
-        "title" : "Digital Terrain Model '{{ .Params.ID }}' in Quantized Mesh format",
-        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/quantized-mesh?f=json"
-      }
-      {{ end }}
-    {{ end }}
-    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
-    ,
-    {
-      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector",
-      "type" : "application/json",
-      "title" : "The JSON representation of the {{ .Params.ID }} tiles served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/tiles?f=json"
-    },
-    {
-      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector",
-      "type" : "text/html",
-      "title" : "The HTML representation of the {{ .Params.ID }} tiles served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/tiles?f=html"
-    }
-    {{ end }}
-    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-    ,
-    {
-      "rel" : "items",
-      "type" : "application/geo+json",
-      "title" : "The JSON representation of the {{ .Params.ID }} features served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=json"
-    },
-    {
-      "rel" : "items",
-      "type" : "application/vnd.ogc.fg+json",
-      "title" : "The JSON-FG representation of the {{ .Params.ID }} features served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=jsonfg"
-    },
-    {
-      "rel" : "items",
-      "type" : "text/html",
-      "title" : "The HTML representation of the {{ .Params.ID }} features served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items?f=html"
-    }
-    {{ if and .Params.Links .Params.Links.Downloads }}
-    {{ range $link := .Params.Links.Downloads }}
-    ,
-    {
-      "rel" : "enclosure",
-      "type" : "{{ $link.MediaType }}",
-      "title" : "{{ $link.Name }}",
-      "href" : "{{ $link.AssetURL }}"{{ if $link.Size }},
-      "length" : {{ bytessize $link.Size }}
-      {{ end }}
-    }
-    {{ end }}
-    {{ end }}
-    {{ end }}
   ]
-  {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-  ,
-  "content" : [
-      {{ if and .Params.GeoVolumes .Params.GeoVolumes.Has3DTiles }}
-      {
-        "rel" : "original",
-        "type" : "application/json+3dtiles",
-        "title" : "Tileset definition of collection {{ .Params.ID }} according to the OGC 3D Tiles specification",
-        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/3dtiles?f=json",
-        "collectionType": "3d-container"
-      }
-      {{ else if and .Params.GeoVolumes .Params.GeoVolumes.HasDTM }}
-      {
-        "rel" : "original",
-        "type" : "application/json",
-        "title" : "Digital Terrain Model '{{ .Params.ID }}' in Quantized Mesh format",
-        "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/quantized-mesh?f=json",
-        "collectionType": "3d-container"
-      }
-      {{ end }}
-  ]
-  {{ end }}
 }

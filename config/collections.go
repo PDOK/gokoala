@@ -1,13 +1,11 @@
 package config
 
 import (
-	"encoding/json"
 	"log"
 	"sort"
 
 	"dario.cat/mergo"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
-	"gopkg.in/yaml.v3"
 )
 
 type GeoSpatialCollections []GeoSpatialCollection
@@ -24,51 +22,6 @@ type GeoSpatialCollection struct {
 	// Links pertaining to this collection (e.g., downloads, documentation)
 	// +optional
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
-
-	// 3D GeoVolumes specific to this collection
-	// +optional
-	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline" json:",inline"`
-
-	// Tiles specific to this collection
-	// +optional
-	Tiles *CollectionEntryTiles `yaml:",inline" json:",inline"`
-
-	// Features specific to this collection
-	// +optional
-	Features *CollectionEntryFeatures `yaml:",inline" json:",inline"`
-}
-
-type GeoSpatialCollectionJSON struct {
-	// Keep this in sync with the GeoSpatialCollection struct!
-	ID                           string                        `json:"id"`
-	Metadata                     *GeoSpatialCollectionMetadata `json:"metadata,omitempty"`
-	Links                        *CollectionLinks              `json:"links,omitempty"`
-	*CollectionEntry3dGeoVolumes `json:",inline"`
-	*CollectionEntryTiles        `json:",inline"`
-	*CollectionEntryFeatures     `json:",inline"`
-}
-
-// MarshalJSON custom because inlining only works on embedded structs.
-// Value instead of pointer receiver because only that way it can be used for both.
-func (c GeoSpatialCollection) MarshalJSON() ([]byte, error) {
-	return json.Marshal(GeoSpatialCollectionJSON{
-		ID:                          c.ID,
-		Metadata:                    c.Metadata,
-		Links:                       c.Links,
-		CollectionEntry3dGeoVolumes: c.GeoVolumes,
-		CollectionEntryTiles:        c.Tiles,
-		CollectionEntryFeatures:     c.Features,
-	})
-}
-
-// UnmarshalJSON parses a string to GeoSpatialCollection
-func (c *GeoSpatialCollection) UnmarshalJSON(b []byte) error {
-	return yaml.Unmarshal(b, c)
-}
-
-// HasDateTime true when collection has temporal support, false otherwise
-func (c *GeoSpatialCollection) HasDateTime() bool {
-	return c.Metadata != nil && c.Metadata.TemporalProperties != nil
 }
 
 // +kubebuilder:object:generate=true
@@ -99,10 +52,6 @@ type GeoSpatialCollectionMetadata struct {
 	// Who updated this collection
 	// +optional
 	LastUpdatedBy string `yaml:"lastUpdatedBy,omitempty" json:"lastUpdatedBy,omitempty"`
-
-	// Fields in the datasource to be used in temporal queries
-	// +optional
-	TemporalProperties *TemporalProperties `yaml:"temporalProperties,omitempty" json:"temporalProperties,omitempty" validate:"omitempty,required_with=Extent.Interval"`
 
 	// Extent of the collection, both geospatial and/or temporal
 	// +optional
@@ -137,27 +86,10 @@ type Extent struct {
 // +kubebuilder:object:generate=true
 type CollectionLinks struct {
 	// Links to downloads of entire collection. These will be rendered as rel=enclosure links
-	// +optional
-	Downloads []DownloadLink `yaml:"downloads,omitempty" json:"downloads,omitempty" validate:"dive"`
+	// <placeholder>
 
 	// Links to documentation describing the collection. These will be rendered as rel=describedby links
 	// <placeholder>
-}
-
-// +kubebuilder:object:generate=true
-type DownloadLink struct {
-	// Name of the provided download
-	Name string `yaml:"name" json:"name" validate:"required"`
-
-	// Full URL to the file to be downloaded
-	AssetURL *URL `yaml:"assetUrl" json:"assetUrl" validate:"required"`
-
-	// Approximate size of the file to be downloaded
-	// +optional
-	Size string `yaml:"size,omitempty" json:"size,omitempty"`
-
-	// Media type of the file to be downloaded
-	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 }
 
 // HasCollections does this API offer collections with for example features, tiles, 3d tiles, etc
@@ -168,24 +100,12 @@ func (c *Config) HasCollections() bool {
 // AllCollections get all collections - with  for example features, tiles, 3d tiles - offered through this OGC API.
 // Results are returned in alphabetic or literal order.
 func (c *Config) AllCollections() GeoSpatialCollections {
-	var result GeoSpatialCollections
-	if c.OgcAPI.GeoVolumes != nil {
-		result = append(result, c.OgcAPI.GeoVolumes.Collections...)
-	}
-	if c.OgcAPI.Tiles != nil {
-		result = append(result, c.OgcAPI.Tiles.Collections...)
-	}
-	if c.OgcAPI.Features != nil {
-		result = append(result, c.OgcAPI.Features.Collections...)
-	}
-
-	// sort
-	if len(c.OgcAPICollectionOrder) > 0 {
-		sortByLiteralOrder(result, c.OgcAPICollectionOrder)
+	if len(c.CollectionOrder) > 0 {
+		sortByLiteralOrder(c.Collections, c.CollectionOrder)
 	} else {
-		sortByAlphabet(result)
+		sortByAlphabet(c.Collections)
 	}
-	return result
+	return c.Collections
 }
 
 // Unique lists all unique GeoSpatialCollections (no duplicate IDs).

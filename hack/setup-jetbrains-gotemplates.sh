@@ -4,8 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-GOKOALA_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
-cd "${GOKOALA_ROOT}"
+PROJECT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+cd "${PROJECT_ROOT}"
 
 traverse_templates() {
   # HTML templates
