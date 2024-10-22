@@ -1,0 +1,74 @@
+{{- /*gotype: github.com/PDOK/gomagpie/internal/engine.TemplateData*/ -}}
+{
+  {{ $cfg := .Config }}
+  {{ $baseUrl := $cfg.BaseURL }}
+  "links" : [
+    {
+      "rel" : "self",
+      "type" : "application/json",
+      "title" : "This document as JSON",
+      "href" : "{{ $baseUrl }}/collections?f=json"
+    },
+    {
+      "rel" : "alternate",
+      "type" : "text/html",
+      "title" : "This document as HTML",
+      "href" : "{{ $baseUrl }}/collections?f=html"
+    },
+    {
+      "rel": "license",
+      "type": "text/html",
+      "title": "{{ $cfg.License.Name }}",
+      "href": "{{ $cfg.License.URL }}"
+    }
+  ],
+  "collections" : [
+    {{ range $index, $coll := $cfg.AllCollections.Unique }}
+    {{/* TIP: temporarily disable the line below to fix intellij/goland highlighting */}}
+    {{ if $index }},{{ end }}
+    {
+      "id" : "{{ $coll.ID }}",
+      {{ if and $coll.Metadata $coll.Metadata.Title }}
+      "title" : "{{ $coll.Metadata.Title }}"
+      {{ else }}
+      "title" : "{{ $coll.ID }}"
+      {{ end }}
+      {{ if and $coll.Metadata $coll.Metadata.Description }}
+      ,"description" : "{{ unmarkdown $coll.Metadata.Description }}"
+      {{ end }}
+        {{ if and $coll.Metadata $coll.Metadata.Extent }}
+      ,"extent" : {
+        "spatial": {
+          "bbox": [ [ {{ $coll.Metadata.Extent.Bbox | join "," }} ] ],
+          {{- if $coll.Metadata.Extent.Srs -}}
+          "crs" : "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}"
+          {{- else -}}
+          "crs" : "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+          {{- end -}}
+        }
+        {{- if and $coll.Metadata $coll.Metadata.Extent.Interval -}}
+        ,"temporal": {
+          "interval": [ [ {{ $coll.Metadata.Extent.Interval | join ", " }} ] ],
+          "trs" : "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
+        }
+        {{- end -}}
+      }
+      {{ end }}
+      ,"links" : [
+        {
+          "rel" : "self",
+          "type" : "application/json",
+          "title" : "Information about the {{ $coll.ID }} collection as JSON",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
+        },
+        {
+          "rel" : "alternate",
+          "type" : "text/html",
+          "title" : "Information about the {{ $coll.ID }} collection as HTML",
+          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=html"
+        }
+      ]
+    }
+    {{end}}
+  ]
+}

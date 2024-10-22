@@ -1,0 +1,16 @@
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>http://localhost:8080/</loc>
+    </url>
+    <url>
+        <loc>http://localhost:8080/api?f=html</loc>
+    </url>
+    <url>
+        <loc>http://localhost:8080/conformance?f=html</loc>
+    </url><url>
+    <loc>http://localhost:8080/collections?f=html</loc>
+</url><url>
+    <loc>http://localhost:8080/collections/addresses?f=html</loc>
+</url><url>
+    <loc>http://localhost:8080/collections/buildings?f=html</loc>
+</url></urlset>

@@ -1,0 +1,135 @@
+@charset "UTF-8";
+
+/**
+ * Swagger UI Theme Overrides
+ */
+
+.swagger-ui .opblock.opblock-post {
+  border-color: #DADFE1;
+  background: rgba(241, 241, 241, .1);
+}
+
+.swagger-ui .opblock.opblock-post .opblock-summary-method {
+  background: #205493;
+}
+
+.swagger-ui .opblock.opblock-post .opblock-summary {
+  border-color: #DADFE1;
+}
+
+.swagger-ui .opblock.opblock-put {
+  border-color: #DADFE1;
+  background: rgba(241, 241, 241, .1);
+}
+
+.swagger-ui .opblock.opblock-put .opblock-summary-method {
+  background: #0071bc;
+}
+
+.swagger-ui .opblock.opblock-put .opblock-summary {
+  border-color: #DADFE1;
+}
+
+.swagger-ui .opblock.opblock-delete {
+  border-color: #DADFE1;
+  background: rgba(241, 241, 241, .1);
+}
+
+.swagger-ui .opblock.opblock-delete .opblock-summary-method {
+  background: #112e51;
+}
+
+.swagger-ui .opblock.opblock-delete .opblock-summary {
+  border-color: #DADFE1;
+}
+
+.swagger-ui .opblock.opblock-get {
+  border-color: #DADFE1;
+  background: rgba(241, 241, 241, .1);
+}
+
+.swagger-ui .opblock.opblock-get .opblock-summary-method {
+  background: #34495E;
+}
+
+.swagger-ui .opblock.opblock-get .opblock-summary {
+  border-color: #DADFE1;
+}
+
+.swagger-ui .opblock.opblock-patch {
+  border-color: #DADFE1;
+  background: rgba(241, 241, 241, .1);
+}
+
+.swagger-ui .opblock.opblock-patch .opblock-summary-method {
+  background: #0071bc;
+}
+
+.swagger-ui .opblock.opblock-patch .opblock-summary {
+  border-color: #DADFE1;
+}
+
+.swagger-ui .opblock.opblock-head {
+  border-color: #DADFE1;
+  background: rgba(241, 241, 241, .1);
+}
+
+.swagger-ui .opblock.opblock-head .opblock-summary-method {
+  background: #5C6BC0;
+}
+
+.swagger-ui .opblock.opblock-head .opblock-summary {
+  border-color: #DADFE1;
+}
+
+.swagger-ui .opblock.opblock-options {
+  border-color: #DADFE1;
+  background: rgba(241, 241, 241, .1);
+}
+
+.swagger-ui .opblock.opblock-options .opblock-summary-method {
+  background: #0071bc;
+}
+
+.swagger-ui .opblock.opblock-options .opblock-summary {
+  border-color: #DADFE1;
+}
+
+.swagger-ui .topbar {
+  background-color: #1a1e4f;
+}
+
+.swagger-ui .topbar .topbar-wrapper a {
+  display: none;
+}
+
+.swagger-ui .topbar .download-url-wrapper {
+  display: none;
+}
+
+.swagger-ui .main a {
+  font-size: 14px;
+  -webkit-transition: all .4s;
+  transition: all .4s;
+  font-family: Open Sans, sans-serif;
+  color: #34495E;
+}
+
+.swagger-ui .main a:hover {
+  color: #34495E;
+}
+
+.swagger-ui .info a {
+  text-decoration: underline;
+}
+
+.swagger-ui .btn.authorize {
+  line-height: 1;
+  display: inline;
+  color: #336E7B;
+  border-color: #336E7B;
+}
+
+.swagger-ui .btn.authorize svg {
+  fill: #336E7B;
+}

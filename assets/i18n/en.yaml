@@ -1,0 +1,59 @@
+---
+# General usage
+ViewAs: View as
+AvailableIn: The page is available in both HTML and JSON.
+LastUpdated: Last updated
+UpdatedBy: Updated by
+Keywords: Keywords
+License: License
+Support: Support
+Projection: Projection
+CrsAbbr: Coordinate Reference System
+Limit: Limit
+Max: max
+ViewInThe: View in the
+SubjectToChange: name/definition may change in future
+LinkToExternalWebsite: link to external website
+Description: Description
+None: None
+Example: Example
+"On": "on"
+As: as
+Of: of
+To: Go to
+For: for
+
+# Layout frame
+ToMain: To main content
+Logo: 'PDOK Logo: Go to landing page'
+SwitchLanguage: Wijzig taal naar
+LanguageSwitchLabel: Nederlands
+LanguageSwitchCode: nl
+SwitchFormat: This page as
+FooterLogo: Logo of The Netherlands Cadastre, Land Registry and Mapping Agency
+
+# Landing page
+Specification: specification
+SpecificationText: The specification in OpenAPI v3 format describes the OGC API in such a way that both humans and computers can explore the API's options. It shows both in- and output options, and helps to quickly generate a first working API call with the desired result.
+Conformance: Conformance
+ConformanceText: The conformance describes which OGC standards this API implements.
+Collections: Collections
+CollectionsText: This API offers one or more collections that divide the dataset in various object types, which can be called separately through for instance <i>features</i> or <i>tiles</i>.
+
+# Conformance page
+ConformanceAbstract: Below are references to OGC API conformance classes to which this service conforms. <br/>The status column indicates whether the given specification is deemed an official standard by the OGC.
+Standard: Standard
+Draft: Draft
+
+# Collections/Collection page
+ViewCollectionAs: View collection as
+Collection: Collection
+Definition: definition
+GeographicExtent: Geographic extent
+TemporalExtent: Temporal extent
+GoTo: Go to the
+ViewIn: View in the
+Browse: Browse through the
+FeaturesExplanation: GeoJSON is an open and widely accepted format for feature data and the first choice for many (web) applications. However, it formally only supports the WGS84 projection. JSON-FG is an extension of GeoJSON and does offer official support for other projections. Since JSON-FG is a recent development, from a compatibility point of view GeoJSON is also offered in other projections for the time being.
+CollectionTilesHTML: This collection is available as vector tiles in one or multiple projections.
+CollectionTilesPlain: This collection is available as vector tiles in one or multiple projections.

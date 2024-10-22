@@ -1,0 +1,122 @@
+{{- /*gotype: github.com/PDOK/gomagpie/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+
+<script>
+  function gotoFeatures(format, selectId) {
+    const crs = document.getElementById(selectId).value;
+    const baseURL = "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}/items";
+    let url;
+    if (crs === "https://www.opengis.net/def/crs/OGC/1.3/CRS84") {
+      // Use the static URL for WGS84
+      url = `${baseURL}?f=${format}`;
+    } else {
+      url = `${baseURL}?f=${format}&crs=${crs}`;
+    }
+    window.open(url, '_blank');
+  }
+</script>
+
+{{/* structed data for this collection, see https://developers.google.com/search/docs/appearance/structured-data/dataset.
+  test any changes using https://search.google.com/test/rich-results */}}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "isPartOf": "{{ .Config.BaseURL }}?f=html",
+    "name": "{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}",
+    {{- if and .Params.Metadata .Params.Metadata.Description (gt (len .Params.Metadata.Description) 50) }}
+    "description": "{{ unmarkdown .Params.Metadata.Description  }}",
+    {{- end }}
+    "url": "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}?f=html",
+    {{- if and .Params.Metadata .Params.Metadata.Keywords -}}
+    {{- end -}}
+    "license": "{{ .Config.License.URL }}",
+    "isAccessibleForFree": true
+    {{- if and .Params.Metadata .Params.Metadata.Thumbnail }}
+    ,"thumbnailUrl": "{{ .Config.BaseURL }}/resources/{{ .Params.Metadata.Thumbnail }}"
+    {{- end }}
+    {{- if and .Params.Metadata .Params.Metadata.LastUpdated }}
+    ,"version": "{{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}"
+    {{- end }}
+}
+</script>
+
+<hgroup>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.ID }}{{ end }}</h1>
+</hgroup>
+
+<div class="row py-3">
+    {{ if and .Params.Metadata .Params.Metadata.Thumbnail }}
+    <div class="col-md-8">
+    {{ else }}
+    <div class="col-md-12">
+    {{ end }}
+        {{ if and .Params.Metadata .Params.Metadata.Description }}
+            {{ markdown .Params.Metadata.Description }}
+        {{ end }}
+        <table class="table table-borderless table-sm w-100">
+            <caption class="visually-hidden">Collection details</caption>
+            <tbody>
+                {{ if and .Params.Metadata .Params.Metadata.LastUpdated }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "LastUpdated" }}:
+                    </td>
+                    <td>
+                        {{ toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated | date "2006-01-02" }}
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if and .Params.Metadata .Params.Metadata.Extent }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "GeographicExtent" }}
+                        {{ if .Params.Metadata.Extent.Srs }}
+                            (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Params.Metadata.Extent.Srs }}" target="_blank"
+                                aria-label="{{ i18n "To" }} {{ .Params.Metadata.Extent.Srs }} {{ i18n "Definition" }}">{{ .Params.Metadata.Extent.Srs }}</a>):
+                        {{ else }}
+                            (<a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84" target="_blank"
+                                aria-label="{{ i18n "To" }} CRS84 {{ i18n "Definition" }}">CRS84</a>):
+                        {{ end }}
+                    </td>
+                    <td>
+                        {{ .Params.Metadata.Extent.Bbox | join ", " }}
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if and .Params.Metadata .Params.Metadata.Extent .Params.Metadata.Extent.Interval }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "TemporalExtent" }} (<a href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian" target="_blank" aria-label="{{ i18n "To" }} ISO-8601 {{ i18n "Definition" }}">ISO-8601</a>):
+                    </td>
+                    <td>
+                        {{ toDate "2006-01-02T15:04:05Z" ((first .Params.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }} /
+                        {{ if not (contains "null" (last .Params.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last .Params.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
+                    </td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    {{ if and .Params.Metadata .Params.Metadata.Thumbnail }}
+    <div class="col-md-4">
+        <img src="resources/{{ .Params.Metadata.Thumbnail }}" class="img-fluid" alt="{{ .Params.ID }} Thumbnail"/>
+    </div>
+    {{ end }}
+</div>
+
+<div class="row row-cols-md-4 g-4">
+
+        <div class="col-md-4 col-sm-12">
+            <div class="card h-100">
+                <h2 class="card-header h5">
+                    TODO
+                </h2>
+                <div class="card-body">
+                    TODO
+                </div>
+            </div>
+        </div>
+
+</div>
+{{end}}
