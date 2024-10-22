@@ -1,0 +1,123 @@
+---
+# reusable piece of metadata used for geovolumes, features and tiles.
+metadata: &addressMetadata
+  title: Addresses
+  description: These are example addresses
+  extent:
+    bbox:
+      - 50.2129
+      - 2.52713
+      - 55.7212
+      - 7.37403
+  storageCrs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+
+# main config
+version: 1.0.0
+title: Demo of all OGC specs in one API
+# shortened title, used in breadcrumb path
+serviceIdentifier: DEMO
+abstract: >-
+  This is example combines features, 3D and vector tiles in one API. Usually
+  this would encompass one dataset but this demo uses data from various sources.
+  So don't pay too much attention to the actual data. It's just an example/demo
+  of GoKoala's capabilities.
+# just a dummy picture, but you can put an actual thumbnail here
+thumbnail: old.png
+resources:
+  directory: ./examples/resources
+keywords:
+  - keyword1
+  - keyword2
+lastUpdated: "2024-03-04T12:00:00Z"
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+support:
+  name: Example Support
+  url: https://support.example.com
+# further details of the dataset to be shown on the landing page; supports markdown
+datasetDetails:
+  - name: Foo
+    value: bar
+  - name: Costs
+    value: None
+  - name: Metadata OGC API Features
+    value: >-
+      [OGC API Features metadata in Example Register](https://example.com/my-features/metadata)
+  - name: Metadata OGC API Tiles
+    value: >-
+      [OGC API Tiles metadata in Example Register](https://example.com/my-tiles/metadata)
+  - name: Metadata dataset
+    value: >-
+      [Dataset metadata in Example Register](https://example.com/my-dataset/metadata)
+datasetCatalogUrl: https://www.pdok.nl/datasets
+baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
+ogcApi:
+  tiles:
+    # dataset tiles
+    tileServer: https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles
+    types:
+      - vector
+    supportedSrs:
+      - srs: EPSG:28992
+        zoomLevelRange:
+          start: 12
+          end: 12
+      - srs: EPSG:3035
+        zoomLevelRange:
+          start: 14
+          end: 14
+    collections:
+      # geodata tiles (collection-level tiles)
+      - id: addresses  # same collection as the geovolumes/features
+        metadata: *addressMetadata
+        tileServer: https://api.pdok.nl/lv/bgt/ogc/v1_0/tiles/
+        types:
+          - vector
+        supportedSrs:
+          - srs: EPSG:28992
+            zoomLevelRange:
+              start: 12
+              end: 12
+          - srs: EPSG:3035
+            zoomLevelRange:
+              start: 14
+              end: 14
+
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./examples/resources/addresses-crs84.gpkg
+    collections:
+      - id: addresses  # same collection as the geovolumes/tiles
+        metadata: *addressMetadata
+        web:
+          urlAsHyperlink: true
+      - id: addresses2
+        tableName: addresses
+
+  3dgeovolumes:
+    tileServer: https://maps.ecere.com/3DAPI/collections/
+    collections:
+      - id: addresses  # same collection as the tiles/features
+        metadata: *addressMetadata
+        tileServerPath: "NewYork/3DTiles"
+        uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+
+  styles:
+    default: dummy-style
+    stylesDir: ./examples/resources
+    supportedStyles:
+      - id: "dummy-style"
+        title: "Dummy style"
+        keywords:
+          - keyword1
+          - keyword2
+        lastUpdated: "2023-02-24T11:27:00Z"
+        formats:
+          - format: "mapbox"

@@ -1,0 +1,79 @@
+{
+  "id": "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=html"
+    },
+    {
+      "rel": "collection",
+      "title": "The collection to which this feature belongs",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/dutch-addresses?f=json"
+    }
+  ],
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      4.874296788478395,
+      53.08353047893742
+    ]
+  },
+  "properties": {
+    "alternativeidentifier": "",
+    "beginlifespanversion": null,
+    "building": "",
+    "component_addressareaname": "Oosterend",
+    "component_adminunitname_1": "",
+    "component_adminunitname_2": "",
+    "component_adminunitname_3": "",
+    "component_adminunitname_4": "",
+    "component_adminunitname_5": "",
+    "component_adminunitname_6": "",
+    "component_postaldescriptor": "1794BL",
+    "component_thoroughfarename": "Achtertune",
+    "endlifespanversion": null,
+    "locator_designator_addressnumber": 9,
+    "locator_designator_addressnumber2ndextension": null,
+    "locator_designator_addressnumberextension": null,
+    "locator_designator_buildingidentifier": "",
+    "locator_designator_buildingidentifierprefix": "",
+    "locator_designator_corneraddress1stidentifier": "",
+    "locator_designator_corneraddress2ndidentifier": "",
+    "locator_designator_entrancedooridentifier": "",
+    "locator_designator_flooridentifier": "",
+    "locator_designator_kilometrepoint": "",
+    "locator_designator_postaldeliveryidentifier": "",
+    "locator_designator_staircaseidentifier": "",
+    "locator_designator_unitidentifier": "",
+    "locator_href": "http://inspire.ec.europa.eu/codelist/LocatorLevelValue/unitLevel",
+    "locator_level": "unit level",
+    "locator_name": "",
+    "parcel": "",
+    "parentaddress": "",
+    "position_default": true,
+    "position_method": "by administrator",
+    "position_method_href": "http://inspire.ec.europa.eu/codelist/GeometryMethodValue/byAdministrator",
+    "position_specification": "entrance",
+    "position_specification_href": "http://inspire.ec.europa.eu/codelist/GeometrySpecificationValue/entrance",
+    "status": "",
+    "status_href": "",
+    "validfrom": "2009-12-21T00:00:00Z",
+    "validto": null
+  }
+}

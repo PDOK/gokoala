@@ -1,0 +1,17 @@
+.boundingboxcontrol {
+  top: 60px;
+  left: 0.5em;
+
+  .innersvg {
+    padding: 3px;
+  }
+}
+
+.fullboxcontrol {
+  top: 84px;
+  left: 0.5em;
+
+  .innersvg {
+    padding: 3px;
+  }
+}

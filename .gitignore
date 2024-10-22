@@ -1,0 +1,12 @@
+.idea/
+*.iml
+.vscode/
+gokoala
+assets/view-component/
+viewer/.nx
+viewer/cypress/screenshots
+viewer/.angular
+viewer/dist
+viewer/node_modules
+viewer/cypress.env.json
+hack/tmp

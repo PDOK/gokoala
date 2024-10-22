@@ -1,0 +1,106 @@
+{
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "This document as JSON",
+      "href": "http://localhost:8080/collections?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "This document as HTML",
+      "href": "http://localhost:8080/collections?f=html"
+    },
+    {
+      "rel": "license",
+      "type": "text/html",
+      "title": "CC0",
+      "href": "https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal"
+    }
+  ],
+  "collections": [
+    {
+      "id": "ligplaatsen",
+      "title": "ligplaatsen",
+      "crs": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+      ],
+      "storageCrs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/json",
+          "title": "Information about the ligplaatsen collection as JSON",
+          "href": "http://localhost:8080/collections/ligplaatsen?f=json"
+        },
+        {
+          "rel": "alternate",
+          "type": "text/html",
+          "title": "Information about the ligplaatsen collection as HTML",
+          "href": "http://localhost:8080/collections/ligplaatsen?f=html"
+        },
+        {
+          "rel": "items",
+          "type": "application/geo+json",
+          "title": "The JSON representation of the ligplaatsen features served from this endpoint",
+          "href": "http://localhost:8080/collections/ligplaatsen/items?f=json"
+        },
+        {
+          "rel": "items",
+          "type": "application/vnd.ogc.fg+json",
+          "title": "The JSON-FG representation of the ligplaatsen features served from this endpoint",
+          "href": "http://localhost:8080/collections/ligplaatsen/items?f=jsonfg"
+        },
+        {
+          "rel": "items",
+          "type": "text/html",
+          "title": "The HTML representation of the ligplaatsen features served from this endpoint",
+          "href": "http://localhost:8080/collections/ligplaatsen/items?f=html"
+        }
+      ],
+      "content": []
+    },
+    {
+      "id": "standplaatsen",
+      "title": "standplaatsen",
+      "crs": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+      ],
+      "storageCrs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/json",
+          "title": "Information about the standplaatsen collection as JSON",
+          "href": "http://localhost:8080/collections/standplaatsen?f=json"
+        },
+        {
+          "rel": "alternate",
+          "type": "text/html",
+          "title": "Information about the standplaatsen collection as HTML",
+          "href": "http://localhost:8080/collections/standplaatsen?f=html"
+        },
+        {
+          "rel": "items",
+          "type": "application/geo+json",
+          "title": "The JSON representation of the standplaatsen features served from this endpoint",
+          "href": "http://localhost:8080/collections/standplaatsen/items?f=json"
+        },
+        {
+          "rel": "items",
+          "type": "application/vnd.ogc.fg+json",
+          "title": "The JSON-FG representation of the standplaatsen features served from this endpoint",
+          "href": "http://localhost:8080/collections/standplaatsen/items?f=jsonfg"
+        },
+        {
+          "rel": "items",
+          "type": "text/html",
+          "title": "The HTML representation of the standplaatsen features served from this endpoint",
+          "href": "http://localhost:8080/collections/standplaatsen/items?f=html"
+        }
+      ],
+      "content": []
+    }
+  ]
+}

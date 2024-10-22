@@ -1,0 +1,150 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+  <hgroup>
+    <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Tiles" }}</h1>
+  </hgroup>
+  <div class="row py-3">
+    <div class="col-md-12">
+      <p>
+        {{ i18n "TilesTextHTML" }} {{ if .Config.OgcAPI.Styles }}{{ i18n "WithStylesHTML" }}{{ end }}
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    {{ $baseUrlTiles := .Params.BaseURL }}
+    {{ $defaultSrs := (index .Params.SupportedSrs 0)}}
+    {{ $projections := .Params.AllProjections }}
+    <div class="col-md-5">
+      <table class="table table-borderless table-sm w-auto">
+        <tbody>
+        <tr>
+        {{ if eq (len .Params.SupportedSrs) 1 }}
+          <td class="w-auto text-nowrap fw-bold">
+            Tile Matrix Set
+          </td>
+          <td class="w-auto px-2">
+            {{ get $projections $defaultSrs.Srs }}
+          </td>
+        {{ else }}
+          <td class="w-auto text-nowrap">
+            <label for="srs" class="col-form-label fw-bold">Tile Matrix Set</label>
+          </td>
+          <td class="w-auto px-2">
+            <select id="srs" class="form-select">
+              {{ range $srs := .Params.SupportedSrs }}
+              <option value="{{ $srs.Srs }}">{{ get $projections (index $srs).Srs }}</option>
+              {{ end }}
+            </select>
+          </td>
+        {{ end }}
+        </tr>
+        <tr>
+            {{ if .Config.LastUpdatedBy }}
+                <td class="w-auto text-nowrap fw-bold">
+                  {{ i18n "UpdatedBy" }} {{ .Config.LastUpdatedBy }} {{ i18n "On" }}
+                </td>
+                <td id="field-updated" class="w-auto px-2">
+                  {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+                </td>
+            {{ else if .Config.LastUpdated}}
+                <td class="w-auto text-nowrap fw-bold">
+                  {{ i18n "LastUpdated" }}
+                </td>
+                <td id="field-updated" class="w-auto px-2">
+                  {{ toDate "2006-01-02T15:04:05Z07:00" .Config.LastUpdated | date "2006-01-02" }}
+                </td>
+            {{ end }}
+        </tr>
+        <tr>
+          <td class="w-auto text-nowrap fw-bold">
+            Type
+          </td>
+          <td id="field-type" class="w-auto px-2">
+            {{ (index .Params.Types 0) | toString | title }}
+          </td>
+        </tr>
+        <tr>
+          <td class="w-auto text-nowrap fw-bold">
+            <abbr title="{{ i18n "CrsAbbr" }}">CRS</abbr>
+          </td>
+          <td id="field-srs" class="w-auto px-2">
+            {{ $defaultSrs.Srs }}
+          </td>
+        </tr>
+        <tr>
+          <td class="w-auto text-nowrap fw-bold">
+            Metadata
+          </td>
+          <td id="field-metadata" class="w-auto px-2">
+            <a id="href-metadata" href="{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}" aria-label="{{ i18n "View" }} tile matrix set metadata">{{ i18n "View" }} metadata</a>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-md-7">
+      <table class="table table-borderless table-sm w-auto">
+        <tbody>
+          <tr>
+            <td class="w-auto text-nowrap fw-bold">
+              URL template
+            </td>
+            <td class="w-auto px-2">
+              <code id="field-url-template">{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}/{z}/{y}/{x}?f=mvt</code>
+            </td>
+          </tr>
+          <tr>
+            <td class="w-auto text-nowrap fw-bold">
+              {{ i18n "Example" }} URL
+            </td>
+            <td class="w-auto px-2">
+              <code id="field-url-example">{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}/{{ $defaultSrs.ZoomLevelRange.End }}/2047/2048?f=mvt</code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+      <script type="module" src="view-component/main.js"></script>
+      <script src="view-component/polyfills.js"></script>
+       <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
+        tile-url="{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}"
+        {{ if .Config.OgcAPI.Styles }}style-url="{{ $.Config.BaseURL }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}
+        center-x="5.3896944" center-y="52.1562499"
+        show-grid="false" show-object-info="true">
+      </app-vectortile-view>
+      <noscript>Enable Javascript to display vector tiles viewer</noscript>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('input', function (event) {
+      // only operate on srs dropdown
+      if (event.target.id !== 'srs') return;
+
+      // update table fields
+      const selectedSrs = event.target.value
+      let tileset;
+      {{ range $index, $srs := .Params.SupportedSrs }}
+      {{ if $index }}else {{ end }}if (selectedSrs === '{{ $srs.Srs }}') {
+        tileset = '{{ get $projections $srs.Srs }}'
+      }{{ end }}
+
+      const srsField = document.getElementById('field-srs');
+      srsField.textContent = selectedSrs;
+
+      const urlTemplateField = document.getElementById('field-url-template');
+      urlTemplateField.textContent = '{{ $baseUrlTiles }}/tiles/' + tileset + '/{z}/{y}/{x}?f=mvt';
+
+      const metadataHref = document.getElementById('href-metadata');
+      metadataHref.setAttribute('href', '{{ $baseUrlTiles }}/tiles/' + tileset);
+
+      // update tile-url and zoom in app-vectortile-view
+      const viewer = document.getElementById('vectortileviewer');
+      viewer.setAttribute('tile-url', '{{ $baseUrlTiles }}/tiles/' + tileset);
+    }, false);
+
+    vectortileviewer.addEventListener('activeTileUrl', activeUrl => {
+      const urlExampleField = document.getElementById('field-url-example');
+      urlExampleField.textContent = activeUrl.detail
+    });
+  </script>
+{{end}}

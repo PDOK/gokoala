@@ -1,0 +1,17 @@
+.maparea {
+  z-index: 1;
+  position: relative;
+  display: flex;
+  background: white;
+}
+
+.toprightpanel {
+  position: absolute;
+  flex: 1;
+  top: 6%;
+  right: 1%;
+  z-index: 2;
+  max-height: 90%;
+  max-width: 40%;
+  height: 100%;
+}

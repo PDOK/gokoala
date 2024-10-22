@@ -1,0 +1,26 @@
+.legendContainer {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  max-height: 100%;
+  padding: 5px;
+  margin: 5px;
+  min-height: 0;
+}
+
+.legendItem {
+  max-width: 23vw;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-items: center;
+  flex: 0 1 auto;
+}
+
+.legendText {
+  font-size: calc((var(--h) / 3));
+  margin-left: 1em;
+}

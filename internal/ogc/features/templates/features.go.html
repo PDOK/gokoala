@@ -1,0 +1,316 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+{{ $cfg := .Config }}
+{{ $baseUrl := $cfg.BaseURL }}
+{{ $mapSheetProperties := .Params.MapSheetProperties }}
+{{ $webConfig := .Params.WebConfig }}
+
+<script>
+    {{- /* generic function to update query string parameters */ -}}
+    function updateQueryString(name, value, existingUrl) {
+      const url = existingUrl ? new URL(existingUrl) : new URL(window.location.href)
+      url.searchParams.delete('cursor') // when filters change, we can't continue pagination.
+      if (value) {
+        if (name === 'datetime') {
+          url.searchParams.set(name, new Date(value).toISOString()) // input is %Y-%m-%d, but parameter value should be RFC3339
+        } else {
+          url.searchParams.set(name, value)
+        }
+      } else {
+        url.searchParams.delete(name)
+      }
+      return url.toString()
+    }
+
+    function callUrl(url, skipReload) {
+      if (skipReload) {
+        window.history.pushState({}, '', url) // only change the url but don't reload the page
+      } else {
+        window.location.href = url
+      }
+    }
+
+    function submitForm(event) {
+      event.preventDefault()
+
+      // Gather form values
+      const fd = new FormData(event.target)
+      const srsValue = fd.get('srs')
+      const datetimeValue = fd.get('datetime')
+      const limitValue = fd.get('limit')
+      const propertyFilters = {}
+      {{ range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
+      propertyFilters["{{ $pfName }}"] = fd.get("{{ $pfName }}")
+      {{ end }}
+
+      // Build url with form values
+      let url = updateQueryString('crs', srsValue)
+      url = updateQueryString('datetime', datetimeValue, url)
+      url = updateQueryString('limit', limitValue, url)
+      for (const [key, value] of Object.entries(propertyFilters)) {
+        url = updateQueryString(key, value, url)
+      }
+
+      callUrl(url)
+    }
+
+    function resetForm() {
+      callUrl("{{ $baseUrl }}/collections/{{ .Params.CollectionID }}/items")
+    }
+
+    window.addEventListener("load", function() {
+      document.getElementById('form').addEventListener('submit', submitForm)
+      document.getElementById('form').addEventListener('reset', resetForm)
+    });
+</script>
+
+<hgroup>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
+</hgroup>
+
+<section class="row py-3">
+    <div class="col-md-6 col-sm-12">
+        <!-- description -->
+        <div class="card">
+            <h2 class="card-header h5">
+                {{ if and .Params.Metadata .Params.Metadata.Title }}
+                    {{ .Params.Metadata.Title }}
+                {{ else }}
+                    {{ .Params.CollectionID }}
+                {{ end }}
+            </h2>
+            <div class="card-body">
+                {{ if and .Params.Metadata .Params.Metadata.Description }}
+                    {{ markdown .Params.Metadata.Description }}
+                {{ end }}
+            </div>
+        </div>
+
+        <!-- filters -->
+        <form id="form" class="col-12 mt-4">
+            <!-- projection -->
+            <div class="row mb-2">
+                <label for="srs-select" class="col-sm-3 col-form-label fw-bold"><abbr title="{{ i18n "CrsAbbr" }}">CRS</abbr></label>
+                <div class="col-sm">
+                    <select id="srs-select" name="srs" class="form-select">
+                        <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
+                            http://www.opengis.net/def/crs/OGC/1.3/CRS84
+                        </option>
+                        {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection $.Params.CollectionID }}
+                        <option value="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}">http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}</option>
+                        {{ end }}
+                    </select>
+                </div>
+            </div>
+            {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
+            <!-- datetime -->
+            <div class="row mb-2">
+                <label for="referencedate-input" class="col-sm-3 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
+                <div class="col-sm">
+                    <input id="referencedate-input" name="datetime" type="date" class="form-control"
+                           value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}">
+                </div>
+            </div>
+            {{ end }}
+            <!-- limit -->
+            <div class="row mb-2">
+                <label for="limit-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Limit" }}</label>
+                <div class="col-sm">
+                    <select id="limit-select" name="limit" class="form-select" aria-label="Limit selection">
+                        <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }}</option>
+                        <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option>
+                        {{/* see Limit.Max in config.go, can't be smaller than 100 */}}
+                        <option value="{{ $cfg.OgcAPI.Features.Limit.Max }}" {{if eq .Params.Limit
+                                $cfg.OgcAPI.Features.Limit.Max }}selected{{end}}>{{ $cfg.OgcAPI.Features.Limit.Max }} {{
+                            i18n "Items" }} ({{ i18n "Max" }})
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <!-- property filters -->
+            {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
+            <div class="row mb-2">
+                <label for="{{ $pfName }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
+                       title="{{ $pfName | title }}">{{ $pfName | title }}</label>
+                <div class="col-sm">
+                    {{ if and $pf $pf.AllowedValues }}
+                    <select id="{{ $pfName }}-input" name="{{ $pfName }}" class="form-select">
+                        <!-- default to empty value -->
+                        <option></option>
+                        {{ range $value := $pf.AllowedValues }}
+                            <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $pfName) $value }}selected{{end}}>{{ $value }}</option>
+                        {{ end }}
+                    </select>
+                    {{ else }}
+                    <input id="{{ $pfName }}-input" name="{{ $pfName }}" type="text" class="form-control"
+                          {{/* get the actual value as supplied by the user from the PropertyFilters,
+                            not the ConfiguredPropertyFilters (which doesn't have this info) */}}
+                           value="{{ index $.Params.PropertyFilters $pfName }}">
+                    {{ end }}
+                </div>
+            </div>
+            {{ end }}
+            <button type="submit" class="btn btn-primary mt-2"> {{ i18n "ApplyFilters" }}</button>
+            <button type="reset" class="btn btn-secondary mt-2">{{ i18n "ResetFilter" }}</button>
+        </form>
+    </div>
+
+    <!-- map viewer -->
+    <div class="col-md-6 col-sm-12">
+        <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+        <script type="module" src="view-component/main.js"></script>
+        <script src="view-component/polyfills.js"></script>
+
+        {{/* different viewer settings depending on whether features are map sheets or not */}}
+        {{ if $mapSheetProperties }}
+        <app-feature-view
+                id="viewer"
+                background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
+                mode="auto"
+                fill-color="rgba(0,0,255,0)"
+                label-field="{{ $mapSheetProperties.MapSheetID }}"
+                class="card"
+                {{ if and $webConfig $webConfig.FeaturesViewer }}
+                    min-fit-scale="{{ $webConfig.FeaturesViewer.MinScale }}"
+                    {{ if $webConfig.FeaturesViewer.MaxScale }}
+                    max-fit-scale="{{ $webConfig.FeaturesViewer.MaxScale }}"
+                    {{ end }}
+                {{ else }}
+                    max-fit-scale="500000"
+                {{ end }}
+                >
+        </app-feature-view>
+        {{ else }}
+        <app-feature-view
+                id="viewer"
+                background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
+                mode="default"
+                class="card"
+                {{ if and $webConfig $webConfig.FeaturesViewer }}
+                    min-fit-scale="{{ $webConfig.FeaturesViewer.MinScale }}"
+                    {{ if $webConfig.FeaturesViewer.MaxScale }}
+                    max-fit-scale="{{ $webConfig.FeaturesViewer.MaxScale }}"
+                    {{ end }}
+                {{ end }}
+                >
+        </app-feature-view>
+        {{ end }}
+
+        <script type="module">
+          const url = new URL(window.location.href)
+          url.searchParams.set('f', 'json')
+          const viewer = document.getElementById('viewer')
+          viewer.setAttribute('items-url', url)
+
+          if (url.searchParams.get('crs') !== null) {
+            let crs = url.searchParams.get('crs')
+            document.getElementById('srs-select').value = crs
+            viewer.setAttribute('projection', crs)
+          } else {
+            viewer.setAttribute('projection', 'http://www.opengis.net/def/crs/OGC/1.3/CRS84')
+          }
+
+          {{ if $mapSheetProperties }}
+          viewer.addEventListener('box', selectBox => {
+            let newUrl = new URL(updateQueryString('bbox', selectBox.detail))
+            callUrl(newUrl.toString(), true)
+
+            // when moving the map to load additional sheets we don't want to do a full page reload (like we
+            // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
+            // on the page manually.
+            newUrl.searchParams.set('f', 'json')
+            viewer.setAttribute('items-url', newUrl.toString())
+            {{ range $formatKey, $formatName := .AvailableFormats }}
+            if (document.getElementById("format-{{ $formatKey }}")) {
+              newUrl.searchParams.set('f', '{{ $formatKey }}')
+              document.getElementById("format-{{ $formatKey }}").setAttribute('href', newUrl.toString())
+            }
+            {{ end }}
+          })
+          viewer.addEventListener('activeFeature', activeFeature => {
+            callUrl(updateQueryString("{{ $mapSheetProperties.MapSheetID }}", activeFeature.detail.get('{{ $mapSheetProperties.MapSheetID }}')))
+          })
+          {{ else }}
+          viewer.addEventListener('box', selectBox => {
+            callUrl(updateQueryString('bbox', selectBox.detail))
+          })
+          {{ end }}
+        </script>
+        <noscript>Enable Javascript to view features on a map</noscript>
+    </div>
+</section>
+
+<section class="row">
+    <!-- pagination -->
+    <div class="col-md-12">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li>
+                    <a class="page-link  {{if not .Params.Cursor.HasPrev }}disabled{{end}}" href="{{ .Params.PrevLink }}" aria-label="{{ i18n "Prev" }}">
+                        <span aria-hidden="true">&laquo;</span>
+                        {{ i18n "Prev" }}
+                    </a>
+                </li>
+                <li>
+                    <a class="page-link {{if not .Params.Cursor.HasNext }}disabled{{end}}" href="{{ .Params.NextLink }}" aria-label="{{ i18n "Next" }}">
+                        {{ i18n "Next" }}
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- results/features -->
+    <div class="col-md-12">
+        {{ range $feat := .Params.Features }}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th colspan="2" scope="row"><a href="{{ $baseUrl }}/collections/{{ $.Params.CollectionID }}/items/{{ $feat.ID }}" aria-label="{{ i18n "To" }} feature {{ $feat.ID }}">{{ $feat.ID }}</a></th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ $skipKeys := list "" }}
+            {{/* for map sheets collection, skip some properties pertaining to downloads */}}
+            {{ if $mapSheetProperties }}
+            {{ $skipKeys = append $skipKeys $mapSheetProperties.Size }}
+            {{ end }}
+
+            {{ range $key := $feat.Keys }}
+                {{- if not (has $key $skipKeys) -}}
+                <tr>
+                    <td class="w-25">{{ $key }}</td>
+
+                    {{ $value := $feat.Properties.Value $key }}
+                    {{- if isdate $value -}}
+                    <td>{{ $value | date "2006/01/02 15:04:05" }}</td>
+
+                    {{- else if hasSuffix ".href" $key -}}
+                    {{- /* render links for relations between features (OGC API part 5) */ -}}
+                    <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+
+                    {{- else if and $webConfig $webConfig.URLAsHyperlink (islink $value) -}}
+                    {{- /* render links to arbitray (external) URLs */ -}}
+                    <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+
+                    {{- else -}}
+                    <td>{{ $value }}</td>
+                    {{- end -}}
+                </tr>
+                {{- end -}}
+            {{ end }}
+            {{/* for map sheets collection, add download button */}}
+            {{ if and $mapSheetProperties $feat.Properties }}
+            <tr>
+                <td colspan="2"><a class="btn btn-primary" role="button" href="{{ $feat.Properties.Value $mapSheetProperties.AssetURL }}" download>
+                    Download
+                </a> ({{ i18n "Size" }}: {{ humansize ($feat.Properties.Value $mapSheetProperties.Size) }})</td>
+            </tr>
+            {{ end }}
+            </tbody>
+        </table>
+        {{ end }}
+    </div>
+</section>
+{{end}}

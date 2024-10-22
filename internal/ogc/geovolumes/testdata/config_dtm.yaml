@@ -1,0 +1,20 @@
+---
+version: 1.0.2
+title: With DTM
+abstract: This is a minimal OGC API, with botch 3d Tiles and a Quantized Mesh DTM
+baseUrl: http://localhost:8080
+serviceIdentifier: dtm
+license:
+  name: MIT
+  url: https://www.tldrlegal.com/license/mit-license
+ogcApi:
+  3dgeovolumes:
+    tileServer: http://localhost:9091
+    collections:
+      - id: container_1  # DTM and 3D tiles in same collection
+        uriTemplate3dTiles: "tiles/{level}/{x}/{y}.glb"
+        uriTemplateDTM: "dtm/tiles/{level}/{x}/{y}.terrain"
+      - id: container_2
+        uriTemplate3dTiles: "tiles2/{level}/{x}/{y}.i3d"
+      - id: container_3
+        uriTemplateDTM: "dtm/tiles/{level}/{x}/{y}.terrain"

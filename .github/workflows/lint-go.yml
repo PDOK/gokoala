@@ -1,0 +1,65 @@
+---
+name: lint (go)
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup cgo dependencies
+        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+          cache: false
+
+      - uses: actions/checkout@v3
+
+      - name: Tidy
+        uses: katexochen/go-tidy-check@v2
+
+      - name: Run govulncheck (when this fails => upgrade go version)
+        run: |
+          GOPATH_BIN=$(go env GOPATH)/bin
+          export PATH="${GOPATH_BIN}:${PATH}"
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Check optimal struct field alignment (for crucial structs)
+        run: |
+          GOPATH_BIN=$(go env GOPATH)/bin
+          export PATH="${GOPATH_BIN}:${PATH}"
+          go install github.com/dkorunic/betteralign/cmd/betteralign@latest
+          betteralign ./internal/ogc/features/domain
+
+      - name: Golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: latest
+
+          # Optional: working directory, useful for monorepos
+          # working-directory: somedir
+
+          # Optional: golangci-lint command line arguments.
+          # args: --issues-exit-code=0
+
+          # Optional: show only new issues if it's a pull request. The default value is `false`.
+          # only-new-issues: true
+
+          # Optional: if set to true then the all caching functionality will be complete disabled,
+          #           takes precedence over all other caching options.
+          # skip-cache: true
+
+          # Optional: if set to true then the action don't cache or restore ~/go/pkg.
+          # skip-pkg-cache: true
+
+          # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
+          # skip-build-cache: true

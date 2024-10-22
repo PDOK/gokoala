@@ -1,0 +1,39 @@
+{
+  "title": "OGC API - Tiles",
+  "description": "Deze dataset wordt beschikbaar gesteld als vector tiles in één of meerdere projecties. ",
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "Tiles",
+      "href": "http://localhost:8080/collections/example2/tiles?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "Tiles as HTML",
+      "href": "http://localhost:8080/collections/example2/tiles?f=html"
+    }
+  ],
+  "tilesets": [
+    {
+      "links": [
+        {
+          "rel": "self",
+          "title": "Access the data as tiles in the tile matrix set 'NetherlandsRDNewQuad'",
+          "href": "http://localhost:8080/collections/example2/tiles/NetherlandsRDNewQuad"
+        },
+        {
+          "rel": "http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
+          "type": "application/json",
+          "title": "Definition of NetherlandsRDNewQuad TileMatrixSet",
+          "href": "http://localhost:8080/tileMatrixSets/NetherlandsRDNewQuad"
+        }
+      ],
+      "dataType": "vector",
+      "crs": "https://www.opengis.net/def/crs/EPSG/0/28992",
+      "tileMatrixSetId": "NetherlandsRDNewQuad",
+      "tileMatrixSetDefinition": "http://localhost:8080/tileMatrixSets/NetherlandsRDNewQuad"
+    }
+  ]
+}

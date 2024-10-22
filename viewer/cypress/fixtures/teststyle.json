@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "name": "teststyle",
+  "id": "test style no metadata",
+
+  "layers": [
+    {
+      "id": "Area print border",
+      "type": "fill",
+      "paint": {
+        "fill-color": "rgb(100, 100,100)",
+        "fill-opacity": 0.1
+      },
+      "source": "test",
+      "source-layer": "testArea"
+    },
+    {
+      "id": "Area label",
+      "type": "symbol",
+      "paint": {
+        "text-opacity": 1,
+        "text-halo-width": 2,
+        "text-color": "rgb(100,0,255)"
+      },
+      "layout": {
+        "symbol-placement": "point",
+
+        "text-field": "{name}",
+        "text-size": 12
+      },
+      "source": "test",
+      "source-layer": "testArea"
+    },
+
+    {
+      "id": "line",
+      "type": "line",
+      "paint": {
+        "line-color": "rgb(255, 0, 0)",
+        "line-width": 2
+      },
+      "source": "test",
+      "source-layer": "testline"
+    }
+  ],
+
+  "sources": {
+    "test": {
+      "type": "vector",
+      "tiles": ["https://test/{z}/{y}/{x}?f=mvt"]
+    }
+  }
+}

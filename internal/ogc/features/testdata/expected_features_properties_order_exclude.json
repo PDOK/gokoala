@@ -1,0 +1,273 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?f=html"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items?cursor=Cw%7C&f=json"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2009-12-21T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.873270473933632,
+          53.083485031473046
+        ]
+      },
+      "id": "1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2011-12-15T00:00:00.05Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.873270473933632,
+          53.083485031473046
+        ]
+      },
+      "id": "2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2009-12-21T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.873270473933632,
+          53.083485031473046
+        ]
+      },
+      "id": "3"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2011-12-15T00:00:00.05Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.873270473933632,
+          53.083485031473046
+        ]
+      },
+      "id": "4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2001-03-22T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.874830644139003,
+          53.08324603567521
+        ]
+      },
+      "id": "5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2001-03-22T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.874774295872454,
+          53.08329236052834
+        ]
+      },
+      "id": "6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2001-03-22T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.874774295872454,
+          53.08329236052834
+        ]
+      },
+      "id": "7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2009-12-21T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.873449975425456,
+          53.08349831911132
+        ]
+      },
+      "id": "8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2002-04-22T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.873619667026849,
+          53.08356122152964
+        ]
+      },
+      "id": "9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "building": "",
+        "alternativeidentifier": "",
+        "beginlifespanversion": null,
+        "endlifespanversion": null,
+        "validfrom": "2009-12-21T00:00:00Z",
+        "component_adminunitname_6": "",
+        "component_adminunitname_4": "",
+        "component_adminunitname_5": "",
+        "component_adminunitname_2": "",
+        "component_adminunitname_3": "",
+        "component_adminunitname_1": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.874296788478395,
+          53.08353047893742
+        ]
+      },
+      "id": "10"
+    }
+  ],
+  "numberReturned": 10
+}

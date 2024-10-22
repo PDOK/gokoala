@@ -1,0 +1,196 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+
+{{/* see https://developers.google.com/search/docs/appearance/structured-data/dataset,
+  test any changes using https://search.google.com/test/rich-results */}}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+    "@type": "Dataset",
+    "name": "{{ .Config.Title }} (OGC API)",
+    "description": "{{ unmarkdown .Config.Abstract }}",
+    "url": "{{ .Config.BaseURL }}?f=html",
+    {{- if .Config.Keywords }}
+    "keywords": ["{{ .Config.Keywords | join ", " }}"],
+    {{- end }}
+    "license": "{{ .Config.License.URL }}",
+    "isAccessibleForFree": true
+    ,"hasPart": [
+    {{- range $index, $coll := .Config.AllCollections.Unique }}
+      {{- if $index }},{{ end }}
+       {
+        "@type": "URL",
+        "url": "{{ $.Config.BaseURL }}/collections/{{ $coll.ID }}"
+       }
+    {{- end }}
+    ]
+}
+</script>
+
+<hgroup>
+    <h1 class="title" id="title">{{ .Config.Title }} (OGC API)</h1>
+</hgroup>
+<div class="row py-3">
+    {{ if and .Config.Thumbnail .Config.Resources }}
+    <div class="col-md-8">
+    {{ else }}
+    <div class="col-md-12">
+    {{ end }}
+        {{ markdown .Config.Abstract }}
+        <table class="table table-borderless table-sm w-100">
+            <caption class="visually-hidden">Dataset details</caption>
+            <tbody>
+                {{ if .Config.Keywords }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "Keywords" }}
+                    </td>
+                    <td>
+                        {{ .Config.Keywords | join ", " }}
+                    </td>
+                </tr>
+                {{ end }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "License" }}
+                    </td>
+                    <td>
+                        <a href="{{ .Config.License.URL }}" target="_blank" aria-label="{{ i18n "To" }} {{ i18n "License" }} {{ .Config.License.Name }}">{{ .Config.License.Name }}</a>
+                    </td>
+                </tr>
+                {{ if .Config.Support}}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ i18n "Support" }}
+                    </td>
+                    <td>
+                        <a href="{{ .Config.Support.URL }}" target="_blank" aria-label="{{ i18n "To" }} {{ i18n "Support" }}">{{ .Config.Support.Name }}</a>
+                    </td>
+                </tr>
+                {{ end }}
+                {{ if .Config.DatasetDetails }}
+                {{ range $detailField := .Config.DatasetDetails }}
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        {{ $detailField.Name }}
+                    </td>
+                    <td>
+                        {{ markdown $detailField.Value }}
+                    </td>
+                </tr>
+                {{ end }}
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    {{ if and .Config.Thumbnail .Config.Resources }}
+    <div class="col-md-4">
+        <img src="resources/{{ .Config.Thumbnail }}" class="img-fluid" alt="{{ .Config.Title }} Thumbnail"/>
+    </div>
+    {{ end }}
+</div>
+
+<div class="row row-cols-md-4 g-4">
+    <div class="col-md-4 col-sm-12">
+        <div class="card h-100">
+            <h2 class="card-header h5">
+                <a href="api" aria-label="{{ i18n "To" }} OpenAPI {{ i18n "Specification" }}">OpenAPI {{ i18n "Specification" }}</a>
+            </h2>
+            <div class="card-body">
+                <p>
+                    {{ i18n "SpecificationText" }}
+                    {{ i18n "AvailableIn" }}
+                </p>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="api?f=json" target="_blank" aria-label="OpenAPI {{ i18n "Specification" }} {{ i18n "As" }} JSON">JSON</a></small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-sm-12">
+        <div class="card h-100">
+            <h2 class="card-header h5">
+                <a href="conformance" aria-label="{{ i18n "To" }} {{ i18n "Conformance" }}">{{ i18n "Conformance" }}</a>
+            </h2>
+            <div class="card-body">
+                <p>
+                    {{ i18n "ConformanceText" }}
+                    {{ i18n "AvailableIn" }}
+                </p>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="conformance?f=json" target="_blank" aria-label="{{ i18n "Conformance" }} {{ i18n "As" }} JSON">JSON</a></small>
+            </div>
+        </div>
+    </div>
+
+    {{ if .Config.HasCollections }}
+    <div class="col-md-4 col-sm-12">
+        <div class="card h-100">
+            <h2 class="card-header h5">
+                <a href="collections" aria-label="{{ i18n "To" }} {{ i18n "Collections" }}">{{ i18n "Collections" }}</a>
+            </h2>
+            <div class="card-body">
+                <p>
+                    {{ i18n "CollectionsText" }}
+                    {{ i18n "AvailableIn" }}
+                </p>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="collections?f=json" target="_blank" aria-label="{{ i18n "Collections" }} {{ i18n "As" }} JSON">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
+    {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles }}
+    <div class="col-md-4 col-sm-12">
+        <div class="card h-100">
+            <h2 class="card-header h5">
+                <a href="tiles" aria-label="{{ i18n "To" }} {{ i18n "Tiles" }}">{{ i18n "Tiles" }}</a>
+            </h2>
+            <div class="card-body">
+                <p>
+                    {{ i18n "TilesTextHTML" }} {{ if .Config.OgcAPI.Styles }}{{ i18n "WithStylesHTML" }}{{ end }}
+                    {{ i18n "AvailableIn" }}
+                </p>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tiles?f=json" target="_blank" aria-label="{{ i18n "Tiles" }} {{ i18n "As" }} JSON">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Styles }}
+    <div class="col-md-4 col-sm-12">
+        <div class="card h-100">
+            <h2 class="card-header h5">
+                <a href="styles" aria-label="{{ i18n "To" }} {{ i18n "Styles" }}">{{ i18n "Styles" }}</a>
+            </h2>
+            <div class="card-body">
+                <p>
+                    {{ i18n "StylesText" }}
+                    {{ i18n "AvailableIn" }}
+                </p>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="styles?f=json" target="_blank" aria-label="{{ i18n "Styles" }} {{ i18n "As" }} JSON">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
+    {{ if .Config.OgcAPI.Tiles }}
+    <div class="col-md-4 col-sm-12">
+        <div class="card h-100">
+            <h2 class="card-header h5">
+                <a href="tileMatrixSets" aria-label="{{ i18n "To" }} {{ i18n "TileMatrixSets" }}">{{ i18n "TileMatrixSets" }}</a>
+            </h2>
+            <div class="card-body">
+                <p>
+                    {{ if .Config.OgcAPI.Tiles.DatasetTiles }}
+                        {{ i18n "TileMatrixSetsDatasetText" }}
+                    {{ else if .Config.OgcAPI.Tiles.Collections }}
+                        {{ i18n "TileMatrixSetsCollectionText" }}
+                    {{ end }}
+                    {{ i18n "AvailableIn" }}
+                </p>
+                <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="tileMatrixSets?f=json" target="_blank" aria-label="{{ i18n "TileMatrixSets" }} {{ i18n "As" }} JSON">JSON</a></small>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+</div>
+{{end}}

@@ -1,0 +1,23 @@
+---
+version: 1.0.0
+title: FooBarBaz
+serviceIdentifier: Foo
+abstract: >-
+  Contains collections in non-alphabetical order
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+baseUrl: http://localhost:8181
+ogcApi:
+  3dgeovolumes:
+    tileServer: https://example.com
+    collections:
+      - id: B
+      - id: Z
+      - id: C
+  tiles:
+    collections:
+      - id: Z
+        tileServer: https://example.com
+      - id: A
+        tileServer: https://example.com

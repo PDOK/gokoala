@@ -1,0 +1,38 @@
+---
+version: 1.0.0
+title: New York in 3D
+# shortened title, used in breadcrumb path
+serviceIdentifier: 3D
+abstract: >-
+  This is a description about the dataset in Markdown.
+# just a dummy picture, but you can put an actual thumbnail here
+thumbnail: 3d.png
+resources:
+  directory: ./examples/resources
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+support:
+  name: Example Support
+  url: https://support.example.com
+lastUpdated: "2023-06-01T12:00:00Z"
+datasetCatalogUrl: https://www.pdok.nl/datasets
+baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
+ogcApi:
+  3dgeovolumes:
+    tileServer: https://maps.ecere.com/3DAPI/collections/
+    collections:
+      - id: NewYork
+        # optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
+        tileServerPath: "NewYork/3DTiles"
+        # URI template for individual 3D tiles
+        uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+
+        # optional URI template for subtrees, only required when "implicit tiling" extension is used
+        # uriTemplateImplicitTilingSubtree: ""
+
+        # URI template for digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM
+        # uriTemplateDTM: ""

@@ -1,0 +1,70 @@
+---
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.29.0
+    container_name: "azurite"
+    hostname: azurite
+    command: "azurite-blob --blobHost 0.0.0.0 --blobPort 10000"
+    ports:
+      - "10000:10000"
+    healthcheck:
+      test: nc 127.0.0.1 10000 -z
+      interval: 1s
+      retries: 30
+
+  azurite-seed:
+    image: rclone/rclone:1.65
+    depends_on:
+      azurite:
+        condition: service_healthy
+    volumes:
+      - ./:/examples
+    environment:
+      - RCLONE_CONFIG_BLOBS_TYPE=azureblob
+      - RCLONE_CONFIG_BLOBS_ENDPOINT=http://azurite:10000/devstoreaccount1
+      - RCLONE_CONFIG_BLOBS_USE_EMULATOR=true
+    entrypoint:
+      - sh
+      - -c
+      - |
+        echo "create azure container"
+        rclone mkdir blobs:example
+        echo "upload cloud-backed sqlite/geopackage files (pre-created with blockcachevfsd CLI)"
+        rclone copy /examples/resources/addresses-cloudbacked-gpkg/ blobs:example
+        touch /tmp/finished
+        echo "done"
+        sleep 300 # because docker-compose --exit-code-from implies --abort-on-container-exit
+    healthcheck:
+      test: stat /tmp/finished
+      interval: 1s
+      retries: 30
+
+  gokoala:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    depends_on:
+      azurite-seed:
+        condition: service_healthy
+    command: "--config-file ./examples/config_features_azure.yaml"
+    volumes:
+      - ./:/examples
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: /bin/curl --fail http://127.0.0.1:8080 || exit 1
+      interval: 1s
+      retries: 30
+
+  smoketest:
+    image: ghcr.io/osgeo/gdal:ubuntu-small-3.8.3
+    depends_on:
+      gokoala:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        echo "test OGC API"
+        ogrinfo -so OAPIF:http://gokoala:8080 dutch-addresses

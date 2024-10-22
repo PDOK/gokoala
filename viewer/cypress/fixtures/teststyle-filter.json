@@ -1,0 +1,68 @@
+{
+  "version": 8,
+  "name": "teststyle",
+  "id": "test style color function",
+  "metadata": {
+    "ol:webfonts": "https://test/resources/fonts/{font-family}/{fontweight}{-fontstyle}.css",
+    "gokoala:title-items": "color,function"
+  },
+  "layers": [
+    {
+      "id": "Area print border",
+      "type": "fill",
+      "paint": {
+        "fill-color": "rgb(255, 0, 0)",
+        "fill-opacity": 0.1
+      },
+      "filter": ["all", ["==", "function", "A"], ["==", "color", "red"]],
+      "source": "test",
+      "source-layer": "testArea"
+    },
+    {
+      "id": "Area label",
+      "filter": ["all", ["==", "function", "A"], ["==", "color", "red"]],
+      "type": "symbol",
+      "paint": {
+        "text-opacity": 1,
+        "text-halo-width": 2,
+        "text-color": "rgb(255, 0, 0)"
+      },
+      "layout": {
+        "symbol-placement": "point",
+        "text-field": "{name}",
+        "text-size": 12
+      },
+      "source": "test",
+      "source-layer": "testArea"
+    },
+    {
+      "id": "line",
+      "filter": ["all", ["==", "function", "A"], ["==", "color", "red"]],
+      "type": "line",
+      "paint": {
+        "line-color": "rgb(255, 0, 0)",
+        "line-width": 2
+      },
+      "source": "test",
+      "source-layer": "testline"
+    },
+    {
+      "id": "circle",
+      "filter": ["all", ["==", "function", "B"], ["==", "color", "green"]],
+      "type": "circle",
+      "source": "test",
+      "source-layer": "testpoint",
+      "paint": {
+        "circle-color": "#7FDF0A",
+        "circle-radius": 4.3,
+        "circle-stroke-color": "#000000"
+      }
+    }
+  ],
+  "sources": {
+    "test": {
+      "type": "vector",
+      "tiles": ["https://test/{z}/{y}/{x}?f=mvt"]
+    }
+  }
+}

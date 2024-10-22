@@ -1,0 +1,38 @@
+---
+name: lint (ts)
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+defaults:
+  run:
+    working-directory: ./viewer
+
+jobs:
+  lint-ts:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: "./viewer/package-lock.json"
+
+      - name: Install
+        run: npm ci
+
+      - name: Formatting
+        run: npm run format
+
+      - name: Linting
+        run: npm run lint
