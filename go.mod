@@ -5,6 +5,7 @@ go 1.23.1
 require (
 	dario.cat/mergo v1.0.1
 	github.com/creasty/defaults v1.8.0
+	github.com/docker/go-connections v0.5.0
 	github.com/docker/go-units v0.5.0
 	github.com/elnormous/contenttype v1.0.4
 	github.com/getkin/kin-openapi v0.128.0
@@ -13,9 +14,11 @@ require (
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/gomarkdown/markdown v0.0.0-20240930133441-72d49d9543d8
+	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/nicksnyder/go-i18n/v2 v2.4.1
 	github.com/stretchr/testify v1.9.0
+	github.com/testcontainers/testcontainers-go v0.34.0
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
@@ -42,7 +45,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/docker v27.1.1+incompatible // indirect
-	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
@@ -55,7 +57,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -83,7 +84,6 @@ require (
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/testcontainers/testcontainers-go v0.34.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect

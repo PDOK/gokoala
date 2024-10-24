@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	serverFlags = []cli.Flag{
+	serviceFlags = []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
 			Usage:    "bind host",
@@ -108,10 +108,10 @@ func main() {
 	app.UseShortOptionHandling = true
 	app.Commands = []*cli.Command{
 		{
-			Name:  "run",
-			Usage: "Run location search and geocoding API server",
+			Name:  "start-service",
+			Usage: "Run location search and geocoding API service",
 			Description: `
-Run location search and geocoding API server.
+Run location search and geocoding API service.
 `,
 			Action: func(c *cli.Context) error {
 				log.Println(c.Command.Usage)
@@ -133,13 +133,13 @@ Run location search and geocoding API server.
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
-			Flags: serverFlags,
+			Flags: serviceFlags,
 		},
 		{
 			Name:  "create-search-index",
 			Usage: "Create search index",
 			Description: `
-Create search index in database. This exists of a search table "zoek_index" with full text indices and prepared for partitioning
+Create search index in database. This exists of a search table "search_index" with full text indices and prepared for partitioning
 `,
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)

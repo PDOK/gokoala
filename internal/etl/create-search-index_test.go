@@ -89,10 +89,10 @@ func insertTestData(ctx context.Context, conn string) error {
 
 	// Create required partitions for testData
 	partitions := `
-	create table zoek_index_adres partition of zoek_index
+	create table search_index_adres partition of search_index
 		for values in ('adres');
 		-- partition by list(collection_version);
-	create table zoek_index_weg partition of zoek_index
+	create table search_index_weg partition of search_index
 		for values in ('weg');
 		-- partition by list(collection_version);
     `
@@ -103,7 +103,7 @@ func insertTestData(ctx context.Context, conn string) error {
 	}
 
 	testData := `
-	insert into zoek_index (feature_id, collection_id, collection_version, display_name, suggest, geometry_type, bbox)
+	insert into search_index (feature_id, collection_id, collection_version, display_name, suggest, geometry_type, bbox)
 	values
 	  ('408f5e13', 'adres', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
 	  ('408f5e13', 'adres', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),

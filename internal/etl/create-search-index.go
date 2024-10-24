@@ -30,7 +30,7 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 	}
 
 	searchIndexTable := `
-    create table if not exists zoek_index (
+    create table if not exists search_index (
 		id 					serial,
 		feature_id 			varchar (8) 			not null ,
 	    collection_id 		text					not null,
@@ -49,7 +49,7 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 	}
 
 	fullTextSearchColumn := `
-	alter table zoek_index add column ts TSVECTOR
+	alter table search_index add column ts TSVECTOR
         generated always as (to_tsvector('dutch', suggest || display_name )) stored ;
     `
 
@@ -59,7 +59,7 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 	}
 
 	ginIndex := `
-	create index ts_idx on zoek_index using gin(ts);
+	create index ts_idx on search_index using gin(ts);
     `
 
 	_, err = db.Exec(ctx, ginIndex)
