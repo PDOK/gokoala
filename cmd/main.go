@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"strconv"
 
+	"github.com/iancoleman/strcase"
+
 	eng "github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gomagpie/internal/etl"
 	"github.com/PDOK/gomagpie/internal/ogc"
 	"github.com/urfave/cli/v2"
 
@@ -14,7 +18,7 @@ import (
 )
 
 var (
-	cliFlags = []cli.Flag{
+	serviceFlags = []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
 			Usage:    "bind host",
@@ -64,36 +68,97 @@ var (
 			EnvVars:  []string{"ENABLE_CORS"},
 		},
 	}
+	commonDBFlags = []cli.Flag{
+		&cli.StringFlag{
+			Name:    "db-host",
+			Value:   "localhost",
+			EnvVars: []string{strcase.ToScreamingSnake("db-host")},
+		},
+		&cli.IntFlag{
+			Name:    "db-port",
+			Value:   5432,
+			EnvVars: []string{strcase.ToScreamingSnake("db-port")},
+		},
+		&cli.StringFlag{
+			Name:    "db-name",
+			Usage:   "Connect to this database",
+			EnvVars: []string{strcase.ToScreamingSnake("db-name")},
+		},
+		&cli.StringFlag{
+			Name:    "db-ssl-mode",
+			Value:   "disable",
+			EnvVars: []string{strcase.ToScreamingSnake("db-ssl-mode")},
+		},
+		&cli.StringFlag{
+			Name:    "db-username",
+			Value:   "postgres",
+			EnvVars: []string{strcase.ToScreamingSnake("db-username")},
+		},
+		&cli.StringFlag{
+			Name:    "db-password",
+			Value:   "postgres",
+			EnvVars: []string{strcase.ToScreamingSnake("db-password")},
+		},
+	}
 )
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "Gomagpie"
-	app.Usage = "Location search and geocoding API"
-	app.Flags = cliFlags
-	app.Action = func(c *cli.Context) error {
-		log.Printf("%s - %s\n", app.Name, app.Usage)
+	app.Name = "gomagpie"
+	app.Usage = "Run location search and geocoding API service, or use as CLI to support the ETL process for this service."
+	app.UseShortOptionHandling = true
+	app.Commands = []*cli.Command{
+		{
+			Name:  "start-service",
+			Usage: "Run location search and geocoding API service",
+			Description: `
+Run location search and geocoding API service.
+`,
+			Action: func(c *cli.Context) error {
+				log.Println(c.Command.Usage)
 
-		address := net.JoinHostPort(c.String("host"), strconv.Itoa(c.Int("port")))
-		debugPort := c.Int("debug-port")
-		shutdownDelay := c.Int("shutdown-delay")
-		configFile := c.String("config-file")
-		trailingSlash := c.Bool("enable-trailing-slash")
-		cors := c.Bool("enable-cors")
+				address := net.JoinHostPort(c.String("host"), strconv.Itoa(c.Int("port")))
+				debugPort := c.Int("debug-port")
+				shutdownDelay := c.Int("shutdown-delay")
+				configFile := c.String("config-file")
+				trailingSlash := c.Bool("enable-trailing-slash")
+				cors := c.Bool("enable-cors")
 
-		// Engine encapsulates shared logic
-		engine, err := eng.NewEngine(configFile, trailingSlash, cors)
-		if err != nil {
-			return err
-		}
-		// Each OGC API building block makes use of said Engine
-		ogc.SetupBuildingBlocks(engine)
+				// Engine encapsulates shared logic
+				engine, err := eng.NewEngine(configFile, trailingSlash, cors)
+				if err != nil {
+					return err
+				}
+				// Each OGC API building block makes use of said Engine
+				ogc.SetupBuildingBlocks(engine)
 
-		return engine.Start(address, debugPort, shutdownDelay)
+				return engine.Start(address, debugPort, shutdownDelay)
+			},
+			Flags: serviceFlags,
+		},
+		{
+			Name:  "create-search-index",
+			Usage: "Create search index",
+			Description: `
+Create search index in database. This exists of a search table "search_index" with full text indices and prepared for partitioning
+`,
+			Action: func(c *cli.Context) error {
+				dbConn := flagsToDBConnStr(c)
+				return etl.CreateSearchIndex(c.Context, dbConn)
+			},
+			Flags: commonDBFlags,
+		},
 	}
 
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func flagsToDBConnStr(c *cli.Context) string {
+	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&application_name=%s",
+		c.String("db-username"), c.String("db-password"), net.JoinHostPort(c.String("db-host"),
+			strconv.Itoa(c.Int("db-port"))), c.String("db-name"), c.String("db-ssl-mode"),
+		"gomagpie")
 }
