@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/iancoleman/strcase"
 	"log"
 	"net"
 	"os"
 	"strconv"
+
+	"github.com/iancoleman/strcase"
 
 	eng "github.com/PDOK/gomagpie/internal/engine"
 	"github.com/PDOK/gomagpie/internal/etl"

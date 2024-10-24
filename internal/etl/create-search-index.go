@@ -3,8 +3,9 @@ package etl
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"log"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func CreateSearchIndex(ctx context.Context, conn string) error {
@@ -14,9 +15,9 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 	}
 
 	defer func(db *pgx.Conn, ctx context.Context) {
-		err = db.Close(ctx)
+		err := db.Close(ctx)
 		if err != nil {
-			log.Fatalf("failed to close database connection: %s", err)
+			log.Printf("failed to close database connection: %s", err)
 		}
 	}(db, ctx)
 
@@ -26,7 +27,7 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 
 	_, err = db.Exec(ctx, geometryType)
 	if err != nil {
-		log.Fatalf("Error creating geometryType: %v\n", err)
+		log.Printf("Error creating geometryType: %v\n", err)
 	}
 
 	searchIndexTable := `
@@ -45,7 +46,7 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 
 	_, err = db.Exec(ctx, searchIndexTable)
 	if err != nil {
-		log.Fatalf("Error creating searchIndexTable: %v\n", err)
+		log.Printf("Error creating searchIndexTable: %v\n", err)
 	}
 
 	fullTextSearchColumn := `
@@ -55,7 +56,7 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 
 	_, err = db.Exec(ctx, fullTextSearchColumn)
 	if err != nil {
-		log.Fatalf("Error creating fullTextSearchColumn: %v\n", err)
+		log.Printf("Error creating fullTextSearchColumn: %v\n", err)
 	}
 
 	ginIndex := `
@@ -64,8 +65,8 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 
 	_, err = db.Exec(ctx, ginIndex)
 	if err != nil {
-		log.Fatalf("Error creating ginIndex: %v\n", err)
+		log.Printf("Error creating ginIndex: %v\n", err)
 	}
 
-	return nil
+	return err
 }

@@ -3,15 +3,16 @@ package etl
 import (
 	"context"
 	"fmt"
+	"log"
+	"path/filepath"
+	"testing"
+	"time"
+
 	"github.com/docker/go-connections/nat"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"log"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 func TestCreateSearchIndex(t *testing.T) {
@@ -21,11 +22,11 @@ func TestCreateSearchIndex(t *testing.T) {
 	ctx := context.Background()
 
 	// given
-	dbPort, postgisContainer, err := setupPostgis(t, ctx)
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
 	if err != nil {
 		t.Error(err)
 	}
-	defer MustTerminateContainer(t, postgisContainer, ctx)
+	defer MustTerminateContainer(ctx, t, postgisContainer)
 
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable&application_name=gomagpie", dbPort.Int(), "test_db")
 
@@ -36,7 +37,7 @@ func TestCreateSearchIndex(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func setupPostgis(t *testing.T, ctx context.Context) (nat.Port, testcontainers.Container, error) {
+func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	req := testcontainers.ContainerRequest{
 		Image: "docker.io/postgis/postgis:16-3.5-alpine",
 		Env: map[string]string{
@@ -74,7 +75,7 @@ func setupPostgis(t *testing.T, ctx context.Context) (nat.Port, testcontainers.C
 	return port, container, err
 }
 
-func MustTerminateContainer(t *testing.T, container testcontainers.Container, ctx context.Context) {
+func MustTerminateContainer(ctx context.Context, t *testing.T, container testcontainers.Container) {
 	if err := container.Terminate(ctx); err != nil {
 		t.Fatalf("Failed to terminate container: %s", err.Error())
 	}
@@ -88,8 +89,9 @@ func insertTestData(ctx context.Context, conn string) error {
 	defer db.Close(ctx)
 
 	// Create required partitions for testData
+	//nolint:misspell
 	partitions := `
-	create table search_index_adres partition of search_index
+	create table search_index_addres partition of search_index
 		for values in ('adres');
 		-- partition by list(collection_version);
 	create table search_index_weg partition of search_index
@@ -99,7 +101,7 @@ func insertTestData(ctx context.Context, conn string) error {
 
 	_, err = db.Exec(ctx, partitions)
 	if err != nil {
-		log.Fatalf("Error creating partitions: %v\n", err)
+		log.Printf("Error creating partitions: %v\n", err)
 	}
 
 	testData := `
@@ -115,9 +117,9 @@ func insertTestData(ctx context.Context, conn string) error {
 
 	_, err = db.Exec(ctx, testData)
 	if err != nil {
-		log.Fatalf("Error creating testData: %v\n", err)
+		log.Printf("Error creating testData: %v\n", err)
 	}
 
-	return nil
+	return err
 
 }
