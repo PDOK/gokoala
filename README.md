@@ -49,7 +49,7 @@ GLOBAL OPTIONS:
 Example (config-file is mandatory):
 
 ```docker
-docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie --config-file /examples/config.yaml
+docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie start-service --config-file /examples/config.yaml
 ```
 
 Now open <http://localhost:8080>. See [examples](examples) for more details.

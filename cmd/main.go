@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	cliFlags = []cli.Flag{
+	flagsStartService = []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
 			Usage:    "bind host",
@@ -70,28 +70,51 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Gomagpie"
 	app.Usage = "Location search and geocoding API"
-	app.Flags = cliFlags
-	app.Action = func(c *cli.Context) error {
-		log.Printf("%s - %s\n", app.Name, app.Usage)
+	app.Commands = []*cli.Command{
+		{
+			Name:  "create-search-index",
+			Usage: "Create search index",
+			Action: func(_ *cli.Context) error {
+				log.Printf("%s - %s\n", app.Name, app.Usage)
+				// TODO
+				return nil
+			},
+		},
+		{
+			Name:  "import-gpkg",
+			Usage: "Import GeoPackage into search index",
+			Action: func(_ *cli.Context) error {
+				log.Printf("%s - %s\n", app.Name, app.Usage)
+				// TODO
+				return nil
+			},
+		},
+		{
+			Name:  "start-service",
+			Usage: "Start service to serve location API",
+			Flags: flagsStartService,
+			Action: func(c *cli.Context) error {
+				log.Printf("%s - %s\n", app.Name, app.Usage)
 
-		address := net.JoinHostPort(c.String("host"), strconv.Itoa(c.Int("port")))
-		debugPort := c.Int("debug-port")
-		shutdownDelay := c.Int("shutdown-delay")
-		configFile := c.String("config-file")
-		trailingSlash := c.Bool("enable-trailing-slash")
-		cors := c.Bool("enable-cors")
+				address := net.JoinHostPort(c.String("host"), strconv.Itoa(c.Int("port")))
+				debugPort := c.Int("debug-port")
+				shutdownDelay := c.Int("shutdown-delay")
+				configFile := c.String("config-file")
+				trailingSlash := c.Bool("enable-trailing-slash")
+				cors := c.Bool("enable-cors")
 
-		// Engine encapsulates shared logic
-		engine, err := eng.NewEngine(configFile, trailingSlash, cors)
-		if err != nil {
-			return err
-		}
-		// Each OGC API building block makes use of said Engine
-		ogc.SetupBuildingBlocks(engine)
+				// Engine encapsulates shared logic
+				engine, err := eng.NewEngine(configFile, trailingSlash, cors)
+				if err != nil {
+					return err
+				}
+				// Each OGC API building block makes use of said Engine
+				ogc.SetupBuildingBlocks(engine)
 
-		return engine.Start(address, debugPort, shutdownDelay)
+				return engine.Start(address, debugPort, shutdownDelay)
+			},
+		},
 	}
-
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
