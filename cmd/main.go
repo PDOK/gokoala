@@ -110,6 +110,7 @@ func main() {
 				}
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine)
+				// TODO: start search API
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},

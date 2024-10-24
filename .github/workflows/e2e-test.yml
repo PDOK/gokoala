@@ -25,7 +25,7 @@ jobs:
             -v `pwd`/examples:/examples \
             --rm --detach -p 8080:8080 \
             --name gomagpie \
-            gomagpie:local --config-file /examples/config.yaml
+            gomagpie:local start-service --config-file /examples/config.yaml
 
       # E2E Test
       - name: E2E Test => Cypress
