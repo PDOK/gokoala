@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	flagsStartService = []cli.Flag{
+	serviceFlags = []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
 			Usage:    "bind host",
@@ -64,37 +64,51 @@ var (
 			EnvVars:  []string{"ENABLE_CORS"},
 		},
 	}
+	commonDBFlags = []cli.Flag{
+		&cli.StringFlag{
+			Name:    "db-host",
+			Value:   "localhost",
+			EnvVars: []string{strcase.ToScreamingSnake("db-host")},
+		},
+		&cli.IntFlag{
+			Name:    "db-port",
+			Value:   5432,
+			EnvVars: []string{strcase.ToScreamingSnake("db-port")},
+		},
+		&cli.StringFlag{
+			Name:    "db-name",
+			Usage:   "Connect to this database",
+			EnvVars: []string{strcase.ToScreamingSnake("db-name")},
+		},
+		&cli.StringFlag{
+			Name:    "db-ssl-mode",
+			Value:   "disable",
+			EnvVars: []string{strcase.ToScreamingSnake("db-ssl-mode")},
+		},
+		&cli.StringFlag{
+			Name:    "db-username",
+			Value:   "postgres",
+			EnvVars: []string{strcase.ToScreamingSnake("db-username")},
+		},
+		&cli.StringFlag{
+			Name:    "db-password",
+			Value:   "postgres",
+			EnvVars: []string{strcase.ToScreamingSnake("db-password")},
+		},
+	}
 )
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "Gomagpie"
-	app.Usage = "Location search and geocoding API"
+	app.Name = "gomagpie"
+	app.Usage = "Run location search and geocoding API service, or use as CLI to support the ETL process for this service."
+	app.UseShortOptionHandling = true
 	app.Commands = []*cli.Command{
-		{
-			Name:  "create-search-index",
-			Usage: "Create search index",
-			Action: func(_ *cli.Context) error {
-				log.Printf("%s - %s\n", app.Name, app.Usage)
-				// TODO
-				return nil
-			},
-		},
-		{
-			Name:  "import-gpkg",
-			Usage: "Import GeoPackage into search index",
-			Action: func(_ *cli.Context) error {
-				log.Printf("%s - %s\n", app.Name, app.Usage)
-				// TODO
-				return nil
-			},
-		},
 		{
 			Name:  "start-service",
 			Usage: "Start service to serve location API",
-			Flags: flagsStartService,
 			Action: func(c *cli.Context) error {
-				log.Printf("%s - %s\n", app.Name, app.Usage)
+				log.Println(c.Command.Usage)
 
 				address := net.JoinHostPort(c.String("host"), strconv.Itoa(c.Int("port")))
 				debugPort := c.Int("debug-port")
@@ -110,14 +124,40 @@ func main() {
 				}
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine)
-				// TODO: start search API
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
+			Flags: serviceFlags,
+		},
+		{
+			Name:  "create-search-index",
+			Usage: "Create search index in database",
+			Action: func(c *cli.Context) error {
+				dbConn := flagsToDBConnStr(c)
+				return etl.CreateSearchIndex(c.Context, dbConn)
+			},
+			Flags: commonDBFlags,
+		},
+		{
+			Name:  "import-gpkg",
+			Usage: "Import GeoPackage into search index",
+			Action: func(_ *cli.Context) error {
+				log.Printf("%s - %s\n", app.Name, app.Usage)
+				// TODO
+				return nil
+			},
 		},
 	}
+
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func flagsToDBConnStr(c *cli.Context) string {
+	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&application_name=%s",
+		c.String("db-username"), c.String("db-password"), net.JoinHostPort(c.String("db-host"),
+			strconv.Itoa(c.Int("db-port"))), c.String("db-name"), c.String("db-ssl-mode"),
+		"gomagpie")
 }

@@ -27,29 +27,24 @@ docker build -t pdok/gomagpie .
 
 ```bash
 NAME:
-   Gomagpie - Location search and geocoding API
+   gomagpie - Run location search and geocoding API, and CLI to support the ETL process
 
 USAGE:
-   Gomagpie [global options] command [command options]
+   gomagpie [global options] command [command options]
 
 COMMANDS:
-   help, h  Shows a list of commands or help for one command
+   run                  Run location search and geocoding API server
+   create-search-index  Create search index
+   help, h              Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --host value             bind host (default: "0.0.0.0") [$HOST]
-   --port value             bind port (default: 8080) [$PORT]
-   --debug-port value       bind port for debug server (disabled by default), do not expose this port publicly (default: -1) [$DEBUG_PORT]
-   --shutdown-delay value   delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
-   --config-file value      reference to YAML configuration file [$CONFIG_FILE]
-   --enable-trailing-slash  allow API calls to URLs with a trailing slash. (default: false) [$ALLOW_TRAILING_SLASH]
-   --enable-cors            enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere. (default: false) [$ENABLE_CORS]
-   --help, -h               show help
+   --help, -h  show help
 ```
 
 Example (config-file is mandatory):
 
 ```docker
-docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie start-service --config-file /examples/config.yaml
+docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie run --config-file /examples/config.yaml
 ```
 
 Now open <http://localhost:8080>. See [examples](examples) for more details.
