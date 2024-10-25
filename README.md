@@ -33,10 +33,15 @@ USAGE:
    gomagpie [global options] command [command options]
 
 COMMANDS:
-   start-service        Start service to serve location API
-   create-search-index  Create search index in database
-   import-gpkg          Import GeoPackage into search index
-   help, h              Shows a list of commands or help for one command
+   start-service  Start service to serve location API
+   help, h        Shows a list of commands or help for one command
+   etl:
+     create-search-index  Create empty search index in database
+     import-gpkg          Import GeoPackage into search index
+
+GLOBAL OPTIONS:
+   --help, -h  show help
+
 ```
 
 Example (config-file is mandatory):

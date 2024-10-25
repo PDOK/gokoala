@@ -169,8 +169,9 @@ func main() {
 			},
 		},
 		{
-			Name:  "create-search-index",
-			Usage: "Create search index in database",
+			Name:     "create-search-index",
+			Category: "etl",
+			Usage:    "Create empty search index in database",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
@@ -185,8 +186,9 @@ func main() {
 			},
 		},
 		{
-			Name:  "import-gpkg",
-			Usage: "Import GeoPackage into search index",
+			Name:     "import-gpkg",
+			Category: "etl",
+			Usage:    "Import GeoPackage into search index",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
@@ -194,6 +196,7 @@ func main() {
 				commonDBFlags[dbUsernameFlag],
 				commonDBFlags[dbPasswordFlag],
 				commonDBFlags[dbSslModeFlag],
+				serviceFlags[configFileFlag],
 				&cli.PathFlag{
 					Name:     gpkgFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(gpkgFlag)},
