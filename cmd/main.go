@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
 	"strconv"
 
+	"github.com/iancoleman/strcase"
+
 	eng "github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gomagpie/internal/etl"
 	"github.com/PDOK/gomagpie/internal/ogc"
 	"github.com/urfave/cli/v2"
 

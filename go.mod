@@ -16,6 +16,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20240930133441-72d49d9543d8
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.1
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/nicksnyder/go-i18n/v2 v2.4.1
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.34.0

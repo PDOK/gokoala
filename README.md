@@ -27,18 +27,16 @@ docker build -t pdok/gomagpie .
 
 ```bash
 NAME:
-   gomagpie - Run location search and geocoding API, and CLI to support the ETL process
+   gomagpie - Run location search and geocoding API service, or use as CLI to support the ETL process for this service.
 
 USAGE:
    gomagpie [global options] command [command options]
 
 COMMANDS:
-   run                  Run location search and geocoding API server
-   create-search-index  Create search index
+   start-service        Start service to serve location API
+   create-search-index  Create search index in database
+   import-gpkg          Import GeoPackage into search index
    help, h              Shows a list of commands or help for one command
-
-GLOBAL OPTIONS:
-   --help, -h  show help
 ```
 
 Example (config-file is mandatory):
