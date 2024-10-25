@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/PDOK/gomagpie/config"
 	"github.com/iancoleman/strcase"
 
 	eng "github.com/PDOK/gomagpie/internal/engine"
@@ -34,6 +35,7 @@ const (
 	dbSslModeFlag           = "db-ssl-mode"
 	dbUsernameFlag          = "db-username"
 	gpkgFlag                = "gpkg"
+	featureTableFlag        = "feature-table"
 	synonymsFlag            = "synonyms"
 	substitutionsFlag       = "substitutions"
 )
@@ -203,6 +205,11 @@ func main() {
 					Required: true,
 				},
 				&cli.PathFlag{
+					Name:     featureTableFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFlag)},
+					Required: true,
+				},
+				&cli.PathFlag{
 					Name:     synonymsFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(synonymsFlag)},
 					Required: false,
@@ -215,7 +222,12 @@ func main() {
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
-				return etl.ImportGeoPackage(c.Path(gpkgFlag), c.Path(synonymsFlag), c.Path(substitutionsFlag), dbConn)
+				cfg, err := config.NewConfig(c.Path(configFileFlag))
+				if err != nil {
+					return err
+				}
+				return etl.ImportGeoPackage(cfg, c.Path(gpkgFlag), c.Path(featureTableFlag),
+					c.Path(synonymsFlag), c.Path(substitutionsFlag), dbConn)
 			},
 		},
 	}

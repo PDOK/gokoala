@@ -19,6 +19,9 @@ type GeoSpatialCollection struct {
 
 	// Links pertaining to this collection (e.g., downloads, documentation)
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
+	// Search config related to location search/suggest
+	Search *Search `yaml:"search,omitempty" json:"search,omitempty"`
 }
 
 type GeoSpatialCollectionMetadata struct {
@@ -50,7 +53,6 @@ type GeoSpatialCollectionMetadata struct {
 	StorageCrs *string `yaml:"storageCrs,omitempty" json:"storageCrs,omitempty" default:"http://www.opengis.net/def/crs/OGC/1.3/CRS84" validate:"startswith=http://www.opengis.net/def/crs"`
 }
 
-// +kubebuilder:object:generate=true
 type Extent struct {
 	// Projection (SRS/CRS) to be used. When none is provided WGS84 (http://www.opengis.net/def/crs/OGC/1.3/CRS84) is used.
 	Srs string `yaml:"srs,omitempty" json:"srs,omitempty" validate:"omitempty,startswith=EPSG:"`
@@ -62,7 +64,14 @@ type Extent struct {
 	Interval []string `yaml:"interval,omitempty" json:"interval,omitempty" validate:"omitempty,len=2"`
 }
 
-// +kubebuilder:object:generate=true
+type Search struct {
+	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required"`
+
+	DisplayName string `yaml:"displayName,omitempty" json:"displayName,omitempty" validate:"required"`
+
+	Suggest []string `yaml:"suggest,omitempty" json:"suggest,omitempty"`
+}
+
 type CollectionLinks struct {
 	// Links to downloads of entire collection. These will be rendered as rel=enclosure links
 	// <placeholder>

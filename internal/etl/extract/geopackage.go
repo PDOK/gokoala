@@ -1,4 +1,4 @@
-package etl
+package extract
 
 import (
 	"database/sql"
@@ -6,6 +6,7 @@ import (
 	"path"
 	"sync"
 
+	t "github.com/PDOK/gomagpie/internal/etl/transform"
 	"github.com/mattn/go-sqlite3"
 )
 
@@ -30,15 +31,12 @@ func loadDriver() {
 type GeoPackage struct {
 }
 
-func NewGeoPackage() *GeoPackage {
+func NewGeoPackage(path string) *GeoPackage {
 	loadDriver()
-
-	// prepare query
-
 	g := &GeoPackage{}
 	return g
 }
 
-func (g *GeoPackage) Get(collection string, lastOffset int) error {
-	return nil
+func (g *GeoPackage) Extract(featureTable string, fields []string, lastOffset int) ([]t.RawRecord, int, error) {
+	return []t.RawRecord{}, lastOffset, nil
 }
