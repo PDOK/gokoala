@@ -33,6 +33,9 @@ func ImportGeoPackage(cfg *config.Config, gpkgPath string, featureTable string, 
 	// query rows (select + rows.next) to slice of structs, with limit+offset
 	// transform data
 	// copy data to postgres using pgx.copyfromslice
+	println(synonymsPath)      // TODO
+	println(substitutionsPath) // TODO
+	println(targetDbConn)      // TODO
 	return nil
 }
 

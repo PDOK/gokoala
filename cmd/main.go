@@ -126,6 +126,7 @@ var (
 	}
 )
 
+//nolint:funlen
 func main() {
 	app := cli.NewApp()
 	app.Name = appName

@@ -3,8 +3,15 @@ FROM docker.io/golang:1.23-bookworm AS build-env
 WORKDIR /go/src/service
 ADD . /go/src/service
 
-ENV CGO_ENABLED=0
+# enable cgo in order to interface with sqlite
+ENV CGO_ENABLED=1
 ENV GOOS=linux
+
+# install sqlite-related compile-time dependencies
+RUN set -eux && \
+    apt-get update && \
+    apt-get install -y libsqlite3-mod-spatialite && \
+    rm -rf /var/lib/apt/lists/*
 
 # build & test the binary with debug information removed.
 RUN go mod download all && \
@@ -22,6 +29,12 @@ EXPOSE 8080
 # use the WORKDIR to create a /tmp folder
 WORKDIR /tmp
 WORKDIR /
+
+# install sqlite-related runtime dependencies
+RUN set -eux && \
+    apt-get update && \
+    apt-get install -y libsqlite3-mod-spatialite && \
+    rm -rf /var/lib/apt/lists/*
 
 # include executable
 COPY --from=build-env /gomagpie /
