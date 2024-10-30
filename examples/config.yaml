@@ -1,14 +1,10 @@
 ---
 version: 1.0.0
-resources:
-  directory: ./examples/resources
 lastUpdated: "2024-10-22T12:00:00Z"
 baseUrl: http://localhost:8080
 availableLanguages:
   - nl
   - en
-database:
-  connectionString: "example string"
 collections:
   - id: addresses
     metadata:

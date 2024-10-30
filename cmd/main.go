@@ -226,7 +226,7 @@ func main() {
 				if err != nil {
 					return err
 				}
-				return etl.ImportGeoPackage(cfg, c.Path(gpkgFlag), c.Path(featureTableFlag),
+				return etl.ImportGeoPackage(cfg, c.Path(gpkgFlag), c.Path(featureTableFlag), 10000,
 					c.Path(synonymsFlag), c.Path(substitutionsFlag), dbConn)
 			},
 		},

@@ -26,9 +26,9 @@ func TestCreateSearchIndex(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	defer MustTerminateContainer(ctx, t, postgisContainer)
+	defer terminateContainer(ctx, t, postgisContainer)
 
-	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable&application_name=gomagpie", dbPort.Int(), "test_db")
+	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
 	// when/then
 	err = CreateSearchIndex(ctx, dbConn)
@@ -75,7 +75,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 	return port, container, err
 }
 
-func MustTerminateContainer(ctx context.Context, t *testing.T, container testcontainers.Container) {
+func terminateContainer(ctx context.Context, t *testing.T, container testcontainers.Container) {
 	if err := container.Terminate(ctx); err != nil {
 		t.Fatalf("Failed to terminate container: %s", err.Error())
 	}
