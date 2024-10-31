@@ -32,6 +32,7 @@ type Load interface {
 	Close() error
 }
 
+// CreateSearchIndex creates empty search index in target database
 func CreateSearchIndex(dbConn string) error {
 	db, err := load.NewPostgis(dbConn)
 	if err != nil {
@@ -41,6 +42,7 @@ func CreateSearchIndex(dbConn string) error {
 	return db.Init()
 }
 
+// ImportGeoPackage import source data into target search index using extract-transform-load principle
 func ImportGeoPackage(cfg *config.Config, gpkgPath string, featureTable string, pageSize int,
 	synonymsPath string, substitutionsPath string, targetDbConn string) error {
 
@@ -81,13 +83,8 @@ func ImportGeoPackage(cfg *config.Config, gpkgPath string, featureTable string, 
 		log.Printf("imported %d records from GeoPackage into Postgres search index", loaded)
 		offset += pageSize
 	}
-	//
-	// query rows (select + rows.next) to slice of structs, with limit+offset
-	// transform data
-	// copy data to postgres using pgx.copyfromslice
 	println(synonymsPath)      // TODO
 	println(substitutionsPath) // TODO
-	println(targetDbConn)      // TODO
 
 	log.Printf("done importing GeoPackage %s into Postgres search index", gpkgPath)
 	return nil
