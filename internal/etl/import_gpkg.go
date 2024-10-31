@@ -26,7 +26,18 @@ type Transform interface {
 type Load interface {
 	Load(records []t.RawRecord, fields []string, collection config.GeoSpatialCollection) (int64, error)
 
+	Init() error
+
 	Close() error
+}
+
+func CreateSearchIndex(dbConn string) error {
+	db, err := load.NewPostgis(dbConn)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	return db.Init()
 }
 
 func ImportGeoPackage(cfg *config.Config, gpkgPath string, featureTable string, pageSize int,

@@ -185,7 +185,7 @@ func main() {
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
-				return etl.CreateSearchIndex(c.Context, dbConn)
+				return etl.CreateSearchIndex(dbConn)
 			},
 		},
 		{
