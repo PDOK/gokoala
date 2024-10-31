@@ -40,6 +40,8 @@ func TestImportGeoPackage(t *testing.T) {
 	assert.NotNil(t, cfg)
 
 	// when/then
+	err = CreateSearchIndex(ctx, dbConn)
+	assert.NoError(t, err)
 	err = ImportGeoPackage(cfg, pwd+"/testdata/addresses-crs84.gpkg", "addresses", 1000, "", "", dbConn)
 	assert.NoError(t, err)
 }

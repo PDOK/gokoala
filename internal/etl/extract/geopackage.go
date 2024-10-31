@@ -47,8 +47,23 @@ func NewGeoPackage(path string) (*GeoPackage, error) {
 	return &GeoPackage{db}, nil
 }
 
+func (g *GeoPackage) Close() error {
+	return g.db.Close()
+}
+
+// TODO: configure fid column, get geom column, prepare
 func (g *GeoPackage) Extract(featureTable string, fields []string, limit int, offset int) ([]t.RawRecord, error) {
-	query := fmt.Sprintf(`select fid, %s from %s limit :limit offset :offset`, strings.Join(fields, ","), featureTable)
+	query := fmt.Sprintf(`
+		select fid,
+		    st_minx(castautomagic(geom)) as minx, 
+		    st_miny(castautomagic(geom)) as miny, 
+		    st_maxx(castautomagic(geom)) as maxx, 
+		    st_maxy(castautomagic(geom)) as maxy,
+		    %s -- all feature specific fields
+		from %s 
+		limit :limit 
+		offset :offset`, strings.Join(fields, ","), featureTable)
+
 	rows, err := g.db.NamedQuery(query, map[string]any{"limit": limit, "offset": offset})
 	if err != nil {
 		return nil, err
@@ -57,16 +72,26 @@ func (g *GeoPackage) Extract(featureTable string, fields []string, limit int, of
 
 	var result []t.RawRecord
 	for rows.Next() {
-		row := make(map[string]any)
-		if err = rows.MapScan(row); err != nil {
+		var row []any
+		if row, err = rows.SliceScan(); err != nil {
 			return nil, err
 		}
-		record := t.RawRecord{
-			FeatureID:        row["fid"].(int64),
-			FieldsWithValues: row,
-			Bbox:             geom.Extent{},
-		}
-		result = append(result, record)
+		result = append(result, mapRowToRawRecord(row, fields))
 	}
 	return result, nil
+}
+
+func mapRowToRawRecord(row []any, fields []string) t.RawRecord {
+	bbox := row[1:5]
+	record := t.RawRecord{
+		FeatureID: row[0].(int64),
+		Bbox: geom.Extent{
+			bbox[0].(float64),
+			bbox[1].(float64),
+			bbox[2].(float64),
+			bbox[3].(float64),
+		},
+		FieldValues: row[5 : 5+len(fields)],
+	}
+	return record
 }

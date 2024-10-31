@@ -1,33 +1,73 @@
 package etl
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/etl/extract"
+	"github.com/PDOK/gomagpie/internal/etl/load"
+	t "github.com/PDOK/gomagpie/internal/etl/transform"
 )
+
+// Extract the 'E' of ETL
+type Extract interface {
+	Extract(featureTable string, fields []string, limit int, offset int) ([]t.RawRecord, error)
+
+	Close() error
+}
+
+// Transform the 'T' of ETL
+type Transform interface {
+	Transform() (t.SearchIndexRecord, error)
+}
+
+// Load the 'L' of ETL
+type Load interface {
+	Load(records []t.RawRecord, fields []string, collection config.GeoSpatialCollection) (int64, error)
+
+	Close() error
+}
 
 func ImportGeoPackage(cfg *config.Config, gpkgPath string, featureTable string, pageSize int,
 	synonymsPath string, substitutionsPath string, targetDbConn string) error {
 
-	searchCfg := getSearchConfigForTable(cfg, featureTable)
-
-	offset := 0
-	g, err := extract.NewGeoPackage(gpkgPath)
+	log.Printf("start importing GeoPackage %s into Postgres search index", gpkgPath)
+	collection, err := getCollectionForTable(cfg, featureTable)
 	if err != nil {
 		return err
 	}
+	if collection.Search == nil {
+		return fmt.Errorf("no search configuration found for feature table: %s", featureTable)
+	}
+
+	source, err := extract.NewGeoPackage(gpkgPath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	target, err := load.NewPostgis(targetDbConn)
+	if err != nil {
+		return err
+	}
+	defer target.Close()
+
+	offset := 0
 	for {
-		batch, err := g.Extract(featureTable, searchCfg.Fields, pageSize, offset)
+		batch, err := source.Extract(featureTable, collection.Search.Fields, pageSize, offset)
 		if err != nil {
-			log.Fatalf("failed importing feature table %s: %v", featureTable, err)
+			return fmt.Errorf("failed reading source: %w", err)
 		}
 		if len(batch) == 0 {
-			break
+			break // no more batches of records to load into search index
 		}
+		loaded, err := target.Load(batch, collection)
+		if err != nil {
+			return fmt.Errorf("failed importing into target: %w", err)
+		}
+		log.Printf("imported %d records from GeoPackage into Postgres search index", loaded)
 		offset += pageSize
-
-		println(len(batch))
 	}
 	//
 	// query rows (select + rows.next) to slice of structs, with limit+offset
@@ -36,20 +76,16 @@ func ImportGeoPackage(cfg *config.Config, gpkgPath string, featureTable string, 
 	println(synonymsPath)      // TODO
 	println(substitutionsPath) // TODO
 	println(targetDbConn)      // TODO
+
+	log.Printf("done importing GeoPackage %s into Postgres search index", gpkgPath)
 	return nil
 }
 
-func getSearchConfigForTable(cfg *config.Config, featureTable string) *config.Search {
-	var searchCfg *config.Search
+func getCollectionForTable(cfg *config.Config, table string) (config.GeoSpatialCollection, error) {
 	for _, coll := range cfg.Collections {
-		if coll.ID == featureTable {
-			if coll.Search != nil {
-				searchCfg = coll.Search
-			}
+		if coll.ID == table {
+			return coll, nil
 		}
 	}
-	if searchCfg == nil {
-		log.Fatalf("no search configuration found for feature table: %s", featureTable)
-	}
-	return searchCfg
+	return config.GeoSpatialCollection{}, fmt.Errorf("no configured collection for feature table: %s", table)
 }

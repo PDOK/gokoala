@@ -33,16 +33,23 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 	searchIndexTable := `
     create table if not exists search_index (
 		id 					serial,
-		feature_id 			varchar (8) 			not null ,
-	    collection_id 		text					not null,
-		collection_version 	int 					not null,
-		display_name 		text					not null,
-		suggest 			text					not null,
-		geometry_type 		geometry_type			not null,
-		bbox 				geometry(POLYGON,4326)	not null,
-	    primary key (id, collection_id, collection_version)
-	) partition by list(collection_id);
+	    component_thoroughfarename varchar,
+        component_postaldescriptor varchar,
+        component_addressareaname varchar,
+	    primary key (id)
+	);
     `
+	//create table if not exists search_index (
+	//	id 					serial,
+	//	feature_id 			varchar (8) 			not null ,
+	//	collection_id 		text					not null,
+	//	collection_version 	int 					not null,
+	//	display_name 		text					not null,
+	//	suggest 			text					not null,
+	//	geometry_type 		geometry_type			not null,
+	//	bbox 				geometry(POLYGON,4326)	not null,
+	//	primary key (id, collection_id, collection_version)
+	//) partition by list(collection_id);
 
 	_, err = db.Exec(ctx, searchIndexTable)
 	if err != nil {
@@ -51,9 +58,11 @@ func CreateSearchIndex(ctx context.Context, conn string) error {
 
 	fullTextSearchColumn := `
 	alter table search_index add column ts TSVECTOR
-        generated always as (to_tsvector('dutch', suggest || display_name )) stored ;
+        generated always as (to_tsvector('dutch', component_thoroughfarename || component_postaldescriptor )) stored ;
     `
-
+	//alter table search_index add column ts TSVECTOR
+	//generated always as (to_tsvector('dutch', suggest || display_name )) stored ;
+	//`
 	_, err = db.Exec(ctx, fullTextSearchColumn)
 	if err != nil {
 		log.Printf("Error creating fullTextSearchColumn: %v\n", err)
