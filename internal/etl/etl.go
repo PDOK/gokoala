@@ -19,14 +19,14 @@ type Extract interface {
 
 // Transform the 'T' of ETL
 type Transform interface {
-	Transform() (t.SearchIndexRecord, error)
+	Transform(collection config.GeoSpatialCollection) (t.SearchIndexRecord, error)
 }
 
 // Load the 'L' of ETL
 type Load interface {
-	Load(records []t.RawRecord, fields []string, collection config.GeoSpatialCollection) (int64, error)
-
 	Init() error
+
+	Load(records []t.RawRecord, fields []string, collection config.GeoSpatialCollection) (int64, error)
 
 	Close() error
 }

@@ -55,10 +55,11 @@ func (g *GeoPackage) Close() error {
 func (g *GeoPackage) Extract(featureTable string, fields []string, limit int, offset int) ([]t.RawRecord, error) {
 	query := fmt.Sprintf(`
 		select fid,
-		    st_minx(castautomagic(geom)) as minx, 
-		    st_miny(castautomagic(geom)) as miny, 
-		    st_maxx(castautomagic(geom)) as maxx, 
-		    st_maxy(castautomagic(geom)) as maxy,
+		    st_minx(castautomagic(geom)) as bbox_minx, 
+		    st_miny(castautomagic(geom)) as bbox_miny, 
+		    st_maxx(castautomagic(geom)) as bbox_maxx, 
+		    st_maxy(castautomagic(geom)) as bbox_maxy,
+		    st_geometrytype(castautomagic(geom)) as gt, -- alternatively can also be read from gpkg_geometry_columns
 		    %s -- all feature specific fields
 		from %s 
 		limit :limit 
@@ -76,6 +77,9 @@ func (g *GeoPackage) Extract(featureTable string, fields []string, limit int, of
 		if row, err = rows.SliceScan(); err != nil {
 			return nil, err
 		}
+		if len(row) != 6+len(fields) {
+			return nil, fmt.Errorf("unexpected row length (%v)", len(row))
+		}
 		result = append(result, mapRowToRawRecord(row, fields))
 	}
 	return result, nil
@@ -83,15 +87,16 @@ func (g *GeoPackage) Extract(featureTable string, fields []string, limit int, of
 
 func mapRowToRawRecord(row []any, fields []string) t.RawRecord {
 	bbox := row[1:5]
-	record := t.RawRecord{
+
+	return t.RawRecord{
 		FeatureID: row[0].(int64),
-		Bbox: geom.Extent{
+		Bbox: &geom.Extent{
 			bbox[0].(float64),
 			bbox[1].(float64),
 			bbox[2].(float64),
 			bbox[3].(float64),
 		},
-		FieldValues: row[5 : 5+len(fields)],
+		GeometryType: row[5].(string),
+		FieldValues:  row[6 : 6+len(fields)],
 	}
-	return record
 }

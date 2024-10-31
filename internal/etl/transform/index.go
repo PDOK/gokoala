@@ -5,38 +5,46 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PDOK/gomagpie/config"
 	"github.com/go-spatial/geom"
 )
 
 type RawRecord struct {
-	FeatureID   int64
-	FieldValues []any
-	Bbox        geom.Extent
+	FeatureID    int64
+	FieldValues  []any
+	Bbox         *geom.Extent
+	GeometryType string
 }
 
-func (r RawRecord) Transform() (SearchIndexRecord, error) {
+func (r RawRecord) Transform(collection config.GeoSpatialCollection) (SearchIndexRecord, error) {
 	fid := strconv.FormatInt(r.FeatureID, 10)
 
 	values, err := toStringSlice(r.FieldValues)
 	if err != nil {
 		return SearchIndexRecord{}, err
 	}
+	if r.Bbox.Area() <= 0 {
+		r.Bbox = nil
+	}
 	return SearchIndexRecord{
-		FeatureID:   fid,
-		DisplayName: strings.Join(values, ","),
-		Suggest:     strings.Join(values, ","),
-		Bbox:        r.Bbox,
+		FeatureID:         fid,
+		CollectionID:      collection.ID,
+		CollectionVersion: collection.Search.Version,
+		DisplayName:       strings.Join(values, ","),
+		Suggest:           strings.Join(values, ","),
+		GeometryType:      r.GeometryType,
+		Bbox:              r.Bbox,
 	}, nil
 }
 
 type SearchIndexRecord struct {
 	FeatureID         string
 	CollectionID      string
-	CollectionVersion string
+	CollectionVersion int
 	DisplayName       string
 	Suggest           string
 	GeometryType      string
-	Bbox              geom.Extent
+	Bbox              *geom.Extent
 }
 
 func toStringSlice[T any](slice []T) ([]string, error) {

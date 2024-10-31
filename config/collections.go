@@ -70,6 +70,8 @@ type Search struct {
 	DisplayName string `yaml:"displayName,omitempty" json:"displayName,omitempty" validate:"required"`
 
 	Suggest []string `yaml:"suggest,omitempty" json:"suggest,omitempty"`
+
+	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 }
 
 type CollectionLinks struct {
