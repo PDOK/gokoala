@@ -10,24 +10,25 @@ import (
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
 )
 
-// Extract the 'E' of ETL
+// Extract the 'E' in ETL
 type Extract interface {
+	// Extract raw records from source database to be transformed and loaded into target search indexs
 	Extract(featureTable string, fields []string, limit int, offset int) ([]t.RawRecord, error)
 
+	// Close connection to source database
 	Close() error
 }
 
-// Transform the 'T' of ETL
-type Transform interface {
-	Transform(collection config.GeoSpatialCollection) (t.SearchIndexRecord, error)
-}
-
-// Load the 'L' of ETL
+// Load the 'L' in ETL
 type Load interface {
+	// Init the target database by creating an empty search index
 	Init() error
 
-	Load(records []t.RawRecord, fields []string, collection config.GeoSpatialCollection) (int64, error)
+	// Load records into search index, and in the process transform (the 'T' in ETL) the records
+	// from raw source records to the desired target records
+	Load(records []t.RawRecord, collection config.GeoSpatialCollection) (int64, error)
 
+	// Close connection to target database
 	Close() error
 }
 

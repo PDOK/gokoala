@@ -16,6 +16,7 @@ type RawRecord struct {
 	GeometryType string
 }
 
+// Transform the 'T' of ETL
 func (r RawRecord) Transform(collection config.GeoSpatialCollection) (SearchIndexRecord, error) {
 	fid := strconv.FormatInt(r.FeatureID, 10)
 
