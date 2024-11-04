@@ -57,6 +57,12 @@ func Test_newRouter(t *testing.T) {
 			wantBody:   "internal/engine/testdata/expected_multiple_ogc_apis_single_collection.html",
 		},
 		{
+			name:       "Serve JSON-LD in multiple OGC APIs for single collection in HTML",
+			configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+			apiCall:    "http://localhost:8180/collections/NewYork?f=html",
+			wantBody:   "internal/engine/testdata/expected_multiple_ogc_apis_single_collection_json_ld.html",
+		},
+		{
 			name:       "Serve multiple Feature Tables from single GeoPackage",
 			configFile: "internal/ogc/features/testdata/config_features_bag_multiple_feature_tables.yaml",
 			apiCall:    "http://localhost:8180/collections?f=json",

@@ -29,7 +29,11 @@
     {{- end }}
     "url": "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}?f=html",
     {{- if and .Params.Metadata .Params.Metadata.Keywords -}}
-    "keywords": ["{{ .Params.Metadata.Keywords | join ", " }}"],
+    "keywords": [
+      {{- range $i, $k := .Params.Metadata.Keywords -}}
+      {{- if $i -}},{{- end -}}"{{ $k }}"
+      {{- end -}}
+    ],
     {{- end -}}
     "license": "{{ .Config.License.URL }}",
     "isAccessibleForFree": true
