@@ -36,6 +36,14 @@
       {{ if and $coll.Metadata $coll.Metadata.Description }}
       ,"description" : "{{ unmarkdown $coll.Metadata.Description }}"
       {{ end }}
+      {{- if and $coll.Metadata $coll.Metadata.Keywords }}
+      ,"keywords": [
+      {{- range $k, $keyword := $coll.Metadata.Keywords -}}
+        {{ if $k }},{{ end }}
+        { "keyword": {{ mustToRawJson $keyword }} }
+      {{- end }}
+      ]
+      {{- end -}}
       {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
         {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
           ,"collectionType" : "3d-container"
@@ -77,14 +85,28 @@
           "rel" : "self",
           "type" : "application/json",
           "title" : "Information about the {{ $coll.ID }} collection as JSON",
+          {{- if and $coll.Metadata $coll.Metadata.LastUpdated }}
+          "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated) "UTC" }}",
+          {{- end }}
           "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         },
         {
           "rel" : "alternate",
           "type" : "text/html",
           "title" : "Information about the {{ $coll.ID }} collection as HTML",
+          {{- if and $coll.Metadata $coll.Metadata.LastUpdated }}
+          "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated) "UTC" }}",
+          {{- end }}
           "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=html"
         }
+        {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}
+        ,{
+          "rel": "preview",
+          "type": "image/{{ $coll.Metadata.Thumbnail | ext | trimPrefix "." }}",
+          "title": "Thumbnail for {{ $coll.ID }}",
+          "href": "{{ $baseUrl }}/resources/{{ $coll.Metadata.Thumbnail }}"
+        }
+        {{ end }}
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
             {{ if and $coll.GeoVolumes $coll.GeoVolumes.Has3DTiles }}

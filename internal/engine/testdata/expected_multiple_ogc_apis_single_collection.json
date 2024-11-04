@@ -2,6 +2,14 @@
   "id": "NewYork",
   "title": "NewYork",
   "description": "This is a description about the NewYork collection in Markdown. We offer both 3D Tiles and Features for this collection.",
+  "keywords": [
+    {
+      "keyword": "Keyword1"
+    },
+    {
+      "keyword": "Keyword2"
+    }
+  ],
   "collectionType": "3d-container",
   "extent": {
     "spatial": {
@@ -35,13 +43,21 @@
       "rel": "self",
       "type": "application/json",
       "title": "This document as JSON",
+      "updated": "2023-05-10T12:00:00Z",
       "href": "http://localhost:8180/collections/NewYork?f=json"
     },
     {
       "rel": "alternate",
       "type": "text/html",
       "title": "This document as HTML",
+      "updated": "2023-05-10T12:00:00Z",
       "href": "http://localhost:8180/collections/NewYork?f=html"
+    },
+    {
+      "rel": "preview",
+      "type": "image/png",
+      "title": "Thumbnail for NewYork",
+      "href": "http://localhost:8180/resources/3d.png"
     },
     {
       "rel": "items",

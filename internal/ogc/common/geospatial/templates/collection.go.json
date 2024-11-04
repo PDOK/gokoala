@@ -9,6 +9,14 @@
   {{ if and .Params.Metadata .Params.Metadata.Description }}
   "description" : "{{ unmarkdown .Params.Metadata.Description }}",
   {{ end }}
+  {{- if and .Params.Metadata .Params.Metadata.Keywords }}
+  "keywords": [
+  {{- range $k, $keyword := .Params.Metadata.Keywords -}}
+    {{ if $k }},{{ end }}
+    {"keyword": {{ mustToRawJson $keyword }} }
+    {{- end -}}
+  ],
+  {{- end }}
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   "collectionType" : "3d-container",
   {{ end }}
@@ -48,14 +56,28 @@
       "rel" : "self",
       "type" : "application/json",
       "title" : "This document as JSON",
+      {{- if and .Params.Metadata .Params.Metadata.LastUpdated }}
+      "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated) "UTC" }}",
+      {{- end }}
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}?f=json"
     },
     {
       "rel" : "alternate",
       "type" : "text/html",
       "title" : "This document as HTML",
+      {{- if and .Params.Metadata .Params.Metadata.LastUpdated }}
+      "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" .Params.Metadata.LastUpdated) "UTC" }}",
+      {{- end }}
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.ID }}?f=html"
     }
+    {{ if and .Params.Metadata .Params.Metadata.Thumbnail }}
+    ,{
+      "rel": "preview",
+      "type": "image/{{ .Params.Metadata.Thumbnail | ext | trimPrefix "." }}",
+      "title": "Thumbnail for {{ .Params.ID }}",
+      "href": "{{ .Config.BaseURL }}/resources/{{ .Params.Metadata.Thumbnail }}"
+    }
+    {{ end }}
     {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
       {{ if and .Params.GeoVolumes .Params.GeoVolumes.Has3DTiles }}
       ,
