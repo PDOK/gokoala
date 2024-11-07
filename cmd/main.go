@@ -38,6 +38,7 @@ const (
 	featureTableFlag        = "feature-table"
 	featureTableFidFlag     = "fid"
 	featureTableGeomFlag    = "geom"
+	pageSizeFlag            = "page-size"
 	synonymsFlag            = "synonyms"
 	substitutionsFlag       = "substitutions"
 )
@@ -207,22 +208,28 @@ func main() {
 					EnvVars:  []string{strcase.ToScreamingSnake(fileFlag)},
 					Required: true,
 				},
-				&cli.PathFlag{
+				&cli.StringFlag{
 					Name:     featureTableFidFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFidFlag)},
 					Required: true,
 					Value:    "fid",
 				},
-				&cli.PathFlag{
+				&cli.StringFlag{
 					Name:     featureTableGeomFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
 					Required: true,
 					Value:    "geom",
 				},
-				&cli.PathFlag{
+				&cli.StringFlag{
 					Name:     featureTableFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFlag)},
 					Required: true,
+				},
+				&cli.IntFlag{
+					Name:     pageSizeFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(pageSizeFlag)},
+					Required: true,
+					Value:    10000,
 				},
 				&cli.PathFlag{
 					Name:     synonymsFlag,
@@ -242,11 +249,11 @@ func main() {
 					return err
 				}
 				featureTable := config.FeatureTable{
-					Name: c.Path(featureTableFlag),
-					FID:  c.Path(featureTableFidFlag),
-					Geom: c.Path(featureTableGeomFlag),
+					Name: c.String(featureTableFlag),
+					FID:  c.String(featureTableFidFlag),
+					Geom: c.String(featureTableGeomFlag),
 				}
-				return etl.ImportFile(cfg, c.Path(fileFlag), featureTable, 10000,
+				return etl.ImportFile(cfg, c.Path(fileFlag), featureTable, c.Int(pageSizeFlag),
 					c.Path(synonymsFlag), c.Path(substitutionsFlag), dbConn)
 			},
 		},
