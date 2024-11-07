@@ -7,6 +7,7 @@ import (
 	"github.com/PDOK/gomagpie/config"
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
 	"github.com/jackc/pgx/v5"
+	pgxgeom "github.com/twpayne/pgx-geom"
 )
 
 type Postgis struct {
@@ -19,6 +20,10 @@ func NewPostgis(dbConn string) (*Postgis, error) {
 	db, err := pgx.Connect(ctx, dbConn)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
+	}
+	// add support for Go <-> PostGIS conversions
+	if err := pgxgeom.Register(ctx, db); err != nil {
+		return nil, err
 	}
 	return &Postgis{db: db, ctx: ctx}, nil
 }

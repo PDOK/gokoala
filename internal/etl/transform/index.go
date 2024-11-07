@@ -1,12 +1,14 @@
 package transform
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/go-spatial/geom"
+	pggeom "github.com/twpayne/go-geom" // this lib has a large overlap with github.com/go-spatial/geom but we need it to integrate with postgres
 )
 
 type RawRecord struct {
@@ -24,8 +26,9 @@ func (r RawRecord) Transform(collection config.GeoSpatialCollection) (SearchInde
 	if err != nil {
 		return SearchIndexRecord{}, err
 	}
-	if r.Bbox.Area() <= 0 {
-		r.Bbox = nil
+	bbox, err := r.transformBbox()
+	if err != nil {
+		return SearchIndexRecord{}, err
 	}
 	return SearchIndexRecord{
 		FeatureID:         fid,
@@ -34,8 +37,25 @@ func (r RawRecord) Transform(collection config.GeoSpatialCollection) (SearchInde
 		DisplayName:       strings.Join(values, ","),
 		Suggest:           strings.Join(values, ","),
 		GeometryType:      r.GeometryType,
-		Bbox:              r.Bbox,
+		Bbox:              bbox,
 	}, nil
+}
+
+func (r RawRecord) transformBbox() (*pggeom.Polygon, error) {
+	if strings.EqualFold(r.GeometryType, "POINT") {
+		r.Bbox = r.Bbox.ExpandBy(0.1) // create valid bbox in case original geom is a point by expanding it a bit
+	}
+	if r.Bbox.Area() <= 0 {
+		return nil, errors.New("bbox area must be greater than zero")
+	}
+	// convert bbox to polygon type supported by Postgres db driver
+	return pggeom.NewPolygon(pggeom.XY).SetCoords([][]pggeom.Coord{{
+		{r.Bbox.MinX(), r.Bbox.MinY()},
+		{r.Bbox.MinX(), r.Bbox.MaxY()},
+		{r.Bbox.MaxX(), r.Bbox.MaxY()},
+		{r.Bbox.MaxX(), r.Bbox.MinY()},
+		{r.Bbox.MinX(), r.Bbox.MinY()},
+	}})
 }
 
 type SearchIndexRecord struct {
@@ -45,7 +65,7 @@ type SearchIndexRecord struct {
 	DisplayName       string
 	Suggest           string
 	GeometryType      string
-	Bbox              *geom.Extent
+	Bbox              *pggeom.Polygon
 }
 
 func toStringSlice[T any](slice []T) ([]string, error) {

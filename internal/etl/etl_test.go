@@ -71,8 +71,18 @@ func TestImportGeoPackage(t *testing.T) {
 	// when/then
 	err = CreateSearchIndex(dbConn)
 	assert.NoError(t, err)
+
 	err = ImportFile(cfg, pwd+"/testdata/addresses-crs84.gpkg", config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}, 1000, "", "", dbConn)
 	assert.NoError(t, err)
+
+	// check nr of records
+	db, err := pgx.Connect(ctx, dbConn)
+	assert.NoError(t, err)
+	var count int
+	err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&count)
+	defer db.Close(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, 33030, count)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
