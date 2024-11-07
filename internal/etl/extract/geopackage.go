@@ -2,12 +2,14 @@ package extract
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path"
 	"strings"
 	"sync"
 
+	"github.com/PDOK/gomagpie/config"
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
 	"github.com/go-spatial/geom"
 	"github.com/jmoiron/sqlx"
@@ -47,23 +49,26 @@ func NewGeoPackage(path string) (*GeoPackage, error) {
 	return &GeoPackage{db}, nil
 }
 
-func (g *GeoPackage) Close() error {
-	return g.db.Close()
+func (g *GeoPackage) Close() {
+	_ = g.db.Close()
 }
 
-// TODO: configure fid column, get geom column, prepare
-func (g *GeoPackage) Extract(featureTable string, fields []string, limit int, offset int) ([]t.RawRecord, error) {
+func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, limit int, offset int) ([]t.RawRecord, error) {
+	if len(fields) == 0 {
+		return nil, errors.New("no fields provided to read from GeoPackage")
+	}
+
 	query := fmt.Sprintf(`
-		select fid,
-		    st_minx(castautomagic(geom)) as bbox_minx, 
-		    st_miny(castautomagic(geom)) as bbox_miny, 
-		    st_maxx(castautomagic(geom)) as bbox_maxx, 
-		    st_maxy(castautomagic(geom)) as bbox_maxy,
-		    st_geometrytype(castautomagic(geom)) as gt, -- alternatively can also be read from gpkg_geometry_columns
-		    %s -- all feature specific fields
-		from %s 
+		select %[3]s,
+		    st_minx(castautomagic(%[4]s)) as bbox_minx, 
+		    st_miny(castautomagic(%[4]s)) as bbox_miny, 
+		    st_maxx(castautomagic(%[4]s)) as bbox_maxx, 
+		    st_maxy(castautomagic(%[4]s)) as bbox_maxy,
+		    st_geometrytype(castautomagic(%[4]s)) as gt, -- alternatively can also be read from gpkg_geometry_columns
+		    %[1]s -- all feature specific fields
+		from %[2]s 
 		limit :limit 
-		offset :offset`, strings.Join(fields, ","), featureTable)
+		offset :offset`, strings.Join(fields, ","), table.Name, table.FID, table.Geom)
 
 	rows, err := g.db.NamedQuery(query, map[string]any{"limit": limit, "offset": offset})
 	if err != nil {

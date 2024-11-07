@@ -34,8 +34,10 @@ const (
 	dbPortFlag              = "db-port"
 	dbSslModeFlag           = "db-ssl-mode"
 	dbUsernameFlag          = "db-username"
-	gpkgFlag                = "gpkg"
+	fileFlag                = "file"
 	featureTableFlag        = "feature-table"
+	featureTableFidFlag     = "fid"
+	featureTableGeomFlag    = "geom"
 	synonymsFlag            = "synonyms"
 	substitutionsFlag       = "substitutions"
 )
@@ -189,9 +191,9 @@ func main() {
 			},
 		},
 		{
-			Name:     "import-gpkg",
+			Name:     "import-file",
 			Category: "etl",
-			Usage:    "Import GeoPackage into search index",
+			Usage:    "Import file into search index",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
@@ -201,9 +203,21 @@ func main() {
 				commonDBFlags[dbSslModeFlag],
 				serviceFlags[configFileFlag],
 				&cli.PathFlag{
-					Name:     gpkgFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(gpkgFlag)},
+					Name:     fileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(fileFlag)},
 					Required: true,
+				},
+				&cli.PathFlag{
+					Name:     featureTableFidFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFidFlag)},
+					Required: true,
+					Value:    "fid",
+				},
+				&cli.PathFlag{
+					Name:     featureTableGeomFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
+					Required: true,
+					Value:    "geom",
 				},
 				&cli.PathFlag{
 					Name:     featureTableFlag,
@@ -227,7 +241,12 @@ func main() {
 				if err != nil {
 					return err
 				}
-				return etl.ImportGeoPackage(cfg, c.Path(gpkgFlag), c.Path(featureTableFlag), 10000,
+				featureTable := config.FeatureTable{
+					Name: c.Path(featureTableFlag),
+					FID:  c.Path(featureTableFidFlag),
+					Geom: c.Path(featureTableGeomFlag),
+				}
+				return etl.ImportFile(cfg, c.Path(fileFlag), featureTable, 10000,
 					c.Path(synonymsFlag), c.Path(substitutionsFlag), dbConn)
 			},
 		},

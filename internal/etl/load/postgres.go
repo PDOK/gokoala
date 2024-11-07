@@ -23,8 +23,8 @@ func NewPostgis(dbConn string) (*Postgis, error) {
 	return &Postgis{db: db, ctx: ctx}, nil
 }
 
-func (p *Postgis) Close() error {
-	return p.db.Close(p.ctx)
+func (p *Postgis) Close() {
+	_ = p.db.Close(p.ctx)
 }
 
 func (p *Postgis) Load(records []t.RawRecord, collection config.GeoSpatialCollection) (int64, error) {
