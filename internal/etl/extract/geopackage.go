@@ -82,7 +82,8 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, limit i
 		if row, err = rows.SliceScan(); err != nil {
 			return nil, err
 		}
-		if len(row) != 6+len(fields) {
+		nrOfStandardFields := 6
+		if len(row) != len(fields)+nrOfStandardFields {
 			return nil, fmt.Errorf("unexpected row length (%v)", len(row))
 		}
 		result = append(result, mapRowToRawRecord(row, fields))

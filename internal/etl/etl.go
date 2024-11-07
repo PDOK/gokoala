@@ -11,7 +11,7 @@ import (
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
 )
 
-// Extract - the 'E' in ETL
+// Extract - the 'E' in ETL. Datasource agnostic interface to extract source data.
 type Extract interface {
 	// Extract raw records from source database to be transformed and loaded into target search index
 	Extract(table config.FeatureTable, fields []string, limit int, offset int) ([]t.RawRecord, error)
@@ -20,7 +20,7 @@ type Extract interface {
 	Close()
 }
 
-// Load - the 'L' in ETL
+// Load - the 'L' in ETL. Datasource agnostic interface to load data into target database.
 type Load interface {
 	// Init the target database by creating an empty search index
 	Init() error
@@ -35,7 +35,7 @@ type Load interface {
 
 // CreateSearchIndex creates empty search index in target database
 func CreateSearchIndex(dbConn string) error {
-	db, err := load.NewPostgis(dbConn)
+	db, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func CreateSearchIndex(dbConn string) error {
 
 // ImportFile import source data into target search index using extract-transform-load principle
 func ImportFile(cfg *config.Config, filePath string, table config.FeatureTable, pageSize int,
-	synonymsPath string, substitutionsPath string, targetDbConn string) error {
+	synonymsPath string, substitutionsPath string, dbConn string) error {
 
 	log.Println("start importing")
 	collection, err := getCollectionForTable(cfg, table)
@@ -62,7 +62,7 @@ func ImportFile(cfg *config.Config, filePath string, table config.FeatureTable, 
 	}
 	defer source.Close()
 
-	target, err := newTargetToLoad(targetDbConn)
+	target, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return err
 	}
