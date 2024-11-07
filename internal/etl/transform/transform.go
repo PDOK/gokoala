@@ -49,13 +49,21 @@ func (r RawRecord) transformBbox() (*pggeom.Polygon, error) {
 		return nil, errors.New("bbox area must be greater than zero")
 	}
 	// convert bbox to polygon type supported by Postgres db driver
-	return pggeom.NewPolygon(pggeom.XY).SetCoords([][]pggeom.Coord{{
+	polygon, err := pggeom.NewPolygon(pggeom.XY).SetCoords([][]pggeom.Coord{{
 		{r.Bbox.MinX(), r.Bbox.MinY()},
-		{r.Bbox.MinX(), r.Bbox.MaxY()},
-		{r.Bbox.MaxX(), r.Bbox.MaxY()},
 		{r.Bbox.MaxX(), r.Bbox.MinY()},
+		{r.Bbox.MaxX(), r.Bbox.MaxY()},
+		{r.Bbox.MinX(), r.Bbox.MaxY()},
 		{r.Bbox.MinX(), r.Bbox.MinY()},
 	}})
+	if err != nil {
+		return nil, err
+	}
+	polygon = polygon.SetSRID(4326)
+	if polygon.Area() <= 0 {
+		return nil, errors.New("polygon area must be greater than zero")
+	}
+	return polygon, nil
 }
 
 type SearchIndexRecord struct {

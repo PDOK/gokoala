@@ -22,6 +22,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.4.1
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go v0.34.0
+	github.com/twpayne/go-geom v1.5.4
 	github.com/twpayne/pgx-geom v0.0.2
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/wk8/go-ordered-map/v2 v2.1.8
@@ -91,7 +92,6 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.13 // indirect
 	github.com/tklauser/numcpus v0.7.0 // indirect
-	github.com/twpayne/go-geom v1.5.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
