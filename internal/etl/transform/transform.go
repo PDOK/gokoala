@@ -108,18 +108,6 @@ func (r RawRecord) transformBbox() (*pggeom.Polygon, error) {
 	return polygon, nil
 }
 
-func toStringSlice[T any](slice []T) ([]string, error) {
-	result := make([]string, 0, len(slice))
-	for _, v := range slice {
-		str, ok := any(v).(string)
-		if !ok {
-			return nil, fmt.Errorf("non-string element found: %v", v)
-		}
-		result = append(result, str)
-	}
-	return result, nil
-}
-
 func slicesToMap(keys []string, values []any) (map[string]any, error) {
 	if len(keys) != len(values) {
 		return nil, fmt.Errorf("slices must be of the same length, got %d keys and %d values", len(keys), len(values))
