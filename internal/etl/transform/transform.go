@@ -18,8 +18,21 @@ type RawRecord struct {
 	GeometryType string
 }
 
-// Transform the 'T' of ETL
-func (r RawRecord) Transform(collection config.GeoSpatialCollection) (SearchIndexRecord, error) {
+type Transformer struct{}
+
+func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection) ([]SearchIndexRecord, error) {
+	result := make([]SearchIndexRecord, 0, len(records))
+	for _, record := range records {
+		tr, err := record.transform(collection)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, tr)
+	}
+	return result, nil
+}
+
+func (r RawRecord) transform(collection config.GeoSpatialCollection) (SearchIndexRecord, error) {
 	fid := strconv.FormatInt(r.FeatureID, 10)
 
 	values, err := toStringSlice(r.FieldValues)

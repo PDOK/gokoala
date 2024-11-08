@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/PDOK/gomagpie/config"
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
 	"github.com/jackc/pgx/v5"
 	pgxgeom "github.com/twpayne/pgx-geom"
@@ -32,17 +31,14 @@ func (p *Postgis) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgis) Load(records []t.RawRecord, collection config.GeoSpatialCollection) (int64, error) {
+func (p *Postgis) Load(records []t.SearchIndexRecord) (int64, error) {
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
 		pgx.Identifier{"search_index"},
 		[]string{"feature_id", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox"},
 		pgx.CopyFromSlice(len(records), func(i int) ([]interface{}, error) {
-			tr, err := records[i].Transform(collection)
-			if err != nil {
-				return nil, err
-			}
-			return []any{tr.FeatureID, tr.CollectionID, tr.CollectionVersion, tr.DisplayName, tr.Suggest, tr.GeometryType, tr.Bbox}, nil
+			r := records[i]
+			return []any{r.FeatureID, r.CollectionID, r.CollectionVersion, r.DisplayName, r.Suggest, r.GeometryType, r.Bbox}, nil
 		}),
 	)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 
 // Extract - the 'E' in ETL. Datasource agnostic interface to extract source data.
 type Extract interface {
+
 	// Extract raw records from source database to be transformed and loaded into target search index
 	Extract(table config.FeatureTable, fields []string, limit int, offset int) ([]t.RawRecord, error)
 
@@ -20,14 +21,21 @@ type Extract interface {
 	Close()
 }
 
+// Transform - the 'T' in ETL. Logic to transform raw records to search index records
+type Transform interface {
+
+	// Transform each raw record in one or more search records depending on the given configuration
+	Transform(records []t.RawRecord, collection config.GeoSpatialCollection) ([]t.SearchIndexRecord, error)
+}
+
 // Load - the 'L' in ETL. Datasource agnostic interface to load data into target database.
 type Load interface {
+
 	// Init the target database by creating an empty search index
 	Init() error
 
-	// Load records into search index, and in the process transform (the 'T' in ETL) the records
-	// from raw source records to the desired target records
-	Load(records []t.RawRecord, collection config.GeoSpatialCollection) (int64, error)
+	// Load records into search index
+	Load(records []t.SearchIndexRecord) (int64, error)
 
 	// Close connection to target database
 	Close()
@@ -68,24 +76,28 @@ func ImportFile(cfg *config.Config, filePath string, table config.FeatureTable, 
 	}
 	defer target.Close()
 
+	transformer := newTransformer(synonymsPath, substitutionsPath)
+
 	offset := 0
 	for {
-		records, err := source.Extract(table, collection.Search.Fields, pageSize, offset)
+		sourceRecords, err := source.Extract(table, collection.Search.Fields, pageSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
 		}
-		if len(records) == 0 {
+		if len(sourceRecords) == 0 {
 			break // no more batches of records to extract
 		}
-		loaded, err := target.Load(records, collection)
+		targetRecords, err := transformer.Transform(sourceRecords, collection)
+		if err != nil {
+			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
+		}
+		loaded, err := target.Load(targetRecords)
 		if err != nil {
 			return fmt.Errorf("failed loading records into target: %w", err)
 		}
 		log.Printf("imported %d records into search index", loaded)
 		offset += pageSize
 	}
-	println(synonymsPath)      // TODO
-	println(substitutionsPath) // TODO
 
 	log.Println("done importing")
 	return nil
@@ -105,6 +117,10 @@ func newTargetToLoad(dbConn string) (Load, error) {
 	}
 	// add new targets here (elasticsearch, solr, etc)
 	return nil, fmt.Errorf("unsupported target database connection: %s", dbConn)
+}
+
+func newTransformer(_ string, _ string) Transform {
+	return t.Transformer{}
 }
 
 func getCollectionForTable(cfg *config.Config, table config.FeatureTable) (config.GeoSpatialCollection, error) {
