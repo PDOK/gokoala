@@ -21,8 +21,8 @@ collections:
         - component_thoroughfarename
         - component_postaldescriptor
         - component_addressareaname
-      displayName: "{component_thoroughfarename} - {component_addressareaname}"
+      displayName: "{{ .component_thoroughfarename }} - {{ .component_addressareaname }}"
       suggest:
-        - "{component_thoroughfarename} {component_addressareaname}"
-        - "{component_thoroughfarename}, {component_postaldescriptor} {component_addressareaname}"
+        - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+        - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
   - id: buildings

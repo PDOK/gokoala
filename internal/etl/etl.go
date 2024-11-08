@@ -78,6 +78,7 @@ func ImportFile(cfg *config.Config, filePath string, table config.FeatureTable, 
 
 	transformer := newTransformer(synonymsPath, substitutionsPath)
 
+	// import records in batches depending on page size
 	offset := 0
 	for {
 		sourceRecords, err := source.Extract(table, collection.Search.Fields, pageSize, offset)

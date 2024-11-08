@@ -82,7 +82,7 @@ func TestImportGeoPackage(t *testing.T) {
 	err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&count)
 	defer db.Close(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, 33030, count)
+	assert.Equal(t, 33030*2, count)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {

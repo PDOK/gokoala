@@ -18,6 +18,9 @@ import (
 
 const (
 	sqliteDriverName = "sqlite3_with_extensions"
+
+	// fid,minx,miny,maxx,maxy,geom_type
+	nrOfStandardFieldsInQuery = 6
 )
 
 var once sync.Once
@@ -59,12 +62,12 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, limit i
 	}
 
 	query := fmt.Sprintf(`
-		select %[3]s,
+		select %[3]s as fid,
 		    st_minx(castautomagic(%[4]s)) as bbox_minx, 
 		    st_miny(castautomagic(%[4]s)) as bbox_miny, 
 		    st_maxx(castautomagic(%[4]s)) as bbox_maxx, 
 		    st_maxy(castautomagic(%[4]s)) as bbox_maxy,
-		    st_geometrytype(castautomagic(%[4]s)) as gt, -- alternatively can also be read from gpkg_geometry_columns
+		    st_geometrytype(castautomagic(%[4]s)) as geom_type,
 		    %[1]s -- all feature specific fields
 		from %[2]s 
 		limit :limit 
@@ -82,8 +85,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, limit i
 		if row, err = rows.SliceScan(); err != nil {
 			return nil, err
 		}
-		nrOfStandardFields := 6
-		if len(row) != len(fields)+nrOfStandardFields {
+		if len(row) != len(fields)+nrOfStandardFieldsInQuery {
 			return nil, fmt.Errorf("unexpected row length (%v)", len(row))
 		}
 		result = append(result, mapRowToRawRecord(row, fields))
@@ -103,6 +105,6 @@ func mapRowToRawRecord(row []any, fields []string) t.RawRecord {
 			bbox[3].(float64),
 		},
 		GeometryType: row[5].(string),
-		FieldValues:  row[6 : 6+len(fields)],
+		FieldValues:  row[nrOfStandardFieldsInQuery : nrOfStandardFieldsInQuery+len(fields)],
 	}
 }
