@@ -72,7 +72,8 @@ func TestImportGeoPackage(t *testing.T) {
 	err = CreateSearchIndex(dbConn)
 	assert.NoError(t, err)
 
-	err = ImportFile(cfg, pwd+"/testdata/addresses-crs84.gpkg", config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}, 1000, "", "", dbConn)
+	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+	err = ImportFile(cfg, pwd+"/testdata/addresses-crs84.gpkg", table, 1000, "", "", dbConn)
 	assert.NoError(t, err)
 
 	// check nr of records

@@ -55,6 +55,8 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
+
+		// create target record(s)
 		for _, suggestion := range suggestions {
 			resultRecord := SearchIndexRecord{
 				FeatureID:         strconv.FormatInt(r.FeatureID, 10),

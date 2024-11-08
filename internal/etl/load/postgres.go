@@ -49,7 +49,7 @@ func (p *Postgis) Load(records []t.SearchIndexRecord) (int64, error) {
 
 // Init initialize search index
 func (p *Postgis) Init() error {
-	geometryType := `create type geometry_type as enum ('GEOMETRY', 'POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');`
+	geometryType := `create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');`
 	_, err := p.db.Exec(p.ctx, geometryType)
 	if err != nil {
 		return fmt.Errorf("error creating geometry type: %w", err)
@@ -64,7 +64,7 @@ func (p *Postgis) Init() error {
 		display_name 		text					not null,
 		suggest 			text					not null,
 		geometry_type 		geometry_type			not null,
-		bbox 				geometry(POLYGON,4326)  null,
+		bbox 				geometry(polygon, 4326) null,
 		primary key (id, collection_id, collection_version)
 	) -- partition by list(collection_id);` // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
