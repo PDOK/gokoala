@@ -133,7 +133,7 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
-	app.Usage = "Run location search and geocoding API service, or use as CLI to support the ETL process for this service."
+	app.Usage = "Run location search and geocoding API, or use as CLI to support the ETL process for this API."
 	app.UseShortOptionHandling = true
 	app.Commands = []*cli.Command{
 		{
