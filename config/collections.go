@@ -65,12 +65,16 @@ type Extent struct {
 }
 
 type Search struct {
+	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate and SuggestTemplates.
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required"`
 
-	DisplayName string `yaml:"displayName,omitempty" json:"displayName,omitempty" validate:"required"`
+	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
+	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
 
-	Suggest []string `yaml:"suggest,omitempty" json:"suggest,omitempty"`
+	// One or more optional templates that make up the autosuggestions. Uses Go text/template syntax to reference fields.
+	SuggestTemplates []string `yaml:"suggestTemplates,omitempty" json:"suggestTemplates,omitempty"`
 
+	// Version of the collection used to link to search results
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 }
 

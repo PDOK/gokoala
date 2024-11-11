@@ -39,12 +39,12 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		displayName, err := t.renderTemplate(collection.Search.DisplayName, fieldValuesByName)
+		displayName, err := t.renderTemplate(collection.Search.DisplayNameTemplate, fieldValuesByName)
 		if err != nil {
 			return nil, err
 		}
-		suggestions := make([]string, 0, len(collection.Search.Suggest))
-		for _, suggestTemplate := range collection.Search.Suggest {
+		suggestions := make([]string, 0, len(collection.Search.SuggestTemplates))
+		for _, suggestTemplate := range collection.Search.SuggestTemplates {
 			suggestion, err := t.renderTemplate(suggestTemplate, fieldValuesByName)
 			if err != nil {
 				return nil, err
