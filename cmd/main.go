@@ -34,13 +34,12 @@ const (
 	dbPortFlag              = "db-port"
 	dbSslModeFlag           = "db-ssl-mode"
 	dbUsernameFlag          = "db-username"
+	searchIndexFlag         = "search-index"
 	fileFlag                = "file"
 	featureTableFlag        = "feature-table"
 	featureTableFidFlag     = "fid"
 	featureTableGeomFlag    = "geom"
 	pageSizeFlag            = "page-size"
-	synonymsFlag            = "synonyms"
-	substitutionsFlag       = "substitutions"
 )
 
 var (
@@ -185,10 +184,17 @@ func main() {
 				commonDBFlags[dbUsernameFlag],
 				commonDBFlags[dbPasswordFlag],
 				commonDBFlags[dbSslModeFlag],
+				&cli.PathFlag{
+					Name:     searchIndexFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:    "Name of search index to create",
+					Required: true,
+					Value:    "search_index",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
-				return etl.CreateSearchIndex(dbConn)
+				return etl.CreateSearchIndex(dbConn, c.String(searchIndexFlag))
 			},
 		},
 		{
@@ -203,6 +209,13 @@ func main() {
 				commonDBFlags[dbPasswordFlag],
 				commonDBFlags[dbSslModeFlag],
 				serviceFlags[configFileFlag],
+				&cli.PathFlag{
+					Name:     searchIndexFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:    "Name of search index in which to import the given file",
+					Required: true,
+					Value:    "search_index",
+				},
 				&cli.PathFlag{
 					Name:     fileFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(fileFlag)},
@@ -236,18 +249,6 @@ func main() {
 					Required: true,
 					Value:    10000,
 				},
-				&cli.PathFlag{
-					Name:     synonymsFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(synonymsFlag)},
-					Usage:    "Path to file with synonyms",
-					Required: false,
-				},
-				&cli.PathFlag{
-					Name:     substitutionsFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(substitutionsFlag)},
-					Usage:    "Path to file with substitutions",
-					Required: false,
-				},
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
@@ -260,8 +261,8 @@ func main() {
 					FID:  c.String(featureTableFidFlag),
 					Geom: c.String(featureTableGeomFlag),
 				}
-				return etl.ImportFile(cfg, c.Path(fileFlag), featureTable, c.Int(pageSizeFlag),
-					c.Path(synonymsFlag), c.Path(substitutionsFlag), dbConn)
+				return etl.ImportFile(cfg, c.String(searchIndexFlag), c.Path(fileFlag), featureTable,
+					c.Int(pageSizeFlag), dbConn)
 			},
 		},
 	}

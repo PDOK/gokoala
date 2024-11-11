@@ -31,10 +31,10 @@ func (p *Postgis) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgis) Load(records []t.SearchIndexRecord) (int64, error) {
+func (p *Postgis) Load(records []t.SearchIndexRecord, index string) (int64, error) {
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
-		pgx.Identifier{"search_index"},
+		pgx.Identifier{index},
 		[]string{"feature_id", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox"},
 		pgx.CopyFromSlice(len(records), func(i int) ([]interface{}, error) {
 			r := records[i]
@@ -48,15 +48,15 @@ func (p *Postgis) Load(records []t.SearchIndexRecord) (int64, error) {
 }
 
 // Init initialize search index
-func (p *Postgis) Init() error {
+func (p *Postgis) Init(index string) error {
 	geometryType := `create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');`
 	_, err := p.db.Exec(p.ctx, geometryType)
 	if err != nil {
 		return fmt.Errorf("error creating geometry type: %w", err)
 	}
 
-	searchIndexTable := `
-	create table if not exists search_index (
+	searchIndexTable := fmt.Sprintf(`
+	create table if not exists %[1]s (
 		id 					serial,
 		feature_id 			varchar (8) 			not null ,
 		collection_id 		text					not null,
@@ -66,21 +66,21 @@ func (p *Postgis) Init() error {
 		geometry_type 		geometry_type			not null,
 		bbox 				geometry(polygon, 4326) null,
 		primary key (id, collection_id, collection_version)
-	) -- partition by list(collection_id);` // TODO partitioning comes later
+	) -- partition by list(collection_id);`, index) // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
 	if err != nil {
 		return fmt.Errorf("error creating search index table: %w", err)
 	}
 
-	fullTextSearchColumn := `
-		alter table search_index add column ts tsvector 
-	    generated always as (to_tsvector('dutch', suggest || display_name )) stored;`
+	fullTextSearchColumn := fmt.Sprintf(`
+		alter table %[1]s add column ts tsvector 
+	    generated always as (to_tsvector('dutch', suggest || display_name )) stored;`, index)
 	_, err = p.db.Exec(p.ctx, fullTextSearchColumn)
 	if err != nil {
 		return fmt.Errorf("error creating full-text search column: %w", err)
 	}
 
-	ginIndex := `create index ts_idx on search_index using gin(ts);`
+	ginIndex := fmt.Sprintf(`create index ts_idx on  %[1]s using gin(ts);`, index)
 	_, err = p.db.Exec(p.ctx, ginIndex)
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)

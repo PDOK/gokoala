@@ -32,28 +32,28 @@ type Transform interface {
 type Load interface {
 
 	// Init the target database by creating an empty search index
-	Init() error
+	Init(index string) error
 
 	// Load records into search index
-	Load(records []t.SearchIndexRecord) (int64, error)
+	Load(records []t.SearchIndexRecord, index string) (int64, error)
 
 	// Close connection to target database
 	Close()
 }
 
 // CreateSearchIndex creates empty search index in target database
-func CreateSearchIndex(dbConn string) error {
+func CreateSearchIndex(dbConn string, searchIndex string) error {
 	db, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	return db.Init()
+	return db.Init(searchIndex)
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
-func ImportFile(cfg *config.Config, filePath string, table config.FeatureTable, pageSize int,
-	synonymsPath string, substitutionsPath string, dbConn string) error {
+func ImportFile(cfg *config.Config, searchIndex string, filePath string, table config.FeatureTable,
+	pageSize int, dbConn string) error {
 
 	log.Println("start importing")
 	collection, err := getCollectionForTable(cfg, table)
@@ -76,7 +76,7 @@ func ImportFile(cfg *config.Config, filePath string, table config.FeatureTable, 
 	}
 	defer target.Close()
 
-	transformer := newTransformer(synonymsPath, substitutionsPath)
+	transformer := newTransformer()
 
 	// import records in batches depending on page size
 	offset := 0
@@ -92,7 +92,7 @@ func ImportFile(cfg *config.Config, filePath string, table config.FeatureTable, 
 		if err != nil {
 			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 		}
-		loaded, err := target.Load(targetRecords)
+		loaded, err := target.Load(targetRecords, searchIndex)
 		if err != nil {
 			return fmt.Errorf("failed loading records into target: %w", err)
 		}
@@ -120,7 +120,7 @@ func newTargetToLoad(dbConn string) (Load, error) {
 	return nil, fmt.Errorf("unsupported target database connection: %s", dbConn)
 }
 
-func newTransformer(_ string, _ string) Transform {
+func newTransformer() Transform {
 	return t.Transformer{}
 }
 

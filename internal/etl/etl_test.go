@@ -41,7 +41,7 @@ func TestCreateSearchIndex(t *testing.T) {
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
 	// when/then
-	err = CreateSearchIndex(dbConn)
+	err = CreateSearchIndex(dbConn, "search_index")
 	assert.NoError(t, err)
 	err = insertTestData(ctx, dbConn)
 	assert.NoError(t, err)
@@ -69,11 +69,11 @@ func TestImportGeoPackage(t *testing.T) {
 	assert.NotNil(t, cfg)
 
 	// when/then
-	err = CreateSearchIndex(dbConn)
+	err = CreateSearchIndex(dbConn, "search_index")
 	assert.NoError(t, err)
 
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-	err = ImportFile(cfg, pwd+"/testdata/addresses-crs84.gpkg", table, 1000, "", "", dbConn)
+	err = ImportFile(cfg, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
 	assert.NoError(t, err)
 
 	// check nr of records
