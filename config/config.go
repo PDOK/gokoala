@@ -183,7 +183,7 @@ type Resources struct {
 	// +optional
 	URL *URL `yaml:"url,omitempty" json:"url,omitempty" validate:"required_without=Directory,omitempty"`
 
-	// // Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if URL is set
+	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted. This is optional if URL is set
 	// +optional
 	Directory *string `yaml:"directory,omitempty" json:"directory,omitempty" validate:"required_without=URL,omitempty,dirpath|filepath"`
 }

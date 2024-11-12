@@ -11,18 +11,18 @@
     "description": "{{ unmarkdown .Config.Abstract }}",
     "url": "{{ .Config.BaseURL }}?f=html",
     {{- if .Config.Keywords }}
-    "keywords": ["{{ .Config.Keywords | join ", " }}"],
+    "keywords": [
+      {{- range $i, $k := .Config.Keywords -}}
+        {{- if $i -}},{{- end -}}"{{ $k }}"
+      {{- end -}}
+    ],
     {{- end }}
     "license": "{{ .Config.License.URL }}",
     "isAccessibleForFree": true
     ,"hasPart": [
-    {{- range $index, $coll := .Config.AllCollections.Unique }}
-      {{- if $index }},{{ end }}
-       {
-        "@type": "URL",
-        "url": "{{ $.Config.BaseURL }}/collections/{{ $coll.ID }}"
-       }
-    {{- end }}
+    {{- range $i, $coll := .Config.AllCollections.Unique -}}
+      {{- if $i -}},{{- end -}}"{{ $.Config.BaseURL }}/collections/{{ $coll.ID }}"
+    {{- end -}}
     ]
 }
 </script>

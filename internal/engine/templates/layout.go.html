@@ -27,7 +27,7 @@
     <!-- canonical -->
     <link rel="canonical" href="{{ .Config.BaseURL }}" />
     {{ range $lang := .Config.AvailableLanguages }}
-        <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?lang={{ $lang }}" />
+        <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?f=html&lang={{ $lang }}" />
     {{ end }}
 
     <!-- css -->
