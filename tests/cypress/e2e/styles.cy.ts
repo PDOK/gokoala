@@ -13,12 +13,7 @@ describe('OGC API Styles tests', () => {
 
   it('styles page should have no broken links', () => {
     cy.visit('/styles')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('style page should have no a11y violations', () => {
@@ -34,12 +29,7 @@ describe('OGC API Styles tests', () => {
 
   it('style page should have no broken links', () => {
     cy.visit('/styles/dummy-style')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('styles metadata page should have no a11y violations', () => {
@@ -55,11 +45,6 @@ describe('OGC API Styles tests', () => {
 
   it('styles metadata page should have no broken links', () => {
     cy.visit('/styles/dummy-style/metadata')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 })

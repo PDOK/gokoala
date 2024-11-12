@@ -18,12 +18,7 @@ describe('OGC API Common tests', () => {
 
   it('landing page should have no broken links', () => {
     cy.visit('/')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   // disabled since it has two violations in the 3rd party swagger-ui component (outside our control)
@@ -40,12 +35,7 @@ describe('OGC API Common tests', () => {
 
   it('openapi page should have no broken links', () => {
     cy.visit('/api')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('conformance page should have no a11y violations', () => {
@@ -62,12 +52,7 @@ describe('OGC API Common tests', () => {
   // Here we also check ogc.org pages, so this test may fail if ogc webpage is down...
   it('conformance page should have no broken links', () => {
     cy.visit('/conformance')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('collections page should have no a11y violations', () => {
@@ -83,12 +68,7 @@ describe('OGC API Common tests', () => {
 
   it('collections page should have no broken links', () => {
     cy.visit('/collections')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('collection page should have no a11y violations', () => {
@@ -104,11 +84,6 @@ describe('OGC API Common tests', () => {
 
   it('collection page should have no broken links', () => {
     cy.visit('/collections/addresses')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 })

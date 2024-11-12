@@ -13,12 +13,7 @@ describe('OGC API Tiles tests', () => {
 
   it('dataset tiles page should have no broken links', () => {
     cy.visit('/tiles')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('dataset tiles metadata page should have no a11y violations', () => {
@@ -34,12 +29,7 @@ describe('OGC API Tiles tests', () => {
 
   it('dataset tiles metadata page should have no broken links', () => {
     cy.visit('/tiles/NetherlandsRDNewQuad')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('geodata tiles page (collection-level) should have no a11y violations', () => {
@@ -55,12 +45,7 @@ describe('OGC API Tiles tests', () => {
 
   it('geodata tiles page should have no broken links', () => {
     cy.visit('/collections/addresses/tiles')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('geodata tiles metadata page (collection-level) should have no a11y violations', () => {
@@ -76,12 +61,7 @@ describe('OGC API Tiles tests', () => {
 
   it('geodata tiles metadata page should have no broken links', () => {
     cy.visit('/collections/addresses/tiles/NetherlandsRDNewQuad')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('tileMatrixSets page should have no a11y violations', () => {
@@ -97,12 +77,7 @@ describe('OGC API Tiles tests', () => {
 
   it('tileMatrixSets page should have no broken links', () => {
     cy.visit('/tileMatrixSets')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 
   it('specific tileMatrixSet (NetherlandsRDNewQuad) page should have no a11y violations', () => {
@@ -118,11 +93,6 @@ describe('OGC API Tiles tests', () => {
 
   it('specific tileMatrixSet (NetherlandsRDNewQuad)  page should have no broken links', () => {
     cy.visit('/tileMatrixSets/NetherlandsRDNewQuad')
-    cy.get('a').each(link => {
-      const href = link.prop('href')
-      if (href && !href.includes('example.com')) {
-        cy.request(href)
-      }
-    })
+    cy.checkForBrokenLinks()
   })
 })
