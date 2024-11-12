@@ -61,6 +61,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, limit i
 		return nil, errors.New("no fields provided to read from GeoPackage")
 	}
 
+	// TODO we might need WGS84 transformation here of bbox
 	query := fmt.Sprintf(`
 		select %[3]s as fid,
 		    st_minx(castautomagic(%[4]s)) as bbox_minx, 

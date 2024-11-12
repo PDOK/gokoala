@@ -12,7 +12,7 @@ type GeoSpatialCollections []GeoSpatialCollection
 
 type GeoSpatialCollection struct {
 	// Unique ID of the collection
-	ID string `yaml:"id" json:"id" validate:"required" `
+	ID string `yaml:"id" json:"id" validate:"required"`
 
 	// Metadata describing the collection contents
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`

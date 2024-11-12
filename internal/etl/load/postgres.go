@@ -64,9 +64,9 @@ func (p *Postgis) Init(index string) error {
 		display_name 		text					not null,
 		suggest 			text					not null,
 		geometry_type 		geometry_type			not null,
-		bbox 				geometry(polygon, 4326) null,
+		bbox 				geometry(polygon, %[2]d) null,
 		primary key (id, collection_id, collection_version)
-	) -- partition by list(collection_id);`, index) // TODO partitioning comes later
+	) -- partition by list(collection_id);`, index, t.WGS84) // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
 	if err != nil {
 		return fmt.Errorf("error creating search index table: %w", err)

@@ -13,6 +13,8 @@ import (
 	pggeom "github.com/twpayne/go-geom" // this lib has a large overlap with github.com/go-spatial/geom but we need it to integrate with postgres
 )
 
+const WGS84 = 4326
+
 type RawRecord struct {
 	FeatureID    int64
 	FieldValues  []any
@@ -103,7 +105,7 @@ func (r RawRecord) transformBbox() (*pggeom.Polygon, error) {
 	if err != nil {
 		return nil, err
 	}
-	polygon = polygon.SetSRID(4326)
+	polygon = polygon.SetSRID(WGS84)
 	if polygon.Area() <= 0 {
 		return nil, errors.New("polygon area must be greater than zero")
 	}
