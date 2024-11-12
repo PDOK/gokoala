@@ -16,6 +16,16 @@ describe('OGC API Common tests', () => {
     cy.get('.card-header.h5').should("have.length", 6)
   })
 
+  it('landing page should have no broken links', () => {
+    cy.visit('/')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
+
   // disabled since it has two violations in the 3rd party swagger-ui component (outside our control)
   it.skip('openapi page should have no a11y violations', () => {
     cy.visit('/api')
@@ -26,6 +36,16 @@ describe('OGC API Common tests', () => {
   it("openapi page should have valid HTML", () => {
     cy.visit("/api");
     cy.htmlvalidate();
+  })
+
+  it('openapi page should have no broken links', () => {
+    cy.visit('/api')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
   })
 
   it('conformance page should have no a11y violations', () => {
@@ -39,6 +59,17 @@ describe('OGC API Common tests', () => {
     cy.htmlvalidate();
   })
 
+  // Here we also check ogc.org pages, so this test may fail if ogc webpage is down...
+  it('conformance page should have no broken links', () => {
+    cy.visit('/conformance')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
+
   it('collections page should have no a11y violations', () => {
     cy.visit('/collections')
     cy.injectAxe()
@@ -50,6 +81,16 @@ describe('OGC API Common tests', () => {
     cy.htmlvalidate();
   })
 
+  it('collections page should have no broken links', () => {
+    cy.visit('/collections')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
+
   it('collection page should have no a11y violations', () => {
     cy.visit('/collections/addresses')
     cy.injectAxe()
@@ -59,5 +100,15 @@ describe('OGC API Common tests', () => {
   it("collection page should have valid HTML", () => {
     cy.visit("/collections/addresses");
     cy.htmlvalidate();
+  })
+
+  it('collection page should have no broken links', () => {
+    cy.visit('/collections/addresses')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
   })
 })

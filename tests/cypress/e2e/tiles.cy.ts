@@ -11,6 +11,16 @@ describe('OGC API Tiles tests', () => {
     cy.htmlvalidate();
   })
 
+  it('dataset tiles page should have no broken links', () => {
+    cy.visit('/tiles')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
+
   it('dataset tiles metadata page should have no a11y violations', () => {
     cy.visit('/tiles/NetherlandsRDNewQuad')
     cy.injectAxe()
@@ -20,6 +30,16 @@ describe('OGC API Tiles tests', () => {
   it("dataset tiles metadata page should have valid HTML", () => {
     cy.visit("/tiles/NetherlandsRDNewQuad");
     cy.htmlvalidate();
+  })
+
+  it('dataset tiles metadata page should have no broken links', () => {
+    cy.visit('/tiles/NetherlandsRDNewQuad')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
   })
 
   it('geodata tiles page (collection-level) should have no a11y violations', () => {
@@ -33,6 +53,16 @@ describe('OGC API Tiles tests', () => {
     cy.htmlvalidate();
   })
 
+  it('geodata tiles page should have no broken links', () => {
+    cy.visit('/collections/addresses/tiles')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
+
   it('geodata tiles metadata page (collection-level) should have no a11y violations', () => {
     cy.visit('/collections/addresses/tiles/NetherlandsRDNewQuad')
     cy.injectAxe()
@@ -40,8 +70,18 @@ describe('OGC API Tiles tests', () => {
   })
 
   it("geodata tiles metadata page should have valid HTML", () => {
-    cy.visit("/collections/addresses/tiles/NetherlandsRDNewQuad");
+    cy.visit('/collections/addresses/tiles/NetherlandsRDNewQuad');
     cy.htmlvalidate();
+  })
+
+  it('geodata tiles metadata page should have no broken links', () => {
+    cy.visit('/collections/addresses/tiles/NetherlandsRDNewQuad')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
   })
 
   it('tileMatrixSets page should have no a11y violations', () => {
@@ -55,6 +95,16 @@ describe('OGC API Tiles tests', () => {
     cy.htmlvalidate();
   })
 
+  it('tileMatrixSets page should have no broken links', () => {
+    cy.visit('/tileMatrixSets')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
+
   it('specific tileMatrixSet (NetherlandsRDNewQuad) page should have no a11y violations', () => {
     cy.visit('/tileMatrixSets/NetherlandsRDNewQuad')
     cy.injectAxe()
@@ -64,5 +114,15 @@ describe('OGC API Tiles tests', () => {
   it("specific tileMatrixSet (NetherlandsRDNewQuad) page should have valid HTML", () => {
     cy.visit("/tileMatrixSets/NetherlandsRDNewQuad");
     cy.htmlvalidate();
+  })
+
+  it('specific tileMatrixSet (NetherlandsRDNewQuad)  page should have no broken links', () => {
+    cy.visit('/tileMatrixSets/NetherlandsRDNewQuad')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
   })
 })

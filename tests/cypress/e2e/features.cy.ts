@@ -13,6 +13,16 @@ describe('OGC API Features tests', () => {
     })
   })
 
+  it('collection page should have no broken links', () => {
+    cy.visit('/collections/addresses/items')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
+
   it('feature page should have no a11y violations', () => {
     cy.visit('/collections/addresses/items/1')
     cy.injectAxe()
@@ -26,4 +36,13 @@ describe('OGC API Features tests', () => {
     })
   })
 
+  it('feature page should have no broken links', () => {
+    cy.visit('/collections/addresses/items/1')
+    cy.get('a').each(link => {
+      const href = link.prop('href')
+      if (href && !href.includes('example.com')) {
+        cy.request(href)
+      }
+    })
+  })
 })
