@@ -1,5 +1,10 @@
 describe('OGC API Styles tests', () => {
 
+  // Fix for https://github.com/cypress-io/cypress/issues/1502#issuecomment-832403402
+  Cypress.on("window:before:load", () => {
+    cy.state("jQuery", Cypress.$);
+  });
+
   it('styles page should have no a11y violations', () => {
     cy.visit('/styles')
     cy.injectAxe()
