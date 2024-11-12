@@ -94,20 +94,12 @@ type Config struct {
 	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted
 	Resources *Resources `yaml:"resources,omitempty" json:"resources,omitempty"`
 
-	// Database to run the queries against
-	Database Database `yaml:"database" json:"database" validate:"required"`
-
 	// Order in which collections should be returned.
 	// When not specified collections are returned in alphabetic order.
 	CollectionOrder []string `yaml:"collectionOrder,omitempty" json:"collectionOrder,omitempty"`
 
 	// Collections offered through this API
 	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty" validate:"required,dive"`
-}
-
-type Database struct {
-	// ConnectionString to connect with backing database
-	ConnectionString string `yaml:"connectionString" json:"connectionString" validate:"required"`
 }
 
 type License struct {

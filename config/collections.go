@@ -12,13 +12,16 @@ type GeoSpatialCollections []GeoSpatialCollection
 
 type GeoSpatialCollection struct {
 	// Unique ID of the collection
-	ID string `yaml:"id" validate:"required" json:"id"`
+	ID string `yaml:"id" json:"id" validate:"required"`
 
 	// Metadata describing the collection contents
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
 	// Links pertaining to this collection (e.g., downloads, documentation)
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
+	// Search config related to location search/suggest
+	Search *Search `yaml:"search,omitempty" json:"search,omitempty"`
 }
 
 type GeoSpatialCollectionMetadata struct {
@@ -50,7 +53,6 @@ type GeoSpatialCollectionMetadata struct {
 	StorageCrs *string `yaml:"storageCrs,omitempty" json:"storageCrs,omitempty" default:"http://www.opengis.net/def/crs/OGC/1.3/CRS84" validate:"startswith=http://www.opengis.net/def/crs"`
 }
 
-// +kubebuilder:object:generate=true
 type Extent struct {
 	// Projection (SRS/CRS) to be used. When none is provided WGS84 (http://www.opengis.net/def/crs/OGC/1.3/CRS84) is used.
 	Srs string `yaml:"srs,omitempty" json:"srs,omitempty" validate:"omitempty,startswith=EPSG:"`
@@ -62,7 +64,20 @@ type Extent struct {
 	Interval []string `yaml:"interval,omitempty" json:"interval,omitempty" validate:"omitempty,len=2"`
 }
 
-// +kubebuilder:object:generate=true
+type Search struct {
+	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate and SuggestTemplates.
+	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required"`
+
+	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
+	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
+
+	// One or more optional templates that make up the autosuggestions. Uses Go text/template syntax to reference fields.
+	SuggestTemplates []string `yaml:"suggestTemplates,omitempty" json:"suggestTemplates,omitempty"`
+
+	// Version of the collection used to link to search results
+	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
+}
+
 type CollectionLinks struct {
 	// Links to downloads of entire collection. These will be rendered as rel=enclosure links
 	// <placeholder>

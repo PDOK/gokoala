@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/PDOK/gomagpie/config"
 	"github.com/iancoleman/strcase"
 
 	eng "github.com/PDOK/gomagpie/internal/engine"
@@ -17,112 +18,149 @@ import (
 	_ "go.uber.org/automaxprocs"
 )
 
+const (
+	appName = "gomagpie"
+
+	hostFlag                = "host"
+	portFlag                = "port"
+	debugPortFlag           = "debug-port"
+	shutdownDelayFlag       = "shutdown-delay"
+	configFileFlag          = "config-file"
+	enableTrailingSlashFlag = "enable-trailing-slash"
+	enableCorsFlag          = "enable-cors"
+	dbHostFlag              = "db-host"
+	dbNameFlag              = "db-name"
+	dbPasswordFlag          = "db-password"
+	dbPortFlag              = "db-port"
+	dbSslModeFlag           = "db-ssl-mode"
+	dbUsernameFlag          = "db-username"
+	searchIndexFlag         = "search-index"
+	fileFlag                = "file"
+	featureTableFlag        = "feature-table"
+	featureTableFidFlag     = "fid"
+	featureTableGeomFlag    = "geom"
+	pageSizeFlag            = "page-size"
+)
+
 var (
-	serviceFlags = []cli.Flag{
-		&cli.StringFlag{
-			Name:     "host",
+	serviceFlags = map[string]cli.Flag{
+		hostFlag: &cli.StringFlag{
+			Name:     hostFlag,
 			Usage:    "bind host",
 			Value:    "0.0.0.0",
 			Required: false,
-			EnvVars:  []string{"HOST"},
+			EnvVars:  []string{strcase.ToScreamingSnake(hostFlag)},
 		},
-		&cli.IntFlag{
-			Name:     "port",
+		portFlag: &cli.IntFlag{
+			Name:     portFlag,
 			Usage:    "bind port",
 			Value:    8080,
 			Required: false,
-			EnvVars:  []string{"PORT"},
+			EnvVars:  []string{strcase.ToScreamingSnake(portFlag)},
 		},
-		&cli.IntFlag{
-			Name:     "debug-port",
+		debugPortFlag: &cli.IntFlag{
+			Name:     debugPortFlag,
 			Usage:    "bind port for debug server (disabled by default), do not expose this port publicly",
 			Value:    -1,
 			Required: false,
-			EnvVars:  []string{"DEBUG_PORT"},
+			EnvVars:  []string{strcase.ToScreamingSnake(debugPortFlag)},
 		},
-		&cli.IntFlag{
-			Name:     "shutdown-delay",
+		shutdownDelayFlag: &cli.IntFlag{
+			Name:     shutdownDelayFlag,
 			Usage:    "delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list)",
 			Value:    0,
 			Required: false,
-			EnvVars:  []string{"SHUTDOWN_DELAY"},
+			EnvVars:  []string{strcase.ToScreamingSnake(shutdownDelayFlag)},
 		},
-		&cli.StringFlag{
-			Name:     "config-file",
+		configFileFlag: &cli.StringFlag{
+			Name:     configFileFlag,
 			Usage:    "reference to YAML configuration file",
 			Required: true,
-			EnvVars:  []string{"CONFIG_FILE"},
+			EnvVars:  []string{strcase.ToScreamingSnake(configFileFlag)},
 		},
-		&cli.BoolFlag{
-			Name:     "enable-trailing-slash",
+		enableTrailingSlashFlag: &cli.BoolFlag{
+			Name:     enableTrailingSlashFlag,
 			Usage:    "allow API calls to URLs with a trailing slash.",
 			Value:    false, // to satisfy https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-48
 			Required: false,
-			EnvVars:  []string{"ALLOW_TRAILING_SLASH"},
+			EnvVars:  []string{strcase.ToScreamingSnake(enableTrailingSlashFlag)},
 		},
-		&cli.BoolFlag{
-			Name:     "enable-cors",
+		enableCorsFlag: &cli.BoolFlag{
+			Name:     enableCorsFlag,
 			Usage:    "enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere.",
 			Value:    false,
 			Required: false,
-			EnvVars:  []string{"ENABLE_CORS"},
+			EnvVars:  []string{strcase.ToScreamingSnake(enableCorsFlag)},
 		},
 	}
-	commonDBFlags = []cli.Flag{
-		&cli.StringFlag{
-			Name:    "db-host",
+
+	commonDBFlags = map[string]cli.Flag{
+		dbHostFlag: &cli.StringFlag{
+			Name:    dbHostFlag,
 			Value:   "localhost",
-			EnvVars: []string{strcase.ToScreamingSnake("db-host")},
+			EnvVars: []string{strcase.ToScreamingSnake(dbHostFlag)},
 		},
-		&cli.IntFlag{
-			Name:    "db-port",
+		dbPortFlag: &cli.IntFlag{
+			Name:    dbPortFlag,
 			Value:   5432,
-			EnvVars: []string{strcase.ToScreamingSnake("db-port")},
+			EnvVars: []string{strcase.ToScreamingSnake(dbPortFlag)},
 		},
-		&cli.StringFlag{
-			Name:    "db-name",
+		dbNameFlag: &cli.StringFlag{
+			Name:    dbNameFlag,
 			Usage:   "Connect to this database",
-			EnvVars: []string{strcase.ToScreamingSnake("db-name")},
+			EnvVars: []string{strcase.ToScreamingSnake(dbNameFlag)},
 		},
-		&cli.StringFlag{
-			Name:    "db-ssl-mode",
+		dbSslModeFlag: &cli.StringFlag{
+			Name:    dbSslModeFlag,
 			Value:   "disable",
-			EnvVars: []string{strcase.ToScreamingSnake("db-ssl-mode")},
+			EnvVars: []string{strcase.ToScreamingSnake(dbSslModeFlag)},
 		},
-		&cli.StringFlag{
-			Name:    "db-username",
+		dbUsernameFlag: &cli.StringFlag{
+			Name:    dbUsernameFlag,
 			Value:   "postgres",
-			EnvVars: []string{strcase.ToScreamingSnake("db-username")},
+			EnvVars: []string{strcase.ToScreamingSnake(dbUsernameFlag)},
 		},
-		&cli.StringFlag{
-			Name:    "db-password",
+		dbPasswordFlag: &cli.StringFlag{
+			Name:    dbPasswordFlag,
 			Value:   "postgres",
-			EnvVars: []string{strcase.ToScreamingSnake("db-password")},
+			EnvVars: []string{strcase.ToScreamingSnake(dbPasswordFlag)},
 		},
 	}
 )
 
+//nolint:funlen
 func main() {
 	app := cli.NewApp()
-	app.Name = "gomagpie"
-	app.Usage = "Run location search and geocoding API service, or use as CLI to support the ETL process for this service."
+	app.Name = appName
+	app.Usage = "Run location search and geocoding API, or use as CLI to support the ETL process for this API."
 	app.UseShortOptionHandling = true
 	app.Commands = []*cli.Command{
 		{
 			Name:  "start-service",
-			Usage: "Run location search and geocoding API service",
-			Description: `
-Run location search and geocoding API service.
-`,
+			Usage: "Start service to serve location API",
+			Flags: []cli.Flag{
+				serviceFlags[hostFlag],
+				serviceFlags[portFlag],
+				serviceFlags[debugPortFlag],
+				serviceFlags[shutdownDelayFlag],
+				serviceFlags[configFileFlag],
+				serviceFlags[enableTrailingSlashFlag],
+				serviceFlags[enableCorsFlag],
+				commonDBFlags[dbPortFlag],
+				commonDBFlags[dbNameFlag],
+				commonDBFlags[dbUsernameFlag],
+				commonDBFlags[dbPasswordFlag],
+				commonDBFlags[dbSslModeFlag],
+			},
 			Action: func(c *cli.Context) error {
 				log.Println(c.Command.Usage)
 
-				address := net.JoinHostPort(c.String("host"), strconv.Itoa(c.Int("port")))
-				debugPort := c.Int("debug-port")
-				shutdownDelay := c.Int("shutdown-delay")
-				configFile := c.String("config-file")
-				trailingSlash := c.Bool("enable-trailing-slash")
-				cors := c.Bool("enable-cors")
+				address := net.JoinHostPort(c.String(hostFlag), strconv.Itoa(c.Int(portFlag)))
+				debugPort := c.Int(debugPortFlag)
+				shutdownDelay := c.Int(shutdownDelayFlag)
+				configFile := c.String(configFileFlag)
+				trailingSlash := c.Bool(enableTrailingSlashFlag)
+				cors := c.Bool(enableCorsFlag)
 
 				// Engine encapsulates shared logic
 				engine, err := eng.NewEngine(configFile, trailingSlash, cors)
@@ -134,19 +172,98 @@ Run location search and geocoding API service.
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
-			Flags: serviceFlags,
 		},
 		{
-			Name:  "create-search-index",
-			Usage: "Create search index",
-			Description: `
-Create search index in database. This exists of a search table "search_index" with full text indices and prepared for partitioning
-`,
+			Name:     "create-search-index",
+			Category: "etl",
+			Usage:    "Create empty search index in database",
+			Flags: []cli.Flag{
+				commonDBFlags[dbHostFlag],
+				commonDBFlags[dbPortFlag],
+				commonDBFlags[dbNameFlag],
+				commonDBFlags[dbUsernameFlag],
+				commonDBFlags[dbPasswordFlag],
+				commonDBFlags[dbSslModeFlag],
+				&cli.PathFlag{
+					Name:     searchIndexFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:    "Name of search index to create",
+					Required: true,
+					Value:    "search_index",
+				},
+			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
-				return etl.CreateSearchIndex(c.Context, dbConn)
+				return etl.CreateSearchIndex(dbConn, c.String(searchIndexFlag))
 			},
-			Flags: commonDBFlags,
+		},
+		{
+			Name:     "import-file",
+			Category: "etl",
+			Usage:    "Import file into search index",
+			Flags: []cli.Flag{
+				commonDBFlags[dbHostFlag],
+				commonDBFlags[dbPortFlag],
+				commonDBFlags[dbNameFlag],
+				commonDBFlags[dbUsernameFlag],
+				commonDBFlags[dbPasswordFlag],
+				commonDBFlags[dbSslModeFlag],
+				serviceFlags[configFileFlag],
+				&cli.PathFlag{
+					Name:     searchIndexFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:    "Name of search index in which to import the given file",
+					Required: true,
+					Value:    "search_index",
+				},
+				&cli.PathFlag{
+					Name:     fileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(fileFlag)},
+					Usage:    "Path to (e.g GeoPackage) file to import",
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     featureTableFidFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFidFlag)},
+					Usage:    "Name of feature ID field in file",
+					Required: true,
+					Value:    "fid",
+				},
+				&cli.StringFlag{
+					Name:     featureTableGeomFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
+					Usage:    "Name of geometry field in file",
+					Required: true,
+					Value:    "geom",
+				},
+				&cli.StringFlag{
+					Name:     featureTableFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFlag)},
+					Usage:    "Name of the table in given file to import",
+					Required: true,
+				},
+				&cli.IntFlag{
+					Name:     pageSizeFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(pageSizeFlag)},
+					Usage:    "Page/batch size to use when extracting records from file",
+					Required: true,
+					Value:    10000,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				dbConn := flagsToDBConnStr(c)
+				cfg, err := config.NewConfig(c.Path(configFileFlag))
+				if err != nil {
+					return err
+				}
+				featureTable := config.FeatureTable{
+					Name: c.String(featureTableFlag),
+					FID:  c.String(featureTableFidFlag),
+					Geom: c.String(featureTableGeomFlag),
+				}
+				return etl.ImportFile(cfg, c.String(searchIndexFlag), c.Path(fileFlag), featureTable,
+					c.Int(pageSizeFlag), dbConn)
+			},
 		},
 	}
 
@@ -158,7 +275,6 @@ Create search index in database. This exists of a search table "search_index" wi
 
 func flagsToDBConnStr(c *cli.Context) string {
 	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&application_name=%s",
-		c.String("db-username"), c.String("db-password"), net.JoinHostPort(c.String("db-host"),
-			strconv.Itoa(c.Int("db-port"))), c.String("db-name"), c.String("db-ssl-mode"),
-		"gomagpie")
+		c.String(dbUsernameFlag), c.String(dbPasswordFlag), net.JoinHostPort(c.String(dbHostFlag),
+			strconv.Itoa(c.Int(dbPortFlag))), c.String(dbNameFlag), c.String(dbSslModeFlag), appName)
 }
