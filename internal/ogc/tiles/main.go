@@ -287,19 +287,18 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.json", collectionID),
 		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.html", collectionID))
 
-	// Now render metadata bout tiles per projection/SRS.
+	// Now render metadata about tiles per projection/SRS.
 	for _, projection := range config.AllTileProjections {
 		path = tilesPath + "/" + projection
-
 		projectionBreadcrumbs := breadcrumbs
-		projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
-			{
-				Name: projection,
-				Path: collectionsCrumb + collectionID + path,
-			},
-		}...)
 
 		if collection != nil {
+			projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
+				{
+					Name: projection,
+					Path: collectionsCrumb + collectionID + path,
+				},
+			}...)
 			path = g.CollectionsPath + "/" + collectionID + tilesPath + "/" + projection
 		}
 		e.RenderTemplatesWithParams(path,

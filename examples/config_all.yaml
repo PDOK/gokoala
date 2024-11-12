@@ -50,7 +50,7 @@ datasetDetails:
   - name: Metadata dataset
     value: >-
       [Dataset metadata in Example Register](https://example.com/my-dataset/metadata)
-datasetCatalogUrl: https://www.pdok.nl/datasets
+datasetCatalogUrl: https://example.com/datasets
 baseUrl: http://localhost:8080
 availableLanguages:
   - nl

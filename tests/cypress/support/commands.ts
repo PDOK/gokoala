@@ -37,3 +37,20 @@
 // }
 
 import 'cypress-axe'
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      checkForBrokenLinks(): Chainable<void>
+    }
+  }
+}
+
+Cypress.Commands.add('checkForBrokenLinks', () =>{
+  cy.get('a').each(link => {
+    const href = link.prop('href')
+    if (href && !href.includes('example.com') && !href.includes('europa.eu')) {
+      cy.request(href)
+    }
+  })
+})
