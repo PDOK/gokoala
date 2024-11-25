@@ -39,7 +39,8 @@ datasets? Spin up a separate instance/container.
     geographic area in an arbitrary format like zip, gpkg, etc.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
   of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing. 
-  Currently, 3 projections (RD, ETRS89 and WebMercator) are supported.
+  Currently, 3 projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
+  geodata tiles (= tiles per collection) are supported.
 - [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends - 
   and JSON representation of supported (Mapbox) styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
@@ -122,7 +123,7 @@ create index "<table>_temporal_idx" on "<table>"(start_date, end_date);
 This is in addition to some of the requirements set forth by the PDOK [GeoPackage validator](https://github.com/PDOK/geopackage-validator).
 Some of the requirements stated above can be automatically applied with help of the PDOK [GeoPackage optimizer](https://github.com/PDOK/geopackage-optimizer-go).
 
-When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend a local cache that is able to hold the spatial index, see by `maxSize` in the config.
+When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend a local cache that is able to hold the spatial index, see `maxSize` in the config.
 
 ### OpenAPI spec
 
