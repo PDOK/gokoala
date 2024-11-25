@@ -68,7 +68,7 @@ func Test_newRouter(t *testing.T) {
 			// given
 			eng, err := gomagpieEngine.NewEngine(tt.configFile, false, true)
 			assert.NoError(t, err)
-			ogc.SetupBuildingBlocks(eng)
+			ogc.SetupBuildingBlocks(eng, "PLACEHOLDER DB CONNECTION STRING")
 
 			recorder := httptest.NewRecorder()
 			req, err := http.NewRequest(http.MethodGet, tt.apiCall, nil)
