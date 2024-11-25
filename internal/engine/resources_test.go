@@ -20,6 +20,52 @@ func (m *MockReverseProxy) Proxy(w http.ResponseWriter, r *http.Request, target 
 	m.Called(w, r, target, prefer204, overwrite)
 }
 
+func TestDir(t *testing.T) {
+	tests := []struct {
+		name           string
+		resourcesDir   string
+		urlParam       string
+		expectedStatus int
+		expectedLog    string
+	}{
+		{
+			name:           "valid url",
+			resourcesDir:   "docs",
+			urlParam:       "foo.txt",
+			expectedStatus: http.StatusOK,
+			expectedLog:    "",
+		},
+		{
+			name:           "invalid url",
+			resourcesDir:   "docs",
+			urlParam:       "non-existing-file",
+			expectedStatus: http.StatusNotFound,
+			expectedLog:    "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			engine, err := NewEngine("internal/engine/testdata/config_resources_dir.yaml", "", false, true)
+			assert.NoError(t, err)
+			r := httptest.NewRequest(http.MethodGet, "/resources/"+tt.urlParam, nil)
+			w := httptest.NewRecorder()
+			var logOutput strings.Builder
+			log.SetOutput(&logOutput)
+
+			// when
+			newResourcesEndpoint(engine)
+			engine.Router.ServeHTTP(w, r)
+
+			// then
+			assert.Equal(t, tt.expectedStatus, w.Result().StatusCode)
+			if tt.expectedLog != "" {
+				assert.Contains(t, logOutput.String(), tt.expectedLog)
+			}
+		})
+	}
+}
+
 func TestProxy(t *testing.T) {
 	tests := []struct {
 		name           string

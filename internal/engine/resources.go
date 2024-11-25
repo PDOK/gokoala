@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -16,8 +15,8 @@ func newResourcesEndpoint(e *Engine) {
 		return
 	}
 	if res.Directory != nil && *res.Directory != "" {
-		resourcesPath := strings.TrimSuffix(*res.Directory, "/resources")
-		e.Router.Handle("/resources/*", http.FileServer(http.Dir(resourcesPath)))
+		resourcesPath := *res.Directory
+		e.Router.Handle("/resources/*", http.StripPrefix("/resources", http.FileServer(http.Dir(resourcesPath))))
 	} else if res.URL != nil && res.URL.String() != "" {
 		e.Router.Get("/resources/*", proxy(e.ReverseProxy, res.URL.String()))
 	}
