@@ -65,12 +65,6 @@ func Test_newRouter(t *testing.T) {
 			apiCall:    "http://localhost:8181?f=html",
 			wantBody:   "internal/engine/testdata/expected_dataset_landingpage.json",
 		},
-		{
-			name:       "Should have valid structured data of type 'Dataset' on (each) collection page",
-			configFile: "examples/config.yaml",
-			apiCall:    "http://localhost:8181/collections/addresses?f=html",
-			wantBody:   "internal/engine/testdata/expected_dataset_collection.json",
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

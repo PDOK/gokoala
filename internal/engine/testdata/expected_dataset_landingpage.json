@@ -6,14 +6,4 @@
   "url": "http:\/\/localhost:8080?f=html",
   "license": "https:\/\/creativecommons.org\/publicdomain\/zero\/1.0\/deed",
   "isAccessibleForFree": true
-,"hasPart": [
-  {
-    "@type": "URL",
-    "url": "http:\/\/localhost:8080/collections/addresses"
-  },
-  {
-    "@type": "URL",
-    "url": "http:\/\/localhost:8080/collections/buildings"
-  }
-]
 }

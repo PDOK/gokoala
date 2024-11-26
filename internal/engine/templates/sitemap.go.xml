@@ -14,9 +14,4 @@
         <loc>{{- .Config.BaseURL -}}/collections?f=html</loc>
     </url>
     {{- end -}}
-    {{- range $index, $coll := .Config.AllCollections.Unique -}}
-    <url>
-        <loc>{{- $.Config.BaseURL -}}/collections/{{- $coll.ID -}}?f=html</loc>
-    </url>
-    {{- end -}}
 </urlset>

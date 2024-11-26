@@ -56,56 +56,7 @@
           {{block "problems" . }}{{end}}
         }
       }
-    },
-    {{- range $index, $coll := .Config.AllCollections -}}
-    {{- if $index -}},{{- end -}}
-    "/collections/{{ $coll.ID }}": {
-      "get": {
-        "tags": [
-          "Collections"
-        ],
-        "summary": "describes a {{ $coll.ID }} collection",
-        "description": "{{ $coll.ID }} collection (geospatial data resource) in this dataset.",
-        "operationId": "getCollection.{{ $coll.ID }}",
-        "parameters": [
-          {
-            "name": "f",
-            "in": "query",
-            "description": "The format of the response. If no value is provided, the standard http\nrules apply, i.e., the accept header is used to determine the format.\n\nPre-defined values are \"json\" and \"html\". The response to other\nvalues is determined by the server.",
-            "required": false,
-            "style": "form",
-            "explode": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            },
-            "example": "json"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Metadata about the collection.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/collection"
-                }
-              },
-              "text/html": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          {{block "problems" . }}{{end}}
-        }
-      }
     }
-    {{- end -}}
   },
   "components": {
     "parameters": {
