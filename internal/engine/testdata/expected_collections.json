@@ -1,5 +1,5 @@
 {
-  "numberReturned": 10,
+  "numberReturned": 2,
   "collections": [
     {
       "id": "adres",
@@ -7,7 +7,7 @@
         "spatial": {
           "bbox": [
             [
-              -1.657292,
+              1.657292,
               48.040502,
               12.431727,
               56.11059
@@ -17,18 +17,22 @@
         }
       },
       "title": "Adres",
-      "description": "... Adressen van Nederland",
-      "keywords": [ "...", "adres", "Nederland"],
+      "description": "Adressen van Nederland",
+      "keywords": [{"keyword":  "adres"}, {"keyword": "Nederland"}],
       "version": 1,
       "displayNameTemplate": "{straatnaam} {huisnummer}{huisletter}, {postcode} {woonplaats}",
       "links": [
         {
-          "href": "https://api.pdok.nl/.../collections/adres?f=json",
-          "rel": "collection",
-          "type": "application/geo+json",
-          "title": "... Adressen van Nederland",
-          "created": "2021-02-08T00:00:00Z",
-          "updated": "2021-02-08T00:00:00Z"
+          "rel": "self",
+          "type": "application/json",
+          "title": "Information about the adres collection as JSON",
+          "href": "http://localhost:8080/collections/adres?f=json"
+        },
+        {
+          "rel": "alternate",
+          "type": "text/html",
+          "title": "Information about the adres collection as HTML",
+          "href": "http://localhost:8080/collections/adres?f=html"
         }
       ]
     },
@@ -48,59 +52,44 @@
         }
       },
       "title": "Weg",
-      "description": "... wegen van Nederland",
-      "keywords": [ "...", "weg", "Nederland"],
+      "description": "wegen van Nederland",
+      "keywords": [{"keyword":  "weg"}, {"keyword": "Nederland"}],
       "version": 2,
       "displayNameTemplate": "{straatnaam} {postcode}, {woonplaats}",
       "links": [
         {
-          "href": "https://api.pdok.nl/.../collections/weg_lijnen?f=json",
-          "rel": "collection",
-          "type": "application/geo+json",
-          "title": "... wegen van Nederland, lijngeometrieen in GeoJSON",
-          "created": "2021-02-08T00:00:00Z",
-          "updated": "2021-02-08T00:00:00Z"
+          "rel": "self",
+          "type": "application/json",
+          "title": "Information about the weg collection as JSON",
+          "href": "http://localhost:8080/collections/weg?f=json"
         },
         {
-          "href": "https://api.pdok.nl/.../collections/weg_vlakken?f=json",
-          "rel": "collection",
-          "type": "application/geo+json",
-          "title": "... wegen van Nederland, vlakgeometrieen in GeoJSON",
-          "created": "2021-02-08T00:00:00Z",
-          "updated": "2021-02-08T00:00:00Z"
+          "rel": "alternate",
+          "type": "text/html",
+          "title": "Information about the weg collection as HTML",
+          "href": "http://localhost:8080/collections/weg?f=html"
         }
       ]
-    },
-    { ... },
-    { ... },
-    { ... },
-    { ... },
-    ...
+    }
   ],
   "links": [
     {
-      "href": "https://api.pdok.nl/location-api?f=json",
-      "rel": "root",
-      "type": "application/geo+json",
-      "title": "Link to this containing collection in JSON"
-    },
-    {
-      "href": "https://api.pdok.nl/location-api?f=html...",
-      "rel": "root",
-      "type": "text/html",
-      "title": "Link to the containing collection in HTML"
-    },
-    {
-      "href": "https://api.pdok.nl/location-api/collections?f=json",
+      "href": "http://localhost:8080/collections?f=json",
       "rel": "self",
-      "type": "application/geo+json",
-      "title": "Link to this response"
+      "type": "application/json",
+      "title": "This document as JSON"
     },
     {
-      "href": "https://api.pdok.nl/location-api/collections?f=html",
+      "href": "http://localhost:8080/collections?f=html",
       "rel": "alternate",
       "type": "text/html",
       "title": "This document as HTML"
+    },
+    {
+      "href": "https://www.tldrlegal.com/license/mit-license",
+      "rel": "license",
+      "type": "text/html",
+      "title": "MIT"
     }
   ]
 }

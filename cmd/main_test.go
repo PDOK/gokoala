@@ -10,7 +10,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	gomagpieEngine "github.com/PDOK/gomagpie/internal/engine"
+
 	"github.com/PDOK/gomagpie/internal/ogc"
 	"github.com/stretchr/testify/assert"
 )
@@ -45,6 +48,12 @@ func Test_newRouter(t *testing.T) {
 			wantBody:   "internal/engine/testdata/expected_conformance.html",
 		},
 		{
+			name:       "Serve collections as JSON",
+			configFile: "internal/engine/testdata/config_full.yaml",
+			apiCall:    "http://localhost:8180/collections?f=json",
+			wantBody:   "internal/engine/testdata/expected_collections.json",
+		},
+		{
 			name:       "Should have valid sitemap XML",
 			configFile: "examples/config.yaml",
 			apiCall:    "http://localhost:8181/sitemap.xml",
@@ -67,7 +76,7 @@ func Test_newRouter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
 			eng, err := gomagpieEngine.NewEngine(tt.configFile, false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			ogc.SetupBuildingBlocks(eng, "PLACEHOLDER DB CONNECTION STRING")
 
 			recorder := httptest.NewRecorder()
@@ -82,9 +91,7 @@ func Test_newRouter(t *testing.T) {
 			// then
 			assert.Equal(t, http.StatusOK, recorder.Code)
 			expectedBody, err := os.ReadFile(tt.wantBody)
-			if err != nil {
-				log.Fatal(err)
-			}
+			require.NoError(t, err)
 			log.Print(recorder.Body.String()) // to ease debugging
 			switch {
 			case strings.HasSuffix(tt.apiCall, "json"):

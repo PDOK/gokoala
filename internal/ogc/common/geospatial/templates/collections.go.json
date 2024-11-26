@@ -22,8 +22,10 @@
       "href": "{{ $cfg.License.URL }}"
     }
   ],
+  {{ $numberReturned := 0 }}
   "collections" : [
     {{ range $index, $coll := $cfg.AllCollections.Unique }}
+    {{ $numberReturned = add $numberReturned 1 }}
     {{/* TIP: temporarily disable the line below to fix intellij/goland highlighting */}}
     {{ if $index }},{{ end }}
     {
@@ -36,6 +38,18 @@
       {{ if and $coll.Metadata $coll.Metadata.Description }}
       ,"description" : "{{ unmarkdown $coll.Metadata.Description }}"
       {{ end }}
+      {{- if and $coll.Metadata $coll.Metadata.Keywords }}
+      ,"keywords": [
+      {{- range $k, $keyword := $coll.Metadata.Keywords -}}
+        {{ if $k }},{{ end }}
+        { "keyword": {{ mustToRawJson $keyword }} }
+      {{- end }}
+      ]
+      {{- end -}}
+      {{ if $coll.Search }}
+      ,"version" : {{ $coll.Search.Version }}
+      ,"displayNameTemplate" : {{ mustToRawJson $coll.Search.DisplayNameTemplate }}
+      {{- end -}}
         {{ if and $coll.Metadata $coll.Metadata.Extent }}
       ,"extent" : {
         "spatial": {
@@ -71,4 +85,5 @@
     }
     {{end}}
   ]
+  , "numberReturned": {{ $numberReturned }}
 }
