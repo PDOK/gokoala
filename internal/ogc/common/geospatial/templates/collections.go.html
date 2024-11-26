@@ -24,6 +24,11 @@
                     <small class="text-body-secondary">{{ i18n "ViewCollectionAs" }} <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json" target="_blank" aria-label="{{ i18n "Collection" }} {{ i18n "As" }} JSON">JSON</a></small>
                 </div>
                 <ul class="list-group list-group-flush">
+                    {{ if and $coll.Metadata $coll.Metadata.Keywords }}
+                    <li class="list-group-item">
+                        <strong>{{ i18n "Keywords" }}</strong>: {{ $coll.Metadata.Keywords | join ", " }}
+                    </li>
+                    {{ end }}
                     {{/* <li class="list-group-item"><b>Schema</b>: TODO link to collection schema</li> */}}
                     {{ if and $coll.Metadata $coll.Metadata.LastUpdated }}
                     <li class="list-group-item">
@@ -67,6 +72,14 @@
                         {{ if not (contains "null" (last $coll.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last $coll.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
                     </li>
                     {{ end }}
+                    {{ if $coll.Search }}
+                    <li class="list-group-item">
+                        <strong>{{ i18n "Version" }}</strong>: {{ $coll.Search.Version }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $coll.Search.DisplayNameTemplate }}</code>
+                    </li>
+                    {{- end -}}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}
                 <img src="resources/{{ $coll.Metadata.Thumbnail }}" class="card-img-bottom" alt="{{ $coll.ID }} Thumbnail">

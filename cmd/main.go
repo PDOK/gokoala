@@ -146,6 +146,7 @@ func main() {
 				serviceFlags[configFileFlag],
 				serviceFlags[enableTrailingSlashFlag],
 				serviceFlags[enableCorsFlag],
+				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
 				commonDBFlags[dbNameFlag],
 				commonDBFlags[dbUsernameFlag],
@@ -162,13 +163,15 @@ func main() {
 				trailingSlash := c.Bool(enableTrailingSlashFlag)
 				cors := c.Bool(enableCorsFlag)
 
+				dbConn := flagsToDBConnStr(c)
+
 				// Engine encapsulates shared logic
 				engine, err := eng.NewEngine(configFile, trailingSlash, cors)
 				if err != nil {
 					return err
 				}
 				// Each OGC API building block makes use of said Engine
-				ogc.SetupBuildingBlocks(engine)
+				ogc.SetupBuildingBlocks(engine, dbConn)
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},

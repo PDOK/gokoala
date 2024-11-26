@@ -1,0 +1,76 @@
+---
+#apiVersion: pdok/crd
+#kind: GoMagpie
+#spec:
+#  service:
+version: 1.0.2
+title: Fully loaded
+serviceIdentifier: full
+abstract: This config should cover all features/options (for testing)
+lastUpdated: "2024-10-22T12:00:00Z"
+lastUpdatedBy: a gnome
+support:
+  name: PDOK Support
+  url: https://www.pdok.nl/support1
+resources:
+  directory: docs  # gomagpie.jpeg
+thumbnail: gomagpie.jpeg
+baseUrl: http://localhost:8080
+license:
+  name: MIT
+  url: https://www.tldrlegal.com/license/mit-license
+availableLanguages:
+  - nl
+  - en
+collections:
+  - id: adres
+    search:
+      displayNameTemplate: "{straatnaam} {huisnummer}{huisletter}, {postcode} {woonplaats}"
+      fields:
+        - straatnaam
+        - huisnummer
+        - huisletter
+        - postcode
+        - woonplaats
+      suggestTemplates:
+        - "{straatnaam} {huisnummer}{huisletter}, {postcode} {woonplaats}"
+        - "maybe something else"
+      version: 1
+      links: {}  # placeholder
+    metadata:
+      title: Adres
+      description: Adressen van Nederland
+      keywords:
+        - adres
+        - Nederland
+      extent:
+        bbox:
+          - 1.657292
+          - 48.040502
+          - 12.431727
+          - 56.11059
+  - id: weg
+    search:
+      version: 2
+      displayNameTemplate: "{straatnaam} {postcode}, {woonplaats}"
+      fields:
+        - straatnaam
+        - postcode
+        - woonplaats
+      suggestTemplates:
+        - "{straatnaam} {postcode}, {woonplaats}"
+    metadata:
+      title: Weg
+      description: wegen van Nederland
+      keywords:
+        - weg
+        - Nederland
+      extent:
+        bbox:
+          - -1.657292
+          - 48.040502
+          - 12.431727
+          - 56.11059
+collectionOrder:
+  - "adres"
+  - "weg"
