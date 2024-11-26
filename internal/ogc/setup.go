@@ -6,7 +6,7 @@ import (
 	"github.com/PDOK/gomagpie/internal/ogc/common/geospatial"
 )
 
-func SetupBuildingBlocks(engine *engine.Engine, dbConnString string) {
+func SetupBuildingBlocks(engine *engine.Engine, _ string) {
 	// OGC Common Part 1, will always be started
 	core.NewCommonCore(engine)
 
@@ -15,6 +15,5 @@ func SetupBuildingBlocks(engine *engine.Engine, dbConnString string) {
 		geospatial.NewCollections(engine)
 	}
 
-	// Something with the DB
-	// TODO
+	// TODO Something with the dbConnString param in PDOK-17118
 }
