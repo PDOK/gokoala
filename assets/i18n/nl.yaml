@@ -58,4 +58,4 @@ FeaturesExplanation: GeoJSON is een open en breed geaccepteerd formaat voor feat
 CollectionTilesHTML: Deze collectie wordt beschikbaar gesteld als vector tiles in &eacute;&eacute;n of meerdere projecties.
 CollectionTilesPlain: Deze collectie wordt beschikbaar gesteld als vector tiles in één of meerdere projecties.
 Version: Versie
-DisplayNameTemplate: Weergavetemplate
+DisplayNameTemplate: Weergavesjabloon
