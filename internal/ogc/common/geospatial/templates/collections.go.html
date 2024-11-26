@@ -12,16 +12,15 @@
             <div class="card h-100">
                 <h2 class="card-header h5">
                     {{ if and $coll.Metadata $coll.Metadata.Title }}
-                    <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                    {{ $coll.Metadata.Title }}
                     {{ else }}
-                    <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                    {{ $coll.ID }}
                     {{ end }}
                 </h2>
                 <div class="card-body">
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
                         {{ markdown $coll.Metadata.Description }}
                     {{ end }}
-                    <small class="text-body-secondary">{{ i18n "ViewCollectionAs" }} <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json" target="_blank" aria-label="{{ i18n "Collection" }} {{ i18n "As" }} JSON">JSON</a></small>
                 </div>
                 <ul class="list-group list-group-flush">
                     {{ if and $coll.Metadata $coll.Metadata.Keywords }}

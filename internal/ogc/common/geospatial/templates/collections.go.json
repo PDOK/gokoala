@@ -68,20 +68,7 @@
         {{- end -}}
       }
       {{ end }}
-      ,"links" : [
-        {
-          "rel" : "self",
-          "type" : "application/json",
-          "title" : "Information about the {{ $coll.ID }} collection as JSON",
-          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
-        },
-        {
-          "rel" : "alternate",
-          "type" : "text/html",
-          "title" : "Information about the {{ $coll.ID }} collection as HTML",
-          "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=html"
-        }
-      ]
+      ,"links" : []
     }
     {{end}}
   ]
