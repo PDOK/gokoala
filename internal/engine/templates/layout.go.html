@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="nl" class="h-100">
 <head>
-    <base href="{{ .Config.BaseURL }}/" />
+    <base href="{{ .Config.BaseURL }}/">
 
     <title>{{ .Config.Title }} (OGC API)</title>
 
@@ -10,24 +10,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- open graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="{{ .Config.BaseURL }}" />
-    <meta property="og:title" content="{{ .Config.Title }} (OGC API)" />
-    <meta property="og:description" content="{{ unmarkdown .Config.Abstract }}" />
-    <meta property="og:logo" content="{{ .Config.BaseURL }}/img/logo-opengraph.png" />
-    <meta property="og:image" content="{{ .Config.BaseURL }}/img/logo-opengraph.png" />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:alt" content="{{ i18n "Logo" }}" />
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ .Config.BaseURL }}">
+    <meta property="og:title" content="{{ .Config.Title }} (OGC API)">
+    <meta property="og:description" content="{{ unmarkdown .Config.Abstract }}">
+    <meta property="og:logo" content="{{ .Config.BaseURL }}/img/logo-opengraph.png">
+    <meta property="og:image" content="{{ .Config.BaseURL }}/img/logo-opengraph.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="{{ i18n "Logo" }}">
 
     <!-- favicons -->
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-    <link rel="shortcut icon" href="img/favicon.ico">
+    <link rel="icon" href="favicon.ico">
 
     <!-- canonical -->
-    <link rel="canonical" href="{{ .Config.BaseURL }}" />
+    <link rel="canonical" href="{{ .Config.BaseURL }}">
     {{ range $lang := .Config.AvailableLanguages }}
-        <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?f=html&lang={{ $lang }}" />
+        <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?f=html&lang={{ $lang }}">
     {{ end }}
 
     <!-- css -->
@@ -73,6 +73,7 @@
                     test any changes using https://search.google.com/test/rich-results */}}
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb" vocab="https://schema.org/" typeof="BreadcrumbList">
+                        <span hidden class="display:none;" property="name">{{ .Config.Title }}</span>
                         {{ if .Config.DatasetCatalogURL.URL }}
                             {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
                             <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
