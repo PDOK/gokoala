@@ -45,8 +45,8 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		suggestions := make([]string, 0, len(collection.Search.SuggestTemplates))
-		for _, suggestTemplate := range collection.Search.SuggestTemplates {
+		suggestions := make([]string, 0, len(collection.Search.ETL.SuggestTemplates))
+		for _, suggestTemplate := range collection.Search.ETL.SuggestTemplates {
 			suggestion, err := t.renderTemplate(suggestTemplate, fieldValuesByName)
 			if err != nil {
 				return nil, err

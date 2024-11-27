@@ -81,7 +81,7 @@ func ImportFile(cfg *config.Config, searchIndex string, filePath string, table c
 	// import records in batches depending on page size
 	offset := 0
 	for {
-		sourceRecords, err := source.Extract(table, collection.Search.Fields, collection.Search.ETLFilter, pageSize, offset)
+		sourceRecords, err := source.Extract(table, collection.Search.Fields, collection.Search.ETL.Filter, pageSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
 		}

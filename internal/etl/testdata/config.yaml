@@ -22,9 +22,10 @@ collections:
         - component_postaldescriptor
         - component_addressareaname
       displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname }}"
-      suggestTemplates:
-        - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
-        - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+      etl:
+        suggestTemplates:
+          - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+          - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
       ogcCollections:
         - api: https://example.com/ogc/v1
           collection: addresses

@@ -71,20 +71,24 @@ type Search struct {
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
 	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
 
-	// One or more optional templates that make up the autosuggestions. Uses Go text/template syntax to reference fields.
-	SuggestTemplates []string `yaml:"suggestTemplates,omitempty" json:"suggestTemplates,omitempty"`
-
-	// SQLite WHERE clause to filter features when importing/ETL-ing
-	// (Without the WHERE keyword, only the clause)
-	// +Optional
-	ETLFilter string `yaml:"etlFilter,omitempty" json:"etlFilter,omitempty"`
-
 	// Version of the collection used to link to search results
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
 	// (Links to) the individual OGC API (feature) collections that are searchable in this collection.
 	// +kubebuilder:validation:MinItems=1
 	OGCCollections []RelatedOGCAPIFeaturesCollection `yaml:"ogcCollections" json:"ogcCollections" validate:"required,min=1"`
+
+	ETL SearchETL `yaml:"etl" json:"etl" validate:"required"`
+}
+
+type SearchETL struct {
+	// One or more optional templates that make up the autosuggestions. Uses Go text/template syntax to reference fields.
+	SuggestTemplates []string `yaml:"suggestTemplates,omitempty" json:"suggestTemplates,omitempty"`
+
+	// SQLite WHERE clause to filter features when importing/ETL-ing
+	// (Without the WHERE keyword, only the clause)
+	// +Optional
+	Filter string `yaml:"filter,omitempty" json:"filter,omitempty"`
 }
 
 type RelatedOGCAPIFeaturesCollection struct {
