@@ -20,8 +20,15 @@
       "description": "Adressen van Nederland",
       "keywords": [{"keyword":  "adres"}, {"keyword": "Nederland"}],
       "version": 1,
-      "displayNameTemplate": "{{straatnaam}} {{huisnummer}}{{huisletter}}, {{postcode}} {{woonplaats}}",
-      "links": []
+      "displayNameTemplate": "{{.straatnaam}} {{.huisnummer}}{{.huisletter}}, {{.postcode}} {{.woonplaats}}",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "adres",
+          "href": "https://api.pdok.nl/owner/dataset/ogc/v1/collections/adres"
+        }
+      ]
     },
     {
       "id": "weg",
@@ -42,8 +49,21 @@
       "description": "wegen van Nederland",
       "keywords": [{"keyword":  "weg"}, {"keyword": "Nederland"}],
       "version": 2,
-      "displayNameTemplate": "{{straatnaam}} {{postcode}}, {{woonplaats}}",
-      "links": []
+      "displayNameTemplate": "{{.straatnaam}} {{.postcode}}, {{.woonplaats}}",
+      "links":  [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "weg_line",
+          "href": "https://api.pdok.nl/owner/dataset/ogc/v1/collections/weg_line"
+        },
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "weg_polygon",
+          "href": "https://api.pdok.nl/owner/dataset/ogc/v1/collections/weg_polygon"
+        }
+      ]
     }
   ],
   "links": [

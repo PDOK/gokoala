@@ -78,6 +78,12 @@
                     <li class="list-group-item">
                         <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $coll.Search.DisplayNameTemplate }}</code>
                     </li>
+                    <li class="list-group-item">
+                        <strong>{{ i18n "OGCCollections" }}</strong>
+                        <ul>{{- range $o, $ogcColl := $coll.Search.OGCCollections -}}
+                        <li><a href="{{ $ogcColl.APIBaseURL }}/collections/{{ $ogcColl.CollectionID }}">{{ $ogcColl.CollectionID }}</a></li>
+                        {{- end -}}</ul>
+                    </li>
                     {{- end -}}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}

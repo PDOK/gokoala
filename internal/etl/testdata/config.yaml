@@ -25,4 +25,8 @@ collections:
       suggestTemplates:
         - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
         - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+      ogcCollections:
+        - api: https://example.com/ogc/v1
+          collection: addresses
+          geometryType: point
   - id: buildings

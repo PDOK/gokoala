@@ -25,7 +25,7 @@ availableLanguages:
 collections:
   - id: adres
     search:
-      displayNameTemplate: "{{straatnaam}} {{huisnummer}}{{huisletter}}, {{postcode}} {{woonplaats}}"
+      displayNameTemplate: "{{.straatnaam}} {{.huisnummer}}{{.huisletter}}, {{.postcode}} {{.woonplaats}}"
       fields:
         - straatnaam
         - huisnummer
@@ -37,6 +37,11 @@ collections:
         - "{{.straatnaam}} {{.huisnummer}}{{.huisletter}} {{.postcode}} {{.woonplaats}}"
       version: 1
       links: {}  # placeholder
+      ogcCollections:
+        - geometryType: point
+          api: https://api.pdok.nl/owner/dataset/ogc/v1
+          collection: adres
+          datetime: "{now()-1h}"
     metadata:
       title: Adres
       description: Adressen van Nederland
@@ -52,13 +57,20 @@ collections:
   - id: weg
     search:
       version: 2
-      displayNameTemplate: "{{straatnaam}} {{postcode}}, {{woonplaats}}"
+      displayNameTemplate: "{{.straatnaam}} {{.postcode}}, {{.woonplaats}}"
       fields:
         - straatnaam
         - postcode
         - woonplaats
       suggestTemplates:
-        - "{{straatnaam}} {{postcode}}, {{woonplaats}}"
+        - "{{.straatnaam}} {{.postcode}}, {{.woonplaats}}"
+      ogcCollections:
+        - geometryType: line
+          api: https://api.pdok.nl/owner/dataset/ogc/v1
+          collection: weg_line
+        - geometryType: polygon
+          api: https://api.pdok.nl/owner/dataset/ogc/v1
+          collection: weg_polygon
     metadata:
       title: Weg
       description: wegen van Nederland

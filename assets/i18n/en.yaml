@@ -59,3 +59,4 @@ CollectionTilesHTML: This collection is available as vector tiles in one or mult
 CollectionTilesPlain: This collection is available as vector tiles in one or multiple projections.
 Version: Version
 DisplayNameTemplate: Display template
+OGCCollections: Related OGC API feature collections
