@@ -19,7 +19,7 @@
                 </h2>
                 <div class="card-body">
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
-                        {{ markdown $coll.Metadata.Description }}
+                        {{ markdown (truncate $coll.Metadata.Description 400) }}
                     {{ end }}
                     <small class="text-body-secondary">{{ i18n "ViewCollectionAs" }} <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json" target="_blank" aria-label="{{ i18n "Collection" }} {{ i18n "As" }} JSON">JSON</a></small>
                 </div>

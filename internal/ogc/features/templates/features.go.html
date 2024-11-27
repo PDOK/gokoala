@@ -81,7 +81,7 @@
             </h2>
             <div class="card-body">
                 {{ if and .Params.Metadata .Params.Metadata.Description }}
-                    {{ markdown .Params.Metadata.Description }}
+                    {{ markdown (truncate .Params.Metadata.Description 400) }}
                 {{ end }}
             </div>
         </div>

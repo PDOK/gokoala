@@ -9,6 +9,7 @@ import (
 	texttemplate "text/template"
 	"time"
 
+	"github.com/aquilax/truncate"
 	"github.com/docker/go-units"
 
 	sprig "github.com/go-task/slim-sprig"
@@ -29,6 +30,7 @@ func init() {
 		// custom template functions
 		"markdown":   markdown,
 		"unmarkdown": unmarkdown,
+		"truncate":   truncateText,
 		"humansize":  humanSize,
 		"bytessize":  bytesSize,
 		"isdate":     isDate,
@@ -79,6 +81,20 @@ func unmarkdown(s *string) string {
 	withoutMarkdown := stripmd.Strip(*s)
 	withoutLinebreaks := strings.ReplaceAll(withoutMarkdown, "\n", " ")
 	return withoutLinebreaks
+}
+
+// truncateText truncate text to avoid overly long text on overview pages
+func truncateText(s *string, limit int) *string {
+	if s == nil {
+		return s
+	}
+	if len(*s) > limit {
+		// truncate at last space or newline before given character limit (+3 puts ellipsis *after* the last word)
+		cutoff := strings.LastIndexAny((*s)[:limit], " \n") + 3
+		t := truncate.Truncate(*s, cutoff, "...", truncate.PositionEnd)
+		return &t
+	}
+	return s
 }
 
 // humanSize converts size in bytes to a human-readable size
