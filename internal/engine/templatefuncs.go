@@ -9,7 +9,6 @@ import (
 	texttemplate "text/template"
 	"time"
 
-	"github.com/aquilax/truncate"
 	"github.com/docker/go-units"
 
 	sprig "github.com/go-task/slim-sprig"
@@ -89,9 +88,9 @@ func truncateText(s *string, limit int) *string {
 		return s
 	}
 	if len(*s) > limit {
-		// truncate at last space or newline before given character limit (+3 puts ellipsis *after* the last word)
-		cutoff := strings.LastIndexAny((*s)[:limit], " \n") + 3
-		t := truncate.Truncate(*s, cutoff, "...", truncate.PositionEnd)
+		// truncate at last space or newline before given character limit
+		cutoff := strings.LastIndexAny((*s)[:limit], " \n")
+		t := (*s)[:cutoff] + "..."
 		return &t
 	}
 	return s
