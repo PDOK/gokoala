@@ -629,6 +629,20 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request features of collection with a long description",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag_long_description.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
+				collectionID: "bar",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_bar_collection_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
