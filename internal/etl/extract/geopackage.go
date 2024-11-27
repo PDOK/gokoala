@@ -56,9 +56,12 @@ func (g *GeoPackage) Close() {
 	_ = g.db.Close()
 }
 
-func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, limit int, offset int) ([]t.RawRecord, error) {
+func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, where string, limit int, offset int) ([]t.RawRecord, error) {
 	if len(fields) == 0 {
 		return nil, errors.New("no fields provided to read from GeoPackage")
+	}
+	if where != "" {
+		where = "where " + where
 	}
 
 	// TODO we might need WGS84 transformation here of bbox
@@ -71,8 +74,9 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, limit i
 		    st_geometrytype(castautomagic(%[4]s)) as geom_type,
 		    %[1]s -- all feature specific fields
 		from %[2]s 
+		%[5]s 
 		limit :limit 
-		offset :offset`, strings.Join(fields, ","), table.Name, table.FID, table.Geom)
+		offset :offset`, strings.Join(fields, ","), table.Name, table.FID, table.Geom, where)
 
 	rows, err := g.db.NamedQuery(query, map[string]any{"limit": limit, "offset": offset})
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 type Extract interface {
 
 	// Extract raw records from source database to be transformed and loaded into target search index
-	Extract(table config.FeatureTable, fields []string, limit int, offset int) ([]t.RawRecord, error)
+	Extract(table config.FeatureTable, fields []string, where string, limit int, offset int) ([]t.RawRecord, error)
 
 	// Close connection to source database
 	Close()
@@ -81,7 +81,7 @@ func ImportFile(cfg *config.Config, searchIndex string, filePath string, table c
 	// import records in batches depending on page size
 	offset := 0
 	for {
-		sourceRecords, err := source.Extract(table, collection.Search.Fields, pageSize, offset)
+		sourceRecords, err := source.Extract(table, collection.Search.Fields, collection.Search.ETLFilter, pageSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
 		}

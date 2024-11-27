@@ -74,6 +74,11 @@ type Search struct {
 	// One or more optional templates that make up the autosuggestions. Uses Go text/template syntax to reference fields.
 	SuggestTemplates []string `yaml:"suggestTemplates,omitempty" json:"suggestTemplates,omitempty"`
 
+	// SQLite WHERE clause to filter features when importing/ETL-ing
+	// (Without the WHERE keyword, only the clause)
+	// +Optional
+	ETLFilter string `yaml:"etlFilter,omitempty" json:"etlFilter,omitempty"`
+
 	// Version of the collection used to link to search results
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
