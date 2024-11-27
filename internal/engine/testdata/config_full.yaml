@@ -32,9 +32,10 @@ collections:
         - huisletter
         - postcode
         - woonplaats
-      suggestTemplates:
-        - "{{.straatnaam}} {{.huisnummer}} {{.huisletter}} {{.postcode}} {{.woonplaats}}"
-        - "{{.straatnaam}} {{.huisnummer}}{{.huisletter}} {{.postcode}} {{.woonplaats}}"
+      etl:
+        suggestTemplates:
+          - "{{.straatnaam}} {{.huisnummer}} {{.huisletter}} {{.postcode}} {{.woonplaats}}"
+          - "{{.straatnaam}} {{.huisnummer}}{{.huisletter}} {{.postcode}} {{.woonplaats}}"
       version: 1
       links: {}  # placeholder
       ogcCollections:

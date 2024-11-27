@@ -86,7 +86,7 @@ func TestImportGeoPackage(t *testing.T) {
 		assert.NotNil(t, cfg)
 		for _, collection := range cfg.Collections {
 			if collection.Search != nil {
-				collection.Search.ETLFilter = tt.where
+				collection.Search.ETL.Filter = tt.where
 			}
 		}
 
