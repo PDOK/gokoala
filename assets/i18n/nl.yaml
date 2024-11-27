@@ -59,3 +59,4 @@ CollectionTilesHTML: Deze collectie wordt beschikbaar gesteld als vector tiles i
 CollectionTilesPlain: Deze collectie wordt beschikbaar gesteld als vector tiles in één of meerdere projecties.
 Version: Versie
 DisplayNameTemplate: Weergavesjabloon
+OGCCollections: Gerelateerde OGC API feature collecties

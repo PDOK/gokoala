@@ -68,7 +68,19 @@
         {{- end -}}
       }
       {{ end }}
-      ,"links" : []
+      ,"links" : [
+        {{ if $coll.Search }}
+        {{- range $o, $ogcColl := $coll.Search.OGCCollections -}}
+        {{ if $o }},{{ end }}
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "{{ $ogcColl.CollectionID }}",
+          "href": "{{ $ogcColl.APIBaseURL }}/collections/{{ $ogcColl.CollectionID }}"
+        }
+        {{- end }}
+        {{- end -}}
+      ]
     }
     {{end}}
   ]
