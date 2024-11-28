@@ -76,7 +76,7 @@ where
 		}
 
 		for _, collection := range collections {
-			if row.Identifier == collection.ID {
+			if row.TableName == collection.ID {
 				result[collection.ID] = &row
 			} else if hasMatchingTableName(collection, row) {
 				result[collection.ID] = &row
@@ -160,5 +160,5 @@ func readFeatureTableInfo(db *sqlx.DB, table featureTable) error {
 
 func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
 	return collection.Features != nil && collection.Features.TableName != nil &&
-		row.Identifier == *collection.Features.TableName
+		row.TableName == *collection.Features.TableName
 }
