@@ -73,7 +73,6 @@
                     test any changes using https://search.google.com/test/rich-results */}}
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb" vocab="https://schema.org/" typeof="BreadcrumbList">
-                        <span hidden class="display:none;" property="name">{{ .Config.Title }}</span>
                         {{ if .Config.DatasetCatalogURL.URL }}
                             {{ $schemaOrgPosition = add1 $schemaOrgPosition }}
                             <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">

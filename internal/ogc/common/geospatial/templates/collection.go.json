@@ -72,8 +72,9 @@
     }
     {{ if and .Params.Metadata .Params.Metadata.Thumbnail }}
     ,{
+      {{ $imageType := .Params.Metadata.Thumbnail | ext | trimPrefix "." }}
       "rel": "preview",
-      "type": "image/{{ .Params.Metadata.Thumbnail | ext | trimPrefix "." }}",
+      "type": "image/{{ if eq $imageType "jpg" }}jpeg{{ else }}{{ $imageType }}{{ end }}",
       "title": "Thumbnail for {{ .Params.ID }}",
       "href": "{{ .Config.BaseURL }}/resources/{{ .Params.Metadata.Thumbnail }}"
     }

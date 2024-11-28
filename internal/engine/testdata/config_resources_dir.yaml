@@ -7,5 +7,6 @@ serviceIdentifier: Min
 license:
   name: MIT
   url: https://www.tldrlegal.com/license/mit-license
+thumbnail: thumbnail.jpg
 resources:
   directory: internal/engine/testdata/test-resources-dir

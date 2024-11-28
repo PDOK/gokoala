@@ -40,6 +40,16 @@
       "title": "{{ .Config.License.Name }}",
       "href": "{{ .Config.License.URL }}"
     }
+    {{ if .Config.Thumbnail }}
+    ,
+    {
+      {{ $imageType := .Config.Thumbnail | ext | trimPrefix "." }}
+      "rel": "preview",
+      "type": "image/{{ if eq $imageType "jpg" }}jpeg{{ else }}{{ $imageType }}{{ end }}",
+      "title": "Thumbnail for the dataset shared via this API",
+      "href": "{{ .Config.BaseURL }}/resources/{{ .Config.Thumbnail }}"
+    }
+    {{ end }}
     {{ if .Config.OgcAPI.Styles }}
     ,
     {
