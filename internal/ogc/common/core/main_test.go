@@ -53,6 +53,17 @@ func TestCommonCore_LandingPage(t *testing.T) {
 			},
 		},
 		{
+			name: "landing page as JSON with Thumbnail",
+			fields: fields{
+				configFile: "internal/engine/testdata/config_resources_dir.yaml",
+				url:        "http://localhost:8080/?f=json",
+			},
+			want: want{
+				body:       "\"rel\": \"preview\",\n   \"type\": \"image/jpeg\",\n   \"title\": \"Thumbnail for the dataset shared via this API\"",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "landing page as HTML",
 			fields: fields{
 				configFile: "internal/engine/testdata/config_minimal.yaml",
@@ -60,6 +71,17 @@ func TestCommonCore_LandingPage(t *testing.T) {
 			},
 			want: want{
 				body:       "<title>Minimal OGC API (OGC API)</title>",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "landing page as HTML with Thumbnail",
+			fields: fields{
+				configFile: "internal/engine/testdata/config_resources_dir.yaml",
+				url:        "http://localhost:8080/?f=html",
+			},
+			want: want{
+				body:       "<img src=\"resources/thumbnail.jpg\"",
 				statusCode: http.StatusOK,
 			},
 		},
