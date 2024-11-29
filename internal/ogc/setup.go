@@ -14,6 +14,4 @@ func SetupBuildingBlocks(engine *engine.Engine, _ string) {
 	if engine.Config.HasCollections() {
 		geospatial.NewCollections(engine)
 	}
-
-	// TODO Something with the dbConnString param in PDOK-17118
 }

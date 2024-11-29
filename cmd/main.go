@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gomagpie/config"
+	"github.com/PDOK/gomagpie/internal/search"
 	"github.com/iancoleman/strcase"
 
 	eng "github.com/PDOK/gomagpie/internal/engine"
@@ -172,6 +173,8 @@ func main() {
 				}
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine, dbConn)
+				// Start search logic
+				search.NewSearch(engine)
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
