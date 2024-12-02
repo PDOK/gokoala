@@ -5,17 +5,24 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/PDOK/gomagpie/internal/engine"
+	ds "github.com/PDOK/gomagpie/internal/search/datasources"
+	"github.com/PDOK/gomagpie/internal/search/datasources/postgres"
 )
 
+const timeout = time.Second * 15
+
 type Search struct {
-	engine *engine.Engine
+	engine     *engine.Engine
+	datasource ds.Datasource
 }
 
-func NewSearch(e *engine.Engine) *Search {
+func NewSearch(e *engine.Engine, dbConn string, searchIndex string) *Search {
 	s := &Search{
-		engine: e,
+		engine:     e,
+		datasource: newDatasource(e, dbConn, searchIndex),
 	}
 	e.Router.Get("/search/suggest", s.Suggest())
 	return s
@@ -36,8 +43,17 @@ func (s *Search) Suggest() http.HandlerFunc {
 		delete(params, "f")
 		crs := params["crs"]
 		delete(params, "crs")
+		limit := params["limit"]
+		delete(params, "limit")
 
-		log.Printf("crs %s, format %s, query %s, params %v", crs, format, searchQuery, params)
+		log.Printf("crs %s, limit %d, format %s, query %s, params %v", crs, limit, format, searchQuery, params)
+
+		suggestions, err := s.datasource.Suggest(r.Context(), r.URL.Query().Get("q"))
+		if err != nil {
+			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
+			return
+		}
+		serveJSON(suggestions, engine.MediaTypeGeoJSON, w)
 	}
 }
 
@@ -65,4 +81,13 @@ func parseQueryParams(query url.Values) (map[string]any, error) {
 		result[mainKey] = subParams
 	}
 	return result, nil
+}
+
+func newDatasource(e *engine.Engine, dbConn string, searchIndex string) ds.Datasource {
+	datasource, err := postgres.NewPostgres(dbConn, timeout, searchIndex)
+	if err != nil {
+		log.Fatalf("failed to create datasource: %v", err)
+	}
+	e.RegisterShutdownHook(datasource.Close)
+	return datasource
 }

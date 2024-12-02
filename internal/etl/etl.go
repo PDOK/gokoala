@@ -114,7 +114,7 @@ func newSourceToExtract(filePath string) (Extract, error) {
 
 func newTargetToLoad(dbConn string) (Load, error) {
 	if strings.HasPrefix(dbConn, "postgres:") {
-		return load.NewPostgis(dbConn)
+		return load.NewPostgres(dbConn)
 	}
 	// add new targets here (elasticsearch, solr, etc)
 	return nil, fmt.Errorf("unsupported target database connection: %s", dbConn)

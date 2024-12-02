@@ -9,12 +9,12 @@ import (
 	pgxgeom "github.com/twpayne/pgx-geom"
 )
 
-type Postgis struct {
+type Postgres struct {
 	db  *pgx.Conn
 	ctx context.Context
 }
 
-func NewPostgis(dbConn string) (*Postgis, error) {
+func NewPostgres(dbConn string) (*Postgres, error) {
 	ctx := context.Background()
 	db, err := pgx.Connect(ctx, dbConn)
 	if err != nil {
@@ -24,14 +24,14 @@ func NewPostgis(dbConn string) (*Postgis, error) {
 	if err := pgxgeom.Register(ctx, db); err != nil {
 		return nil, err
 	}
-	return &Postgis{db: db, ctx: ctx}, nil
+	return &Postgres{db: db, ctx: ctx}, nil
 }
 
-func (p *Postgis) Close() {
+func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgis) Load(records []t.SearchIndexRecord, index string) (int64, error) {
+func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, error) {
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
 		pgx.Identifier{index},
@@ -48,7 +48,7 @@ func (p *Postgis) Load(records []t.SearchIndexRecord, index string) (int64, erro
 }
 
 // Init initialize search index
-func (p *Postgis) Init(index string) error {
+func (p *Postgres) Init(index string) error {
 	geometryType := `create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');`
 	_, err := p.db.Exec(p.ctx, geometryType)
 	if err != nil {
