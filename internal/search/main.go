@@ -31,12 +31,7 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string) *Search {
 // Suggest autosuggest locations based on user input
 func (s *Search) Suggest() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params, err := parseQueryParams(r.URL.Query())
-		if err != nil {
-			log.Printf("%v", err)
-			engine.RenderProblem(engine.ProblemBadRequest, w)
-			return
-		}
+		params := parseQueryParams(r.URL.Query())
 		searchQuery := params["q"]
 		delete(params, "q")
 		format := params["f"]
@@ -48,7 +43,7 @@ func (s *Search) Suggest() http.HandlerFunc {
 
 		log.Printf("crs %s, limit %d, format %s, query %s, params %v", crs, limit, format, searchQuery, params)
 
-		suggestions, err := s.datasource.Suggest(r.Context(), r.URL.Query().Get("q"))
+		suggestions, err := s.datasource.Suggest(r.Context(), searchQuery.(string)) // TODO check before casting
 		if err != nil {
 			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
 			return
@@ -57,7 +52,7 @@ func (s *Search) Suggest() http.HandlerFunc {
 	}
 }
 
-func parseQueryParams(query url.Values) (map[string]any, error) {
+func parseQueryParams(query url.Values) map[string]any {
 	result := make(map[string]any, len(query))
 
 	deepObjectParams := make(map[string]map[string]string)
@@ -80,7 +75,7 @@ func parseQueryParams(query url.Values) (map[string]any, error) {
 	for mainKey, subParams := range deepObjectParams {
 		result[mainKey] = subParams
 	}
-	return result, nil
+	return result
 }
 
 func newDatasource(e *engine.Engine, dbConn string, searchIndex string) ds.Datasource {

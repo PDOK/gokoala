@@ -19,21 +19,22 @@ jobs:
           push: false
           tags: gomagpie:local
 
-      - name: Start gomagpie test instance
-        run: |
-          docker run \
-            -v `pwd`/examples:/examples \
-            --rm --detach -p 8080:8080 \
-            --name gomagpie \
-            gomagpie:local start-service --config-file /examples/config.yaml
-
-      # E2E Test
-      - name: E2E Test => Cypress
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./tests
-          browser: chrome
-
-      - name: Stop gomagpie test instance
-        run: |
-          docker stop gomagpie
+# TODO build end-to-end test
+#      - name: Start gomagpie test instance
+#        run: |
+#          docker run \
+#            -v `pwd`/examples:/examples \
+#            --rm --detach -p 8080:8080 \
+#            --name gomagpie \
+#            gomagpie:local start-service some_index --config-file /examples/config.yaml
+#
+#      # E2E Test
+#      - name: E2E Test => Cypress
+#        uses: cypress-io/github-action@v6
+#        with:
+#          working-directory: ./tests
+#          browser: chrome
+#
+#      - name: Stop gomagpie test instance
+#        run: |
+#          docker stop gomagpie

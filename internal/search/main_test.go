@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,6 +18,7 @@ import (
 	"github.com/PDOK/gomagpie/internal/engine"
 	"github.com/PDOK/gomagpie/internal/etl"
 	"github.com/docker/go-connections/nat"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -36,7 +40,7 @@ func TestSuggest(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	// given
+	// given postgres available
 	dbPort, postgisContainer, err := setupPostgis(ctx, t)
 	if err != nil {
 		t.Error(err)
@@ -45,20 +49,42 @@ func TestSuggest(t *testing.T) {
 
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
+	// given empty search index
 	err = etl.CreateSearchIndex(dbConn, "search_index")
 	assert.NoError(t, err)
 
+	// given imported gpkg
 	cfg, err := config.NewConfig("internal/etl/testdata/config.yaml")
 	assert.NoError(t, err)
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
 	err = etl.ImportFile(cfg, "search_index", "internal/etl/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
 	assert.NoError(t, err)
 
-	// when/then
+	// given engine available
 	e, err := engine.NewEngine("internal/etl/testdata/config.yaml", false, false)
 	assert.NoError(t, err)
+
+	// given server available
+	rr, ts := createMockServer()
+	defer ts.Close()
+
+	// when perform autosuggest
 	searchEndpoint := NewSearch(e, dbConn, "search_index")
-	searchEndpoint.Suggest()
+	handler := searchEndpoint.Suggest()
+	req, err := createRequest("http://localhost:8080/search/suggest?q=\"Oudeschild\"")
+	assert.NoError(t, err)
+	handler.ServeHTTP(rr, req)
+
+	// then
+	assert.Equal(t, 200, rr.Code)
+	assert.JSONEq(t, `[
+		"Barentszstraat, 1792AD <b>Oudeschild</b>",
+		"Bolwerk, 1792AS <b>Oudeschild</b>",
+		"Commandeurssingel, 1792AV <b>Oudeschild</b>",
+		"De Houtmanstraat, 1792BC <b>Oudeschild</b>",
+		"De Ruyterstraat, 1792AP <b>Oudeschild</b>",
+		"De Wittstraat, 1792BP <b>Oudeschild</b>"
+	]`, rr.Body.String())
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
@@ -103,4 +129,32 @@ func terminateContainer(ctx context.Context, t *testing.T, container testcontain
 	if err := container.Terminate(ctx); err != nil {
 		t.Fatalf("Failed to terminate container: %s", err.Error())
 	}
+}
+
+func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
+	rr := httptest.NewRecorder()
+	l, err := net.Listen("tcp", "localhost:9095")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		engine.SafeWrite(w.Write, []byte(r.URL.String()))
+	}))
+	err = ts.Listener.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ts.Listener = l
+	ts.Start()
+	return rr, ts
+}
+
+func createRequest(url string) (*http.Request, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if req == nil || err != nil {
+		return req, err
+	}
+	rctx := chi.NewRouteContext()
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	return req, err
 }
