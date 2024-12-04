@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
 	pgxgeom "github.com/twpayne/pgx-geom"
 
@@ -36,17 +37,17 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Suggest(ctx context.Context, suggestForThis string) ([]string, error) {
+func (p *Postgres) Suggest(ctx context.Context, searchTerm string, _ map[string]map[string]string, _ domain.SRID, limit int) ([]string, error) {
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
 	// Prepare dynamic full-text search query
 	// Split terms by spaces and append :* to each term
-	terms := strings.Fields(suggestForThis)
+	terms := strings.Fields(searchTerm)
 	for i, term := range terms {
 		terms[i] = term + ":*"
 	}
-	searchTerm := strings.Join(terms, " & ")
+	searchTermForPostgres := strings.Join(terms, " & ")
 
 	sqlQuery := fmt.Sprintf(
 		`SELECT
@@ -56,17 +57,15 @@ func (p *Postgres) Suggest(ctx context.Context, suggestForThis string) ([]string
 	FROM (
 		SELECT display_name, 
 	    ts_rank_cd(ts, to_tsquery('%[1]s'), 1) AS rank,
-	    ts_headline('dutch', suggest, to_tsquery('%[2]s')) AS highlighted_text
-		FROM
-		%[3]s
-		WHERE ts @@ to_tsquery('%[4]s') LIMIT 500
+	    ts_headline('dutch', suggest, to_tsquery('%[1]s')) AS highlighted_text
+		FROM %[2]s
+		WHERE ts @@ to_tsquery('%[1]s') LIMIT 500
 	) r
 	GROUP BY display_name
-	ORDER BY rank DESC, display_name ASC LIMIT 50`,
-		searchTerm, searchTerm, p.searchIndex, searchTerm)
+	ORDER BY rank DESC, display_name ASC LIMIT $1`, searchTermForPostgres, p.searchIndex)
 
 	// Execute query
-	rows, err := p.db.Query(queryCtx, sqlQuery)
+	rows, err := p.db.Query(queryCtx, sqlQuery, limit)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sqlQuery, err)
 	}

@@ -24,6 +24,8 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+const testSearchIndex = "search_index"
+
 func init() {
 	// change working dir to root
 	_, filename, _, _ := runtime.Caller(0)
@@ -40,7 +42,7 @@ func TestSuggest(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	// given postgres available
+	// given available postgres
 	dbPort, postgisContainer, err := setupPostgis(ctx, t)
 	if err != nil {
 		t.Error(err)
@@ -49,42 +51,110 @@ func TestSuggest(t *testing.T) {
 
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
-	// given empty search index
-	err = etl.CreateSearchIndex(dbConn, "search_index")
+	// given available engine
+	eng, err := engine.NewEngine("internal/etl/testdata/config.yaml", false, false)
 	assert.NoError(t, err)
 
-	// given imported gpkg
+	// given search endpoint
+	searchEndpoint := NewSearch(eng, dbConn, testSearchIndex)
+
+	// given empty search index
+	err = etl.CreateSearchIndex(dbConn, testSearchIndex)
+	assert.NoError(t, err)
+
+	// given imported geopackage
 	cfg, err := config.NewConfig("internal/etl/testdata/config.yaml")
 	assert.NoError(t, err)
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-	err = etl.ImportFile(cfg, "search_index", "internal/etl/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
+	err = etl.ImportFile(cfg, testSearchIndex, "internal/etl/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
 	assert.NoError(t, err)
 
-	// given engine available
-	e, err := engine.NewEngine("internal/etl/testdata/config.yaml", false, false)
-	assert.NoError(t, err)
+	// run test cases
+	type fields struct {
+		url string
+	}
+	type want struct {
+		body       string
+		statusCode int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "Suggest: Oudeschild",
+			fields: fields{
+				url: "http://localhost:8080/search/suggest?q=\"Oudeschild\"&limit=50",
+			},
+			want: want{
+				body: `[
+					"Barentszstraat, 1792AD <b>Oudeschild</b>",
+					"Bolwerk, 1792AS <b>Oudeschild</b>",
+					"Commandeurssingel, 1792AV <b>Oudeschild</b>",
+					"De Houtmanstraat, 1792BC <b>Oudeschild</b>",
+					"De Ruyterstraat, 1792AP <b>Oudeschild</b>",
+					"De Wittstraat, 1792BP <b>Oudeschild</b>"
+				]`,
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Suggest: Den ",
+			fields: fields{
+				url: "http://localhost:8080/search/suggest?q=\"Den\"&limit=50",
+			},
+			want: want{
+				body: `[
+					"Abbewaal, 1791WZ <b>Den</b> Burg",
+					"Achterom, 1791AN <b>Den</b> Burg",
+					"Akenbuurt, 1791PJ <b>Den</b> Burg",
+					"Amaliaweg, 1797SW <b>Den</b> Hoorn",
+					"Bakkenweg, 1797RJ <b>Den</b> Hoorn",
+					"Beatrixlaan, 1791GE <b>Den</b> Burg",
+					"Ada van Hollandstraat, 1791DH <b>Den</b> Burg",
+					"Anne Frankstraat, 1791DT <b>Den</b> Burg"
+				]`,
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Suggest: Den. With deepCopy params",
+			fields: fields{
+				url: "http://localhost:8080/search/suggest?q=\"Den\"&weg[version]=2&weg[relevance]=0.8&adres[version]=1&adres[relevance]=1&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+			},
+			want: want{
+				body: `[
+					"Abbewaal, 1791WZ <b>Den</b> Burg",
+					"Achterom, 1791AN <b>Den</b> Burg",
+					"Akenbuurt, 1791PJ <b>Den</b> Burg",
+					"Amaliaweg, 1797SW <b>Den</b> Hoorn",
+					"Bakkenweg, 1797RJ <b>Den</b> Hoorn",
+					"Beatrixlaan, 1791GE <b>Den</b> Burg",
+					"Ada van Hollandstraat, 1791DH <b>Den</b> Burg",
+					"Anne Frankstraat, 1791DT <b>Den</b> Burg"
+				]`,
+				statusCode: http.StatusOK,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given available server
+			rr, ts := createMockServer()
+			defer ts.Close()
 
-	// given server available
-	rr, ts := createMockServer()
-	defer ts.Close()
+			// when
+			handler := searchEndpoint.Suggest()
+			req, err := createRequest(tt.fields.url)
+			assert.NoError(t, err)
+			handler.ServeHTTP(rr, req)
 
-	// when perform autosuggest
-	searchEndpoint := NewSearch(e, dbConn, "search_index")
-	handler := searchEndpoint.Suggest()
-	req, err := createRequest("http://localhost:8080/search/suggest?q=\"Oudeschild\"")
-	assert.NoError(t, err)
-	handler.ServeHTTP(rr, req)
-
-	// then
-	assert.Equal(t, 200, rr.Code)
-	assert.JSONEq(t, `[
-		"Barentszstraat, 1792AD <b>Oudeschild</b>",
-		"Bolwerk, 1792AS <b>Oudeschild</b>",
-		"Commandeurssingel, 1792AV <b>Oudeschild</b>",
-		"De Houtmanstraat, 1792BC <b>Oudeschild</b>",
-		"De Ruyterstraat, 1792AP <b>Oudeschild</b>",
-		"De Wittstraat, 1792BP <b>Oudeschild</b>"
-	]`, rr.Body.String())
+			// then
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			assert.JSONEq(t, tt.want.body, rr.Body.String())
+		})
+	}
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
@@ -154,7 +224,6 @@ func createRequest(url string) (*http.Request, error) {
 	if req == nil || err != nil {
 		return req, err
 	}
-	rctx := chi.NewRouteContext()
-	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, chi.NewRouteContext()))
 	return req, err
 }
