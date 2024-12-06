@@ -185,3 +185,12 @@ func isExistingLocalDir(path string) bool {
 	fileInfo, err := os.Stat(path)
 	return err == nil && fileInfo.IsDir()
 }
+
+func CollectionByID(cfg *Config, id string) *GeoSpatialCollection {
+	for _, coll := range cfg.Collections {
+		if coll.ID == id {
+			return &coll
+		}
+	}
+	return nil
+}
