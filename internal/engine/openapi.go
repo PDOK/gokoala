@@ -189,7 +189,7 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 func renderOpenAPITemplate(config *gomagpieconfig.Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
 	files := []string{problems, file} // add problems template too since it's an "include" template
-	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(files...))
+	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(GlobalTemplateFuncs).ParseFiles(files...))
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{Config: config, Params: params}); err != nil {

@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/PDOK/gomagpie/config"
+	"github.com/PDOK/gomagpie/internal/engine"
 	"github.com/go-spatial/geom"
 	pggeom "github.com/twpayne/go-geom" // this lib has a large overlap with github.com/go-spatial/geom but we need it to integrate with postgres
 )
@@ -76,7 +77,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 }
 
 func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]any) (string, error) {
-	parsedTemplate, err := template.New("").Parse(templateFromConfig)
+	parsedTemplate, err := template.New("").Funcs(engine.GlobalTemplateFuncs).Parse(templateFromConfig)
 	if err != nil {
 		return "", err
 	}
