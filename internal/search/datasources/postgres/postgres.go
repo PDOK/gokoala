@@ -3,10 +3,12 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
 	pggeom "github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/geojson"
 	pgxgeom "github.com/twpayne/pgx-geom"
 
 	"strings"
@@ -38,7 +40,7 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Suggest(ctx context.Context, searchTerm string, _ map[string]map[string]string, _ domain.SRID, limit int) ([]string, error) {
+func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections map[string]map[string]string, srid domain.SRID, limit int) (*domain.FeatureCollection, error) {
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
@@ -48,9 +50,51 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, _ map[string]
 	for i, term := range terms {
 		terms[i] = term + ":*"
 	}
-	searchTermForPostgres := strings.Join(terms, " & ")
+	termsConcat := strings.Join(terms, " & ")
+	searchQuery := makeSearchQuery(termsConcat, p.searchIndex)
 
-	sqlQuery := fmt.Sprintf(`
+	// Execute search query
+	rows, err := p.db.Query(queryCtx, searchQuery, limit)
+	if err != nil {
+		return nil, fmt.Errorf("query '%s' failed: %w", searchQuery, err)
+	}
+	defer rows.Close()
+
+	fc := domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
+	for rows.Next() {
+		var displayName, highlightedText, featureID, collectionID, collectionVersion string
+		var rank float64
+		var bbox pggeom.T
+
+		if err := rows.Scan(&displayName, &featureID, &collectionID, &collectionVersion,
+			&bbox, &rank, &highlightedText); err != nil {
+			return nil, err
+		}
+		geojsonGeom, err := geojson.Encode(bbox)
+		if err != nil {
+			return nil, err
+		}
+		f := domain.Feature{
+			ID:       featureID,
+			Geometry: *geojsonGeom,
+			Properties: map[string]any{
+				"collectionId":      collectionID,
+				"collectionVersion": collectionVersion,
+				"displayName":       displayName,
+				"highlight":         highlightedText,
+				"href":              "<todo>", // TODO add href
+				"score":             rank,
+			},
+			// TODO add href also to Links
+		}
+		log.Printf("collections %s, srid %v", collections, srid) //TODO  use params
+		fc.Features = append(fc.Features, &f)
+	}
+	return &fc, queryCtx.Err()
+}
+
+func makeSearchQuery(term string, index string) string {
+	return fmt.Sprintf(`
 	select r.display_name as display_name, 
 	       max(r.feature_id) as feature_id,
 		   max(r.collection_id) as collection_id,
@@ -68,26 +112,5 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, _ map[string]
 	) r
 	group by r.display_name
 	order by rank desc, display_name asc
-	limit $1`, searchTermForPostgres, p.searchIndex)
-
-	// Execute query
-	rows, err := p.db.Query(queryCtx, sqlQuery, limit)
-	if err != nil {
-		return nil, fmt.Errorf("query '%s' failed: %w", sqlQuery, err)
-	}
-	defer rows.Close()
-
-	var suggestions []string
-	for rows.Next() {
-		var displayName, highlightedText, featureID, collectionID, collectionVersion string
-		var rank float64
-		var bbox pggeom.Polygon
-
-		if err := rows.Scan(&displayName, &featureID, &collectionID, &collectionVersion, &bbox, &rank, &highlightedText); err != nil {
-			return nil, err
-		}
-		suggestions = append(suggestions, highlightedText) // or displayName, whichever you want to return
-	}
-
-	return suggestions, queryCtx.Err()
+	limit $1`, term, index)
 }

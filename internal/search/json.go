@@ -7,14 +7,29 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gomagpie/internal/search/domain"
 	perfjson "github.com/goccy/go-json"
 )
 
 var (
+	now                            = time.Now // allow mocking
 	disableJSONPerfOptimization, _ = strconv.ParseBool(os.Getenv("DISABLE_JSON_PERF_OPTIMIZATION"))
 )
+
+func featuresAsGeoJSON(w http.ResponseWriter, fc *domain.FeatureCollection) {
+	fc.Timestamp = now().Format(time.RFC3339)
+	// fc.Links = createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL) // TODO add links
+
+	// TODO add validation
+	// if jf.validateResponse {
+	//	jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
+	// } else {
+	serveJSON(&fc, engine.MediaTypeGeoJSON, w)
+	// }
+}
 
 // serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream
 func serveJSON(input any, contentType string, w http.ResponseWriter) {

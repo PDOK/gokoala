@@ -55,7 +55,7 @@ func (s *Search) Suggest() http.HandlerFunc {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		suggestions, err := s.datasource.Suggest(r.Context(), searchTerm, collections, outputSRID, limit)
+		fc, err := s.datasource.Suggest(r.Context(), searchTerm, collections, outputSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return
@@ -63,7 +63,7 @@ func (s *Search) Suggest() http.HandlerFunc {
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			serveJSON(suggestions, engine.MediaTypeGeoJSON, w)
+			featuresAsGeoJSON(w, fc)
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return

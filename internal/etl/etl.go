@@ -52,11 +52,11 @@ func CreateSearchIndex(dbConn string, searchIndex string) error {
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
-func ImportFile(cfg *config.Config, searchIndex string, filePath string, table config.FeatureTable,
+func ImportFile(conf *config.Config, searchIndex string, filePath string, table config.FeatureTable,
 	pageSize int, dbConn string) error {
 
 	log.Println("start importing")
-	collection, err := getCollectionForTable(cfg, table)
+	collection, err := getCollectionForTable(conf, table)
 	if err != nil {
 		return err
 	}
