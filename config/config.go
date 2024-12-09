@@ -14,6 +14,7 @@ import (
 
 const (
 	CookieMaxAge = 60 * 60 * 24
+	DefaultSrs   = "EPSG:28992"
 )
 
 // NewConfig read YAML config file, required to start GoKoala
@@ -207,19 +208,30 @@ func setDefaults(config *Config) error {
 	if len(config.AvailableLanguages) == 0 {
 		config.AvailableLanguages = append(config.AvailableLanguages, Language{language.Dutch}) // default to Dutch only
 	}
-	if config.OgcAPI.Tiles != nil && config.OgcAPI.Tiles.DatasetTiles.HealthCheck.Srs == "EPSG:28992" && config.OgcAPI.Tiles.DatasetTiles.HealthCheck.TilePath == nil {
-		var deepestZoomLevel int
-		for _, srs := range config.OgcAPI.Tiles.DatasetTiles.SupportedSrs {
-			if srs.Srs == "EPSG:28992" {
-				deepestZoomLevel = srs.ZoomLevelRange.End
+	if config.OgcAPI.Tiles != nil && config.OgcAPI.Tiles.DatasetTiles != nil && config.OgcAPI.Tiles.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
+		config.OgcAPI.Tiles.DatasetTiles.HealthCheck.TilePath == nil {
+		setTilePath(config.OgcAPI.Tiles.DatasetTiles)
+	} else if config.OgcAPI.Tiles != nil && config.OgcAPI.Tiles.Collections != nil {
+		for _, coll := range config.OgcAPI.Tiles.Collections {
+			if coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
+				setTilePath(&coll.Tiles.GeoDataTiles)
 			}
 		}
-		defaultTile := HealthCheckDefaultTiles[deepestZoomLevel]
-		tileMatrixSet := AllTileProjections["EPSG:28992"]
-		tilePath := fmt.Sprintf("/%s/%d/%d/%d", tileMatrixSet, deepestZoomLevel, defaultTile.x, defaultTile.y)
-		config.OgcAPI.Tiles.DatasetTiles.HealthCheck.TilePath = &tilePath
 	}
 	return nil
+}
+
+func setTilePath(tilesConfig *Tiles) {
+	var deepestZoomLevel int
+	for _, srs := range tilesConfig.SupportedSrs {
+		if srs.Srs == DefaultSrs {
+			deepestZoomLevel = srs.ZoomLevelRange.End
+		}
+	}
+	defaultTile := HealthCheckDefaultTiles[deepestZoomLevel]
+	tileMatrixSet := AllTileProjections[DefaultSrs]
+	tilePath := fmt.Sprintf("/%s/%d/%d/%d", tileMatrixSet, deepestZoomLevel, defaultTile.x, defaultTile.y)
+	tilesConfig.HealthCheck.TilePath = &tilePath
 }
 
 func validate(config *Config) error {
