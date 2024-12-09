@@ -109,6 +109,7 @@ var (
 		dbNameFlag: &cli.StringFlag{
 			Name:    dbNameFlag,
 			Usage:   "Connect to this database",
+			Value:   "postgres",
 			EnvVars: []string{strcase.ToScreamingSnake(dbNameFlag)},
 		},
 		dbSslModeFlag: &cli.StringFlag{
@@ -154,11 +155,10 @@ func main() {
 				commonDBFlags[dbPasswordFlag],
 				commonDBFlags[dbSslModeFlag],
 				&cli.PathFlag{
-					Name:     searchIndexFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
-					Usage:    "Name of search index to use",
-					Required: true,
-					Value:    "search_index",
+					Name:    searchIndexFlag,
+					EnvVars: []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:   "Name of search index to use",
+					Value:   "search_index",
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -223,11 +223,10 @@ func main() {
 				commonDBFlags[dbSslModeFlag],
 				serviceFlags[configFileFlag],
 				&cli.PathFlag{
-					Name:     searchIndexFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
-					Usage:    "Name of search index in which to import the given file",
-					Required: true,
-					Value:    "search_index",
+					Name:    searchIndexFlag,
+					EnvVars: []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:   "Name of search index in which to import the given file",
+					Value:   "search_index",
 				},
 				&cli.PathFlag{
 					Name:     fileFlag,
@@ -236,18 +235,16 @@ func main() {
 					Required: true,
 				},
 				&cli.StringFlag{
-					Name:     featureTableFidFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFidFlag)},
-					Usage:    "Name of feature ID field in file",
-					Required: true,
-					Value:    "fid",
+					Name:    featureTableFidFlag,
+					EnvVars: []string{strcase.ToScreamingSnake(featureTableFidFlag)},
+					Usage:   "Name of feature ID field in file",
+					Value:   "fid",
 				},
 				&cli.StringFlag{
-					Name:     featureTableGeomFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
-					Usage:    "Name of geometry field in file",
-					Required: true,
-					Value:    "geom",
+					Name:    featureTableGeomFlag,
+					EnvVars: []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
+					Usage:   "Name of geometry field in file",
+					Value:   "geom",
 				},
 				&cli.StringFlag{
 					Name:     featureTableFlag,
@@ -256,11 +253,10 @@ func main() {
 					Required: true,
 				},
 				&cli.IntFlag{
-					Name:     pageSizeFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(pageSizeFlag)},
-					Usage:    "Page/batch size to use when extracting records from file",
-					Required: true,
-					Value:    10000,
+					Name:    pageSizeFlag,
+					EnvVars: []string{strcase.ToScreamingSnake(pageSizeFlag)},
+					Usage:   "Page/batch size to use when extracting records from file",
+					Value:   10000,
 				},
 			},
 			Action: func(c *cli.Context) error {
