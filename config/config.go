@@ -210,18 +210,18 @@ func setDefaults(config *Config) error {
 	}
 	if config.OgcAPI.Tiles != nil && config.OgcAPI.Tiles.DatasetTiles != nil && config.OgcAPI.Tiles.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
 		config.OgcAPI.Tiles.DatasetTiles.HealthCheck.TilePath == nil {
-		setTilePath(config.OgcAPI.Tiles.DatasetTiles)
+		setHealthCheckTilePath(config.OgcAPI.Tiles.DatasetTiles)
 	} else if config.OgcAPI.Tiles != nil && config.OgcAPI.Tiles.Collections != nil {
 		for _, coll := range config.OgcAPI.Tiles.Collections {
 			if coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
-				setTilePath(&coll.Tiles.GeoDataTiles)
+				setHealthCheckTilePath(&coll.Tiles.GeoDataTiles)
 			}
 		}
 	}
 	return nil
 }
 
-func setTilePath(tilesConfig *Tiles) {
+func setHealthCheckTilePath(tilesConfig *Tiles) {
 	var deepestZoomLevel int
 	for _, srs := range tilesConfig.SupportedSrs {
 		if srs.Srs == DefaultSrs {
