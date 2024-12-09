@@ -21,7 +21,7 @@ collections:
         - component_thoroughfarename
         - component_postaldescriptor
         - component_addressareaname
-      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname }}"
+      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
       etl:
         suggestTemplates:
           - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"

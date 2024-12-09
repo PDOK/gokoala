@@ -84,6 +84,8 @@ func TestImportGeoPackage(t *testing.T) {
 			t.Error(err)
 		}
 		assert.NotNil(t, cfg)
+		collection := config.CollectionByID(cfg, "addresses")
+		assert.NotNil(t, collection)
 		for _, collection := range cfg.Collections {
 			if collection.Search != nil {
 				collection.Search.ETL.Filter = tt.where
@@ -95,7 +97,7 @@ func TestImportGeoPackage(t *testing.T) {
 		assert.NoError(t, err)
 
 		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-		err = ImportFile(cfg, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
+		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
 		assert.NoError(t, err)
 
 		// check nr of records

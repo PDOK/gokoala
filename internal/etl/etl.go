@@ -52,14 +52,10 @@ func CreateSearchIndex(dbConn string, searchIndex string) error {
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
-func ImportFile(conf *config.Config, searchIndex string, filePath string, table config.FeatureTable,
+func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, table config.FeatureTable,
 	pageSize int, dbConn string) error {
 
 	log.Println("start importing")
-	collection, err := getCollectionForTable(conf, table)
-	if err != nil {
-		return err
-	}
 	if collection.Search == nil {
 		return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
 	}
@@ -114,7 +110,7 @@ func newSourceToExtract(filePath string) (Extract, error) {
 
 func newTargetToLoad(dbConn string) (Load, error) {
 	if strings.HasPrefix(dbConn, "postgres:") {
-		return load.NewPostgres(dbConn)
+		return load.NewPostgis(dbConn)
 	}
 	// add new targets here (elasticsearch, solr, etc)
 	return nil, fmt.Errorf("unsupported target database connection: %s", dbConn)
@@ -122,13 +118,4 @@ func newTargetToLoad(dbConn string) (Load, error) {
 
 func newTransformer() Transform {
 	return t.Transformer{}
-}
-
-func getCollectionForTable(cfg *config.Config, table config.FeatureTable) (config.GeoSpatialCollection, error) {
-	for _, coll := range cfg.Collections {
-		if coll.ID == table.Name {
-			return coll, nil
-		}
-	}
-	return config.GeoSpatialCollection{}, fmt.Errorf("no configured collection for feature table: %s", table)
 }
