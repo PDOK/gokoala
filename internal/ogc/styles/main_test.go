@@ -21,6 +21,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var tilePath = "/foo/12/34/56"
+
 func init() {
 	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
 	_, filename, _, _ := runtime.Caller(0)
@@ -66,6 +68,7 @@ func TestNewStyles(t *testing.T) {
 										},
 									},
 								},
+								HealthCheck: config.HealthCheck{Srs: "EPSG:28992", TilePath: &tilePath},
 							},
 						},
 						Styles: &config.OgcAPIStyles{
