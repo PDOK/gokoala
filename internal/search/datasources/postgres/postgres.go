@@ -87,13 +87,14 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections m
 			},
 			// TODO add href also to Links
 		}
-		log.Printf("collections %s, srid %v", collections, srid) //TODO  use params
+		log.Printf("collections %s, srid %v", collections, srid) // TODO  use params
 		fc.Features = append(fc.Features, &f)
 	}
 	return &fc, queryCtx.Err()
 }
 
 func makeSearchQuery(term string, index string) string {
+	// language=postgresql
 	return fmt.Sprintf(`
 	select r.display_name as display_name, 
 	       max(r.feature_id) as feature_id,
