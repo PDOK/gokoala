@@ -106,6 +106,10 @@ type Tiles struct {
 	// Optional template to the vector tiles on the tileserver. Defaults to {tms}/{z}/{x}/{y}.pbf.
 	// +optional
 	URITemplateTiles *string `yaml:"uriTemplateTiles,omitempty" json:"uriTemplateTiles,omitempty"`
+
+	// Optional health check configuration
+	// +optional
+	HealthCheck HealthCheck `yaml:"healthCheck" json:"healthCheck"`
 }
 
 // +kubebuilder:object:generate=true
@@ -126,4 +130,40 @@ type ZoomLevelRange struct {
 
 	// End zoom level
 	End int `yaml:"end" json:"end" validate:"required,gtefield=Start"`
+}
+
+type TileCoordinates struct {
+	x int
+	y int
+}
+
+// default tiles for EPSG:28992 - location centered just outside a village in the province of Friesland
+var HealthCheckDefaultTiles = map[int]TileCoordinates{
+	0:  {x: 0, y: 0},
+	1:  {x: 1, y: 0},
+	2:  {x: 2, y: 1},
+	3:  {x: 4, y: 2},
+	4:  {x: 8, y: 5},
+	5:  {x: 17, y: 11},
+	6:  {x: 35, y: 22},
+	7:  {x: 71, y: 45},
+	8:  {x: 143, y: 91},
+	9:  {x: 286, y: 182},
+	10: {x: 572, y: 365},
+	11: {x: 1144, y: 731},
+	12: {x: 2288, y: 1462},
+	13: {x: 4576, y: 2925},
+	14: {x: 9152, y: 5851},
+	15: {x: 18304, y: 11702},
+	16: {x: 36608, y: 23404},
+}
+
+// +kubebuilder:object:generate=true
+type HealthCheck struct {
+	// Projection (SRS/CRS) used for tile healthcheck
+	Srs string `yaml:"srs" json:"srs" default:"EPSG:28992" validate:"required,startswith=EPSG:"`
+
+	// Path to specific tile used for healthcheck
+	// +optional
+	TilePath *string `yaml:"tilePath,omitempty" json:"tilePath,omitempty" validate:"required_unless=Srs EPSG:28992"`
 }
