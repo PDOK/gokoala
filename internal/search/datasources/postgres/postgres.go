@@ -6,6 +6,7 @@ import (
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
+	pggeom "github.com/twpayne/go-geom"
 	pgxgeom "github.com/twpayne/pgx-geom"
 
 	"strings"
@@ -49,20 +50,25 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, _ map[string]
 	}
 	searchTermForPostgres := strings.Join(terms, " & ")
 
-	sqlQuery := fmt.Sprintf(
-		`SELECT
-	r.display_name AS display_name,
-	max(r.rank) AS rank,
-	max(r.highlighted_text) AS highlighted_text
-	FROM (
-		SELECT display_name, 
-	    ts_rank_cd(ts, to_tsquery('%[1]s'), 1) AS rank,
-	    ts_headline('dutch', suggest, to_tsquery('%[1]s')) AS highlighted_text
-		FROM %[2]s
-		WHERE ts @@ to_tsquery('%[1]s') LIMIT 500
+	sqlQuery := fmt.Sprintf(`
+	select r.display_name as display_name, 
+	       max(r.feature_id) as feature_id,
+		   max(r.collection_id) as collection_id,
+		   max(r.collection_version) as collection_version,
+		   cast(max(r.bbox) as geometry) as bbox,
+		   max(r.rank) as rank, 
+		   max(r.highlighted_text) as highlighted_text
+	from (
+		select display_name, feature_id, collection_id, collection_version, bbox,
+	           ts_rank_cd(ts, to_tsquery('%[1]s'), 1) as rank,
+	    	   ts_headline('dutch', suggest, to_tsquery('%[1]s')) as highlighted_text
+		from %[2]s
+		where ts @@ to_tsquery('%[1]s') 
+		limit 500
 	) r
-	GROUP BY display_name
-	ORDER BY rank DESC, display_name ASC LIMIT $1`, searchTermForPostgres, p.searchIndex)
+	group by r.display_name
+	order by rank desc, display_name asc
+	limit $1`, searchTermForPostgres, p.searchIndex)
 
 	// Execute query
 	rows, err := p.db.Query(queryCtx, sqlQuery, limit)
@@ -71,22 +77,17 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, _ map[string]
 	}
 	defer rows.Close()
 
-	if queryCtx.Err() != nil {
-		return nil, queryCtx.Err()
-	}
-
 	var suggestions []string
 	for rows.Next() {
-		var displayName, highlightedText string
+		var displayName, highlightedText, featureID, collectionID, collectionVersion string
 		var rank float64
+		var bbox pggeom.Polygon
 
-		// Scan all selected columns
-		if err := rows.Scan(&displayName, &rank, &highlightedText); err != nil {
+		if err := rows.Scan(&displayName, &featureID, &collectionID, &collectionVersion, &bbox, &rank, &highlightedText); err != nil {
 			return nil, err
 		}
-
 		suggestions = append(suggestions, highlightedText) // or displayName, whichever you want to return
 	}
 
-	return suggestions, nil
+	return suggestions, queryCtx.Err()
 }
