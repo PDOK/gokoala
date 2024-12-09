@@ -40,7 +40,9 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections map[string]map[string]string, srid domain.SRID, limit int) (*domain.FeatureCollection, error) {
+func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections map[string]map[string]string,
+	srid domain.SRID, limit int) (*domain.FeatureCollection, error) {
+
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
@@ -89,6 +91,7 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections m
 		}
 		log.Printf("collections %s, srid %v", collections, srid) // TODO  use params
 		fc.Features = append(fc.Features, &f)
+		fc.NumberReturned = len(fc.Features)
 	}
 	return &fc, queryCtx.Err()
 }
