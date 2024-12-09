@@ -63,10 +63,10 @@ func TestSuggest(t *testing.T) {
 	assert.NoError(t, err)
 
 	// given imported geopackage
-	cfg, err := config.NewConfig("internal/etl/testdata/config.yaml")
+	conf, err := config.NewConfig("internal/etl/testdata/config.yaml")
 	assert.NoError(t, err)
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-	err = etl.ImportFile(cfg, testSearchIndex, "internal/etl/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
+	err = etl.ImportFile(conf, testSearchIndex, "internal/etl/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
 	assert.NoError(t, err)
 
 	// run test cases
