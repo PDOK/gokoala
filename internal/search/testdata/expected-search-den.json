@@ -17,7 +17,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg",
-        "highlight": "Abbewaal, 1791WZ <b>Den</b> Burg",
+        "highlight": "Abbewaal - <b>Den</b> Burg",
         "href": "https://example.com/ogc/v1/collections/addresses/items/99?f=json",
         "score": 0.11162212491035461
       },
@@ -65,7 +65,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Achterom - Den Burg",
-        "highlight": "Achterom, 1791AN <b>Den</b> Burg",
+        "highlight": "Achterom - <b>Den</b> Burg",
         "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json",
         "score": 0.11162212491035461
       },
@@ -113,7 +113,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Akenbuurt - Den Burg",
-        "highlight": "Akenbuurt, 1791PJ <b>Den</b> Burg",
+        "highlight": "Akenbuurt - <b>Den</b> Burg",
         "href": "https://example.com/ogc/v1/collections/addresses/items/46?f=json",
         "score": 0.11162212491035461
       },
@@ -161,7 +161,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Amaliaweg - Den Hoorn",
-        "highlight": "Amaliaweg, 1797SW <b>Den</b> Hoorn",
+        "highlight": "Amaliaweg - <b>Den</b> Hoorn",
         "href": "https://example.com/ogc/v1/collections/addresses/items/50?f=json",
         "score": 0.11162212491035461
       },
@@ -209,7 +209,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Bakkenweg - Den Hoorn",
-        "highlight": "Bakkenweg, 1797RJ <b>Den</b> Hoorn",
+        "highlight": "Bakkenweg - <b>Den</b> Hoorn",
         "href": "https://example.com/ogc/v1/collections/addresses/items/520?f=json",
         "score": 0.11162212491035461
       },
@@ -257,7 +257,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Beatrixlaan - Den Burg",
-        "highlight": "Beatrixlaan, 1791GE <b>Den</b> Burg",
+        "highlight": "Beatrixlaan - <b>Den</b> Burg",
         "href": "https://example.com/ogc/v1/collections/addresses/items/591?f=json",
         "score": 0.11162212491035461
       },
@@ -305,7 +305,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Ada van Hollandstraat - Den Burg",
-        "highlight": "Ada van Hollandstraat, 1791DH <b>Den</b> Burg",
+        "highlight": "Ada van Hollandstraat - <b>Den</b> Burg",
         "href": "https://example.com/ogc/v1/collections/addresses/items/26?f=json",
         "score": 0.09617967158555984
       },
@@ -353,7 +353,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Anne Frankstraat - Den Burg",
-        "highlight": "Anne Frankstraat, 1791DT <b>Den</b> Burg",
+        "highlight": "Anne Frankstraat - <b>Den</b> Burg",
         "href": "https://example.com/ogc/v1/collections/addresses/items/474?f=json",
         "score": 0.09617967158555984
       },

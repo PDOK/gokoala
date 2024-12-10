@@ -110,7 +110,7 @@ func makeSearchQuery(term string, index string) string {
 	from (
 		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
 	           ts_rank_cd(ts, to_tsquery('%[1]s'), 1) as rank,
-	    	   ts_headline('dutch', suggest, to_tsquery('%[1]s')) as highlighted_text
+	    	   ts_headline('dutch', display_name, to_tsquery('%[1]s')) as highlighted_text
 		from %[2]s
 		where ts @@ to_tsquery('%[1]s') 
 		limit 500

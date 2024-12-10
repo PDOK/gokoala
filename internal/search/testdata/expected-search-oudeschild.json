@@ -17,7 +17,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Barentszstraat - Oudeschild",
-        "highlight": "Barentszstraat, 1792AD <b>Oudeschild</b>",
+        "highlight": "Barentszstraat - <b>Oudeschild</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/548?f=json",
         "score": 0.14426951110363007
       },
@@ -65,7 +65,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Bolwerk - Oudeschild",
-        "highlight": "Bolwerk, 1792AS <b>Oudeschild</b>",
+        "highlight": "Bolwerk - <b>Oudeschild</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/1050?f=json",
         "score": 0.14426951110363007
       },
@@ -113,7 +113,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "Commandeurssingel - Oudeschild",
-        "highlight": "Commandeurssingel, 1792AV <b>Oudeschild</b>",
+        "highlight": "Commandeurssingel - <b>Oudeschild</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/2725?f=json",
         "score": 0.14426951110363007
       },
@@ -161,7 +161,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "De Houtmanstraat - Oudeschild",
-        "highlight": "De Houtmanstraat, 1792BC <b>Oudeschild</b>",
+        "highlight": "De Houtmanstraat - <b>Oudeschild</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/2921?f=json",
         "score": 0.12426698952913284
       },
@@ -209,7 +209,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "De Ruyterstraat - Oudeschild",
-        "highlight": "De Ruyterstraat, 1792AP <b>Oudeschild</b>",
+        "highlight": "De Ruyterstraat - <b>Oudeschild</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/3049?f=json",
         "score": 0.12426698952913284
       },
@@ -257,7 +257,7 @@
         "collectionId": "addresses",
         "collectionVersion": "1",
         "displayName": "De Wittstraat - Oudeschild",
-        "highlight": "De Wittstraat, 1792BP <b>Oudeschild</b>",
+        "highlight": "De Wittstraat - <b>Oudeschild</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/3041?f=json",
         "score": 0.12426698952913284
       },
