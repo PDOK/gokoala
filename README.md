@@ -16,10 +16,10 @@ _Cloud Native OGC APIs server, written in Go._
 
 ## Description
 
-This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes 
-in a cloud-native way. It contains a complete implementation of OGC API Features (part 1 and 2). With respect to 
-OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other 
-implementations. For example vector tile hosting may be delegated to a vector tile engine, 3D tile hosting to object storage, 
+This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes
+in a cloud-native way. It contains a complete implementation of OGC API Features (part 1 and 2). With respect to
+OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other
+implementations. For example vector tile hosting may be delegated to a vector tile engine, 3D tile hosting to object storage,
 raster map hosting to a WMS server, etc.
 
 This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
@@ -27,21 +27,21 @@ datasets? Spin up a separate instance/container.
 
 ## Features
 
-- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves 
+- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
-- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. 
+- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG
   - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
   - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
   - Supports property and temporal filtering.
   - Uses cursor-based pagination in order to support browsing large datasets.
-  - Offers the ability to serve features representing "map sheets", allowing users to download a certain 
+  - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
-  of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing. 
+  of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing.
   Currently, 3 projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
   geodata tiles (= tiles per collection) are supported.
-- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends - 
+- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends -
   and JSON representation of supported (Mapbox) styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
@@ -144,7 +144,7 @@ Health endpoint is available on `/health`. When the server is configured to serv
 When no OGC API Tiles are configured, the health endpoint will simply serve an HTTP 200 when called.
 
 By default, when OGC API Tiles are configured, the checked tile is determined from a fixed lookup table, based on the deepest zoomlevel (i.e., `zoomLevelRange.end`) of `EPSG:28992` (e.g., if the
-deepest zoomlevel is 12, the path of the checked tile is `/NetherlandsRDNewQuad/12/1462/2288`).  
+deepest zoomlevel is 12, the path of the checked tile is `/NetherlandsRDNewQuad/12/1462/2288.pbf`).  
 It is possible to override the tile to be checked, both in terms of projection (SRS/CRS) and specific tile path:
 
 ```yaml
@@ -155,8 +155,8 @@ ogcApi:
       tilePath: /EuropeanETRS89_LAEAQuad/14/8237/7303
 ```
 
-When specifying a projection other than `EPSG:28992`, the `tilePath` _must_ also be specified. When specifying a `tilePath`, the format to be used is either `/{tileMatrixSetId}/{tileMatrix}/{col}/{row}` or
-`/{tileMatrixSetId}/{tileMatrix}/{row}/{col}` (depending on what order the tile server requires).
+When specifying a projection other than `EPSG:28992`, the `tilePath` _must_ also be specified. When specifying a `tilePath`, the format to be used is either `/{tileMatrixSetId}/{tileMatrix}/{col}/{row}.pbf` or
+`/{tileMatrixSetId}/{tileMatrix}/{row}/{col}.pbf` (depending on what order the tile server requires).
 
 #### Profiling
 
