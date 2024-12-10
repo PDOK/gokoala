@@ -178,9 +178,9 @@ type MetadataLink struct {
 	// Name of the metadata collection/site/organization
 	Name string `yaml:"name" json:"name" validate:"required"`
 
-	// Which part of the API this metadata concerns. E.g. dataset (in general), tiles or features
+	// Which category of the API this metadata concerns. E.g. dataset (in general), tiles or features
 	// +kubebuilder:default="dataset"
-	Part string `yaml:"part" json:"part" validate:"required" default:"dataset"`
+	Category string `yaml:"category" json:"category" validate:"required" default:"dataset"`
 
 	// URL to external metadata detail page
 	// +kubebuilder:validation:Type=string

@@ -43,10 +43,10 @@ datasetDetails:
     value: None
 metadataLinks:
   - name: Example Register
-    part: Features
+    category: Features
     url: https://example.com/my-features/metadata
   - name: Example Register
-    part: Tiles
+    category: Tiles
     url: https://example.com/my-tiles/metadata
   - name: Example Register
     url: https://example.com/my-dataset/metadata

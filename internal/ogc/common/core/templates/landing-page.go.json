@@ -104,7 +104,7 @@
     {{ if $m }},{{ end }}
     {
       "rel" : "http://www.opengis.net/def/rel/ogc/1.0/data-meta",
-      "title" : "Metadata for {{ $metadataLink.Part }} at {{ $metadataLink.Name }}",
+      "title" : "Metadata for {{ $metadataLink.Category }} at {{ $metadataLink.Name }}",
       "href" : "{{ $metadataLink.URL }}"
     }
     {{- end -}}
