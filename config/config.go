@@ -230,7 +230,7 @@ func setHealthCheckTilePath(tilesConfig *Tiles) {
 	}
 	defaultTile := HealthCheckDefaultTiles[deepestZoomLevel]
 	tileMatrixSet := AllTileProjections[DefaultSrs]
-	tilePath := fmt.Sprintf("/%s/%d/%d/%d", tileMatrixSet, deepestZoomLevel, defaultTile.x, defaultTile.y)
+	tilePath := fmt.Sprintf("/%s/%d/%d/%d.pbf", tileMatrixSet, deepestZoomLevel, defaultTile.x, defaultTile.y)
 	tilesConfig.HealthCheck.TilePath = &tilePath
 }
 
