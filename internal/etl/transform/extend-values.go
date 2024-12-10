@@ -49,11 +49,11 @@ func applySubstitutions(input string, substitutions map[string]string) ([]string
 	for oldChar, newChar := range substitutions {
 		if strings.Contains(inputLower, oldChar) {
 			for i := 0; i < strings.Count(inputLower, oldChar); i++ {
-				substituded, err := replaceNth(inputLower, oldChar, newChar, i+1)
+				substituted, err := replaceNth(inputLower, oldChar, newChar, i+1)
 				if err != nil {
 					return nil, err
 				}
-				subCombinations, err := applySubstitutions(substituded, substitutions)
+				subCombinations, err := applySubstitutions(substituted, substitutions)
 				if err != nil {
 					return nil, err
 				}
