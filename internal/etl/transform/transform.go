@@ -49,9 +49,9 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		suggestions := make([]string, 0, len(collection.Search.SuggestTemplates))
+		suggestions := make([]string, 0, len(collection.Search.ETL.SuggestTemplates))
 		for i := range allFieldValuesByName {
-			for _, suggestTemplate := range collection.Search.SuggestTemplates {
+			for _, suggestTemplate := range collection.Search.ETL.SuggestTemplates {
 				suggestion, err := t.renderTemplate(suggestTemplate, allFieldValuesByName[i])
 				if err != nil {
 					return nil, err
@@ -98,7 +98,7 @@ func (t Transformer) generateFieldValuesSubstitutions(fieldValuesByName map[stri
 }
 
 func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]any) (string, error) {
-	parsedTemplate, err := template.New("").Parse(templateFromConfig)
+	parsedTemplate, err := template.New("").Funcs(engine.GlobalTemplateFuncs).Parse(templateFromConfig)
 	if err != nil {
 		return "", err
 	}

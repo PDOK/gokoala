@@ -15,7 +15,7 @@ import (
 type Extract interface {
 
 	// Extract raw records from source database to be transformed and loaded into target search index
-	Extract(table config.FeatureTable, fields []string, limit int, offset int) ([]t.RawRecord, error)
+	Extract(table config.FeatureTable, fields []string, where string, limit int, offset int) ([]t.RawRecord, error)
 
 	// Close connection to source database
 	Close()
@@ -52,14 +52,10 @@ func CreateSearchIndex(dbConn string, searchIndex string) error {
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
-func ImportFile(cfg *config.Config, searchIndex string, filePath string, substitutionFile string, table config.FeatureTable,
+func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, substitutionFile string, table config.FeatureTable,
 	pageSize int, dbConn string) error {
 
 	log.Println("start importing")
-	collection, err := getCollectionForTable(cfg, table)
-	if err != nil {
-		return err
-	}
 	if collection.Search == nil {
 		return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
 	}
@@ -81,7 +77,7 @@ func ImportFile(cfg *config.Config, searchIndex string, filePath string, substit
 	// import records in batches depending on page size
 	offset := 0
 	for {
-		sourceRecords, err := source.Extract(table, collection.Search.Fields, pageSize, offset)
+		sourceRecords, err := source.Extract(table, collection.Search.Fields, collection.Search.ETL.Filter, pageSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
 		}
@@ -122,13 +118,4 @@ func newTargetToLoad(dbConn string) (Load, error) {
 
 func newTransformer() Transform {
 	return t.Transformer{}
-}
-
-func getCollectionForTable(cfg *config.Config, table config.FeatureTable) (config.GeoSpatialCollection, error) {
-	for _, coll := range cfg.Collections {
-		if coll.ID == table.Name {
-			return coll, nil
-		}
-	}
-	return config.GeoSpatialCollection{}, fmt.Errorf("no configured collection for feature table: %s", table)
 }

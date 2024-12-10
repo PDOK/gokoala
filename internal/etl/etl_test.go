@@ -51,40 +51,64 @@ func TestImportGeoPackage(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
-	ctx := context.Background()
-
-	// given
-	dbPort, postgisContainer, err := setupPostgis(ctx, t)
-	if err != nil {
-		t.Error(err)
+	tests := []struct {
+		name  string
+		where string
+		count int
+	}{
+		{
+			name:  "import everything",
+			where: "",
+			count: 67230, // 33030*2 + substitution mutations
+		},
+		{
+			name:  "with where clause",
+			where: "fid <= 2",
+			count: 2 * 2, // * 2 because 2 suggest templates
+		},
 	}
-	defer terminateContainer(ctx, t, postgisContainer)
+	for _, tt := range tests {
+		ctx := context.Background()
 
-	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
+		// given
+		dbPort, postgisContainer, err := setupPostgis(ctx, t)
+		if err != nil {
+			t.Error(err)
+		}
+		defer terminateContainer(ctx, t, postgisContainer)
 
-	cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
-	if err != nil {
-		t.Error(err)
+		dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
+
+		cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
+		if err != nil {
+			t.Error(err)
+		}
+		assert.NotNil(t, cfg)
+		collection := config.CollectionByID(cfg, "addresses")
+		assert.NotNil(t, collection)
+		for _, collection := range cfg.Collections {
+			if collection.Search != nil {
+				collection.Search.ETL.Filter = tt.where
+			}
+		}
+
+		// when/then
+		err = CreateSearchIndex(dbConn, "search_index")
+		assert.NoError(t, err)
+
+		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", pwd+"/testdata/substitution.csv", table, 1000, dbConn)
+		assert.NoError(t, err)
+
+		// check nr of records
+		db, err := pgx.Connect(ctx, dbConn)
+		assert.NoError(t, err)
+		var count int
+		err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&count)
+		defer db.Close(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, tt.count, count)
 	}
-	assert.NotNil(t, cfg)
-
-	// when/then
-	err = CreateSearchIndex(dbConn, "search_index")
-	assert.NoError(t, err)
-
-	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-	err = ImportFile(cfg, "search_index", pwd+"/testdata/addresses-crs84.gpkg", pwd+"/testdata/substitution.csv", table, 1000, dbConn)
-	assert.NoError(t, err)
-
-	// check nr of records
-	db, err := pgx.Connect(ctx, dbConn)
-	assert.NoError(t, err)
-	var count int
-	err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&count)
-	defer db.Close(ctx)
-	assert.NoError(t, err)
-	// 33030*2 + substitution mutations
-	assert.Equal(t, 67230, count)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {

@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	globalTemplateFuncs texttemplate.FuncMap
+	GlobalTemplateFuncs texttemplate.FuncMap
 	linkRegex           = regexp.MustCompile(`^https?://\S+$`)
 )
 
@@ -33,9 +33,10 @@ func init() {
 		"bytessize":  bytesSize,
 		"isdate":     isDate,
 		"islink":     isLink,
+		"firstupper": firstUpper,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
-	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
+	GlobalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
 }
 
 // combine given FuncMaps
@@ -121,4 +122,8 @@ func isLink(v any) bool {
 		return linkRegex.MatchString(text)
 	}
 	return false
+}
+
+func firstUpper(s string) string {
+	return strings.ToUpper(s[0:1]) + s[1:]
 }

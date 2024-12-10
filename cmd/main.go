@@ -26,6 +26,7 @@ const (
 	debugPortFlag           = "debug-port"
 	shutdownDelayFlag       = "shutdown-delay"
 	configFileFlag          = "config-file"
+	collectionIDFlag        = "collection-id"
 	enableTrailingSlashFlag = "enable-trailing-slash"
 	enableCorsFlag          = "enable-cors"
 	dbHostFlag              = "db-host"
@@ -78,6 +79,12 @@ var (
 			Usage:    "reference to YAML configuration file",
 			Required: true,
 			EnvVars:  []string{strcase.ToScreamingSnake(configFileFlag)},
+		},
+		collectionIDFlag: &cli.StringFlag{
+			Name:     collectionIDFlag,
+			Usage:    "reference to collection ID in the config file",
+			Required: true,
+			EnvVars:  []string{strcase.ToScreamingSnake(collectionIDFlag)},
 		},
 		enableTrailingSlashFlag: &cli.BoolFlag{
 			Name:     enableTrailingSlashFlag,
@@ -152,6 +159,7 @@ func main() {
 				serviceFlags[configFileFlag],
 				serviceFlags[enableTrailingSlashFlag],
 				serviceFlags[enableCorsFlag],
+				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
 				commonDBFlags[dbNameFlag],
 				commonDBFlags[dbUsernameFlag],
@@ -168,13 +176,15 @@ func main() {
 				trailingSlash := c.Bool(enableTrailingSlashFlag)
 				cors := c.Bool(enableCorsFlag)
 
+				dbConn := flagsToDBConnStr(c)
+
 				// Engine encapsulates shared logic
 				engine, err := eng.NewEngine(configFile, trailingSlash, cors)
 				if err != nil {
 					return err
 				}
 				// Each OGC API building block makes use of said Engine
-				ogc.SetupBuildingBlocks(engine)
+				ogc.SetupBuildingBlocks(engine, dbConn)
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
@@ -215,6 +225,7 @@ func main() {
 				commonDBFlags[dbPasswordFlag],
 				commonDBFlags[dbSslModeFlag],
 				serviceFlags[configFileFlag],
+				serviceFlags[collectionIDFlag],
 				&cli.PathFlag{
 					Name:     searchIndexFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
@@ -273,7 +284,12 @@ func main() {
 					FID:  c.String(featureTableFidFlag),
 					Geom: c.String(featureTableGeomFlag),
 				}
-				return etl.ImportFile(cfg, c.String(searchIndexFlag), c.Path(fileFlag), c.Path(substitutionFileFlag), featureTable,
+				collectionID := c.String(collectionIDFlag)
+				collection := config.CollectionByID(cfg, collectionID)
+				if collection == nil {
+					return fmt.Errorf("no configured collection found with id: %s", collectionID)
+				}
+				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), c.Path(substitutionFileFlag), featureTable,
 					c.Int(pageSizeFlag), dbConn)
 			},
 		},

@@ -9,8 +9,4 @@
         <loc>http://localhost:8080/conformance?f=html</loc>
     </url><url>
     <loc>http://localhost:8080/collections?f=html</loc>
-</url><url>
-    <loc>http://localhost:8080/collections/addresses?f=html</loc>
-</url><url>
-    <loc>http://localhost:8080/collections/buildings?f=html</loc>
 </url></urlset>

@@ -12,15 +12,6 @@
     "url": "{{ .Config.BaseURL }}?f=html",
     "license": "{{ .Config.License.URL }}",
     "isAccessibleForFree": true
-    ,"hasPart": [
-    {{- range $index, $coll := .Config.AllCollections.Unique }}
-      {{- if $index }},{{ end }}
-       {
-        "@type": "URL",
-        "url": "{{ $.Config.BaseURL }}/collections/{{ $coll.ID }}"
-       }
-    {{- end }}
-    ]
 }
 </script>
 

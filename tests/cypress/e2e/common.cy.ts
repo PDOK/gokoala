@@ -49,15 +49,4 @@ describe('OGC API Common tests', () => {
     cy.visit("/collections");
     cy.htmlvalidate();
   })
-
-  it('collection page should have no a11y violations', () => {
-    cy.visit('/collections/addresses')
-    cy.injectAxe()
-    cy.checkA11y()
-  })
-
-  it("collection page should have valid HTML", () => {
-    cy.visit("/collections/addresses");
-    cy.htmlvalidate();
-  })
 })

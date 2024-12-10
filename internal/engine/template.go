@@ -223,7 +223,7 @@ func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params 
 }
 
 func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]any {
-	return combineFuncMaps(globalTemplateFuncs, texttemplate.FuncMap{
+	return combineFuncMaps(GlobalTemplateFuncs, texttemplate.FuncMap{
 		// create func just-in-time based on TemplateKey
 		"i18n": func(messageID string) htmltemplate.HTML {
 			localizer := t.localizers[lang]

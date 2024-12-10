@@ -9,13 +9,13 @@ Config:
 OpenAPI
 - Materialize the collections as API endpoints by looping over the collection in the OpenAPI template 
   for that specific OGC building block. For example for OGC tiles you'll need to 
-  create `/collection/{collectionId}/tiles` endpoints in OpenAPI. Note `/collection/{collectionId}` endpoint
+  create `/collections/{collectionId}/tiles` endpoints in OpenAPI. Note `/collections/{collectionId}` endpoint
   are already implemented in OpenAPI by this package.
 
 Responses:
 - Expand the `collections` and `collection` [templates](./templates). 
 - Implement an endpoint in your specific OGC API building block to serve the CONTENTS of a collection 
-  (e.g. `/collection/{collectionId}/tiles`)
+  (e.g. `/collections/{collectionId}/tiles`)
 
 Testing:
 - Add unit tests
