@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var tilePath = "/foo/12/34/56"
+var tilePath = "/foo/12/34/56.pbf"
 
 func init() {
 	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
