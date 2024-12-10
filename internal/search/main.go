@@ -44,12 +44,12 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string) *Search {
 		engine:     e,
 		datasource: newDatasource(e, dbConn, searchIndex),
 	}
-	e.Router.Get("/search/suggest", s.Suggest())
+	e.Router.Get("/search", s.Search())
 	return s
 }
 
-// Suggest autosuggest locations based on user input
-func (s *Search) Suggest() http.HandlerFunc {
+// Search autosuggest locations based on user input
+func (s *Search) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collections, searchTerm, outputSRID, limit, err := parseQueryParams(r.URL.Query())
 		if err != nil {
@@ -104,7 +104,7 @@ func (s *Search) Suggest() http.HandlerFunc {
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			featuresAsGeoJSON(w, fc)
+			featuresAsGeoJSON(w, *s.engine.Config.BaseURL.URL, fc)
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return

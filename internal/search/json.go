@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -19,9 +20,9 @@ var (
 	disableJSONPerfOptimization, _ = strconv.ParseBool(os.Getenv("DISABLE_JSON_PERF_OPTIMIZATION"))
 )
 
-func featuresAsGeoJSON(w http.ResponseWriter, fc *domain.FeatureCollection) {
+func featuresAsGeoJSON(w http.ResponseWriter, baseURL url.URL, fc *domain.FeatureCollection) {
 	fc.Timestamp = now().Format(time.RFC3339)
-	// fc.Links = createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL) // TODO add links
+	fc.Links = createFeatureCollectionLinks(baseURL) // TODO add links
 
 	// TODO add validation
 	// if jf.validateResponse {
@@ -39,6 +40,36 @@ func serveJSON(input any, contentType string, w http.ResponseWriter) {
 		handleJSONEncodingFailure(err, w)
 		return
 	}
+}
+
+func createFeatureCollectionLinks(baseURL url.URL) []domain.Link {
+	links := make([]domain.Link, 0)
+
+	href := baseURL.JoinPath("search")
+	query := href.Query()
+	query.Set(engine.FormatParam, engine.FormatJSON)
+	href.RawQuery = query.Encode()
+
+	links = append(links, domain.Link{
+		Rel:   "self",
+		Title: "This document as GeoJSON",
+		Type:  engine.MediaTypeGeoJSON,
+		Href:  href.String(),
+	})
+	// TODO: support HTML and JSON-FG output in location API
+	//  links = append(links, domain.Link{
+	//	Rel:   "alternate",
+	//	Title: "This document as JSON-FG",
+	//	Type:  engine.MediaTypeJSONFG,
+	//	Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSONFG),
+	//  })
+	//  links = append(links, domain.Link{
+	//	Rel:   "alternate",
+	//	Title: "This document as HTML",
+	//	Type:  engine.MediaTypeHTML,
+	//	Href:  featuresURL.toSelfURL(collectionID, engine.FormatHTML),
+	//  })
+	return links
 }
 
 type jsonEncoder interface {

@@ -62,6 +62,7 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections m
 	}
 	defer rows.Close()
 
+	// Turn rows into FeatureCollection
 	fc := domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 	for rows.Next() {
 		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string

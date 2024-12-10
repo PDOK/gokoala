@@ -36,7 +36,7 @@ func init() {
 	}
 }
 
-func TestSuggest(t *testing.T) {
+func TestSearch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -84,9 +84,9 @@ func TestSuggest(t *testing.T) {
 		want   want
 	}{
 		{
-			name: "Suggest: Oudeschild",
+			name: "Search: Oudeschild",
 			fields: fields{
-				url: "http://localhost:8080/search/suggest?q=\"Oudeschild\"&limit=50",
+				url: "http://localhost:8080/search?q=\"Oudeschild\"&limit=50",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-oudeschild.json",
@@ -94,9 +94,9 @@ func TestSuggest(t *testing.T) {
 			},
 		},
 		{
-			name: "Suggest: Den ",
+			name: "Search: Den ",
 			fields: fields{
-				url: "http://localhost:8080/search/suggest?q=\"Den\"&limit=50",
+				url: "http://localhost:8080/search?q=\"Den\"&limit=50",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den.json",
@@ -104,9 +104,9 @@ func TestSuggest(t *testing.T) {
 			},
 		},
 		{
-			name: "Suggest: Den. With deepCopy params",
+			name: "Search: Den. With deepCopy params",
 			fields: fields{
-				url: "http://localhost:8080/search/suggest?q=\"Den\"&weg[version]=2&weg[relevance]=0.8&adres[version]=1&adres[relevance]=1&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=\"Den\"&weg[version]=2&weg[relevance]=0.8&adres[version]=1&adres[relevance]=1&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-deepcopy.json",
@@ -124,7 +124,7 @@ func TestSuggest(t *testing.T) {
 			defer ts.Close()
 
 			// when
-			handler := searchEndpoint.Suggest()
+			handler := searchEndpoint.Search()
 			req, err := createRequest(tt.fields.url)
 			assert.NoError(t, err)
 			handler.ServeHTTP(rr, req)
