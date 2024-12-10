@@ -64,11 +64,11 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections m
 
 	fc := domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 	for rows.Next() {
-		var displayName, highlightedText, featureID, collectionID, collectionVersion string
+		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
 		var rank float64
 		var bbox pggeom.T
 
-		if err := rows.Scan(&displayName, &featureID, &collectionID, &collectionVersion,
+		if err := rows.Scan(&displayName, &featureID, &collectionID, &collectionVersion, &geomType,
 			&bbox, &rank, &highlightedText); err != nil {
 			return nil, err
 		}
@@ -80,14 +80,13 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections m
 			ID:       featureID,
 			Geometry: *geojsonGeom,
 			Properties: map[string]any{
-				"collectionId":      collectionID,
-				"collectionVersion": collectionVersion,
-				"displayName":       displayName,
-				"highlight":         highlightedText,
-				"href":              "<todo>", // TODO add href
-				"score":             rank,
+				"collectionId":           collectionID,
+				"collectionVersion":      collectionVersion,
+				"collectionGeometryType": geomType,
+				"displayName":            displayName,
+				"highlight":              highlightedText,
+				"score":                  rank,
 			},
-			// TODO add href also to Links
 		}
 		log.Printf("collections %s, srid %v", collections, srid) // TODO  use params
 		fc.Features = append(fc.Features, &f)
@@ -103,11 +102,12 @@ func makeSearchQuery(term string, index string) string {
 	       max(r.feature_id) as feature_id,
 		   max(r.collection_id) as collection_id,
 		   max(r.collection_version) as collection_version,
+		   max(r.geometry_type) as geometry_type,
 		   cast(max(r.bbox) as geometry) as bbox,
 		   max(r.rank) as rank, 
 		   max(r.highlighted_text) as highlighted_text
 	from (
-		select display_name, feature_id, collection_id, collection_version, bbox,
+		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
 	           ts_rank_cd(ts, to_tsquery('%[1]s'), 1) as rank,
 	    	   ts_headline('dutch', suggest, to_tsquery('%[1]s')) as highlighted_text
 		from %[2]s

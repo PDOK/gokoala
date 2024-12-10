@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/engine"
 	ds "github.com/PDOK/gomagpie/internal/search/datasources"
 	"github.com/PDOK/gomagpie/internal/search/datasources/postgres"
@@ -60,6 +61,46 @@ func (s *Search) Suggest() http.HandlerFunc {
 			handleQueryError(w, err)
 			return
 		}
+
+		for _, feat := range fc.Features {
+			collectionID, ok := feat.Properties["collectionId"]
+			if !ok || collectionID == "" {
+				log.Printf("collection reference not found in feature %s", feat.ID)
+				engine.RenderProblem(engine.ProblemServerError, w)
+				return
+			}
+			collection := config.CollectionByID(s.engine.Config, collectionID.(string))
+			if collection.Search != nil {
+				for _, ogcColl := range collection.Search.OGCCollections {
+					geomType, ok := feat.Properties["collectionGeometryType"]
+					if !ok || geomType == "" {
+						log.Printf("geometry type not found in feature %s", feat.ID)
+						engine.RenderProblem(engine.ProblemServerError, w)
+						return
+					}
+					if strings.EqualFold(ogcColl.GeometryType, geomType.(string)) {
+						href, err := url.JoinPath(ogcColl.APIBaseURL.String(), "collections", ogcColl.CollectionID, "items", feat.ID)
+						if err != nil {
+							log.Printf("failed to construct API url %v", err)
+							engine.RenderProblem(engine.ProblemServerError, w)
+						}
+						href += "?f=json"
+
+						// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
+						feat.Properties["href"] = href
+						feat.Links = []domain.Link{
+							domain.Link{
+								Rel:   "canonical",
+								Title: "The actual feature in the corresponding OGC API",
+								Type:  "application/geo+json",
+								Href:  href,
+							},
+						}
+					}
+				}
+			}
+		}
+
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:

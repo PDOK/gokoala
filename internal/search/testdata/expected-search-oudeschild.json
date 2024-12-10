@@ -1,0 +1,295 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Barentszstraat - Oudeschild",
+        "highlight": "Barentszstraat, 1792AD <b>Oudeschild</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/548?f=json",
+        "score": 0.14426951110363007
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.748384044242354,
+              52.93901709012591
+            ],
+            [
+              4.948384044242354,
+              52.93901709012591
+            ],
+            [
+              4.948384044242354,
+              53.13901709012591
+            ],
+            [
+              4.748384044242354,
+              53.13901709012591
+            ],
+            [
+              4.748384044242354,
+              52.93901709012591
+            ]
+          ]
+        ]
+      },
+      "id": "548",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/548?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Bolwerk - Oudeschild",
+        "highlight": "Bolwerk, 1792AS <b>Oudeschild</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/1050?f=json",
+        "score": 0.14426951110363007
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.75002232386939,
+              52.93847294238573
+            ],
+            [
+              4.95002232386939,
+              52.93847294238573
+            ],
+            [
+              4.95002232386939,
+              53.13847294238573
+            ],
+            [
+              4.75002232386939,
+              53.13847294238573
+            ],
+            [
+              4.75002232386939,
+              52.93847294238573
+            ]
+          ]
+        ]
+      },
+      "id": "1050",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/1050?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Commandeurssingel - Oudeschild",
+        "highlight": "Commandeurssingel, 1792AV <b>Oudeschild</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/2725?f=json",
+        "score": 0.14426951110363007
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.7451477245429015,
+              52.93967814281323
+            ],
+            [
+              4.945147724542901,
+              52.93967814281323
+            ],
+            [
+              4.945147724542901,
+              53.13967814281323
+            ],
+            [
+              4.7451477245429015,
+              53.13967814281323
+            ],
+            [
+              4.7451477245429015,
+              52.93967814281323
+            ]
+          ]
+        ]
+      },
+      "id": "2725",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/2725?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "De Houtmanstraat - Oudeschild",
+        "highlight": "De Houtmanstraat, 1792BC <b>Oudeschild</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/2921?f=json",
+        "score": 0.12426698952913284
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.748360166368449,
+              52.93815392755542
+            ],
+            [
+              4.948360166368448,
+              52.93815392755542
+            ],
+            [
+              4.948360166368448,
+              53.13815392755542
+            ],
+            [
+              4.748360166368449,
+              53.13815392755542
+            ],
+            [
+              4.748360166368449,
+              52.93815392755542
+            ]
+          ]
+        ]
+      },
+      "id": "2921",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/2921?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "De Ruyterstraat - Oudeschild",
+        "highlight": "De Ruyterstraat, 1792AP <b>Oudeschild</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/3049?f=json",
+        "score": 0.12426698952913284
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.747714279539418,
+              52.93617309495475
+            ],
+            [
+              4.947714279539417,
+              52.93617309495475
+            ],
+            [
+              4.947714279539417,
+              53.136173094954756
+            ],
+            [
+              4.747714279539418,
+              53.136173094954756
+            ],
+            [
+              4.747714279539418,
+              52.93617309495475
+            ]
+          ]
+        ]
+      },
+      "id": "3049",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/3049?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "De Wittstraat - Oudeschild",
+        "highlight": "De Wittstraat, 1792BP <b>Oudeschild</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/3041?f=json",
+        "score": 0.12426698952913284
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.745616492688666,
+              52.93705261983951
+            ],
+            [
+              4.945616492688665,
+              52.93705261983951
+            ],
+            [
+              4.945616492688665,
+              53.137052619839515
+            ],
+            [
+              4.745616492688666,
+              53.137052619839515
+            ],
+            [
+              4.745616492688666,
+              52.93705261983951
+            ]
+          ]
+        ]
+      },
+      "id": "3041",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/3041?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 6
+}

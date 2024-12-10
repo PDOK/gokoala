@@ -93,23 +93,35 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, where s
 		if len(row) != len(fields)+nrOfStandardFieldsInQuery {
 			return nil, fmt.Errorf("unexpected row length (%v)", len(row))
 		}
-		result = append(result, mapRowToRawRecord(row, fields))
+		record, err := mapRowToRawRecord(row, fields)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, record)
 	}
 	return result, nil
 }
 
-func mapRowToRawRecord(row []any, fields []string) t.RawRecord {
+func mapRowToRawRecord(row []any, fields []string) (t.RawRecord, error) {
 	bbox := row[1:5]
 
+	fid := row[0].(int64)
+	if fid <= 0 {
+		return t.RawRecord{}, errors.New("encountered negative fid")
+	}
+	geomType := row[5].(string)
+	if geomType == "" {
+		return t.RawRecord{}, fmt.Errorf("encountered empty geometry type for fid %d", fid)
+	}
 	return t.RawRecord{
-		FeatureID: row[0].(int64),
+		FeatureID: fid,
 		Bbox: &geom.Extent{
 			bbox[0].(float64),
 			bbox[1].(float64),
 			bbox[2].(float64),
 			bbox[3].(float64),
 		},
-		GeometryType: row[5].(string),
+		GeometryType: geomType,
 		FieldValues:  row[nrOfStandardFieldsInQuery : nrOfStandardFieldsInQuery+len(fields)],
-	}
+	}, nil
 }
