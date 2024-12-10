@@ -161,6 +161,7 @@ var HealthCheckDefaultTiles = map[int]TileCoordinates{
 // +kubebuilder:object:generate=true
 type HealthCheck struct {
 	// Projection (SRS/CRS) used for tile healthcheck
+	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	Srs string `yaml:"srs" json:"srs" default:"EPSG:28992" validate:"required,startswith=EPSG:"`
 
 	// Path to specific tile used for healthcheck
