@@ -47,19 +47,19 @@ func Test_newRouter(t *testing.T) {
 		{
 			name:       "Serve multiple OGC APIs for single collection in JSON",
 			configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
-			apiCall:    "http://localhost:8180/collections/NewYork?f=json",
+			apiCall:    "http://localhost:8180/collections/newyork?f=json",
 			wantBody:   "internal/engine/testdata/expected_multiple_ogc_apis_single_collection.json",
 		},
 		{
 			name:       "Serve multiple OGC APIs for single collection in HTML",
 			configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
-			apiCall:    "http://localhost:8180/collections/NewYork?f=html",
+			apiCall:    "http://localhost:8180/collections/newyork?f=html",
 			wantBody:   "internal/engine/testdata/expected_multiple_ogc_apis_single_collection.html",
 		},
 		{
 			name:       "Serve JSON-LD in multiple OGC APIs for single collection in HTML",
 			configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
-			apiCall:    "http://localhost:8180/collections/NewYork?f=html",
+			apiCall:    "http://localhost:8180/collections/newyork?f=html",
 			wantBody:   "internal/engine/testdata/expected_multiple_ogc_apis_single_collection_json_ld.html",
 		},
 		{

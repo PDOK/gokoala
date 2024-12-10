@@ -30,7 +30,7 @@ ogcApi:
   3dgeovolumes:
     tileServer: https://maps.ecere.com/3DAPI/collections/
     collections:
-      - id: NewYork
+      - id: newyork
         # reference to common metadata
         metadata: *collectionMetadata
         tileServerPath: "NewYork/3DTiles"
@@ -48,7 +48,7 @@ ogcApi:
             local:
               file: ./examples/resources/addresses-rd.gpkg
     collections:
-      - id: NewYork
+      - id: newyork
         tableName: addresses
         # reference to common metadata
         metadata: *collectionMetadata

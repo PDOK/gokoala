@@ -12,12 +12,12 @@ ogcApi:
   3dgeovolumes:
     tileServer: https://example.com
     collections:
-      - id: B
-      - id: Z
-      - id: C
+      - id: b
+      - id: z
+      - id: c
   tiles:
     collections:
-      - id: Z
+      - id: z
         tileServer: https://example.com
-      - id: A
+      - id: a
         tileServer: https://example.com
