@@ -78,5 +78,5 @@ func (u *URL) DeepCopy() *URL {
 }
 
 func parseURL(s string) (*url.URL, error) {
-	return url.ParseRequestURI(strings.TrimSuffix(s, "/"))
+	return url.Parse(strings.TrimSuffix(s, "/"))
 }
