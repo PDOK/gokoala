@@ -6,6 +6,22 @@ import (
 	"strings"
 )
 
+func generateFieldValuesSubstitutions(fieldValuesByName map[string]any, substitutionFile string) ([]map[string]any, error) {
+	substitutions, err := readSubstitutionsFile(substitutionFile)
+	if err != nil {
+		return nil, err
+	}
+	var fieldValuesByNameExtensions = make(map[string][]string)
+	for key, value := range fieldValuesByName {
+		valueSubstitutions, err := applySubstitutions(value.(string), substitutions)
+		if err != nil {
+			return nil, err
+		}
+		fieldValuesByNameExtensions[key] = valueSubstitutions
+	}
+	return generateAllFieldValuesByName(fieldValuesByNameExtensions), err
+}
+
 // Transform a map[string][]string into a []map[string]string using the cartesian product, i.e.
 // - both maps have the same keys
 // - values exist for all possible combinations

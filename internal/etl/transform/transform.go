@@ -46,7 +46,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		allFieldValuesByName, err := t.generateFieldValuesSubstitutions(fieldValuesByName, substitutionFile)
+		allFieldValuesByName, err := generateFieldValuesSubstitutions(fieldValuesByName, substitutionFile)
 		if err != nil {
 			return nil, err
 		}
@@ -80,22 +80,6 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		}
 	}
 	return result, nil
-}
-
-func (t Transformer) generateFieldValuesSubstitutions(fieldValuesByName map[string]any, substitutionFile string) ([]map[string]any, error) {
-	substitutions, err := readSubstitutionsFile(substitutionFile)
-	if err != nil {
-		return nil, err
-	}
-	var fieldValuesByNameExtensions = make(map[string][]string)
-	for key, value := range fieldValuesByName {
-		valueSubstitutions, err := applySubstitutions(value.(string), substitutions)
-		if err != nil {
-			return nil, err
-		}
-		fieldValuesByNameExtensions[key] = valueSubstitutions
-	}
-	return generateAllFieldValuesByName(fieldValuesByNameExtensions), err
 }
 
 func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]any) (string, error) {
