@@ -105,6 +105,10 @@ To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also ha
 Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
 from the root.
 
+### Unit test
+
+Either run `go test ./...` or `go test -short ./...`
+
 ### IntelliJ / GoLand
 
 - Install the [Go Template](https://plugins.jetbrains.com/plugin/10581-go-template) plugin
