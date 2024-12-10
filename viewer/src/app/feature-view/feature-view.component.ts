@@ -343,7 +343,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
             const featureId = feature.getId()
             if (featureId) {
               const items = 'items'
-              const itemsUrl = this.itemsUrl.toLowerCase()
+              const itemsUrl = this.itemsUrl
               const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
               const link = currentUrl.protocol + '//' + currentUrl.host + currentUrl.pathname + '/' + featureId
               tooltipContent.innerHTML = '<a href="' + link + '">' + featureId + '</a>'
