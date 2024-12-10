@@ -143,8 +143,9 @@ the defaults by providing your own spec using the `openapi-file` CLI flag.
 Health endpoint is available on `/health`. When the server is configured to serve OGC API Tiles, the health endpoint will check for the presence of a specific tile on the configured tileserver.
 When no OGC API Tiles are configured, the health endpoint will simply serve an HTTP 200 when called.
 
-By default, when OGC API Tiles are configured, the checked tile is determined from a fixed lookup table, based on the deepest zoomlevel of `EPSG:28992` configured (e.g., if the deepest zoomlevel
-configured is 12, the path of the checked tile is `/NetherlandsRDNewQuad/12/1462/2288`). It is possible to override the tile to be checked, both in terms of projection (SRS/CRS) and specific tile path:
+By default, when OGC API Tiles are configured, the checked tile is determined from a fixed lookup table, based on the deepest zoomlevel (i.e., `zoomLevelRange.end`) of `EPSG:28992` (e.g., if the
+deepest zoomlevel is 12, the path of the checked tile is `/NetherlandsRDNewQuad/12/1462/2288`).  
+It is possible to override the tile to be checked, both in terms of projection (SRS/CRS) and specific tile path:
 
 ```yaml
 ogcApi:
