@@ -16,10 +16,10 @@ _Cloud Native OGC APIs server, written in Go._
 
 ## Description
 
-This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes 
-in a cloud-native way. It contains a complete implementation of OGC API Features (part 1 and 2). With respect to 
-OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other 
-implementations. For example vector tile hosting may be delegated to a vector tile engine, 3D tile hosting to object storage, 
+This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes
+in a cloud-native way. It contains a complete implementation of OGC API Features (part 1 and 2). With respect to
+OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other
+implementations. For example vector tile hosting may be delegated to a vector tile engine, 3D tile hosting to object storage,
 raster map hosting to a WMS server, etc.
 
 This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
@@ -27,21 +27,21 @@ datasets? Spin up a separate instance/container.
 
 ## Features
 
-- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves 
+- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
-- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec. 
+- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG
   - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
   - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
   - Supports property and temporal filtering.
   - Uses cursor-based pagination in order to support browsing large datasets.
-  - Offers the ability to serve features representing "map sheets", allowing users to download a certain 
+  - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
-  of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing. 
+  of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing.
   Currently, 3 projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
   geodata tiles (= tiles per collection) are supported.
-- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends - 
+- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends -
   and JSON representation of supported (Mapbox) styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
@@ -101,9 +101,11 @@ ogcApi:
 ### GeoPackage requirements
 
 GoKoala has a few requirements regarding GeoPackages backing an OGC API Features:
+
 - Each feature table must contain a [RTree](https://www.geopackage.org/guidance/extensions/rtree_spatial_indexes.html) index.
 - Each feature table must contain a BTree spatial index:
-```
+
+```sql
 select load_extension('/path/to/mod_spatialite');
 alter table "<table>" add minx numeric;
 alter table "<table>" add maxx numeric;
@@ -112,11 +114,14 @@ alter table "<table>" add maxy numeric;
 update "<table>" set minx = st_minx('geom'), maxx = st_maxx('geom'), miny = st_miny('geom'), maxy = st_maxy('geom');
 create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy);
 ```
+
 - When enabling temporal filtering (using `datetime` query param) the temporal fields should be indexed and the spatial index should be expanded to include the temporal fields.
-```
+
+```sql
 create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy, start_date, end_date);
 create index "<table>_temporal_idx" on "<table>"(start_date, end_date);
 ```
+
 - Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the config.
 - Feature IDs (fid) in the GeoPackage should be contiguous and auto-incrementing.
 
@@ -135,7 +140,23 @@ the defaults by providing your own spec using the `openapi-file` CLI flag.
 
 #### Health checks
 
-Health endpoint is available on `/health`.
+Health endpoint is available on `/health`. When the server is configured to serve OGC API Tiles, the health endpoint will check for the presence of a specific tile on the configured tileserver.
+When no OGC API Tiles are configured, the health endpoint will simply serve an HTTP 200 when called.
+
+By default, when OGC API Tiles are configured, the checked tile is determined from a fixed lookup table, based on the deepest zoomlevel (i.e., `zoomLevelRange.end`) of `EPSG:28992` (e.g., if the
+deepest zoomlevel is 12, the path of the checked tile is `/NetherlandsRDNewQuad/12/1462/2288.pbf`).  
+It is possible to override the tile to be checked, both in terms of projection (SRS/CRS) and specific tile path:
+
+```yaml
+ogcApi:
+  tiles:
+    healthCheck:
+      srs: EPSG:3035
+      tilePath: /EuropeanETRS89_LAEAQuad/14/8237/7303
+```
+
+When specifying a projection other than `EPSG:28992`, the `tilePath` _must_ also be specified. When specifying a `tilePath`, the format to be used is either `/{tileMatrixSetId}/{tileMatrix}/{col}/{row}.pbf` or
+`/{tileMatrixSetId}/{tileMatrix}/{row}/{col}.pbf` (depending on what order the tile server requires).
 
 #### Profiling
 
@@ -182,10 +203,10 @@ Design principles:
 
 ### Build/run as Go application
 
-Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), `openssl` and `curl` are installed. 
+Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), `openssl` and `curl` are installed.
 Also make sure `gcc` or similar is available since the application uses cgo.
 
-```
+```bash
 go build -o gokoala cmd/main.go
 ./gokoala
 ```
