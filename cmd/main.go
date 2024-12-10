@@ -42,6 +42,7 @@ const (
 	featureTableFidFlag     = "fid"
 	featureTableGeomFlag    = "geom"
 	pageSizeFlag            = "page-size"
+	substitutionFileFlag    = "substitution-file"
 )
 
 var (
@@ -104,35 +105,41 @@ var (
 
 	commonDBFlags = map[string]cli.Flag{
 		dbHostFlag: &cli.StringFlag{
-			Name:    dbHostFlag,
-			Value:   "localhost",
-			EnvVars: []string{strcase.ToScreamingSnake(dbHostFlag)},
+			Name:     dbHostFlag,
+			Value:    "localhost",
+			Required: false,
+			EnvVars:  []string{strcase.ToScreamingSnake(dbHostFlag)},
 		},
 		dbPortFlag: &cli.IntFlag{
-			Name:    dbPortFlag,
-			Value:   5432,
-			EnvVars: []string{strcase.ToScreamingSnake(dbPortFlag)},
+			Name:     dbPortFlag,
+			Value:    5432,
+			Required: false,
+			EnvVars:  []string{strcase.ToScreamingSnake(dbPortFlag)},
 		},
 		dbNameFlag: &cli.StringFlag{
 			Name:    dbNameFlag,
 			Usage:   "Connect to this database",
 			Value:   "postgres",
+			Required: false,
 			EnvVars: []string{strcase.ToScreamingSnake(dbNameFlag)},
 		},
 		dbSslModeFlag: &cli.StringFlag{
-			Name:    dbSslModeFlag,
-			Value:   "disable",
-			EnvVars: []string{strcase.ToScreamingSnake(dbSslModeFlag)},
+			Name:     dbSslModeFlag,
+			Value:    "disable",
+			Required: false,
+			EnvVars:  []string{strcase.ToScreamingSnake(dbSslModeFlag)},
 		},
 		dbUsernameFlag: &cli.StringFlag{
-			Name:    dbUsernameFlag,
-			Value:   "postgres",
-			EnvVars: []string{strcase.ToScreamingSnake(dbUsernameFlag)},
+			Name:     dbUsernameFlag,
+			Value:    "postgres",
+			Required: false,
+			EnvVars:  []string{strcase.ToScreamingSnake(dbUsernameFlag)},
 		},
 		dbPasswordFlag: &cli.StringFlag{
-			Name:    dbPasswordFlag,
-			Value:   "postgres",
-			EnvVars: []string{strcase.ToScreamingSnake(dbPasswordFlag)},
+			Name:     dbPasswordFlag,
+			Value:    "postgres",
+			Required: false,
+			EnvVars:  []string{strcase.ToScreamingSnake(dbPasswordFlag)},
 		},
 	}
 )
@@ -208,7 +215,7 @@ func main() {
 					Name:     searchIndexFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
 					Usage:    "Name of search index to create",
-					Required: true,
+					Required: false,
 					Value:    "search_index",
 				},
 			},
@@ -231,10 +238,11 @@ func main() {
 				serviceFlags[configFileFlag],
 				serviceFlags[collectionIDFlag],
 				&cli.PathFlag{
-					Name:    searchIndexFlag,
-					EnvVars: []string{strcase.ToScreamingSnake(searchIndexFlag)},
-					Usage:   "Name of search index in which to import the given file",
-					Value:   "search_index",
+					Name:     searchIndexFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:    "Name of search index in which to import the given file",
+					Required: false,
+					Value:    "search_index",
 				},
 				&cli.PathFlag{
 					Name:     fileFlag,
@@ -242,17 +250,25 @@ func main() {
 					Usage:    "Path to (e.g GeoPackage) file to import",
 					Required: true,
 				},
-				&cli.StringFlag{
-					Name:    featureTableFidFlag,
-					EnvVars: []string{strcase.ToScreamingSnake(featureTableFidFlag)},
-					Usage:   "Name of feature ID field in file",
-					Value:   "fid",
+				&cli.PathFlag{
+					Name:     substitutionFileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(substitutionFileFlag)},
+					Usage:    "Path to csv file containing substitutions used to generate suggestions",
+					Required: true,
 				},
 				&cli.StringFlag{
-					Name:    featureTableGeomFlag,
-					EnvVars: []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
-					Usage:   "Name of geometry field in file",
-					Value:   "geom",
+					Name:     featureTableFidFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFidFlag)},
+					Usage:    "Name of feature ID field in file",
+					Required: false,
+					Value:    "fid",
+				},
+				&cli.StringFlag{
+					Name:     featureTableGeomFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
+					Usage:    "Name of geometry field in file",
+					Required: false,
+					Value:    "geom",
 				},
 				&cli.StringFlag{
 					Name:     featureTableFlag,
@@ -261,10 +277,11 @@ func main() {
 					Required: true,
 				},
 				&cli.IntFlag{
-					Name:    pageSizeFlag,
-					EnvVars: []string{strcase.ToScreamingSnake(pageSizeFlag)},
-					Usage:   "Page/batch size to use when extracting records from file",
-					Value:   10000,
+					Name:     pageSizeFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(pageSizeFlag)},
+					Usage:    "Page/batch size to use when extracting records from file",
+					Required: false,
+					Value:    10000,
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -283,7 +300,7 @@ func main() {
 				if collection == nil {
 					return fmt.Errorf("no configured collection found with id: %s", collectionID)
 				}
-				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), featureTable,
+				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), c.Path(substitutionFileFlag), featureTable,
 					c.Int(pageSizeFlag), dbConn)
 			},
 		},

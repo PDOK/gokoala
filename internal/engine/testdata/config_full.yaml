@@ -63,8 +63,9 @@ collections:
         - straatnaam
         - postcode
         - woonplaats
-      suggestTemplates:
-        - "{{.straatnaam}} {{.postcode}}, {{.woonplaats}}"
+      etl:
+        suggestTemplates:
+          - "{{.straatnaam}} {{.postcode}}, {{.woonplaats}}"
       ogcCollections:
         - geometryType: line
           api: https://api.pdok.nl/owner/dataset/ogc/v1

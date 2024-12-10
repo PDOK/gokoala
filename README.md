@@ -17,12 +17,6 @@ _Location search and geocoding API. To be used in concert with OGC APIs._
 
 This application offers location search and geocoding.
 
-## Build
-
-```bash
-docker build -t pdok/gomagpie .
-```
-
 ## Run
 
 ```bash
@@ -50,6 +44,26 @@ docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie start-serv
 ```
 
 Now open <http://localhost:8080>. See [examples](examples) for more details.
+
+### Run ETL
+
+Create database using the ETL commands.
+
+```shell
+# First create database to populate
+docker run --rm --name postgis -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=test_db -p 5432:5432 postgis/postgis
+
+./gomagpie create-search-index --db-name test_db
+
+./gomagpie import-file --db-name test_db --config-file internal/etl/testdata/config.yaml --file internal/etl/testdata/addresses-crs84.gpkg --substitution-file internal/etl/testdata/substitution.csv --feature-table "addresses"
+
+```
+
+## Build
+
+```bash
+docker build -t pdok/gomagpie .
+```
 
 ### Observability
 
@@ -90,6 +104,10 @@ To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also ha
 
 Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
 from the root.
+
+### Unit test
+
+Either run `go test ./...` or `go test -short ./...`
 
 ### IntelliJ / GoLand
 
