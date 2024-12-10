@@ -25,7 +25,7 @@ type Extract interface {
 type Transform interface {
 
 	// Transform each raw record in one or more search records depending on the given configuration
-	Transform(records []t.RawRecord, collection config.GeoSpatialCollection) ([]t.SearchIndexRecord, error)
+	Transform(records []t.RawRecord, collection config.GeoSpatialCollection, substitutionFile string) ([]t.SearchIndexRecord, error)
 }
 
 // Load - the 'L' in ETL. Datasource agnostic interface to load data into target database.
@@ -52,7 +52,7 @@ func CreateSearchIndex(dbConn string, searchIndex string) error {
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
-func ImportFile(cfg *config.Config, searchIndex string, filePath string, table config.FeatureTable,
+func ImportFile(cfg *config.Config, searchIndex string, filePath string, substitutionFile string, table config.FeatureTable,
 	pageSize int, dbConn string) error {
 
 	log.Println("start importing")
@@ -88,7 +88,7 @@ func ImportFile(cfg *config.Config, searchIndex string, filePath string, table c
 		if len(sourceRecords) == 0 {
 			break // no more batches of records to extract
 		}
-		targetRecords, err := transformer.Transform(sourceRecords, collection)
+		targetRecords, err := transformer.Transform(sourceRecords, collection, substitutionFile)
 		if err != nil {
 			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 		}

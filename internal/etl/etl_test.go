@@ -73,7 +73,7 @@ func TestImportGeoPackage(t *testing.T) {
 	assert.NoError(t, err)
 
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-	err = ImportFile(cfg, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
+	err = ImportFile(cfg, "search_index", pwd+"/testdata/addresses-crs84.gpkg", pwd+"/testdata/substitution.csv", table, 1000, dbConn)
 	assert.NoError(t, err)
 
 	// check nr of records
@@ -83,7 +83,8 @@ func TestImportGeoPackage(t *testing.T) {
 	err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&count)
 	defer db.Close(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, 33030*2, count)
+	// 33030*2 + substitution mutations
+	assert.Equal(t, 67230, count)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {

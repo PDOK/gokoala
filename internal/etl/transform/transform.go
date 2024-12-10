@@ -34,7 +34,7 @@ type SearchIndexRecord struct {
 
 type Transformer struct{}
 
-func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection) ([]SearchIndexRecord, error) {
+func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection, substitutionFile string) ([]SearchIndexRecord, error) {
 	result := make([]SearchIndexRecord, 0, len(records))
 	for _, r := range records {
 		fieldValuesByName, err := slicesToMap(collection.Search.Fields, r.FieldValues)
@@ -45,13 +45,19 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
+		allFieldValuesByName, err := t.generateFieldValuesSubstitutions(fieldValuesByName, substitutionFile)
+		if err != nil {
+			return nil, err
+		}
 		suggestions := make([]string, 0, len(collection.Search.SuggestTemplates))
-		for _, suggestTemplate := range collection.Search.SuggestTemplates {
-			suggestion, err := t.renderTemplate(suggestTemplate, fieldValuesByName)
-			if err != nil {
-				return nil, err
+		for i := range allFieldValuesByName {
+			for _, suggestTemplate := range collection.Search.SuggestTemplates {
+				suggestion, err := t.renderTemplate(suggestTemplate, allFieldValuesByName[i])
+				if err != nil {
+					return nil, err
+				}
+				suggestions = append(suggestions, suggestion)
 			}
-			suggestions = append(suggestions, suggestion)
 		}
 		bbox, err := r.transformBbox()
 		if err != nil {
@@ -73,6 +79,22 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		}
 	}
 	return result, nil
+}
+
+func (t Transformer) generateFieldValuesSubstitutions(fieldValuesByName map[string]any, substitutionFile string) ([]map[string]any, error) {
+	substitutions, err := readSubstitutionsFile(substitutionFile)
+	if err != nil {
+		return nil, err
+	}
+	var fieldValuesByNameExtensions = make(map[string][]string)
+	for key, value := range fieldValuesByName {
+		valueSubstitutions, err := applySubstitutions(value.(string), substitutions)
+		if err != nil {
+			return nil, err
+		}
+		fieldValuesByNameExtensions[key] = valueSubstitutions
+	}
+	return generateAllFieldValuesByName(fieldValuesByNameExtensions), err
 }
 
 func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]any) (string, error) {
