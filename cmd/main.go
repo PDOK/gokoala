@@ -117,11 +117,11 @@ var (
 			EnvVars:  []string{strcase.ToScreamingSnake(dbPortFlag)},
 		},
 		dbNameFlag: &cli.StringFlag{
-			Name:    dbNameFlag,
-			Usage:   "Connect to this database",
-			Value:   "postgres",
+			Name:     dbNameFlag,
+			Usage:    "Connect to this database",
+			Value:    "postgres",
 			Required: false,
-			EnvVars: []string{strcase.ToScreamingSnake(dbNameFlag)},
+			EnvVars:  []string{strcase.ToScreamingSnake(dbNameFlag)},
 		},
 		dbSslModeFlag: &cli.StringFlag{
 			Name:     dbSslModeFlag,
