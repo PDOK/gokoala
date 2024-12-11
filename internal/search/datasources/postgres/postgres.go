@@ -54,12 +54,12 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 		terms[i] = term + ":*"
 	}
 	termsConcat := strings.Join(terms, " & ")
-	searchQuery := makeSearchQuery(termsConcat, p.searchIndex)
+	query := makeSearchQuery(p.searchIndex)
 
 	// Execute search query
-	rows, err := p.db.Query(queryCtx, searchQuery, limit)
+	rows, err := p.db.Query(queryCtx, query, limit, termsConcat)
 	if err != nil {
-		return nil, fmt.Errorf("query '%s' failed: %w", searchQuery, err)
+		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
 
@@ -97,7 +97,7 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 	return &fc, queryCtx.Err()
 }
 
-func makeSearchQuery(term string, index string) string {
+func makeSearchQuery(index string) string {
 	// language=postgresql
 	return fmt.Sprintf(`
 	select r.display_name as display_name, 
@@ -110,13 +110,13 @@ func makeSearchQuery(term string, index string) string {
 		   max(r.highlighted_text) as highlighted_text
 	from (
 		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
-	           ts_rank_cd(ts, to_tsquery('%[1]s'), 1) as rank,
-	    	   ts_headline('dutch', display_name, to_tsquery('%[1]s')) as highlighted_text
-		from %[2]s
-		where ts @@ to_tsquery('%[1]s') 
+	           ts_rank_cd(ts, to_tsquery($2), 1) as rank,
+	    	   ts_headline('dutch', display_name, to_tsquery($2)) as highlighted_text
+		from %[1]s
+		where ts @@ to_tsquery($2)
 		limit 500
 	) r
 	group by r.display_name
 	order by rank desc, display_name asc
-	limit $1`, term, index)
+	limit $1`, index)
 }
