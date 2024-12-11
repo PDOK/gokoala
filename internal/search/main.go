@@ -56,49 +56,14 @@ func (s *Search) Search() http.HandlerFunc {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		fc, err := s.datasource.Suggest(r.Context(), searchTerm, collections, outputSRID, limit)
+		fc, err := s.datasource.Search(r.Context(), searchTerm, collections, outputSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return
 		}
-
-		for _, feat := range fc.Features {
-			collectionID, ok := feat.Properties["collectionId"]
-			if !ok || collectionID == "" {
-				log.Printf("collection reference not found in feature %s", feat.ID)
-				engine.RenderProblem(engine.ProblemServerError, w)
-				return
-			}
-			collection := config.CollectionByID(s.engine.Config, collectionID.(string))
-			if collection.Search != nil {
-				for _, ogcColl := range collection.Search.OGCCollections {
-					geomType, ok := feat.Properties["collectionGeometryType"]
-					if !ok || geomType == "" {
-						log.Printf("geometry type not found in feature %s", feat.ID)
-						engine.RenderProblem(engine.ProblemServerError, w)
-						return
-					}
-					if strings.EqualFold(ogcColl.GeometryType, geomType.(string)) {
-						href, err := url.JoinPath(ogcColl.APIBaseURL.String(), "collections", ogcColl.CollectionID, "items", feat.ID)
-						if err != nil {
-							log.Printf("failed to construct API url %v", err)
-							engine.RenderProblem(engine.ProblemServerError, w)
-						}
-						href += "?f=json"
-
-						// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
-						feat.Properties["href"] = href
-						feat.Links = []domain.Link{
-							domain.Link{
-								Rel:   "canonical",
-								Title: "The actual feature in the corresponding OGC API",
-								Type:  "application/geo+json",
-								Href:  href,
-							},
-						}
-					}
-				}
-			}
+		if err = s.enrichFeaturesWithHref(fc); err != nil {
+			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
+			return
 		}
 
 		format := s.engine.CN.NegotiateFormat(r)
@@ -112,21 +77,59 @@ func (s *Search) Search() http.HandlerFunc {
 	}
 }
 
-func parseQueryParams(query url.Values) (collectionsWithParams map[string]map[string]string, searchTerm string, outputSRID domain.SRID, limit int, err error) {
+func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection) error {
+	for _, feat := range fc.Features {
+		collectionID, ok := feat.Properties[domain.PropCollectionID]
+		if !ok || collectionID == "" {
+			return fmt.Errorf("collection reference not found in feature %s", feat.ID)
+		}
+		collection := config.CollectionByID(s.engine.Config, collectionID.(string))
+		if collection.Search != nil {
+			for _, ogcColl := range collection.Search.OGCCollections {
+				geomType, ok := feat.Properties[domain.PropGeomType]
+				if !ok || geomType == "" {
+					return fmt.Errorf("geometry type not found in feature %s", feat.ID)
+				}
+				if strings.EqualFold(ogcColl.GeometryType, geomType.(string)) {
+					href, err := url.JoinPath(ogcColl.APIBaseURL.String(), "collections", ogcColl.CollectionID, "items", feat.ID)
+					if err != nil {
+						return fmt.Errorf("failed to construct API url %w", err)
+					}
+					href += "?f=json"
+
+					// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
+					feat.Properties[domain.PropHref] = href
+					feat.Links = []domain.Link{
+						{
+							Rel:   "canonical",
+							Title: "The actual feature in the corresponding OGC API",
+							Type:  "application/geo+json",
+							Href:  href,
+						},
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func parseQueryParams(query url.Values) (collections ds.CollectionsWithParams, searchTerm string, outputSRID domain.SRID, limit int, err error) {
 	err = validateNoUnknownParams(query)
 	if err != nil {
 		return
 	}
 	searchTerm, searchTermErr := parseSearchTerm(query)
-	collectionsWithParams = parseCollectionDeepObjectParams(query)
+	collections = parseDeepObjectParams(query)
 	outputSRID, outputSRIDErr := parseCrsToSRID(query, crsParam)
 	limit, limitErr := parseLimit(query)
 	err = errors.Join(searchTermErr, limitErr, outputSRIDErr)
 	return
 }
 
-func parseCollectionDeepObjectParams(query url.Values) map[string]map[string]string {
-	deepObjectParams := make(map[string]map[string]string, len(query))
+// Parse "deep object" params, e.g. paramName[prop1]=value1&paramName[prop2]=value2&....
+func parseDeepObjectParams(query url.Values) ds.CollectionsWithParams {
+	deepObjectParams := make(ds.CollectionsWithParams, len(query))
 	for key, values := range query {
 		if strings.Contains(key, "[") {
 			// Extract deepObject parameters

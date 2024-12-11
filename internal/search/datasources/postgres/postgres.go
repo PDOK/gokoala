@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/PDOK/gomagpie/internal/search/domain"
+	"github.com/PDOK/gomagpie/internal/search/datasources"
+	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
 	pggeom "github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
@@ -40,8 +41,8 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections map[string]map[string]string,
-	srid domain.SRID, limit int) (*domain.FeatureCollection, error) {
+func (p *Postgres) Search(ctx context.Context, searchTerm string, collections datasources.CollectionsWithParams,
+	srid d.SRID, limit int) (*d.FeatureCollection, error) {
 
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
@@ -63,7 +64,7 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections m
 	defer rows.Close()
 
 	// Turn rows into FeatureCollection
-	fc := domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
+	fc := d.FeatureCollection{Features: make([]*d.Feature, 0)}
 	for rows.Next() {
 		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
 		var rank float64
@@ -77,16 +78,16 @@ func (p *Postgres) Suggest(ctx context.Context, searchTerm string, collections m
 		if err != nil {
 			return nil, err
 		}
-		f := domain.Feature{
+		f := d.Feature{
 			ID:       featureID,
 			Geometry: *geojsonGeom,
 			Properties: map[string]any{
-				"collectionId":           collectionID,
-				"collectionVersion":      collectionVersion,
-				"collectionGeometryType": geomType,
-				"displayName":            displayName,
-				"highlight":              highlightedText,
-				"score":                  rank,
+				d.PropCollectionID:      collectionID,
+				d.PropCollectionVersion: collectionVersion,
+				d.PropGeomType:          geomType,
+				d.PropDisplayName:       displayName,
+				d.PropHighlight:         highlightedText,
+				d.PropScore:             rank,
 			},
 		}
 		log.Printf("collections %s, srid %v", collections, srid) // TODO  use params
