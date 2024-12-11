@@ -98,6 +98,10 @@ type Config struct {
 	// +optional
 	Support *Support `yaml:"support,omitempty" json:"support,omitempty"`
 
+	// Metadata links
+	// +optional
+	MetadataLinks []MetadataLink `yaml:"metadataLinks,omitempty" json:"metadataLinks,omitempty"`
+
 	// Key/value pairs to add extra information to the landing page
 	// +optional
 	DatasetDetails []DatasetDetail `yaml:"datasetDetails,omitempty" json:"datasetDetails,omitempty"`
@@ -167,6 +171,20 @@ type Support struct {
 	// Email for support questions
 	// +optional
 	Email string `yaml:"email,omitempty" json:"email,omitempty" validate:"omitempty,email"`
+}
+
+// +kubebuilder:object:generate=true
+type MetadataLink struct {
+	// Name of the metadata collection/site/organization
+	Name string `yaml:"name" json:"name" validate:"required"`
+
+	// Which category of the API this metadata concerns. E.g. dataset (in general), tiles or features
+	// +kubebuilder:default="dataset"
+	Category string `yaml:"category" json:"category" validate:"required" default:"dataset"`
+
+	// URL to external metadata detail page
+	// +kubebuilder:validation:Type=string
+	URL URL `yaml:"url" json:"url" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true

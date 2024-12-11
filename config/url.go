@@ -2,10 +2,16 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	validURLRegexp = regexp.MustCompile(`^(https?://.+|\$\{.+\}.*)$`) // https://regex101.com/r/IvhP6H/1
 )
 
 // URL Custom net.URL compatible with YAML and JSON (un)marshalling and kubebuilder.
@@ -78,5 +84,8 @@ func (u *URL) DeepCopy() *URL {
 }
 
 func parseURL(s string) (*url.URL, error) {
-	return url.ParseRequestURI(strings.TrimSuffix(s, "/"))
+	if !validURLRegexp.MatchString(s) {
+		return nil, fmt.Errorf("invalid URL: %s", s)
+	}
+	return url.Parse(strings.TrimSuffix(s, "/"))
 }

@@ -2,6 +2,14 @@
 {
   "title": "{{ .Config.Title }}",
   "description": "{{ unmarkdown .Config.Abstract }}",
+  {{- if .Config.Keywords }}
+  "keywords": [
+  {{- range $k, $keyword := .Config.Keywords -}}
+  {{ if $k }},{{ end }}
+  {"keyword": {{ mustToRawJson $keyword }} }
+  {{- end -}}
+  ],
+  {{- end }}
   "links": [
     {
       "rel": "self",
@@ -89,6 +97,17 @@
       "title" : "The JSON representation of the list of all data layers (collections) served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections"
     }
+    {{ end }}
+    {{ if .Config.MetadataLinks }}
+    ,
+    {{- range $m, $metadataLink := .Config.MetadataLinks -}}
+    {{ if $m }},{{ end }}
+    {
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/data-meta",
+      "title" : "Metadata for {{ $metadataLink.Category }} at {{ $metadataLink.Name }}",
+      "href" : "{{ $metadataLink.URL }}"
+    }
+    {{- end -}}
     {{ end }}
   ]
 }
