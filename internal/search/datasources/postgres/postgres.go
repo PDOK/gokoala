@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/PDOK/gomagpie/internal/engine/util"
 	"github.com/PDOK/gomagpie/internal/search/datasources"
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
@@ -54,10 +55,10 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 		terms[i] = term + ":*"
 	}
 	termsConcat := strings.Join(terms, " & ")
-	query := makeSearchQuery(p.searchIndex)
+	query, args := makeSearchQuery(p.searchIndex, limit, termsConcat, util.Keys(collections))
 
 	// Execute search query
-	rows, err := p.db.Query(queryCtx, query, limit, termsConcat)
+	rows, err := p.db.Query(queryCtx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
@@ -97,9 +98,18 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 	return &fc, queryCtx.Err()
 }
 
-func makeSearchQuery(index string) string {
+func makeSearchQuery(index string, limit int, terms string, collections []string) (string, []any) {
+	args := []any{limit, terms}
+
+	collectionsClause := ""
+	if len(collections) > 0 {
+		// language=postgresql
+		collectionsClause = `and collection_id = any($3)`
+		args = append(args, collections)
+	}
+
 	// language=postgresql
-	return fmt.Sprintf(`
+	query := fmt.Sprintf(`
 	select r.display_name as display_name, 
 	       max(r.feature_id) as feature_id,
 		   max(r.collection_id) as collection_id,
@@ -113,10 +123,12 @@ func makeSearchQuery(index string) string {
 	           ts_rank_cd(ts, to_tsquery($2), 1) as rank,
 	    	   ts_headline('dutch', display_name, to_tsquery($2)) as highlighted_text
 		from %[1]s
-		where ts @@ to_tsquery($2)
+		where ts @@ to_tsquery($2) %[2]s
 		limit 500
 	) r
 	group by r.display_name
 	order by rank desc, display_name asc
-	limit $1`, index)
+	limit $1`, index, collectionsClause) // don't add user input here, use $X params for user input!
+
+	return query, args
 }

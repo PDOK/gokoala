@@ -105,9 +105,9 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search: Den. With deepCopy params",
+			name: "Search: Den. With deepCopy params for a single collection",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&weg[version]=2&weg[relevance]=0.8&adres[version]=1&adres[relevance]=1&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-deepcopy.json",
