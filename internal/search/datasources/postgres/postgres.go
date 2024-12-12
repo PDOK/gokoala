@@ -78,7 +78,7 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 		if err != nil {
 			return nil, err
 		}
-		f := d.Feature{
+		fc.Features = append(fc.Features, &d.Feature{
 			ID:       featureID,
 			Geometry: *geojsonGeom,
 			Properties: map[string]any{
@@ -89,9 +89,7 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 				d.PropHighlight:         highlightedText,
 				d.PropScore:             rank,
 			},
-		}
-		log.Printf("collections %s, srid %v", collections, srid) // TODO  use params
-		fc.Features = append(fc.Features, &f)
+		})
 		fc.NumberReturned = len(fc.Features)
 	}
 	return &fc, queryCtx.Err()
