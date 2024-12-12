@@ -300,6 +300,13 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 				},
 			}...)
 			path = g.CollectionsPath + "/" + collectionID + tilesPath + "/" + projection
+		} else {
+			projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
+				{
+					Name: projection,
+					Path: path,
+				},
+			}...)
 		}
 		e.RenderTemplatesWithParams(path,
 			data,
