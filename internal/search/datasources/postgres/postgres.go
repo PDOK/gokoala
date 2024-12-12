@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/PDOK/gomagpie/internal/engine/util"
 	"github.com/PDOK/gomagpie/internal/search/datasources"
