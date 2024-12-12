@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 
@@ -17,18 +16,7 @@ import (
 )
 
 const (
-	queryParam = "q"
-	limitParam = "limit"
-	crsParam   = "crs"
-
-	limitDefault = 10
-	limitMax     = 50
-
 	timeout = time.Second * 15
-)
-
-var (
-	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+]`)
 )
 
 type Search struct {

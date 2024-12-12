@@ -4,12 +4,26 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/PDOK/gomagpie/internal/engine"
 	ds "github.com/PDOK/gomagpie/internal/search/datasources"
 	"github.com/PDOK/gomagpie/internal/search/domain"
+)
+
+const (
+	queryParam = "q"
+	limitParam = "limit"
+	crsParam   = "crs"
+
+	limitDefault = 10
+	limitMax     = 50
+)
+
+var (
+	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+]`)
 )
 
 func parseQueryParams(query url.Values) (collections ds.CollectionsWithParams, searchTerm string, outputSRID domain.SRID, limit int, err error) {
