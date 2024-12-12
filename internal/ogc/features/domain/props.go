@@ -69,7 +69,7 @@ func (p *FeatureProperties) SetRelation(key string, value any, existingKeyPrefix
 	p.moveKeyBeforePrefix(key, existingKeyPrefix)
 }
 
-// moveKeyBeforePrefix best-effort algorithm to place the feature relation BEFORE any similarly named keys.
+// moveKeyBeforePrefix best-effort algorithm to place the feature relation BEFORE the first shortest of any similarly named keys.
 // For example, places "building.href" before "building_fk" or "building_fid".
 func (p *FeatureProperties) moveKeyBeforePrefix(key string, keyPrefix string) {
 	if p.unordered != nil {
@@ -78,8 +78,10 @@ func (p *FeatureProperties) moveKeyBeforePrefix(key string, keyPrefix string) {
 	var existingKey string
 	for pair := p.ordered.Oldest(); pair != nil; pair = pair.Next() {
 		if strings.HasPrefix(pair.Key, keyPrefix) {
+			if existingKey != "" && len(existingKey) <= len(pair.Key) {
+				continue
+			}
 			existingKey = pair.Key
-			break
 		}
 	}
 	if existingKey != "" {
