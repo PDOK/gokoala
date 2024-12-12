@@ -35,7 +35,7 @@ type SearchIndexRecord struct {
 
 type Transformer struct{}
 
-func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection, substitutionFile string) ([]SearchIndexRecord, error) {
+func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection, substitutionsFile string, synonymsFile string) ([]SearchIndexRecord, error) {
 	result := make([]SearchIndexRecord, 0, len(records))
 	for _, r := range records {
 		fieldValuesByName, err := slicesToMap(collection.Search.Fields, r.FieldValues)
@@ -46,7 +46,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		allFieldValuesByName, err := generateFieldValuesSubstitutions(fieldValuesByName, substitutionFile)
+		allFieldValuesByName, err := generateAllFieldValues(fieldValuesByName, substitutionsFile, synonymsFile)
 		if err != nil {
 			return nil, err
 		}

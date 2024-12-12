@@ -2,24 +2,52 @@ package transform
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
+	"slices"
 	"strings"
 )
 
-func generateFieldValuesSubstitutions(fieldValuesByName map[string]any, substitutionFile string) ([]map[string]any, error) {
-	substitutions, err := readSubstitutionsFile(substitutionFile)
+// Return slice of fieldValuesByName
+func generateAllFieldValues(fieldValuesByName map[string]any, substitutionsFile, synonymsFile string) ([]map[string]any, error) {
+	substitutions, err := readSubstitutionsFile(substitutionsFile)
 	if err != nil {
 		return nil, err
 	}
-	var fieldValuesByNameExtensions = make(map[string][]string)
+	synonyms, err := readSubstitutionsFile(synonymsFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var fieldValuesByNameWithAllValues = make(map[string][]string)
 	for key, value := range fieldValuesByName {
-		valueSubstitutions, err := applySubstitutions(value.(string), substitutions)
+		valueLower := strings.ToLower(value.(string))
+
+		// Get all substitutions
+		substitutedValues, err := extentValues([]string{valueLower}, substitutions)
 		if err != nil {
 			return nil, err
 		}
-		fieldValuesByNameExtensions[key] = valueSubstitutions
+		// Get all synonyms for these substituted values
+		// one way
+		synonymsValuesOneWay, err := extentValues(substitutedValues, synonyms)
+		if err != nil {
+			return nil, err
+		}
+		// reverse way
+		reverseSynonyms, err := reverseMap(synonyms)
+		if err != nil {
+			return nil, err
+		}
+		allValues, err := extentValues(synonymsValuesOneWay, reverseSynonyms)
+		if err != nil {
+			return nil, err
+		}
+
+		// Create map with for each key a slice of []values
+		fieldValuesByNameWithAllValues[key] = allValues
 	}
-	return generateAllFieldValuesByName(fieldValuesByNameExtensions), err
+	return generateAllFieldValuesByName(fieldValuesByNameWithAllValues), err
 }
 
 // Transform a map[string][]string into a []map[string]string using the cartesian product, i.e.
@@ -57,27 +85,28 @@ func generateCombinations(keys []string, values [][]string, keyDepth int, curren
 	return result
 }
 
-func applySubstitutions(input string, substitutions map[string]string) ([]string, error) {
-	inputLower := strings.ToLower(input)
+func extentValues(input []string, mapping map[string]string) ([]string, error) {
 	var results []string
-	results = append(results, inputLower)
+	results = append(results, input...)
 
-	for oldChar, newChar := range substitutions {
-		if strings.Contains(inputLower, oldChar) {
-			for i := 0; i < strings.Count(inputLower, oldChar); i++ {
-				substituted, err := replaceNth(inputLower, oldChar, newChar, i+1)
-				if err != nil {
-					return nil, err
+	for j := range input {
+		for oldChar, newChar := range mapping {
+			if strings.Contains(input[j], oldChar) {
+				for i := 0; i < strings.Count(input[j], oldChar); i++ {
+					extendedInput, err := replaceNth(input[j], oldChar, newChar, i+1)
+					if err != nil {
+						return nil, err
+					}
+					subCombinations, err := extentValues([]string{extendedInput}, mapping)
+					if err != nil {
+						return nil, err
+					}
+					results = append(results, subCombinations...)
 				}
-				subCombinations, err := applySubstitutions(substituted, substitutions)
-				if err != nil {
-					return nil, err
-				}
-				results = append(results, subCombinations...)
 			}
 		}
 	}
-
+	// Todo: avoid getting duplicates (for performance improvement)
 	return uniqueSlice(results), nil
 }
 
@@ -133,4 +162,17 @@ func readSubstitutionsFile(filepath string) (map[string]string, error) {
 		substitutions[row[0]] = row[1]
 	}
 	return substitutions, err
+}
+
+func reverseMap(m map[string]string) (map[string]string, error) {
+	n := make(map[string]string, len(m))
+	var seen []string
+	for k, v := range m {
+		if slices.Contains(seen, v) {
+			return nil, fmt.Errorf("Can't reverse Map due to multiple keys with equal values: %s", v)
+		}
+		seen = append(seen, v)
+		n[v] = k
+	}
+	return n, nil
 }

@@ -8,6 +8,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_generateAllFieldValues(t *testing.T) {
+	type args struct {
+		fieldValuesByName map[string]any
+		substitutionsFile string
+		synonymsFile      string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []map[string]any
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{"simple record", args{map[string]any{"component_thoroughfarename": "foo", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "foo", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"single synonym record", args{map[string]any{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"single synonym with capital", args{map[string]any{"component_thoroughfarename": "Eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"two-way synonym record", args{map[string]any{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "eerste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := generateAllFieldValues(tt.args.fieldValuesByName, tt.args.substitutionsFile, tt.args.synonymsFile)
+			if !tt.wantErr(t, err, fmt.Sprintf("generateAllFieldValues(%v, %v, %v)", tt.args.fieldValuesByName, tt.args.substitutionsFile, tt.args.synonymsFile)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "generateAllFieldValues(%v, %v, %v)", tt.args.fieldValuesByName, tt.args.substitutionsFile, tt.args.synonymsFile)
+		})
+	}
+}
+
 func Test_generateCombinations(t *testing.T) {
 	type args struct {
 		keys     []string
@@ -33,10 +61,10 @@ func Test_generateCombinations(t *testing.T) {
 	}
 }
 
-func Test_applySubstitution(t *testing.T) {
+func Test_extentValues(t *testing.T) {
 	type args struct {
-		input         string
-		substitutions map[string]string
+		input   []string
+		mapping map[string]string
 	}
 	tests := []struct {
 		name    string
@@ -44,20 +72,19 @@ func Test_applySubstitution(t *testing.T) {
 		want    []string
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{"No substitution", args{input: "foobar", substitutions: map[string]string{"ae": "a", "à": "a"}}, []string{"foobar"}, assert.NoError},
-		{"Single substitution", args{input: "achtaertune", substitutions: map[string]string{"ae": "a", "à": "a"}}, []string{"achtaertune", "achtartune"}, assert.NoError},
-		{"Multiple but different substitutions", args{input: "klàr achtaertune", substitutions: map[string]string{"ae": "a", "à": "a"}}, []string{"klàr achtaertune", "klàr achtartune", "klar achtartune", "klar achtaertune"}, assert.NoError},
-		{"Two from same substitutions", args{input: "naer achtaertune", substitutions: map[string]string{"ae": "a", "à": "a"}}, []string{"naer achtaertune", "naer achtartune", "nar achtartune", "nar achtaertune"}, assert.NoError},
-		{"Three from same substitutions", args{input: "naer achtaertune kaerel", substitutions: map[string]string{"ae": "a", "à": "a"}}, []string{"naer achtaertune kaerel", "naer achtartune kaerel", "nar achtartune kaerel", "nar achtaertune kaerel", "naer achtaertune karel", "naer achtartune karel", "nar achtartune karel", "nar achtaertune karel"}, assert.NoError},
-		{"Single substitution with capital", args{input: "Aechtartune", substitutions: map[string]string{"ae": "a", "à": "a"}}, []string{"aechtartune", "achtartune"}, assert.NoError},
+		{"No mapping", args{input: []string{"foobar"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar"}, assert.NoError},
+		{"Single mapping", args{input: []string{"foobar eerste"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste", "foobar 1ste"}, assert.NoError},
+		{"Two different mappings", args{input: []string{"foobar eerste tweede"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste tweede", "foobar 1ste tweede", "foobar eerste 2de", "foobar 1ste 2de"}, assert.NoError},
+		{"Two similar mappings", args{input: []string{"foobar eerste eerste"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste eerste", "foobar 1ste eerste", "foobar eerste 1ste", "foobar 1ste 1ste"}, assert.NoError},
+		{"Three from same mapping", args{input: []string{"naer achtaertune kaerel"}, mapping: map[string]string{"ae": "a", "à": "a"}}, []string{"naer achtaertune kaerel", "naer achtartune kaerel", "nar achtartune kaerel", "nar achtaertune kaerel", "naer achtaertune karel", "naer achtartune karel", "nar achtartune karel", "nar achtaertune karel"}, assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := applySubstitutions(tt.args.input, tt.args.substitutions)
-			if !tt.wantErr(t, err, fmt.Sprintf("applySubstitutions(%v, %v)", tt.args.input, tt.args.substitutions)) {
+			got, err := extentValues(tt.args.input, tt.args.mapping)
+			if !tt.wantErr(t, err, fmt.Sprintf("extentValues(%v, %v)", tt.args.input, tt.args.mapping)) {
 				return
 			}
-			assert.ElementsMatch(t, tt.want, got, "applySubstitutions(%v, %v)", tt.args.input, tt.args.substitutions)
+			assert.ElementsMatch(t, tt.want, got, "extentValues(%v, %v)", tt.args.input, tt.args.mapping)
 		})
 	}
 }
@@ -121,7 +148,8 @@ func Test_readSubstitutions(t *testing.T) {
 		want    map[string]string
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{"Read substitutions csv", args{"../testdata/substitution.csv"}, map[string]string{"ae": "a", "à": "a"}, assert.NoError},
+		{"Read substitutions csv", args{"../testdata/substitutions.csv"}, map[string]string{"ae": "a", "à": "a"}, assert.NoError},
+		{"Read substitutions csv", args{"../testdata/synonyms.csv"}, map[string]string{"eerste": "1ste", "fryslân": "friesland", "tweede": "2de"}, assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -130,6 +158,31 @@ func Test_readSubstitutions(t *testing.T) {
 				return
 			}
 			assert.Equalf(t, tt.want, got, "readSubstitutionsFile(%v)", tt.args.filepath)
+		})
+	}
+}
+
+func Test_reverseMap1(t *testing.T) {
+	type args struct {
+		m map[string]string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    map[string]string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{"single k/v", args{map[string]string{"foo": "bar"}}, map[string]string{"bar": "foo"}, assert.NoError},
+		{"multiple k/v", args{map[string]string{"foo": "bar", "foo2": "bar2"}}, map[string]string{"bar": "foo", "bar2": "foo2"}, assert.NoError},
+		{"raise equal values error", args{map[string]string{"foo": "bar", "foo2": "bar"}}, nil, assert.Error},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := reverseMap(tt.args.m)
+			if !tt.wantErr(t, err, fmt.Sprintf("reverseMap(%v)", tt.args.m)) {
+				return
+			}
+			assert.Equalf(t, tt.want, got, "reverseMap(%v)", tt.args.m)
 		})
 	}
 }
