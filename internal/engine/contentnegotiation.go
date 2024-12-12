@@ -84,6 +84,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeMVT),
 		contenttype.NewMediaType(MediaTypeMapboxStyle),
 		contenttype.NewMediaType(MediaTypeSLD),
+		contenttype.NewMediaType(MediaTypeOpenAPI),
 	}
 
 	formatsByMediaType := map[string]string{
@@ -171,7 +172,7 @@ func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string 
 func (cn *ContentNegotiation) getFormatFromAcceptHeader(req *http.Request) string {
 	accepted, _, err := contenttype.GetAcceptableMediaType(req, cn.availableMediaTypes)
 	if err != nil {
-		log.Printf("Failed to parse Accept header: %v. Continuing\n", err)
+		log.Printf("Failed to parse Accept header: %v. Continuing\nValue(s) provided: %v\n", err, req.Header.Values("Accept"))
 		return ""
 	}
 	return cn.formatsByMediaType[accepted.String()]
