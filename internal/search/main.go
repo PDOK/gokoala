@@ -121,6 +121,11 @@ func parseQueryParams(query url.Values) (collections ds.CollectionsWithParams, s
 	}
 	searchTerm, searchTermErr := parseSearchTerm(query)
 	collections = parseDeepObjectParams(query)
+	if len(collections) == 0 {
+		return nil, "", 0, 0, errors.New(
+			"no collection(s) specified in request, specify at least one collection and version. " +
+				"For example: foo[version]=1&bar[version]=2 where 'foo' and 'bar' are collection names")
+	}
 	outputSRID, outputSRIDErr := parseCrsToSRID(query, crsParam)
 	limit, limitErr := parseLimit(query)
 	err = errors.Join(searchTermErr, limitErr, outputSRIDErr)

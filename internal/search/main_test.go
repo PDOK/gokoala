@@ -85,32 +85,32 @@ func TestSearch(t *testing.T) {
 		want   want
 	}{
 		{
-			name: "Search: Oudeschild",
+			name: "Fail on search without collection parameter(s)",
 			fields: fields{
 				url: "http://localhost:8080/search?q=\"Oudeschild\"&limit=50",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-oudeschild.json",
-				statusCode: http.StatusOK,
+				body:       "internal/search/testdata/expected-search-no-collection.json",
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{
-			name: "Search: Den ",
-			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&limit=50",
-			},
-			want: want{
-				body:       "internal/search/testdata/expected-search-den.json",
-				statusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "Search: Den. With deepCopy params for a single collection",
+			name: "Search: 'Den' for a single collection",
 			fields: fields{
 				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-den-deepcopy.json",
+				body:       "internal/search/testdata/expected-search-den-single-collection.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search: 'Den' for multiple collections (with one not existing collection, so same output as single collection)",
+			fields: fields{
+				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&addresses[relevance]=0.8&foo[version]=2&foo[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-den-single-collection.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -119,6 +119,7 @@ func TestSearch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// mock time
 			now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+			engine.Now = now
 
 			// given available server
 			rr, ts := createMockServer()

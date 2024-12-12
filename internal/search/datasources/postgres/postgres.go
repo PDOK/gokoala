@@ -48,14 +48,13 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
-	// Prepare dynamic full-text search query
 	// Split terms by spaces and append :* to each term
 	terms := strings.Fields(searchTerm)
 	for i, term := range terms {
 		terms[i] = term + ":*"
 	}
 	termsConcat := strings.Join(terms, " & ")
-	query, args := makeSearchQuery(p.searchIndex, limit, termsConcat, util.Keys(collections))
+	query, args := makeSearchQuery(p.searchIndex, limit, termsConcat, util.Keys(collections), srid)
 
 	// Execute search query
 	rows, err := p.db.Query(queryCtx, query, args...)
@@ -98,15 +97,8 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections da
 	return &fc, queryCtx.Err()
 }
 
-func makeSearchQuery(index string, limit int, terms string, collections []string) (string, []any) {
-	args := []any{limit, terms}
-
-	collectionsClause := ""
-	if len(collections) > 0 {
-		// language=postgresql
-		collectionsClause = `and collection_id = any($3)`
-		args = append(args, collections)
-	}
+func makeSearchQuery(index string, limit int, terms string, collections []string, srid d.SRID) (string, []any) {
+	args := []any{limit, terms, collections}
 
 	// language=postgresql
 	query := fmt.Sprintf(`
@@ -115,7 +107,7 @@ func makeSearchQuery(index string, limit int, terms string, collections []string
 		   max(r.collection_id) as collection_id,
 		   max(r.collection_version) as collection_version,
 		   max(r.geometry_type) as geometry_type,
-		   cast(max(r.bbox) as geometry) as bbox,
+		   cast(st_transform(max(r.bbox), %[2]d) as geometry) as bbox,
 		   max(r.rank) as rank, 
 		   max(r.highlighted_text) as highlighted_text
 	from (
@@ -123,12 +115,12 @@ func makeSearchQuery(index string, limit int, terms string, collections []string
 	           ts_rank_cd(ts, to_tsquery($2), 1) as rank,
 	    	   ts_headline('dutch', display_name, to_tsquery($2)) as highlighted_text
 		from %[1]s
-		where ts @@ to_tsquery($2) %[2]s
+		where ts @@ to_tsquery($2) and collection_id = any($3)
 		limit 500
 	) r
 	group by r.display_name
 	order by rank desc, display_name asc
-	limit $1`, index, collectionsClause) // don't add user input here, use $X params for user input!
+	limit $1`, index, srid) // don't add user input here, use $X params for user input!
 
 	return query, args
 }
