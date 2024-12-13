@@ -248,6 +248,7 @@
           "crs": "https://www.opengis.net/def/crs/EPSG/0/3035",
           "tileMatrixSetId": "EuropeanETRS89_LAEAQuad",
           "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/EuropeanETRS89_LAEAQuad",
+          "tileMatrixSetURI": "http://www.opengis.net/def/tilematrixset/OGC/1.0/EuropeanETRS89_LAEAQuad",
           "tileMatrixSetLimits": [
             {{ $first := true }}
             {{ if eq $type.ZoomLevelRange.Start 0 }}
@@ -440,6 +441,7 @@
           "crs": "https://www.opengis.net/def/crs/EPSG/0/3857",
           "tileMatrixSetId": "WebMercatorQuad",
           "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/WebMercatorQuad",
+          "tileMatrixSetURI": "http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad",
           "tileMatrixSetLimits": [
             {{ $first := true }}
             {{ if eq $type.ZoomLevelRange.Start 0 }}
