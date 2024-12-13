@@ -2,6 +2,7 @@ package datasources
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
 )
@@ -21,3 +22,19 @@ type CollectionsWithParams map[string]CollectionParams
 
 // CollectionParams parameter key with associated value
 type CollectionParams map[string]string
+
+func (cp CollectionsWithParams) NamesAndVersions() (names []string, versions []int) {
+	for name := range cp {
+		version, ok := cp[name]["version"]
+		if !ok {
+			continue
+		}
+		versionNr, err := strconv.Atoi(version)
+		if err != nil {
+			continue
+		}
+		versions = append(versions, versionNr)
+		names = append(names, name)
+	}
+	return names, versions
+}

@@ -95,9 +95,39 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
+			name: "Fail on search with collection without version (first variant)",
+			fields: fields{
+				url: "http://localhost:8080/search?q=\"Oudeschild\"&addresses",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-no-version-1.json",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Fail on search with collection without version (second variant)",
+			fields: fields{
+				url: "http://localhost:8080/search?q=\"Oudeschild\"&addresses=1",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-no-version-2.json",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Fail on search with collection without version (third variant)",
+			fields: fields{
+				url: "http://localhost:8080/search?q=\"Oudeschild\"&addresses[foo]=1",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-no-version-3.json",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
 			name: "Search: 'Den' for a single collection",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-single-collection.json",
@@ -107,7 +137,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search: 'Den' for multiple collections (with one not existing collection, so same output as single collection)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&addresses[relevance]=0.8&foo[version]=2&foo[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=1&addresses[relevance]=0.8&foo[version]=2&foo[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-single-collection.json",

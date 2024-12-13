@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	queryParam = "q"
-	limitParam = "limit"
-	crsParam   = "crs"
+	queryParam   = "q"
+	limitParam   = "limit"
+	crsParam     = "crs"
+	VersionParam = "version"
 
 	limitDefault = 10
 	limitMax     = 50
@@ -32,20 +33,15 @@ func parseQueryParams(query url.Values) (collections ds.CollectionsWithParams, s
 		return
 	}
 	searchTerm, searchTermErr := parseSearchTerm(query)
-	collections = parseDeepObjectParams(query)
-	if len(collections) == 0 {
-		return nil, "", 0, 0, errors.New(
-			"no collection(s) specified in request, specify at least one collection and version. " +
-				"For example: foo[version]=1&bar[version]=2 where 'foo' and 'bar' are collection names")
-	}
+	collections, collErr := parseCollections(query)
 	outputSRID, outputSRIDErr := parseCrsToSRID(query, crsParam)
 	limit, limitErr := parseLimit(query)
-	err = errors.Join(searchTermErr, limitErr, outputSRIDErr)
+	err = errors.Join(collErr, searchTermErr, limitErr, outputSRIDErr)
 	return
 }
 
 // Parse "deep object" params, e.g. paramName[prop1]=value1&paramName[prop2]=value2&....
-func parseDeepObjectParams(query url.Values) ds.CollectionsWithParams {
+func parseCollections(query url.Values) (ds.CollectionsWithParams, error) {
 	deepObjectParams := make(ds.CollectionsWithParams, len(query))
 	for key, values := range query {
 		if strings.Contains(key, "[") {
@@ -60,7 +56,16 @@ func parseDeepObjectParams(query url.Values) ds.CollectionsWithParams {
 			deepObjectParams[mainKey][subKey] = values[0]
 		}
 	}
-	return deepObjectParams
+	errMsg := "specify at least one collection and version. For example: 'foo[version]=1' where 'foo' is the collection and '1' the version"
+	if len(deepObjectParams) == 0 {
+		return nil, fmt.Errorf("no collection(s) specified in request, %s", errMsg)
+	}
+	for name := range deepObjectParams {
+		if version, ok := deepObjectParams[name][VersionParam]; !ok || version == "" {
+			return nil, fmt.Errorf("no version specified in request for collection %s, %s", name, errMsg)
+		}
+	}
+	return deepObjectParams, nil
 }
 
 func parseSearchTerm(query url.Values) (searchTerm string, err error) {

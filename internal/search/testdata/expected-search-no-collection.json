@@ -1,5 +1,5 @@
 {
-  "detail": "no collection(s) specified in request, specify at least one collection and version. For example: foo[version]=1\u0026bar[version]=2 where 'foo' and 'bar' are collection names",
+  "detail": "no collection(s) specified in request, specify at least one collection and version. For example: 'foo[version]=1' where 'foo' is the collection and '1' the version",
   "status": 400,
   "timeStamp": "2000-01-01T00:00:00Z",
   "title": "Bad Request"
