@@ -9,15 +9,13 @@ import (
 	"strings"
 
 	"github.com/PDOK/gomagpie/internal/engine"
-	ds "github.com/PDOK/gomagpie/internal/search/datasources"
-	"github.com/PDOK/gomagpie/internal/search/domain"
+	d "github.com/PDOK/gomagpie/internal/search/domain"
 )
 
 const (
-	queryParam   = "q"
-	limitParam   = "limit"
-	crsParam     = "crs"
-	VersionParam = "version"
+	queryParam = "q"
+	limitParam = "limit"
+	crsParam   = "crs"
 
 	limitDefault = 10
 	limitMax     = 50
@@ -27,22 +25,22 @@ var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+]`)
 )
 
-func parseQueryParams(query url.Values) (collections ds.CollectionsWithParams, searchTerm string, outputSRID domain.SRID, limit int, err error) {
+func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerm string, outputSRID d.SRID, limit int, err error) {
 	err = validateNoUnknownParams(query)
 	if err != nil {
 		return
 	}
 	searchTerm, searchTermErr := parseSearchTerm(query)
 	collections, collErr := parseCollections(query)
-	outputSRID, outputSRIDErr := parseCrsToSRID(query, crsParam)
+	outputSRID, outputSRIDErr := parseCrsToPostgisSRID(query, crsParam)
 	limit, limitErr := parseLimit(query)
 	err = errors.Join(collErr, searchTermErr, limitErr, outputSRIDErr)
 	return
 }
 
-// Parse "deep object" params, e.g. paramName[prop1]=value1&paramName[prop2]=value2&....
-func parseCollections(query url.Values) (ds.CollectionsWithParams, error) {
-	deepObjectParams := make(ds.CollectionsWithParams, len(query))
+// Parse collections as "deep object" params, e.g. collectionName[prop1]=value1&collectionName[prop2]=value2&....
+func parseCollections(query url.Values) (d.CollectionsWithParams, error) {
+	deepObjectParams := make(d.CollectionsWithParams, len(query))
 	for key, values := range query {
 		if strings.Contains(key, "[") {
 			// Extract deepObject parameters
@@ -61,7 +59,7 @@ func parseCollections(query url.Values) (ds.CollectionsWithParams, error) {
 		return nil, fmt.Errorf("no collection(s) specified in request, %s", errMsg)
 	}
 	for name := range deepObjectParams {
-		if version, ok := deepObjectParams[name][VersionParam]; !ok || version == "" {
+		if version, ok := deepObjectParams[name][d.VersionParam]; !ok || version == "" {
 			return nil, fmt.Errorf("no version specified in request for collection %s, %s", name, errMsg)
 		}
 	}
@@ -102,27 +100,27 @@ func clone(params url.Values) url.Values {
 	return copyParams
 }
 
-func parseCrsToSRID(params url.Values, paramName string) (domain.SRID, error) {
+func parseCrsToPostgisSRID(params url.Values, paramName string) (d.SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
-		return domain.UndefinedSRID, nil
+		return d.WGS84SRIDPostgis, nil // default to WGS84
 	}
 	param = strings.TrimSpace(param)
-	if !strings.HasPrefix(param, domain.CrsURIPrefix) {
-		return domain.UndefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, domain.CrsURIPrefix, param)
+	if !strings.HasPrefix(param, d.CrsURIPrefix) {
+		return d.UndefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, d.CrsURIPrefix, param)
 	}
-	var srid domain.SRID
+	var srid d.SRID
 	lastIndex := strings.LastIndex(param, "/")
 	if lastIndex != -1 {
 		crsCode := param[lastIndex+1:]
-		if crsCode == domain.WGS84CodeOGC {
-			return domain.WGS84SRIDPostgis, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
+		if crsCode == d.WGS84CodeOGC {
+			return d.WGS84SRIDPostgis, nil // CRS84 is WGS84, we use EPSG:4326 for Postgres TODO: check if correct since axis order differs between CRS84 and EPSG:4326
 		}
 		val, err := strconv.Atoi(crsCode)
 		if err != nil {
 			return 0, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
 		}
-		srid = domain.SRID(val)
+		srid = d.SRID(val)
 	}
 	return srid, nil
 }

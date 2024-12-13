@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/PDOK/gomagpie/internal/search/datasources"
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
 	pggeom "github.com/twpayne/go-geom"
@@ -40,7 +39,7 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Search(ctx context.Context, searchTerm string, collections datasources.CollectionsWithParams,
+func (p *Postgres) Search(ctx context.Context, searchTerm string, collections d.CollectionsWithParams,
 	srid d.SRID, limit int) (*d.FeatureCollection, error) {
 
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
