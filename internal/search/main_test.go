@@ -67,8 +67,10 @@ func TestSearch(t *testing.T) {
 	assert.NoError(t, err)
 	collection := config.CollectionByID(conf, "addresses")
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-	err = etl.ImportFile(*collection, testSearchIndex, "internal/etl/testdata/addresses-crs84.gpkg",
-		"internal/etl/testdata/substitution.csv", table, 5000, dbConn)
+	err = etl.ImportFile(*collection, testSearchIndex,
+		"internal/etl/testdata/addresses-crs84.gpkg",
+		"internal/etl/testdata/substitution.csv",
+		"internal/etl/testdata/synonyms.csv", table, 5000, dbConn)
 	assert.NoError(t, err)
 
 	// run test cases
