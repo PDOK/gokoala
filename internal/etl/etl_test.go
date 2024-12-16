@@ -162,21 +162,22 @@ func insertTestData(ctx context.Context, conn string) error {
 	}
 	defer db.Close(ctx)
 
-	// Create required partitions for testData
-	//nolint:misspell
-	partitions := `
-	create table search_index_addres partition of search_index
-		for values in ('adres');
-		-- partition by list(collection_version);
-	create table search_index_weg partition of search_index
-		for values in ('weg');
-		-- partition by list(collection_version);
-    `
-
-	_, err = db.Exec(ctx, partitions)
-	if err != nil {
-		log.Printf("Error creating partitions: %v\n", err)
-	}
+	// TODO: Disabled since partitioning is disabled for now (see)
+	// // Create required partitions for testData
+	// //nolint:misspell
+	// partitions := `
+	// create table search_index_addres partition of search_index
+	// 	for values in ('adres');
+	// 	-- partition by list(collection_version);
+	// create table search_index_weg partition of search_index
+	// 	for values in ('weg');
+	// 	-- partition by list(collection_version);
+	// `
+	//
+	// _, err = db.Exec(ctx, partitions)
+	// if err != nil {
+	// 	log.Printf("Error creating partitions: %v\n", err)
+	// }
 
 	testData := `
 	insert into search_index(feature_id, collection_id, collection_version, display_name, suggest, geometry_type, bbox)
