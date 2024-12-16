@@ -2,9 +2,10 @@ package transform
 
 import (
 	"encoding/csv"
-	"github.com/PDOK/gomagpie/internal/engine/util"
 	"os"
 	"strings"
+
+	"github.com/PDOK/gomagpie/internal/engine/util"
 )
 
 // Return slice of fieldValuesByName
