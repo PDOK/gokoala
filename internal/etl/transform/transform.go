@@ -46,7 +46,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		allFieldValuesByName, err := generateAllFieldValues(fieldValuesByName, substitutionsFile, synonymsFile)
+		allFieldValuesByName, err := extendFieldValues(fieldValuesByName, substitutionsFile, synonymsFile)
 		if err != nil {
 			return nil, err
 		}

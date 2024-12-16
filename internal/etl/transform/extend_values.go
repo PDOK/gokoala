@@ -2,19 +2,18 @@ package transform
 
 import (
 	"encoding/csv"
-	"fmt"
+	"github.com/PDOK/gomagpie/internal/engine/util"
 	"os"
-	"slices"
 	"strings"
 )
 
 // Return slice of fieldValuesByName
-func generateAllFieldValues(fieldValuesByName map[string]any, substitutionsFile, synonymsFile string) ([]map[string]any, error) {
-	substitutions, err := readSubstitutionsFile(substitutionsFile)
+func extendFieldValues(fieldValuesByName map[string]any, substitutionsFile, synonymsFile string) ([]map[string]any, error) {
+	substitutions, err := readCsvFile(substitutionsFile)
 	if err != nil {
 		return nil, err
 	}
-	synonyms, err := readSubstitutionsFile(synonymsFile)
+	synonyms, err := readCsvFile(synonymsFile)
 	if err != nil {
 		return nil, err
 	}
@@ -24,22 +23,18 @@ func generateAllFieldValues(fieldValuesByName map[string]any, substitutionsFile,
 		valueLower := strings.ToLower(value.(string))
 
 		// Get all substitutions
-		substitutedValues, err := extentValues([]string{valueLower}, substitutions)
+		substitutedValues, err := extendValues([]string{valueLower}, substitutions)
 		if err != nil {
 			return nil, err
 		}
 		// Get all synonyms for these substituted values
 		// one way
-		synonymsValuesOneWay, err := extentValues(substitutedValues, synonyms)
+		synonymsValuesOneWay, err := extendValues(substitutedValues, synonyms)
 		if err != nil {
 			return nil, err
 		}
 		// reverse way
-		reverseSynonyms, err := reverseMap(synonyms)
-		if err != nil {
-			return nil, err
-		}
-		allValues, err := extentValues(synonymsValuesOneWay, reverseSynonyms)
+		allValues, err := extendValues(synonymsValuesOneWay, util.Inverse(synonyms))
 		if err != nil {
 			return nil, err
 		}
@@ -62,30 +57,32 @@ func generateAllFieldValuesByName(input map[string][]string) []map[string]any {
 		values = append(values, vals)
 	}
 
-	return generateCombinations(keys, values, 0, make(map[string]any))
+	return generateCombinations(keys, values)
 }
 
-// Recursively generate all combinations
-func generateCombinations(keys []string, values [][]string, keyDepth int, current map[string]any) []map[string]any {
-	var result []map[string]any
-	if keyDepth == len(keys) {
-		newEntry := make(map[string]any)
-		for k, v := range current {
-			newEntry[k] = v
+func generateCombinations(keys []string, values [][]string) []map[string]any {
+	if len(keys) == 0 || len(values) == 0 {
+		return nil
+	}
+	result := []map[string]any{{}} // contains empty map so the first iteration works
+	for keyDepth := 0; keyDepth < len(keys); keyDepth++ {
+		var newResult []map[string]any
+		for _, entry := range result {
+			for _, val := range values[keyDepth] {
+				newEntry := make(map[string]any)
+				for k, v := range entry {
+					newEntry[k] = v
+				}
+				newEntry[keys[keyDepth]] = val
+				newResult = append(newResult, newEntry)
+			}
 		}
-		return []map[string]any{newEntry}
+		result = newResult
 	}
-
-	for _, val := range values[keyDepth] {
-		current[keys[keyDepth]] = val
-		partialResult := generateCombinations(keys, values, keyDepth+1, current)
-		result = append(result, partialResult...)
-	}
-
 	return result
 }
 
-func extentValues(input []string, mapping map[string]string) ([]string, error) {
+func extendValues(input []string, mapping map[string]string) ([]string, error) {
 	var results []string
 	results = append(results, input...)
 
@@ -97,7 +94,7 @@ func extentValues(input []string, mapping map[string]string) ([]string, error) {
 					if err != nil {
 						return nil, err
 					}
-					subCombinations, err := extentValues([]string{extendedInput}, mapping)
+					subCombinations, err := extendValues([]string{extendedInput}, mapping)
 					if err != nil {
 						return nil, err
 					}
@@ -106,7 +103,7 @@ func extentValues(input []string, mapping map[string]string) ([]string, error) {
 			}
 		}
 	}
-	// Todo: avoid getting duplicates (for performance improvement)
+	// Possible performance improvement here by avoiding duplicates in the first place
 	return uniqueSlice(results), nil
 }
 
@@ -143,7 +140,7 @@ func uniqueSlice(s []string) []string {
 	return results
 }
 
-func readSubstitutionsFile(filepath string) (map[string]string, error) {
+func readCsvFile(filepath string) (map[string]string, error) {
 	substitutions := make(map[string]string)
 
 	file, err := os.Open(filepath)
@@ -162,17 +159,4 @@ func readSubstitutionsFile(filepath string) (map[string]string, error) {
 		substitutions[row[0]] = row[1]
 	}
 	return substitutions, err
-}
-
-func reverseMap(m map[string]string) (map[string]string, error) {
-	n := make(map[string]string, len(m))
-	var seen []string
-	for k, v := range m {
-		if slices.Contains(seen, v) {
-			return nil, fmt.Errorf("Can't reverse Map due to multiple keys with equal values: %s", v)
-		}
-		seen = append(seen, v)
-		n[v] = k
-	}
-	return n, nil
 }
