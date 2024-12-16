@@ -55,8 +55,14 @@ docker run --rm --name postgis -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=test
 
 ./gomagpie create-search-index --db-name test_db
 
-./gomagpie import-file --db-name test_db --config-file internal/etl/testdata/config.yaml --file internal/etl/testdata/addresses-crs84.gpkg --substitution-file internal/etl/testdata/substitution.csv --feature-table "addresses"
-
+./gomagpie import-file --db-name test_db \
+  --file internal/etl/testdata/addresses-crs84.gpkg \
+  --feature-table "addresses" \
+  --config-file internal/etl/testdata/config.yaml \
+  --collection-id "addresses" \
+  --substitutions-file internal/etl/testdata/substitutions.csv \
+   --synonyms-file internal/etl/testdata/synonyms.csv
+ 
 ```
 
 ## Build

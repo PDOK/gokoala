@@ -59,7 +59,7 @@ func TestImportGeoPackage(t *testing.T) {
 		{
 			name:  "import everything",
 			where: "",
-			count: 67230, // 33030*2 + substitution mutations
+			count: 67230, // 33030*2 + substitution and synonyms combinations
 		},
 		{
 			name:  "with where clause",
@@ -97,7 +97,7 @@ func TestImportGeoPackage(t *testing.T) {
 		assert.NoError(t, err)
 
 		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", pwd+"/testdata/substitution.csv", table, 1000, dbConn)
+		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", pwd+"/testdata/substitutions.csv", pwd+"/testdata/synonyms.csv", table, 1000, dbConn)
 		assert.NoError(t, err)
 
 		// check nr of records
