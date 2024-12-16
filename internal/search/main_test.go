@@ -69,7 +69,7 @@ func TestSearch(t *testing.T) {
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
 	err = etl.ImportFile(*collection, testSearchIndex,
 		"internal/etl/testdata/addresses-crs84.gpkg",
-		"internal/etl/testdata/substitution.csv",
+		"internal/etl/testdata/substitutions.csv",
 		"internal/etl/testdata/synonyms.csv", table, 5000, dbConn)
 	assert.NoError(t, err)
 
