@@ -41,7 +41,7 @@ func (s *Search) Search() http.HandlerFunc {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		fc, err := s.datasource.Search(r.Context(), searchTerm, collections, outputSRID, limit)
+		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), searchTerm, collections, outputSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return

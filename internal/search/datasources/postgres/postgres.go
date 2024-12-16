@@ -39,13 +39,11 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Search(ctx context.Context, searchTerm string, collections d.CollectionsWithParams,
+func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTerm string, collections d.CollectionsWithParams,
 	srid d.SRID, limit int) (*d.FeatureCollection, error) {
 
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
-
-	collectionNames, collectionVersions := collections.NamesAndVersions()
 
 	// Split terms by spaces and append :* to each term
 	terms := strings.Fields(searchTerm)
@@ -56,6 +54,7 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections d.
 	query := makeSearchQuery(p.searchIndex, srid)
 
 	// Execute search query
+	collectionNames, collectionVersions := collections.NamesAndVersions()
 	rows, err := p.db.Query(queryCtx, query, limit, termsConcat, collectionNames, collectionVersions)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
@@ -63,6 +62,37 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections d.
 	defer rows.Close()
 
 	// Turn rows into FeatureCollection
+	return mapRowsToFeatures(queryCtx, rows)
+}
+
+func makeSearchQuery(index string, srid d.SRID) string {
+	// language=postgresql
+	query := fmt.Sprintf(`
+	select r.display_name as display_name, 
+	       max(r.feature_id) as feature_id,
+		   max(r.collection_id) as collection_id,
+		   max(r.collection_version) as collection_version,
+		   max(r.geometry_type) as geometry_type,
+		   cast(st_transform(max(r.bbox), %[2]d) as geometry) as bbox,
+		   max(r.rank) as rank, 
+		   max(r.highlighted_text) as highlighted_text
+	from (
+		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
+	           ts_rank_cd(ts, to_tsquery($2), 1) as rank,
+	    	   ts_headline('dutch', display_name, to_tsquery($2)) as highlighted_text
+		from %[1]s
+		where ts @@ to_tsquery($2) and collection_id = any($3) and collection_version = any($4)
+		order by rank desc, display_name asc
+		limit 500
+	) r
+	group by r.display_name
+	order by rank desc, display_name asc
+	limit $1`, index, srid) // don't add user input here, use $X params for user input!
+
+	return query
+}
+
+func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureCollection, error) {
 	fc := d.FeatureCollection{Features: make([]*d.Feature, 0)}
 	for rows.Next() {
 		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
@@ -92,30 +122,4 @@ func (p *Postgres) Search(ctx context.Context, searchTerm string, collections d.
 		fc.NumberReturned = len(fc.Features)
 	}
 	return &fc, queryCtx.Err()
-}
-
-func makeSearchQuery(index string, srid d.SRID) string {
-	// language=postgresql
-	query := fmt.Sprintf(`
-	select r.display_name as display_name, 
-	       max(r.feature_id) as feature_id,
-		   max(r.collection_id) as collection_id,
-		   max(r.collection_version) as collection_version,
-		   max(r.geometry_type) as geometry_type,
-		   cast(st_transform(max(r.bbox), %[2]d) as geometry) as bbox,
-		   max(r.rank) as rank, 
-		   max(r.highlighted_text) as highlighted_text
-	from (
-		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
-	           ts_rank_cd(ts, to_tsquery($2), 1) as rank,
-	    	   ts_headline('dutch', display_name, to_tsquery($2)) as highlighted_text
-		from %[1]s
-		where ts @@ to_tsquery($2) and collection_id = any($3) and collection_version = any($4)
-		limit 500
-	) r
-	group by r.display_name
-	order by rank desc, display_name asc
-	limit $1`, index, srid) // don't add user input here, use $X params for user input!
-
-	return query
 }

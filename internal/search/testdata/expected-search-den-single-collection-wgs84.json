@@ -26,24 +26,24 @@
         "coordinates": [
           [
             [
-              4.701721422439945,
-              52.9619223105808
+              4.703246926093469,
+              52.9627011349704
             ],
             [
-              4.901721422439945,
-              52.9619223105808
+              4.903246926093468,
+              52.9627011349704
             ],
             [
-              4.901721422439945,
-              53.161922310580806
+              4.903246926093468,
+              53.162701134970405
             ],
             [
-              4.701721422439945,
-              53.161922310580806
+              4.703246926093469,
+              53.162701134970405
             ],
             [
-              4.701721422439945,
-              52.9619223105808
+              4.703246926093469,
+              52.9627011349704
             ]
           ]
         ]
@@ -66,7 +66,7 @@
         "collectionVersion": "1",
         "displayName": "Achterom - Den Burg",
         "highlight": "Achterom - <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/22215?f=json",
         "score": 0.11162212491035461
       },
       "geometry": {
@@ -74,35 +74,35 @@
         "coordinates": [
           [
             [
-              4.699813158490893,
-              52.95463219709524
+              4.699139629150976,
+              52.95528084051514
             ],
             [
-              4.899813158490892,
-              52.95463219709524
+              4.899139629150976,
+              52.95528084051514
             ],
             [
-              4.899813158490892,
-              53.154632197095246
+              4.899139629150976,
+              53.15528084051514
             ],
             [
-              4.699813158490893,
-              53.154632197095246
+              4.699139629150976,
+              53.15528084051514
             ],
             [
-              4.699813158490893,
-              52.95463219709524
+              4.699139629150976,
+              52.95528084051514
             ]
           ]
         ]
       },
-      "id": "114",
+      "id": "22215",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/22215?f=json"
         }
       ]
     },
@@ -122,24 +122,24 @@
         "coordinates": [
           [
             [
-              4.680059099895046,
-              52.95346592050607
+              4.678620944865994,
+              52.957118421718
             ],
             [
-              4.880059099895045,
-              52.95346592050607
+              4.878620944865993,
+              52.957118421718
             ],
             [
-              4.880059099895045,
-              53.15346592050607
+              4.878620944865993,
+              53.157118421718
             ],
             [
-              4.680059099895046,
-              53.15346592050607
+              4.678620944865994,
+              53.157118421718
             ],
             [
-              4.680059099895046,
-              52.95346592050607
+              4.678620944865994,
+              52.957118421718
             ]
           ]
         ]
@@ -258,7 +258,7 @@
         "collectionVersion": "1",
         "displayName": "Beatrixlaan - Den Burg",
         "highlight": "Beatrixlaan - <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/591?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/827?f=json",
         "score": 0.11162212491035461
       },
       "geometry": {
@@ -266,134 +266,38 @@
         "coordinates": [
           [
             [
-              4.690892824472019,
-              52.95558352001795
+              4.691060243798572,
+              52.956498997973284
             ],
             [
-              4.890892824472019,
-              52.95558352001795
+              4.891060243798571,
+              52.956498997973284
             ],
             [
-              4.890892824472019,
-              53.155583520017956
+              4.891060243798571,
+              53.15649899797329
             ],
             [
-              4.690892824472019,
-              53.155583520017956
+              4.691060243798572,
+              53.15649899797329
             ],
             [
-              4.690892824472019,
-              52.95558352001795
+              4.691060243798572,
+              52.956498997973284
             ]
           ]
         ]
       },
-      "id": "591",
+      "id": "827",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/591?f=json"
-        }
-      ]
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Ada van Hollandstraat - Den Burg",
-        "highlight": "Ada van Hollandstraat - <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/26?f=json",
-        "score": 0.09617967158555984
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              4.696235388824104,
-              52.95196001510249
-            ],
-            [
-              4.8962353888241035,
-              52.95196001510249
-            ],
-            [
-              4.8962353888241035,
-              53.151960015102496
-            ],
-            [
-              4.696235388824104,
-              53.151960015102496
-            ],
-            [
-              4.696235388824104,
-              52.95196001510249
-            ]
-          ]
-        ]
-      },
-      "id": "26",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/26?f=json"
-        }
-      ]
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Anne Frankstraat - Den Burg",
-        "highlight": "Anne Frankstraat - <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/474?f=json",
-        "score": 0.09617967158555984
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              4.692873779103581,
-              52.950932925919574
-            ],
-            [
-              4.892873779103581,
-              52.950932925919574
-            ],
-            [
-              4.892873779103581,
-              53.15093292591958
-            ],
-            [
-              4.692873779103581,
-              53.15093292591958
-            ],
-            [
-              4.692873779103581,
-              52.950932925919574
-            ]
-          ]
-        ]
-      },
-      "id": "474",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/474?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/827?f=json"
         }
       ]
     }
   ],
-  "numberReturned": 8
+  "numberReturned": 6
 }
