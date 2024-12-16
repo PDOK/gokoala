@@ -11,7 +11,6 @@ import { NGXLogger } from 'ngx-logger'
   templateUrl: './legend-view.component.html',
   styleUrls: ['./legend-view.component.css'],
   imports: [CommonModule, LegendItemComponent],
-  standalone: true,
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {

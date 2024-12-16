@@ -65,7 +65,6 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './vectortile-view.component.html',
   styleUrls: ['./vectortile-view.component.css'],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ObjectInfoComponent],
   schemas: [
