@@ -1,0 +1,25 @@
+<div *ngIf="url" role="search">
+  <label id="searchboxlabel" for="searchBox">{{ label }}</label>
+  <input
+    role="textbox"
+    class="search-box"
+    autoComplete="off"
+    [value]="searchLocation"
+    id="searchBox"
+    (keyup)="updateSearchField($event)"
+    type="text"
+    [placeholder]="placeholder"
+    [title]="title"
+    list="locatie-auto-complete"
+    aria-label="Search for a location" />
+
+  <div>
+    <div *ngFor="let collection of collections; let i = index">
+      <label>
+        <input type="checkbox" [checked]="isActiveCollection(collection.title)" />
+        {{ collection.title }}
+      </label>
+    </div>
+  </div>
+</div>
+{{ infomessage }}
