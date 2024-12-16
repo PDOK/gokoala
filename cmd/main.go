@@ -42,7 +42,8 @@ const (
 	featureTableFidFlag     = "fid"
 	featureTableGeomFlag    = "geom"
 	pageSizeFlag            = "page-size"
-	substitutionFileFlag    = "substitution-file"
+	substitutionsFileFlag   = "substitutions-file"
+	synonymsFileFlag        = "synonyms-file"
 )
 
 var (
@@ -251,9 +252,15 @@ func main() {
 					Required: true,
 				},
 				&cli.PathFlag{
-					Name:     substitutionFileFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(substitutionFileFlag)},
+					Name:     substitutionsFileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(substitutionsFileFlag)},
 					Usage:    "Path to csv file containing substitutions used to generate suggestions",
+					Required: true,
+				},
+				&cli.PathFlag{
+					Name:     synonymsFileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(synonymsFileFlag)},
+					Usage:    "Path to csv file containing synonyms used to generate suggestions",
 					Required: true,
 				},
 				&cli.StringFlag{
@@ -300,7 +307,7 @@ func main() {
 				if collection == nil {
 					return fmt.Errorf("no configured collection found with id: %s", collectionID)
 				}
-				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), c.Path(substitutionFileFlag), featureTable,
+				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), c.Path(substitutionsFileFlag), c.Path(synonymsFileFlag), featureTable,
 					c.Int(pageSizeFlag), dbConn)
 			},
 		},
