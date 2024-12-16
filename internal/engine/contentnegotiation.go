@@ -172,7 +172,7 @@ func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string 
 func (cn *ContentNegotiation) getFormatFromAcceptHeader(req *http.Request) string {
 	accepted, _, err := contenttype.GetAcceptableMediaType(req, cn.availableMediaTypes)
 	if err != nil {
-		log.Printf("Failed to parse Accept header: %v. Continuing\nValue(s) provided: %v\n", err, req.Header.Values("Accept"))
+		log.Printf("Failed to parse Accept header: %v. Continuing\n", err)
 		return ""
 	}
 	return cn.formatsByMediaType[accepted.String()]
