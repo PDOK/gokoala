@@ -401,7 +401,7 @@ func readTileMatrixSetLimits(tileMatrixSetLimits map[string]map[int]TileMatrixSe
 	}
 }
 
-func parseTileParams(tileMatrix string, tileRow string, tileCol string) (int, int, int, error) {
+func parseTileParams(tileMatrix, tileRow, tileCol string) (int, int, int, error) {
 	tm, tmErr := strconv.Atoi(tileMatrix)
 	tr, trErr := strconv.Atoi(tileRow)
 	tc, tcErr := strconv.Atoi(tileCol)
