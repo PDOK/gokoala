@@ -23,7 +23,7 @@ export class SearchOptionsComponent implements OnInit {
   collections: Array<Collection & CollectionLink> | undefined = undefined
   infomessage: string | undefined = undefined
   active: ActiveCollection[] = []
-  visible: any
+  visible: boolean = false
 
   constructor(
     private logger: NGXLogger,

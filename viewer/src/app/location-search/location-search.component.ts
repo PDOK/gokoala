@@ -1,9 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core'
+import { Component, Input } from '@angular/core'
 
 import { CommonModule } from '@angular/common'
 
 import { CollectionsService } from '../api/services'
-import { CollectionLink, Collection } from '../api/models'
 import { NGXLogger } from 'ngx-logger'
 import { LocationSearchService } from '../location-search.service'
 import { defaultMapping, ProjectionMapping } from '../feature.service'
