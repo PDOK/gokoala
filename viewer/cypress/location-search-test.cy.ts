@@ -15,7 +15,9 @@ function loadLocationSearchEmpty() {
   })
 }
 function loadLocationSearchWithUrl() {
-  cy.intercept('GET', 'https://visualisation.example.com/locationapi*/**', { fixture: 'collectionfix.json' }).as('col')
+  cy.intercept('GET', 'https://visualisation.example.com/locationapi/collections', { fixture: 'collectionfix.json' }).as('col')
+  cy.intercept('GET', 'https://visualisation.example.com/locationapi/search', { fixture: 'search-den-wgs84.json' }).as('search')
+
   cy.mount(LocationSearchComponent, {
     imports: [
       HttpClientModule,
@@ -28,6 +30,7 @@ function loadLocationSearchWithUrl() {
     },
   })
   cy.wait('@col')
+
 }
 
 function loadLocationSearch(fixture: string, labelText: string, placeholder: string, title: string) {
@@ -103,6 +106,11 @@ describe('location-search-test', () => {
     loadLocationSearchWithUrl()
     cy.get(':nth-child(3) >  label > input[type=checkbox]').uncheck()
     cy.get(':nth-child(6) >  label > input[type=checkbox]').uncheck()
-    cy.get('#searchBox').should('be.visible').should('be.enabled').type('AAAAA')
+    cy.get('#searchBox').should('be.visible').should('be.enabled').type('den')
+    cy.wait('@search')
+    cy.wait('@search')
+    cy.wait('@search')
+    cy.contains('Beatrixlaan').focus()
+
   })
 })

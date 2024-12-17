@@ -1,0 +1,303 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?f=json"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Abbewaal - Den Burg",
+        "highlight": "Abbewaal - <b>Den</b> Burg",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/99?f=json",
+        "score": 0.11162212491035461
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              109043.61280645092,
+              553071.2827189546
+            ],
+            [
+              122481.77479068137,
+              552962.5620117659
+            ],
+            [
+              122631.09554431966,
+              575219.1012624607
+            ],
+            [
+              109254.66298884692,
+              575327.4685912606
+            ],
+            [
+              109043.61280645092,
+              553071.2827189546
+            ]
+          ]
+        ]
+      },
+      "id": "99",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/99?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Achterom - Den Burg",
+        "highlight": "Achterom - <b>Den</b> Burg",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/22215?f=json",
+        "score": 0.11162212491035461
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108759.77100749934,
+              552248.1945484902
+            ],
+            [
+              122200.21718796142,
+              552138.6957663981
+            ],
+            [
+              122350.79776828067,
+              574395.1784952144
+            ],
+            [
+              108972.07779478905,
+              574504.3214884505
+            ],
+            [
+              108759.77100749934,
+              552248.1945484902
+            ]
+          ]
+        ]
+      },
+      "id": "22215",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/22215?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Akenbuurt - Den Burg",
+        "highlight": "Akenbuurt - <b>Den</b> Burg",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/46?f=json",
+        "score": 0.11162212491035461
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107382.89003167403,
+              552466.0160286687
+            ],
+            [
+              120822.74710915676,
+              552352.698917785
+            ],
+            [
+              120979.66241412575,
+              574609.1632009319
+            ],
+            [
+              107601.53236763355,
+              574722.1120828141
+            ],
+            [
+              107382.89003167403,
+              552466.0160286687
+            ]
+          ]
+        ]
+      },
+      "id": "46",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/46?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Amaliaweg - Den Hoorn",
+        "highlight": "Amaliaweg - <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/50?f=json",
+        "score": 0.11162212491035461
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108053.06245183083,
+              548829.392089723
+            ],
+            [
+              121502.9902353966,
+              548717.9709095402
+            ],
+            [
+              121656.63098808826,
+              570974.2312531795
+            ],
+            [
+              108268.41604413971,
+              571085.2908990474
+            ],
+            [
+              108053.06245183083,
+              548829.392089723
+            ]
+          ]
+        ]
+      },
+      "id": "50",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/50?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Bakkenweg - Den Hoorn",
+        "highlight": "Bakkenweg - <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/520?f=json",
+        "score": 0.11162212491035461
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              105776.85318090196,
+              551480.3458531145
+            ],
+            [
+              119219.4593937051,
+              551362.588411998
+            ],
+            [
+              119383.69392558266,
+              573618.9542783926
+            ],
+            [
+              106002.81086040766,
+              573736.3292134333
+            ],
+            [
+              105776.85318090196,
+              551480.3458531145
+            ]
+          ]
+        ]
+      },
+      "id": "520",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/520?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Beatrixlaan - Den Burg",
+        "highlight": "Beatrixlaan - <b>Den</b> Burg",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/827?f=json",
+        "score": 0.11162212491035461
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108218.13045314618,
+              552388.953964499
+            ],
+            [
+              121658.19222109031,
+              552277.9525492993
+            ],
+            [
+              121811.26766043308,
+              574534.4315263145
+            ],
+            [
+              108432.93263887867,
+              574645.0722492639
+            ],
+            [
+              108218.13045314618,
+              552388.953964499
+            ]
+          ]
+        ]
+      },
+      "id": "827",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/827?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 6
+}

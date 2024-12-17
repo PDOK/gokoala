@@ -4,6 +4,13 @@ import { CommonModule } from '@angular/common'
 import { CollectionsService } from '../api/services'
 import { CollectionLink, Collection } from '../api/models'
 import { NGXLogger } from 'ngx-logger'
+import { LocationSearchService } from '../location-search.service'
+import { defaultMapping, ProjectionMapping } from '../feature.service'
+import { Feature } from 'ol'
+import { Geometry } from 'ol/geom'
+import { Observable } from 'rxjs'
+import { SafeHtmlPipe } from '../safe-html.pipe'
+import { FeatureViewComponent } from '../feature-view/feature-view.component'
 type ActiveCollection = {
   name: string
   enabled: boolean
@@ -11,11 +18,13 @@ type ActiveCollection = {
 
 @Component({
   selector: 'app-location-search',
-  imports: [CommonModule],
+  imports: [CommonModule, SafeHtmlPipe, FeatureViewComponent],
   templateUrl: './location-search.component.html',
   styleUrl: './location-search.component.css',
 })
 export class LocationSearchComponent implements OnInit {
+  selectedResultUrl: string | undefined = undefined
+
   @Input() url: string | undefined = undefined
   @Input() label: string = 'Search location'
   @Input() title: string = 'Enter the location you want to search for'
@@ -25,14 +34,13 @@ export class LocationSearchComponent implements OnInit {
   collections: Array<Collection & CollectionLink> | undefined = undefined
   infomessage: string | undefined = undefined
   active: ActiveCollection[] = []
-
-  updateSearchField(event: KeyboardEvent) {
-    this.logger.log(event)
-  }
+  projection: ProjectionMapping = defaultMapping
+  $results: Observable<Feature<Geometry>[]> | undefined = undefined
 
   constructor(
     private logger: NGXLogger,
-    private collectionService: CollectionsService
+    private collectionService: CollectionsService,
+    private locationSearchService: LocationSearchService
   ) {}
 
   ngOnInit() {
@@ -57,5 +65,17 @@ export class LocationSearchComponent implements OnInit {
     } else {
       return false
     }
+  }
+  updateSearchField(event: KeyboardEvent) {
+    const inputValue = (event.target as HTMLInputElement).value
+    this.logger.log(inputValue)
+    if (this.url) {
+      this.$results = this.locationSearchService.getResults({ url: this.url + '/search', dataMapping: this.projection })
+    }
+  }
+
+  selectResult(item: Feature<Geometry>) {
+    this.logger.log(item)
+    this.selectedResultUrl = item.getProperties()['href'] as string
   }
 }

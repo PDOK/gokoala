@@ -1,4 +1,13 @@
 <div *ngIf="url" role="search">
+  <div>
+    <div *ngFor="let collection of collections; let i = index">
+      <label>
+        <input type="checkbox" [checked]="isActiveCollection(collection.title)" />
+        {{ collection.title }}
+      </label>
+    </div>
+  </div>
+
   <label id="searchboxlabel" for="searchBox">{{ label }}</label>
   <input
     role="textbox"
@@ -13,13 +22,25 @@
     list="locatie-auto-complete"
     aria-label="Search for a location" />
 
-  <div>
-    <div *ngFor="let collection of collections; let i = index">
-      <label>
-        <input type="checkbox" [checked]="isActiveCollection(collection.title)" />
-        {{ collection.title }}
-      </label>
+  <div role="list" *ngFor="let r of $results | async">
+    <div role="listitem">
+      <button (mouseover)="selectResult(r)" (focus)="selectResult(r)">
+        <div [innerHTML]="r.getProperties()['highlight'] | safeHtml"></div>
+        <div hidden="hidden">
+          {{ r.getProperties()['collectionGeometryType:'] }}
+          {{ r.getProperties()['collectionId'] }}
+          {{ r.getProperties()['collectionVersion'] }}
+          {{ r.getProperties()['displayName'] }}
+
+          {{ r.getProperties()['href'] }}
+          {{ r.getProperties()['score'] }}
+        </div>
+      </button>
     </div>
   </div>
 </div>
+<div *ngIf="selectedResultUrl" role="application">
+  <app-feature-view [itemsUrl]="selectedResultUrl"></app-feature-view>
+</div>
+
 {{ infomessage }}
