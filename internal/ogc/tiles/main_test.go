@@ -233,13 +233,13 @@ func TestTiles_Tile(t *testing.T) {
 			fields: fields{
 				configFile:      "internal/ogc/tiles/testdata/config_tiles_urltemplate.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
-				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
 				tileMatrix:      "5",
 				tileRow:         "10",
 				tileCol:         "15",
 			},
 			want: want{
-				body:       "/foo/NetherlandsRDNewQuad/5/10/15",
+				body:       "/foo/EuropeanETRS89_LAEAQuad/5/10/15",
 				statusCode: http.StatusOK,
 			},
 		},
