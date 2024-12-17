@@ -17,6 +17,9 @@ function loadLocationSearchEmpty() {
 function loadLocationSearchWithUrl() {
   cy.intercept('GET', 'https://visualisation.example.com/locationapi/collections', { fixture: 'collectionfix.json' }).as('col')
   cy.intercept('GET', 'https://visualisation.example.com/locationapi/search', { fixture: 'search-den-wgs84.json' }).as('search')
+  cy.intercept('GET', 'https://example.com/ogc/v1/collections/addresses/items/827*', { fixture: 'amsterdam-wgs84.json' }).as('geo')
+  cy.intercept('GET', 'https://example.com/ogc/v1/collections/addresses/items/22215*', { fixture: 'grid-amsterdam-wgs84.json' }).as('geo2')
+  cy.intercept('GET', 'https://tile.openstreetmap.org/**/*', { fixture: 'backgroundstub.png' }).as('background')
 
   cy.mount(LocationSearchComponent, {
     imports: [
@@ -27,10 +30,10 @@ function loadLocationSearchWithUrl() {
     ],
     componentProperties: {
       url: 'https://visualisation.example.com/locationapi',
+      //    backgroundmap: 'BRT',
     },
   })
   cy.wait('@col')
-
 }
 
 function loadLocationSearch(fixture: string, labelText: string, placeholder: string, title: string) {
@@ -85,6 +88,7 @@ describe('location-search-test', () => {
 
   it('should verify all checkboxes are checked', () => {
     loadLocationSearchWithUrl()
+    cy.get('button').should('have.attr', 'title', 'show search options').click()
     cy.get('input[type="checkbox"').each($checkbox => {
       cy.wrap($checkbox).should('be.checked').should('be.enabled')
     })
@@ -92,6 +96,7 @@ describe('location-search-test', () => {
 
   it('verify all titles from collections', () => {
     loadLocationSearchWithUrl()
+    cy.get('button').should('have.attr', 'title', 'show search options').click()
     const expectedLabels = ['functioneel_gebied', 'geografisch_gebied', 'ligplaats', 'standplaats', 'verblijfsobject', 'woonplaats']
     expectedLabels.forEach(label => {
       // Verify the checkbox is checked
@@ -104,13 +109,16 @@ describe('location-search-test', () => {
 
   it('disable collection and typeahead', () => {
     loadLocationSearchWithUrl()
+    cy.get('button').should('have.attr', 'title', 'show search options').click()
     cy.get(':nth-child(3) >  label > input[type=checkbox]').uncheck()
     cy.get(':nth-child(6) >  label > input[type=checkbox]').uncheck()
     cy.get('#searchBox').should('be.visible').should('be.enabled').type('den')
     cy.wait('@search')
     cy.wait('@search')
     cy.wait('@search')
-    cy.contains('Beatrixlaan').focus()
 
+    cy.contains('Beatrixlaan').focus()
+    cy.wait('@geo')
+    cy.wait('@background')
   })
 })
