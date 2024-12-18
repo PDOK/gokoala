@@ -78,9 +78,8 @@ func NewTiles(e *engine.Engine) *Tiles {
 	tiles := &Tiles{engine: e}
 
 	// TileMatrixSetLimits
-	tiles.tileMatrixSetLimits = make(map[string]map[int]TileMatrixSetLimits)
 	supportedProjections := e.Config.OgcAPI.Tiles.GetProjections()
-	readTileMatrixSetLimits(tiles.tileMatrixSetLimits, supportedProjections)
+	tiles.tileMatrixSetLimits = readTileMatrixSetLimits(supportedProjections)
 
 	// TileMatrixSets
 	renderTileMatrixTemplates(e)
@@ -379,7 +378,8 @@ func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollecti
 	return collectionID
 }
 
-func readTileMatrixSetLimits(tileMatrixSetLimits map[string]map[int]TileMatrixSetLimits, supportedProjections []config.SupportedSrs) {
+func readTileMatrixSetLimits(supportedProjections []config.SupportedSrs) map[string]map[int]TileMatrixSetLimits {
+	tileMatrixSetLimits := make(map[string]map[int]TileMatrixSetLimits)
 	for _, supportedSrs := range supportedProjections {
 		tileMatrixSetID := config.AllTileProjections[supportedSrs.Srs]
 		yamlFile, err := os.ReadFile(tmsLimitsDir + tileMatrixSetID + ".yaml")
@@ -399,6 +399,7 @@ func readTileMatrixSetLimits(tileMatrixSetLimits map[string]map[int]TileMatrixSe
 		}
 		tileMatrixSetLimits[tileMatrixSetID] = tmsLimits
 	}
+	return tileMatrixSetLimits
 }
 
 func parseTileParams(tileMatrix, tileRow, tileCol string) (int, int, int, error) {
