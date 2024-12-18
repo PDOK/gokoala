@@ -182,7 +182,7 @@ func (t *Tiles) Tile(tilesConfig config.Tiles) http.HandlerFunc {
 		}
 		tm, tr, tc, err := parseTileParams(tileMatrix, tileRow, tileCol)
 		if err != nil {
-			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, strings.ReplaceAll(err.Error(), "strconv.Atoi: ", ""))
 			return
 		}
 
@@ -222,7 +222,7 @@ func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tile
 		}
 		tm, tr, tc, err := parseTileParams(tileMatrix, tileRow, tileCol)
 		if err != nil {
-			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, strings.ReplaceAll(err.Error(), "strconv.Atoi: ", ""))
 			return
 		}
 
