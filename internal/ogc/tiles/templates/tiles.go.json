@@ -46,6 +46,7 @@
           "crs": "https://www.opengis.net/def/crs/EPSG/0/28992",
           "tileMatrixSetId": "NetherlandsRDNewQuad",
           "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/NetherlandsRDNewQuad",
+          "tileMatrixSetURI": "{{ $.Config.BaseURL }}/tileMatrixSets/NetherlandsRDNewQuad",
           "tileMatrixSetLimits": [
             {{ $first := true }}
             {{ if eq $type.ZoomLevelRange.Start 0 }}
