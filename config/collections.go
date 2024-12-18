@@ -16,7 +16,7 @@ type GeoSpatialCollections []GeoSpatialCollection
 type GeoSpatialCollection struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9]([a-z0-9_-]*[a-z0-9]+|)$`
-	ID string `yaml:"id" validate:"required,gokoala_id" json:"id"`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
 
 	// Metadata describing the collection contents
 	// +optional

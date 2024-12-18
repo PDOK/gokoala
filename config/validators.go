@@ -7,21 +7,21 @@ import (
 )
 
 var (
-	gokoalaIDRegexp = regexp.MustCompile("^[a-z0-9]([a-z0-9_-]*[a-z0-9]+|)$")
+	lowercaseIDRegexp = regexp.MustCompile("^[a-z0-9]([a-z0-9_-]*[a-z0-9]+|)$")
 )
 
 const (
-	gokoalaID = "gokoala_id"
+	lowercaseID = "lowercase_id"
 )
 
 func RegisterAllValidators(v *validator.Validate) error {
-	return v.RegisterValidation(gokoalaID, GokoalaID)
+	return v.RegisterValidation(lowercaseID, LowercaseID)
 }
 
-// GokoalaID is the validation function for validating if the current field
+// LowercaseID is the validation function for validating if the current field
 // is not empty and contains only lowercase chars, numbers, hyphens or underscores.
 // It's similar to RFC 1035 DNS label but not the same.
-func GokoalaID(fl validator.FieldLevel) bool {
+func LowercaseID(fl validator.FieldLevel) bool {
 	valAsString := fl.Field().String()
-	return gokoalaIDRegexp.MatchString(valAsString)
+	return lowercaseIDRegexp.MatchString(valAsString)
 }
