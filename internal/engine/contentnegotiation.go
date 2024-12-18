@@ -84,6 +84,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeMVT),
 		contenttype.NewMediaType(MediaTypeMapboxStyle),
 		contenttype.NewMediaType(MediaTypeSLD),
+		contenttype.NewMediaType(MediaTypeOpenAPI),
 	}
 
 	formatsByMediaType := map[string]string{

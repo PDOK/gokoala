@@ -23,7 +23,7 @@
           "Tiling Schemes"
         ],
         "summary": "Retrieve the list of available tiling schemes (tile matrix sets)",
-        "operationId": "getTileMatrixSetsList",
+        "operationId": "tileMatrixSets.dataset.vector.getTileSetsList",
         "parameters": [
           {
             "$ref": "#/components/parameters/f-metadata"
@@ -43,7 +43,7 @@
           "Tiling Schemes"
         ],
         "summary": "Retrieve the definition of the specified tiling scheme (tile matrix set)",
-        "operationId": "getTileMatrixSet",
+        "operationId": "tileMatrixSets.dataset.vector.getTileSet",
         "parameters": [
           {
             "$ref": "#/components/parameters/tileMatrixSetId"
@@ -67,7 +67,7 @@
           "Vector Tiles"
         ],
         "summary": "Retrieve a list of available vector tilesets for the whole dataset",
-        "operationId": "{{ $coll.ID }}.getVectorTiles",
+        "operationId": "{{ $coll.ID }}.collection.vector.getTileSetsList",
         "parameters": [
           {
             "$ref": "#/components/parameters/f-metadata"
@@ -87,7 +87,7 @@
           "Vector Tiles"
         ],
         "summary": "Retrieve the vector tileset metadata for the whole dataset and the specified tiling scheme (tile matrix set)",
-        "operationId": "{{ $coll.ID }}.getVectorTilesMetadata",
+        "operationId": "{{ $coll.ID }}.collection.vector.getTileSet",
         "parameters": [
           {
             "$ref": "#/components/parameters/tileMatrixSetId"
@@ -110,7 +110,7 @@
           "Vector Tiles"
         ],
         "summary": "Retrieve a vector tile from the dataset.",
-        "operationId": "{{ $coll.ID }}.getTile",
+        "operationId": "{{ $coll.ID }}.collection.vector.getTile",
         "parameters": [
           {
             "$ref": "#/components/parameters/tileMatrix"
@@ -147,7 +147,7 @@
           "Vector Tiles"
         ],
         "summary": "Retrieve a list of available vector tilesets for the specified collection",
-        "operationId": "getVectorTiles",
+        "operationId": "tiles.dataset.vector.getTileSetsList",
         "parameters": [
           {
             "$ref": "#/components/parameters/f-metadata"
@@ -167,7 +167,7 @@
           "Vector Tiles"
         ],
         "summary": "Retrieve the vector tileset metadata for the specified collection and tiling scheme (tile matrix set)",
-        "operationId": "getVectorTilesMetadata",
+        "operationId": "tiles.dataset.vector.getTileSet",
         "parameters": [
           {
             "$ref": "#/components/parameters/tileMatrixSetId"
@@ -190,7 +190,7 @@
           "Vector Tiles"
         ],
         "summary": "Retrieve a vector tile from a collection",
-        "operationId": "getTile",
+        "operationId": "tiles.dataset.vector.getTile",
         "parameters": [
           {
             "$ref": "#/components/parameters/tileMatrix"
