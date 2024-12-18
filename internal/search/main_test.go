@@ -168,7 +168,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&buildings[version]=1&limit=20&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-den-building-collection-wgs84.json", // only expect building results since addresses version doesn't exist.
+				body:       "internal/search/testdata/expected-search-den-multiple-collection-single-output-wgs84.json", // only expect building results since addresses version doesn't exist.
 				statusCode: http.StatusOK,
 			},
 		},
