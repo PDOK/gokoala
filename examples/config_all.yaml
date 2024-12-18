@@ -70,6 +70,10 @@ ogcApi:
         zoomLevelRange:
           start: 14
           end: 14
+      - srs: EPSG:3857
+        zoomLevelRange:
+          start: 17
+          end: 17
     collections:
       # geodata tiles (collection-level tiles)
       - id: addresses  # same collection as the geovolumes/features
@@ -86,6 +90,10 @@ ogcApi:
             zoomLevelRange:
               start: 14
               end: 14
+          - srs: EPSG:3857
+            zoomLevelRange:
+              start: 17
+              end: 17
 
   features:
     datasources:
