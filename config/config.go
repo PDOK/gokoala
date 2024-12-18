@@ -255,7 +255,11 @@ func setHealthCheckTilePath(tilesConfig *Tiles) {
 func validate(config *Config) error {
 	// process 'validate' tags
 	v := validator.New()
-	err := v.Struct(config)
+	err := RegisterAllValidators(v)
+	if err != nil {
+		return err
+	}
+	err = v.Struct(config)
 	if err != nil {
 		var ive *validator.InvalidValidationError
 		if ok := errors.Is(err, ive); ok {

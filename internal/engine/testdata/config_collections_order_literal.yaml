@@ -9,20 +9,20 @@ license:
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
 baseUrl: http://localhost:8181
 collectionOrder:
-  - Z
-  - C
-  - A
-  - B
+  - z
+  - c
+  - a
+  - b
 ogcApi:
   3dgeovolumes:
     tileServer: https://example.com
     collections:
-      - id: B
-      - id: Z
-      - id: C
+      - id: b
+      - id: z
+      - id: c
   tiles:
     collections:
-      - id: Z
+      - id: z
         tileServer: https://example.com
-      - id: A
+      - id: a
         tileServer: https://example.com

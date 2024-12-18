@@ -15,7 +15,8 @@ type GeoSpatialCollections []GeoSpatialCollection
 // +kubebuilder:object:generate=true
 type GeoSpatialCollection struct {
 	// Unique ID of the collection
-	ID string `yaml:"id" validate:"required" json:"id"`
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([a-z0-9_-]*[a-z0-9]+|)$`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
 
 	// Metadata describing the collection contents
 	// +optional

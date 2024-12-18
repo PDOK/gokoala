@@ -81,28 +81,28 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 			name: "should return collections in default order (alphabetic)",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_order_alphabetic.yaml",
-				expectedOrder: []string{"A", "B", "C", "Z", "Z"},
+				expectedOrder: []string{"a", "b", "c", "z", "z"},
 			},
 		},
 		{
 			name: "should return collections in default order (alphabetic) - by title",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_order_alphabetic_titles.yaml",
-				expectedOrder: []string{"B", "C", "Z", "Z", "A"},
+				expectedOrder: []string{"b", "c", "z", "z", "a"},
 			},
 		},
 		{
 			name: "should return collections in default order (alphabetic) - extra test",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_unique.yaml",
-				expectedOrder: []string{"BarCollection", "FooCollection", "FooCollection"},
+				expectedOrder: []string{"bar_collection", "foo_collection", "foo_collection"},
 			},
 		},
 		{
 			name: "should return collections in explicit / literal order",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_order_literal.yaml",
-				expectedOrder: []string{"Z", "Z", "C", "A", "B"},
+				expectedOrder: []string{"z", "z", "c", "a", "b"},
 			},
 		},
 		{

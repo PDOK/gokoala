@@ -25,7 +25,7 @@ ogcApi:
   3dgeovolumes:
     tileServer: https://maps.ecere.com/3DAPI/collections/
     collections:
-      - id: NewYork
+      - id: newyork
         # optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
         tileServerPath: "NewYork/3DTiles"
         # URI template for individual 3D tiles

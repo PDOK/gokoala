@@ -12,22 +12,22 @@ ogcApi:
   3dgeovolumes:
     tileServer: https://example.com
     collections:
-      - id: B
+      - id: b
         metadata:
           title: Bear
-      - id: Z
+      - id: z
         metadata:
           title: Chicken
-      - id: C
+      - id: c
         metadata:
           title: Bird
   tiles:
     collections:
-      - id: Z
+      - id: z
         tileServer: https://example.com
         metadata:
           title: Chicken
-      - id: A
+      - id: a
         tileServer: https://example.com
         metadata:
           title: Horse
