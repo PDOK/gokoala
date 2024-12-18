@@ -25,6 +25,7 @@ import (
 )
 
 const testSearchIndex = "search_index"
+const configFile = "internal/search/testdata/config.yaml"
 
 func init() {
 	// change working dir to root
@@ -52,7 +53,7 @@ func TestSearch(t *testing.T) {
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
 	// given available engine
-	eng, err := engine.NewEngine("internal/etl/testdata/config.yaml", false, false)
+	eng, err := engine.NewEngine(configFile, false, false)
 	assert.NoError(t, err)
 
 	// given search endpoint
@@ -62,15 +63,10 @@ func TestSearch(t *testing.T) {
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex)
 	assert.NoError(t, err)
 
-	// given imported geopackage
-	conf, err := config.NewConfig("internal/etl/testdata/config.yaml")
+	// given imported geopackage (creates two collections in search_index with identical data)
+	err = importAddressesGpkg("addresses", dbConn)
 	assert.NoError(t, err)
-	collection := config.CollectionByID(conf, "addresses")
-	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-	err = etl.ImportFile(*collection, testSearchIndex,
-		"internal/etl/testdata/addresses-crs84.gpkg",
-		"internal/etl/testdata/substitutions.csv",
-		"internal/etl/testdata/synonyms.csv", table, 5000, dbConn)
+	err = importAddressesGpkg("buildings", dbConn)
 	assert.NoError(t, err)
 
 	// run test cases
@@ -147,7 +143,17 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search: 'Den' for multiple collections (with one not existing collection, so same output as single collection) in RD",
+			name: "Search: 'Den' in another collection in RD",
+			fields: fields{
+				url: "http://localhost:8080/search?q=\"Den\"&buildings[version]=1&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-den-building-collection-wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search: 'Den' in multiple collections: with one non-existing collection, so same output as single collection) in RD",
 			fields: fields{
 				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=1&addresses[relevance]=0.8&foo[version]=2&foo[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
@@ -156,10 +162,20 @@ func TestSearch(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Search: 'Den' in multiple collections: collection addresses + collection buildings, but addresses with non-existing version",
+			fields: fields{
+				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&buildings[version]=1&limit=20&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-den-building-collection-wgs84.json", // only expect building results since addresses version doesn't exist.
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// mock time
+			// given mock time
 			now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
 			engine.Now = now
 
@@ -184,6 +200,19 @@ func TestSearch(t *testing.T) {
 			assert.JSONEq(t, string(expectedBody), rr.Body.String())
 		})
 	}
+}
+
+func importAddressesGpkg(collectionName string, dbConn string) error {
+	conf, err := config.NewConfig(configFile)
+	if err != nil {
+		return err
+	}
+	collection := config.CollectionByID(conf, collectionName)
+	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+	return etl.ImportFile(*collection, testSearchIndex,
+		"internal/etl/testdata/addresses-crs84.gpkg",
+		"internal/etl/testdata/substitutions.csv",
+		"internal/etl/testdata/synonyms.csv", table, 5000, dbConn)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {

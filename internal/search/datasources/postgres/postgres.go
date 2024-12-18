@@ -54,8 +54,8 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 	query := makeSearchQuery(p.searchIndex, srid)
 
 	// Execute search query
-	collectionNames, collectionVersions := collections.NamesAndVersions()
-	rows, err := p.db.Query(queryCtx, query, limit, termsConcat, collectionNames, collectionVersions)
+	names, ints := collections.NamesAndVersions()
+	rows, err := p.db.Query(queryCtx, query, limit, termsConcat, names, ints)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
@@ -81,7 +81,10 @@ func makeSearchQuery(index string, srid d.SRID) string {
 	           ts_rank_cd(ts, to_tsquery($2), 1) as rank,
 	    	   ts_headline('dutch', display_name, to_tsquery($2)) as highlighted_text
 		from %[1]s
-		where ts @@ to_tsquery($2) and collection_id = any($3) and collection_version = any($4)
+		where ts @@ to_tsquery($2) and (collection_id, collection_version) in (
+		    -- make a virtual table by creating tuples from the provided arrays.
+			select * from unnest($3::text[], $4::int[])
+		)
 		order by rank desc, display_name asc
 		limit 500
 	) r

@@ -83,7 +83,10 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 }
 
 func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]any) (string, error) {
-	parsedTemplate, err := template.New("").Funcs(engine.GlobalTemplateFuncs).Parse(templateFromConfig)
+	parsedTemplate, err := template.New("").
+		Funcs(engine.GlobalTemplateFuncs).
+		Option("missingkey=zero").
+		Parse(templateFromConfig)
 	if err != nil {
 		return "", err
 	}

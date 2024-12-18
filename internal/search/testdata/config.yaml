@@ -1,0 +1,56 @@
+---
+version: 1.0.0
+lastUpdated: "2024-10-22T12:00:00Z"
+baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
+collections:
+  - id: addresses
+    metadata:
+      title: Addresses
+      description: These are example addresses
+      extent:
+        bbox:
+          - 50.2129
+          - 2.52713
+          - 55.7212
+          - 7.37403
+    search:
+      fields:
+        - component_thoroughfarename
+        - component_postaldescriptor
+        - component_addressareaname
+      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
+      etl:
+        suggestTemplates:
+          - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+          - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+      ogcCollections:
+        - api: https://example.com/ogc/v1
+          collection: addresses
+          geometryType: point
+  - id: buildings
+    metadata:
+      title: Buildings
+      description: These are example buildings
+      extent:
+        bbox:
+          - 50.2129
+          - 2.52713
+          - 55.7212
+          - 7.37403
+    search:
+      fields:
+        - component_thoroughfarename
+        - component_postaldescriptor
+        - component_addressareaname
+      displayNameTemplate: "Building {{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
+      etl:
+        suggestTemplates:
+          - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+          - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+      ogcCollections:
+        - api: https://example.com/ogc/v1
+          collection: buildings
+          geometryType: point

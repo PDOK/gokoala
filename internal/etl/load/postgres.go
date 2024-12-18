@@ -58,7 +58,7 @@ func (p *Postgres) Init(index string) error {
 	searchIndexTable := fmt.Sprintf(`
 	create table if not exists %[1]s (
 		id 					serial,
-		feature_id 			varchar (8) 			not null ,
+		feature_id 			text 					not null ,
 		collection_id 		text					not null,
 		collection_version 	int 					not null,
 		display_name 		text					not null,
