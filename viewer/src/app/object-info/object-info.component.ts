@@ -9,7 +9,6 @@ type propRow = {
 
 @Component({
   selector: 'app-object-info',
-  standalone: true,
   encapsulation: ViewEncapsulation.ShadowDom,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
