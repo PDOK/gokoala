@@ -88,7 +88,7 @@ func makeSearchQuery(index string, srid d.SRID) string {
 		order by rank desc, display_name asc
 		limit 500
 	) r
-	group by r.display_name
+	group by r.display_name, r.collection_id, r.collection_version
 	order by rank desc, display_name asc
 	limit $1`, index, srid) // don't add user input here, use $X params for user input!
 
