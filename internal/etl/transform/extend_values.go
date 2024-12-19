@@ -9,7 +9,7 @@ import (
 )
 
 // Return slice of fieldValuesByName
-func extendFieldValues(fieldValuesByName map[string]any, substitutionsFile, synonymsFile string) ([]map[string]any, error) {
+func extendFieldValues(fieldValuesByName map[string]string, substitutionsFile, synonymsFile string) ([]map[string]string, error) {
 	substitutions, err := readCsvFile(substitutionsFile)
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func extendFieldValues(fieldValuesByName map[string]any, substitutionsFile, syno
 
 	var fieldValuesByNameWithAllValues = make(map[string][]string)
 	for key, value := range fieldValuesByName {
-		valueLower := strings.ToLower(value.(string))
+		valueLower := strings.ToLower(value)
 
 		// Get all substitutions
 		substitutedValues, err := extendValues([]string{valueLower}, substitutions)
@@ -49,7 +49,7 @@ func extendFieldValues(fieldValuesByName map[string]any, substitutionsFile, syno
 // Transform a map[string][]string into a []map[string]string using the cartesian product, i.e.
 // - both maps have the same keys
 // - values exist for all possible combinations
-func generateAllFieldValuesByName(input map[string][]string) []map[string]any {
+func generateAllFieldValuesByName(input map[string][]string) []map[string]string {
 	keys := []string{}
 	values := [][]string{}
 
@@ -61,16 +61,16 @@ func generateAllFieldValuesByName(input map[string][]string) []map[string]any {
 	return generateCombinations(keys, values)
 }
 
-func generateCombinations(keys []string, values [][]string) []map[string]any {
+func generateCombinations(keys []string, values [][]string) []map[string]string {
 	if len(keys) == 0 || len(values) == 0 {
 		return nil
 	}
-	result := []map[string]any{{}} // contains empty map so the first iteration works
+	result := []map[string]string{{}} // contains empty map so the first iteration works
 	for keyDepth := 0; keyDepth < len(keys); keyDepth++ {
-		var newResult []map[string]any
+		var newResult []map[string]string
 		for _, entry := range result {
 			for _, val := range values[keyDepth] {
-				newEntry := make(map[string]any)
+				newEntry := make(map[string]string)
 				for k, v := range entry {
 					newEntry[k] = v
 				}

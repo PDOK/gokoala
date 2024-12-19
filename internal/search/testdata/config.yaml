@@ -21,7 +21,10 @@ collections:
         - component_thoroughfarename
         - component_postaldescriptor
         - component_addressareaname
-      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
+        - locator_designator_addressnumber
+        - locator_designator_addressnumberextension
+        - locator_designator_addressnumber2ndextension
+      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }} {{ .locator_designator_addressnumber }} {{ .locator_designator_addressnumberextension }} {{ .locator_designator_addressnumber2ndextension }}"
       etl:
         suggestTemplates:
           - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
@@ -45,7 +48,10 @@ collections:
         - component_thoroughfarename
         - component_postaldescriptor
         - component_addressareaname
-      displayNameTemplate: "Building {{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
+        - locator_designator_addressnumber
+        - locator_designator_addressnumberextension
+        - locator_designator_addressnumber2ndextension
+      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }} {{ .locator_designator_addressnumber }} {{ .locator_designator_addressnumberextension }} {{ .locator_designator_addressnumber2ndextension }}"
       etl:
         suggestTemplates:
           - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"

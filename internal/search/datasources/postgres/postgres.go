@@ -68,27 +68,30 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 func makeSearchQuery(index string, srid d.SRID) string {
 	// language=postgresql
 	query := fmt.Sprintf(`
+	with query as (
+		select to_tsquery('dutch', $2) query
+	)
 	select r.display_name as display_name, 
 	       max(r.feature_id) as feature_id,
 		   max(r.collection_id) as collection_id,
 		   max(r.collection_version) as collection_version,
 		   max(r.geometry_type) as geometry_type,
-		   cast(st_transform(max(r.bbox), %[2]d) as geometry) as bbox,
+		   st_transform(max(r.bbox), %[2]d)::geometry as bbox,
 		   max(r.rank) as rank, 
 		   max(r.highlighted_text) as highlighted_text
 	from (
 		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
-	           ts_rank_cd(ts, to_tsquery($2), 1) as rank,
-	    	   ts_headline('dutch', display_name, to_tsquery($2)) as highlighted_text
+	           ts_rank_cd(ts, (select query from query), 1) as rank,
+	    	   ts_headline('dutch', display_name, (select query from query)) as highlighted_text
 		from %[1]s
-		where ts @@ to_tsquery($2) and (collection_id, collection_version) in (
+		where ts @@ (select query from query) and (collection_id, collection_version) in (
 		    -- make a virtual table by creating tuples from the provided arrays.
 			select * from unnest($3::text[], $4::int[])
 		)
-		order by rank desc, display_name asc
+		order by rank desc, display_name asc -- keep the same as outer 'order by' clause
 		limit 500
 	) r
-	group by r.display_name, r.collection_id, r.collection_version
+	group by r.display_name, r.collection_id, r.collection_version, r.feature_id
 	order by rank desc, display_name asc
 	limit $1`, index, srid) // don't add user input here, use $X params for user input!
 
