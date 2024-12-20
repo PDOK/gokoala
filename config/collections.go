@@ -134,6 +134,15 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	return c.Collections
 }
 
+func (g GeoSpatialCollections) SupportsSearch() bool {
+	for _, collection := range g {
+		if collection.Search != nil {
+			return true
+		}
+	}
+	return false
+}
+
 // Unique lists all unique GeoSpatialCollections (no duplicate IDs).
 // Don't use in hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
