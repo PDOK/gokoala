@@ -39,6 +39,10 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string) *Search {
 // Search autosuggest locations based on user input
 func (s *Search) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			return
+		}
 		collections, searchTerm, outputSRID, limit, err := parseQueryParams(r.URL.Query())
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
