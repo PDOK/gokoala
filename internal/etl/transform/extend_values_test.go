@@ -9,20 +9,20 @@ import (
 
 func Test_generateAllFieldValues(t *testing.T) {
 	type args struct {
-		fieldValuesByName map[string]any
+		fieldValuesByName map[string]string
 		substitutionsFile string
 		synonymsFile      string
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    []map[string]any
+		want    []map[string]string
 		wantErr assert.ErrorAssertionFunc
 	}{
-		{"simple record", args{map[string]any{"component_thoroughfarename": "foo", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "foo", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
-		{"single synonym record", args{map[string]any{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
-		{"single synonym with capital", args{map[string]any{"component_thoroughfarename": "Eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
-		{"two-way synonym record", args{map[string]any{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]any{{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "eerste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"simple record", args{map[string]string{"component_thoroughfarename": "foo", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"component_thoroughfarename": "foo", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"single synonym record", args{map[string]string{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"single synonym with capital", args{map[string]string{"component_thoroughfarename": "Eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"two-way synonym record", args{map[string]string{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "eerste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -43,13 +43,13 @@ func Test_generateCombinations(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []map[string]any
+		want []map[string]string
 	}{
-		{"Single key, single value", args{[]string{"key1"}, [][]string{{"value1"}}}, []map[string]any{{"key1": "value1"}}},
-		{"Single key, slice of values", args{[]string{"key1"}, [][]string{{"value1", "value2"}}}, []map[string]any{{"key1": "value1"}, {"key1": "value2"}}},
-		{"Two keys, two single values", args{[]string{"key1", "key2"}, [][]string{{"value1"}, {"value2"}}}, []map[string]any{{"key1": "value1", "key2": "value2"}}},
-		{"Two keys, slice + single value", args{[]string{"key1", "key2"}, [][]string{{"value1", "value2"}, {"value3"}}}, []map[string]any{{"key1": "value1", "key2": "value3"}, {"key1": "value2", "key2": "value3"}}},
-		{"Two keys, two slices values", args{[]string{"key1", "key2"}, [][]string{{"value1", "value2"}, {"value3", "value4"}}}, []map[string]any{{"key1": "value1", "key2": "value3"}, {"key1": "value1", "key2": "value4"}, {"key1": "value2", "key2": "value3"}, {"key1": "value2", "key2": "value4"}}},
+		{"Single key, single value", args{[]string{"key1"}, [][]string{{"value1"}}}, []map[string]string{{"key1": "value1"}}},
+		{"Single key, slice of values", args{[]string{"key1"}, [][]string{{"value1", "value2"}}}, []map[string]string{{"key1": "value1"}, {"key1": "value2"}}},
+		{"Two keys, two single values", args{[]string{"key1", "key2"}, [][]string{{"value1"}, {"value2"}}}, []map[string]string{{"key1": "value1", "key2": "value2"}}},
+		{"Two keys, slice + single value", args{[]string{"key1", "key2"}, [][]string{{"value1", "value2"}, {"value3"}}}, []map[string]string{{"key1": "value1", "key2": "value3"}, {"key1": "value2", "key2": "value3"}}},
+		{"Two keys, two slices values", args{[]string{"key1", "key2"}, [][]string{{"value1", "value2"}, {"value3", "value4"}}}, []map[string]string{{"key1": "value1", "key2": "value3"}, {"key1": "value1", "key2": "value4"}, {"key1": "value2", "key2": "value3"}, {"key1": "value2", "key2": "value4"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

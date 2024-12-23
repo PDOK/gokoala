@@ -14,6 +14,7 @@ require (
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/go-spatial/geom v0.1.0
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
+	github.com/goccy/go-json v0.10.3
 	github.com/gomarkdown/markdown v0.0.0-20240930133441-72d49d9543d8
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.1

@@ -26,12 +26,13 @@ import (
 )
 
 const (
-	specPath          = templatesDir + "openapi/"
-	preamble          = specPath + "preamble.go.json"
-	problems          = specPath + "problems.go.json"
-	commonCollections = specPath + "common-collections.go.json"
-	commonSpec        = specPath + "common.go.json"
-	HTMLRegex         = `<[/]?([a-zA-Z]+).*?>`
+	specPath           = templatesDir + "openapi/"
+	preamble           = specPath + "preamble.go.json"
+	problems           = specPath + "problems.go.json"
+	commonCollections  = specPath + "common-collections.go.json"
+	commonSpec         = specPath + "common.go.json"
+	featuresSearchSpec = specPath + "features-search.go.json"
+	HTMLRegex          = `<[/]?([a-zA-Z]+).*?>`
 )
 
 type OpenAPI struct {
@@ -50,6 +51,9 @@ func newOpenAPI(config *gomagpieconfig.Config) *OpenAPI {
 	defaultOpenAPIFiles := []string{commonSpec}
 	if config.AllCollections() != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, commonCollections)
+	}
+	if len(config.Collections.WithSearch()) > 0 {
+		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSearchSpec)
 	}
 
 	// add preamble first

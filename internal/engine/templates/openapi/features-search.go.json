@@ -1,0 +1,710 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{ $cfg := .Config }}
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/search": {
+      "get": {
+        "tags" : [ "Features" ],
+        "summary": "search features in one or more collections across datasets.",
+        "description": "This endpoint allows one to implement autocomplete functionality for location search. The `q` parameter accepts a partial location name and will return all matching locations up to the specified `limit`. The list of search results are offered as features (in GeoJSON, JSON-FG) but contain only minimal information; like a feature ID, highlighted text and a bounding box. When you want to get the full feature you must follow the included link (`href`) in the search result. This allows one to retrieve all properties of the feature and the full geometry from the corresponding OGC API.",
+        "operationId": "search",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {{- range $index, $coll := .Config.Collections.WithSearch -}}
+          {{- if $index -}},{{- end -}}
+          {
+            "$ref": "#/components/parameters/{{ $coll.ID }}-collection-search"
+          }
+          {{- end -}}
+          ,
+          {
+            "$ref": "#/components/parameters/limit-search"
+          },
+          {
+            "$ref": "#/components/parameters/crs"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response is a document consisting of features in the collection.\nThe features contain only minimal information but include a link (href) to the actual feature in another OGC API. Follow that link to get the full feature data.",
+            "headers": {
+              "Content-Crs": {
+                "description": "a URI, in angular brackets, identifying the coordinate reference system used in the content / payload",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "<http://www.opengis.net/def/crs/EPSG/0/3395>"
+              }
+            },
+            "content": {
+              "application/geo+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/featureCollectionGeoJSON"
+                },
+                "example": {
+                  "type": "FeatureCollection",
+                  "links": [
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.json",
+                      "rel": "self",
+                      "type": "application/geo+json",
+                      "title": "this document"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items?f=html",
+                      "rel": "alternate",
+                      "type": "text/html",
+                      "title": "this document as HTML"
+                    }
+                  ],
+                  "timeStamp": "2018-04-03T14:52:23Z",
+{{/*                  "numberMatched": 123,*/}}
+                  "numberReturned": 2,
+                  "features": [
+                    {
+                      "type": "Feature",
+                      "id": "123",
+                      "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "properties": {
+                        "function": "residential",
+                        "floors": "2",
+                        "lastUpdate": "2015-08-01T12:34:56Z"
+                      }
+                    },
+                    {
+                      "type": "Feature",
+                      "id": "132",
+                      "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "properties": {
+                        "function": "public use",
+                        "floors": "10",
+                        "lastUpdate": "2013-12-03T10:15:37Z"
+                      }
+                    }
+                  ]
+                }
+              },
+              "application/vnd.ogc.fg+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/featureCollectionJSONFG"
+                },
+                "example": {
+                  "conformsTo": [
+                    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+                  ],
+                  "type": "FeatureCollection",
+                  "links": [
+                    {
+                      "href": "http://data.example.com/collections/buildings/items.json",
+                      "rel": "self",
+                      "type": "application/geo+json",
+                      "title": "this document"
+                    },
+                    {
+                      "href": "http://data.example.com/collections/buildings/items?f=html",
+                      "rel": "alternate",
+                      "type": "text/html",
+                      "title": "this document as HTML"
+                    }
+                  ],
+                  "timeStamp": "2018-04-03T14:52:23Z",
+                  {{/*                  "numberMatched": 123,*/}}
+                  "numberReturned": 2,
+                  "features": [
+                    {
+                      "type": "Feature",
+                      "id": "123",
+                      "place": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "geometry": null,
+                      "time": null,
+                      "properties": {
+                        "function": "residential",
+                        "floors": "2",
+                        "lastUpdate": "2015-08-01T12:34:56Z"
+                      }
+                    },
+                    {
+                      "type": "Feature",
+                      "id": "132",
+                      "place": {
+                        "type": "Polygon",
+                        "coordinates": [
+                          "..."
+                        ]
+                      },
+                      "geometry": null,
+                      "time": null,
+                      "properties": {
+                        "function": "public use",
+                        "floors": "10",
+                        "lastUpdate": "2013-12-03T10:15:37Z"
+                      }
+                    }
+                  ]
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "featureCollectionJSONFG": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "conformsTo": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "coordRefSys": {
+            "type": "string",
+            "format": "uri"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/featureJSONFG"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "timeStamp": {
+            "$ref": "#/components/schemas/timeStamp"
+          },
+{{/*          "numberMatched": {*/}}
+{{/*            "$ref": "#/components/schemas/numberMatched"*/}}
+{{/*          },*/}}
+          "numberReturned": {
+            "$ref": "#/components/schemas/numberReturned"
+          }
+        }
+      },
+      "featureCollectionGeoJSON": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/featureGeoJSON"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "timeStamp": {
+            "$ref": "#/components/schemas/timeStamp"
+          },
+{{/*          "numberMatched": {*/}}
+{{/*            "$ref": "#/components/schemas/numberMatched"*/}}
+{{/*          },*/}}
+          "numberReturned": {
+            "$ref": "#/components/schemas/numberReturned"
+          }
+        }
+      },
+      "featureJSONFG": {
+        "required": [
+            "time",
+            "place",
+            "geometry",
+            "properties",
+            "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "conformsTo": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "coordRefSys": {
+            "type": "string",
+            "format": "uri"
+          },
+          "time": {
+            {{/* not implemented yet, since we don't yet support temporal data */}}
+            "nullable": true
+          },
+          "place": {
+            "nullable": true,
+            "allOf": [
+              {{/* 3D conformance class not implemented, so just delegate to GeoJSON compatible geometries */}}
+              {
+                "$ref": "#/components/schemas/geometryGeoJSON"
+              }
+            ]
+          },
+          "geometry": {
+            "nullable": true,
+            "allOf": [
+              {{/* 3D conformance class not implemented, so just delegate to GeoJSON compatible geometries */}}
+              {
+                "$ref": "#/components/schemas/geometryGeoJSON"
+              }
+            ]
+          },
+          "properties": {
+            "type": "object",
+            "nullable": true
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      },
+      "featureGeoJSON": {
+        "required": [
+          "geometry",
+          "properties",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/geometryGeoJSON"
+          },
+          "properties": {
+            "type": "object",
+            "nullable": true
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      },
+      "geometryGeoJSON": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/pointGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/multipointGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/linestringGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/multilinestringGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/polygonGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/multipolygonGeoJSON"
+          },
+          {
+            "$ref": "#/components/schemas/geometrycollectionGeoJSON"
+          }
+        ]
+      },
+      "geometrycollectionGeoJSON": {
+        "required": [
+          "geometries",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "GeometryCollection"
+            ]
+          },
+          "geometries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/geometryGeoJSON"
+            }
+          }
+        }
+      },
+      "linestringGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "LineString"
+            ]
+          },
+          "coordinates": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "minItems": 2,
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "link": {
+        "required": [
+          "href"
+        ],
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string",
+            "example": "http://data.example.com/buildings/123"
+          },
+          "rel": {
+            "type": "string",
+            "example": "alternate"
+          },
+          "type": {
+            "type": "string",
+            "example": "application/geo+json"
+          },
+          "hreflang": {
+            "type": "string",
+            "example": "en"
+          },
+          "title": {
+            "type": "string",
+            "example": "Trierer Strasse 70, 53115 Bonn"
+          },
+          "length": {
+            "type": "integer"
+          }
+        }
+      },
+      "multilinestringGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MultiLineString"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "minItems": 2,
+              "type": "array",
+              "items": {
+                "minItems": 2,
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "multipointGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MultiPoint"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "minItems": 2,
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "multipolygonGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "MultiPolygon"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "minItems": 4,
+                "type": "array",
+                "items": {
+                  "minItems": 2,
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+{{/*      "numberMatched": {*/}}
+{{/*        "minimum": 0,*/}}
+{{/*        "type": "integer",*/}}
+{{/*        "description": "The number of features of the feature type that match the selection\nparameters like `bbox`.",*/}}
+{{/*        "example": 127*/}}
+{{/*      },*/}}
+      "numberReturned": {
+        "minimum": 0,
+        "type": "integer",
+        "description": "The number of features in the feature collection.\n\nA server may omit this information in a response, if the information\nabout the number of features is not known or difficult to compute.\n\nIf the value is provided, the value shall be identical to the number\nof items in the \"features\" array.",
+        "example": 10
+      },
+      "pointGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Point"
+            ]
+          },
+          "coordinates": {
+            "minItems": 2,
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "polygonGeoJSON": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Polygon"
+            ]
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "minItems": 4,
+              "type": "array",
+              "items": {
+                "minItems": 2,
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "timeStamp": {
+        "type": "string",
+        "description": "This property indicates the time and date when the response was generated.",
+        "format": "date-time",
+        "example": "2017-08-17T08:05:32Z"
+      }
+    },
+    "parameters": {
+      "q": {
+        "name": "q",
+        "in": "query",
+        "description": "The search term(s)",
+        "required": true,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      {{- range $index, $coll := .Config.Collections.WithSearch -}}
+      {{- if $index -}},{{- end -}}
+      "{{ $coll.ID }}-collection-search": {
+        "name": "{{ $coll.ID }}",
+        "in": "query",
+        "description": "When provided the {{ $coll.ID }} collection is included in the search. This parameter should be provided as a [deep object](https://swagger.io/docs/specification/v3_0/serialization/#query-parameters) containing the version and relevance of the {{ $coll.ID }} collection, for example `q=foo&{{ $coll.ID }}[version]=1&{{ $coll.ID }}[relevance]=0.5`",
+        "required": false,
+        "style": "deepObject",
+        "explode": true,
+        "schema": {
+          "type": "object",
+          "required": [
+            "version"
+          ],
+          "properties": {
+            "version": {
+              "type": "number",
+              "description": "The version of the {{ $coll.ID }} collection.",
+              "example": "1"
+            },
+            "relevance": {
+              "type": "number",
+              "format": "float",
+              "description": "The relevance score of the {{ $coll.ID }} collection.",
+              "example": 0.50
+            }
+          }
+        }
+      }
+      {{- end -}}
+      ,
+      "crs": {
+        "name": "crs",
+        "in": "query",
+        "description": "The coordinate reference system of the geometries in the response. Default is WGS84 longitude/latitude",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+          "enum": [
+            {{/* TODO make configurable */}}
+            "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+            "http://www.opengis.net/def/crs/EPSG/0/28992"
+          ]
+        },
+        "style": "form",
+        "explode": false
+      },
+      "limit-search": {
+        "name": "limit",
+        "in": "query",
+        "description": "The optional limit parameter limits the number of items that are presented in the response document.\n\nOnly items are counted that are on the first level of the collection in the response document.\nNested objects contained within the explicitly requested items shall not be counted.\n\nMinimum = 1. Maximum = 50. Default = 10.",
+        "required": false,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "maximum": 50,
+          "minimum": 1,
+          "type": "integer",
+          "default": 10
+        }
+      }
+    }
+  }
+}

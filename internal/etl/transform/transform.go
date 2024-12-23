@@ -38,7 +38,7 @@ type Transformer struct{}
 func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection, substitutionsFile string, synonymsFile string) ([]SearchIndexRecord, error) {
 	result := make([]SearchIndexRecord, 0, len(records))
 	for _, r := range records {
-		fieldValuesByName, err := slicesToMap(collection.Search.Fields, r.FieldValues)
+		fieldValuesByName, err := slicesToStringMap(collection.Search.Fields, r.FieldValues)
 		if err != nil {
 			return nil, err
 		}
@@ -82,8 +82,11 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 	return result, nil
 }
 
-func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]any) (string, error) {
-	parsedTemplate, err := template.New("").Funcs(engine.GlobalTemplateFuncs).Parse(templateFromConfig)
+func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]string) (string, error) {
+	parsedTemplate, err := template.New("").
+		Funcs(engine.GlobalTemplateFuncs).
+		Option("missingkey=zero").
+		Parse(templateFromConfig)
 	if err != nil {
 		return "", err
 	}
@@ -91,7 +94,7 @@ func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName
 	if err = parsedTemplate.Execute(&b, fieldValuesByName); err != nil {
 		return "", err
 	}
-	return b.String(), err
+	return strings.TrimSpace(b.String()), err
 }
 
 func (r RawRecord) transformBbox() (*pggeom.Polygon, error) {
@@ -119,13 +122,17 @@ func (r RawRecord) transformBbox() (*pggeom.Polygon, error) {
 	return polygon, nil
 }
 
-func slicesToMap(keys []string, values []any) (map[string]any, error) {
+func slicesToStringMap(keys []string, values []any) (map[string]string, error) {
 	if len(keys) != len(values) {
 		return nil, fmt.Errorf("slices must be of the same length, got %d keys and %d values", len(keys), len(values))
 	}
-	result := make(map[string]any, len(keys))
+	result := make(map[string]string, len(keys))
 	for i := range keys {
-		result[keys[i]] = values[i]
+		value := values[i]
+		if value != nil {
+			stringValue := fmt.Sprintf("%v", value)
+			result[keys[i]] = stringValue
+		}
 	}
 	return result, nil
 }

@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gomagpie/config"
+	"github.com/PDOK/gomagpie/internal/search"
 	"github.com/iancoleman/strcase"
 
 	eng "github.com/PDOK/gomagpie/internal/engine"
@@ -117,9 +118,11 @@ var (
 			EnvVars:  []string{strcase.ToScreamingSnake(dbPortFlag)},
 		},
 		dbNameFlag: &cli.StringFlag{
-			Name:    dbNameFlag,
-			Usage:   "Connect to this database",
-			EnvVars: []string{strcase.ToScreamingSnake(dbNameFlag)},
+			Name:     dbNameFlag,
+			Usage:    "Connect to this database",
+			Value:    "postgres",
+			Required: false,
+			EnvVars:  []string{strcase.ToScreamingSnake(dbNameFlag)},
 		},
 		dbSslModeFlag: &cli.StringFlag{
 			Name:     dbSslModeFlag,
@@ -166,6 +169,12 @@ func main() {
 				commonDBFlags[dbUsernameFlag],
 				commonDBFlags[dbPasswordFlag],
 				commonDBFlags[dbSslModeFlag],
+				&cli.PathFlag{
+					Name:    searchIndexFlag,
+					EnvVars: []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:   "Name of search index to use",
+					Value:   "search_index",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				log.Println(c.Command.Usage)
@@ -186,6 +195,8 @@ func main() {
 				}
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine, dbConn)
+				// Create search endpoint
+				search.NewSearch(engine, dbConn, c.String(searchIndexFlag))
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
