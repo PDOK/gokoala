@@ -280,6 +280,39 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "get features empty geometry",
+			fields: fields{
+				backend:          addressesGeoPackage("/testdata/empty.gpkg"),
+				fidColumn:        "fid",
+				featureTableByID: map[string]*featureTable{"stations": {TableName: "stations", GeometryColumnName: "geom"}},
+				queryTimeout:     60 * time.Second,
+			},
+			args: args{
+				ctx:        context.Background(),
+				collection: "stations",
+				queryParams: datasources.FeaturesCriteria{
+					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
+					Limit:  1,
+				},
+			},
+			wantFC: &domain.FeatureCollection{
+				NumberReturned: 1,
+				Features: []*domain.Feature{
+					{
+						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
+							"fid":     "129",
+							"station": "OS A18",
+						}),
+					},
+				},
+			},
+			wantCursor: domain.Cursors{
+				Prev: "|",
+				Next: "hQ|",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
