@@ -52,7 +52,7 @@ func newOpenAPI(config *gomagpieconfig.Config) *OpenAPI {
 	if config.AllCollections() != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, commonCollections)
 	}
-	if config.Collections.SupportsSearch() {
+	if len(config.Collections.WithSearch()) > 0 {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSearchSpec)
 	}
 

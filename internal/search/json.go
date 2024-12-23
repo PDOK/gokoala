@@ -1,6 +1,7 @@
 package search
 
 import (
+	"bytes"
 	stdjson "encoding/json"
 	"io"
 	"log"
@@ -20,20 +21,41 @@ var (
 	disableJSONPerfOptimization, _ = strconv.ParseBool(os.Getenv("DISABLE_JSON_PERF_OPTIMIZATION"))
 )
 
-func featuresAsGeoJSON(w http.ResponseWriter, baseURL url.URL, fc *domain.FeatureCollection) {
+type jsonFeatures struct {
+	engine           *engine.Engine
+	validateResponse bool
+}
+
+func newJSONFeatures(e *engine.Engine) *jsonFeatures {
+	return &jsonFeatures{
+		engine:           e,
+		validateResponse: true, // TODO make configurable
+	}
+}
+
+func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, baseURL url.URL, fc *domain.FeatureCollection) {
 	fc.Timestamp = now().Format(time.RFC3339)
 	fc.Links = createFeatureCollectionLinks(baseURL) // TODO add links
 
-	// TODO add validation
-	// if jf.validateResponse {
-	//	jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
-	// } else {
-	serveJSON(&fc, engine.MediaTypeGeoJSON, w)
-	// }
+	if jf.validateResponse {
+		jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
+	} else {
+		jf.serveJSON(&fc, engine.MediaTypeGeoJSON, w)
+	}
+}
+
+// serveAndValidateJSON serves JSON after performing OpenAPI response validation.
+func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *http.Request, w http.ResponseWriter) {
+	json := &bytes.Buffer{}
+	if err := getEncoder(json).Encode(input); err != nil {
+		handleJSONEncodingFailure(err, w)
+		return
+	}
+	jf.engine.Serve(w, r, false /* performed earlier */, jf.validateResponse, contentType, json.Bytes())
 }
 
 // serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream
-func serveJSON(input any, contentType string, w http.ResponseWriter) {
+func (jf *jsonFeatures) serveJSON(input any, contentType string, w http.ResponseWriter) {
 	w.Header().Set(engine.HeaderContentType, contentType)
 
 	if err := getEncoder(w).Encode(input); err != nil {

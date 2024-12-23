@@ -22,12 +22,15 @@ const (
 type Search struct {
 	engine     *engine.Engine
 	datasource ds.Datasource
+
+	json *jsonFeatures
 }
 
 func NewSearch(e *engine.Engine, dbConn string, searchIndex string) *Search {
 	s := &Search{
 		engine:     e,
 		datasource: newDatasource(e, dbConn, searchIndex),
+		json:       newJSONFeatures(e),
 	}
 	e.Router.Get("/search", s.Search())
 	return s
@@ -54,7 +57,7 @@ func (s *Search) Search() http.HandlerFunc {
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			featuresAsGeoJSON(w, *s.engine.Config.BaseURL.URL, fc)
+			s.json.featuresAsGeoJSON(w, r, *s.engine.Config.BaseURL.URL, fc)
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return

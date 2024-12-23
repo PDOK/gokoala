@@ -16,6 +16,16 @@
         "operationId": "search",
         "parameters": [
           {
+            "$ref": "#/components/parameters/q"
+          },
+          {{- range $index, $coll := .Config.Collections.WithSearch -}}
+          {{- if $index -}},{{- end -}}
+          {
+            "$ref": "#/components/parameters/{{ $coll.ID }}-collection-search"
+          }
+          {{- end -}}
+          ,
+          {
             "$ref": "#/components/parameters/limit-search"
           },
           {
@@ -619,6 +629,50 @@
       }
     },
     "parameters": {
+      "q": {
+        "name": "q",
+        "in": "query",
+        "description": "The search term(s)",
+        "required": true,
+        "style": "form",
+        "explode": false,
+        "schema": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      {{- range $index, $coll := .Config.Collections.WithSearch -}}
+      {{- if $index -}},{{- end -}}
+      "{{ $coll.ID }}-collection-search": {
+        "name": "{{ $coll.ID }}",
+        "in": "query",
+        "description": "When provided the {{ $coll.ID }} collection is included in the search. This parameter should be provided as a [deep object](https://swagger.io/docs/specification/v3_0/serialization/#query-parameters) containing the version and relevance of the {{ $coll.ID }} collection, for example `q=foo&{{ $coll.ID }}[version]=1&{{ $coll.ID }}[relevance]=0.5`",
+        "required": false,
+        "style": "deepObject",
+        "explode": true,
+        "schema": {
+          "type": "object",
+          "required": [
+            "version"
+          ],
+          "properties": {
+            "version": {
+              "type": "number",
+              "description": "The version of the {{ $coll.ID }} collection.",
+              "example": "1"
+            },
+            "relevance": {
+              "type": "number",
+              "format": "float",
+              "description": "The relevance score of the {{ $coll.ID }} collection.",
+              "example": 0.50
+            }
+          }
+        }
+      }
+      {{- end -}}
+      ,
       "crs": {
         "name": "crs",
         "in": "query",
@@ -634,17 +688,6 @@
         },
         "style": "form",
         "explode": false
-      },
-      "collectionId": {
-        "name": "collectionId",
-        "in": "path",
-        "description": "local identifier of a collection",
-        "required": true,
-        "style": "simple",
-        "explode": false,
-        "schema": {
-          "type": "string"
-        }
       },
       "limit-search": {
         "name": "limit",

@@ -123,7 +123,7 @@ func (c *Config) HasCollections() bool {
 	return c.AllCollections() != nil
 }
 
-// AllCollections get all collections - with  for example features, tiles, 3d tiles - offered through this OGC API.
+// AllCollections get all collections - with for example features, tiles, 3d tiles - offered through this OGC API.
 // Results are returned in alphabetic or literal order.
 func (c *Config) AllCollections() GeoSpatialCollections {
 	if len(c.CollectionOrder) > 0 {
@@ -134,13 +134,14 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	return c.Collections
 }
 
-func (g GeoSpatialCollections) SupportsSearch() bool {
+func (g GeoSpatialCollections) WithSearch() GeoSpatialCollections {
+	result := make([]GeoSpatialCollection, 0, len(g))
 	for _, collection := range g {
 		if collection.Search != nil {
-			return true
+			result = append(result, collection)
 		}
 	}
-	return false
+	return result
 }
 
 // Unique lists all unique GeoSpatialCollections (no duplicate IDs).
