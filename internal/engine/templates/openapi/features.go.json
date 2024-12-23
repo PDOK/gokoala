@@ -781,6 +781,7 @@
           "type"
         ],
         "type": "object",
+        "nullable": true,
         "properties": {
           "type": {
             "type": "string",

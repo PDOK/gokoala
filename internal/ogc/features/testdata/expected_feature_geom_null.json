@@ -1,0 +1,48 @@
+{
+  "id": "3542",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items/3542?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/foo/items/3542?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items/3542?f=html"
+    },
+    {
+      "rel": "collection",
+      "title": "The collection to which this feature belongs",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/foo?f=json"
+    }
+  ],
+  "type": "Feature",
+  "geometry": null,
+  "properties": {
+    "datum_doc": "1900-01-01",
+    "datum_eind": null,
+    "datum_strt": "1900-01-01",
+    "document": "GV00000402",
+    "geom": null,
+    "huisletter": null,
+    "huisnummer": 14,
+    "nummer_id": "0363200000454013",
+    "postcode": "1013CR",
+    "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000454013",
+    "status": "Naamgeving uitgegeven",
+    "straatnaam": "Van Diemenkade",
+    "toevoeging": null,
+    "type": "Ligplaats",
+    "woonplaats": "Amsterdam"
+  }
+}

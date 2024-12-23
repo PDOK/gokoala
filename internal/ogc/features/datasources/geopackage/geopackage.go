@@ -447,6 +447,7 @@ func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProp
 }
 
 func mapGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
+	// ToDO: allow null here?
 	geometry, err := gpkg.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err
