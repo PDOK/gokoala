@@ -71,18 +71,18 @@ func makeSearchQuery(index string, srid d.SRID) string {
 	with query as (
 		select to_tsquery('dutch', $2) query
 	)
-	select r.display_name as display_name, 
-	       max(r.feature_id) as feature_id,
-		   max(r.collection_id) as collection_id,
-		   max(r.collection_version) as collection_version,
-		   max(r.geometry_type) as geometry_type,
-		   st_transform(max(r.bbox), %[2]d)::geometry as bbox,
-		   max(r.rank) as rank, 
-		   max(r.highlighted_text) as highlighted_text
+	select 	r.display_name as display_name, 
+			max(r.feature_id) as feature_id,
+			max(r.collection_id) as collection_id,
+			max(r.collection_version) as collection_version,
+			max(r.geometry_type) as geometry_type,
+			st_transform(max(r.bbox), %[2]d)::geometry as bbox,
+			max(r.rank) as rank, 
+			max(r.highlighted_text) as highlighted_text
 	from (
 		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
-	           ts_rank_cd(ts, (select query from query), 1) as rank,
-	    	   ts_headline('dutch', display_name, (select query from query)) as highlighted_text
+				ts_rank_cd(ts, (select query from query), 1) as rank,
+				ts_headline('dutch', display_name, (select query from query)) as highlighted_text
 		from %[1]s
 		where ts @@ (select query from query) and (collection_id, collection_version) in (
 		    -- make a virtual table by creating tuples from the provided arrays.
