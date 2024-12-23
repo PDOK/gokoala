@@ -1,0 +1,37 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Contains a slimmed-down/example version of the BAG-dataset
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./internal/ogc/features/datasources/geopackage/testdata/empty.gpkg
+            fid: fid
+            queryTimeout: 15m # pretty high to allow debugging
+    collections:
+      - id: foo
+        tableName: stations
+        filters:
+          properties:
+            - name: station
+              indexRequired: false
+            - name: netbeheerder
+              indexRequired: false
+        metadata:
+          title: Foooo
+          description: Foooo
+      - id: bar
+        tableName: stations
+        metadata:
+          title: Barrr
+          description: Barrr
+          tableName: station
+      - id: baz
