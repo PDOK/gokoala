@@ -550,7 +550,12 @@
             ]
           },
           "geometry": {
-            "$ref": "#/components/schemas/geometryGeoJSON"
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/geometryGeoJSON"
+              }
+            ]
           },
           "properties": {
             "type": "object",
@@ -781,7 +786,6 @@
           "type"
         ],
         "type": "object",
-        "nullable": true,
         "properties": {
           "type": {
             "type": "string",
