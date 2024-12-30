@@ -94,6 +94,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		wantFC     *domain.FeatureCollection
 		wantCursor domain.Cursors
 		wantErr    bool
+		wantGeom   bool
 	}{
 		{
 			name: "get first page of features",
@@ -132,7 +133,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Prev: "|",
 				Next: "Dv4|", // 3838
 			},
-			wantErr: false,
+			wantGeom: true,
+			wantErr:  false,
 		},
 		{
 			name: "get second page of features",
@@ -181,7 +183,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Prev: "|",
 				Next: "DwE|",
 			},
-			wantErr: false,
+			wantGeom: true,
+			wantErr:  false,
 		},
 		{
 			name: "get first page of features with reference date",
@@ -225,7 +228,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Prev: "|",
 				Next: "Dv4|", // 3838
 			},
-			wantErr: false,
+			wantGeom: true,
+			wantErr:  false,
 		},
 		{
 			name: "fail on non existing collection",
@@ -278,7 +282,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Prev: "|",
 				Next: "GSQ|",
 			},
-			wantErr: false,
+			wantGeom: false, // should be null
+			wantErr:  false,
 		},
 		{
 			name: "get features with null geometry",
@@ -311,7 +316,8 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Prev: "DdY|",
 				Next: "|",
 			},
-			wantErr: false,
+			wantGeom: false, // should be null
+			wantErr:  false,
 		},
 	}
 	for _, tt := range tests {
@@ -337,6 +343,9 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			for i, wantedFeature := range tt.wantFC.Features {
 				assert.Equal(t, wantedFeature.Properties.Value("straatnaam"), fc.Features[i].Properties.Value("straatnaam"))
 				assert.Equal(t, wantedFeature.Properties.Value("nummer_id"), fc.Features[i].Properties.Value("nummer_id"))
+				if !tt.wantGeom {
+					assert.Nil(t, fc.Features[i].Geometry)
+				}
 			}
 			assert.Equal(t, tt.wantCursor.Prev, cursor.Prev)
 			assert.Equal(t, tt.wantCursor.Next, cursor.Next)
