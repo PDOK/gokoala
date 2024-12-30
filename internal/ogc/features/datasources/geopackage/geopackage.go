@@ -18,6 +18,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-spatial/geom"
+	"github.com/go-spatial/geom/cmp"
 	"github.com/go-spatial/geom/encoding/gpkg"
 	"github.com/go-spatial/geom/encoding/wkt"
 	"github.com/google/uuid"
@@ -447,12 +448,14 @@ func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProp
 }
 
 func mapGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
-	// ToDO: allow null here?
-	geometry, err := gpkg.DecodeGeometry(rawGeom)
+	geomWithMetadata, err := gpkg.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err
 	}
-	return geometry.Geometry, nil
+	if geomWithMetadata == nil || cmp.IsEmptyGeo(geomWithMetadata.Geometry) {
+		return nil, nil
+	}
+	return geomWithMetadata.Geometry, nil
 }
 
 func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[string]any) {
