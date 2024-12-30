@@ -1,23 +1,42 @@
 {
-  "id": "3542",
+  "type": "Feature",
+  "properties": {
+    "datum_doc": "2021-02-26",
+    "datum_eind": null,
+    "datum_strt": "2021-02-26",
+    "document": "SE05427877",
+    "geom": null,
+    "huisletter": null,
+    "huisnummer": 6,
+    "nummer_id": "0363200012163629",
+    "postcode": "1013NK",
+    "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200012163629",
+    "status": "Naamgeving uitgegeven",
+    "straatnaam": "Bokkinghangen",
+    "toevoeging": null,
+    "type": "Ligplaats",
+    "woonplaats": "Amsterdam"
+  },
+  "geometry": null,
+  "id": "6436",
   "links": [
     {
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items/3542?f=json"
+      "href": "http://localhost:8080/collections/foo/items/6436?f=json"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/foo/items/3542?f=jsonfg"
+      "href": "http://localhost:8080/collections/foo/items/6436?f=jsonfg"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/foo/items/3542?f=html"
+      "href": "http://localhost:8080/collections/foo/items/6436?f=html"
     },
     {
       "rel": "collection",
@@ -25,24 +44,5 @@
       "type": "application/json",
       "href": "http://localhost:8080/collections/foo?f=json"
     }
-  ],
-  "type": "Feature",
-  "geometry": null,
-  "properties": {
-    "datum_doc": "1900-01-01",
-    "datum_eind": null,
-    "datum_strt": "1900-01-01",
-    "document": "GV00000402",
-    "geom": null,
-    "huisletter": null,
-    "huisnummer": 14,
-    "nummer_id": "0363200000454013",
-    "postcode": "1013CR",
-    "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000454013",
-    "status": "Naamgeving uitgegeven",
-    "straatnaam": "Van Diemenkade",
-    "toevoeging": null,
-    "type": "Ligplaats",
-    "woonplaats": "Amsterdam"
-  }
+  ]
 }

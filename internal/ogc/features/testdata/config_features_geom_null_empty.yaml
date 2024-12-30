@@ -13,7 +13,7 @@ ogcApi:
       defaultWGS84:
         geopackage:
           local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/bag-null-geometries.gpkg
+            file: ./internal/ogc/features/datasources/geopackage/testdata/null-empty-geoms.gpkg
             fid: feature_id
             queryTimeout: 15m # pretty high to allow debugging
     collections:

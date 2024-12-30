@@ -1,55 +1,41 @@
 {
   "type": "Feature",
   "properties": {
-    "beschikbare_capaciteit_afname_10_jaar_mva": "160",
-    "beschikbare_capaciteit_afname_10_jaar_mva_visualisatie": 160,
-    "beschikbare_capaciteit_afname_3_jaar_mva": "0",
-    "beschikbare_capaciteit_afname_3_jaar_mva_visualisatie": 0,
-    "beschikbare_capaciteit_afname_5_jaar_mva": "0",
-    "beschikbare_capaciteit_afname_5_jaar_mva_visualisatie": 0,
-    "beschikbare_capaciteit_afname_huidig_mva": "0",
-    "beschikbare_capaciteit_afname_huidig_mva_visualisatie": 0,
-    "beschikbare_capaciteit_invoeding_10_jaar_mva": "160",
-    "beschikbare_capaciteit_invoeding_10_jaar_mva_visualisatie": 160,
-    "beschikbare_capaciteit_invoeding_3_jaar_mva": "0",
-    "beschikbare_capaciteit_invoeding_3_jaar_mva_visualisatie": 0,
-    "beschikbare_capaciteit_invoeding_5_jaar_mva": "0",
-    "beschikbare_capaciteit_invoeding_5_jaar_mva_visualisatie": 0,
-    "beschikbare_capaciteit_invoeding_huidig_mva": "0",
-    "beschikbare_capaciteit_invoeding_huidig_mva_visualisatie": 0,
-    "investeringsplanning_tijd_afname": "2030",
-    "investeringsplanning_tijd_invoeding": "2030",
-    "investeringsplanning_vermogen_afname": "160",
-    "investeringsplanning_vermogen_invoeding": "160",
-    "netbeheerder": "Liander",
-    "peildatum": "2023/04/21",
-    "station": "OS A18",
-    "status": "Gepland, locatie onbekend",
-    "totale_capaciteit_afname_mva": 0,
-    "totale_capaciteit_invoeding_mva": 0,
-    "verwacht_jaar_van_overbelasting_afname": null,
-    "verwacht_jaar_van_overbelasting_invoeding": null
+    "datum_doc": "1900-01-01",
+    "datum_eind": null,
+    "datum_strt": "1900-01-01",
+    "document": "GV00000402",
+    "huisletter": null,
+    "huisnummer": 14,
+    "nummer_id": "0363200000454013",
+    "postcode": "1013CR",
+    "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000454013",
+    "status": "Naamgeving uitgegeven",
+    "straatnaam": "Van Diemenkade",
+    "toevoeging": null,
+    "type": "Ligplaats",
+    "woonplaats": "Amsterdam"
   },
   "geometry": null,
-  "id": "129",
+  "id": "3542",
   "links": [
     {
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/foo/items/129?f=json"
+      "href": "http://localhost:8080/collections/foo/items/3542?f=json"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/foo/items/129?f=jsonfg"
+      "href": "http://localhost:8080/collections/foo/items/3542?f=jsonfg"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/foo/items/129?f=html"
+      "href": "http://localhost:8080/collections/foo/items/3542?f=html"
     },
     {
       "rel": "collection",

@@ -22,7 +22,7 @@ func init() {
 	pwd = path.Dir(filename)
 }
 
-func addressesGeoPackage(file string) geoPackageBackend {
+func newTestGeoPackage(file string) geoPackageBackend {
 	loadDriver()
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
@@ -98,7 +98,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		{
 			name: "get first page of features",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
@@ -137,7 +137,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		{
 			name: "get second page of features",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
@@ -186,7 +186,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		{
 			name: "get first page of features with reference date",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag-temporal.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag-temporal.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
@@ -230,7 +230,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		{
 			name: "fail on non existing collection",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
@@ -248,9 +248,9 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			wantErr:    true, // should fail
 		},
 		{
-			name: "get features with null geometry",
+			name: "get features with empty geometry",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag-null-geometries.gpkg"),
+				backend:          newTestGeoPackage("/testdata/null-empty-geoms.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
@@ -276,23 +276,23 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			},
 			wantCursor: domain.Cursors{
 				Prev: "|",
-				Next: "Dv0|",
+				Next: "GSQ|",
 			},
 			wantErr: false,
 		},
 		{
-			name: "get features empty geometry",
+			name: "get features with null geometry",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/empty.gpkg"),
-				fidColumn:        "fid",
-				featureTableByID: map[string]*featureTable{"stations": {TableName: "stations", GeometryColumnName: "geom"}},
+				backend:          newTestGeoPackage("/testdata/null-empty-geoms.gpkg"),
+				fidColumn:        "feature_id",
+				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
 				ctx:        context.Background(),
-				collection: "stations",
+				collection: "ligplaatsen",
 				queryParams: datasources.FeaturesCriteria{
-					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
+					Cursor: domain.DecodedCursor{FID: 6436, FiltersChecksum: []byte{}},
 					Limit:  1,
 				},
 			},
@@ -301,15 +301,15 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				Features: []*domain.Feature{
 					{
 						Properties: domain.NewFeaturePropertiesWithData(false, map[string]any{
-							"fid":     "129",
-							"station": "OS A18",
+							"straatnaam": "Bokkinghangen",
+							"nummer_id":  "0363200012163629",
 						}),
 					},
 				},
 			},
 			wantCursor: domain.Cursors{
-				Prev: "|",
-				Next: "hQ|",
+				Prev: "DdY|",
+				Next: "|",
 			},
 			wantErr: false,
 		},
@@ -366,7 +366,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 		{
 			name: "get feature",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
@@ -389,7 +389,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 		{
 			name: "get non existing feature",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
@@ -405,7 +405,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 		{
 			name: "fail on non existing collection",
 			fields: fields{
-				backend:          addressesGeoPackage("/testdata/bag.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
@@ -447,7 +447,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 func TestGeoPackage_Warmup(t *testing.T) {
 	t.Run("warmup", func(t *testing.T) {
 		g := &GeoPackage{
-			backend:                    addressesGeoPackage("/testdata/bag.gpkg"),
+			backend:                    newTestGeoPackage("/testdata/bag.gpkg"),
 			fidColumn:                  "feature_id",
 			featureTableByCollectionID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 			queryTimeout:               5 * time.Second,
