@@ -1051,20 +1051,20 @@ func TestFeatures_Feature(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
-		// {
-		// 	name: "Request JSON-FG for feature with null geom",
-		// 	fields: fields{
-		// 		configFile:   "internal/ogc/features/testdata/config_features_geom_empty_point.yaml",
-		// 		url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
-		// 		collectionID: "foo",
-		// 		featureID:    "129",
-		// 		format:       "json",
-		// 	},
-		// 	want: want{
-		// 		body:       "internal/ogc/features/testdata/expected_feature_geom_empty_point_jsonfg.json",
-		// 		statusCode: http.StatusOK,
-		// 	},
-		// },
+		{
+			name: "Request JSON-FG for feature with empty point",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
+				collectionID: "foo",
+				featureID:    "3542",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_geom_empty_point_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
