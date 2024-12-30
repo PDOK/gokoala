@@ -1009,6 +1009,62 @@ func TestFeatures_Feature(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request GeoJSON for feature with null geom",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "foo",
+				featureID:    "6436",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_geom_null.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request JSON-FG for feature with null geom",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
+				collectionID: "foo",
+				featureID:    "6436",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_geom_null_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request GeoJSON for feature with empty point",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "foo",
+				featureID:    "3542",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_geom_empty_point.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request JSON-FG for feature with empty point",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
+				collectionID: "foo",
+				featureID:    "3542",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_geom_empty_point_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1031,9 +1087,7 @@ func TestFeatures_Feature(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, rr.Code)
 			if tt.want.body != "" {
 				expectedBody, err := os.ReadFile(tt.want.body)
-				if err != nil {
-					log.Fatal(err)
-				}
+				assert.NoError(t, err)
 
 				printActual(rr)
 				switch {
