@@ -48,6 +48,7 @@ func loadDriver() {
 	})
 }
 
+// geoPackageBackend abstraction over different kinds of GeoPackages, e.g. local file or cloud-backed sqlite.
 type geoPackageBackend interface {
 	getDB() *sqlx.DB
 	close()
