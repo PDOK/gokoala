@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
@@ -23,5 +24,9 @@ func RegisterAllValidators(v *validator.Validate) error {
 // It's similar to RFC 1035 DNS label but not the same.
 func LowercaseID(fl validator.FieldLevel) bool {
 	valAsString := fl.Field().String()
-	return lowercaseIDRegexp.MatchString(valAsString)
+	valid := lowercaseIDRegexp.MatchString(valAsString)
+	if !valid {
+		log.Printf("Invalid ID %s", valAsString)
+	}
+	return valid
 }
