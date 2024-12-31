@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	lowercaseIDRegexp = regexp.MustCompile("^[a-z0-9]([a-z0-9_-]*[a-z0-9]+|)$")
+	lowercaseIDRegexp = regexp.MustCompile("^[a-z0-9\"]([a-z0-9_-]*[a-z0-9\"]+|)$")
 )
 
 const (
