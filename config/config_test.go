@@ -46,12 +46,27 @@ func TestNewConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "fail on invalid config file",
+			name: "fail on invalid config file with wrong version number",
 			args: args{
 				configFile: "internal/engine/testdata/config_invalid.yaml",
 			},
 			wantErr:    true,
 			wantErrMsg: "validation for 'Version' failed on the 'semver' tag",
+		},
+		{
+			name: "fail on invalid config file with wrong collection IDs",
+			args: args{
+				configFile: "internal/engine/testdata/config_invalid_collection_ids.yaml",
+			},
+			wantErr:    true,
+			wantErrMsg: "Field validation for 'ID' failed on the 'lowercase_id' tag",
+		},
+		{
+			name: "read config file with valid collection IDs",
+			args: args{
+				configFile: "internal/engine/testdata/config_valid_collection_ids.yaml",
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
