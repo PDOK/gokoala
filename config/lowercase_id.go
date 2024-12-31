@@ -15,10 +15,6 @@ const (
 	lowercaseID = "lowercase_id"
 )
 
-func RegisterAllValidators(v *validator.Validate) error {
-	return v.RegisterValidation(lowercaseID, LowercaseID)
-}
-
 // LowercaseID is the validation function for validating if the current field
 // is not empty and contains only lowercase chars, numbers, hyphens or underscores.
 // It's similar to RFC 1035 DNS label but not the same.
