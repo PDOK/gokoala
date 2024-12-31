@@ -233,14 +233,74 @@ func TestTiles_Tile(t *testing.T) {
 			fields: fields{
 				configFile:      "internal/ogc/tiles/testdata/config_tiles_urltemplate.yaml",
 				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
-				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
 				tileMatrix:      "5",
 				tileRow:         "10",
 				tileCol:         "15",
 			},
 			want: want{
-				body:       "/foo/NetherlandsRDNewQuad/5/10/15",
+				body:       "/foo/EuropeanETRS89_LAEAQuad/5/10/15",
 				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "request unknown tileMatrixSet",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol?f=mvt",
+				tileMatrixSetID: "EuropeanETRS89_LAEAQuad",
+				tileMatrix:      "5",
+				tileRow:         "10",
+				tileCol:         "15",
+			},
+			want: want{
+				body:       "unknown tileMatrixSet 'EuropeanETRS89_LAEAQuad'",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "request tile in unsupported tileMatrix",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "13",
+				tileRow:         "10",
+				tileCol:         "15.pbf",
+			},
+			want: want{
+				body:       "tileMatrix 13 is out of range",
+				statusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "request tile beyond tileMatrixSetLimits",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "32",
+				tileCol:         "32.pbf",
+			},
+			want: want{
+				body:       "tileRow/tileCol 32/32 is out of range",
+				statusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "invalid request parameter",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:             "http://localhost:8080/tiles/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				tileMatrix:      "5",
+				tileRow:         "3A",
+				tileCol:         "E2.pbf",
+			},
+			want: want{
+				body:       "invalid syntax",
+				statusCode: http.StatusBadRequest,
 			},
 		},
 	}

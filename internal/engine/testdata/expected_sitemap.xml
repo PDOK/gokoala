@@ -36,6 +36,9 @@
         <loc>http://localhost:8080/tiles/EuropeanETRS89_LAEAQuad?f=html</loc>
     </url>
     <url>
+        <loc>http://localhost:8080/tiles/WebMercatorQuad?f=html</loc>
+    </url>
+    <url>
         <loc>http://localhost:8080/tileMatrixSets?f=html</loc>
     </url>
     <url>
@@ -43,6 +46,9 @@
     </url>
     <url>
         <loc>http://localhost:8080/tileMatrixSets/EuropeanETRS89_LAEAQuad?f=html</loc>
+    </url>
+    <url>
+        <loc>http://localhost:8080/tileMatrixSets/WebMercatorQuad?f=html</loc>
     </url>
     <url>
         <loc>http://localhost:8080/styles?f=html</loc>

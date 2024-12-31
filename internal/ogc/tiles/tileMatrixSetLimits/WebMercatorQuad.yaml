@@ -1,0 +1,125 @@
+0:
+  minCol: 0
+  maxCol: 0
+  minRow: 0
+  maxRow: 0
+1:
+  minCol: 0
+  maxCol: 1
+  minRow: 0
+  maxRow: 1
+2:
+  minCol: 0
+  maxCol: 3
+  minRow: 0
+  maxRow: 3
+3:
+  minCol: 0
+  maxCol: 7
+  minRow: 0
+  maxRow: 7
+4:
+  minCol: 0
+  maxCol: 15
+  minRow: 0
+  maxRow: 15
+5:
+  minCol: 0
+  maxCol: 31
+  minRow: 0
+  maxRow: 31
+6:
+  minCol: 0
+  maxCol: 63
+  minRow: 0
+  maxRow: 63
+7:
+  minCol: 0
+  maxCol: 127
+  minRow: 0
+  maxRow: 127
+8:
+  minCol: 0
+  maxCol: 255
+  minRow: 0
+  maxRow: 255
+9:
+  minCol: 0
+  maxCol: 511
+  minRow: 0
+  maxRow: 511
+10:
+  minCol: 0
+  maxCol: 1023
+  minRow: 0
+  maxRow: 1023
+11:
+  minCol: 0
+  maxCol: 2047
+  minRow: 0
+  maxRow: 2047
+12:
+  minCol: 0
+  maxCol: 4095
+  minRow: 0
+  maxRow: 4095
+13:
+  minCol: 0
+  maxCol: 8191
+  minRow: 0
+  maxRow: 8191
+14:
+  minCol: 0
+  maxCol: 16383
+  minRow: 0
+  maxRow: 16383
+15:
+  minCol: 0
+  maxCol: 32767
+  minRow: 0
+  maxRow: 32767
+16:
+  minCol: 0
+  maxCol: 65535
+  minRow: 0
+  maxRow: 65535
+17:
+  minCol: 0
+  maxCol: 131071
+  minRow: 0
+  maxRow: 131071
+18:
+  minCol: 0
+  maxCol: 262143
+  minRow: 0
+  maxRow: 262143
+19:
+  minCol: 0
+  maxCol: 524287
+  minRow: 0
+  maxRow: 524287
+20:
+  minCol: 0
+  maxCol: 1048575
+  minRow: 0
+  maxRow: 1048575
+21:
+  minCol: 0
+  maxCol: 2097151
+  minRow: 0
+  maxRow: 2097151
+22:
+  minCol: 0
+  maxCol: 4194303
+  minRow: 0
+  maxRow: 4194303
+23:
+  minCol: 0
+  maxCol: 8388607
+  minRow: 0
+  maxRow: 8388607
+24:
+  minCol: 0
+  maxCol: 16777215
+  minRow: 0
+  maxRow: 16777215
