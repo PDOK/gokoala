@@ -3,10 +3,10 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	pggeom "github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 	pgxgeom "github.com/twpayne/pgx-geom"
@@ -30,10 +30,7 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string) 
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
 	}
 
-	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		// add support for Go <-> PostGIS conversions
-		return pgxgeom.Register(ctx, conn)
-	}
+	config.AfterConnect = pgxgeom.Register
 
 	db, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
