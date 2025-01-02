@@ -6,6 +6,7 @@ import (
 
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	pggeom "github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 	pgxgeom "github.com/twpayne/pgx-geom"
@@ -15,7 +16,7 @@ import (
 )
 
 type Postgres struct {
-	db  *pgx.Conn
+	db  *pgxpool.Pool
 	ctx context.Context
 
 	queryTimeout time.Duration
@@ -24,19 +25,24 @@ type Postgres struct {
 
 func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string) (*Postgres, error) {
 	ctx := context.Background()
-	db, err := pgx.Connect(ctx, dbConn)
+	config, err := pgxpool.ParseConfig(dbConn)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse database config: %w", err)
+	}
+
+	// add support for Go <-> PostGIS conversions
+	config.AfterConnect = pgxgeom.Register
+
+	db, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
-	// add support for Go <-> PostGIS conversions
-	if err := pgxgeom.Register(ctx, db); err != nil {
-		return nil, err
-	}
+
 	return &Postgres{db, ctx, queryTimeout, searchIndex}, nil
 }
 
 func (p *Postgres) Close() {
-	_ = p.db.Close(p.ctx)
+	p.db.Close()
 }
 
 func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTerm string, collections d.CollectionsWithParams,
