@@ -30,6 +30,7 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string) 
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
 	}
 
+	// add support for Go <-> PostGIS conversions
 	config.AfterConnect = pgxgeom.Register
 
 	db, err := pgxpool.NewWithConfig(ctx, config)
