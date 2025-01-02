@@ -3,6 +3,7 @@ import { LoggerModule } from 'ngx-logger'
 import { environment } from './../src/environments/environment'
 import { LocationSearchComponent } from './../src/app/location-search/location-search.component'
 import { checkAccessibility, injectAxe } from './shared'
+import { SeachResponse } from './seachResponse-model'
 
 function loadLocationSearchEmpty() {
   cy.mount(LocationSearchComponent, {
@@ -16,7 +17,7 @@ function loadLocationSearchEmpty() {
 }
 function loadLocationSearchWithUrl() {
   cy.intercept('GET', 'https://visualisation.example.com/locationapi/collections', { fixture: 'collectionfix.json' }).as('col')
-  cy.intercept('GET', 'https://visualisation.example.com/locationapi/search', { fixture: 'search-den-wgs84.json' }).as('search')
+  cy.intercept('GET', 'https://visualisation.example.com/locationapi/search?*', { fixture: 'search-den-wgs84.json' }).as('search')
   cy.intercept('GET', 'https://example.com/ogc/v1/collections/addresses/items/827*', { fixture: 'amsterdam-wgs84.json' }).as('geo')
   cy.intercept('GET', 'https://example.com/ogc/v1/collections/addresses/items/22215*', { fixture: 'grid-amsterdam-wgs84.json' }).as('geo2')
   cy.intercept('GET', 'https://tile.openstreetmap.org/**/*', { fixture: 'backgroundstub.png' }).as('background')
@@ -30,6 +31,7 @@ function loadLocationSearchWithUrl() {
     ],
     componentProperties: {
       url: 'https://visualisation.example.com/locationapi',
+
       //    backgroundmap: 'BRT',
     },
   })
@@ -116,6 +118,17 @@ describe('location-search-test', () => {
     cy.wait('@search')
     cy.wait('@search')
     cy.wait('@search')
+    cy.get('@search').then(res => {
+      const result = res as unknown as SeachResponse
+      const r = result.request.query
+      expect(r.q).to.equal('den')
+      expect(r.functioneel_gebied.version).to.equal('1')
+      expect(r.geografisch_gebied.version).to.equal('1')
+      expect(r.ligplaats.version).to.equal('1')
+      expect(r.standplaats.version).to.equal('1')
+      expect(r.verblijfsobject.version).to.equal('1')
+      expect(r.woonplaats.version).to.equal('1')
+    })
 
     cy.contains('Beatrixlaan').focus()
     cy.wait('@geo')

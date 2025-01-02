@@ -12,21 +12,25 @@
     [placeholder]="placeholder"
     [title]="title"
     list="locatie-auto-complete"
-    aria-label="Search for a location" /><app-search-options [url]="url"> </app-search-options>
+    aria-label="Search for a location" /><app-search-options
+    [url]="url"
+    [searchParams]="searchParams"
+    (searchParamsEvent)="paramChanged($event)">
+  </app-search-options>
 
   <h2>Result</h2>
 
-  <div role="list" *ngFor="let r of $results | async">
+  <div role="list" *ngFor="let r of results">
     <div role="listitem">
-      <button title="{{ r.getProperties()['displayName'] }}" (mouseover)="selectResult(r)" (focus)="selectResult(r)">
-        <div [innerHTML]="r.getProperties()['highlight'] | safeHtml"></div>
+      <button title="{{ getDisplayname(r) }}" (mouseover)="selectResult(r)" (focus)="selectResult(r)">
+        <div [innerHTML]="getHighLight(r) | safeHtml"></div>
         <div hidden="hidden">
-          {{ r.getProperties()['collectionGeometryType:'] }}
-          {{ r.getProperties()['collectionId'] }}
-          {{ r.getProperties()['collectionVersion'] }}
-          {{ r.getProperties()['displayName'] }}
-          {{ r.getProperties()['href'] }}
-          {{ r.getProperties()['score'] }}
+          {{ getProperty(r, 'collectionGeometryType:') }}
+          {{ getProperty(r, 'collectionId') }}
+          {{ getProperty(r, 'collectionVersion') }}
+          {{ getProperty(r, 'displayName') }}
+          {{ getProperty(r, 'href') }}
+          {{ getProperty(r, 'score') }}
         </div>
       </button>
     </div>

@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none",
+    "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none && npm pack .",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress info && npx cypress run --component",
     "ghpage": "angular-cli-ghpages --dir=dist/view-component/browser",

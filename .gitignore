@@ -10,4 +10,4 @@ viewer/dist
 viewer/node_modules
 viewer/cypress.env.json
 hack/tmp
-viewer/src/app/api/
+viewer/view-component-1.0.0.tgz
