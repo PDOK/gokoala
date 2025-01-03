@@ -3,115 +3,17 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OGC API map component samples</title>
-    <style>
-      #itemurl {
-        width: 60vw;
-        padding: 2px;
-      }
-    </style>
+    <title>OGC API Map Component Samples</title>
+    <meta name="description" content="Samples of OGC API map components including location search.">
+    <!-- Link to external CSS -->
+    <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.css"></noscript>
+    <!-- Link to external JavaScript -->
+    <script src="scripts.js" defer></script>
   <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.css"></noscript></head>
 
-  <body onload="load()">
-    <h2>Location search sample</h2>
-    <!--app-location-search id="locationsearch" url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"></app-location-search-->
+  <body>
+    <h2>Location API sample to test <a href="https://github.com/PDOK/gomagpie">gomagpie</a></h2>
 
-    <app-location-search id="locationsearch2" url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"></app-location-search>
-
-    <h2> OGC API BBOX sample</h2>
-    <label for="itemurl">Item Url:</label>
-    <input type="url" id="itemurl" name="itemurl" title><br><br>
-    <label for="itemprojection">projection:</label>
-    <input type="string" id="itemprojection" name="itemprojection" title><br><br>
-
-    <div>
-      <br>
-      if selected auto mode fills view with features:
-      <input type="checkbox" id="modeCheck" onclick="setMode()">
-      <br>
-      Buttons on map : selectbox
-      <input type="checkbox" id="selectCheck" onclick="showMap()">
-      full fill box
-      <input type="checkbox" id="fullSelectCheck" onclick="showMap()">
-    </div>
-
-    <label for="endpoints">or choose sample url:</label>
-
-    <select name="endpoints" id="endpoints" onclick="fillDefault()">
-      <option value="https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items?&amp;limit=1000">BGT pand</option>
-    </select>
-
-    <div>show map for:</div>
-    <a id="showurl">placeholdertext</a>
-    <div id="bbox"></div>
-
-    <app-feature-view id="featuresample" mode="default"></app-feature-view>
+    <app-location-search id="locationsearch1" url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod" label aria-label="Location Search"></app-location-search>
   <link rel="modulepreload" href="chunk-FDERIQAA.js"><script src="polyfills.js" type="module"></script><script src="main.js" type="module"></script></body>
-  <script>
-    function load() {
-      const showurl = 'https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items?&limit=1000'
-      const showprojection = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
-      itemurl.value = showurl
-      itemurl.title = showurl
-      itemprojection.value = showprojection
-      itemprojection.title = showprojection
-
-      featuresample.addEventListener('box', selectbox => {
-        console.log('box')
-        console.log(JSON.stringify(selectbox.detail))
-        bbox.innerHTML = selectbox.detail
-        const url = new URL(itemurl.value)
-        url.searchParams.set('bbox', selectbox.detail)
-        itemurl.value = url
-        itemurl.title = url
-
-        showMap()
-      })
-
-      showMap()
-    }
-    function showMap() {
-      const url = itemurl.value
-      const p = itemprojection.value
-      showurl.innerHTML = url + '     using (projection ' + p + ')'
-      showurl.href = url
-
-      const map = document.getElementById('featuresample')
-      map.setAttribute('items-url', url)
-      map.setAttribute('projection', p)
-      map.setAttribute('show-bounding-box-button', document.getElementById('selectCheck').checked)
-      map.setAttribute('show-fill-extent-button', document.getElementById('fullSelectCheck').checked)
-      /* for example modify map behavour and label styling: :
- map.setAttribute('label-field', 'bladnr')
- const optionstring = JSON.stringify({ font: 'bold 40px Arial, Verdana, Courier New' })
- map.setAttribute('label-options', optionstring)
-map.setAttribute('fill-color', 'rgba(0,0,255,0)')
-*/
-    }
-
-    function fillDefault() {
-      const defaulturl = document.getElementById('endpoints').value
-      itemurl.value = defaulturl
-      itemurl.title = defaulturl
-      showMap()
-    }
-
-    function setMode() {
-      var checkBox = document.getElementById('modeCheck')
-      const map = document.getElementById('featuresample')
-
-      if (checkBox.checked) {
-        map.setAttribute('mode', 'auto')
-        document.getElementById('fullSelectCheck').disabled = true
-        document.getElementById('selectCheck').disabled = true
-      } else {
-        map.setAttribute('mode', 'default')
-        document.getElementById('fullSelectCheck').disabled = false
-        document.getElementById('selectCheck').disabled = false
-      }
-      showMap()
-    }
-    function setSelectBox() {}
-    function setFullSelectBox() {}
-  </script>
 </html>
