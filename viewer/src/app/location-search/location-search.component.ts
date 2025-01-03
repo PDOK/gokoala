@@ -71,9 +71,9 @@ export class LocationSearchComponent {
     this.logger.log(item)
     this.activeFeature.emit(item)
     //if (item.links![0].href) {
-      // this.selectedResultUrl = item.links![0].href as string
-      //e.g: this.selectedResultUrl =
-      //  'https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/80f96ef7-dfa4-5197-b681-cfd92b10757e'
+    // this.selectedResultUrl = item.links![0].href as string
+    //e.g: this.selectedResultUrl =
+    //  'https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/80f96ef7-dfa4-5197-b681-cfd92b10757e'
     //}
   }
   getHighLight(r: { properties: unknown }): string {
