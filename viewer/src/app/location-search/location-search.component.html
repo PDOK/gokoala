@@ -16,7 +16,8 @@
     [searchParams]="searchParams"
     (searchParamsEvent)="paramChanged($event)">
   </app-search-options>
-  <div role="list" *ngFor="let r of results">
+  <div *ngIf="results"></div>
+  <div role="list" *ngFor="let r of getResults(results | async)">
     <div role="listitem">
       <button title="{{ getDisplayname(r) }}" (mouseover)="selectResult(r)" (focus)="selectResult(r)">
         <div [innerHTML]="getHighLight(r) | safeHtml"></div>

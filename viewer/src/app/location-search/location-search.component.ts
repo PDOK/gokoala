@@ -11,8 +11,9 @@ import { SafeHtmlPipe } from '../safe-html.pipe'
 import { BackgroundMap, FeatureViewComponent } from '../feature-view/feature-view.component'
 import { SearchOptionsComponent } from './search-options/search-options.component'
 
-import { FeatureJsonfg } from '../api/models'
+import { FeatureCollectionJsonfg, FeatureJsonfg } from '../api/models'
 import { Search$Json$Params } from '../api/fn/features/search-json'
+import { Observable } from 'rxjs'
 
 @Component({
   selector: 'app-location-search',
@@ -22,6 +23,7 @@ import { Search$Json$Params } from '../api/fn/features/search-json'
 })
 export class LocationSearchComponent {
   selectedResultUrl: string | undefined = undefined
+  //@Output() activeFeature = new EventEmitter<FeatureLike>()
 
   @Input() url: string | undefined = undefined
   @Input() label: string = 'Search location'
@@ -42,7 +44,7 @@ export class LocationSearchComponent {
   searchLocation: string = ''
 
   projection: ProjectionMapping = defaultMapping
-  results: FeatureJsonfg[] = []
+  results: Observable<FeatureCollectionJsonfg> | undefined = undefined
 
   constructor(
     private logger: NGXLogger,
@@ -60,16 +62,14 @@ export class LocationSearchComponent {
   private lookup() {
     if (this.url) {
       this.featuresService.rootUrl = this.url
-      this.results = []
-      this.featuresService.search$Json(this.searchParams).subscribe(x => {
-        this.results = x.features
-      })
+      this.results = this.featuresService.search$Json(this.searchParams)
     }
   }
 
   selectResult(item: FeatureJsonfg) {
     this.logger.log('lookup via link to api: ')
     this.logger.log(item)
+    //this.activeFeature.emit(item)
     if (item.links![0].href) {
       // this.selectedResultUrl = item.links![0].href as string
       //e.g: this.selectedResultUrl =
@@ -99,5 +99,13 @@ export class LocationSearchComponent {
     this.logger.log(JSON.stringify(event))
     this.searchParams = event
     this.lookup()
+  }
+
+  getResults(f: FeatureCollectionJsonfg | null): FeatureJsonfg[] {
+    if (f) {
+      return f?.features
+    } else {
+      return []
+    }
   }
 }

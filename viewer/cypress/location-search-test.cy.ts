@@ -109,11 +109,13 @@ describe('location-search-test', () => {
     })
   })
 
-  /*it('disable collection and typeahead', () => {
+  it('disable collection and typeahead', () => {
     loadLocationSearchWithUrl()
     cy.get('button').should('have.attr', 'title', 'show/hide search options').click()
-    cy.get(':nth-child(3) >  label > input[type=checkbox]').uncheck()
-    cy.get(':nth-child(6) >  label > input[type=checkbox]').uncheck()
+    cy.contains('ligplaats').find('input[type="checkbox"]').uncheck()
+    cy.contains('standplaats').find('input[type="checkbox"]').uncheck()
+    cy.contains('verblijfsobject').find('input[type="checkbox"]').uncheck()
+    cy.get('input[placeholder="Enter Relevance for woonplaats"]').type('{backspace}{backspace}0.8')
     cy.get('#searchBox').should('be.visible').should('be.enabled').type('den')
     cy.wait('@search')
     cy.wait('@search')
@@ -124,15 +126,15 @@ describe('location-search-test', () => {
       expect(r.q).to.equal('den')
       expect(r.functioneel_gebied.version).to.equal('1')
       expect(r.geografisch_gebied.version).to.equal('1')
-      expect(r.ligplaats.version).to.equal('1')
-      expect(r.standplaats.version).to.equal('1')
-      expect(r.verblijfsobject.version).to.equal('1')
       expect(r.woonplaats.version).to.equal('1')
+      expect(r.woonplaats.relevance).to.equal('0.8')
+      expect(result.request.url).to.equal(
+        'https://visualisation.example.com/locationapi/search?q=den&functioneel_gebied%5Brelevance%5D=0.5&functioneel_gebied%5Bversion%5D=1&geografisch_gebied%5Brelevance%5D=0.5&geografisch_gebied%5Bversion%5D=1&woonplaats%5Brelevance%5D=0.8&woonplaats%5Bversion%5D=1'
+      )
     })
 
     cy.contains('Beatrixlaan').focus()
-    cy.wait('@geo')
+    //  cy.wait('@geo')
     cy.wait('@background')
   })
-    */ 
 })
