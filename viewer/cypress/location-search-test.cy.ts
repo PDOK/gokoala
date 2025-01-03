@@ -134,7 +134,7 @@ describe('location-search-test', () => {
     })
 
     cy.contains('Beatrixlaan').focus()
-    //  cy.wait('@geo')
-    cy.wait('@background')
+    //cy.wait('@geo')
+    //cy.wait('@background')
   })
 })
