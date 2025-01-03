@@ -1,5 +1,4 @@
 <div role="search">
-  <h2>Enter text</h2>
   <label id="searchboxlabel" for="searchBox">{{ label }}</label>
   <input
     role="textbox"
@@ -17,9 +16,6 @@
     [searchParams]="searchParams"
     (searchParamsEvent)="paramChanged($event)">
   </app-search-options>
-
-  <h2>Result</h2>
-
   <div role="list" *ngFor="let r of results">
     <div role="listitem">
       <button title="{{ getDisplayname(r) }}" (mouseover)="selectResult(r)" (focus)="selectResult(r)">
