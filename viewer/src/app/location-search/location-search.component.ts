@@ -14,6 +14,8 @@ import { SearchOptionsComponent } from './search-options/search-options.componen
 import { FeatureCollectionJsonfg, FeatureJsonfg } from '../api/models'
 import { Search$Json$Params } from '../api/fn/features/search-json'
 import { Observable } from 'rxjs'
+import { FeatureLike } from 'ol/Feature'
+import { GeoJSON } from 'ol/format'
 
 @Component({
   selector: 'app-location-search',
@@ -23,7 +25,7 @@ import { Observable } from 'rxjs'
 })
 export class LocationSearchComponent {
   selectedResultUrl: string | undefined = undefined
-  @Output() activeFeature = new EventEmitter<FeatureJsonfg>()
+  @Output() activeFeature = new EventEmitter<FeatureLike>()
 
   @Input() url: string | undefined = undefined
   @Input() label: string = 'Search location'
@@ -67,9 +69,14 @@ export class LocationSearchComponent {
   }
 
   selectResult(item: FeatureJsonfg) {
-    this.logger.log('lookup via link to api: ')
-    this.logger.log(item)
-    this.activeFeature.emit(item)
+    //this.logger.log('lookup via link to api: ')
+    //this.logger.log(item)
+    const geoJsonFormat = new GeoJSON()
+
+    // Read the GeoJSON data and create an OpenLayers feature
+    const feature = geoJsonFormat.readFeature(item) //, { featureProjection: 'EPSG:3857'}//
+
+    this.activeFeature.emit(feature)
     //if (item.links![0].href) {
     // this.selectedResultUrl = item.links![0].href as string
     //e.g: this.selectedResultUrl =

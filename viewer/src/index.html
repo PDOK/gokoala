@@ -10,7 +10,7 @@
     <!-- Link to external JavaScript -->
   </head>
 
-  <body>
+  <body onload="load()">
     <h2>Location API sample to test <a href="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod">location api (preprod)</a></h2>
 
     <app-location-search
@@ -18,10 +18,15 @@
       url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"
       label=""
       aria-label="Location Search"></app-location-search>
+
+    <div>
+        <app-objectinfo-view id="objectinfooutside"> </app-objectinfo-view>
+      </div>
+
   </body>
   <script type="text/javascript">
     function load() {
-      locatoinsearch.addEventListener('activeFeature', e => {
+      locationsearch.addEventListener('activeFeature', e => {
         console.log('activeFeature')
         console.log(JSON.stringify(e.detail))
         objectinfooutside.feature = e.detail
