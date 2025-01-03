@@ -11,7 +11,7 @@ import (
 )
 
 type TestEmbeddedURL struct {
-	U URL `json:"U" yaml:"U"`
+	U URL `json:"u" yaml:"u"`
 }
 
 func TestURL_DeepCopy(t *testing.T) {
@@ -174,7 +174,7 @@ func TestURL_Unmarshalling_YAML(t *testing.T) {
 
 			// non-pointer
 			unmarshalledEmbedded := &TestEmbeddedURL{}
-			err = yaml.Unmarshal([]byte(`{"U": `+tt.url+`}`), unmarshalledEmbedded)
+			err = yaml.Unmarshal([]byte(`{"u": `+tt.url+`}`), unmarshalledEmbedded)
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}

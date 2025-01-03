@@ -226,36 +226,16 @@ func setDefaults(config *Config) error {
 	if len(config.AvailableLanguages) == 0 {
 		config.AvailableLanguages = append(config.AvailableLanguages, Language{language.Dutch}) // default to Dutch only
 	}
-	if config.OgcAPI.Tiles != nil && config.OgcAPI.Tiles.DatasetTiles != nil && config.OgcAPI.Tiles.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
-		config.OgcAPI.Tiles.DatasetTiles.HealthCheck.TilePath == nil {
-		setHealthCheckTilePath(config.OgcAPI.Tiles.DatasetTiles)
-	} else if config.OgcAPI.Tiles != nil && config.OgcAPI.Tiles.Collections != nil {
-		for _, coll := range config.OgcAPI.Tiles.Collections {
-			if coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
-				setHealthCheckTilePath(&coll.Tiles.GeoDataTiles)
-			}
-		}
+	if config.OgcAPI.Tiles != nil {
+		config.OgcAPI.Tiles.Defaults()
 	}
 	return nil
-}
-
-func setHealthCheckTilePath(tilesConfig *Tiles) {
-	var deepestZoomLevel int
-	for _, srs := range tilesConfig.SupportedSrs {
-		if srs.Srs == DefaultSrs {
-			deepestZoomLevel = srs.ZoomLevelRange.End
-		}
-	}
-	defaultTile := HealthCheckDefaultTiles[deepestZoomLevel]
-	tileMatrixSet := AllTileProjections[DefaultSrs]
-	tilePath := fmt.Sprintf("/%s/%d/%d/%d.pbf", tileMatrixSet, deepestZoomLevel, defaultTile.x, defaultTile.y)
-	tilesConfig.HealthCheck.TilePath = &tilePath
 }
 
 func validate(config *Config) error {
 	// process 'validate' tags
 	v := validator.New()
-	err := RegisterAllValidators(v)
+	err := v.RegisterValidation(lowercaseID, LowercaseID)
 	if err != nil {
 		return err
 	}

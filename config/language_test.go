@@ -11,7 +11,7 @@ import (
 )
 
 type TestEmbeddedLanguage struct {
-	L Language `json:"L" yaml:"L"`
+	L Language `json:"l" yaml:"l"`
 }
 
 func TestLanguage_DeepCopy(t *testing.T) {
@@ -78,7 +78,7 @@ func TestLanguage_Marshalling_JSON(t *testing.T) {
 
 			// non-pointer
 			unmarshalledEmbedded := &TestEmbeddedLanguage{}
-			err = yaml.Unmarshal([]byte(`{"L": `+tt.want+`}`), unmarshalledEmbedded)
+			err = yaml.Unmarshal([]byte(`{"l": `+tt.want+`}`), unmarshalledEmbedded)
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}

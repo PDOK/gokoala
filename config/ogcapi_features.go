@@ -97,7 +97,7 @@ type CollectionEntryFeatures struct {
 type Datasources struct {
 	// Features should always be available in WGS84 (according to spec).
 	// This specifies the datasource to be used for features in the WGS84 projection
-	DefaultWGS84 Datasource `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"`
+	DefaultWGS84 Datasource `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"` //nolint:tagliatelle // grandfathered
 
 	// One or more additional datasources for features in other projections. GoKoala doesn't do
 	// any on-the-fly reprojection so additional datasources need to be reprojected ahead of time.

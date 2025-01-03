@@ -11,7 +11,7 @@ import (
 )
 
 type TestEmbeddedMediaType struct {
-	M MediaType `json:"M" yaml:"M"`
+	M MediaType `json:"m" yaml:"m"`
 }
 
 func TestMediaType_DeepCopy(t *testing.T) {
@@ -174,7 +174,7 @@ func TestMediaType_Unmarshalling_YAML(t *testing.T) {
 
 			// non-pointer
 			unmarshalledEmbedded := &TestEmbeddedMediaType{}
-			err = yaml.Unmarshal([]byte(`{"M": `+tt.mediaType+`}`), unmarshalledEmbedded)
+			err = yaml.Unmarshal([]byte(`{"m": `+tt.mediaType+`}`), unmarshalledEmbedded)
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}

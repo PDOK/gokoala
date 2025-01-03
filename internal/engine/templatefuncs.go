@@ -26,7 +26,7 @@ var (
 // Initialize functions to be used in html/json/etc templates
 func init() {
 	customFuncs := texttemplate.FuncMap{
-		// custom template functions
+		// custom template functions (keep lowercase)
 		"markdown":   markdown,
 		"unmarkdown": unmarkdown,
 		"truncate":   truncateText,

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"slices"
 	"sort"
 
@@ -16,6 +17,19 @@ type OgcAPITiles struct {
 	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
 	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty"`
+}
+
+func (o *OgcAPITiles) Defaults() {
+	if o.DatasetTiles != nil && o.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
+		o.DatasetTiles.HealthCheck.TilePath == nil {
+		o.DatasetTiles.deriveHealthCheckTilePath()
+	} else if o.Collections != nil {
+		for _, coll := range o.Collections {
+			if coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
+				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
+			}
+		}
+	}
 }
 
 // +kubebuilder:object:generate=true
@@ -110,6 +124,19 @@ type Tiles struct {
 	// Optional health check configuration
 	// +optional
 	HealthCheck HealthCheck `yaml:"healthCheck" json:"healthCheck"`
+}
+
+func (t *Tiles) deriveHealthCheckTilePath() {
+	var deepestZoomLevel int
+	for _, srs := range t.SupportedSrs {
+		if srs.Srs == DefaultSrs {
+			deepestZoomLevel = srs.ZoomLevelRange.End
+		}
+	}
+	defaultTile := HealthCheckDefaultTiles[deepestZoomLevel]
+	tileMatrixSet := AllTileProjections[DefaultSrs]
+	tilePath := fmt.Sprintf("/%s/%d/%d/%d.pbf", tileMatrixSet, deepestZoomLevel, defaultTile.x, defaultTile.y)
+	t.HealthCheck.TilePath = &tilePath
 }
 
 // +kubebuilder:object:generate=true
