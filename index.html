@@ -1,8 +1,8 @@
 <!doctype html>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<html lang="en" data-critters-container>
-  <head><base href="https://pdok.github.io/gokoala/">
-    <meta charset="utf-8">
+<html lang="en" data-beasties-container>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OGC API map component samples</title>
     <style>
       #itemurl {
@@ -10,9 +10,14 @@
         padding: 2px;
       }
     </style>
-  <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.d0a2eaa73edc60ab.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.d0a2eaa73edc60ab.css"></noscript></head>
+  <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.css"></noscript></head>
 
   <body onload="load()">
+    <h2>Location search sample</h2>
+    <!--app-location-search id="locationsearch" url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"></app-location-search-->
+
+    <app-location-search id="locationsearch2" url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"></app-location-search>
+
     <h2> OGC API BBOX sample</h2>
     <label for="itemurl">Item Url:</label>
     <input type="url" id="itemurl" name="itemurl" title><br><br>
@@ -41,7 +46,7 @@
     <div id="bbox"></div>
 
     <app-feature-view id="featuresample" mode="default"></app-feature-view>
-  <script src="runtime.735c6a055d4f787c.js" type="module"></script><script src="polyfills.da05a5a1c612cd73.js" type="module"></script><script src="main.a0014224cbf0724f.js" type="module"></script></body>
+  <link rel="modulepreload" href="chunk-FDERIQAA.js"><script src="polyfills.js" type="module"></script><script src="main.js" type="module"></script></body>
   <script>
     function load() {
       const showurl = 'https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items?&limit=1000'
@@ -77,11 +82,11 @@
       map.setAttribute('show-bounding-box-button', document.getElementById('selectCheck').checked)
       map.setAttribute('show-fill-extent-button', document.getElementById('fullSelectCheck').checked)
       /* for example modify map behavour and label styling: :
-       map.setAttribute('label-field', 'bladnr')
-       const optionstring = JSON.stringify({ font: 'bold 40px Arial, Verdana, Courier New' })
-       map.setAttribute('label-options', optionstring)
-      map.setAttribute('fill-color', 'rgba(0,0,255,0)')
-     */
+ map.setAttribute('label-field', 'bladnr')
+ const optionstring = JSON.stringify({ font: 'bold 40px Arial, Verdana, Courier New' })
+ map.setAttribute('label-options', optionstring)
+map.setAttribute('fill-color', 'rgba(0,0,255,0)')
+*/
     }
 
     function fillDefault() {
