@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core'
+import { Component, EventEmitter, Input, Output } from '@angular/core'
 
 import { CommonModule } from '@angular/common'
 
@@ -23,7 +23,7 @@ import { Observable } from 'rxjs'
 })
 export class LocationSearchComponent {
   selectedResultUrl: string | undefined = undefined
-  //@Output() activeFeature = new EventEmitter<FeatureLike>()
+  @Output() activeFeature = new EventEmitter<FeatureJsonfg>()
 
   @Input() url: string | undefined = undefined
   @Input() label: string = 'Search location'
@@ -69,12 +69,12 @@ export class LocationSearchComponent {
   selectResult(item: FeatureJsonfg) {
     this.logger.log('lookup via link to api: ')
     this.logger.log(item)
-    //this.activeFeature.emit(item)
-    if (item.links![0].href) {
+    this.activeFeature.emit(item)
+    //if (item.links![0].href) {
       // this.selectedResultUrl = item.links![0].href as string
       //e.g: this.selectedResultUrl =
       //  'https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/80f96ef7-dfa4-5197-b681-cfd92b10757e'
-    }
+    //}
   }
   getHighLight(r: { properties: unknown }): string {
     return this.getProperty(r, 'highlight')
