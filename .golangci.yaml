@@ -16,6 +16,7 @@ issues:
       linters:
         - bodyclose
         - dupl
+        - dogsled
         - funlen
 
 output:
@@ -66,15 +67,19 @@ linters:
     - cyclop  # checks function and package cyclomatic complexity
     - dupl  # tool for code clone detection
     - durationcheck  # checks for two durations multiplied together
+    - dogsled  # find assignments/declarations with too many blank identifiers
     - errname  # checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error
     - errorlint  # finds code that will cause problems with the error wrapping scheme introduced in Go 1.13
     - exhaustive  # checks exhaustiveness of enum switch statements
+    - exptostd  # detects functions from golang.org/x/exp/ that can be replaced by std functions
     - copyloopvar  # checks for pointers to enclosing loop variables
+    - fatcontext  # detects nested contexts in loops and function literals
     - forbidigo  # forbids identifiers
     - funlen  # tool for detection of long functions
     - gocheckcompilerdirectives  # validates go compiler directive comments (//go:)
     - goconst  # finds repeated strings that could be replaced by a constant
     - gocritic  # provides diagnostics that check for bugs, performance and style issues
+    - gofmt  # checks if the code is formatted according to 'gofmt' command
     - goimports  # in addition to fixing imports, goimports also formats your code in the same style as gofmt
     - gomoddirectives  # manages the use of 'replace', 'retract', and 'excludes' directives in go.mod
     - gomodguard  # allow and block lists linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations
@@ -82,6 +87,7 @@ linters:
     - gosec  # inspects source code for security problems
     - loggercheck  # checks key value pairs for common logger libraries (kitlog,klog,logr,zap)
     - makezero  # finds slice declarations with non-zero initial length
+    - mirror  # reports wrong mirror patterns of bytes/strings usage
     - misspell  # finds commonly misspelled English words
     - nakedret  # finds naked returns in functions greater than a specified function length
     - nestif  # reports deeply nested if statements
@@ -96,6 +102,7 @@ linters:
     - rowserrcheck  # checks whether Err of rows is checked successfully
     - sqlclosecheck  # checks that sql.Rows and sql.Stmt are closed
     - sloglint  # A Go linter that ensures consistent code style when using log/slog
+    - tagliatelle  # checks the struct tags.
     - tenv  # detects using os.Setenv instead of t.Setenv since Go1.17
     - testableexamples  # checks if examples are testable (have an expected output)
     - tparallel  # detects inappropriate usage of t.Parallel() method in your Go test codes

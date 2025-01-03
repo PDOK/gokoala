@@ -25,8 +25,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/qustavo/sqlhooks/v2"
-
-	_ "github.com/mattn/go-sqlite3" // import for side effect (= sqlite3 driver) only
 )
 
 const (
