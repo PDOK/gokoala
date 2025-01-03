@@ -6,6 +6,8 @@ import { NgModule, Injector } from '@angular/core'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
+import { LocationSearchComponent } from './location-search/location-search.component'
+
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { environment } from 'src/environments/environment'
 
@@ -35,6 +37,9 @@ export class AppModule {
 
     const featureView = createCustomElement(FeatureViewComponent, { injector })
     customElements.define('app-feature-view', featureView)
+
+    const locationSearch = createCustomElement(LocationSearchComponent, { injector })
+    customElements.define('app-location-search', locationSearch)
   }
 
   // eslint-disable-next-line

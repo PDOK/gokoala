@@ -28,7 +28,7 @@ jobs:
           cache-dependency-path: "./viewer/package-lock.json"
 
       - name: Install
-        run: npm ci
+        run: npm ci && npm run apigen
 
       - name: Cypress run
         uses: cypress-io/github-action@v6

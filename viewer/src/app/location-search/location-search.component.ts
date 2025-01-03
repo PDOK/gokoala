@@ -1,0 +1,118 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core'
+
+import { CommonModule } from '@angular/common'
+
+import { CollectionsService, FeaturesService } from '../api/services'
+import { NGXLogger } from 'ngx-logger'
+
+import { defaultMapping, ProjectionMapping } from '../feature.service'
+
+import { SafeHtmlPipe } from '../safe-html.pipe'
+import { BackgroundMap, FeatureViewComponent } from '../feature-view/feature-view.component'
+import { SearchOptionsComponent } from './search-options/search-options.component'
+
+import { FeatureCollectionJsonfg, FeatureJsonfg } from '../api/models'
+import { Search$Json$Params } from '../api/fn/features/search-json'
+import { Observable } from 'rxjs'
+import { FeatureLike } from 'ol/Feature'
+import { GeoJSON } from 'ol/format'
+
+@Component({
+  selector: 'app-location-search',
+  imports: [CommonModule, SafeHtmlPipe, FeatureViewComponent, SearchOptionsComponent],
+  templateUrl: './location-search.component.html',
+  styleUrl: './location-search.component.css',
+})
+export class LocationSearchComponent {
+  selectedResultUrl: string | undefined = undefined
+  @Output() activeFeature = new EventEmitter<FeatureLike>()
+
+  @Input() url: string | undefined = undefined
+  @Input() label: string = 'Search location'
+  @Input() title: string = 'Enter the location you want to search for'
+  @Input() placeholder: string = 'Enter location to search'
+  @Input() backgroundmap: BackgroundMap = 'OSM'
+  defaultColparams = { relevance: 0.5, version: 1 }
+  @Input() searchParams: Search$Json$Params = {
+    q: '',
+    functioneel_gebied: this.defaultColparams,
+    geografisch_gebied: this.defaultColparams,
+    ligplaats: this.defaultColparams,
+    standplaats: this.defaultColparams,
+    verblijfsobject: this.defaultColparams,
+    woonplaats: this.defaultColparams,
+  }
+
+  searchLocation: string = ''
+
+  projection: ProjectionMapping = defaultMapping
+  results: Observable<FeatureCollectionJsonfg> | undefined = undefined
+
+  constructor(
+    private logger: NGXLogger,
+    private collectionService: CollectionsService,
+    private featuresService: FeaturesService
+  ) {}
+
+  updateSearchField(event: KeyboardEvent) {
+    const inputValue = (event.target as HTMLInputElement).value
+    this.searchParams.q = inputValue
+    this.logger.log(inputValue)
+    this.lookup()
+  }
+
+  private lookup() {
+    if (this.url) {
+      this.featuresService.rootUrl = this.url
+      this.results = this.featuresService.search$Json(this.searchParams)
+    }
+  }
+
+  selectResult(item: FeatureJsonfg) {
+    //this.logger.log('lookup via link to api: ')
+    //this.logger.log(item)
+    const geoJsonFormat = new GeoJSON()
+
+    // Read the GeoJSON data and create an OpenLayers feature
+    const feature = geoJsonFormat.readFeature(item) //, { featureProjection: 'EPSG:3857'}//
+
+    this.activeFeature.emit(feature)
+    //if (item.links![0].href) {
+    // this.selectedResultUrl = item.links![0].href as string
+    //e.g: this.selectedResultUrl =
+    //  'https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/80f96ef7-dfa4-5197-b681-cfd92b10757e'
+    //}
+  }
+  getHighLight(r: { properties: unknown }): string {
+    return this.getProperty(r, 'highlight')
+  }
+
+  getDisplayname(r: { properties: unknown }): string {
+    return this.getProperty(r, 'displayName')
+  }
+
+  getProperty(r: { properties: unknown }, propertyName: string): string {
+    const p = r.properties as { [key: string]: unknown }
+
+    if (p[propertyName]) {
+      return p[propertyName] as string
+    } else {
+      return ''
+    }
+  }
+
+  paramChanged(event: Search$Json$Params) {
+    this.logger.log('paramchanged:')
+    this.logger.log(JSON.stringify(event))
+    this.searchParams = event
+    this.lookup()
+  }
+
+  getResults(f: FeatureCollectionJsonfg | null): FeatureJsonfg[] {
+    if (f) {
+      return f?.features
+    } else {
+      return []
+    }
+  }
+}

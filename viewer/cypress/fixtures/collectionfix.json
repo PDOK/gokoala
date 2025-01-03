@@ -1,0 +1,133 @@
+{
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "This document as JSON",
+      "href": "https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod/collections?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "This document as HTML",
+      "href": "https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod/collections?f=html"
+    },
+    {
+      "rel": "license",
+      "type": "text/html",
+      "title": "CC0 1.0",
+      "href": "http://creativecommons.org/publicdomain/zero/1.0/deed.nl"
+    }
+  ],
+  "collections": [
+    {
+      "id": "functioneel_gebied",
+      "title": "functioneel_gebied",
+      "version": 1,
+      "displayNameTemplate": "{{.typefunctioneelgebied | firstupper}} {{.naamnl}}",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "functioneel_gebied_multivlak",
+          "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/functioneel_gebied_multivlak"
+        },
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "functioneel_gebied_punt",
+          "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/functioneel_gebied_punt"
+        },
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "functioneel_gebied_vlak",
+          "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/functioneel_gebied_vlak"
+        }
+      ]
+    },
+    {
+      "id": "geografisch_gebied",
+      "title": "geografisch_gebied",
+      "version": 1,
+      "displayNameTemplate": "{{.typegeografischgebied | firstupper}} {{.naamnl}}",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "geografisch_gebied_multivlak",
+          "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/geografisch_gebied_multivlak"
+        },
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "geografisch_gebied_punt",
+          "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/geografisch_gebied_punt"
+        },
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "geografisch_gebied_vlak",
+          "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/geografisch_gebied_vlak"
+        }
+      ]
+    },
+    {
+      "id": "ligplaats",
+      "title": "ligplaats",
+      "version": 1,
+      "displayNameTemplate": "{{.openbare_ruimte_naam}} {{.huisnummer}}{{.huisletter}}, {{.postcode}} {{.woonplaats_naam}} ({{.bronhouder_naam}})",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "ligplaats",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/ligplaats"
+        }
+      ]
+    },
+    {
+      "id": "standplaats",
+      "title": "standplaats",
+      "version": 1,
+      "displayNameTemplate": "{{.openbare_ruimte_naam}} {{.huisnummer}}{{.huisletter}}, {{.postcode}} {{.woonplaats_naam}} ({{.bronhouder_naam}})",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "standplaats",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/standplaats"
+        }
+      ]
+    },
+    {
+      "id": "verblijfsobject",
+      "title": "verblijfsobject",
+      "version": 1,
+      "displayNameTemplate": "{{.openbare_ruimte_naam}} {{.huisnummer}}{{.huisletter}}, {{.postcode}} {{.woonplaats_naam}} ({{.bronhouder_naam}})",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "verblijfsobject",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject"
+        }
+      ]
+    },
+    {
+      "id": "woonplaats",
+      "title": "woonplaats",
+      "version": 1,
+      "displayNameTemplate": "{{.woonplaats}} ({{.bronhouder_naam}})",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "woonplaats",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/woonplaats"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 6
+}
