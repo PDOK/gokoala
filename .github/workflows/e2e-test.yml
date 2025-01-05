@@ -6,7 +6,7 @@ jobs:
   end-to-end-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Build a local test image for (potential) re-use across end-to-end tests
       - name: Set up Docker Buildx
