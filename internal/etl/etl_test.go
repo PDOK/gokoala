@@ -37,14 +37,38 @@ func TestCreateSearchIndex(t *testing.T) {
 		t.Error(err)
 	}
 	defer terminateContainer(ctx, t, postgisContainer)
-
-	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
+	dbConn := makeDbConnection(dbPort)
 
 	// when/then
 	err = CreateSearchIndex(dbConn, "search_index")
 	assert.NoError(t, err)
 	err = insertTestData(ctx, dbConn)
 	assert.NoError(t, err)
+}
+
+func TestCreateSearchIndexIdempotent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+	ctx := context.Background()
+
+	// given
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	// when/then
+	err = CreateSearchIndex(dbConn, "search_index")
+	assert.NoError(t, err)
+	err = CreateSearchIndex(dbConn, "search_index") // second time, should not fail
+	assert.NoError(t, err)
+}
+
+func makeDbConnection(dbPort nat.Port) string {
+	return fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 }
 
 func TestImportGeoPackage(t *testing.T) {
@@ -75,9 +99,7 @@ func TestImportGeoPackage(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		defer terminateContainer(ctx, t, postgisContainer)
-
-		dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
+		dbConn := makeDbConnection(dbPort)
 
 		cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
 		if err != nil {
@@ -105,9 +127,11 @@ func TestImportGeoPackage(t *testing.T) {
 		assert.NoError(t, err)
 		var count int
 		err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&count)
-		defer db.Close(ctx)
+		db.Close(ctx)
 		assert.NoError(t, err)
 		assert.Equal(t, tt.count, count)
+
+		terminateContainer(ctx, t, postgisContainer)
 	}
 }
 

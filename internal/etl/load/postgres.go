@@ -49,7 +49,14 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 
 // Init initialize search index
 func (p *Postgres) Init(index string) error {
-	geometryType := `create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');`
+	// since "create type if not exists" isn't supported by Postgres we use a bit
+	// of pl/pgsql to avoid creating the geometry_type when it already exists.
+	geometryType := `
+		do $$ begin
+		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
+		exception
+		    when duplicate_object then null;
+		end $$;`
 	_, err := p.db.Exec(p.ctx, geometryType)
 	if err != nil {
 		return fmt.Errorf("error creating geometry type: %w", err)
@@ -73,14 +80,14 @@ func (p *Postgres) Init(index string) error {
 	}
 
 	fullTextSearchColumn := fmt.Sprintf(`
-		alter table %[1]s add column ts tsvector 
+		alter table %[1]s add column if not exists ts tsvector 
 	    generated always as (to_tsvector('dutch', suggest || display_name )) stored;`, index)
 	_, err = p.db.Exec(p.ctx, fullTextSearchColumn)
 	if err != nil {
 		return fmt.Errorf("error creating full-text search column: %w", err)
 	}
 
-	ginIndex := fmt.Sprintf(`create index ts_idx on  %[1]s using gin(ts);`, index)
+	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on  %[1]s using gin(ts);`, index)
 	_, err = p.db.Exec(p.ctx, ginIndex)
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)
