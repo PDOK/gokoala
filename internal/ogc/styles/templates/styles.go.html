@@ -99,13 +99,13 @@
       const selectedProjection = value.proj;
       const urlHref = document.getElementById('href-url');
       const metadataHref = document.getElementById('href-metadata');
-      urlHref.textContent = '{{ $baseUrl }}/styles/' + selectedStyle;
-      urlHref.setAttribute('href', 'styles/' + selectedStyle);
-      metadataHref.setAttribute('href', 'styles/' + selectedStyle + '/metadata');
+      urlHref.textContent = '{{ $baseUrl }}/styles/' + encodeURIComponent(selectedStyle);
+      urlHref.setAttribute('href', 'styles/' + encodeURIComponent(selectedStyle));
+      metadataHref.setAttribute('href', 'styles/' + encodeURIComponent(selectedStyle) + '/metadata');
       // update style-url in app-vectortile-view
       const viewer = document.getElementById('styles-vectortile-view')
-      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + selectedProjection)
-      viewer.setAttribute('style-url', '{{ $baseUrl }}/styles/' + selectedStyle + '?f=mapbox')
+      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + encodeURIComponent(selectedProjection))
+      viewer.setAttribute('style-url', '{{ $baseUrl }}/styles/' + encodeURIComponent(selectedStyle) + '?f=mapbox')
     }, false);
   </script>
   <noscript>Enable Javascript to display vector tiles viewer</noscript>
