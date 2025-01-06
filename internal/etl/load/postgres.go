@@ -50,7 +50,7 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 // Init initialize search index
 func (p *Postgres) Init(index string) error {
 	// since "create type if not exists" isn't supported by Postgres we use a bit
-	// of pl/pgsql to avoid to creating the geometry_type when it already exists.
+	// of pl/pgsql to avoid creating the geometry_type when it already exists.
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
