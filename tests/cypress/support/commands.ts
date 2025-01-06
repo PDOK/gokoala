@@ -49,8 +49,12 @@ declare global {
 Cypress.Commands.add('checkForBrokenLinks', () =>{
   cy.get('a').each(link => {
     const href = link.prop('href')
-    if (href && !href.includes('example.com') && !href.includes('europa.eu')) {
-      cy.request(href)
+    if (href) {
+      const host = new URL(href).host;
+      const allowedHosts = ['example.com', 'europa.eu'];
+      if (!allowedHosts.includes(host)) {
+        cy.request(href)
+      }
     }
   })
 })
