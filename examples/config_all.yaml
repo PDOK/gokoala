@@ -102,12 +102,11 @@ ogcApi:
         tableName: addresses
 
   3dgeovolumes:
-    tileServer: https://maps.ecere.com/3DAPI/collections/
+    tileServer: https://api.pdok.nl/kadaster/3d-basisvoorziening/ogc/v1/collections
     collections:
       - id: addresses  # same collection as the tiles/features
-        metadata: *addressMetadata
-        tileServerPath: "NewYork/3DTiles"
-        uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+        tileServerPath: "gebouwen"
+        uriTemplate3dTiles: "t/{level}/{x}/{y}.glb"
 
   styles:
     default: dummy-style
