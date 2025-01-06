@@ -320,7 +320,7 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 }
 
 type TestEmbeddedGeoSpatialCollection struct {
-	C GeoSpatialCollection `json:"C"`
+	C GeoSpatialCollection `json:"c"`
 }
 
 func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {

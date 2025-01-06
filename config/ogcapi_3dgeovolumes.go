@@ -32,7 +32,7 @@ type CollectionEntry3dGeoVolumes struct {
 
 	// URI template for digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM.
 	// +optional
-	URITemplateDTM *string `yaml:"uriTemplateDTM,omitempty" json:"uriTemplateDTM,omitempty" validate:"required_without_all=URITemplate3dTiles"`
+	URITemplateDTM *string `yaml:"uriTemplateDTM,omitempty" json:"uriTemplateDTM,omitempty" validate:"required_without_all=URITemplate3dTiles"` //nolint:tagliatelle // grandfathered
 
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
 	// +optional
