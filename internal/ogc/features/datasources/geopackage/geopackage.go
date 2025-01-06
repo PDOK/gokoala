@@ -18,14 +18,13 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-spatial/geom"
+	"github.com/go-spatial/geom/cmp"
 	"github.com/go-spatial/geom/encoding/gpkg"
 	"github.com/go-spatial/geom/encoding/wkt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/qustavo/sqlhooks/v2"
-
-	_ "github.com/mattn/go-sqlite3" // import for side effect (= sqlite3 driver) only
 )
 
 const (
@@ -47,6 +46,7 @@ func loadDriver() {
 	})
 }
 
+// geoPackageBackend abstraction over different kinds of GeoPackages, e.g. local file or cloud-backed sqlite.
 type geoPackageBackend interface {
 	getDB() *sqlx.DB
 	close()
@@ -447,11 +447,14 @@ func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProp
 }
 
 func mapGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
-	geometry, err := gpkg.DecodeGeometry(rawGeom)
+	geomWithMetadata, err := gpkg.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err
 	}
-	return geometry.Geometry, nil
+	if geomWithMetadata == nil || cmp.IsEmptyGeo(geomWithMetadata.Geometry) {
+		return nil, nil
+	}
+	return geomWithMetadata.Geometry, nil
 }
 
 func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[string]any) {

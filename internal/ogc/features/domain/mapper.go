@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
-
 	"github.com/go-spatial/geom"
 	"github.com/go-spatial/geom/encoding/geojson"
 	"github.com/jmoiron/sqlx"
@@ -109,7 +108,9 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			if err != nil {
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
-			feature.Geometry = geojson.Geometry{Geometry: mappedGeom}
+			if mappedGeom != nil {
+				feature.Geometry = geojson.Geometry{Geometry: mappedGeom}
+			}
 
 		case "minx", "miny", "maxx", "maxy", "min_zoom", "max_zoom":
 			// Skip these columns used for bounding box and zoom filtering

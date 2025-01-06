@@ -46,12 +46,27 @@ func TestNewConfig(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "fail on invalid config file",
+			name: "fail on invalid config file with wrong version number",
 			args: args{
 				configFile: "internal/engine/testdata/config_invalid.yaml",
 			},
 			wantErr:    true,
 			wantErrMsg: "validation for 'Version' failed on the 'semver' tag",
+		},
+		{
+			name: "fail on invalid config file with wrong collection IDs",
+			args: args{
+				configFile: "internal/engine/testdata/config_invalid_collection_ids.yaml",
+			},
+			wantErr:    true,
+			wantErrMsg: "Field validation for 'ID' failed on the 'lowercase_id' tag",
+		},
+		{
+			name: "read config file with valid collection IDs",
+			args: args{
+				configFile: "internal/engine/testdata/config_valid_collection_ids.yaml",
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -81,28 +96,28 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 			name: "should return collections in default order (alphabetic)",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_order_alphabetic.yaml",
-				expectedOrder: []string{"A", "B", "C", "Z", "Z"},
+				expectedOrder: []string{"a", "b", "c", "z", "z"},
 			},
 		},
 		{
 			name: "should return collections in default order (alphabetic) - by title",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_order_alphabetic_titles.yaml",
-				expectedOrder: []string{"B", "C", "Z", "Z", "A"},
+				expectedOrder: []string{"b", "c", "z", "z", "a"},
 			},
 		},
 		{
 			name: "should return collections in default order (alphabetic) - extra test",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_unique.yaml",
-				expectedOrder: []string{"BarCollection", "FooCollection", "FooCollection"},
+				expectedOrder: []string{"bar_collection", "foo_collection", "foo_collection"},
 			},
 		},
 		{
 			name: "should return collections in explicit / literal order",
 			args: args{
 				configFile:    "internal/engine/testdata/config_collections_order_literal.yaml",
-				expectedOrder: []string{"Z", "Z", "C", "A", "B"},
+				expectedOrder: []string{"z", "z", "c", "a", "b"},
 			},
 		},
 		{
@@ -305,7 +320,7 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 }
 
 type TestEmbeddedGeoSpatialCollection struct {
-	C GeoSpatialCollection `json:"C"`
+	C GeoSpatialCollection `json:"c"`
 }
 
 func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {

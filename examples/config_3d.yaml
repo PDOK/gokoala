@@ -1,6 +1,6 @@
 ---
 version: 1.0.0
-title: New York in 3D
+title: Example 3D
 # shortened title, used in breadcrumb path
 serviceIdentifier: 3D
 abstract: >-
@@ -23,16 +23,7 @@ availableLanguages:
   - en
 ogcApi:
   3dgeovolumes:
-    tileServer: https://maps.ecere.com/3DAPI/collections/
+    tileServer: https://api.pdok.nl/kadaster/3d-basisvoorziening/ogc/v1/collections
     collections:
-      - id: NewYork
-        # optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
-        tileServerPath: "NewYork/3DTiles"
-        # URI template for individual 3D tiles
-        uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
-
-        # optional URI template for subtrees, only required when "implicit tiling" extension is used
-        # uriTemplateImplicitTilingSubtree: ""
-
-        # URI template for digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM
-        # uriTemplateDTM: ""
+      - id: gebouwen
+        uriTemplate3dTiles: "t/{level}/{x}/{y}.glb"

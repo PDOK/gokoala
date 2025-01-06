@@ -10,7 +10,7 @@ import (
 )
 
 type TestEmbeddedDuration struct {
-	D Duration `json:"D" yaml:"D"`
+	D Duration `json:"d" yaml:"d"`
 }
 
 func TestDuration_DeepCopy(t *testing.T) {
@@ -77,7 +77,7 @@ func TestDuration_Marshalling_JSON(t *testing.T) {
 
 			// non-pointer
 			unmarshalledEmbedded := &TestEmbeddedDuration{}
-			err = yaml.Unmarshal([]byte(`{"D": `+tt.want+`}`), unmarshalledEmbedded)
+			err = yaml.Unmarshal([]byte(`{"d": `+tt.want+`}`), unmarshalledEmbedded)
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}

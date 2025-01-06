@@ -1,6 +1,6 @@
 {
-  "id": "NewYork",
-  "title": "NewYork",
+  "id": "newyork",
+  "title": "newyork",
   "description": "This is a description about the NewYork collection in Markdown. We offer both 3D Tiles and Features for this collection.",
   "keywords": [
     {
@@ -44,52 +44,52 @@
       "type": "application/json",
       "title": "This document as JSON",
       "updated": "2023-05-10T12:00:00Z",
-      "href": "http://localhost:8180/collections/NewYork?f=json"
+      "href": "http://localhost:8180/collections/newyork?f=json"
     },
     {
       "rel": "alternate",
       "type": "text/html",
       "title": "This document as HTML",
       "updated": "2023-05-10T12:00:00Z",
-      "href": "http://localhost:8180/collections/NewYork?f=html"
+      "href": "http://localhost:8180/collections/newyork?f=html"
     },
     {
       "rel": "preview",
       "type": "image/png",
-      "title": "Thumbnail for NewYork",
+      "title": "Thumbnail for newyork",
       "href": "http://localhost:8180/resources/3d.png"
     },
     {
       "rel": "items",
       "type": "application/json+3dtiles",
-      "title": "Tileset definition of collection NewYork according to the OGC 3D Tiles specification",
-      "href": "http://localhost:8180/collections/NewYork/3dtiles?f=json"
+      "title": "Tileset definition of collection newyork according to the OGC 3D Tiles specification",
+      "href": "http://localhost:8180/collections/newyork/3dtiles?f=json"
     },
     {
       "rel": "items",
       "type": "application/geo+json",
-      "title": "The JSON representation of the NewYork features served from this endpoint",
-      "href": "http://localhost:8180/collections/NewYork/items?f=json"
+      "title": "The JSON representation of the newyork features served from this endpoint",
+      "href": "http://localhost:8180/collections/newyork/items?f=json"
     },
     {
       "rel": "items",
       "type": "application/vnd.ogc.fg+json",
-      "title": "The JSON-FG representation of the NewYork features served from this endpoint",
-      "href": "http://localhost:8180/collections/NewYork/items?f=jsonfg"
+      "title": "The JSON-FG representation of the newyork features served from this endpoint",
+      "href": "http://localhost:8180/collections/newyork/items?f=jsonfg"
     },
     {
       "rel": "items",
       "type": "text/html",
-      "title": "The HTML representation of the NewYork features served from this endpoint",
-      "href": "http://localhost:8180/collections/NewYork/items?f=html"
+      "title": "The HTML representation of the newyork features served from this endpoint",
+      "href": "http://localhost:8180/collections/newyork/items?f=html"
     }
   ],
   "content": [
     {
       "rel": "original",
       "type": "application/json+3dtiles",
-      "title": "Tileset definition of collection NewYork according to the OGC 3D Tiles specification",
-      "href": "http://localhost:8180/collections/NewYork/3dtiles?f=json",
+      "title": "Tileset definition of collection newyork according to the OGC 3D Tiles specification",
+      "href": "http://localhost:8180/collections/newyork/3dtiles?f=json",
       "collectionType": "3d-container"
     }
   ]
