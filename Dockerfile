@@ -41,7 +41,7 @@ FROM docker.io/debian:bookworm-slim
 # install sqlite-related runtime dependencies
 RUN set -eux && \
     apt-get update && \
-    apt-get install --no-install-recommends -y libcurl4=* curl=* openssl=* libsqlite3-mod-spatialite=* && \
+    apt-get install --no-install-recommends -y libcurl4=* curl=* openssl=* ca-certificates=* libsqlite3-mod-spatialite=* && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080
