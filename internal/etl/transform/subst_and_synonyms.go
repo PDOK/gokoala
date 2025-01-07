@@ -2,6 +2,7 @@ package transform
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -9,38 +10,45 @@ import (
 	"github.com/PDOK/gomagpie/internal/engine/util"
 )
 
-func extendFieldValues(fieldValuesByName map[string]string, substitutionsFile, synonymsFile string) ([]map[string]string, error) {
-	substitutions, err := readCsvFile(substitutionsFile)
-	if err != nil {
-		return nil, err
-	}
-	synonyms, err := readCsvFile(synonymsFile)
-	if err != nil {
-		return nil, err
-	}
+type SubstAndSynonyms struct {
+	substitutions   map[string]string
+	synonyms        map[string]string
+	synonymsInverse map[string]string
+}
 
+func NewSubstAndSynonyms(substitutionsFile, synonymsFile string) (*SubstAndSynonyms, error) {
+	substitutions, substErr := readCsvFile(substitutionsFile)
+	synonyms, synErr := readCsvFile(synonymsFile)
+	return &SubstAndSynonyms{
+		substitutions:   substitutions,
+		synonyms:        synonyms,
+		synonymsInverse: util.Inverse(synonyms),
+	}, errors.Join(substErr, synErr)
+}
+
+func (s SubstAndSynonyms) generate(fieldValuesByName map[string]string) []map[string]string {
 	var fieldValuesByNameWithAllValues = make(map[string][]string)
 	for key, value := range fieldValuesByName {
 		valueLower := strings.ToLower(value)
 		// Get all substitutions
-		substitutedValues := extendValues([]string{valueLower}, substitutions)
+		substitutedValues := extendValues([]string{valueLower}, s.substitutions)
 		// Get all synonyms for these substituted values
 		// -> one way
-		synonymsValuesOneWay := extendValues(substitutedValues, synonyms)
+		synonymsValuesOneWay := extendValues(substitutedValues, s.synonyms)
 		// <- reverse way
-		allValues := extendValues(synonymsValuesOneWay, util.Inverse(synonyms))
+		allValues := extendValues(synonymsValuesOneWay, s.synonymsInverse)
 		// Create map with for each key a slice of []values
 		fieldValuesByNameWithAllValues[key] = allValues
 	}
-	return generateAllFieldValuesByName(fieldValuesByNameWithAllValues), err
+	return generateAllCombinations(fieldValuesByNameWithAllValues)
 }
 
 // Transform a map[string][]string into a []map[string]string using the cartesian product, i.e.
 // - both maps have the same keys
 // - values exist for all possible combinations
-func generateAllFieldValuesByName(input map[string][]string) []map[string]string {
-	keys := []string{}
-	values := [][]string{}
+func generateAllCombinations(input map[string][]string) []map[string]string {
+	var keys []string
+	var values [][]string
 
 	for key, vals := range input {
 		keys = append(keys, key)
@@ -122,8 +130,6 @@ func uniqueSlice(s []string) []string {
 }
 
 func readCsvFile(filepath string) (map[string]string, error) {
-	substitutions := make(map[string]string)
-
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
@@ -136,8 +142,9 @@ func readCsvFile(filepath string) (map[string]string, error) {
 		return nil, fmt.Errorf("failed to parse CSV file: %w", err)
 	}
 
+	result := make(map[string]string)
 	for _, row := range records {
-		substitutions[row[0]] = row[1]
+		result[row[0]] = row[1]
 	}
-	return substitutions, nil
+	return result, nil
 }
