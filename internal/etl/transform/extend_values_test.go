@@ -64,23 +64,19 @@ func Test_extendValues(t *testing.T) {
 		mapping map[string]string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    []string
-		wantErr assert.ErrorAssertionFunc
+		name string
+		args args
+		want []string
 	}{
-		{"No mapping", args{input: []string{"foobar"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar"}, assert.NoError},
-		{"Single mapping", args{input: []string{"foobar eerste"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste", "foobar 1ste"}, assert.NoError},
-		{"Two different mappings", args{input: []string{"foobar eerste tweede"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste tweede", "foobar 1ste tweede", "foobar eerste 2de", "foobar 1ste 2de"}, assert.NoError},
-		{"Two similar mappings", args{input: []string{"foobar eerste eerste"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste eerste", "foobar 1ste eerste", "foobar eerste 1ste", "foobar 1ste 1ste"}, assert.NoError},
-		{"Three from same mapping", args{input: []string{"naer achtaertune kaerel"}, mapping: map[string]string{"ae": "a", "à": "a"}}, []string{"naer achtaertune kaerel", "naer achtartune kaerel", "nar achtartune kaerel", "nar achtaertune kaerel", "naer achtaertune karel", "naer achtartune karel", "nar achtartune karel", "nar achtaertune karel"}, assert.NoError},
+		{"No mapping", args{input: []string{"foobar"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar"}},
+		{"Single mapping", args{input: []string{"foobar eerste"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste", "foobar 1ste"}},
+		{"Two different mappings", args{input: []string{"foobar eerste tweede"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste tweede", "foobar 1ste tweede", "foobar eerste 2de", "foobar 1ste 2de"}},
+		{"Two similar mappings", args{input: []string{"foobar eerste eerste"}, mapping: map[string]string{"eerste": "1ste", "tweede": "2de", "fryslân": "friesland"}}, []string{"foobar eerste eerste", "foobar 1ste eerste", "foobar eerste 1ste", "foobar 1ste 1ste"}},
+		{"Three from same mapping", args{input: []string{"naer achtaertune kaerel"}, mapping: map[string]string{"ae": "a", "à": "a"}}, []string{"naer achtaertune kaerel", "naer achtartune kaerel", "nar achtartune kaerel", "nar achtaertune kaerel", "naer achtaertune karel", "naer achtartune karel", "nar achtartune karel", "nar achtaertune karel"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := extendValues(tt.args.input, tt.args.mapping)
-			if !tt.wantErr(t, err, fmt.Sprintf("extendValues(%v, %v)", tt.args.input, tt.args.mapping)) {
-				return
-			}
+			got := extendValues(tt.args.input, tt.args.mapping)
 			assert.ElementsMatch(t, tt.want, got, "extendValues(%v, %v)", tt.args.input, tt.args.mapping)
 		})
 	}
@@ -94,20 +90,16 @@ func Test_replaceNth(t *testing.T) {
 		nthIndex int
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr assert.ErrorAssertionFunc
+		name string
+		args args
+		want string
 	}{
-		{"Replace 1st only", args{"naer achtaertune kaerel", "ae", "a", 1}, "nar achtaertune kaerel", assert.NoError},
-		{"Replace 2nd only", args{"naer achtaertune kaerel", "ae", "a", 2}, "naer achtartune kaerel", assert.NoError},
+		{"Replace 1st only", args{"naer achtaertune kaerel", "ae", "a", 1}, "nar achtaertune kaerel"},
+		{"Replace 2nd only", args{"naer achtaertune kaerel", "ae", "a", 2}, "naer achtartune kaerel"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := replaceNth(tt.args.input, tt.args.oldChar, tt.args.newChar, tt.args.nthIndex)
-			if !tt.wantErr(t, err, fmt.Sprintf("replaceNth(%v, %v, %v, %v)", tt.args.input, tt.args.oldChar, tt.args.newChar, tt.args.nthIndex)) {
-				return
-			}
+			got := replaceNth(tt.args.input, tt.args.oldChar, tt.args.newChar, tt.args.nthIndex)
 			assert.Equalf(t, tt.want, got, "replaceNth(%v, %v, %v, %v)", tt.args.input, tt.args.oldChar, tt.args.newChar, tt.args.nthIndex)
 		})
 	}

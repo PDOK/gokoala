@@ -2,13 +2,13 @@ package transform
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/PDOK/gomagpie/internal/engine/util"
 )
 
-// Return slice of fieldValuesByName
 func extendFieldValues(fieldValuesByName map[string]string, substitutionsFile, synonymsFile string) ([]map[string]string, error) {
 	substitutions, err := readCsvFile(substitutionsFile)
 	if err != nil {
@@ -22,24 +22,13 @@ func extendFieldValues(fieldValuesByName map[string]string, substitutionsFile, s
 	var fieldValuesByNameWithAllValues = make(map[string][]string)
 	for key, value := range fieldValuesByName {
 		valueLower := strings.ToLower(value)
-
 		// Get all substitutions
-		substitutedValues, err := extendValues([]string{valueLower}, substitutions)
-		if err != nil {
-			return nil, err
-		}
+		substitutedValues := extendValues([]string{valueLower}, substitutions)
 		// Get all synonyms for these substituted values
-		// one way
-		synonymsValuesOneWay, err := extendValues(substitutedValues, synonyms)
-		if err != nil {
-			return nil, err
-		}
-		// reverse way
-		allValues, err := extendValues(synonymsValuesOneWay, util.Inverse(synonyms))
-		if err != nil {
-			return nil, err
-		}
-
+		// -> one way
+		synonymsValuesOneWay := extendValues(substitutedValues, synonyms)
+		// <- reverse way
+		allValues := extendValues(synonymsValuesOneWay, util.Inverse(synonyms))
 		// Create map with for each key a slice of []values
 		fieldValuesByNameWithAllValues[key] = allValues
 	}
@@ -83,7 +72,7 @@ func generateCombinations(keys []string, values [][]string) []map[string]string 
 	return result
 }
 
-func extendValues(input []string, mapping map[string]string) ([]string, error) {
+func extendValues(input []string, mapping map[string]string) []string {
 	var results []string
 	results = append(results, input...)
 
@@ -91,24 +80,18 @@ func extendValues(input []string, mapping map[string]string) ([]string, error) {
 		for oldChar, newChar := range mapping {
 			if strings.Contains(input[j], oldChar) {
 				for i := 0; i < strings.Count(input[j], oldChar); i++ {
-					extendedInput, err := replaceNth(input[j], oldChar, newChar, i+1)
-					if err != nil {
-						return nil, err
-					}
-					subCombinations, err := extendValues([]string{extendedInput}, mapping)
-					if err != nil {
-						return nil, err
-					}
+					extendedInput := replaceNth(input[j], oldChar, newChar, i+1)
+					subCombinations := extendValues([]string{extendedInput}, mapping)
 					results = append(results, subCombinations...)
 				}
 			}
 		}
 	}
 	// Possible performance improvement here by avoiding duplicates in the first place
-	return uniqueSlice(results), nil
+	return uniqueSlice(results)
 }
 
-func replaceNth(input, oldChar, newChar string, nthIndex int) (string, error) {
+func replaceNth(input, oldChar, newChar string, nthIndex int) string {
 	count := 0
 	result := strings.Builder{}
 
@@ -121,12 +104,9 @@ func replaceNth(input, oldChar, newChar string, nthIndex int) (string, error) {
 				continue
 			}
 		}
-		err := result.WriteByte(input[i])
-		if err != nil {
-			return "", err
-		}
+		result.WriteByte(input[i]) // no need to catch error since "the returned error is always nil"
 	}
-	return result.String(), nil
+	return result.String()
 }
 
 func uniqueSlice(s []string) []string {
@@ -146,18 +126,18 @@ func readCsvFile(filepath string) (map[string]string, error) {
 
 	file, err := os.Open(filepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open CSV file: %w", err)
 	}
 	defer file.Close()
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse CSV file: %w", err)
 	}
 
 	for _, row := range records {
 		substitutions[row[0]] = row[1]
 	}
-	return substitutions, err
+	return substitutions, nil
 }
