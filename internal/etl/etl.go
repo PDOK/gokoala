@@ -81,18 +81,21 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
 		}
-		if len(sourceRecords) == 0 {
+		sourceRecordCount := len(sourceRecords)
+		if sourceRecordCount == 0 {
 			break // no more batches of records to extract
 		}
+		log.Printf("extracted %d source records, starting transform", sourceRecordCount)
 		targetRecords, err := transformer.Transform(sourceRecords, collection, substitutionsFile, synonymsFile)
 		if err != nil {
 			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 		}
+		log.Printf("transform completed, %d source records transformed into %d target records", sourceRecordCount, len(targetRecords))
 		loaded, err := target.Load(targetRecords, searchIndex)
 		if err != nil {
 			return fmt.Errorf("failed loading records into target: %w", err)
 		}
-		log.Printf("imported %d records into search index", loaded)
+		log.Printf("loaded %d records into target search index: '%s'", loaded, searchIndex)
 		offset += pageSize
 	}
 

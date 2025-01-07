@@ -26,11 +26,9 @@ func Test_generateAllFieldValues(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := extendFieldValues(tt.args.fieldValuesByName, tt.args.substitutionsFile, tt.args.synonymsFile)
-			if !tt.wantErr(t, err, fmt.Sprintf("extendFieldValues(%v, %v, %v)", tt.args.fieldValuesByName, tt.args.substitutionsFile, tt.args.synonymsFile)) {
-				return
-			}
-			assert.Equalf(t, tt.want, got, "extendFieldValues(%v, %v, %v)", tt.args.fieldValuesByName, tt.args.substitutionsFile, tt.args.synonymsFile)
+			ss, err := NewSubstAndSynonyms(tt.args.substitutionsFile, tt.args.synonymsFile)
+			assert.NoError(t, err)
+			assert.Equalf(t, tt.want, ss.generate(tt.args.fieldValuesByName), "generate(%v, %v, %v)", tt.args.fieldValuesByName, tt.args.substitutionsFile, tt.args.synonymsFile)
 		})
 	}
 }
@@ -53,7 +51,8 @@ func Test_generateCombinations(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, generateCombinations(tt.args.keys, tt.args.values), "generateCombinations(%v, %v, %v, %v)", tt.args.keys, tt.args.values)
+			got := generateCombinations(tt.args.keys, tt.args.values)
+			assert.Equalf(t, tt.want, got, "generateCombinations(%v, %v)", tt.args.keys, tt.args.values)
 		})
 	}
 }
