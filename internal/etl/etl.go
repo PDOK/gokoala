@@ -52,10 +52,12 @@ func CreateSearchIndex(dbConn string, searchIndex string) error {
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
-func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, substitutionsFile string, synonymsFile string, table config.FeatureTable,
-	pageSize int, dbConn string) error {
+func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, substitutionsFile string,
+	synonymsFile string, table config.FeatureTable, pageSize int, dbConn string) error {
 
-	log.Println("start importing")
+	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
+	log.Printf("start import of %s", details)
+
 	if collection.Search == nil {
 		return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
 	}
@@ -77,6 +79,8 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	// import records in batches depending on page size
 	offset := 0
 	for {
+		log.Println("---")
+		log.Printf("extracting source records from offset %d", offset)
 		sourceRecords, err := source.Extract(table, collection.Search.Fields, collection.Search.ETL.Filter, pageSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
@@ -99,7 +103,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		offset += pageSize
 	}
 
-	log.Println("done importing")
+	log.Printf("completed import of %s", details)
 	return nil
 }
 
