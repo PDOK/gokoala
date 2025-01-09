@@ -33,14 +33,16 @@ type SearchIndexRecord struct {
 	Bbox              *pggeom.Polygon
 }
 
-type Transformer struct{}
+type Transformer struct {
+	substAndSynonyms *SubstAndSynonyms
+}
 
-func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection, substitutionsFile string, synonymsFile string) ([]SearchIndexRecord, error) {
+func NewTransformer(substitutionsFile string, synonymsFile string) (*Transformer, error) {
 	substAndSynonyms, err := NewSubstAndSynonyms(substitutionsFile, synonymsFile)
-	if err != nil {
-		return nil, err
-	}
+	return &Transformer{substAndSynonyms}, err
+}
 
+func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection) ([]SearchIndexRecord, error) {
 	result := make([]SearchIndexRecord, 0, len(records))
 	for _, r := range records {
 		fieldValuesByName, err := slicesToStringMap(collection.Search.Fields, r.FieldValues)
@@ -51,7 +53,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		allFieldValuesByName := substAndSynonyms.generate(fieldValuesByName)
+		allFieldValuesByName := t.substAndSynonyms.generate(fieldValuesByName)
 		suggestions := make([]string, 0, len(collection.Search.ETL.SuggestTemplates))
 		for i := range allFieldValuesByName {
 			for _, suggestTemplate := range collection.Search.ETL.SuggestTemplates {
