@@ -25,7 +25,7 @@ type Extract interface {
 type Transform interface {
 
 	// Transform each raw record in one or more search records depending on the given configuration
-	Transform(records []t.RawRecord, collection config.GeoSpatialCollection, substitutionsFile string, synonymsFile string) ([]t.SearchIndexRecord, error)
+	Transform(records []t.RawRecord, collection config.GeoSpatialCollection) ([]t.SearchIndexRecord, error)
 }
 
 // Load - the 'L' in ETL. Datasource agnostic interface to load data into target database.
@@ -74,7 +74,10 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	}
 	defer target.Close()
 
-	transformer := newTransformer()
+	transformer, err := newTransformer(substitutionsFile, synonymsFile)
+	if err != nil {
+		return err
+	}
 
 	// import records in batches depending on page size
 	offset := 0
@@ -90,7 +93,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 			break // no more batches of records to extract
 		}
 		log.Printf("extracted %d source records, starting transform", sourceRecordCount)
-		targetRecords, err := transformer.Transform(sourceRecords, collection, substitutionsFile, synonymsFile)
+		targetRecords, err := transformer.Transform(sourceRecords, collection)
 		if err != nil {
 			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 		}
@@ -123,6 +126,6 @@ func newTargetToLoad(dbConn string) (Load, error) {
 	return nil, fmt.Errorf("unsupported target database connection: %s", dbConn)
 }
 
-func newTransformer() Transform {
-	return t.Transformer{}
+func newTransformer(substitutionsFile string, synonymsFile string) (Transform, error) {
+	return t.NewTransformer(substitutionsFile, synonymsFile)
 }

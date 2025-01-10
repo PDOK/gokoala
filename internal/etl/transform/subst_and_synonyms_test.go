@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_generateAllFieldValues(t *testing.T) {
+func Test_generate(t *testing.T) {
 	type args struct {
 		fieldValuesByName map[string]string
 		substitutionsFile string
@@ -23,6 +23,7 @@ func Test_generateAllFieldValues(t *testing.T) {
 		{"single synonym record", args{map[string]string{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
 		{"single synonym with capital", args{map[string]string{"component_thoroughfarename": "Eerste", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"component_thoroughfarename": "eerste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
 		{"two-way synonym record", args{map[string]string{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234AB", "component_addressareaname": "bar"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"component_thoroughfarename": "eerste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste 2de", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "eerste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}, {"component_thoroughfarename": "1ste tweede", "component_postaldescriptor": "1234ab", "component_addressareaname": "bar"}}, assert.NoError},
+		{"avoid endless loop for synonyms that contain source value", args{map[string]string{"street": "oude kerkstraat"}, "../testdata/substitutions.csv", "../testdata/synonyms.csv"}, []map[string]string{{"street": "oude kerkstraat"}, {"street": "oud kerkstraat"}}, assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -135,7 +136,7 @@ func Test_readCsvFile(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{"Read substitutions csv", args{"../testdata/substitutions.csv"}, map[string]string{"ae": "a", "à": "a"}, assert.NoError},
-		{"Read synonyms csv", args{"../testdata/synonyms.csv"}, map[string]string{"eerste": "1ste", "fryslân": "friesland", "tweede": "2de"}, assert.NoError},
+		{"Read synonyms csv", args{"../testdata/synonyms.csv"}, map[string]string{"eerste": "1ste", "fryslân": "friesland", "oud": "oude", "tweede": "2de"}, assert.NoError},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

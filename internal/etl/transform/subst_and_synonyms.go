@@ -40,7 +40,8 @@ func (s SubstAndSynonyms) generate(fieldValuesByName map[string]string) []map[st
 		// Create map with for each key a slice of []values
 		fieldValuesByNameWithAllValues[key] = allValues
 	}
-	return generateAllCombinations(fieldValuesByNameWithAllValues)
+	combinations := generateAllCombinations(fieldValuesByNameWithAllValues)
+	return combinations
 }
 
 // Transform a map[string][]string into a []map[string]string using the cartesian product, i.e.
@@ -82,19 +83,31 @@ func generateCombinations(keys []string, values [][]string) []map[string]string 
 
 func extendValues(input []string, mapping map[string]string) []string {
 	var results []string
-	results = append(results, input...)
 
-	for j := range input {
+	for len(input) > 0 {
+		// Pop the first element from the input slice
+		current := input[0]
+		input = input[1:]
+
+		// Add the current string to the results
+		results = append(results, current)
+
+		// Generate new strings based on the mapping
 		for oldChar, newChar := range mapping {
-			if strings.Contains(input[j], oldChar) {
-				for i := 0; i < strings.Count(input[j], oldChar); i++ {
-					extendedInput := replaceNth(input[j], oldChar, newChar, i+1)
-					subCombinations := extendValues([]string{extendedInput}, mapping)
-					results = append(results, subCombinations...)
+			if strings.Contains(current, oldChar) {
+				for i := 0; i < strings.Count(current, oldChar); i++ {
+					if strings.HasPrefix(newChar, oldChar) {
+						// skip to prevent endless loop for cases such as
+						// oldChar = "foo", newChar = "foos" and input = "foosball", which would otherwise result in "foosssssssssssssssball"
+						continue
+					}
+					extendedInput := replaceNth(current, oldChar, newChar, i+1)
+					input = append(input, extendedInput)
 				}
 			}
 		}
 	}
+
 	// Possible performance improvement here by avoiding duplicates in the first place
 	return uniqueSlice(results)
 }
