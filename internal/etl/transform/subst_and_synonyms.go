@@ -96,6 +96,11 @@ func extendValues(input []string, mapping map[string]string) []string {
 		for oldChar, newChar := range mapping {
 			if strings.Contains(current, oldChar) {
 				for i := 0; i < strings.Count(current, oldChar); i++ {
+					if strings.HasPrefix(newChar, oldChar) {
+						// skip to prevent endless loop for cases such as
+						// oldChar = "foo", newChar = "foos" and input = "foosball", which would otherwise result in "foosssssssssssssssball"
+						continue
+					}
 					extendedInput := replaceNth(current, oldChar, newChar, i+1)
 					input = append(input, extendedInput)
 				}
@@ -113,11 +118,6 @@ func replaceNth(input, oldChar, newChar string, nthIndex int) string {
 
 	for i := 0; i < len(input); i++ {
 		if strings.HasPrefix(input[i:], oldChar) {
-			if strings.HasPrefix(newChar, oldChar) {
-				// skip to prevent endless loop (in calling function) for cases such as
-				// oldChar = "foo", newChar = "foos" and input = "foosball", which would otherwise result in "foosssssssssssssssball"
-				continue
-			}
 			count++
 			if count == nthIndex {
 				result.WriteString(newChar)
