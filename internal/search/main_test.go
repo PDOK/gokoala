@@ -143,7 +143,7 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search: 'Den' in another collection in RD",
+			name: "Search: 'Den' in another collection in WGS84",
 			fields: fields{
 				url: "http://localhost:8080/search?q=\"Den\"&buildings[version]=1&limit=10&f=json",
 			},
