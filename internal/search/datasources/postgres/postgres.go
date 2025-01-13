@@ -75,7 +75,7 @@ func makeSearchQuery(index string, srid d.SRID) string {
 	// language=postgresql
 	query := fmt.Sprintf(`
 	with query as (
-		select to_tsquery('dutch', $2) query
+		select to_tsquery('simple', $2) query
 	)
 	select 	r.display_name as display_name, 
 			max(r.feature_id) as feature_id,
@@ -88,7 +88,7 @@ func makeSearchQuery(index string, srid d.SRID) string {
 	from (
 		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
 				ts_rank_cd(ts, (select query from query), 1) as rank,
-				ts_headline('dutch', display_name, (select query from query)) as highlighted_text
+				ts_headline('simple', display_name, (select query from query)) as highlighted_text
 		from %[1]s
 		where ts @@ (select query from query) and (collection_id, collection_version) in (
 		    -- make a virtual table by creating tuples from the provided arrays.
