@@ -81,7 +81,7 @@ func (p *Postgres) Init(index string) error {
 
 	fullTextSearchColumn := fmt.Sprintf(`
 		alter table %[1]s add column if not exists ts tsvector 
-	    generated always as (to_tsvector('dutch', suggest || display_name )) stored;`, index)
+	    generated always as (to_tsvector('dutch', suggest)) stored;`, index)
 	_, err = p.db.Exec(p.ctx, fullTextSearchColumn)
 	if err != nil {
 		return fmt.Errorf("error creating full-text search column: %w", err)
