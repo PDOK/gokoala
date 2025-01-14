@@ -355,7 +355,7 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 			projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
 				{
 					Name: projection,
-					Path: path,
+					Path: tilesLocalPath + projection,
 				},
 			}...)
 		}
