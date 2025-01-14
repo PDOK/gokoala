@@ -20,9 +20,12 @@
       aria-label="Location Search"></app-location-search>
 
     <div>
-        <app-objectinfo-view id="objectinfooutside"> </app-objectinfo-view>
-      </div>
+      <app-objectinfo-view id="objectinfooutside"> </app-objectinfo-view>
+    </div>
 
+    <H3>Used search url</H3>
+
+    <a id="search-url" href=""></a>
   </body>
   <script type="text/javascript">
     function load() {
@@ -30,6 +33,13 @@
         console.log('activeFeature')
         console.log(JSON.stringify(e.detail))
         objectinfooutside.feature = e.detail
+      })
+
+      locationsearch.addEventListener('activeSearchUrl', u => {
+        console.log(JSON.stringify(u.detail))
+        document.getElementById('search-url').innerHTML = u.detail
+        document.getElementById('search-url').href = u.detail + '&f=json'
+        // history.replaceState(null, '', u.detail)
       })
     }
   </script>

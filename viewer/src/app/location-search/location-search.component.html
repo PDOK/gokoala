@@ -11,15 +11,14 @@
     [placeholder]="placeholder"
     [title]="title"
     list="locatie-auto-complete"
-    aria-label="Search for a location" /><app-search-options
-    [url]="url"
-    [searchParams]="searchParams"
-    (searchParamsEvent)="paramChanged($event)">
-  </app-search-options>
-  <div *ngIf="results"></div>
+    aria-label="Search for a location" />
+  <app-search-options [url]="url" [searchParams]="searchParams" (searchParamsEvent)="paramChanged($event)"> </app-search-options>
+</div>
+
+<div *ngIf="results">
   <div role="list" *ngFor="let r of getResults(results | async)">
     <div role="listitem">
-      <button title="{{ getDisplayname(r) }}" (mouseover)="selectResult(r)" (focus)="selectResult(r)">
+      <button class="result-button" title="{{ getDisplayname(r) }}" (mouseover)="selectResult(r)" (focus)="selectResult(r)">
         <div [innerHTML]="getHighLight(r) | safeHtml"></div>
         <div hidden="hidden">
           {{ getProperty(r, 'collectionGeometryType:') }}

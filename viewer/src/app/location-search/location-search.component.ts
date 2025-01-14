@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, EventEmitter, forwardRef, Input, Output, Provider, OnInit, AfterViewChecked } from '@angular/core'
 
 import { CommonModule } from '@angular/common'
 
@@ -16,6 +16,26 @@ import { Search$Json$Params } from '../api/fn/features/search-json'
 import { Observable } from 'rxjs'
 import { FeatureLike } from 'ol/Feature'
 import { GeoJSON } from 'ol/format'
+import { ApiInterceptor } from './appi-interceptor'
+import {
+  HTTP_INTERCEPTORS,
+  HttpEvent,
+  HttpFeature,
+  HttpFeatureKind,
+  HttpHandlerFn,
+  HttpRequest,
+  provideHttpClient,
+  withInterceptors,
+  withInterceptorsFromDi,
+} from '@angular/common/http'
+import { Global } from '../app.module'
+import { environment } from 'src/environments/environment'
+
+export const API_INTERCEPTOR_PROVIDER: Provider = {
+  provide: HTTP_INTERCEPTORS,
+  useExisting: forwardRef(() => ApiInterceptor),
+  multi: true,
+}
 
 @Component({
   selector: 'app-location-search',
@@ -23,9 +43,10 @@ import { GeoJSON } from 'ol/format'
   templateUrl: './location-search.component.html',
   styleUrl: './location-search.component.css',
 })
-export class LocationSearchComponent {
+export class LocationSearchComponent implements AfterViewChecked {
   selectedResultUrl: string | undefined = undefined
   @Output() activeFeature = new EventEmitter<FeatureLike>()
+  @Output() activeSearchUrl = new EventEmitter<string>()
 
   @Input() url: string | undefined = undefined
   @Input() label: string = 'Search location'
@@ -50,15 +71,23 @@ export class LocationSearchComponent {
 
   constructor(
     private logger: NGXLogger,
-    private collectionService: CollectionsService,
     private featuresService: FeaturesService
   ) {}
 
   updateSearchField(event: KeyboardEvent) {
     const inputValue = (event.target as HTMLInputElement).value
     this.searchParams.q = inputValue
-    this.logger.log(inputValue)
+    this.logger.debug(inputValue)
+    this.deSelectResult()
+
     this.lookup()
+  }
+
+  ngAfterViewChecked() {
+    this.logger.log('url2' + environment.currenturl)
+    if (environment.currenturl.includes('search')) {
+      this.activeSearchUrl.emit(environment.currenturl)
+    }
   }
 
   private lookup() {
@@ -83,6 +112,11 @@ export class LocationSearchComponent {
     //  'https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/80f96ef7-dfa4-5197-b681-cfd92b10757e'
     //}
   }
+
+  deSelectResult() {
+    this.activeFeature.emit(undefined)
+  }
+
   getHighLight(r: { properties: unknown }): string {
     return this.getProperty(r, 'highlight')
   }
@@ -102,8 +136,9 @@ export class LocationSearchComponent {
   }
 
   paramChanged(event: Search$Json$Params) {
-    this.logger.log('paramchanged:')
-    this.logger.log(JSON.stringify(event))
+    this.deSelectResult()
+    this.logger.debug('paramchanged:')
+    this.logger.debug(JSON.stringify(event))
     this.searchParams = event
     this.lookup()
   }

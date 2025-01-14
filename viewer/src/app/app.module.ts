@@ -2,14 +2,38 @@ import { BrowserModule } from '@angular/platform-browser'
 import { VectortileViewComponent } from './vectortile-view/vectortile-view.component'
 import { createCustomElement } from '@angular/elements'
 import { ObjectInfoComponent } from './object-info/object-info.component'
-import { NgModule, Injector } from '@angular/core'
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { NgModule, Injector, forwardRef } from '@angular/core'
+import {
+  HTTP_INTERCEPTORS,
+  HttpEvent,
+  HttpEventType,
+  HttpHandlerFn,
+  HttpRequest,
+  provideHttpClient,
+  withInterceptors,
+  withInterceptorsFromDi,
+} from '@angular/common/http'
 import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
 import { LocationSearchComponent } from './location-search/location-search.component'
 
-import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+import { LoggerModule, NGXLogger, NgxLoggerLevel } from 'ngx-logger'
+
+
+import { Observable, tap } from 'rxjs'
 import { environment } from 'src/environments/environment'
+
+export class Global {
+  static loggingInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
+    return next(req).pipe(
+      tap(event => {
+        if (event.type === HttpEventType.Response) {
+          environment.currenturl = req.urlWithParams
+        }
+      })
+    )
+  }
+}
 
 @NgModule({
   declarations: [],
@@ -22,7 +46,8 @@ import { environment } from 'src/environments/environment'
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
   ],
-  providers: [provideHttpClient(withInterceptorsFromDi())],
+
+  providers: [provideHttpClient(withInterceptors([Global.loggingInterceptor]))],
 })
 export class AppModule {
   constructor(private injector: Injector) {
