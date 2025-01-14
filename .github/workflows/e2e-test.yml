@@ -34,19 +34,31 @@ jobs:
             --name gokoala \
             gokoala:local --config-file /examples/config_all.yaml
 
-      # E2E Test
+      # E2E Test (Cypress)
       - name: E2E Test => Cypress
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./tests
           browser: chrome
 
-      # E2E Test
+      # E2E Test (Features conformance)
       - name: E2E Test => OGC API Features Conformance Validation
         run: |
           sleep 5
           docker run --net=host -t -v "$(pwd):/mnt" \
             docker.io/pdok/ets-ogcapi-features10-docker:latest \
+            http://localhost:8080 \
+            --generateHtmlReport true \
+            --outputDir /mnt/output \
+            --exitOnFail \
+            --prettyPrint
+
+      # E2E Test (Tiles conformance)
+      - name: E2E Test => OGC API Tiles Conformance Validation
+        run: |
+          sleep 5
+          docker run --net=host -t -v "$(pwd):/mnt" \
+            docker.io/pdok/ets-ogcapi-tiles10-docker:latest \
             http://localhost:8080 \
             --generateHtmlReport true \
             --outputDir /mnt/output \
