@@ -18,6 +18,10 @@
     <div>
       <app-objectinfo-view id="objectinfooutside"> </app-objectinfo-view>
     </div>
+
+    <h3>Used search url</h3>
+
+    <a id="search-url" href="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod">https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod</a>
   <link rel="modulepreload" href="chunk-FDERIQAA.js"><script src="polyfills.js" type="module"></script><script src="main.js" type="module"></script></body>
   <script type="text/javascript">
     function load() {
@@ -25,6 +29,13 @@
         console.log('activeFeature')
         console.log(JSON.stringify(e.detail))
         objectinfooutside.feature = e.detail
+      })
+
+      locationsearch.addEventListener('activeSearchUrl', u => {
+        console.log(JSON.stringify(u.detail))
+        document.getElementById('search-url').innerHTML = u.detail
+        document.getElementById('search-url').href = u.detail + '&f=json'
+        // history.replaceState(null, '', u.detail)
       })
     }
   </script>
