@@ -1,8 +1,8 @@
-import { Component, EventEmitter, forwardRef, Input, Output, Provider, OnInit, AfterViewChecked } from '@angular/core'
+import { Component, EventEmitter, Input, Output, AfterViewChecked } from '@angular/core'
 
 import { CommonModule } from '@angular/common'
 
-import { CollectionsService, FeaturesService } from '../api/services'
+import { FeaturesService } from '../api/services'
 import { NGXLogger } from 'ngx-logger'
 
 import { defaultMapping, ProjectionMapping } from '../feature.service'
@@ -16,26 +16,8 @@ import { Search$Json$Params } from '../api/fn/features/search-json'
 import { Observable } from 'rxjs'
 import { FeatureLike } from 'ol/Feature'
 import { GeoJSON } from 'ol/format'
-import { ApiInterceptor } from './appi-interceptor'
-import {
-  HTTP_INTERCEPTORS,
-  HttpEvent,
-  HttpFeature,
-  HttpFeatureKind,
-  HttpHandlerFn,
-  HttpRequest,
-  provideHttpClient,
-  withInterceptors,
-  withInterceptorsFromDi,
-} from '@angular/common/http'
-import { Global } from '../app.module'
-import { environment } from 'src/environments/environment'
 
-export const API_INTERCEPTOR_PROVIDER: Provider = {
-  provide: HTTP_INTERCEPTORS,
-  useExisting: forwardRef(() => ApiInterceptor),
-  multi: true,
-}
+import { environment } from 'src/environments/environment'
 
 @Component({
   selector: 'app-location-search',

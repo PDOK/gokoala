@@ -2,23 +2,13 @@ import { BrowserModule } from '@angular/platform-browser'
 import { VectortileViewComponent } from './vectortile-view/vectortile-view.component'
 import { createCustomElement } from '@angular/elements'
 import { ObjectInfoComponent } from './object-info/object-info.component'
-import { NgModule, Injector, forwardRef } from '@angular/core'
-import {
-  HTTP_INTERCEPTORS,
-  HttpEvent,
-  HttpEventType,
-  HttpHandlerFn,
-  HttpRequest,
-  provideHttpClient,
-  withInterceptors,
-  withInterceptorsFromDi,
-} from '@angular/common/http'
+import { NgModule, Injector } from '@angular/core'
+import { HttpEvent, HttpEventType, HttpHandlerFn, HttpRequest, provideHttpClient, withInterceptors } from '@angular/common/http'
 import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
 import { LocationSearchComponent } from './location-search/location-search.component'
 
-import { LoggerModule, NGXLogger, NgxLoggerLevel } from 'ngx-logger'
-
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 
 import { Observable, tap } from 'rxjs'
 import { environment } from 'src/environments/environment'
