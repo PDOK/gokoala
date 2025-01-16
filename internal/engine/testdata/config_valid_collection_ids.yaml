@@ -1,0 +1,16 @@
+---
+version: 1.0.0
+title: Valid config file
+abstract: Valid collection IDs
+baseUrl: http://test.example
+serviceIdentifier: Min
+license:
+  name: MIT
+  url: https://www.tldrlegal.com/license/mit-license
+ogcApi:
+  features:
+    collections:
+      - id: validlowercase
+      - id: valid-lower-case-with-hyphens
+      - id: valid_lower_case_with_underscores
+      - id: "valid_lower-case-with_quotes"  # most often used for style ID's

@@ -151,6 +151,14 @@ func TestEncodedCursor_Decode(t *testing.T) {
 				FiltersChecksum: []byte("foobar"),
 			},
 		},
+		{
+			name: "should decode cursor without checksum",
+			c:    "GSQ|",
+			want: DecodedCursor{
+				FID:             6436,
+				FiltersChecksum: nil,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,0 +1,54 @@
+{
+  "id": "6436",
+  "type": "Feature",
+  "time": null,
+  "place": null,
+  "geometry": null,
+  "properties": {
+    "datum_doc": "2021-02-26",
+    "datum_eind": null,
+    "datum_strt": "2021-02-26",
+    "document": "SE05427877",
+    "geom": null,
+    "huisletter": null,
+    "huisnummer": 6,
+    "nummer_id": "0363200012163629",
+    "postcode": "1013NK",
+    "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200012163629",
+    "status": "Naamgeving uitgegeven",
+    "straatnaam": "Bokkinghangen",
+    "toevoeging": null,
+    "type": "Ligplaats",
+    "woonplaats": "Amsterdam"
+  },
+  "coordRefSys": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/foo/items/6436?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items/6436?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items/6436?f=html"
+    },
+    {
+      "rel": "collection",
+      "title": "The collection to which this feature belongs",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/foo?f=json"
+    }
+  ],
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+  ]
+}
