@@ -88,7 +88,7 @@ func makeSearchQuery(index string, srid d.SRID) string {
 	from (
 		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
 				ts_rank_cd(ts, (select query from query), 1) as rank,
-				ts_headline('simple', display_name, (select query from query)) as highlighted_text
+				ts_headline('simple', suggest, (select query from query)) as highlighted_text
 		from %[1]s
 		where ts @@ (select query from query) and (collection_id, collection_version) in (
 		    -- make a virtual table by creating tuples from the provided arrays.
