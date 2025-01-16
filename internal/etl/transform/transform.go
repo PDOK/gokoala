@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -64,6 +65,8 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 				suggestions = append(suggestions, suggestion)
 			}
 		}
+		suggestions = slices.Compact(suggestions)
+
 		bbox, err := r.transformBbox()
 		if err != nil {
 			return nil, err
