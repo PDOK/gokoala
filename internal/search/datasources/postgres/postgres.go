@@ -52,16 +52,17 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 	defer cancel()
 
 	// Split terms by spaces and append :* to each term
-	terms := strings.Fields(searchTerm)
-	for i, term := range terms {
-		terms[i] = term + ":*"
+	termsWildcard := strings.Fields(searchTerm)
+	for i, term := range termsWildcard {
+		termsWildcard[i] = term + ":*"
 	}
-	termsConcat := strings.Join(terms, " & ")
+	termsWildcardConcat := strings.Join(termsWildcard, " & ")
+	termExactConcat := strings.Join(strings.Fields(searchTerm), " | ")
 	query := makeSearchQuery(p.searchIndex, srid)
 
 	// Execute search query
 	names, ints := collections.NamesAndVersions()
-	rows, err := p.db.Query(queryCtx, query, limit, termsConcat, names, ints)
+	rows, err := p.db.Query(queryCtx, query, limit, termsWildcardConcat, termExactConcat, names, ints)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
@@ -74,32 +75,66 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 func makeSearchQuery(index string, srid d.SRID) string {
 	// language=postgresql
 	query := fmt.Sprintf(`
-	with query as (
-		select to_tsquery('simple', $2) query
+	WITH query_wildcard AS (
+		SELECT to_tsquery('simple', $2) query
+	),
+	query_exact AS (
+		SELECT to_tsquery('simple', $3) query
 	)
-	select 	r.display_name as display_name, 
-			max(r.feature_id) as feature_id,
-			max(r.collection_id) as collection_id,
-			max(r.collection_version) as collection_version,
-			max(r.geometry_type) as geometry_type,
-			st_transform(max(r.bbox), %[2]d)::geometry as bbox,
-			max(r.rank) as rank, 
-			max(r.highlighted_text) as highlighted_text
-	from (
-		select display_name, feature_id, collection_id, collection_version, geometry_type, bbox,
-				ts_rank_cd(ts, (select query from query), 1) as rank,
-				ts_headline('simple', suggest, (select query from query)) as highlighted_text
-		from %[1]s
-		where ts @@ (select query from query) and (collection_id, collection_version) in (
-		    -- make a virtual table by creating tuples from the provided arrays.
-			select * from unnest($3::text[], $4::int[])
-		)
-		order by rank desc, display_name asc -- keep the same as outer 'order by' clause
-		limit 500
-	) r
-	group by r.display_name, r.collection_id, r.collection_version, r.feature_id
-	order by rank desc, display_name asc
-	limit $1`, index, srid) // don't add user input here, use $X params for user input!
+	SELECT
+	    rn.display_name AS display_name,
+		rn.feature_id AS feature_id,
+		rn.collection_id AS collection_id,
+		rn.collection_version AS collection_version,
+		rn.geometry_type AS geometry_type,
+		st_transform(rn.bbox, %[2]d)::geometry AS bbox,
+		rn.rank AS rank,
+		rn.highlighted_text AS highlighted_text
+	FROM (
+		SELECT
+			*,
+			ROW_NUMBER() OVER (
+				PARTITION BY
+					r.display_name,
+					r.collection_id,
+					r.collection_version,
+					r.feature_id
+				ORDER BY
+					r.rank DESC,
+					r.display_name ASC
+			) AS row_number
+		FROM (
+			SELECT
+				display_name,
+				feature_id,
+				collection_id,
+				collection_version,
+				geometry_type,
+				bbox,
+				CASE WHEN display_name=suggest THEN
+					ts_rank(ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(ts, (SELECT query FROM query_wildcard), 1)
+				ELSE
+				    ts_rank(ts, (SELECT query FROM query_exact), 1) + ts_rank(ts, (SELECT query FROM query_wildcard), 1)
+				END AS rank,
+				ts_headline('simple', suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
+			FROM
+				%[1]s
+			WHERE
+				ts @@ (SELECT query FROM query_wildcard) AND (collection_id, collection_version) IN (
+					-- make a virtual table by creating tuples from the provided arrays.
+					SELECT * FROM unnest($4::text[], $5::int[])
+				)
+			ORDER BY -- keep the same as outer and row_number 'order by' clause
+			    rank DESC,
+			    display_name ASC
+			LIMIT 500
+		) r
+	) rn
+	WHERE rn.row_number = 1
+	ORDER BY
+	    rank DESC,
+	    display_name ASC
+	LIMIT $1`, index, srid) // don't add user input here, use $X params for user input!
 
 	return query
 }
