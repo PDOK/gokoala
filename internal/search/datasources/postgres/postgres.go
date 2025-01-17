@@ -82,14 +82,14 @@ func makeSearchQuery(index string, srid d.SRID) string {
 		SELECT to_tsquery('simple', $3) query
 	)
 	SELECT
-	    rn.display_name as display_name,
-		rn.feature_id as feature_id,
-		rn.collection_id as collection_id,
-		rn.collection_version as collection_version,
-		rn.geometry_type as geometry_type,
-		st_transform(rn.bbox, %[2]d)::geometry as bbox,
-		rn.rank as rank,
-		rn.highlighted_text as highlighted_text
+	    rn.display_name AS display_name,
+		rn.feature_id AS feature_id,
+		rn.collection_id AS collection_id,
+		rn.collection_version AS collection_version,
+		rn.geometry_type AS geometry_type,
+		st_transform(rn.bbox, %[2]d)::geometry AS bbox,
+		rn.rank AS rank,
+		rn.highlighted_text AS highlighted_text
 	FROM (
 		SELECT
 			*,
