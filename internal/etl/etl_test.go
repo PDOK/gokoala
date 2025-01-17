@@ -83,7 +83,7 @@ func TestImportGeoPackage(t *testing.T) {
 		{
 			name:  "import everything",
 			where: "",
-			count: 72210, // 33030*2 + substitution and synonyms combinations
+			count: 66338, // 33030*2 + substitution and synonyms combinations
 		},
 		{
 			name:  "with where clause",

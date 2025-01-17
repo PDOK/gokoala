@@ -29,9 +29,8 @@ func NewSubstAndSynonyms(substitutionsFile, synonymsFile string) (*SubstAndSynon
 func (s SubstAndSynonyms) generate(fieldValuesByName map[string]string) []map[string]string {
 	var fieldValuesByNameWithAllValues = make(map[string][]string)
 	for key, value := range fieldValuesByName {
-		valueLower := strings.ToLower(value)
 		// Get all substitutions
-		substitutedValues := extendValues([]string{valueLower}, s.substitutions)
+		substitutedValues := extendValues([]string{value}, s.substitutions)
 		// Get all synonyms for these substituted values
 		// -> one way
 		synonymsValuesOneWay := extendValues(substitutedValues, s.synonyms)
