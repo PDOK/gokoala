@@ -13,7 +13,6 @@ require (
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/cors v1.2.1
 	github.com/go-playground/validator/v10 v10.23.0
-	github.com/go-spatial/geom v0.1.0
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/goccy/go-json v0.10.3
 	github.com/gomarkdown/markdown v0.0.0-20241105142532-d03b89096d81
@@ -24,6 +23,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.4.1
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.9.0
+	github.com/twpayne/go-geom v1.6.0
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
@@ -43,7 +43,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
-	github.com/gdey/errors v0.0.0-20190426172550-8ebd5bc891fb // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

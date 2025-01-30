@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"math"
 	"net/url"
 	"slices"
 	"sort"
@@ -16,7 +17,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/go-spatial/geom"
+	geom2 "github.com/twpayne/go-geom"
 )
 
 const (
@@ -48,7 +49,7 @@ type featureCollectionURL struct {
 
 // parse the given URL to values required to delivery a set of Features
 func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int, inputSRID d.SRID, outputSRID d.SRID,
-	contentCrs d.ContentCrs, bbox *geom.Extent, referenceDate time.Time, propertyFilters map[string]string, err error) {
+	contentCrs d.ContentCrs, bbox *geom2.Bounds, referenceDate time.Time, propertyFilters map[string]string, err error) {
 
 	err = fc.validateNoUnknownParams()
 	if err != nil {
@@ -98,7 +99,7 @@ OUTER:
 	bytesToHash := valuesToHash.Bytes()
 	if len(bytesToHash) > 0 {
 		hasher := fnv.New32a() // fast non-cryptographic hash
-		hasher.Write(bytesToHash)
+		_, _ = hasher.Write(bytesToHash)
 		return hasher.Sum(nil)
 	}
 	return []byte{}
@@ -230,7 +231,7 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	return limit, err
 }
 
-func parseBbox(params url.Values) (*geom.Extent, d.SRID, error) {
+func parseBbox(params url.Values) (*geom2.Bounds, d.SRID, error) {
 	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
@@ -245,17 +246,26 @@ func parseBbox(params url.Values) (*geom.Extent, d.SRID, error) {
 			"separated by commas: minx,miny,maxx,maxy")
 	}
 
-	var extent geom.Extent
+	bboxFloats := make([]float64, len(bboxValues))
 	for i, v := range bboxValues {
-		extent[i], err = strconv.ParseFloat(v, 64)
+		bboxFloats[i], err = strconv.ParseFloat(v, 64)
 		if err != nil {
 			return nil, bboxSRID, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
 		}
 	}
-	if extent.Area() <= 0 {
+
+	bbox := geom2.NewBounds(geom2.XY).Set(bboxFloats...)
+	if !hasSurfaceArea(bbox) {
 		return nil, bboxSRID, errors.New("bbox has no surface area")
 	}
-	return &extent, bboxSRID, nil
+	return bbox, bboxSRID, nil
+}
+
+func hasSurfaceArea(bbox *geom2.Bounds) bool {
+	return !bbox.IsEmpty() &&
+		// Use the same logic as bbox.Area() in https://github.com/go-spatial/geom to calculate surface area.
+		// The bounds.Area() in github.com/twpayne/go-geom behaves differently and is not what we're looking for.
+		math.Abs((bbox.Max(1)-bbox.Min(1))*(bbox.Max(0)-bbox.Min(0))) > 0
 }
 
 func parseCrsToContentCrs(params url.Values) d.ContentCrs {

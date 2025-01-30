@@ -6,16 +6,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-spatial/geom"
-	"github.com/go-spatial/geom/encoding/geojson"
 	"github.com/stretchr/testify/assert"
+	geom2 "github.com/twpayne/go-geom"
+	geojson2 "github.com/twpayne/go-geom/encoding/geojson"
 )
 
-func mockMapGeom(data []byte) (geom.Geometry, error) {
+var (
+	mockPoint           = geom2.NewPoint(geom2.XY).MustSetCoords(geom2.Coord{1.0, 2.0})
+	mockPointGeoJSON, _ = geojson2.Encode(mockPoint)
+)
+
+func mockMapGeom(data []byte) (geom2.T, error) {
 	if string(data) == "mock error" {
 		return nil, errors.New(string(data))
 	}
-	return geom.Point{1.0, 2.0}, nil
+	p, _ := geom2.NewPoint(geom2.XY).SetCoords(geom2.Coord{1.0, 2.0})
+	return p, nil
 }
 
 func TestMapColumnsToFeature(t *testing.T) {
@@ -50,7 +56,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 			fidColumn:        "id",
 			geomColumn:       "geom",
 			mapGeom:          mockMapGeom,
-			expectedFeature:  &Feature{ID: "1", Properties: NewFeaturePropertiesWithData(false, map[string]any{}), Geometry: geojson.Geometry{Geometry: geom.Point{1.0, 2.0}}},
+			expectedFeature:  &Feature{ID: "1", Properties: NewFeaturePropertiesWithData(false, map[string]any{}), Geometry: mockPointGeoJSON},
 			expectedPrevNext: &PrevNextFID{},
 		},
 		{
