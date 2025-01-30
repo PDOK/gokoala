@@ -1,21 +1,18 @@
+// This is a stripped down version of https://github.com/go-spatial/geom/blob/master/encoding/gpkg/binary_header.go
+//
+// Copyright (c) 2017 go-spatial. Modified by PDOK.
+// Licensed under the MIT license. See https://github.com/go-spatial/geom/blob/master/LICENSE for details.
+
 package encoding
 
 import (
 	"encoding/binary"
-	"fmt"
-	"math"
-
 	"errors"
+	"math"
 
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/wkb"
 	"github.com/twpayne/go-geom/encoding/wkbcommon"
-)
-
-var (
-	ErrInvalidEnvelopeType = errors.New("invalid envelope type")
-	ErrInsufficientBytes   = errors.New("not enough bytes")
-	ErrInvalidMagicNumber  = errors.New("invalid magic number")
 )
 
 type EnvelopeType uint8
@@ -50,24 +47,6 @@ func (et EnvelopeType) NumberOfElements() int {
 	}
 }
 
-func (et EnvelopeType) String() string {
-	str := "NONEXYZMXYMINVALID"
-	switch et { //nolint:exhaustive
-	case EnvelopeTypeNone:
-		return str[0:4]
-	case EnvelopeTypeXY:
-		return str[4 : 4+2]
-	case EnvelopeTypeXYZ:
-		return str[4 : 4+3]
-	case EnvelopeTypeXYM:
-		return str[8 : 8+3]
-	case EnvelopeTypeXYZM:
-		return str[4 : 4+4]
-	default:
-		return str[11:]
-	}
-}
-
 // HEADER FLAG LAYOUT
 // 7 6 5 4 3 2 1 0
 // R R X Y E E E B
@@ -78,15 +57,11 @@ func (et EnvelopeType) String() string {
 // B ByteOrder
 // http://www.geopackage.org/spec/#flags_layout
 const (
-	maskByteOrder        = 1 << 0
-	maskEnvelopeType     = 1<<3 | 1<<2 | 1<<1
-	maskEmptyGeometry    = 1 << 4
-	maskGeoPackageBinary = 1 << 5
+	maskByteOrder    = 1 << 0
+	maskEnvelopeType = 1<<3 | 1<<2 | 1<<1
 )
 
 type headerFlags byte
-
-func (hf headerFlags) String() string { return fmt.Sprintf("0x%02x", uint8(hf)) }
 
 // Endian will return the encoded Endianess
 func (hf headerFlags) Endian() binary.ByteOrder {
@@ -115,10 +90,10 @@ type BinaryHeader struct {
 	envelope []float64
 }
 
-// DecodeBinaryHeader decodes the data into the BinaryHeader
-func DecodeBinaryHeader(data []byte) (*BinaryHeader, error) {
+// decodeBinaryHeader decodes the data into the BinaryHeader
+func decodeBinaryHeader(data []byte) (*BinaryHeader, error) {
 	if len(data) < 8 {
-		return nil, ErrInsufficientBytes
+		return nil, errors.New("not enough bytes")
 	}
 
 	var bh BinaryHeader
@@ -132,7 +107,7 @@ func DecodeBinaryHeader(data []byte) (*BinaryHeader, error) {
 	bytes := data[8:]
 	et := bh.flags.Envelope()
 	if et == EnvelopeTypeInvalid {
-		return nil, ErrInvalidEnvelopeType
+		return nil, errors.New("invalid envelope type")
 	}
 	if et == EnvelopeTypeNone {
 		return &bh, nil
@@ -140,7 +115,7 @@ func DecodeBinaryHeader(data []byte) (*BinaryHeader, error) {
 	num := et.NumberOfElements()
 	// there are 8 bytes per float64 value and we need num of them.
 	if len(bytes) < (num * 8) {
-		return nil, ErrInsufficientBytes
+		return nil, errors.New("not enough bytes")
 	}
 
 	bh.envelope = make([]float64, 0, num)
@@ -149,7 +124,7 @@ func DecodeBinaryHeader(data []byte) (*BinaryHeader, error) {
 		bh.envelope = append(bh.envelope, math.Float64frombits(bits))
 	}
 	if bh.magic[0] != Magic[0] || bh.magic[1] != Magic[1] {
-		return &bh, ErrInvalidMagicNumber
+		return &bh, errors.New("invalid magic number")
 	}
 	return &bh, nil
 
@@ -180,7 +155,7 @@ type StandardBinary struct {
 }
 
 func DecodeGeometry(bytes []byte) (*StandardBinary, error) {
-	h, err := DecodeBinaryHeader(bytes)
+	h, err := decodeBinaryHeader(bytes)
 	if err != nil {
 		return nil, err
 	}
