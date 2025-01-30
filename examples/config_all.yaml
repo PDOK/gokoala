@@ -108,6 +108,16 @@ ogcApi:
           urlAsHyperlink: true
       - id: addresses2
         tableName: addresses
+        metadata:
+          title: Addresses II
+          description: These are also example addresses
+          extent:
+            bbox:
+              - 50.2129
+              - 2.52713
+              - 55.7212
+              - 7.37403
+          storageCrs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
 
   3dgeovolumes:
     tileServer: https://api.pdok.nl/kadaster/3d-basisvoorziening/ogc/v1/collections
