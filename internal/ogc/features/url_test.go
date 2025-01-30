@@ -8,7 +8,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
-	geom2 "github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom"
 
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
@@ -28,7 +28,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 		wantEncodedCursor domain.EncodedCursor
 		wantLimit         int
 		wantOutputCrs     int
-		wantBbox          *geom2.Bounds
+		wantBbox          *geom.Bounds
 		wantInputCrs      int
 		wantRefDate       *time.Time
 		wantPropFilters   map[string]string
@@ -62,7 +62,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantOutputCrs: 28992,
-			wantBbox:      geom2.NewBounds(geom2.XY).Set(5.375925226997315, 51.505264437720115, 5.38033585204785, 51.50760171277042),
+			wantBbox:      geom.NewBounds(geom.XY).Set(5.375925226997315, 51.505264437720115, 5.38033585204785, 51.50760171277042),
 			wantInputCrs:  100000,
 			wantErr:       success(),
 		},
@@ -85,7 +85,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
-			wantBbox:          geom2.NewBounds(geom2.XY).Set(1, 2, 3, 4),
+			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      28992,
 			wantErr:           success(),
@@ -108,7 +108,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
-			wantBbox:          geom2.NewBounds(geom2.XY).Set(1, 2, 3, 4),
+			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      28992,
 			wantErr:           success(),
@@ -131,7 +131,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
-			wantBbox:          geom2.NewBounds(geom2.XY).Set(1, 2, 3, 4),
+			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      100000,
 			wantErr:           success(),
@@ -155,7 +155,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantEncodedCursor: "H3w",
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
-			wantBbox:          geom2.NewBounds(geom2.XY).Set(1, 2, 3, 4),
+			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      28992,
 			wantErr:           success(),

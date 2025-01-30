@@ -9,15 +9,15 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/jmoiron/sqlx"
 
-	geom2 "github.com/twpayne/go-geom"
-	geojson2 "github.com/twpayne/go-geom/encoding/geojson"
+	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
 // MapRelation abstract function type to map feature relations
 type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName string, newColumnValue any)
 
 // MapGeom abstract function type to map geometry from bytes to Geometry
-type MapGeom func([]byte) (geom2.T, error)
+type MapGeom func([]byte) (geom.T, error)
 
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
 func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
@@ -110,7 +110,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
 			if mappedGeom != nil {
-				feature.Geometry, err = geojson2.Encode(mappedGeom)
+				feature.Geometry, err = geojson.Encode(mappedGeom)
 				if err != nil {
 					return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
 				}

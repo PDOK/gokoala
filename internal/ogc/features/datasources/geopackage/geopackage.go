@@ -18,8 +18,8 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage/encoding"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	geom2 "github.com/twpayne/go-geom"
-	wkt2 "github.com/twpayne/go-geom/encoding/wkt"
+	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/wkt"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -406,7 +406,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
 `, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
 		selectClause, temporalClause, pfClause, btreeIndexHint, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
 
-	bboxAsWKT, err := wkt2.Marshal(criteria.Bbox.Polygon())
+	bboxAsWKT, err := wkt.Marshal(criteria.Bbox.Polygon())
 	if err != nil {
 		return "", nil, err
 	}
@@ -446,7 +446,7 @@ func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProp
 	return result
 }
 
-func mapGpkgGeometry(rawGeom []byte) (geom2.T, error) {
+func mapGpkgGeometry(rawGeom []byte) (geom.T, error) {
 	geomWithMetadata, err := encoding.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err

@@ -7,20 +7,20 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	geom2 "github.com/twpayne/go-geom"
-	geojson2 "github.com/twpayne/go-geom/encoding/geojson"
+	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
 var (
-	mockPoint           = geom2.NewPoint(geom2.XY).MustSetCoords(geom2.Coord{1.0, 2.0})
-	mockPointGeoJSON, _ = geojson2.Encode(mockPoint)
+	mockPoint           = geom.NewPoint(geom.XY).MustSetCoords(geom.Coord{1.0, 2.0})
+	mockPointGeoJSON, _ = geojson.Encode(mockPoint)
 )
 
-func mockMapGeom(data []byte) (geom2.T, error) {
+func mockMapGeom(data []byte) (geom.T, error) {
 	if string(data) == "mock error" {
 		return nil, errors.New(string(data))
 	}
-	p, _ := geom2.NewPoint(geom2.XY).SetCoords(geom2.Coord{1.0, 2.0})
+	p, _ := geom.NewPoint(geom.XY).SetCoords(geom.Coord{1.0, 2.0})
 	return p, nil
 }
 

@@ -17,7 +17,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	geom2 "github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom"
 )
 
 const (
@@ -49,7 +49,7 @@ type featureCollectionURL struct {
 
 // parse the given URL to values required to delivery a set of Features
 func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int, inputSRID d.SRID, outputSRID d.SRID,
-	contentCrs d.ContentCrs, bbox *geom2.Bounds, referenceDate time.Time, propertyFilters map[string]string, err error) {
+	contentCrs d.ContentCrs, bbox *geom.Bounds, referenceDate time.Time, propertyFilters map[string]string, err error) {
 
 	err = fc.validateNoUnknownParams()
 	if err != nil {
@@ -231,7 +231,7 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	return limit, err
 }
 
-func parseBbox(params url.Values) (*geom2.Bounds, d.SRID, error) {
+func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
 	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
@@ -254,14 +254,14 @@ func parseBbox(params url.Values) (*geom2.Bounds, d.SRID, error) {
 		}
 	}
 
-	bbox := geom2.NewBounds(geom2.XY).Set(bboxFloats...)
+	bbox := geom.NewBounds(geom.XY).Set(bboxFloats...)
 	if !hasSurfaceArea(bbox) {
 		return nil, bboxSRID, errors.New("bbox has no surface area")
 	}
 	return bbox, bboxSRID, nil
 }
 
-func hasSurfaceArea(bbox *geom2.Bounds) bool {
+func hasSurfaceArea(bbox *geom.Bounds) bool {
 	return !bbox.IsEmpty() &&
 		// Use the same logic as bbox.Area() in https://github.com/go-spatial/geom to calculate surface area.
 		// The bounds.Area() in github.com/twpayne/go-geom behaves differently and is not what we're looking for.

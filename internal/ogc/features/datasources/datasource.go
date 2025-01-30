@@ -6,7 +6,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	geom2 "github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom"
 )
 
 // Datasource holds all Features for a single object type in a specific projection/CRS.
@@ -48,7 +48,7 @@ type FeaturesCriteria struct {
 	OutputSRID int // derived from crs param when available, or WGS84 as default
 
 	// filtering by bounding box
-	Bbox *geom2.Bounds
+	Bbox *geom.Bounds
 
 	// filtering by reference date/time
 	TemporalCriteria TemporalCriteria

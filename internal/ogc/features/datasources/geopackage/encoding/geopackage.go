@@ -7,9 +7,9 @@ import (
 
 	"errors"
 
-	geom2 "github.com/twpayne/go-geom"
-	wkb2 "github.com/twpayne/go-geom/encoding/wkb"
-	wkbcommmon2 "github.com/twpayne/go-geom/encoding/wkbcommon"
+	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/wkb"
+	"github.com/twpayne/go-geom/encoding/wkbcommon"
 )
 
 var (
@@ -176,7 +176,7 @@ func (h *BinaryHeader) Size() int {
 type StandardBinary struct {
 	Header   *BinaryHeader
 	SRSID    int32
-	Geometry geom2.T
+	Geometry geom.T
 }
 
 func DecodeGeometry(bytes []byte) (*StandardBinary, error) {
@@ -185,7 +185,7 @@ func DecodeGeometry(bytes []byte) (*StandardBinary, error) {
 		return nil, err
 	}
 
-	geo, err := wkb2.Unmarshal(bytes[h.Size():], wkbcommmon2.WKBOptionEmptyPointHandling(wkbcommmon2.EmptyPointHandlingNaN))
+	geo, err := wkb.Unmarshal(bytes[h.Size():], wkbcommon.WKBOptionEmptyPointHandling(wkbcommon.EmptyPointHandlingNaN))
 	if err != nil {
 		return nil, err
 	}
