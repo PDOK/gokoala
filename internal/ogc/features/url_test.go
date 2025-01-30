@@ -67,6 +67,20 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantErr:       success(),
 		},
 		{
+			name: "Parse bbox with 180 longitude (testcase from OGC API conformance validator)",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"bbox": []string{"177,65,-177,70"},
+				},
+			},
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantBbox:      geom.NewBounds(geom.XY).Set(177, 65, -177, 70),
+			wantRefDate:   nil,
+			wantErr:       success(),
+		},
+		{
 			name: "Parse many params",
 			fields: fields{
 				baseURL: *host,
