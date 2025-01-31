@@ -7,16 +7,17 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/go-spatial/geom"
-	"github.com/go-spatial/geom/encoding/geojson"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
 // MapRelation abstract function type to map feature relations
 type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName string, newColumnValue any)
 
 // MapGeom abstract function type to map geometry from bytes to Geometry
-type MapGeom func([]byte) (geom.Geometry, error)
+type MapGeom func([]byte) (geom.T, error)
 
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
 func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
@@ -109,7 +110,10 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
 			if mappedGeom != nil {
-				feature.Geometry = geojson.Geometry{Geometry: mappedGeom}
+				feature.Geometry, err = geojson.Encode(mappedGeom)
+				if err != nil {
+					return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
+				}
 			}
 
 		case "minx", "miny", "maxx", "maxy", "min_zoom", "max_zoom":

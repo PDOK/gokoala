@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/go-spatial/geom"
+	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
 // featureCollectionType allows the GeoJSON type to be automatically set during json marshalling
@@ -33,7 +33,7 @@ type FeatureCollection struct {
 type Feature struct {
 	Type       featureType       `json:"type"`
 	Properties FeatureProperties `json:"properties"`
-	Geometry   geom.Geometry     `json:"geometry"`
+	Geometry   *geojson.Geometry `json:"geometry"`
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
 	ID    string `json:"id"`

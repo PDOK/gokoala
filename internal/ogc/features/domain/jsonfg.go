@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/go-spatial/geom"
+	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
 const (
@@ -30,8 +30,8 @@ type JSONFGFeature struct {
 	Time any         `json:"time"`
 	// We don't implement the JSON-FG "3D" conformance class. So Place only
 	// supports simple/2D geometries, no 3D geometries like Polyhedron, Prism, etc.
-	Place       geom.Geometry     `json:"place"`    // may only contain non-WGS84 geometries
-	Geometry    geom.Geometry     `json:"geometry"` // may only contain WGS84 geometries
+	Place       *geojson.Geometry `json:"place"`    // may only contain non-WGS84 geometries
+	Geometry    *geojson.Geometry `json:"geometry"` // may only contain WGS84 geometries
 	Properties  FeatureProperties `json:"properties"`
 	CoordRefSys string            `json:"coordRefSys,omitempty"`
 	Links       []Link            `json:"links,omitempty"`

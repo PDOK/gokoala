@@ -16,11 +16,11 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage/encoding"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/go-spatial/geom"
-	"github.com/go-spatial/geom/cmp"
-	"github.com/go-spatial/geom/encoding/gpkg"
-	"github.com/go-spatial/geom/encoding/wkt"
+	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/wkt"
+
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
@@ -406,7 +406,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
 `, table.TableName, g.fidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
 		selectClause, temporalClause, pfClause, btreeIndexHint, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
 
-	bboxAsWKT, err := wkt.EncodeString(criteria.Bbox)
+	bboxAsWKT, err := wkt.Marshal(criteria.Bbox.Polygon())
 	if err != nil {
 		return "", nil, err
 	}
@@ -414,10 +414,10 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
 		"fid":      criteria.Cursor.FID,
 		"limit":    criteria.Limit,
 		"bboxWkt":  bboxAsWKT,
-		"maxx":     criteria.Bbox.MaxX(),
-		"minx":     criteria.Bbox.MinX(),
-		"maxy":     criteria.Bbox.MaxY(),
-		"miny":     criteria.Bbox.MinY(),
+		"maxx":     criteria.Bbox.Max(0),
+		"minx":     criteria.Bbox.Min(0),
+		"maxy":     criteria.Bbox.Max(1),
+		"miny":     criteria.Bbox.Min(1),
 		"bboxSrid": criteria.InputSRID}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
@@ -446,12 +446,12 @@ func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProp
 	return result
 }
 
-func mapGpkgGeometry(rawGeom []byte) (geom.Geometry, error) {
-	geomWithMetadata, err := gpkg.DecodeGeometry(rawGeom)
+func mapGpkgGeometry(rawGeom []byte) (geom.T, error) {
+	geomWithMetadata, err := encoding.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err
 	}
-	if geomWithMetadata == nil || cmp.IsEmptyGeo(geomWithMetadata.Geometry) {
+	if geomWithMetadata == nil || geomWithMetadata.Geometry.Empty() {
 		return nil, nil
 	}
 	return geomWithMetadata.Geometry, nil
