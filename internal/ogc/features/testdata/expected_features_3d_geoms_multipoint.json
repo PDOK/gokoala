@@ -1,0 +1,72 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/bar/items?f=json&limit=5"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/bar/items?f=jsonfg&limit=5"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/bar/items?f=html&limit=5"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [
+            239833.392999999,
+            451859.4530000016,
+            0
+          ]
+        ]
+      },
+      "id": "1"
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [
+            226269.9899999984,
+            444831.585999999,
+            0
+          ]
+        ]
+      },
+      "id": "2"
+    },
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [
+            227163.449000001,
+            444071.0119999982,
+            0
+          ]
+        ]
+      },
+      "id": "3"
+    }
+  ],
+  "numberReturned": 3
+}

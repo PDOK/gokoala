@@ -643,6 +643,62 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request 3D geoms (LINESTRING Z) as features",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_3d_geoms.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=5",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_3d_geoms.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request 3D geoms (LINESTRING Z) as features as JSON-FG",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_3d_geoms.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=5&f=jsonfg",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_3d_geoms_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request 3D geoms (MULTIPOINT Z) as features",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_3d_geoms.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=5",
+				collectionID: "bar",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">", // Geoms are actually in RD in gpkg, but not important for this test
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_3d_geoms_multipoint.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request 3D geoms (MULTIPOINT Z) as features as JSON-FG",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_3d_geoms.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=5&f=jsonfg",
+				collectionID: "bar",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">", // Geoms are actually in RD in gpkg, but not important for this test
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_3d_geoms_multipoint_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
