@@ -1,13 +1,13 @@
-// This is a stripped down version of https://github.com/go-spatial/geom/blob/master/encoding/gpkg/binary_header.go
+// Package encoding based on https://github.com/go-spatial/geom/blob/master/encoding/gpkg/binary_header.go
 //
 // Copyright (c) 2017 go-spatial. Modified by PDOK.
 // Licensed under the MIT license. See https://github.com/go-spatial/geom/blob/master/LICENSE for details.
-
 package encoding
 
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/twpayne/go-geom"
@@ -19,6 +19,9 @@ type EnvelopeType uint8
 
 // Magic is the magic number encode in the header. It should be 0x4750
 var Magic = [2]byte{0x47, 0x50}
+
+// Decipher empty points with NaN as coordinates, in line with Requirement 152 of the spec (http://www.geopackage.org/spec/).
+var gpkgNaNHandling = wkbcommon.WKBOptionEmptyPointHandling(wkbcommon.EmptyPointHandlingNaN)
 
 const (
 	EnvelopeTypeNone    = EnvelopeType(0)
@@ -47,6 +50,24 @@ func (et EnvelopeType) NumberOfElements() int {
 	}
 }
 
+func (et EnvelopeType) String() string {
+	str := "NONEXYZMXYMINVALID"
+	switch et { //nolint:exhaustive
+	case EnvelopeTypeNone:
+		return str[0:4]
+	case EnvelopeTypeXY:
+		return str[4 : 4+2]
+	case EnvelopeTypeXYZ:
+		return str[4 : 4+3]
+	case EnvelopeTypeXYM:
+		return str[8 : 8+3]
+	case EnvelopeTypeXYZM:
+		return str[4 : 4+4]
+	default:
+		return str[11:]
+	}
+}
+
 // HEADER FLAG LAYOUT
 // 7 6 5 4 3 2 1 0
 // R R X Y E E E B
@@ -57,11 +78,15 @@ func (et EnvelopeType) NumberOfElements() int {
 // B ByteOrder
 // http://www.geopackage.org/spec/#flags_layout
 const (
-	maskByteOrder    = 1 << 0
-	maskEnvelopeType = 1<<3 | 1<<2 | 1<<1
+	maskByteOrder        = 1 << 0
+	maskEnvelopeType     = 1<<3 | 1<<2 | 1<<1
+	maskEmptyGeometry    = 1 << 4
+	maskGeoPackageBinary = 1 << 5
 )
 
 type headerFlags byte
+
+func (hf headerFlags) String() string { return fmt.Sprintf("0x%02x", uint8(hf)) }
 
 // Endian will return the encoded Endianess
 func (hf headerFlags) Endian() binary.ByteOrder {
@@ -79,6 +104,12 @@ func (hf headerFlags) Envelope() EnvelopeType {
 	}
 	return EnvelopeType(et)
 }
+
+// IsEmpty returns whether or not the geometry is empty.
+func (hf headerFlags) IsEmpty() bool { return ((hf & maskEmptyGeometry) >> 4) == 1 }
+
+// IsStandard returns weather or not the geometry is a standard GeoPackage geometry type.
+func (hf headerFlags) IsStandard() bool { return ((hf & maskGeoPackageBinary) >> 5) == 0 }
 
 // BinaryHeader is the gpkg header that accompainies every feature.
 type BinaryHeader struct {
@@ -130,12 +161,61 @@ func decodeBinaryHeader(data []byte) (*BinaryHeader, error) {
 
 }
 
+// Magic is the magic number encode in the header. It should be 0x4750
+func (h *BinaryHeader) Magic() [2]byte {
+	if h == nil {
+		return Magic
+	}
+	return h.magic
+}
+
+// Version is the version number encode in the header.
+func (h *BinaryHeader) Version() uint8 {
+	if h == nil {
+		return 0
+	}
+	return h.version
+}
+
+// EnvelopeType is the type of the envelope that is provided.
+func (h *BinaryHeader) EnvelopeType() EnvelopeType {
+	if h == nil {
+		return EnvelopeTypeInvalid
+	}
+	return h.flags.Envelope()
+}
+
 // SRSID is the SRS id of the feature.
 func (h *BinaryHeader) SRSID() int32 {
 	if h == nil {
 		return 0
 	}
 	return h.srsid
+}
+
+// Envelope is the bounding box of the feature, used for searching. If the EnvelopeType is EvelopeTypeNone, then there isn't a envelope encoded
+// and a search without an index will need to be preformed. This is to save space.
+func (h *BinaryHeader) Envelope() []float64 {
+	if h == nil {
+		return nil
+	}
+	return h.envelope
+}
+
+// IsGeometryEmpty tells us if the geometry should be considered empty.
+func (h *BinaryHeader) IsGeometryEmpty() bool {
+	if h == nil {
+		return true
+	}
+	return h.flags.IsEmpty()
+}
+
+// IsStandardGeometry is the geometry a core/extended geometry type, or a user defined geometry type.
+func (h *BinaryHeader) IsStandardGeometry() bool {
+	if h == nil {
+		return true
+	}
+	return h.flags.IsStandard()
 }
 
 // Size is the size of the header in bytes.
@@ -159,8 +239,7 @@ func DecodeGeometry(bytes []byte) (*StandardBinary, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	geo, err := wkb.Unmarshal(bytes[h.Size():], wkbcommon.WKBOptionEmptyPointHandling(wkbcommon.EmptyPointHandlingNaN))
+	geo, err := wkb.Unmarshal(bytes[h.Size():], gpkgNaNHandling)
 	if err != nil {
 		return nil, err
 	}
