@@ -20,8 +20,7 @@ func mockMapGeom(data []byte) (geom.T, error) {
 	if string(data) == "mock error" {
 		return nil, errors.New(string(data))
 	}
-	p, _ := geom.NewPoint(geom.XY).SetCoords(geom.Coord{1.0, 2.0})
-	return p, nil
+	return mockPoint, nil
 }
 
 func TestMapColumnsToFeature(t *testing.T) {
