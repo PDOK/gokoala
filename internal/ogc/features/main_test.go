@@ -699,6 +699,34 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request road polygons as features",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_roads.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=10",
+				collectionID: "road",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_roads.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request road polygons as features in JSON-FG",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_roads.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=10&f=jsonfg",
+				collectionID: "road",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_roads_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
