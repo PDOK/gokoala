@@ -61,8 +61,8 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 	query := makeSearchQuery(p.searchIndex, srid)
 
 	// Execute search query
-	names, ints := collections.NamesAndVersions()
-	rows, err := p.db.Query(queryCtx, query, limit, termsWildcardConcat, termExactConcat, names, ints)
+	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
+	rows, err := p.db.Query(queryCtx, query, limit, termsWildcardConcat, termExactConcat, names, versions, relevance)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
@@ -82,14 +82,14 @@ func makeSearchQuery(index string, srid d.SRID) string {
 		SELECT to_tsquery('simple', $3) query
 	)
 	SELECT
-	    rn.display_name AS display_name,
-		rn.feature_id AS feature_id,
-		rn.collection_id AS collection_id,
-		rn.collection_version AS collection_version,
-		rn.geometry_type AS geometry_type,
+	    rn.display_name,
+		rn.feature_id,
+		rn.collection_id,
+		rn.collection_version,
+		rn.geometry_type,
 		st_transform(rn.bbox, %[2]d)::geometry AS bbox,
-		rn.rank AS rank,
-		rn.highlighted_text AS highlighted_text
+		rn.rank,
+		rn.highlighted_text
 	FROM (
 		SELECT
 			*,
@@ -105,35 +105,39 @@ func makeSearchQuery(index string, srid d.SRID) string {
 			) AS row_number
 		FROM (
 			SELECT
-				display_name,
-				feature_id,
-				collection_id,
-				collection_version,
-				geometry_type,
-				bbox,
-				CASE WHEN display_name=suggest THEN
-					ts_rank(ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(ts, (SELECT query FROM query_wildcard), 1)
+				r.display_name,
+				r.feature_id,
+				r.collection_id,
+				r.collection_version,
+				r.geometry_type,
+				r.bbox,
+				CASE WHEN r.display_name=r.suggest THEN
+					(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
 				ELSE
-				    ts_rank(ts, (SELECT query FROM query_exact), 1) + ts_rank(ts, (SELECT query FROM query_wildcard), 1)
+				    (ts_rank(r.ts, (SELECT query FROM query_exact), 1) + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
 				END AS rank,
-				ts_headline('simple', suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
+				ts_headline('simple', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
 			FROM
-				%[1]s
+				%[1]s r
+			LEFT JOIN
+				(SELECT * FROM unnest($4::text[], $6::float[]) rel(collection_id,relevance)) rel
+			ON
+				rel.collection_id = r.collection_id
 			WHERE
-				ts @@ (SELECT query FROM query_wildcard) AND (collection_id, collection_version) IN (
+				r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
 					-- make a virtual table by creating tuples from the provided arrays.
 					SELECT * FROM unnest($4::text[], $5::int[])
 				)
 			ORDER BY -- keep the same as outer and row_number 'order by' clause
 			    rank DESC,
-			    display_name ASC
+			    r.display_name ASC
 			LIMIT 500
 		) r
 	) rn
 	WHERE rn.row_number = 1
 	ORDER BY
-	    rank DESC,
-	    display_name ASC
+	    rn.rank DESC,
+	    rn.display_name ASC
 	LIMIT $1`, index, srid) // don't add user input here, use $X params for user input!
 
 	return query
