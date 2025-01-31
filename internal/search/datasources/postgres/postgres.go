@@ -61,8 +61,8 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 	query := makeSearchQuery(p.searchIndex, srid)
 
 	// Execute search query
-	names, ints, relevance := collections.NamesAndVersionsAndRelevance()
-	rows, err := p.db.Query(queryCtx, query, limit, termsWildcardConcat, termExactConcat, names, ints, relevance)
+	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
+	rows, err := p.db.Query(queryCtx, query, limit, termsWildcardConcat, termExactConcat, names, versions, relevance)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
