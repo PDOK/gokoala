@@ -16,9 +16,13 @@ Run `npm run cypress:headless` in CI, run `npm run cypress:open` to author (new)
 
 See [OGC API Features example](../examples) involving the `config_features_azure.yaml` config file.
 
-## OGC Compliance validation
+## OGC Compliance Validation
 
-In the case of OGC API Features the complaince is [validated on each PR in CI](.github/workflows/e2e-test.yml)
-using the OGC [TEAM Engine](https://cite.opengeospatial.org/teamengine/). More specifically using a 
-[CLI friendly](https://github.com/PDOK/ets-ogcapi-features10-docker) version of this tool. GoKoala currently
-passes all OGC API Features compliance tests.
+GoKoala currently passes all OGC API Features and OGC API Tiles compliance tests.
+
+These are [validated on each PR in CI](.github/workflows/e2e-test.yml) using the OGC [TEAM Engine](https://github.com/opengeospatial/teamengine). 
+More specifically using a CLI friendly version of this tool:
+
+- https://github.com/PDOK/ets-ogcapi-features10-docker
+- https://github.com/PDOK/ets-ogcapi-tiles10-docker
+
