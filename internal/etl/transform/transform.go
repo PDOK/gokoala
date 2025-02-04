@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -11,8 +12,7 @@ import (
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/engine"
-	"github.com/go-spatial/geom"
-	pggeom "github.com/twpayne/go-geom" // this lib has a large overlap with github.com/go-spatial/geom but we need it to integrate with postgres
+	"github.com/twpayne/go-geom"
 )
 
 const WGS84 = 4326
@@ -20,7 +20,7 @@ const WGS84 = 4326
 type RawRecord struct {
 	FeatureID    int64
 	FieldValues  []any
-	Bbox         *geom.Extent
+	Bbox         *geom.Bounds
 	GeometryType string
 }
 
@@ -31,7 +31,7 @@ type SearchIndexRecord struct {
 	DisplayName       string
 	Suggest           string
 	GeometryType      string
-	Bbox              *pggeom.Polygon
+	Bbox              *geom.Polygon
 }
 
 type Transformer struct {
@@ -104,29 +104,26 @@ func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName
 	return strings.TrimSpace(b.String()), err
 }
 
-func (r RawRecord) transformBbox() (*pggeom.Polygon, error) {
+func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 	if strings.EqualFold(r.GeometryType, "POINT") {
-		r.Bbox = r.Bbox.ExpandBy(0.1) // create valid bbox in case original geom is a point by expanding it a bit
+		// create valid bbox in case original geom is a point by expanding it a bit (eventually we'll replace this with something better)
+		minx := r.Bbox.Min(0) - 0.1
+		miny := r.Bbox.Min(1) - 0.1
+		maxx := r.Bbox.Max(0) + 0.1
+		maxy := r.Bbox.Max(1) + 0.1
+		r.Bbox = geom.NewBounds(geom.XY).Set(minx, miny, maxx, maxy)
 	}
-	if r.Bbox.Area() <= 0 {
+	if surfaceArea(r.Bbox) <= 0 {
 		return nil, errors.New("bbox area must be greater than zero")
 	}
-	// convert bbox to polygon type supported by Postgres db driver
-	polygon, err := pggeom.NewPolygon(pggeom.XY).SetCoords([][]pggeom.Coord{{
-		{r.Bbox.MinX(), r.Bbox.MinY()},
-		{r.Bbox.MaxX(), r.Bbox.MinY()},
-		{r.Bbox.MaxX(), r.Bbox.MaxY()},
-		{r.Bbox.MinX(), r.Bbox.MaxY()},
-		{r.Bbox.MinX(), r.Bbox.MinY()},
-	}})
-	if err != nil {
-		return nil, err
-	}
-	polygon = polygon.SetSRID(WGS84)
-	if polygon.Area() <= 0 {
-		return nil, errors.New("polygon area must be greater than zero")
-	}
-	return polygon, nil
+	return r.Bbox.Polygon().SetSRID(WGS84), nil
+}
+
+// Copied from https://github.com/PDOK/gokoala/blob/070ec77b2249553959330ff8029bfdf48d7e5d86/internal/ogc/features/url.go#L264
+func surfaceArea(bbox *geom.Bounds) float64 {
+	// Use the same logic as bbox.Area() in https://github.com/go-spatial/geom to calculate surface area.
+	// The bounds.Area() in github.com/twpayne/go-geom behaves differently and is not what we're looking for.
+	return math.Abs((bbox.Max(1) - bbox.Min(1)) * (bbox.Max(0) - bbox.Min(0)))
 }
 
 func slicesToStringMap(keys []string, values []any) (map[string]string, error) {
