@@ -7,7 +7,7 @@ import (
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	pggeom "github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 	pgxgeom "github.com/twpayne/pgx-geom"
 
@@ -74,7 +74,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 
 func makeSearchQuery(index string, srid d.SRID) string {
 	// language=postgresql
-	query := fmt.Sprintf(`
+	return fmt.Sprintf(`
 	WITH query_wildcard AS (
 		SELECT to_tsquery('simple', $2) query
 	),
@@ -139,8 +139,6 @@ func makeSearchQuery(index string, srid d.SRID) string {
 	    rn.rank DESC,
 	    rn.display_name ASC
 	LIMIT $1`, index, srid) // don't add user input here, use $X params for user input!
-
-	return query
 }
 
 func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureCollection, error) {
@@ -148,7 +146,7 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 	for rows.Next() {
 		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
 		var rank float64
-		var bbox pggeom.T
+		var bbox geom.T
 
 		if err := rows.Scan(&displayName, &featureID, &collectionID, &collectionVersion, &geomType,
 			&bbox, &rank, &highlightedText); err != nil {
@@ -160,7 +158,7 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 		}
 		fc.Features = append(fc.Features, &d.Feature{
 			ID:       featureID,
-			Geometry: *geojsonGeom,
+			Geometry: geojsonGeom,
 			Properties: map[string]any{
 				d.PropCollectionID:      collectionID,
 				d.PropCollectionVersion: collectionVersion,

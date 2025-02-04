@@ -11,9 +11,9 @@ import (
 
 	"github.com/PDOK/gomagpie/config"
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
-	"github.com/go-spatial/geom"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
+	"github.com/twpayne/go-geom"
 )
 
 const (
@@ -115,12 +115,12 @@ func mapRowToRawRecord(row []any, fields []string) (t.RawRecord, error) {
 	}
 	return t.RawRecord{
 		FeatureID: fid,
-		Bbox: &geom.Extent{
+		Bbox: geom.NewBounds(geom.XY).Set(
 			bbox[0].(float64),
 			bbox[1].(float64),
 			bbox[2].(float64),
 			bbox[3].(float64),
-		},
+		),
 		GeometryType: geomType,
 		FieldValues:  row[nrOfStandardFieldsInQuery : nrOfStandardFieldsInQuery+len(fields)],
 	}, nil
