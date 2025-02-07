@@ -234,7 +234,7 @@ func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tile
 		}
 		err = checkTileMatrixSetLimits(t.tileMatrixSetLimits, tileMatrixSetID, tm, tr, tc)
 		if err != nil {
-			engine.RenderProblemAndLog(engine.ProblemNotFound, w, err, err.Error())
+			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
 			return
 		}
 
