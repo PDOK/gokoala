@@ -194,7 +194,7 @@ func (t *Tiles) Tile(tilesConfig config.Tiles) http.HandlerFunc {
 		}
 		err = checkTileMatrixSetLimits(t.tileMatrixSetLimits, tileMatrixSetID, tm, tr, tc)
 		if err != nil {
-			engine.RenderProblemAndLog(engine.ProblemNotFound, w, err, err.Error())
+			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
 			return
 		}
 
