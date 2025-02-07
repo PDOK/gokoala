@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"golang.org/x/text/language"
 )
 
 var pwd string
@@ -40,7 +41,7 @@ func TestCreateSearchIndex(t *testing.T) {
 	dbConn := makeDbConnection(dbPort)
 
 	// when/then
-	err = CreateSearchIndex(dbConn, "search_index")
+	err = CreateSearchIndex(dbConn, "search_index", language.Dutch)
 	assert.NoError(t, err)
 	err = insertTestData(ctx, dbConn)
 	assert.NoError(t, err)
@@ -61,9 +62,9 @@ func TestCreateSearchIndexIdempotent(t *testing.T) {
 	dbConn := makeDbConnection(dbPort)
 
 	// when/then
-	err = CreateSearchIndex(dbConn, "search_index")
+	err = CreateSearchIndex(dbConn, "search_index", language.English)
 	assert.NoError(t, err)
-	err = CreateSearchIndex(dbConn, "search_index") // second time, should not fail
+	err = CreateSearchIndex(dbConn, "search_index", language.English) // second time, should not fail
 	assert.NoError(t, err)
 }
 
@@ -115,7 +116,7 @@ func TestImportGeoPackage(t *testing.T) {
 		}
 
 		// when/then
-		err = CreateSearchIndex(dbConn, "search_index")
+		err = CreateSearchIndex(dbConn, "search_index", language.English)
 		assert.NoError(t, err)
 
 		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
