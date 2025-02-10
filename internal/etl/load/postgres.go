@@ -36,10 +36,10 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
 		pgx.Identifier{index},
-		[]string{"feature_id", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox"},
+		[]string{"feature_id", "external_fid", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox"},
 		pgx.CopyFromSlice(len(records), func(i int) ([]interface{}, error) {
 			r := records[i]
-			return []any{r.FeatureID, r.CollectionID, r.CollectionVersion, r.DisplayName, r.Suggest, r.GeometryType, r.Bbox}, nil
+			return []any{r.FeatureID, r.ExternalFid, r.CollectionID, r.CollectionVersion, r.DisplayName, r.Suggest, r.GeometryType, r.Bbox}, nil
 		}),
 	)
 	if err != nil {
@@ -66,12 +66,13 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 	searchIndexTable := fmt.Sprintf(`
 	create table if not exists %[1]s (
 		id 					serial,
-		feature_id 			text 					not null ,
-		collection_id 		text					not null,
-		collection_version 	int 					not null,
-		display_name 		text					not null,
-		suggest 			text					not null,
-		geometry_type 		geometry_type			not null,
+		feature_id 			text 					 not null,
+		external_fid        text                     null,
+		collection_id 		text					 not null,
+		collection_version 	int 					 not null,
+		display_name 		text					 not null,
+		suggest 			text					 not null,
+		geometry_type 		geometry_type			 not null,
 		bbox 				geometry(polygon, %[2]d) null,
 		primary key (id, collection_id, collection_version)
 	) -- partition by list(collection_id);`, index, t.WGS84) // TODO partitioning comes later
@@ -81,7 +82,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 	}
 
 	fullTextSearchColumn := fmt.Sprintf(`
-		alter table %[1]s add column if not exists ts tsvector 
+		alter table %[1]s add column if not exists ts tsvector
 	    generated always as (to_tsvector('simple', suggest)) stored;`, index)
 	_, err = p.db.Exec(p.ctx, fullTextSearchColumn)
 	if err != nil {

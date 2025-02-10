@@ -84,6 +84,7 @@ func makeSearchQuery(index string, srid d.SRID) string {
 	SELECT
 	    rn.display_name,
 		rn.feature_id,
+		rn.external_fid,
 		rn.collection_id,
 		rn.collection_version,
 		rn.geometry_type,
@@ -98,7 +99,8 @@ func makeSearchQuery(index string, srid d.SRID) string {
 					r.display_name,
 					r.collection_id,
 					r.collection_version,
-					r.feature_id
+					r.feature_id,
+					r.external_fid
 				ORDER BY -- use same "order by" clause everywhere
 					r.rank DESC,
 					r.display_name COLLATE "custom_numeric" ASC
@@ -107,6 +109,7 @@ func makeSearchQuery(index string, srid d.SRID) string {
 			SELECT
 				r.display_name,
 				r.feature_id,
+				r.external_fid,
 				r.collection_id,
 				r.collection_version,
 				r.geometry_type,
@@ -147,8 +150,9 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
 		var rank float64
 		var bbox geom.T
+		var externalFid *string
 
-		if err := rows.Scan(&displayName, &featureID, &collectionID, &collectionVersion, &geomType,
+		if err := rows.Scan(&displayName, &featureID, &externalFid, &collectionID, &collectionVersion, &geomType,
 			&bbox, &rank, &highlightedText); err != nil {
 			return nil, err
 		}
@@ -157,7 +161,7 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 			return nil, err
 		}
 		fc.Features = append(fc.Features, &d.Feature{
-			ID:       featureID,
+			ID:       getFeatureID(externalFid, featureID),
 			Geometry: geojsonGeom,
 			Properties: map[string]any{
 				d.PropCollectionID:      collectionID,
@@ -171,4 +175,11 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 		fc.NumberReturned = len(fc.Features)
 	}
 	return &fc, queryCtx.Err()
+}
+
+func getFeatureID(externalFid *string, featureID string) string {
+	if externalFid != nil {
+		return *externalFid
+	}
+	return featureID
 }

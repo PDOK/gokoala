@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"dario.cat/mergo"
+	"github.com/google/uuid"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
@@ -89,6 +90,20 @@ type SearchETL struct {
 	// (Without the WHERE keyword, only the clause)
 	// +Optional
 	Filter string `yaml:"filter,omitempty" json:"filter,omitempty"`
+
+	// Optional configuration for generation of external_fid
+	// +optional
+	ExternalFid *ExternalFid `yaml:"externalFid,omitempty" json:"externalFid,omitempty"`
+}
+
+type ExternalFid struct {
+	// Namespace (UUID5) used to generate external_fid, defaults to uuid.NameSpaceURL
+	// +kubebuilder:default="6ba7b811-9dad-11d1-80b4-00c04fd430c8"
+	UUIDNamespace uuid.UUID `yaml:"uuidNamespace,omitempty" json:"uuidNamespace,omitempty" default:"6ba7b811-9dad-11d1-80b4-00c04fd430c8" validate:"required"`
+
+	// Fields used to generate external_fid in the target OGC Features Collection(s).
+	// If feature ID should be used, always specify it as 'fid'!
+	Fields []string `yaml:"fields" json:"fields" validate:"required"`
 }
 
 type RelatedOGCAPIFeaturesCollection struct {
