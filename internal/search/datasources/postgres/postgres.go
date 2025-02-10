@@ -101,9 +101,9 @@ func makeSearchQuery(index string, srid d.SRID) string {
 					r.collection_version,
 					r.feature_id,
 					r.external_fid
-				ORDER BY
+				ORDER BY -- use same "order by" clause everywhere
 					r.rank DESC,
-					r.display_name ASC
+					r.display_name COLLATE "custom_numeric" ASC
 			) AS row_number
 		FROM (
 			SELECT
@@ -131,16 +131,16 @@ func makeSearchQuery(index string, srid d.SRID) string {
 					-- make a virtual table by creating tuples from the provided arrays.
 					SELECT * FROM unnest($4::text[], $5::int[])
 				)
-			ORDER BY -- keep the same as outer and row_number 'order by' clause
+			ORDER BY -- use same "order by" clause everywhere
 			    rank DESC,
-			    r.display_name ASC
+			    r.display_name COLLATE "custom_numeric" ASC
 			LIMIT 500
 		) r
 	) rn
 	WHERE rn.row_number = 1
-	ORDER BY
+	ORDER BY -- use same "order by" clause everywhere
 	    rn.rank DESC,
-	    rn.display_name ASC
+	    rn.display_name COLLATE "custom_numeric" ASC
 	LIMIT $1`, index, srid) // don't add user input here, use $X params for user input!
 }
 

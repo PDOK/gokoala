@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"golang.org/x/text/language"
 )
 
 const testSearchIndex = "search_index"
@@ -60,7 +61,7 @@ func TestSearch(t *testing.T) {
 	searchEndpoint := NewSearch(eng, dbConn, testSearchIndex)
 
 	// given empty search index
-	err = etl.CreateSearchIndex(dbConn, testSearchIndex)
+	err = etl.CreateSearchIndex(dbConn, testSearchIndex, language.Dutch)
 	assert.NoError(t, err)
 
 	// given imported geopackage (creates two collections in search_index with identical data)

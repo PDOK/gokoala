@@ -7,6 +7,7 @@ import (
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
 	"github.com/jackc/pgx/v5"
 	pgxgeom "github.com/twpayne/pgx-geom"
+	"golang.org/x/text/language"
 )
 
 type Postgres struct {
@@ -48,7 +49,7 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 }
 
 // Init initialize search index
-func (p *Postgres) Init(index string) error {
+func (p *Postgres) Init(index string, lang language.Tag) error {
 	// since "create type if not exists" isn't supported by Postgres we use a bit
 	// of pl/pgsql to avoid creating the geometry_type when it already exists.
 	geometryType := `
@@ -93,5 +94,14 @@ func (p *Postgres) Init(index string) error {
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)
 	}
+
+	// create custom collation to correctly handle "numbers in strings" when sorting results
+	// see https://www.postgresql.org/docs/12/collation.html#id-1.6.10.4.5.7.5
+	collation := fmt.Sprintf(`create collation if not exists custom_numeric (provider = icu, locale = '%s-u-kn-true');`, lang.String())
+	_, err = p.db.Exec(p.ctx, collation)
+	if err != nil {
+		return fmt.Errorf("error creating numeric collation: %w", err)
+	}
+
 	return err
 }
