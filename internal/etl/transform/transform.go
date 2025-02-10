@@ -19,10 +19,11 @@ import (
 const WGS84 = 4326
 
 type RawRecord struct {
-	FeatureID    int64
-	FieldValues  []any
-	Bbox         *geom.Bounds
-	GeometryType string
+	FeatureID         int64
+	FieldValues       []any
+	ExternalFidValues []any
+	Bbox              *geom.Bounds
+	GeometryType      string
 }
 
 type SearchIndexRecord struct {
@@ -74,10 +75,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 			return nil, err
 		}
 
-		// add FeatureID to available fields for ExternalFid
-		externalFidFieldValues := fieldValuesByName
-		externalFidFieldValues["fid"] = strconv.FormatInt(r.FeatureID, 10)
-		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, externalFidFieldValues)
+		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
 		if err != nil {
 			return nil, err
 		}
@@ -152,15 +150,14 @@ func slicesToStringMap(keys []string, values []any) (map[string]string, error) {
 	return result, nil
 }
 
-func generateExternalFid(collectionID string, externalFid *config.ExternalFid, fieldValues map[string]string) (*string, error) {
+func generateExternalFid(collectionID string, externalFid *config.ExternalFid, externalFidValues []any) (*string, error) {
 	if externalFid != nil {
 		uuidInput := collectionID
-		for _, field := range externalFid.Fields {
-			if fieldValue, ok := fieldValues[field]; ok {
-				uuidInput += fieldValue
-			} else {
-				return nil, fmt.Errorf("specified ExternalFid field '%s' not present in record", field)
-			}
+		if len(externalFid.Fields) != len(externalFidValues) {
+			return nil, fmt.Errorf("slices must be of the same length, got %d keys and %d values", len(externalFid.Fields), len(externalFidValues))
+		}
+		for _, value := range externalFidValues {
+			uuidInput += fmt.Sprint(value)
 		}
 		externalFid := uuid.NewSHA1(externalFid.UUIDNamespace, []byte(uuidInput)).String()
 		return &externalFid, nil

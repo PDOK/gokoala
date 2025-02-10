@@ -16,7 +16,7 @@ import (
 type Extract interface {
 
 	// Extract raw records from source database to be transformed and loaded into target search index
-	Extract(table config.FeatureTable, fields []string, where string, limit int, offset int) ([]t.RawRecord, error)
+	Extract(table config.FeatureTable, fields []string, externaFidFields []string, where string, limit int, offset int) ([]t.RawRecord, error)
 
 	// Close connection to source database
 	Close()
@@ -85,7 +85,11 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	for {
 		log.Println("---")
 		log.Printf("extracting source records from offset %d", offset)
-		sourceRecords, err := source.Extract(table, collection.Search.Fields, collection.Search.ETL.Filter, pageSize, offset)
+		externalFidFields := []string{}
+		if collection.Search.ETL.ExternalFid != nil {
+			externalFidFields = collection.Search.ETL.ExternalFid.Fields
+		}
+		sourceRecords, err := source.Extract(table, collection.Search.Fields, externalFidFields, collection.Search.ETL.Filter, pageSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
 		}
