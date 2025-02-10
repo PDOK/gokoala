@@ -10,6 +10,7 @@ import (
 	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/search"
 	"github.com/iancoleman/strcase"
+	"golang.org/x/text/language"
 
 	eng "github.com/PDOK/gomagpie/internal/engine"
 	"github.com/PDOK/gomagpie/internal/etl"
@@ -44,6 +45,7 @@ const (
 	pageSizeFlag            = "page-size"
 	substitutionsFileFlag   = "substitutions-file"
 	synonymsFileFlag        = "synonyms-file"
+	languageFlag            = "lang"
 )
 
 var (
@@ -219,10 +221,21 @@ func main() {
 					Required: false,
 					Value:    "search_index",
 				},
+				&cli.StringFlag{
+					Name:     languageFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(languageFlag)},
+					Usage:    "What language will predominantly be used in the search index. Specify as a BCP 47 tag, like 'en', 'nl', 'de'",
+					Required: false,
+					Value:    "nl",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
-				return etl.CreateSearchIndex(dbConn, c.String(searchIndexFlag))
+				lang, err := language.Parse(c.String(languageFlag))
+				if err != nil {
+					return err
+				}
+				return etl.CreateSearchIndex(dbConn, c.String(searchIndexFlag), lang)
 			},
 		},
 		{

@@ -1,6 +1,6 @@
 module crd
 
-go 1.23.3
+go 1.23.6
 
 require (
 	github.com/PDOK/gomagpie v0.0.0

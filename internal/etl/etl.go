@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gomagpie/internal/etl/extract"
 	"github.com/PDOK/gomagpie/internal/etl/load"
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
+	"golang.org/x/text/language"
 )
 
 // Extract - the 'E' in ETL. Datasource agnostic interface to extract source data.
@@ -32,7 +33,7 @@ type Transform interface {
 type Load interface {
 
 	// Init the target database by creating an empty search index
-	Init(index string) error
+	Init(index string, lang language.Tag) error
 
 	// Load records into search index
 	Load(records []t.SearchIndexRecord, index string) (int64, error)
@@ -42,13 +43,13 @@ type Load interface {
 }
 
 // CreateSearchIndex creates empty search index in target database
-func CreateSearchIndex(dbConn string, searchIndex string) error {
+func CreateSearchIndex(dbConn string, searchIndex string, lang language.Tag) error {
 	db, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	return db.Init(searchIndex)
+	return db.Init(searchIndex, lang)
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
