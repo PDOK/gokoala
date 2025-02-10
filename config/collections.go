@@ -102,7 +102,7 @@ type ExternalFid struct {
 	UUIDNamespace uuid.UUID `yaml:"uuidNamespace,omitempty" json:"uuidNamespace,omitempty" default:"6ba7b811-9dad-11d1-80b4-00c04fd430c8" validate:"required"`
 
 	// Fields used to generate external_fid in the target OGC Features Collection(s).
-	// If feature ID should be used, always specify it as 'fid'!
+	// Field names should match those in the source datasource.
 	Fields []string `yaml:"fields" json:"fields" validate:"required"`
 }
 
