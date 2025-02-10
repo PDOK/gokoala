@@ -56,7 +56,7 @@ func (g *GeoPackage) Close() {
 	_ = g.db.Close()
 }
 
-func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, where string, limit int, offset int) ([]t.RawRecord, error) {
+func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, externalFidFields []string, where string, limit int, offset int) ([]t.RawRecord, error) {
 	if len(fields) == 0 {
 		return nil, errors.New("no fields provided to read from GeoPackage")
 	}
@@ -64,19 +64,23 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, where s
 		where = "where " + where
 	}
 
+	// combine field and externalFidFields
+	extraFields := fields
+	extraFields = append(extraFields, externalFidFields...)
+
 	// TODO we might need WGS84 transformation here of bbox
 	query := fmt.Sprintf(`
 		select %[3]s as fid,
-		    st_minx(castautomagic(%[4]s)) as bbox_minx, 
-		    st_miny(castautomagic(%[4]s)) as bbox_miny, 
-		    st_maxx(castautomagic(%[4]s)) as bbox_maxx, 
+		    st_minx(castautomagic(%[4]s)) as bbox_minx,
+		    st_miny(castautomagic(%[4]s)) as bbox_miny,
+		    st_maxx(castautomagic(%[4]s)) as bbox_maxx,
 		    st_maxy(castautomagic(%[4]s)) as bbox_maxy,
 		    st_geometrytype(castautomagic(%[4]s)) as geom_type,
-		    %[1]s -- all feature specific fields
-		from %[2]s 
-		%[5]s 
-		limit :limit 
-		offset :offset`, strings.Join(fields, ","), table.Name, table.FID, table.Geom, where)
+		    %[1]s -- all feature specific fields and any fields for external_fid
+		from %[2]s
+		%[5]s
+		limit :limit
+		offset :offset`, strings.Join(extraFields, ","), table.Name, table.FID, table.Geom, where)
 
 	rows, err := g.db.NamedQuery(query, map[string]any{"limit": limit, "offset": offset})
 	if err != nil {
@@ -90,10 +94,10 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, where s
 		if row, err = rows.SliceScan(); err != nil {
 			return nil, err
 		}
-		if len(row) != len(fields)+nrOfStandardFieldsInQuery {
+		if len(row) != len(fields)+len(externalFidFields)+nrOfStandardFieldsInQuery {
 			return nil, fmt.Errorf("unexpected row length (%v)", len(row))
 		}
-		record, err := mapRowToRawRecord(row, fields)
+		record, err := mapRowToRawRecord(row, fields, externalFidFields)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +106,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, where s
 	return result, nil
 }
 
-func mapRowToRawRecord(row []any, fields []string) (t.RawRecord, error) {
+func mapRowToRawRecord(row []any, fields []string, externalFidFields []string) (t.RawRecord, error) {
 	bbox := row[1:5]
 
 	fid := row[0].(int64)
@@ -121,7 +125,8 @@ func mapRowToRawRecord(row []any, fields []string) (t.RawRecord, error) {
 			bbox[2].(float64),
 			bbox[3].(float64),
 		),
-		GeometryType: geomType,
-		FieldValues:  row[nrOfStandardFieldsInQuery : nrOfStandardFieldsInQuery+len(fields)],
+		GeometryType:      geomType,
+		FieldValues:       row[nrOfStandardFieldsInQuery : nrOfStandardFieldsInQuery+len(fields)],
+		ExternalFidValues: row[nrOfStandardFieldsInQuery+len(fields) : nrOfStandardFieldsInQuery+len(fields)+len(externalFidFields)],
 	}, nil
 }
