@@ -12,6 +12,7 @@ import (
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/google/uuid"
 	"github.com/twpayne/go-geom"
 )
 
@@ -26,6 +27,7 @@ type RawRecord struct {
 
 type SearchIndexRecord struct {
 	FeatureID         string
+	ExternalFid       *string
 	CollectionID      string
 	CollectionVersion int
 	DisplayName       string
@@ -72,10 +74,19 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 			return nil, err
 		}
 
+		// add FeatureID to available fields for ExternalFid
+		externalFidFieldValues := fieldValuesByName
+		externalFidFieldValues["fid"] = strconv.FormatInt(r.FeatureID, 10)
+		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, externalFidFieldValues)
+		if err != nil {
+			return nil, err
+		}
+
 		// create target record(s)
 		for _, suggestion := range suggestions {
 			resultRecord := SearchIndexRecord{
 				FeatureID:         strconv.FormatInt(r.FeatureID, 10),
+				ExternalFid:       externalFid,
 				CollectionID:      collection.ID,
 				CollectionVersion: collection.Search.Version,
 				DisplayName:       displayName,
@@ -139,4 +150,20 @@ func slicesToStringMap(keys []string, values []any) (map[string]string, error) {
 		}
 	}
 	return result, nil
+}
+
+func generateExternalFid(collectionID string, externalFid *config.ExternalFid, fieldValues map[string]string) (*string, error) {
+	if externalFid != nil {
+		uuidInput := collectionID
+		for _, field := range externalFid.Fields {
+			if fieldValue, ok := fieldValues[field]; ok {
+				uuidInput += fieldValue
+			} else {
+				return nil, fmt.Errorf("specified ExternalFid field '%s' not present in record", field)
+			}
+		}
+		externalFid := uuid.NewSHA1(externalFid.UUIDNamespace, []byte(uuidInput)).String()
+		return &externalFid, nil
+	}
+	return nil, nil
 }
