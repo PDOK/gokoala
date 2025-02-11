@@ -57,6 +57,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 		termsWildcard[i] = term + ":*"
 	}
 	termsWildcardConcat := strings.Join(termsWildcard, " & ")
+	// TODO begraafplaats voorbeeld
 	termExactConcat := strings.Join(strings.Fields(searchTerm), " | ")
 	query := makeSearchQuery(p.searchIndex, srid)
 

@@ -177,6 +177,18 @@ func main() {
 					Usage:   "Name of search index to use",
 					Value:   "search_index",
 				},
+				&cli.PathFlag{
+					Name:     substitutionsFileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(substitutionsFileFlag)},
+					Usage:    "Path to csv file containing substitutions used to generate suggestions",
+					Required: true,
+				},
+				&cli.PathFlag{
+					Name:     synonymsFileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(synonymsFileFlag)},
+					Usage:    "Path to csv file containing synonyms used to generate suggestions",
+					Required: true,
+				},
 			},
 			Action: func(c *cli.Context) error {
 				log.Println(c.Command.Usage)
@@ -198,7 +210,7 @@ func main() {
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine, dbConn)
 				// Create search endpoint
-				search.NewSearch(engine, dbConn, c.String(searchIndexFlag))
+				search.NewSearch(engine, dbConn, c.String(searchIndexFlag), c.Path(substitutionsFileFlag), c.Path(synonymsFileFlag))
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},

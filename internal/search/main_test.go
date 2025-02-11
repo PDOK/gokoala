@@ -58,7 +58,7 @@ func TestSearch(t *testing.T) {
 	assert.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint := NewSearch(eng, dbConn, testSearchIndex)
+	searchEndpoint := NewSearch(eng, dbConn, testSearchIndex, "internal/search/testdata/substitutions.csv", "internal/search/testdata/synonyms.csv")
 
 	// given empty search index
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex, language.Dutch)
