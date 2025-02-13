@@ -53,9 +53,9 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	sql := makeSQL(p.searchIndex, srid)
 	wildcardQuery := searchQuery.ToWildcardQuery()
 	exactMatchQuery := searchQuery.ToExactMatchQuery()
+	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
 
 	// Execute search query
-	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
 	rows, err := p.db.Query(queryCtx, sql, limit, wildcardQuery, exactMatchQuery, names, versions, relevance)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)

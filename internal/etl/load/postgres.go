@@ -74,6 +74,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		suggest 			text					 not null,
 		geometry_type 		geometry_type			 not null,
 		bbox 				geometry(polygon, %[2]d) null,
+	    ts                  tsvector                 generated always as (to_tsvector('simple', suggest)) stored,
 		primary key (id, collection_id, collection_version)
 	) -- partition by list(collection_id);`, index, t.WGS84) // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
@@ -81,15 +82,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		return fmt.Errorf("error creating search index table: %w", err)
 	}
 
-	fullTextSearchColumn := fmt.Sprintf(`
-		alter table %[1]s add column if not exists ts tsvector
-	    generated always as (to_tsvector('simple', suggest)) stored;`, index)
-	_, err = p.db.Exec(p.ctx, fullTextSearchColumn)
-	if err != nil {
-		return fmt.Errorf("error creating full-text search column: %w", err)
-	}
-
-	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on  %[1]s using gin(ts);`, index)
+	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on %[1]s using gin(ts);`, index)
 	_, err = p.db.Exec(p.ctx, ginIndex)
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)
