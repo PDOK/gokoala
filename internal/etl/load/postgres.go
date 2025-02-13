@@ -48,6 +48,14 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 	return loaded, nil
 }
 
+func (p *Postgres) Optimize() error {
+	_, err := p.db.Exec(p.ctx, `vacuum analyze;`)
+	if err != nil {
+		return fmt.Errorf("error performing vacuum analyze: %w", err)
+	}
+	return nil
+}
+
 // Init initialize search index
 func (p *Postgres) Init(index string, lang language.Tag) error {
 	// since "create type if not exists" isn't supported by Postgres we use a bit

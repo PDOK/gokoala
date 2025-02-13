@@ -38,6 +38,9 @@ type Load interface {
 	// Load records into search index
 	Load(records []t.SearchIndexRecord, index string) (int64, error)
 
+	// Optimize once ETL is completed (optionally)
+	Optimize() error
+
 	// Close connection to target database
 	Close()
 }
@@ -53,6 +56,8 @@ func CreateSearchIndex(dbConn string, searchIndex string, lang language.Tag) err
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
+//
+//nolint:funlen
 func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, substitutionsFile string,
 	synonymsFile string, table config.FeatureTable, pageSize int, dbConn string) error {
 
@@ -111,6 +116,9 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		offset += pageSize
 	}
 
+	if err = target.Optimize(); err != nil {
+		return fmt.Errorf("failed optimizing: %w", err)
+	}
 	log.Printf("completed import of %s", details)
 	return nil
 }
