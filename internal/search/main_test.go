@@ -124,9 +124,9 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search: 'Den Haag' for a single collection in WGS84 (default)",
+			name: "Search: 'Den' for a single collection in WGS84 (default)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=eerste 2de Den Haag&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-single-collection-wgs84.json",
