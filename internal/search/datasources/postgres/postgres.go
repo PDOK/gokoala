@@ -150,7 +150,7 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 			&bbox, &rank, &highlightedText); err != nil {
 			return nil, err
 		}
-		geojsonGeom, err := geojson.Encode(bbox)
+		geojsonGeom, err := geojson.Encode(bbox, geojson.EncodeGeometryWithMaxDecimalDigits(10))
 		if err != nil {
 			return nil, err
 		}
