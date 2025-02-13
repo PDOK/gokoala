@@ -11,8 +11,8 @@ import (
 type Datasource interface {
 	// SearchFeaturesAcrossCollections search features in one or more collections. Collections can be located
 	// in this dataset or in other datasets.
-	SearchFeaturesAcrossCollections(ctx context.Context, searchTerm string, collections domain.CollectionsWithParams,
-		srid domain.SRID, limit int) (*domain.FeatureCollection, error)
+	SearchFeaturesAcrossCollections(ctx context.Context, searchQuery domain.SearchQuery,
+		collections domain.CollectionsWithParams, srid domain.SRID, limit int) (*domain.FeatureCollection, error)
 
 	// Close closes (connections to) the datasource gracefully
 	Close()

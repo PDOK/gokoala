@@ -54,19 +54,8 @@ func (s *Search) Search() http.HandlerFunc {
 			return
 		}
 
-		// TODO syn + subst
-		// split zoektermen in zoektermen op spatie hier opnemen
-		// per zoekterm synoniemen genereren (check SOLR issue, anders omdraaien) -> 2x doen, 1x vooraf, 1x per woord> NEE -> 1x op hele string
-		// resultaat is: lijst van lijst met zoektermen + synoniemen.
-		// later een toQuery() uitvoeren die er een query string van maakt.
-		terms := s.substAndSynonyms.generate(searchTerm)
-		for _, term := range terms {
-			for _, variant := range term {
-				log.Printf("term: %s, variant: %s", term, variant)
-			}
-		}
-
-		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), searchTerm, collections, outputSRID, limit)
+		searchQuery := s.substAndSynonyms.generate(searchTerm)
+		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), searchQuery, collections, outputSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return

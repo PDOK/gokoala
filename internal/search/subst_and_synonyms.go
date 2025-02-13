@@ -5,14 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/PDOK/gomagpie/internal/engine/util"
+	"github.com/PDOK/gomagpie/internal/search/domain"
 )
 
 type SubstAndSynonyms struct {
-	substitutions   map[string]string
-	synonyms        map[string]string
-	synonymsInverse map[string]string
+	substitutions   map[string][]string
+	synonyms        map[string][]string
+	synonymsInverse map[string][]string
 }
 
 func NewSubstAndSynonyms(substitutionsFile, synonymsFile string) (*SubstAndSynonyms, error) {
@@ -21,17 +24,71 @@ func NewSubstAndSynonyms(substitutionsFile, synonymsFile string) (*SubstAndSynon
 	return &SubstAndSynonyms{
 		substitutions:   substitutions,
 		synonyms:        synonyms,
-		synonymsInverse: util.Inverse(synonyms),
+		synonymsInverse: util.InverseMulti(synonyms),
 	}, errors.Join(substErr, synErr)
 }
 
-func (s SubstAndSynonyms) generate(term string) [][]string {
-	var result = make([][]string, 2)
-	result[0] = []string{term}
-	return result
+func (s SubstAndSynonyms) generate(term string) domain.SearchQuery {
+	// Expand substitutions
+	result := extendValues([]string{term}, s.substitutions)
+	// Expand synonyms
+	// -> one way
+	result = extendValues(result, s.synonyms)
+	// <- reverse way
+	result = extendValues(result, s.synonymsInverse)
+	return domain.NewSearchQuery(result)
 }
 
-func readCsvFile(filepath string) (map[string]string, error) {
+func extendValues(input []string, mapping map[string][]string) []string {
+	var results []string
+
+	for len(input) > 0 {
+		// Pop the first element from the input slice
+		current := strings.ToLower(input[0])
+		input = input[1:]
+
+		// Add the current string to the results
+		results = append(results, current)
+
+		// Generate new strings based on the mapping
+		for original, alternatives := range mapping {
+			for _, alternative := range alternatives {
+				if strings.Contains(current, original) {
+					for i := 0; i < strings.Count(current, original); i++ {
+						if strings.HasPrefix(alternative, original) {
+							// skip to prevent endless loop for cases such as
+							// original = "foo", alternative = "foos" and input = "foosball", which would otherwise result in "foosssssssssssssssball"
+							continue
+						}
+						extendedInput := replaceNth(current, original, alternative, i+1)
+						input = append(input, extendedInput)
+					}
+				}
+			}
+		}
+	}
+	return slices.Compact(results)
+}
+
+func replaceNth(input, oldChar, newChar string, nthIndex int) string {
+	count := 0
+	result := strings.Builder{}
+
+	for i := 0; i < len(input); i++ {
+		if strings.HasPrefix(input[i:], oldChar) {
+			count++
+			if count == nthIndex {
+				result.WriteString(newChar)
+				i += len(oldChar) - 1
+				continue
+			}
+		}
+		result.WriteByte(input[i]) // no need to catch error since "the returned error is always nil"
+	}
+	return result.String()
+}
+
+func readCsvFile(filepath string) (map[string][]string, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
@@ -47,9 +104,13 @@ func readCsvFile(filepath string) (map[string]string, error) {
 		return nil, fmt.Errorf("failed to parse CSV file: %w", err)
 	}
 
-	result := make(map[string]string)
+	result := make(map[string][]string)
 	for _, row := range records {
-		result[row[0]] = row[1]
+		for i := 0; i < len(row); i++ {
+			// make sure it's all in lowercase since replacement happens in lowercase
+			row[i] = strings.ToLower(row[i])
+		}
+		result[row[0]] = row[1:]
 	}
 	return result, nil
 }

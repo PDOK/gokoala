@@ -1,6 +1,9 @@
 package domain
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 const (
 	VersionParam     = "version"
@@ -53,4 +56,42 @@ func (cp CollectionsWithParams) NamesAndVersionsAndRelevance() (names []string, 
 		names = append(names, name)
 	}
 	return names, versions, relevance
+}
+
+type SearchQuery struct {
+	terms []string
+}
+
+func NewSearchQuery(terms []string) SearchQuery {
+	return SearchQuery{terms: terms}
+}
+
+func (q *SearchQuery) ToWildcardQuery() string {
+	return q.toString(true)
+}
+
+func (q *SearchQuery) ToExactMatchQuery() string {
+	return q.toString(false)
+}
+
+func (q *SearchQuery) toString(wildcard bool) string {
+	sb := &strings.Builder{}
+	for i, term := range q.terms {
+		sb.WriteByte('(')
+		parts := strings.Fields(term)
+		for j, part := range parts {
+			sb.WriteString(part)
+			if wildcard {
+				sb.WriteString(":*")
+			}
+			if j != len(parts)-1 {
+				sb.WriteString(" & ")
+			}
+		}
+		sb.WriteByte(')')
+		if i != len(q.terms)-1 {
+			sb.WriteString(" | ")
+		}
+	}
+	return sb.String()
 }

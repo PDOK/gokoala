@@ -11,7 +11,6 @@ import (
 	"github.com/twpayne/go-geom/encoding/geojson"
 	pgxgeom "github.com/twpayne/pgx-geom"
 
-	"strings"
 	"time"
 )
 
@@ -45,27 +44,21 @@ func (p *Postgres) Close() {
 	p.db.Close()
 }
 
-func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTerm string, collections d.CollectionsWithParams,
-	srid d.SRID, limit int) (*d.FeatureCollection, error) {
+func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQuery d.SearchQuery,
+	collections d.CollectionsWithParams, srid d.SRID, limit int) (*d.FeatureCollection, error) {
 
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
-	// Split terms by spaces and append :* to each term
-	termsWildcard := strings.Fields(searchTerm)
-	for i, term := range termsWildcard {
-		termsWildcard[i] = term + ":*"
-	}
-	termsWildcardConcat := strings.Join(termsWildcard, " & ")
-	// TODO begraafplaats voorbeeld
-	termExactConcat := strings.Join(strings.Fields(searchTerm), " | ")
-	query := makeSearchQuery(p.searchIndex, srid)
+	sql := makeSQL(p.searchIndex, srid)
+	wildcardQuery := searchQuery.ToWildcardQuery()
+	exactMatchQuery := searchQuery.ToExactMatchQuery()
 
 	// Execute search query
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
-	rows, err := p.db.Query(queryCtx, query, limit, termsWildcardConcat, termExactConcat, names, versions, relevance)
+	rows, err := p.db.Query(queryCtx, sql, limit, wildcardQuery, exactMatchQuery, names, versions, relevance)
 	if err != nil {
-		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
+		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
 	}
 	defer rows.Close()
 
@@ -73,7 +66,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchTe
 	return mapRowsToFeatures(queryCtx, rows)
 }
 
-func makeSearchQuery(index string, srid d.SRID) string {
+func makeSQL(index string, srid d.SRID) string {
 	// language=postgresql
 	return fmt.Sprintf(`
 	WITH query_wildcard AS (
