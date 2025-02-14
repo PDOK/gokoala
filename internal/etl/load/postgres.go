@@ -56,10 +56,10 @@ func (p *Postgres) Optimize() error {
 	return nil
 }
 
-// Init initialize search index
+// Init initialize search index. Should be idempotent!
 func (p *Postgres) Init(index string, lang language.Tag) error {
 	// since "create type if not exists" isn't supported by Postgres we use a bit
-	// of pl/pgsql to avoid creating the geometry_type when it already exists.
+	// of pl/pgsql to make it idempotent
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
@@ -69,6 +69,23 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 	_, err := p.db.Exec(p.ctx, geometryType)
 	if err != nil {
 		return fmt.Errorf("error creating geometry type: %w", err)
+	}
+
+	// since "create text search configuration if not exists" isn't supported by Postgres we use a bit
+	// of pl/pgsql to make it idempotent.
+	// Our custom dictionary incorporates the 'unaccent' extension.
+	textSearchConfig := `
+		do $$ begin
+		    create text search configuration custom_dict (copy = simple);
+			alter text search configuration custom_dict
+			  alter mapping for hword, hword_part, word
+			  with unaccent, simple;
+		exception
+		    when unique_violation then null;
+		end $$;`
+	_, err = p.db.Exec(p.ctx, textSearchConfig)
+	if err != nil {
+		return fmt.Errorf("error creating text search configuration: %w", err)
 	}
 
 	searchIndexTable := fmt.Sprintf(`
@@ -82,7 +99,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		suggest 			text					 not null,
 		geometry_type 		geometry_type			 not null,
 		bbox 				geometry(polygon, %[2]d) null,
-	    ts                  tsvector                 generated always as (to_tsvector('simple', suggest)) stored,
+	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored,
 		primary key (id, collection_id, collection_version)
 	) -- partition by list(collection_id);`, index, t.WGS84) // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)

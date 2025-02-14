@@ -115,11 +115,13 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		log.Printf("loaded %d records into target search index: '%s'", loaded, searchIndex)
 		offset += pageSize
 	}
+	log.Printf("completed import of %s", details)
 
+	log.Println("start optimizing")
 	if err = target.Optimize(); err != nil {
 		return fmt.Errorf("failed optimizing: %w", err)
 	}
-	log.Printf("completed import of %s", details)
+	log.Println("completed optimizing")
 	return nil
 }
 

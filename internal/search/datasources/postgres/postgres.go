@@ -70,10 +70,10 @@ func makeSQL(index string, srid d.SRID) string {
 	// language=postgresql
 	return fmt.Sprintf(`
 	WITH query_wildcard AS (
-		SELECT to_tsquery('simple', $2) query
+		SELECT to_tsquery('custom_dict', $2) query
 	),
 	query_exact AS (
-		SELECT to_tsquery('simple', $3) query
+		SELECT to_tsquery('custom_dict', $3) query
 	)
 	SELECT
 	    rn.display_name,
@@ -113,7 +113,7 @@ func makeSQL(index string, srid d.SRID) string {
 				ELSE
 				    (ts_rank(r.ts, (SELECT query FROM query_exact), 1) + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
 				END AS rank,
-				ts_headline('simple', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
+				ts_headline('custom_dict', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
 			FROM
 				%[1]s r
 			LEFT JOIN
