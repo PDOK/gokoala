@@ -141,18 +141,12 @@ export function search$Json(
     rb.query('crs', params.crs, { style: 'form', explode: false })
   }
 
-  return http
-    .request(
-      // rb.build({ responseType: 'json', accept: 'application/vnd.ogc.fg+json', context })
-
-      rb.build({ responseType: 'json', accept: 'application/geo+json', context })
-    )
-    .pipe(
-      filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
-      map((r: HttpResponse<any>) => {
-        return r as StrictHttpResponse<FeatureCollectionJsonfg>
-      })
-    )
+  return http.request(rb.build({ responseType: 'json', accept: 'application/json', context })).pipe(
+    filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
+    map((r: HttpResponse<any>) => {
+      return r as StrictHttpResponse<FeatureCollectionJsonfg>
+    })
+  )
 }
 
 search$Json.PATH = '/search'
