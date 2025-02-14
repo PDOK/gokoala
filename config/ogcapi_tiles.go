@@ -25,13 +25,6 @@ func (o *OgcAPITiles) Defaults() {
 		o.DatasetTiles.HealthCheck.TilePath == nil {
 		log.Println("Setting dataset tiles healthcheck")
 		o.DatasetTiles.deriveHealthCheckTilePath()
-	} else if o.Collections != nil {
-		log.Println("Setting collection tiles healthcheck")
-		for _, coll := range o.Collections {
-			if coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
-				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
-			}
-		}
 	}
 }
 
