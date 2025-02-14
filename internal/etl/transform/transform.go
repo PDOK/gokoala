@@ -37,13 +37,10 @@ type SearchIndexRecord struct {
 	Bbox              *geom.Polygon
 }
 
-type Transformer struct {
-	substAndSynonyms *SubstAndSynonyms
-}
+type Transformer struct{}
 
-func NewTransformer(substitutionsFile string, synonymsFile string) (*Transformer, error) {
-	substAndSynonyms, err := NewSubstAndSynonyms(substitutionsFile, synonymsFile)
-	return &Transformer{substAndSynonyms}, err
+func NewTransformer() *Transformer {
+	return &Transformer{}
 }
 
 func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection) ([]SearchIndexRecord, error) {

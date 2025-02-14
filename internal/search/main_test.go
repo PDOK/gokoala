@@ -211,9 +211,7 @@ func importAddressesGpkg(collectionName string, dbConn string) error {
 	collection := config.CollectionByID(conf, collectionName)
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
 	return etl.ImportFile(*collection, testSearchIndex,
-		"internal/etl/testdata/addresses-crs84.gpkg",
-		"internal/etl/testdata/substitutions.csv",
-		"internal/etl/testdata/synonyms.csv", table, 5000, dbConn)
+		"internal/etl/testdata/addresses-crs84.gpkg", table, 5000, dbConn)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {

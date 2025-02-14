@@ -58,8 +58,8 @@ func CreateSearchIndex(dbConn string, searchIndex string, lang language.Tag) err
 // ImportFile import source data into target search index using extract-transform-load principle
 //
 //nolint:funlen
-func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, substitutionsFile string,
-	synonymsFile string, table config.FeatureTable, pageSize int, dbConn string) error {
+func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string,
+	table config.FeatureTable, pageSize int, dbConn string) error {
 
 	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
 	log.Printf("start import of %s", details)
@@ -80,10 +80,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	}
 	defer target.Close()
 
-	transformer, err := newTransformer(substitutionsFile, synonymsFile)
-	if err != nil {
-		return err
-	}
+	transformer := t.NewTransformer()
 
 	// import records in batches depending on page size
 	offset := 0
@@ -139,8 +136,4 @@ func newTargetToLoad(dbConn string) (Load, error) {
 	}
 	// add new targets here (elasticsearch, solr, etc)
 	return nil, fmt.Errorf("unsupported target database connection: %s", dbConn)
-}
-
-func newTransformer(substitutionsFile string, synonymsFile string) (Transform, error) {
-	return t.NewTransformer(substitutionsFile, synonymsFile)
 }

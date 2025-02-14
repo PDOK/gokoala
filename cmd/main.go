@@ -276,18 +276,6 @@ func main() {
 					Usage:    "Path to (e.g GeoPackage) file to import",
 					Required: true,
 				},
-				&cli.PathFlag{
-					Name:     substitutionsFileFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(substitutionsFileFlag)},
-					Usage:    "Path to csv file containing substitutions used to generate suggestions",
-					Required: true,
-				},
-				&cli.PathFlag{
-					Name:     synonymsFileFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(synonymsFileFlag)},
-					Usage:    "Path to csv file containing synonyms used to generate suggestions",
-					Required: true,
-				},
 				&cli.StringFlag{
 					Name:     featureTableFidFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFidFlag)},
@@ -332,7 +320,7 @@ func main() {
 				if collection == nil {
 					return fmt.Errorf("no configured collection found with id: %s", collectionID)
 				}
-				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), c.Path(substitutionsFileFlag), c.Path(synonymsFileFlag), featureTable,
+				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), featureTable,
 					c.Int(pageSizeFlag), dbConn)
 			},
 		},
