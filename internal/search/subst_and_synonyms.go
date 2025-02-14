@@ -13,33 +13,40 @@ import (
 )
 
 type SubstAndSynonyms struct {
-	substitutions   map[string][]string
+	rewrites        map[string][]string
 	synonyms        map[string][]string
 	synonymsInverse map[string][]string
 }
 
-func NewSubstAndSynonyms(substitutionsFile, synonymsFile string) (*SubstAndSynonyms, error) {
-	substitutions, substErr := readCsvFile(substitutionsFile)
+func NewSubstAndSynonyms(rewritesFile, synonymsFile string) (*SubstAndSynonyms, error) {
+	rewrites, rewErr := readCsvFile(rewritesFile)
 	synonyms, synErr := readCsvFile(synonymsFile)
 	return &SubstAndSynonyms{
-		substitutions:   substitutions,
+		rewrites:        rewrites,
 		synonyms:        synonyms,
 		synonymsInverse: util.InverseMulti(synonyms),
-	}, errors.Join(substErr, synErr)
+	}, errors.Join(rewErr, synErr)
 }
 
 func (s SubstAndSynonyms) generate(term string) domain.SearchQuery {
-	// Expand substitutions
-	result := extendValues([]string{term}, s.substitutions)
-	// Expand synonyms
+	result := rewrite(term, s.rewrites)
 	// -> one way
-	result = extendValues(result, s.synonyms)
+	result = expandSynonyms(result, s.synonyms)
 	// <- reverse way
-	result = extendValues(result, s.synonymsInverse)
+	result = expandSynonyms(result, s.synonymsInverse)
 	return domain.NewSearchQuery(result)
 }
 
-func extendValues(input []string, mapping map[string][]string) []string {
+func rewrite(terms string, mapping map[string][]string) []string {
+	for original, alternatives := range mapping {
+		for _, alternative := range alternatives {
+			terms = strings.ReplaceAll(terms, alternative, original)
+		}
+	}
+	return []string{terms}
+}
+
+func expandSynonyms(input []string, mapping map[string][]string) []string {
 	var results []string
 
 	for len(input) > 0 {

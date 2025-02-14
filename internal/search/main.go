@@ -26,8 +26,8 @@ type Search struct {
 	json             *jsonFeatures
 }
 
-func NewSearch(e *engine.Engine, dbConn string, searchIndex string, substitutionsFile string, synonymsFile string) *Search {
-	substAndSynonyms, err := NewSubstAndSynonyms(substitutionsFile, synonymsFile)
+func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile string, synonymsFile string) *Search {
+	substAndSynonyms, err := NewSubstAndSynonyms(rewritesFile, synonymsFile)
 	if err != nil {
 		log.Fatal(err) // TODO: return err
 	}

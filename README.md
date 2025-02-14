@@ -59,10 +59,7 @@ docker run --rm --name postgis -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=test
   --file internal/etl/testdata/addresses-crs84.gpkg \
   --feature-table "addresses" \
   --config-file internal/etl/testdata/config.yaml \
-  --collection-id "addresses" \
-  --substitutions-file internal/etl/testdata/substitutions.csv \
-   --synonyms-file internal/etl/testdata/synonyms.csv
- 
+  --collection-id "addresses"
 ```
 
 ## Build

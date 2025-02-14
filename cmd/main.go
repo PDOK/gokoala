@@ -43,7 +43,7 @@ const (
 	featureTableFidFlag     = "fid"
 	featureTableGeomFlag    = "geom"
 	pageSizeFlag            = "page-size"
-	substitutionsFileFlag   = "substitutions-file"
+	rewritesFileFlag        = "rewrites-file"
 	synonymsFileFlag        = "synonyms-file"
 	languageFlag            = "lang"
 )
@@ -178,9 +178,9 @@ func main() {
 					Value:   "search_index",
 				},
 				&cli.PathFlag{
-					Name:     substitutionsFileFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(substitutionsFileFlag)},
-					Usage:    "Path to csv file containing substitutions used to generate suggestions",
+					Name:     rewritesFileFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(rewritesFileFlag)},
+					Usage:    "Path to csv file containing rewrites.csv used to generate suggestions",
 					Required: true,
 				},
 				&cli.PathFlag{
@@ -210,7 +210,7 @@ func main() {
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine, dbConn)
 				// Create search endpoint
-				search.NewSearch(engine, dbConn, c.String(searchIndexFlag), c.Path(substitutionsFileFlag), c.Path(synonymsFileFlag))
+				search.NewSearch(engine, dbConn, c.String(searchIndexFlag), c.Path(rewritesFileFlag), c.Path(synonymsFileFlag))
 
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
