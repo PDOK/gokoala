@@ -12,24 +12,27 @@ import (
 	"github.com/PDOK/gomagpie/internal/search/domain"
 )
 
-type SubstAndSynonyms struct {
+// QueryExpansion query expansion involves evaluating a user's input (what words were typed into the search query area)
+// and expanding the search query to match additional results, see https://en.wikipedia.org/wiki/Query_expansion
+type QueryExpansion struct {
 	rewrites        map[string][]string
 	synonyms        map[string][]string
 	synonymsInverse map[string][]string
 }
 
-func NewSubstAndSynonyms(rewritesFile, synonymsFile string) (*SubstAndSynonyms, error) {
+func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, error) {
 	rewrites, rewErr := readCsvFile(rewritesFile)
 	synonyms, synErr := readCsvFile(synonymsFile)
-	return &SubstAndSynonyms{
+	return &QueryExpansion{
 		rewrites:        rewrites,
 		synonyms:        synonyms,
 		synonymsInverse: util.InverseMulti(synonyms),
 	}, errors.Join(rewErr, synErr)
 }
 
-func (s SubstAndSynonyms) generate(term string) domain.SearchQuery {
-	result := rewrite(term, s.rewrites)
+// Expand Perform query expansion, see https://en.wikipedia.org/wiki/Query_expansion
+func (s QueryExpansion) Expand(searchQuery string) domain.SearchQuery {
+	result := rewrite(searchQuery, s.rewrites)
 	// -> one way
 	result = expandSynonyms(result, s.synonyms)
 	// <- reverse way
@@ -37,13 +40,13 @@ func (s SubstAndSynonyms) generate(term string) domain.SearchQuery {
 	return domain.NewSearchQuery(result)
 }
 
-func rewrite(terms string, mapping map[string][]string) []string {
+func rewrite(input string, mapping map[string][]string) []string {
 	for original, alternatives := range mapping {
 		for _, alternative := range alternatives {
-			terms = strings.ReplaceAll(terms, alternative, original)
+			input = strings.ReplaceAll(input, alternative, original)
 		}
 	}
-	return []string{terms}
+	return []string{input}
 }
 
 func expandSynonyms(input []string, mapping map[string][]string) []string {

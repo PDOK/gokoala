@@ -210,8 +210,10 @@ func main() {
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine, dbConn)
 				// Create search endpoint
-				search.NewSearch(engine, dbConn, c.String(searchIndexFlag), c.Path(rewritesFileFlag), c.Path(synonymsFileFlag))
-
+				_, err = search.NewSearch(engine, dbConn, c.String(searchIndexFlag), c.Path(rewritesFileFlag), c.Path(synonymsFileFlag))
+				if err != nil {
+					return err
+				}
 				return engine.Start(address, debugPort, shutdownDelay)
 			},
 		},

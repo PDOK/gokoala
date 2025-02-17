@@ -20,25 +20,25 @@ const (
 )
 
 type Search struct {
-	engine           *engine.Engine
-	datasource       ds.Datasource
-	substAndSynonyms *SubstAndSynonyms
-	json             *jsonFeatures
+	engine         *engine.Engine
+	datasource     ds.Datasource
+	queryExpansion *QueryExpansion
+	json           *jsonFeatures
 }
 
-func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile string, synonymsFile string) *Search {
-	substAndSynonyms, err := NewSubstAndSynonyms(rewritesFile, synonymsFile)
+func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile string, synonymsFile string) (*Search, error) {
+	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
-		log.Fatal(err) // TODO: return err
+		return nil, err
 	}
 	s := &Search{
-		engine:           e,
-		datasource:       newDatasource(e, dbConn, searchIndex),
-		json:             newJSONFeatures(e),
-		substAndSynonyms: substAndSynonyms,
+		engine:         e,
+		datasource:     newDatasource(e, dbConn, searchIndex),
+		json:           newJSONFeatures(e),
+		queryExpansion: queryExpansion,
 	}
 	e.Router.Get("/search", s.Search())
-	return s
+	return s, nil
 }
 
 // Search autosuggest locations based on user input
@@ -54,7 +54,7 @@ func (s *Search) Search() http.HandlerFunc {
 			return
 		}
 
-		searchQuery := s.substAndSynonyms.generate(searchTerm)
+		searchQuery := s.queryExpansion.Expand(searchTerm)
 		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), searchQuery, collections, outputSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
