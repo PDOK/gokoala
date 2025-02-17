@@ -174,6 +174,16 @@ func TestSearch(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Search: complex search term with synonyms and rewrites, should not result in error",
+			fields: fields{
+				url: "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-complex-search-term.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -25,12 +25,12 @@ var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+]`)
 )
 
-func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerm string, outputSRID d.SRID, limit int, err error) {
+func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string, outputSRID d.SRID, limit int, err error) {
 	err = validateNoUnknownParams(query)
 	if err != nil {
 		return
 	}
-	searchTerm, searchTermErr := parseSearchTerm(query)
+	searchTerms, searchTermErr := parseSearchTerms(query)
 	collections, collErr := parseCollections(query)
 	outputSRID, outputSRIDErr := parseCrsToPostgisSRID(query, crsParam)
 	limit, limitErr := parseLimit(query)
@@ -66,10 +66,10 @@ func parseCollections(query url.Values) (d.CollectionsWithParams, error) {
 	return deepObjectParams, nil
 }
 
-func parseSearchTerm(query url.Values) (searchTerm string, err error) {
-	searchTerm = query.Get(queryParam)
-	if searchTerm == "" {
-		err = fmt.Errorf("no search term provided, '%s' query parameter is required", queryParam)
+func parseSearchTerms(query url.Values) (searchTerms string, err error) {
+	searchTerms = query.Get(queryParam)
+	if searchTerms == "" {
+		err = fmt.Errorf("no search terms provided, '%s' query parameter is required", queryParam)
 	}
 	return
 }
