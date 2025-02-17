@@ -77,6 +77,7 @@ func expandSynonyms(input string, mapping map[*regexp.Regexp][]string) []string 
 	return uniqueSlice(results)
 }
 
+// replaces all duplicates in a slice (note: slices.compact() only replaces consecutive duplicates).
 func uniqueSlice(s []string) []string {
 	var results []string
 	seen := make(map[string]bool)
