@@ -9,10 +9,10 @@
   #searchBox {
     padding: var(--ls-searchbox-padding, 2px);
     margin: var(--ls-searchbox-margin, 2px);
-    border: var(--ls-search-box-border, inset, rgb(118, 118, 118));
+    border: var(--ls-searchbox-border, inset, rgb(118, 118, 118));
     border-radius: var(--ls-searchbox-border-radius, 1);
     text-align: var(--ls-searchbox-text-align, top);
-    width: var(--ls-search-text-box-width, 100%);
+    width: var(--ls-search-textbox-width, 100%);
     height: var(--ls-searchbox-height, 20px);
     font-size: var(--ls-searchbox-font-size);
   }
