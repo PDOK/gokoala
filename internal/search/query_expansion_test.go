@@ -37,6 +37,13 @@ func TestQueryExpansion_Expand(t *testing.T) {
 			want: `(spui & 1 & gravenhage)`,
 		},
 		{
+			name: "remove user provided search operators",
+			args: args{
+				searchQuery: `A & B !C D <-> E`,
+			},
+			want: `(a & b & c & d & e)`,
+		},
+		{
 			name: "one synonym",
 			args: args{
 				searchQuery: `Foo`,
@@ -55,7 +62,7 @@ func TestQueryExpansion_Expand(t *testing.T) {
 			args: args{
 				searchQuery: `foosball`,
 			},
-			want: `(foosball)`,
+			want: `(fooball) | (foobarball) | (foosball)`,
 		},
 		{
 			name: "synonym with diacritics",
@@ -63,6 +70,65 @@ func TestQueryExpansion_Expand(t *testing.T) {
 				searchQuery: `oude fryslân`,
 			},
 			want: `(oud & friesland) | (oud & fryslân) | (oude & friesland) | (oude & fryslân)`,
+		},
+		{
+			name: "case insensitive",
+			args: args{
+				searchQuery: `OudE DeN HaAg`,
+			},
+			want: `(oud & gravenhage) | (oude & gravenhage)`,
+		},
+		{
+			name: "one substring",
+			args: args{
+				searchQuery: `1e Gouverneurstraat 1800`,
+			},
+			want: `
+(1e & goeverneurstraat & 1800) | 
+(1e & goevstraat & 1800) | 
+(1e & gouverneurstraat & 1800) | 
+(1e & gouvstraat & 1800)
+`,
+		},
+		{
+			name: "three substrings",
+			args: args{
+				searchQuery: `Oude Westelijker-Gouverneurstraat`,
+			},
+			want: `
+(oud & westelijker-goeverneurstraat) | 
+(oud & westelijker-goevstraat) | 
+(oud & westelijker-gouverneurstraat) | 
+(oud & westelijker-gouvstraat) | 
+(oud & westerr-goeverneurstraat) | 
+(oud & westerr-goevstraat) | 
+(oud & westerr-gouverneurstraat) | 
+(oud & westerr-gouvstraat) | 
+(oud & westr-goeverneurstraat) | 
+(oud & westr-goevstraat) | 
+(oud & westr-gouverneurstraat) | 
+(oud & westr-gouvstraat) | 
+(oud & wr-goeverneurstraat) | 
+(oud & wr-goevstraat) | 
+(oud & wr-gouverneurstraat) | 
+(oud & wr-gouvstraat) | 
+(oude & westelijker-goeverneurstraat) | 
+(oude & westelijker-goevstraat) | 
+(oude & westelijker-gouverneurstraat) | 
+(oude & westelijker-gouvstraat) | 
+(oude & westerr-goeverneurstraat) | 
+(oude & westerr-goevstraat) | 
+(oude & westerr-gouverneurstraat) | 
+(oude & westerr-gouvstraat) | 
+(oude & westr-goeverneurstraat) | 
+(oude & westr-goevstraat) | 
+(oude & westr-gouverneurstraat) | 
+(oude & westr-gouvstraat) | 
+(oude & wr-goeverneurstraat) | 
+(oude & wr-goevstraat) | 
+(oude & wr-gouverneurstraat) | 
+(oude & wr-gouvstraat)
+`,
 		},
 		{
 			name: "one rewrite and multiple synonyms",

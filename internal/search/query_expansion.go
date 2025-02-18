@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"regexp"
+	"slices"
+	"sort"
 	"strings"
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
@@ -15,79 +16,138 @@ import (
 // and expanding the search query to match additional results, see https://en.wikipedia.org/wiki/Query_expansion
 type QueryExpansion struct {
 	rewrites map[string][]string
-	synonyms map[*regexp.Regexp][]string
+	synonyms map[string][]string
 }
 
 func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, error) {
 	rewrites, rewErr := readCsvFile(rewritesFile, false)
 	synonyms, synErr := readCsvFile(synonymsFile, true)
 
-	// Turn keys into regexes for efficient matching of whole words
-	synonymsWithRegexKey := make(map[*regexp.Regexp][]string)
-	for k, v := range synonyms {
-		wholeWordRegex, err := regexp.Compile(`\b` + regexp.QuoteMeta(k) + `\b`)
-		if err != nil {
-			return nil, err
-		}
-		synonymsWithRegexKey[wholeWordRegex] = v
-	}
-
 	return &QueryExpansion{
 		rewrites: rewrites,
-		synonyms: synonymsWithRegexKey,
+		synonyms: synonyms,
 	}, errors.Join(rewErr, synErr)
 }
 
 // Expand Perform query expansion, see https://en.wikipedia.org/wiki/Query_expansion
 func (s QueryExpansion) Expand(searchTerms string) domain.SearchQuery {
-	result := rewrite(searchTerms, s.rewrites)
+	result := rewrite(strings.ToLower(searchTerms), s.rewrites)
 	results := expandSynonyms(result, s.synonyms)
 	return domain.NewSearchQuery(results)
 }
 
 func rewrite(input string, mapping map[string][]string) string {
-	terms := strings.ToLower(input)
 	for original, alternatives := range mapping {
 		for _, alternative := range alternatives {
-			terms = strings.ReplaceAll(terms, alternative, original)
+			input = strings.ReplaceAll(input, alternative, original)
 		}
 	}
-	return terms
+	return input
 }
 
-func expandSynonyms(input string, mapping map[*regexp.Regexp][]string) []string {
-	results := []string{input}
+// Position is a substring match in the given search term
+type Position struct {
+	start       int
+	length      int
+	alternative string
+}
 
-	for original, alternatives := range mapping {
-		currentResults := make([]string, 0)
-		for _, existing := range results {
-			if original.MatchString(existing) {
-				for _, alternative := range alternatives {
-					// Replace only complete words to avoid situations like:
-					// original = "foo", alternative = "foos" and input = "foosball",
-					// which would otherwise result in "foossball"
-					updated := original.ReplaceAllString(existing, alternative)
-					currentResults = append(currentResults, updated)
+func expandSynonyms(input string, mapping map[string][]string) []string {
+	results := []string{input}
+	continueExpanding := true
+
+	for continueExpanding {
+		var currentResults []string
+		continueExpanding = false
+
+		for _, variant := range results {
+			positions := mapPositions(variant, mapping)
+
+			// sort by longest length, when equal by smallest start position
+			sort.Slice(positions, func(i, j int) bool {
+				if positions[i].length != positions[j].length {
+					return positions[i].length > positions[j].length
+				}
+				return positions[i].start < positions[j].start
+			})
+
+			for _, newVariant := range generateCandidateVariants(variant, positions) {
+				if !slices.Contains(results, newVariant) && !slices.Contains(currentResults, newVariant) {
+					currentResults = append(currentResults, newVariant)
+					continueExpanding = true
 				}
 			}
 		}
 		results = append(results, currentResults...)
 	}
-
-	return uniqueSlice(results)
+	return results
 }
 
-// replaces all duplicates in a slice (note: slices.compact() only replaces consecutive duplicates).
-func uniqueSlice(s []string) []string {
+func mapPositions(input string, mapping map[string][]string) []Position {
+	var results []Position
+	words := strings.Fields(input)
+	wordsPos := 0
+
+	for _, word := range words {
+		// try to match whole words first
+		if alternatives, exists := mapping[word]; exists {
+			for _, alternative := range alternatives {
+				results = append(results, Position{
+					start:       wordsPos,
+					length:      len(word),
+					alternative: alternative,
+				})
+			}
+		} else {
+			// then try to find matches within the word
+			for original, alternatives := range mapping {
+				for pos := 0; pos < len(word); {
+					originalPos := strings.Index(word[pos:], original)
+					if originalPos == -1 {
+						break
+					}
+
+					actualPos := wordsPos + pos + originalPos
+					for _, alternative := range alternatives {
+						results = append(results, Position{
+							start:       actualPos,
+							length:      len(original),
+							alternative: alternative,
+						})
+					}
+					pos += originalPos + 1
+				}
+			}
+		}
+		wordsPos += len(word) + 1 // +1 for the space
+	}
+	return results
+}
+
+func generateCandidateVariants(input string, positions []Position) []string {
 	var results []string
-	seen := make(map[string]bool)
-	for _, entry := range s {
-		if !seen[entry] {
-			seen[entry] = true
-			results = append(results, entry)
+	for _, pos := range positions {
+		if !hasOverlap(pos, positions) {
+			variant := input[:pos.start] + pos.alternative + input[pos.start+pos.length:]
+			results = append(results, variant)
 		}
 	}
 	return results
+}
+
+func hasOverlap(current Position, all []Position) bool {
+	currentEnd := current.start + current.length
+	for _, other := range all {
+		if other.length <= current.length {
+			continue
+		}
+
+		otherEnd := other.start + other.length
+		if current.start < otherEnd && other.start < currentEnd {
+			return true
+		}
+	}
+	return false
 }
 
 func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
