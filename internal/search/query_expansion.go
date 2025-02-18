@@ -60,8 +60,8 @@ func expandSynonyms(input string, mapping map[string][]string) []string {
 		var currentResults []string
 		continueExpanding = false
 
-		for _, variant := range results {
-			positions := mapPositions(variant, mapping)
+		for _, existing := range results {
+			positions := mapPositions(existing, mapping)
 
 			// sort by longest length, when equal by smallest start position
 			sort.Slice(positions, func(i, j int) bool {
@@ -71,8 +71,8 @@ func expandSynonyms(input string, mapping map[string][]string) []string {
 				return positions[i].start < positions[j].start
 			})
 
-			for _, newVariant := range generateCandidateVariants(variant, positions) {
-				if !slices.Contains(results, newVariant) && !slices.Contains(currentResults, newVariant) {
+			for _, newVariant := range generateNewVariants(existing, positions) {
+				if !slices.Contains(currentResults, newVariant) && !slices.Contains(results, newVariant) {
 					currentResults = append(currentResults, newVariant)
 					continueExpanding = true
 				}
@@ -124,7 +124,7 @@ func mapPositions(input string, mapping map[string][]string) []Position {
 	return results
 }
 
-func generateCandidateVariants(input string, positions []Position) []string {
+func generateNewVariants(input string, positions []Position) []string {
 	var results []string
 	for _, pos := range positions {
 		if !hasOverlap(pos, positions) {
