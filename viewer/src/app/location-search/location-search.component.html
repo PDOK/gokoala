@@ -1,39 +1,47 @@
-<div role="search">
-  <label id="searchboxlabel" for="searchBox">{{ label }}</label>
-  <input
-    role="textbox"
-    class="search-box"
-    autoComplete="off"
-    [value]="searchLocation"
-    id="searchBox"
-    (keyup)="updateSearchField($event)"
-    type="text"
-    [placeholder]="placeholder"
-    [title]="title"
-    list="locatie-auto-complete"
-    aria-label="Search for a location" />
-  <app-search-options [url]="url" [searchParams]="searchParams" (searchParamsEvent)="paramChanged($event)"> </app-search-options>
-</div>
+<div class="location-search">
+  <div class="search-box" role="search">
+    <label id="searchboxlabel" for="searchBox">{{ label }}</label>
+    <input
+      role="textbox"
+      class="search-input-box"
+      autoComplete="off"
+      [value]="searchLocation"
+      id="searchBox"
+      (keyup)="updateSearchField($event)"
+      type="text"
+      [placeholder]="placeholder"
+      [title]="title"
+      list="locatie-auto-complete"
+      aria-label="Search for a location" />
 
-<div *ngIf="results">
-  <div role="list" *ngFor="let r of getResults(results | async)">
-    <div role="listitem">
-      <button class="result-button" title="{{ getDisplayname(r) }}" (mouseover)="selectResult(r)" (focus)="selectResult(r)">
-        <div [innerHTML]="getHighLight(r) | safeHtml"></div>
-        <div hidden="hidden">
-          {{ getProperty(r, 'collectionGeometryType:') }}
-          {{ getProperty(r, 'collectionId') }}
-          {{ getProperty(r, 'collectionVersion') }}
-          {{ getProperty(r, 'displayName') }}
-          {{ getProperty(r, 'href') }}
-          {{ getProperty(r, 'score') }}
-        </div>
-      </button>
-    </div>
+    <app-search-options [url]="url" [searchParams]="searchParams" (searchParamsEvent)="paramChanged($event)"> </app-search-options>
   </div>
 
-  <div *ngIf="selectedResultUrl" role="application">
-    <h2>Selected Item</h2>
-    <app-feature-view [itemsUrl]="selectedResultUrl" [backgroundMap]="backgroundmap"></app-feature-view>
+  <div *ngIf="results">
+    <div role="list" *ngFor="let r of getResults(results | async)">
+      <div role="listitem">
+        <button
+          class="result-button"
+          part="rbutton"
+          title="{{ getDisplayname(r) }}"
+          (mouseover)="selectResult(r)"
+          (focus)="selectResult(r)">
+          <div [innerHTML]="getHighLight(r) | safeHtml"></div>
+          <div hidden="hidden">
+            {{ getProperty(r, 'collectionGeometryType:') }}
+            {{ getProperty(r, 'collectionId') }}
+            {{ getProperty(r, 'collectionVersion') }}
+            {{ getProperty(r, 'displayName') }}
+            {{ getProperty(r, 'href') }}
+            {{ getProperty(r, 'score') }}
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="selectedResultUrl" role="application">
+      <h2>Selected Item</h2>
+      <app-feature-view [itemsUrl]="selectedResultUrl" [backgroundMap]="backgroundmap"></app-feature-view>
+    </div>
   </div>
 </div>

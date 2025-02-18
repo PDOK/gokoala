@@ -1,0 +1,9 @@
+.search-options-button {
+  padding: var(--ls-searchbox-padding, 2px);
+  margin: var(--ls-searchbox-margin, 2px);
+  border: var(--ls-search-box-border, thin);
+}
+svg {
+  height: var(--ls-searchbox-height, auto);
+  width: var(--ls-searchbox-height, auto);
+}

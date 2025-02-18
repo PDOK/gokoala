@@ -26,7 +26,6 @@ export class SearchOptionsComponent implements OnInit {
     q: '',
   }
   @Output() searchParamsEvent = new EventEmitter<Search$Json$Params>()
-
   collections: Array<Collection & CollectionLink> | undefined = undefined
   infomessage: string | undefined = undefined
   active: ActiveCollection[] = []

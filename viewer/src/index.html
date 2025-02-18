@@ -6,15 +6,21 @@
     <title>OGC API Map Component Samples</title>
     <meta name="description" content="Samples of OGC API map components including location search." />
     <!-- Link to external CSS -->
-    <link rel="stylesheet" href="styles.css" />
+
     <!-- Link to external JavaScript -->
   </head>
 
   <body onload="load()">
+    <h2>Legend sample</h2>
+    <!--app-legend-view id="legendview1" style-url="assets/dkk_standaardvissualisatie.json"> </app-legend-view-->
+
+    <!--app-legend-view id="legendview1" style-url="http://127.0.0.1:4200/styles/brk/dkk_kwaliteitsvissualisatie_nederlandsRDNewQuad.json">
+    </app-legend-view-->
+
     <h2>Location API sample to test <a href="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod">location api (preprod)</a></h2>
 
     <app-location-search
-      id="locationsearch"
+      id="locationsearchunstyled"
       url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"
       label=""
       aria-label="Location Search"></app-location-search>
@@ -43,6 +49,19 @@
         document.getElementById('search-url').href = u.detail + '&f=json'
         // history.replaceState(null, '', u.detail)
       })
+
+      locationsearch.addEventListener('activeSearchText', t => {
+        console.log(JSON.stringify(t.detail))
+        // history.replaceState(null, '', u.detail)
+      })
     }
   </script>
+
+  <!--h2>Location API sample to test with CSS styling</h2>
+
+  <app-location-search
+    id="styledlocationsearch"
+    url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"
+    label=""
+    aria-label="Location Search"></app-location-search -->
 </html>

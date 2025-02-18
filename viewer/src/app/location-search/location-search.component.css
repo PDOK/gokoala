@@ -1,7 +1,28 @@
-.search-box {
-  width: 20%;
+.location-search {
+  max-width: var(--ls-searchbox-width, 20%);
+  font-size: var(--ls-searchbox-font-size);
+  text-align: var(--ls-searchbox-text-align, top);
 }
+.search-box {
+  display: flex;
+  background-color: var(--ls-options-background-color, transparant);
+  #searchBox {
+    padding: var(--ls-searchbox-padding, 2px);
+    margin: var(--ls-searchbox-margin, 2px);
+    border: var(--ls-search-box-border, inset, rgb(118, 118, 118));
+    border-radius: var(--ls-searchbox-border-radius, 1);
+    text-align: var(--ls-searchbox-text-align, top);
+    width: var(--ls-search-text-box-width, 100%);
+    height: var(--ls-searchbox-height, 20px);
+    font-size: var(--ls-searchbox-font-size);
+  }
+}
+
 .result-button {
-  width: 25%;
   margin-top: 0.5vh;
+  height: var(--ls-selectbox-buttonheight, 2em);
+  min-height: var(--ls-selectbox-buttonheight, 2em);
+  font-size: var(--ls-selectbox-fontsize, auto);
+  font-family: var(--ls-selectbox-font-family, 'Roboto');
+  min-width: var(--ls-selectbox-width, 100%);
 }

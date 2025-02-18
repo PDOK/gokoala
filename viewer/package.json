@@ -1,10 +1,14 @@
 {
   "name": "view-component",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
+  "files": [
+    "dist/view-component/browser/"
+  ],
+  "typings": "view-component.d.ts",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 4201",
     "build": "npm run format && npm run lint && ng build --configuration production --verbose --output-hashing none && npm pack .",
     "watch": "ng build --watch --configuration development",
     "test": "npx cypress info && npx cypress run --component",

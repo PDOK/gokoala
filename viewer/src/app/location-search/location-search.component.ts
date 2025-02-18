@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, AfterViewChecked } from '@angular/core'
+import { Component, EventEmitter, Input, Output, AfterViewChecked, OnInit, ElementRef } from '@angular/core'
 
 import { CommonModule } from '@angular/common'
 
@@ -25,16 +25,18 @@ import { environment } from 'src/environments/environment'
   templateUrl: './location-search.component.html',
   styleUrl: './location-search.component.css',
 })
-export class LocationSearchComponent implements AfterViewChecked {
+export class LocationSearchComponent implements OnInit, AfterViewChecked {
   selectedResultUrl: string | undefined = undefined
   @Output() activeFeature = new EventEmitter<FeatureLike>()
   @Output() activeSearchUrl = new EventEmitter<string>()
+  @Output() activeSearchText = new EventEmitter<string>()
 
   @Input() url: string | undefined = undefined
   @Input() label: string = 'Search location'
   @Input() title: string = 'Enter the location you want to search for'
   @Input() placeholder: string = 'Enter location to search'
   @Input() backgroundmap: BackgroundMap = 'OSM'
+
   defaultColparams = { relevance: 0.5, version: 1 }
   @Input() searchParams: Search$Json$Params = {
     q: '',
@@ -53,13 +55,18 @@ export class LocationSearchComponent implements AfterViewChecked {
 
   constructor(
     private logger: NGXLogger,
-    private featuresService: FeaturesService
+    private featuresService: FeaturesService,
+    private elementRef: ElementRef
   ) {}
+  ngOnInit(): void {
+    this.logger.debug('LocationSearchComponent initialized with URL:', this.url)
+  }
 
   updateSearchField(event: KeyboardEvent) {
     const inputValue = (event.target as HTMLInputElement).value
     this.searchParams.q = inputValue
     this.logger.debug(inputValue)
+    this.activeSearchText.emit(inputValue)
     this.deSelectResult()
 
     this.lookup()
