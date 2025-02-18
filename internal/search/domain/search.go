@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -23,6 +24,11 @@ const (
 	PropHref              = "href"
 )
 
+var (
+	// match & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
+	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
+)
+
 type SearchQuery struct {
 	terms []string
 }
@@ -43,6 +49,10 @@ func (q *SearchQuery) ToExactMatchQuery() string {
 func (q *SearchQuery) toString(wildcard bool) string {
 	sb := &strings.Builder{}
 	for i, term := range q.terms {
+		// remove user provided search operators
+		term = searchOperatorsRegex.ReplaceAllString(term, "")
+
+		// assemble query
 		sb.WriteByte('(')
 		parts := strings.Fields(term)
 		for j, part := range parts {
