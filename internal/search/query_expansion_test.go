@@ -51,6 +51,13 @@ func TestQueryExpansion_Expand(t *testing.T) {
 			want: `(foo) | (foobar) | (foos)`,
 		},
 		{
+			name: "two the same synonyms",
+			args: args{
+				searchQuery: `Foo FooBar`,
+			},
+			want: `(foo & foo) | (foo & foobar) | (foo & foos) | (foobar & foo) | (foobar & foobar) | (foobar & foos) | (foos & foo) | (foos & foobar) | (foos & foos)`,
+		},
+		{
 			name: "two-way synonym",
 			args: args{
 				searchQuery: `eerste 2de`,
