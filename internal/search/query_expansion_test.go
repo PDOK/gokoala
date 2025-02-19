@@ -93,6 +93,13 @@ func TestExpand(t *testing.T) {
 			want: `(oud & gravenhage) | (oude & gravenhage)`,
 		},
 		{
+			name: "word delimiters",
+			args: args{
+				searchQuery: `ok text with spaces ok`,
+			},
+			want: `(ok & text & with & spaces & ok) | (ok & text-with-delims & ok) | (ok & textwithoutspaces & ok)`,
+		},
+		{
 			name: "one substring",
 			args: args{
 				searchQuery: `1e Gouverneurstraat 1800`,
