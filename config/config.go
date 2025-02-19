@@ -4,7 +4,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/creasty/defaults"
@@ -219,21 +218,17 @@ type License struct {
 
 func setDefaults(config *Config) error {
 	// process 'default' tags
-	log.Println("Start setting defaults")
 	if err := defaults.Set(config); err != nil {
 		return fmt.Errorf("failed to set default configuration: %w", err)
 	}
 
 	// custom default logic
 	if len(config.AvailableLanguages) == 0 {
-		log.Println("Setting language defaults")
 		config.AvailableLanguages = append(config.AvailableLanguages, Language{language.Dutch}) // default to Dutch only
 	}
 	if config.OgcAPI.Tiles != nil {
-		log.Println("Setting tiles defaults")
 		config.OgcAPI.Tiles.Defaults()
 	}
-	log.Println("Done setting defaults")
 	return nil
 }
 

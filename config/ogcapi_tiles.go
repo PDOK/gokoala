@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"slices"
 	"sort"
 
@@ -23,10 +22,8 @@ type OgcAPITiles struct {
 func (o *OgcAPITiles) Defaults() {
 	if o.DatasetTiles != nil && o.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
 		o.DatasetTiles.HealthCheck.TilePath == nil {
-		log.Println("Setting dataset tiles healthcheck")
 		o.DatasetTiles.deriveHealthCheckTilePath()
 	} else if o.Collections != nil {
-		log.Println("Setting collection tiles healthcheck")
 		for _, coll := range o.Collections {
 			if coll.Tiles != nil && coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
 				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
