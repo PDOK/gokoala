@@ -44,6 +44,13 @@ func TestQueryExpansion_Expand(t *testing.T) {
 			want: `(a & b & c & d & e)`,
 		},
 		{
+			name: "no synonym",
+			args: args{
+				searchQuery: `just some text`,
+			},
+			want: `(just & some & text)`,
+		},
+		{
 			name: "one synonym",
 			args: args{
 				searchQuery: `Foo`,

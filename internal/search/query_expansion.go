@@ -52,98 +52,78 @@ type Position struct {
 	alternative string
 }
 
+func (p Position) End() int {
+	return p.start + p.length
+}
+
+func (p Position) Replace(input string) string {
+	return input[:p.start] + p.alternative + input[p.End():]
+}
+
 func expandSynonyms(input string, mapping map[string][]string) []string {
 	results := []string{input}
-	continueExpanding := true
 
-	for continueExpanding {
-		var currentResults []string
-		continueExpanding = false
+	for i := 0; i < len(results); i++ {
+		existing := results[i]
+		positions := mapPositions(existing, mapping)
 
-		for _, existing := range results {
-			positions := mapPositions(existing, mapping)
+		// sort by longest length, when equal by smallest start position
+		sort.Slice(positions, func(i, j int) bool {
+			if positions[i].length != positions[j].length {
+				return positions[i].length > positions[j].length
+			}
+			return positions[i].start < positions[j].start
+		})
 
-			// sort by longest length, when equal by smallest start position
-			sort.Slice(positions, func(i, j int) bool {
-				if positions[i].length != positions[j].length {
-					return positions[i].length > positions[j].length
-				}
-				return positions[i].start < positions[j].start
-			})
-
-			for _, newVariant := range generateNewVariants(existing, positions) {
-				if !slices.Contains(currentResults, newVariant) && !slices.Contains(results, newVariant) {
-					currentResults = append(currentResults, newVariant)
-					continueExpanding = true
-				}
+		for _, newVariant := range generateNewVariants(existing, positions) {
+			if !slices.Contains(results, newVariant) {
+				results = append(results, newVariant)
 			}
 		}
-		results = append(results, currentResults...)
 	}
 	return results
 }
 
 func mapPositions(input string, mapping map[string][]string) []Position {
 	var results []Position
-	words := strings.Fields(input)
-	wordsPos := 0
 
-	for _, word := range words {
-		// try to match whole words first
-		if alternatives, exists := mapping[word]; exists {
+	for original, alternatives := range mapping {
+		for i := 0; i < len(input); {
+			originalPos := strings.Index(input[i:], original)
+			if originalPos == -1 {
+				break
+			}
+
+			actualPos := i + originalPos
 			for _, alternative := range alternatives {
 				results = append(results, Position{
-					start:       wordsPos,
-					length:      len(word),
+					start:       actualPos,
+					length:      len(original),
 					alternative: alternative,
 				})
 			}
-		} else {
-			// then try to find matches within the word
-			for original, alternatives := range mapping {
-				for pos := 0; pos < len(word); {
-					originalPos := strings.Index(word[pos:], original)
-					if originalPos == -1 {
-						break
-					}
-
-					actualPos := wordsPos + pos + originalPos
-					for _, alternative := range alternatives {
-						results = append(results, Position{
-							start:       actualPos,
-							length:      len(original),
-							alternative: alternative,
-						})
-					}
-					pos += originalPos + 1
-				}
-			}
+			i += originalPos + 1
 		}
-		wordsPos += len(word) + 1 // +1 for the space
 	}
 	return results
 }
 
 func generateNewVariants(input string, positions []Position) []string {
 	var results []string
-	for _, pos := range positions {
-		if !hasOverlap(pos, positions) {
-			variant := input[:pos.start] + pos.alternative + input[pos.start+pos.length:]
-			results = append(results, variant)
+	for _, position := range positions {
+		if !hasOverlap(position, positions) {
+			results = append(results, position.Replace(input))
 		}
 	}
 	return results
 }
 
 func hasOverlap(current Position, all []Position) bool {
-	currentEnd := current.start + current.length
 	for _, other := range all {
 		if other.length <= current.length {
 			continue
 		}
-
-		otherEnd := other.start + other.length
-		if current.start < otherEnd && other.start < currentEnd {
+		if current.start < other.End() && other.start < current.End() {
 			return true
 		}
 	}
@@ -177,9 +157,12 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 		}
 
 		if bidi {
-			// make result map bidirectional
+			// make result map bidirectional, so:
+			// 1e => one,first | 2e => second
+			// becomes:
+			// 1e => one,first | 2e => second | one => 1e,first | first => 1e,one | second => 2e
 			for _, alt := range result[key] {
-				if _, exists := result[alt]; !exists {
+				if _, ok := result[alt]; !ok {
 					result[alt] = make([]string, 0)
 				}
 				result[alt] = append(result[alt], key)
