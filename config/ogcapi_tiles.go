@@ -29,11 +29,15 @@ func (o *OgcAPITiles) Defaults() {
 		log.Println("Setting collection tiles healthcheck")
 		log.Printf("Config:\n%+v\n", o)
 		for _, coll := range o.Collections {
-			log.Printf("Collection '%s' tiles config: %+v\n", coll.ID, coll.Tiles.GeoDataTiles)
+			if coll.Metadata != nil {
+				log.Printf("Collection '%s' metadata: %+v\n", coll.ID, coll.Metadata)
+			}
 			if coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
 				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
 			}
-			log.Printf("Collection '%s' tiles config: %+v\n", coll.ID, coll.Tiles.GeoDataTiles)
+			if coll.Tiles != nil {
+				log.Printf("Collection '%s' tiles config: %+v\n", coll.ID, coll.Tiles.GeoDataTiles)
+			}
 		}
 	}
 }
