@@ -20,7 +20,7 @@ func init() {
 	}
 }
 
-func TestQueryExpansion_Expand(t *testing.T) {
+func TestExpand(t *testing.T) {
 	type args struct {
 		searchQuery string
 	}

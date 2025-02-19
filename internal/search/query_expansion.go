@@ -45,19 +45,19 @@ func rewrite(input string, mapping map[string][]string) string {
 	return input
 }
 
-// Position is a substring match in the given search term
-type Position struct {
+// position is a substring match in the given search term
+type position struct {
 	start       int
 	length      int
 	alternative string
 }
 
-func (p Position) End() int {
+func (p position) end() int {
 	return p.start + p.length
 }
 
-func (p Position) Replace(input string) string {
-	return input[:p.start] + p.alternative + input[p.End():]
+func (p position) replace(input string) string {
+	return input[:p.start] + p.alternative + input[p.end():]
 }
 
 func expandSynonyms(input string, mapping map[string][]string) []string {
@@ -84,8 +84,8 @@ func expandSynonyms(input string, mapping map[string][]string) []string {
 	return results
 }
 
-func mapPositions(input string, mapping map[string][]string) []Position {
-	var results []Position
+func mapPositions(input string, mapping map[string][]string) []position {
+	var results []position
 
 	for original, alternatives := range mapping {
 		for i := 0; i < len(input); {
@@ -96,7 +96,7 @@ func mapPositions(input string, mapping map[string][]string) []Position {
 
 			actualPos := i + originalPos
 			for _, alternative := range alternatives {
-				results = append(results, Position{
+				results = append(results, position{
 					start:       actualPos,
 					length:      len(original),
 					alternative: alternative,
@@ -108,22 +108,29 @@ func mapPositions(input string, mapping map[string][]string) []Position {
 	return results
 }
 
-func generateNewVariants(input string, positions []Position) []string {
+func generateNewVariants(input string, positions []position) []string {
 	var results []string
-	for _, position := range positions {
-		if !hasOverlap(position, positions) {
-			results = append(results, position.Replace(input))
+	for _, pos := range positions {
+		if !hasOverlap(pos, positions) {
+			results = append(results, pos.replace(input))
 		}
 	}
 	return results
 }
 
-func hasOverlap(current Position, all []Position) bool {
+// We need to check for overlapping synonyms for situations like:
+//
+// synonyms = goeverneur,goev,gouverneur,gouv
+// input = 1e gouverneurstraat
+// synonyms key (original) => gouv
+// synonyms value (alternative) = goeverneur
+// resulting string = 1e goeverneurERNEURstraat <-- not what we want
+func hasOverlap(current position, all []position) bool {
 	for _, other := range all {
 		if other.length <= current.length {
 			continue
 		}
-		if current.start < other.End() && other.start < current.End() {
+		if current.start < other.end() && other.start < current.end() {
 			return true
 		}
 	}
