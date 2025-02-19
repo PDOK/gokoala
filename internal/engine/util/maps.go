@@ -10,8 +10,8 @@ func Keys[M ~map[K]V, K comparable, V any](input M) []K {
 }
 
 // Inverse switches the values to keys and the keys to values.
-func Inverse(input map[string]string) map[string]string {
-	output := make(map[string]string)
+func Inverse[K, V comparable](input map[K]V) map[V]K {
+	output := make(map[V]K)
 	for k, v := range input {
 		output[v] = k
 	}

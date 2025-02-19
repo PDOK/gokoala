@@ -84,7 +84,7 @@ func TestImportGeoPackage(t *testing.T) {
 		{
 			name:  "import everything",
 			where: "",
-			count: 66338, // 33030*2 + substitution and synonyms combinations
+			count: 66060, // 33030*2
 		},
 		{
 			name:  "with where clause",
@@ -120,7 +120,7 @@ func TestImportGeoPackage(t *testing.T) {
 		assert.NoError(t, err)
 
 		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", pwd+"/testdata/substitutions.csv", pwd+"/testdata/synonyms.csv", table, 1000, dbConn)
+		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
 		assert.NoError(t, err)
 
 		// check nr of records
@@ -138,7 +138,7 @@ func TestImportGeoPackage(t *testing.T) {
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	req := testcontainers.ContainerRequest{
-		Image: "docker.io/postgis/postgis:16-3.5-alpine",
+		Image: "docker.io/postgis/postgis:16-3.5", // use debian, not alpine (proj issues between environments)
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
 			"POSTGRES_PASSWORD": "postgres",

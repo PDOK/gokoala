@@ -1,6 +1,11 @@
 package domain
 
-import "strconv"
+import (
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+)
 
 const (
 	VersionParam     = "version"
@@ -18,6 +23,54 @@ const (
 	PropScore             = "score"
 	PropHref              = "href"
 )
+
+var (
+	// match & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
+	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
+)
+
+type SearchQuery struct {
+	terms []string
+}
+
+func NewSearchQuery(terms []string) SearchQuery {
+	sort.Strings(terms)
+	return SearchQuery{terms: terms}
+}
+
+func (q *SearchQuery) ToWildcardQuery() string {
+	return q.toString(true)
+}
+
+func (q *SearchQuery) ToExactMatchQuery() string {
+	return q.toString(false)
+}
+
+func (q *SearchQuery) toString(wildcard bool) string {
+	sb := &strings.Builder{}
+	for i, term := range q.terms {
+		// remove user provided search operators
+		term = searchOperatorsRegex.ReplaceAllString(term, "")
+
+		// assemble query
+		sb.WriteByte('(')
+		parts := strings.Fields(term)
+		for j, part := range parts {
+			sb.WriteString(part)
+			if wildcard {
+				sb.WriteString(":*")
+			}
+			if j != len(parts)-1 {
+				sb.WriteString(" & ")
+			}
+		}
+		sb.WriteByte(')')
+		if i != len(q.terms)-1 {
+			sb.WriteString(" | ")
+		}
+	}
+	return sb.String()
+}
 
 // CollectionsWithParams collection name with associated CollectionParams
 // These are provided though a URL query string as "deep object" params, e.g. paramName[prop1]=value1&paramName[prop2]=value2&....

@@ -58,7 +58,8 @@ func TestSearch(t *testing.T) {
 	assert.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint := NewSearch(eng, dbConn, testSearchIndex)
+	searchEndpoint, err := NewSearch(eng, dbConn, testSearchIndex, "internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
+	assert.NoError(t, err)
 
 	// given empty search index
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex, language.Dutch)
@@ -86,7 +87,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search without collection parameter(s)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Oudeschild\"&limit=50",
+				url: "http://localhost:8080/search?q=Oudeschild&limit=50",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-no-collection.json",
@@ -96,7 +97,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search with collection without version (first variant)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Oudeschild\"&addresses",
+				url: "http://localhost:8080/search?q=Oudeschild&addresses",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-no-version-1.json",
@@ -106,7 +107,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search with collection without version (second variant)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Oudeschild\"&addresses=1",
+				url: "http://localhost:8080/search?q=Oudeschild&addresses=1",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-no-version-2.json",
@@ -116,7 +117,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search with collection without version (third variant)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Oudeschild\"&addresses[foo]=1",
+				url: "http://localhost:8080/search?q=Oudeschild&addresses[foo]=1",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-no-version-3.json",
@@ -126,7 +127,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search: 'Den' for a single collection in WGS84 (default)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-single-collection-wgs84.json",
@@ -136,7 +137,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search: 'Den' for a single collection in RD",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-single-collection-rd.json",
@@ -146,7 +147,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search: 'Den' in another collection in WGS84",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&buildings[version]=1&limit=10&f=json",
+				url: "http://localhost:8080/search?q=Den&buildings[version]=1&limit=10&f=json",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-building-collection-wgs84.json",
@@ -156,7 +157,7 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search: 'Den' in multiple collections: with one non-existing collection, so same output as single collection) in RD",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=1&addresses[relevance]=0.8&foo[version]=2&foo[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&foo[version]=2&foo[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-single-collection-rd.json",
@@ -166,10 +167,20 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search: 'Den' in multiple collections: collection addresses + collection buildings, but addresses with non-existing version",
 			fields: fields{
-				url: "http://localhost:8080/search?q=\"Den\"&addresses[version]=2&buildings[version]=1&limit=20&f=json",
+				url: "http://localhost:8080/search?q=Den&addresses[version]=2&buildings[version]=1&limit=20&f=json",
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-search-den-multiple-collection-single-output-wgs84.json", // only expect building results since addresses version doesn't exist.
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search: complex search term with synonyms and rewrites, should not result in error",
+			fields: fields{
+				url: "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-complex-search-term.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -211,14 +222,12 @@ func importAddressesGpkg(collectionName string, dbConn string) error {
 	collection := config.CollectionByID(conf, collectionName)
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
 	return etl.ImportFile(*collection, testSearchIndex,
-		"internal/etl/testdata/addresses-crs84.gpkg",
-		"internal/etl/testdata/substitutions.csv",
-		"internal/etl/testdata/synonyms.csv", table, 5000, dbConn)
+		"internal/etl/testdata/addresses-crs84.gpkg", table, 5000, dbConn)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	req := testcontainers.ContainerRequest{
-		Image: "docker.io/postgis/postgis:16-3.5-alpine",
+		Image: "docker.io/postgis/postgis:16-3.5", // use debian, not alpine (proj issues between environments)
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
 			"POSTGRES_PASSWORD": "postgres",
