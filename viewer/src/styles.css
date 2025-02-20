@@ -1,3 +1,12 @@
+#styledlocationsearch {
+  --ls-searchbox-width: 50%;
+  --ls-options-background-color: rgb(111, 236, 255);
+  --ls-searchbox-height: 4vh;
+  --ls-searchbox-padding: 5px;
+  --ls-searchbox-margin: 5px;
+  --ls-searchbox-border: solid, 2px, rgb(164, 209, 227);
+  --ls-selectbox-buttonheight: 60px;
+}
 .boundingboxcontrol {
   top: 60px;
   left: 0.5em;
