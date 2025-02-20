@@ -125,8 +125,8 @@ func makeSQL(index string, srid d.SRID) string {
 					-- make a virtual table by creating tuples from the provided arrays.
 					SELECT * FROM unnest($4::text[], $5::int[])
 				)
-			ORDER BY -- use same "order by" clause everywhere
-			    rank DESC,
+			ORDER BY -- pre-rank generic search results (aka big result sets) by ordering on suggest length and display_name
+			    char_length(r.suggest) ASC,
 			    r.display_name COLLATE "custom_numeric" ASC
 			LIMIT 500
 		) r

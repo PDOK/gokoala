@@ -121,5 +121,12 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		return fmt.Errorf("error creating numeric collation: %w", err)
 	}
 
+	// index used to pre-rank results when generic search terms are used
+	preRankIndex := fmt.Sprintf(`create index if not exists pre_rank_idx on %[1]s (char_length(suggest) asc, display_name collate "custom_numeric" asc);`, index)
+	_, err = p.db.Exec(p.ctx, preRankIndex)
+	if err != nil {
+		return fmt.Errorf("error creating pre-rank index: %w", err)
+	}
+
 	return err
 }
