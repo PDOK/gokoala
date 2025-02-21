@@ -5,11 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
+)
+
+var (
+	// Regex to remove user provided search operators:
+	// matches & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
+	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
 )
 
 // QueryExpansion query expansion involves evaluating a user's input (what words were typed into the search query area)
@@ -31,9 +38,9 @@ func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, erro
 
 // Expand Perform query expansion, see https://en.wikipedia.org/wiki/Query_expansion
 func (s QueryExpansion) Expand(searchTerms string) domain.SearchQuery {
-	result := rewrite(strings.ToLower(searchTerms), s.rewrites)
-	results := expandSynonyms(result, s.synonyms)
-	return domain.NewSearchQuery(results)
+	normalized := searchOperatorsRegex.ReplaceAllString(strings.ToLower(searchTerms), "")
+	rewritten := rewrite(normalized, s.rewrites)
+	return domain.NewSearchQuery(expandSynonyms(rewritten, s.synonyms))
 }
 
 func rewrite(input string, mapping map[string][]string) string {
@@ -49,6 +56,7 @@ func rewrite(input string, mapping map[string][]string) string {
 type position struct {
 	start       int
 	length      int
+	original    string
 	alternative string
 }
 
@@ -60,25 +68,51 @@ func (p position) replace(input string) string {
 	return input[:p.start] + p.alternative + input[p.end():]
 }
 
-func expandSynonyms(input string, mapping map[string][]string) []string {
-	results := []string{input}
+func expandSynonyms(input string, mapping map[string][]string) ([]string, map[string]struct{}, map[string][]string) {
+	words := uniqueSlice(strings.Fields(input))
 
-	for i := 0; i < len(results); i++ {
-		existing := results[i]
-		positions := mapPositions(existing, mapping)
+	wordsWithSynonyms := make(map[string][]string)
+	for _, word := range words {
+		variants := []string{word}
+		for i := 0; i < len(variants); i++ {
+			existingVariant := variants[i]
+			positions := mapPositions(existingVariant, mapping)
 
-		// sort by longest length, when equal by smallest start position
-		sort.Slice(positions, func(i, j int) bool {
-			if positions[i].length != positions[j].length {
-				return positions[i].length > positions[j].length
+			// sort by longest length, when equal by smallest start position
+			sort.Slice(positions, func(i, j int) bool {
+				if positions[i].length != positions[j].length {
+					return positions[i].length > positions[j].length
+				}
+				return positions[i].start < positions[j].start
+			})
+
+			for _, newVariant := range generateNewVariants(existingVariant, positions) {
+				if !slices.Contains(variants, newVariant) {
+					variants = append(variants, newVariant) // continue for-loop by appending to slice
+					wordsWithSynonyms[word] = append(wordsWithSynonyms[word], newVariant)
+				}
 			}
-			return positions[i].start < positions[j].start
-		})
+		}
+	}
 
-		for _, newVariant := range generateNewVariants(existing, positions) {
-			if !slices.Contains(results, newVariant) {
-				results = append(results, newVariant)
-			}
+	wordsWithoutSynonyms := make(map[string]struct{})
+	for _, word := range words {
+		if _, ok := wordsWithSynonyms[word]; ok {
+			continue
+		}
+		wordsWithoutSynonyms[word] = struct{}{}
+	}
+	return words, wordsWithoutSynonyms, wordsWithSynonyms
+}
+
+// replaces all duplicates in a slice (note: slices.compact() only replaces consecutive duplicates).
+func uniqueSlice(s []string) []string {
+	var results []string
+	seen := make(map[string]bool)
+	for _, entry := range s {
+		if !seen[entry] {
+			seen[entry] = true
+			results = append(results, entry)
 		}
 	}
 	return results
@@ -94,11 +128,11 @@ func mapPositions(input string, mapping map[string][]string) []position {
 				break
 			}
 
-			actualPos := i + originalPos
 			for _, alternative := range alternatives {
 				results = append(results, position{
-					start:       actualPos,
+					start:       i + originalPos,
 					length:      len(original),
+					original:    input,
 					alternative: alternative,
 				})
 			}
