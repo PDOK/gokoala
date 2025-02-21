@@ -41,7 +41,7 @@ func TestCreateSearchIndex(t *testing.T) {
 	dbConn := makeDbConnection(dbPort)
 
 	// when/then
-	err = CreateSearchIndex(dbConn, "search_index", language.Dutch)
+	err = CreateSearchIndex(dbConn, "search_index", 28992, language.Dutch)
 	assert.NoError(t, err)
 	err = insertTestData(ctx, dbConn)
 	assert.NoError(t, err)
@@ -62,9 +62,9 @@ func TestCreateSearchIndexIdempotent(t *testing.T) {
 	dbConn := makeDbConnection(dbPort)
 
 	// when/then
-	err = CreateSearchIndex(dbConn, "search_index", language.English)
+	err = CreateSearchIndex(dbConn, "search_index", 28992, language.English)
 	assert.NoError(t, err)
-	err = CreateSearchIndex(dbConn, "search_index", language.English) // second time, should not fail
+	err = CreateSearchIndex(dbConn, "search_index", 28992, language.English) // second time, should not fail
 	assert.NoError(t, err)
 }
 
@@ -116,7 +116,7 @@ func TestImportGeoPackage(t *testing.T) {
 		}
 
 		// when/then
-		err = CreateSearchIndex(dbConn, "search_index", language.English)
+		err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
 		assert.NoError(t, err)
 
 		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}

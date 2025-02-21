@@ -15,8 +15,6 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
-const WGS84 = 4326
-
 type RawRecord struct {
 	FeatureID    int64
 	FieldValues  []any
@@ -116,7 +114,7 @@ func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 	if surfaceArea(r.Bbox) <= 0 {
 		return nil, errors.New("bbox area must be greater than zero")
 	}
-	return r.Bbox.Polygon().SetSRID(WGS84), nil
+	return r.Bbox.Polygon(), nil
 }
 
 // Copied from https://github.com/PDOK/gokoala/blob/070ec77b2249553959330ff8029bfdf48d7e5d86/internal/ogc/features/url.go#L264

@@ -43,7 +43,9 @@ Example (config-file is mandatory):
 docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie start-service --config-file /examples/config.yaml
 ```
 
-Now open <http://localhost:8080>. See [examples](examples) for more details.
+Now open <http://localhost:8080>or open <http://localhost:8080/api> to check the openAPI specification.
+
+See [examples](examples) for more details.
 
 ### Run ETL
 
@@ -54,9 +56,8 @@ Create database using the ETL commands.
 docker run --rm --name postgis -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=test_db -p 5432:5432 postgis/postgis
 
 ./gomagpie create-search-index --db-name test_db
-
 ./gomagpie import-file --db-name test_db \
-  --file internal/etl/testdata/addresses-crs84.gpkg \
+  --file internal/etl/testdata/addresses-rd.gpkg \
   --feature-table "addresses" \
   --config-file internal/etl/testdata/config.yaml \
   --collection-id "addresses" \

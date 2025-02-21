@@ -38,6 +38,7 @@ const (
 	dbSslModeFlag           = "db-ssl-mode"
 	dbUsernameFlag          = "db-username"
 	searchIndexFlag         = "search-index"
+	sridFlag                = "srid"
 	fileFlag                = "file"
 	featureTableFlag        = "feature-table"
 	featureTableFidFlag     = "fid"
@@ -221,6 +222,13 @@ func main() {
 					Required: false,
 					Value:    "search_index",
 				},
+				&cli.PathFlag{
+					Name:     sridFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
+					Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage it's bbox should be in the same SRID.",
+					Required: false,
+					Value:    "28992",
+				},
 				&cli.StringFlag{
 					Name:     languageFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(languageFlag)},
@@ -235,7 +243,7 @@ func main() {
 				if err != nil {
 					return err
 				}
-				return etl.CreateSearchIndex(dbConn, c.String(searchIndexFlag), lang)
+				return etl.CreateSearchIndex(dbConn, c.String(searchIndexFlag), c.Int(sridFlag), lang)
 			},
 		},
 		{

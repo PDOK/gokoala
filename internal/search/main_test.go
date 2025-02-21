@@ -61,7 +61,7 @@ func TestSearch(t *testing.T) {
 	searchEndpoint := NewSearch(eng, dbConn, testSearchIndex)
 
 	// given empty search index
-	err = etl.CreateSearchIndex(dbConn, testSearchIndex, language.Dutch)
+	err = etl.CreateSearchIndex(dbConn, testSearchIndex, 28992, language.Dutch)
 	assert.NoError(t, err)
 
 	// given imported geopackage (creates two collections in search_index with identical data)
@@ -211,7 +211,7 @@ func importAddressesGpkg(collectionName string, dbConn string) error {
 	collection := config.CollectionByID(conf, collectionName)
 	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
 	return etl.ImportFile(*collection, testSearchIndex,
-		"internal/etl/testdata/addresses-crs84.gpkg",
+		"internal/etl/testdata/addresses-rd.gpkg",
 		"internal/etl/testdata/substitutions.csv",
 		"internal/etl/testdata/synonyms.csv", table, 5000, dbConn)
 }
@@ -219,6 +219,7 @@ func importAddressesGpkg(collectionName string, dbConn string) error {
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	req := testcontainers.ContainerRequest{
 		Image: "docker.io/postgis/postgis:16-3.5-alpine",
+		Name:  "postgis",
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
 			"POSTGRES_PASSWORD": "postgres",

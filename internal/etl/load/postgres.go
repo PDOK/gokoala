@@ -49,7 +49,7 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 }
 
 // Init initialize search index
-func (p *Postgres) Init(index string, lang language.Tag) error {
+func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	// since "create type if not exists" isn't supported by Postgres we use a bit
 	// of pl/pgsql to avoid creating the geometry_type when it already exists.
 	geometryType := `
@@ -74,7 +74,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		geometry_type 		geometry_type			not null,
 		bbox 				geometry(polygon, %[2]d) null,
 		primary key (id, collection_id, collection_version)
-	) -- partition by list(collection_id);`, index, t.WGS84) // TODO partitioning comes later
+	) -- partition by list(collection_id);`, index, srid) // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
 	if err != nil {
 		return fmt.Errorf("error creating search index table: %w", err)

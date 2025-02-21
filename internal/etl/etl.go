@@ -33,7 +33,7 @@ type Transform interface {
 type Load interface {
 
 	// Init the target database by creating an empty search index
-	Init(index string, lang language.Tag) error
+	Init(index string, srid int, lang language.Tag) error
 
 	// Load records into search index
 	Load(records []t.SearchIndexRecord, index string) (int64, error)
@@ -43,13 +43,13 @@ type Load interface {
 }
 
 // CreateSearchIndex creates empty search index in target database
-func CreateSearchIndex(dbConn string, searchIndex string, lang language.Tag) error {
+func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang language.Tag) error {
 	db, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	return db.Init(searchIndex, lang)
+	return db.Init(searchIndex, srid, lang)
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
