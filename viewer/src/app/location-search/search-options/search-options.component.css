@@ -12,4 +12,5 @@ svg {
 .collections {
   position: absolute;
   left: var(--ls-searchbox-collections-left, 21vw);
+  background-color: var(--ls-options-background-color, transparant);
 }
