@@ -1,9 +1,11 @@
 import { HttpClientModule } from '@angular/common/http'
+import { createOutputSpy } from 'cypress/angular'
 import { LoggerModule } from 'ngx-logger'
-import { environment } from './../src/environments/environment'
+import { FeatureLike } from 'ol/Feature'
 import { LocationSearchComponent } from './../src/app/location-search/location-search.component'
+import { environment } from './../src/environments/environment'
+import { SearchResponse } from './seachResponse-model'
 import { checkAccessibility, injectAxe } from './shared'
-import { SeachResponse } from './seachResponse-model'
 
 function loadLocationSearchEmpty() {
   cy.mount(LocationSearchComponent, {
@@ -33,6 +35,10 @@ function loadLocationSearchWithUrl() {
       url: 'https://visualisation.example.com/locationapi',
 
       //    backgroundmap: 'BRT',
+      activeSearchUrl: createOutputSpy('activeSearchUrlSpy'),
+      activeSearchText: createOutputSpy('activeSearchTextSpy'),
+      activeFeatureHovered: createOutputSpy('activeFeatureHoveredSpy'),
+      activeFeatureSelected: createOutputSpy('activeFeatureSelectedSpy'),
     },
   })
   cy.wait('@col')
@@ -47,13 +53,50 @@ function loadLocationSearch(fixture: string, labelText: string, placeholder: str
         level: environment.loglevel,
       }),
     ],
+
     componentProperties: {
       url: 'https://visualisation.example.com/locationapi',
       label: labelText,
       placeholder,
       title,
+      activeSearchUrl: createOutputSpy('activeSearchUrlSpy'),
+      activeSearchText: createOutputSpy('activeSearchTextSpy'),
+      activeFeatureHovered: createOutputSpy('activeFeatureHoveredSpy'),
+      activeFeatureSelected: createOutputSpy('activeFeatureSelectedSpy'),
     },
   })
+}
+
+function loadLocationSearchHTML() {
+  cy.intercept('GET', 'https://visualisation.example.com/locationapi/collections', { fixture: 'collectionfix.json' }).as('col')
+  cy.intercept('GET', 'https://visualisation.example.com/locationapi/search?*', { fixture: 'search-den-wgs84.json' }).as('search')
+  cy.intercept('GET', 'https://example.com/ogc/v1/collections/addresses/items/827*', { fixture: 'amsterdam-wgs84.json' }).as('geo')
+  cy.intercept('GET', 'https://example.com/ogc/v1/collections/addresses/items/22215*', { fixture: 'grid-amsterdam-wgs84.json' }).as('geo2')
+  cy.intercept('GET', 'https://tile.openstreetmap.org/**/*', { fixture: 'backgroundstub.png' }).as('background')
+
+  cy.intercept('GET', 'https://visualisation.example.com/locationapi*', { fixture: 'collectionfix.json' }).as('col')
+  cy.mount(
+    `
+    <app-location-search id="locationsearchnew" url="https://visualisation.example.com/locationapi"
+    (activeSearchText)="activeSearchText.emit($event)"
+    (activeFeature)="activeFeature.emit($event)">
+    </app-location-search>
+`,
+    {
+      imports: [
+        HttpClientModule,
+        LocationSearchComponent,
+        LoggerModule.forRoot({
+          level: environment.loglevel,
+        }),
+      ],
+
+      componentProperties: {
+        activeSearchText: createOutputSpy('activeSearchTextSpy'),
+        activeFeature: createOutputSpy<FeatureLike>('activeFeatureSpy'),
+      },
+    }
+  )
 }
 
 describe('location-search-test', () => {
@@ -121,7 +164,7 @@ describe('location-search-test', () => {
     cy.wait('@search')
     cy.wait('@search')
     cy.get('@search').then(res => {
-      const result = res as unknown as SeachResponse
+      const result = res as unknown as SearchResponse
       const r = result.request.query
       expect(r.q).to.equal('den')
       expect(r.functioneel_gebied.version).to.equal('1')
@@ -134,7 +177,36 @@ describe('location-search-test', () => {
     })
 
     cy.contains('Beatrixlaan').focus()
-    //cy.wait('@geo')
-    //cy.wait('@background')
+
+    cy.get('@activeFeatureHoveredSpy')
+      .should('have.been.called')
+      .its('lastCall.args.0')
+      .then(s => {
+        cy.log(JSON.stringify(s))
+
+        const expectedHref = 'https://example.com/ogc/v1/collections/addresses/items/827?f=json'
+        checkFeature(s, expectedHref)
+      })
+
+    cy.get('@activeFeatureSelectedSpy').should('have.not.been.called')
+
+    cy.contains('Achterom').click()
+
+    cy.get('@activeFeatureSelectedSpy')
+      .should('have.been.called')
+      .its('firstCall.args.0')
+      .then(s => {
+        cy.log('feature selected')
+        cy.log(JSON.stringify(s))
+        const expectedHref = 'https://example.com/ogc/v1/collections/addresses/items/22215?f=json'
+        checkFeature(s, expectedHref)
+      })
   })
 })
+function checkFeature(s: any, expectedHref: string) {
+  const f: FeatureLike = s
+  cy.log(JSON.stringify(f.getProperties()))
+  const href = f.getProperties()['href']
+  cy.log(href)
+  expect(href).to.equal(expectedHref)
+}

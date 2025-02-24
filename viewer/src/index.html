@@ -8,6 +8,21 @@
     <!-- Link to external CSS -->
 
     <!-- Link to external JavaScript -->
+    <style>
+      .area {
+        display: flex;
+        flex-direction: row;
+
+      }
+
+      .box {
+        width: 35vw;
+        --ls-searchbox-width: 90%;
+
+        padding: 0;
+
+      }
+    </style>
   </head>
 
   <body onload="load()">
@@ -24,23 +39,51 @@
     >
 
     <h3>Search</h3>
+    <div class="area">
+      <div class="box">
+        <app-location-search
+          id="locationsearch"
+          url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"
+          label=""
+          aria-label="Location Search"></app-location-search>
 
-    <app-location-search
-      id="locationsearch"
-      url="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"
-      label=""
-      aria-label="Location Search"></app-location-search>
 
+      </div>
+
+      <div class="box">
+        <app-feature-view
+          id="featureview"
+          items-url="https://api.pdok.nl/lv/bag/ogc/v1/collections/standplaats/items/d9fc2b92-20fe-5643-b3aa-e03874f7f5e3?f=json"
+          show-bounding-box-button="false">
+        </app-feature-view>
+      </div>
+    </div>
     <div>
       <app-objectinfo-view id="objectinfooutside"> </app-objectinfo-view>
     </div>
   </body>
   <script type="text/javascript">
     function load() {
-      locationsearch.addEventListener('activeFeature', e => {
-        console.log('activeFeature')
+      locationsearch.addEventListener('activeFeatureHovered', e => {
+        console.log('activeFeatureHovered')
         console.log(JSON.stringify(e.detail))
-        objectinfooutside.feature = e.detail
+        const feature = e.detail
+        objectinfooutside.feature = feature
+        console.log('href hovered ' + feature.getProperties().href)
+
+        featureview.setAttribute('items-url', feature.getProperties().href)
+        featureview.style.visibility = 'visible'
+      })
+
+      featureview.style.visibility = 'hidden'
+      locationsearch.addEventListener('activeFeatureSelected', e => {
+        console.log('activeFeatureSelected')
+        console.log(JSON.stringify(e.detail))
+        const feature = e.detail
+        objectinfooutside.feature = feature
+        console.log('href selected ' + feature.getProperties().href)
+        featureview.setAttribute('items-url', feature.getProperties().href)
+        featureview.style.visibility = 'visible'
       })
 
       locationsearch.addEventListener('activeSearchUrl', u => {

@@ -1,5 +1,5 @@
 .location-search {
-  max-width: var(--ls-searchbox-width, 20%);
+  max-width: var(--ls-searchbox-width, 50%);
   font-size: var(--ls-searchbox-font-size);
   text-align: var(--ls-searchbox-text-align, top);
 }

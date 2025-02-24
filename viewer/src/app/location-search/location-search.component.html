@@ -24,8 +24,9 @@
           class="result-button"
           part="rbutton"
           title="{{ getDisplayname(r) }}"
-          (mouseover)="selectResult(r)"
-          (focus)="selectResult(r)">
+          (mouseover)="selectResultHover(r)"
+          (focus)="selectResultHover(r)"
+          (click)="selectResultClick(r)">
           <div [innerHTML]="getHighLight(r) | safeHtml"></div>
           <div hidden="hidden">
             {{ getProperty(r, 'collectionGeometryType:') }}
@@ -37,11 +38,6 @@
           </div>
         </button>
       </div>
-    </div>
-
-    <div *ngIf="selectedResultUrl" role="application">
-      <h2>Selected Item</h2>
-      <app-feature-view [itemsUrl]="selectedResultUrl" [backgroundMap]="backgroundmap"></app-feature-view>
     </div>
   </div>
 </div>
