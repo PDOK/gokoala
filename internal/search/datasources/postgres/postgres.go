@@ -74,6 +74,50 @@ func makeSQL(index string, srid d.SRID) string {
 	),
 	query_exact AS (
 		SELECT to_tsquery('custom_dict', $3) query
+	),
+	results AS NOT MATERIALIZED ( -- the results query is called twice, materializing it results in a non optimal query plan for one of the calls
+		SELECT
+			r.display_name,
+			r.feature_id,
+			r.external_fid,
+			r.collection_id,
+			r.collection_version,
+			r.geometry_type,
+			r.bbox,
+			r.suggest,
+			CASE WHEN r.display_name = r.suggest THEN
+				(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
+			ELSE
+				(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
+			END AS rank,
+			ts_headline('custom_dict', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
+		FROM
+			%[1]s r
+		LEFT JOIN
+			(SELECT * FROM unnest($4::text[], $6::float[]) rel(collection_id,relevance)) rel
+		ON
+			rel.collection_id = r.collection_id
+		WHERE
+			r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
+				-- make a virtual table by creating tuples from the provided arrays.
+				SELECT * FROM unnest($4::text[], $5::int[])
+			)
+	),
+	results_count AS (
+	    SELECT
+	    	COUNT(*) c
+	    FROM (
+	        SELECT
+	        	r.id
+	        FROM
+	        	%[1]s r
+			WHERE
+				r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
+					-- make a virtual table by creating tuples from the provided arrays.
+					SELECT * FROM unnest($4::text[], $5::int[])
+				)
+	        LIMIT 500
+	    )
 	)
 	SELECT
 	    rn.display_name,
@@ -100,35 +144,29 @@ func makeSQL(index string, srid d.SRID) string {
 					r.display_name COLLATE "custom_numeric" ASC
 			) AS row_number
 		FROM (
-			SELECT
-				r.display_name,
-				r.feature_id,
-				r.external_fid,
-				r.collection_id,
-				r.collection_version,
-				r.geometry_type,
-				r.bbox,
-				CASE WHEN r.display_name=r.suggest THEN
-					(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
-				ELSE
-				    (ts_rank(r.ts, (SELECT query FROM query_exact), 1) + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
-				END AS rank,
-				ts_headline('custom_dict', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
-			FROM
-				%[1]s r
-			LEFT JOIN
-				(SELECT * FROM unnest($4::text[], $6::float[]) rel(collection_id,relevance)) rel
-			ON
-				rel.collection_id = r.collection_id
-			WHERE
-				r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
-					-- make a virtual table by creating tuples from the provided arrays.
-					SELECT * FROM unnest($4::text[], $5::int[])
-				)
-			ORDER BY -- pre-rank generic search results (aka big result sets) by ordering on suggest length and display_name
-			    char_length(r.suggest) ASC,
-			    r.display_name COLLATE "custom_numeric" ASC
-			LIMIT 500
+		    -- a UNION ALL is used, because a CASE in the ORDER BY clause causes a sequence scan instead of an index scan
+			-- because of 1 = 1 in the WHERE clauses below the results are only added if WHEN is true, otherwise the results are ignored
+			(
+				SELECT
+					*
+				FROM
+					results r
+				WHERE
+				    -- less then 500 results don't need to be pre-ranked, an order by would result in a non optimal query plan for small result sets
+					CASE WHEN (SELECT c from results_count) < 500 THEN 1 = 1 END
+			) UNION ALL (
+		    	SELECT
+					*
+				FROM
+					results r
+				WHERE
+				    -- pre-rank more then 500 results by ordering on suggest length and display_name
+					CASE WHEN (SELECT c from results_count) = 500 THEN 1 = 1 END
+				ORDER BY
+					char_length(r.suggest) ASC,
+					r.display_name COLLATE "custom_numeric" ASC
+				LIMIT 500
+			)
 		) r
 	) rn
 	WHERE rn.row_number = 1
