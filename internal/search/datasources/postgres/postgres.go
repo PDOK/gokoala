@@ -116,7 +116,7 @@ func makeSQL(index string, srid d.SRID) string {
 					-- make a virtual table by creating tuples from the provided arrays.
 					SELECT * FROM unnest($4::text[], $5::int[])
 				)
-	        LIMIT 500
+	        LIMIT 40000
 	    )
 	)
 	SELECT
@@ -152,20 +152,20 @@ func makeSQL(index string, srid d.SRID) string {
 				FROM
 					results r
 				WHERE
-				    -- less then 500 results don't need to be pre-ranked, an order by would result in a non optimal query plan for small result sets
-					CASE WHEN (SELECT c from results_count) < 500 THEN 1 = 1 END
+				    -- less then 40000 results don't need to be pre-ranked, they can be ranked based on score
+					CASE WHEN (SELECT c from results_count) < 40000 THEN 1 = 1 END
 			) UNION ALL (
 		    	SELECT
 					*
 				FROM
 					results r
 				WHERE
-				    -- pre-rank more then 500 results by ordering on suggest length and display_name
-					CASE WHEN (SELECT c from results_count) = 500 THEN 1 = 1 END
+				    -- pre-rank more then 40000 results by ordering on suggest length and display_name
+					CASE WHEN (SELECT c from results_count) = 40000 THEN 1 = 1 END
 				ORDER BY
 					char_length(r.suggest) ASC,
 					r.display_name COLLATE "custom_numeric" ASC
-				LIMIT 500
+				LIMIT 400 -- return 400 pre-ranked results for ranking based on score
 			)
 		) r
 	) rn
