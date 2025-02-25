@@ -53,23 +53,26 @@
       locationsearch.addEventListener('activeFeatureHovered', e => {
         console.log('activeFeatureHovered')
         console.log(JSON.stringify(e.detail))
-        const feature = e.detail
-        objectinfooutside.feature = feature
-        console.log('href hovered ' + feature.getProperties().href)
-
-        featureview.setAttribute('items-url', feature.getProperties().href)
+        const featureHovered = e.detail
+        objectinfooutside.feature = featureHovered
+        console.log('href hovered ' + featureHovered.getProperties().href)
+        featureview.setAttribute('items-url', featureHovered.getProperties().href)
+        featureview.drawFeature = undefined
         featureview.style.visibility = 'visible'
       })
 
       featureview.style.visibility = 'hidden'
+
       locationsearch.addEventListener('activeFeatureSelected', e => {
         console.log('activeFeatureSelected')
-        console.log(JSON.stringify(e.detail))
-        const feature = e.detail
-        objectinfooutside.feature = feature
-        console.log('href selected ' + feature.getProperties().href)
-        featureview.setAttribute('items-url', feature.getProperties().href)
+        //console.log(JSON.stringify(e.detail))
+        const selectedFeature = e.detail
+        objectinfooutside.feature = selectedFeature
+
+        console.log('href selected ' + selectedFeature.getProperties().href)
+        //featureview.setAttribute('items-url', feature.getProperties().href)
         featureview.style.visibility = 'visible'
+        featureview.drawFeature = selectedFeature
       })
 
       locationsearch.addEventListener('activeSearchUrl', u => {
