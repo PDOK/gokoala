@@ -36,10 +36,10 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
 		pgx.Identifier{index},
-		[]string{"feature_id", "external_fid", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox"},
+		[]string{"feature_id", "external_fid", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox", "geometry"},
 		pgx.CopyFromSlice(len(records), func(i int) ([]interface{}, error) {
 			r := records[i]
-			return []any{r.FeatureID, r.ExternalFid, r.CollectionID, r.CollectionVersion, r.DisplayName, r.Suggest, r.GeometryType, r.Bbox}, nil
+			return []any{r.FeatureID, r.ExternalFid, r.CollectionID, r.CollectionVersion, r.DisplayName, r.Suggest, r.GeometryType, r.Bbox, r.Geometry}, nil
 		}),
 	)
 	if err != nil {
@@ -99,6 +99,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		suggest 			text					 not null,
 		geometry_type 		geometry_type			 not null,
 		bbox 				geometry(polygon, %[2]d) null,
+		geometry            geometry(point, %[2]d)   null,
 	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored,
 		primary key (id, collection_id, collection_version)
 	) -- partition by list(collection_id);`, index, t.WGS84) // TODO partitioning comes later

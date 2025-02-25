@@ -66,6 +66,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	return mapRowsToFeatures(queryCtx, rows)
 }
 
+//nolint:funlen
 func makeSQL(index string, srid d.SRID) string {
 	// language=postgresql
 	return fmt.Sprintf(`
@@ -84,6 +85,7 @@ func makeSQL(index string, srid d.SRID) string {
 			r.collection_version,
 			r.geometry_type,
 			r.bbox,
+			r.geometry,
 			r.suggest,
 			CASE WHEN r.display_name = r.suggest THEN
 				(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
@@ -181,20 +183,25 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 	for rows.Next() {
 		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
 		var rank float64
-		var bbox geom.T
+		var bbox, geometry geom.T
 		var externalFid *string
 
 		if err := rows.Scan(&displayName, &featureID, &externalFid, &collectionID, &collectionVersion, &geomType,
-			&bbox, &rank, &highlightedText); err != nil {
+			&bbox, &geometry, &rank, &highlightedText); err != nil {
 			return nil, err
 		}
-		geojsonGeom, err := geojson.Encode(bbox, geojson.EncodeGeometryWithMaxDecimalDigits(10))
+		geojsonBbox, err := geojson.Encode(bbox, geojson.EncodeGeometryWithMaxDecimalDigits(10))
+		if err != nil {
+			return nil, err
+		}
+		geojsonGeom, err := geojson.Encode(geometry, geojson.EncodeGeometryWithMaxDecimalDigits(10))
 		if err != nil {
 			return nil, err
 		}
 		fc.Features = append(fc.Features, &d.Feature{
 			ID:       getFeatureID(externalFid, featureID),
 			Geometry: geojsonGeom,
+			Bbox:     geojsonBbox,
 			Properties: map[string]any{
 				d.PropCollectionID:      collectionID,
 				d.PropCollectionVersion: collectionVersion,
