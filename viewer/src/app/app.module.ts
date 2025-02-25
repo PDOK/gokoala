@@ -3,11 +3,27 @@ import { VectortileViewComponent } from './vectortile-view/vectortile-view.compo
 import { createCustomElement } from '@angular/elements'
 import { ObjectInfoComponent } from './object-info/object-info.component'
 import { NgModule, Injector } from '@angular/core'
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { HttpEvent, HttpEventType, HttpHandlerFn, HttpRequest, provideHttpClient, withInterceptors } from '@angular/common/http'
 import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
+import { LocationSearchComponent } from './location-search/location-search.component'
+
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+
+import { Observable, tap } from 'rxjs'
 import { environment } from 'src/environments/environment'
+
+export class Global {
+  static loggingInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
+    return next(req).pipe(
+      tap(event => {
+        if (event.type === HttpEventType.Response) {
+          environment.currenturl = req.urlWithParams
+        }
+      })
+    )
+  }
+}
 
 @NgModule({
   declarations: [],
@@ -20,7 +36,8 @@ import { environment } from 'src/environments/environment'
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
   ],
-  providers: [provideHttpClient(withInterceptorsFromDi())],
+
+  providers: [provideHttpClient(withInterceptors([Global.loggingInterceptor]))],
 })
 export class AppModule {
   constructor(private injector: Injector) {
@@ -35,6 +52,9 @@ export class AppModule {
 
     const featureView = createCustomElement(FeatureViewComponent, { injector })
     customElements.define('app-feature-view', featureView)
+
+    const locationSearch = createCustomElement(LocationSearchComponent, { injector })
+    customElements.define('app-location-search', locationSearch)
   }
 
   // eslint-disable-next-line

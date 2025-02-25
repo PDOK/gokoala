@@ -15,7 +15,6 @@ import VectorTileSource from 'ol/source/VectorTile.js'
 import View from 'ol/View'
 import { Subject } from 'rxjs'
 import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../map-projection'
-import { ObjectInfoComponent } from '../object-info/object-info.component'
 
 import { CommonModule } from '@angular/common'
 import { NGXLogger } from 'ngx-logger'
@@ -65,9 +64,8 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './vectortile-view.component.html',
   styleUrls: ['./vectortile-view.component.css'],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ObjectInfoComponent],
+  imports: [CommonModule],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
   ],
