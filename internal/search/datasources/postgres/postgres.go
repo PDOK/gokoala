@@ -129,6 +129,7 @@ func makeSQL(index string, srid d.SRID) string {
 		rn.collection_version,
 		rn.geometry_type,
 		st_transform(rn.bbox, %[2]d)::geometry AS bbox,
+		st_transform(rn.geometry, %[2]d)::geometry AS geometry,
 		rn.rank,
 		rn.highlighted_text
 	FROM (
