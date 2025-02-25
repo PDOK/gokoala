@@ -24,6 +24,7 @@ type RawRecord struct {
 	ExternalFidValues []any
 	Bbox              *geom.Bounds
 	GeometryType      string
+	Geometry          *geom.Point
 }
 
 type SearchIndexRecord struct {
@@ -35,6 +36,7 @@ type SearchIndexRecord struct {
 	Suggest           string
 	GeometryType      string
 	Bbox              *geom.Polygon
+	Geometry          *geom.Point
 }
 
 type Transformer struct{}
@@ -69,6 +71,8 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 			return nil, err
 		}
 
+		geometry := r.Geometry.SetSRID(WGS84)
+
 		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
 		if err != nil {
 			return nil, err
@@ -85,6 +89,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 				Suggest:           suggestion,
 				GeometryType:      r.GeometryType,
 				Bbox:              bbox,
+				Geometry:          geometry,
 			}
 			result = append(result, resultRecord)
 		}
@@ -109,12 +114,7 @@ func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName
 
 func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 	if strings.EqualFold(r.GeometryType, "POINT") {
-		// create valid bbox in case original geom is a point by expanding it a bit (eventually we'll replace this with something better)
-		minx := r.Bbox.Min(0) - 0.1
-		miny := r.Bbox.Min(1) - 0.1
-		maxx := r.Bbox.Max(0) + 0.1
-		maxy := r.Bbox.Max(1) + 0.1
-		r.Bbox = geom.NewBounds(geom.XY).Set(minx, miny, maxx, maxy)
+		return nil, nil // No bbox for point geometries
 	}
 	if surfaceArea(r.Bbox) <= 0 {
 		return nil, errors.New("bbox area must be greater than zero")

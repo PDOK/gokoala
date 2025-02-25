@@ -14,13 +14,14 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/wkt"
 )
 
 const (
 	sqliteDriverName = "sqlite3_with_extensions"
 
-	// fid,minx,miny,maxx,maxy,geom_type
-	nrOfStandardFieldsInQuery = 6
+	// fid,minx,miny,maxx,maxy,geom_type,geometry
+	nrOfStandardFieldsInQuery = 7
 )
 
 var once sync.Once
@@ -76,6 +77,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, externa
 		    st_maxx(castautomagic(%[4]s)) as bbox_maxx,
 		    st_maxy(castautomagic(%[4]s)) as bbox_maxy,
 		    st_geometrytype(castautomagic(%[4]s)) as geom_type,
+		    st_astext(st_pointonsurface(castautomagic(%[4]s))) as geometry,
 		    %[1]s -- all feature specific fields and any fields for external_fid
 		from %[2]s
 		%[5]s
@@ -117,6 +119,10 @@ func mapRowToRawRecord(row []any, fields []string, externalFidFields []string) (
 	if geomType == "" {
 		return t.RawRecord{}, fmt.Errorf("encountered empty geometry type for fid %d", fid)
 	}
+	geometry, err := wkt.Unmarshal(row[6].(string))
+	if err != nil {
+		return t.RawRecord{}, err
+	}
 	return t.RawRecord{
 		FeatureID: fid,
 		Bbox: geom.NewBounds(geom.XY).Set(
@@ -126,6 +132,7 @@ func mapRowToRawRecord(row []any, fields []string, externalFidFields []string) (
 			bbox[3].(float64),
 		),
 		GeometryType:      geomType,
+		Geometry:          geometry.(*geom.Point),
 		FieldValues:       row[nrOfStandardFieldsInQuery : nrOfStandardFieldsInQuery+len(fields)],
 		ExternalFidValues: row[nrOfStandardFieldsInQuery+len(fields) : nrOfStandardFieldsInQuery+len(fields)+len(externalFidFields)],
 	}, nil
