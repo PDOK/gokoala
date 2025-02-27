@@ -37,13 +37,6 @@ func TestExpand(t *testing.T) {
 			want: `spui & 1 & gravenhage`,
 		},
 		{
-			name: "remove user provided search operators",
-			args: args{
-				searchQuery: `A & B !C D <-> E`,
-			},
-			want: `a & b & c & d & e`,
-		},
-		{
 			name: "no synonym",
 			args: args{
 				searchQuery: `just some text`,
@@ -79,12 +72,10 @@ func TestExpand(t *testing.T) {
 			want: `
 (oudwesterlijke-goeverneur | oudewestelijkelijke-goev | oudewestelijkelijke-goeverneur | oudewestelijkelijke-gouv | 
 oudewestelijkelijke-gouverneur | oudewesterlijke-goev | oudewesterlijke-goeverneur | oudewesterlijke-gouv | 
-oudewesterlijke-gouverneur | oudewestlijke-goev | oudewestlijke-goeverneur | oudewestlijke-gouv | 
-oudewestlijke-gouverneur | oudewlijke-goev | oudewlijke-goeverneuroudewlijke-gouv | oudewlijke-gouverneur | 
+oudewesterlijke-gouverneur | oudewestlijke-goev | oudewestlijke-goeverneur | oudewestlijke-gouv | oudewestlijke-gouverneur | 
 oudwestelijkelijke-goev | oudwestelijkelijke-goeverneur | oudwestelijkelijke-gouv | oudwestelijkelijke-gouverneur | 
 oudwesterlijke-goev | oudwesterlijke-gouv | oudwesterlijke-gouverneur | oudwestlijke-goev | 
-oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur | oudwlijke-goev | 
-oudwlijke-goeverneur | oudwlijke-gouv | oudwlijke-gouverneur)
+oudwestlijke-goeverneur | oudwestlijke-gouvoudwestlijke-gouverneur)
 `,
 		},
 		{
@@ -113,7 +104,7 @@ oudwlijke-goeverneur | oudwlijke-gouv | oudwlijke-gouverneur)
 			args: args{
 				searchQuery: `ok text with spaces ok`,
 			},
-			want: `ok & text & (with | westelijkeith | westerith | westith) & spaces`,
+			want: `ok & text & with & spaces`,
 		},
 		{
 			name: "long",
@@ -148,9 +139,8 @@ piet & (gouverneurstraat | goeverneurstraat | goevstraat | gouvstraat) & 1800
 			want: `
 (oude | oud) & piet & 
 (westgouverneurstraat | westelijkegoeverneurstraat | westelijkegoevstraat | westelijkegouverneurstraat | 
-westelijkegouvstraat | westergoeverneurstraat | westergoevstraat | westergouverneurstraat | 
-westergouvstraat | westgoeverneurstraat | westgoevstraat | westgouvstraat | wgoeverneurstraat | 
-wgoevstraat | wgouverneurstraat | wgouvstraat) & 1800
+westelijkegouvstraat | westergoeverneurstraat | westergoevstraat | westergouverneurstraat | westergouvstraat | 
+westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 `,
 		},
 		{
@@ -163,7 +153,7 @@ wgoevstraat | wgouverneurstraat | wgouvstraat) & 1800
 `,
 		},
 		{
-			name: "lots of synonyms",
+			name: "four synonyms",
 			args: args{
 				searchQuery: `Oud Gouv 2DE 's-Gravenhage Fryslân Nederland`,
 			},

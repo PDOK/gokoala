@@ -85,6 +85,16 @@ func TestSearch(t *testing.T) {
 		want   want
 	}{
 		{
+			name: "Fail on search with boolean operators",
+			fields: fields{
+				url: "http://localhost:8080/search?q=!foo&addresses[version]=1",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-boolean-operators.json",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
 			name: "Fail on search without collection parameter(s)",
 			fields: fields{
 				url: "http://localhost:8080/search?q=Oudeschild&limit=50",

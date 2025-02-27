@@ -5,18 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"regexp"
 	"slices"
 	"sort"
 	"strings"
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
-)
-
-var (
-	// Regex to remove user provided search operators:
-	// matches & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
-	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
 )
 
 // QueryExpansion query expansion involves evaluating a user's input (what words were typed into the search query area)
@@ -38,8 +31,7 @@ func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, erro
 
 // Expand Perform query expansion, see https://en.wikipedia.org/wiki/Query_expansion
 func (s QueryExpansion) Expand(searchTerms string) domain.SearchQuery {
-	normalized := searchOperatorsRegex.ReplaceAllString(strings.ToLower(searchTerms), "")
-	rewritten := rewrite(normalized, s.rewrites)
+	rewritten := rewrite(strings.ToLower(searchTerms), s.rewrites)
 	return domain.NewSearchQuery(expandSynonyms(rewritten, s.synonyms))
 }
 
