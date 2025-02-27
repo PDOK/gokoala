@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
 
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
@@ -45,12 +46,12 @@ func (p *Postgres) Close() {
 }
 
 func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQuery d.SearchQuery,
-	collections d.CollectionsWithParams, srid d.SRID, limit int) (*d.FeatureCollection, error) {
+	collections d.CollectionsWithParams, srid d.SRID, bbox *geom.Bounds, bboxSRID d.SRID, limit int) (*d.FeatureCollection, error) {
 
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
-	sql := makeSQL(p.searchIndex, srid)
+	sql := makeSQL(p.searchIndex, srid, bbox, bboxSRID)
 	wildcardQuery := searchQuery.ToWildcardQuery()
 	exactMatchQuery := searchQuery.ToExactMatchQuery()
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
@@ -67,7 +68,8 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 }
 
 //nolint:funlen
-func makeSQL(index string, srid d.SRID) string {
+func makeSQL(index string, srid d.SRID, bbox *geom.Bounds, bboxSRID d.SRID) string {
+	log.Printf("TODO: query on bbox (%v/%d)\n", bbox, bboxSRID)
 	// language=postgresql
 	return fmt.Sprintf(`
 	WITH query_wildcard AS (
