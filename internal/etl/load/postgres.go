@@ -57,9 +57,11 @@ func (p *Postgres) Optimize() error {
 }
 
 // Init initialize search index. Should be idempotent!
+//
+// Since not all DDL in Postgres support the "if not exists" syntax we use a bit
+// of pl/pgsql to make it idempotent.
 func (p *Postgres) Init(index string, lang language.Tag) error {
-	// since "create type if not exists" isn't supported by Postgres we use a bit
-	// of pl/pgsql to make it idempotent
+
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
@@ -71,21 +73,29 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		return fmt.Errorf("error creating geometry type: %w", err)
 	}
 
-	// since "create text search configuration if not exists" isn't supported by Postgres we use a bit
-	// of pl/pgsql to make it idempotent.
-	// Our custom dictionary incorporates the 'unaccent' extension.
 	textSearchConfig := `
 		do $$ begin
 		    create text search configuration custom_dict (copy = simple);
-			alter text search configuration custom_dict
-			  alter mapping for hword, hword_part, word
-			  with unaccent, simple;
 		exception
 		    when unique_violation then null;
 		end $$;`
 	_, err = p.db.Exec(p.ctx, textSearchConfig)
 	if err != nil {
 		return fmt.Errorf("error creating text search configuration: %w", err)
+	}
+
+	// This adds the 'unaccent' extension to allow searching with/without diacritics. Must happen in separate transaction.
+	alterTextSearchConfig := `
+		do $$ begin
+			alter text search configuration custom_dict
+			  alter mapping for hword, hword_part, word
+			  with unaccent, simple;
+		exception
+		    when unique_violation then null;
+		end $$;`
+	_, err = p.db.Exec(p.ctx, alterTextSearchConfig)
+	if err != nil {
+		return fmt.Errorf("error altering text search configuration: %w", err)
 	}
 
 	searchIndexTable := fmt.Sprintf(`
@@ -108,6 +118,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		return fmt.Errorf("error creating search index table: %w", err)
 	}
 
+	// GIN indexes are best for text search
 	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on %[1]s using gin(ts);`, index)
 	_, err = p.db.Exec(p.ctx, ginIndex)
 	if err != nil {
