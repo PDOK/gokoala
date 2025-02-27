@@ -45,7 +45,7 @@ func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, erro
 
 // Expand Perform query expansion, see https://en.wikipedia.org/wiki/Query_expansion
 func (s QueryExpansion) Expand(ctx context.Context, searchTerms string) (*domain.SearchQuery, error) {
-	expandCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	expandCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
 	rewritten, err := rewrite(expandCtx, strings.ToLower(searchTerms), s.rewrites)
