@@ -31,8 +31,8 @@ type SearchQuery struct {
 	withSynonyms    map[string][]string
 }
 
-func NewSearchQuery(words []string, withoutSynonyms map[string]struct{}, withSynonyms map[string][]string) SearchQuery {
-	return SearchQuery{words, withoutSynonyms, withSynonyms}
+func NewSearchQuery(words []string, withoutSynonyms map[string]struct{}, withSynonyms map[string][]string) *SearchQuery {
+	return &SearchQuery{words, withoutSynonyms, withSynonyms}
 }
 
 func (q *SearchQuery) ToWildcardQuery() string {

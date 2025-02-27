@@ -44,6 +44,7 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile
 // Search autosuggest locations based on user input
 func (s *Search) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Validate
 		if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -54,8 +55,15 @@ func (s *Search) Search() http.HandlerFunc {
 			return
 		}
 
-		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(),
-			s.queryExpansion.Expand(searchTerms), collections, outputSRID, limit)
+		// Query expansion
+		searchQuery, err := s.queryExpansion.Expand(r.Context(), searchTerms)
+		if err != nil {
+			handleQueryError(w, err)
+			return
+		}
+
+		// Perform actual search
+		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), *searchQuery, collections, outputSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return
@@ -65,6 +73,7 @@ func (s *Search) Search() http.HandlerFunc {
 			return
 		}
 
+		// Output
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:

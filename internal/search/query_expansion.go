@@ -1,6 +1,7 @@
 package search
 
 import (
+	"context"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
 )
@@ -42,25 +44,34 @@ func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, erro
 }
 
 // Expand Perform query expansion, see https://en.wikipedia.org/wiki/Query_expansion
-func (s QueryExpansion) Expand(searchTerms string) domain.SearchQuery {
-	rewritten := rewrite(strings.ToLower(searchTerms), s.rewrites)
-	return domain.NewSearchQuery(expandSynonyms(rewritten, s.synonyms))
+func (s QueryExpansion) Expand(ctx context.Context, searchTerms string) (*domain.SearchQuery, error) {
+	expandCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	rewritten, err := rewrite(expandCtx, strings.ToLower(searchTerms), s.rewrites)
+	if err != nil {
+		return nil, err
+	}
+	words, wordsWithoutSynonyms, wordsWithSynonyms, err := expandSynonyms(expandCtx, rewritten, s.synonyms)
+	if err != nil {
+		return nil, err
+	}
+	return domain.NewSearchQuery(words, wordsWithoutSynonyms, wordsWithSynonyms), expandCtx.Err()
 }
 
-func rewrite(input string, mapping map[string][]string) string {
+func rewrite(ctx context.Context, input string, mapping map[string][]string) (string, error) {
 	for original, alternatives := range mapping {
 		for _, alternative := range alternatives {
 			input = strings.ReplaceAll(input, alternative, original)
 		}
 	}
-	return input
+	return input, ctx.Err()
 }
 
 // position is a substring match in the given search term
 type position struct {
 	start       int
 	length      int
-	original    string
 	alternative string
 }
 
@@ -72,7 +83,9 @@ func (p position) replace(input string) string {
 	return input[:p.start] + p.alternative + input[p.end():]
 }
 
-func expandSynonyms(input string, mapping map[string][]string) ([]string, map[string]struct{}, map[string][]string) {
+func expandSynonyms(ctx context.Context, input string, mapping map[string][]string) ([]string, map[string]struct{},
+	map[string][]string, error) {
+
 	words := uniqueSlice(strings.Fields(input))
 
 	wordsWithSynonyms := make(map[string][]string)
@@ -91,6 +104,9 @@ func expandSynonyms(input string, mapping map[string][]string) ([]string, map[st
 			})
 
 			for _, newVariant := range generateNewVariants(existingVariant, positions) {
+				if err := ctx.Err(); err != nil {
+					return nil, nil, nil, err // timeout encountered
+				}
 				if !slices.Contains(variants, newVariant) {
 					variants = append(variants, newVariant) // continue for-loop by appending to slice
 					wordsWithSynonyms[word] = append(wordsWithSynonyms[word], newVariant)
@@ -106,7 +122,7 @@ func expandSynonyms(input string, mapping map[string][]string) ([]string, map[st
 		}
 		wordsWithoutSynonyms[word] = struct{}{}
 	}
-	return words, wordsWithoutSynonyms, wordsWithSynonyms
+	return words, wordsWithoutSynonyms, wordsWithSynonyms, ctx.Err()
 }
 
 // replaces all duplicates in a slice (note: slices.compact() only replaces consecutive duplicates).
@@ -136,7 +152,6 @@ func mapPositions(input string, mapping map[string][]string) []position {
 				results = append(results, position{
 					start:       i + originalPos,
 					length:      len(original),
-					original:    input,
 					alternative: alternative,
 				})
 			}

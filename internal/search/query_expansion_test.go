@@ -1,6 +1,7 @@
 package search
 
 import (
+	"context"
 	"os"
 	"path"
 	"runtime"
@@ -166,7 +167,8 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 		t.Run(tt.name, func(t *testing.T) {
 			queryExpansion, err := NewQueryExpansion("internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
 			assert.NoError(t, err)
-			actual := queryExpansion.Expand(tt.args.searchQuery)
+			actual, err := queryExpansion.Expand(context.Background(), tt.args.searchQuery)
+			assert.NoError(t, err)
 			assert.Equal(t, strings.ReplaceAll(tt.want, "\n", ""), actual.ToExactMatchQuery(), tt.args.searchQuery)
 		})
 	}
