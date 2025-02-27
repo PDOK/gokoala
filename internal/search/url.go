@@ -87,6 +87,8 @@ func validateNoUnknownParams(query url.Values) error {
 	copyParams.Del(queryParam)
 	copyParams.Del(limitParam)
 	copyParams.Del(crsParam)
+	copyParams.Del(bboxParam)
+	copyParams.Del(bboxCrsParam)
 	for key := range query {
 		if deepObjectParamRegex.MatchString(key) {
 			copyParams.Del(key)
