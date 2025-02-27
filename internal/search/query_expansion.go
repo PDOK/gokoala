@@ -72,7 +72,6 @@ func rewrite(ctx context.Context, input string, mapping map[string][]string) (st
 type position struct {
 	start       int
 	length      int
-	original    string
 	alternative string
 }
 
@@ -153,7 +152,6 @@ func mapPositions(input string, mapping map[string][]string) []position {
 				results = append(results, position{
 					start:       i + originalPos,
 					length:      len(original),
-					original:    input,
 					alternative: alternative,
 				})
 			}
