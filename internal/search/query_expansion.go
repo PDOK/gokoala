@@ -181,12 +181,19 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 
 	result := make(map[string][]string)
 	for _, row := range records {
-		key := strings.ToLower(row[0])
-		result[key] = make([]string, 0)
+		key, err := assertSynonymLength(strings.ToLower(row[0]))
+		if err != nil {
+			return nil, err
+		}
 
 		// add all alternatives
+		result[key] = make([]string, 0)
 		for i := 1; i < len(row); i++ {
-			result[key] = append(result[key], strings.ToLower(row[i]))
+			val, err := assertSynonymLength(strings.ToLower(row[i]))
+			if err != nil {
+				return nil, err
+			}
+			result[key] = append(result[key], val)
 		}
 
 		if bidi {
@@ -208,4 +215,11 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 		}
 	}
 	return result, nil
+}
+
+func assertSynonymLength(syn string) (string, error) {
+	if len(syn) < 2 {
+		return "", fmt.Errorf("failed to parse CSV file: synonym '%s' is too short, should be at least 2 chars long", syn)
+	}
+	return syn, nil
 }
