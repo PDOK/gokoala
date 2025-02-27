@@ -23,6 +23,9 @@ const (
 
 var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+]`)
+
+	// matches & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
+	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
 )
 
 func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string, outputSRID d.SRID, limit int, err error) {
@@ -66,12 +69,16 @@ func parseCollections(query url.Values) (d.CollectionsWithParams, error) {
 	return deepObjectParams, nil
 }
 
-func parseSearchTerms(query url.Values) (searchTerms string, err error) {
-	searchTerms = query.Get(queryParam)
+func parseSearchTerms(query url.Values) (string, error) {
+	searchTerms := strings.TrimSpace(strings.ToLower(query.Get(queryParam)))
 	if searchTerms == "" {
-		err = fmt.Errorf("no search terms provided, '%s' query parameter is required", queryParam)
+		return "", fmt.Errorf("no search terms provided, '%s' query parameter is required", queryParam)
 	}
-	return
+	if searchOperatorsRegex.MatchString(searchTerms) {
+		return "", errors.New("provided search terms contain one ore more boolean operators " +
+			"such as & (AND), | (OR), ! (NOT) which aren't allowed")
+	}
+	return searchTerms, nil
 }
 
 // implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)

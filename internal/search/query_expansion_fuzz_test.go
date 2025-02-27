@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"testing"
 	"unicode/utf8"
 
@@ -34,6 +35,8 @@ func FuzzExpand(f *testing.F) {
 		query := expanded.ToExactMatchQuery()
 
 		assert.Truef(t, utf8.ValidString(query), "valid string")
-		assert.NotEmpty(t, query)
+		if strings.TrimSpace(input) != "" {
+			assert.NotEmpty(t, query)
+		}
 	})
 }
