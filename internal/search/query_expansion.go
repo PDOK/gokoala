@@ -23,6 +23,18 @@ func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, erro
 	rewrites, rewErr := readCsvFile(rewritesFile, false)
 	synonyms, synErr := readCsvFile(synonymsFile, true)
 
+	// avoid too short synonyms to prevent to many invalid synonym/combinations
+	for k, v := range synonyms {
+		if err := assertSynonymLength(k); err != nil {
+			return nil, err
+		}
+		for _, variant := range v {
+			if err := assertSynonymLength(variant); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return &QueryExpansion{
 		rewrites: rewrites,
 		synonyms: synonyms,
@@ -181,19 +193,12 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 
 	result := make(map[string][]string)
 	for _, row := range records {
-		key, err := assertSynonymLength(strings.ToLower(row[0]))
-		if err != nil {
-			return nil, err
-		}
+		key := strings.ToLower(row[0])
 
 		// add all alternatives
 		result[key] = make([]string, 0)
 		for i := 1; i < len(row); i++ {
-			val, err := assertSynonymLength(strings.ToLower(row[i]))
-			if err != nil {
-				return nil, err
-			}
-			result[key] = append(result[key], val)
+			result[key] = append(result[key], strings.ToLower(row[i]))
 		}
 
 		if bidi {
@@ -217,9 +222,9 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 	return result, nil
 }
 
-func assertSynonymLength(syn string) (string, error) {
+func assertSynonymLength(syn string) error {
 	if len(syn) < 2 {
-		return "", fmt.Errorf("failed to parse CSV file: synonym '%s' is too short, should be at least 2 chars long", syn)
+		return fmt.Errorf("failed to parse CSV file: synonym '%s' is too short, should be at least 2 chars long", syn)
 	}
-	return syn, nil
+	return nil
 }
