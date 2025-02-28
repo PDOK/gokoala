@@ -1,9 +1,11 @@
 package search
 
 import (
+	"context"
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"testing"
 	"unicode/utf8"
 
@@ -30,10 +32,13 @@ func FuzzExpand(f *testing.F) {
 		f.Add(tc)
 	}
 	f.Fuzz(func(t *testing.T, input string) {
-		expanded := queryExpansion.Expand(input)
+		expanded, err := queryExpansion.Expand(context.Background(), input)
+		assert.NoError(t, err)
 		query := expanded.ToExactMatchQuery()
 
 		assert.Truef(t, utf8.ValidString(query), "valid string")
-		assert.NotEmpty(t, query)
+		if strings.TrimSpace(input) != "" {
+			assert.NotEmpty(t, query)
+		}
 	})
 }

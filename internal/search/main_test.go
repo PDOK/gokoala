@@ -58,7 +58,18 @@ func TestSearch(t *testing.T) {
 	assert.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint, err := NewSearch(eng, dbConn, testSearchIndex, "internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
+	searchEndpoint, err := NewSearch(
+		eng,
+		dbConn,
+		testSearchIndex,
+		"internal/search/testdata/rewrites.csv",
+		"internal/search/testdata/synonyms.csv",
+		1,
+		3.0,
+		1.01,
+		4000,
+		400,
+	)
 	assert.NoError(t, err)
 
 	// given empty search index
@@ -84,6 +95,16 @@ func TestSearch(t *testing.T) {
 		fields fields
 		want   want
 	}{
+		{
+			name: "Fail on search with boolean operators",
+			fields: fields{
+				url: "http://localhost:8080/search?q=!foo&addresses[version]=1",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-boolean-operators.json",
+				statusCode: http.StatusBadRequest,
+			},
+		},
 		{
 			name: "Fail on search without collection parameter(s)",
 			fields: fields{

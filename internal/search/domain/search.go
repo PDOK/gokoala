@@ -1,8 +1,7 @@
 package domain
 
 import (
-	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -11,6 +10,7 @@ const (
 	VersionParam     = "version"
 	RelevanceParam   = "relevance"
 	DefaultRelevance = 0.5
+	Wildcard         = ":*"
 )
 
 // GeoJSON properties in search response
@@ -24,18 +24,15 @@ const (
 	PropHref              = "href"
 )
 
-var (
-	// match & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
-	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
-)
-
+// SearchQuery based on parsed search terms/words.
 type SearchQuery struct {
-	terms []string
+	words           []string
+	withoutSynonyms map[string]struct{}
+	withSynonyms    map[string][]string
 }
 
-func NewSearchQuery(terms []string) SearchQuery {
-	sort.Strings(terms)
-	return SearchQuery{terms: terms}
+func NewSearchQuery(words []string, withoutSynonyms map[string]struct{}, withSynonyms map[string][]string) *SearchQuery {
+	return &SearchQuery{words, withoutSynonyms, withSynonyms}
 }
 
 func (q *SearchQuery) ToWildcardQuery() string {
@@ -48,25 +45,30 @@ func (q *SearchQuery) ToExactMatchQuery() string {
 
 func (q *SearchQuery) toString(wildcard bool) string {
 	sb := &strings.Builder{}
-	for i, term := range q.terms {
-		// remove user provided search operators
-		term = searchOperatorsRegex.ReplaceAllString(term, "")
-
-		// assemble query
-		sb.WriteByte('(')
-		parts := strings.Fields(term)
-		for j, part := range parts {
-			sb.WriteString(part)
-			if wildcard {
-				sb.WriteString(":*")
-			}
-			if j != len(parts)-1 {
-				sb.WriteString(" & ")
-			}
+	for i, word := range q.words {
+		if i > 0 {
+			sb.WriteString(" & ")
 		}
-		sb.WriteByte(')')
-		if i != len(q.terms)-1 {
-			sb.WriteString(" | ")
+		if _, ok := q.withoutSynonyms[word]; ok {
+			sb.WriteString(word)
+			if wildcard {
+				sb.WriteString(Wildcard)
+			}
+		} else if synonyms, ok := q.withSynonyms[word]; ok {
+			slices.Sort(synonyms)
+			sb.WriteByte('(')
+			sb.WriteString(word)
+			if wildcard {
+				sb.WriteString(Wildcard)
+			}
+			for _, synonym := range synonyms {
+				sb.WriteString(" | ")
+				sb.WriteString(synonym)
+				if wildcard {
+					sb.WriteString(Wildcard)
+				}
+			}
+			sb.WriteByte(')')
 		}
 	}
 	return sb.String()

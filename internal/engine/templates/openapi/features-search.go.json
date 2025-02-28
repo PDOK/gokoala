@@ -78,6 +78,9 @@
                           "..."
                         ]
                       },
+                      "bbox": [
+                        "..."
+                      ],
                       "properties": {
                         "function": "residential",
                         "floors": "2",
@@ -93,6 +96,7 @@
                           "..."
                         ]
                       },
+                      "bbox": null,
                       "properties": {
                         "function": "public use",
                         "floors": "10",
@@ -133,12 +137,15 @@
                       "type": "Feature",
                       "id": "123",
                       "place": {
-                        "type": "Polygon",
+                        "type": "Point",
                         "coordinates": [
                           "..."
                         ]
                       },
                       "geometry": null,
+                      "bbox": [
+                        "..."
+                      ],
                       "time": null,
                       "properties": {
                         "function": "residential",
@@ -150,12 +157,13 @@
                       "type": "Feature",
                       "id": "132",
                       "place": {
-                        "type": "Polygon",
+                        "type": "Point",
                         "coordinates": [
                           "..."
                         ]
                       },
                       "geometry": null,
+                      "bbox": null,
                       "time": null,
                       "properties": {
                         "function": "public use",
@@ -263,6 +271,7 @@
             "time",
             "place",
             "geometry",
+            "bbox",
             "properties",
             "type"
         ],
@@ -308,6 +317,15 @@
               }
             ]
           },
+          "bbox": {
+            "type": "array",
+            "nullable": true,
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "number"
+            }
+          },
           "properties": {
             "type": "object",
             "nullable": true
@@ -333,6 +351,7 @@
       "featureGeoJSON": {
         "required": [
           "geometry",
+          "bbox",
           "properties",
           "type"
         ],
@@ -346,6 +365,15 @@
           },
           "geometry": {
             "$ref": "#/components/schemas/geometryGeoJSON"
+          },
+          "bbox": {
+            "type": "array",
+            "nullable": true,
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "number"
+            }
           },
           "properties": {
             "type": "object",

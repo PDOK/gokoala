@@ -1,6 +1,7 @@
 package search
 
 import (
+	"context"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/PDOK/gomagpie/internal/search/domain"
 )
@@ -23,6 +25,18 @@ func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, erro
 	rewrites, rewErr := readCsvFile(rewritesFile, false)
 	synonyms, synErr := readCsvFile(synonymsFile, true)
 
+	// avoid too short synonyms to prevent to many invalid synonym/combinations
+	for k, v := range synonyms {
+		if err := assertSynonymLength(k); err != nil {
+			return nil, err
+		}
+		for _, variant := range v {
+			if err := assertSynonymLength(variant); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return &QueryExpansion{
 		rewrites: rewrites,
 		synonyms: synonyms,
@@ -30,19 +44,28 @@ func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, erro
 }
 
 // Expand Perform query expansion, see https://en.wikipedia.org/wiki/Query_expansion
-func (s QueryExpansion) Expand(searchTerms string) domain.SearchQuery {
-	result := rewrite(strings.ToLower(searchTerms), s.rewrites)
-	results := expandSynonyms(result, s.synonyms)
-	return domain.NewSearchQuery(results)
+func (s QueryExpansion) Expand(ctx context.Context, searchTerms string) (*domain.SearchQuery, error) {
+	expandCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	rewritten, err := rewrite(expandCtx, strings.ToLower(searchTerms), s.rewrites)
+	if err != nil {
+		return nil, err
+	}
+	words, wordsWithoutSynonyms, wordsWithSynonyms, err := expandSynonyms(expandCtx, rewritten, s.synonyms)
+	if err != nil {
+		return nil, err
+	}
+	return domain.NewSearchQuery(words, wordsWithoutSynonyms, wordsWithSynonyms), expandCtx.Err()
 }
 
-func rewrite(input string, mapping map[string][]string) string {
+func rewrite(ctx context.Context, input string, mapping map[string][]string) (string, error) {
 	for original, alternatives := range mapping {
 		for _, alternative := range alternatives {
 			input = strings.ReplaceAll(input, alternative, original)
 		}
 	}
-	return input
+	return input, ctx.Err()
 }
 
 // position is a substring match in the given search term
@@ -60,25 +83,56 @@ func (p position) replace(input string) string {
 	return input[:p.start] + p.alternative + input[p.end():]
 }
 
-func expandSynonyms(input string, mapping map[string][]string) []string {
-	results := []string{input}
+func expandSynonyms(ctx context.Context, input string, mapping map[string][]string) ([]string, map[string]struct{},
+	map[string][]string, error) {
 
-	for i := 0; i < len(results); i++ {
-		existing := results[i]
-		positions := mapPositions(existing, mapping)
+	words := uniqueSlice(strings.Fields(input))
 
-		// sort by longest length, when equal by smallest start position
-		sort.Slice(positions, func(i, j int) bool {
-			if positions[i].length != positions[j].length {
-				return positions[i].length > positions[j].length
+	wordsWithSynonyms := make(map[string][]string)
+	for _, word := range words {
+		variants := []string{word}
+		for i := 0; i < len(variants); i++ {
+			existingVariant := variants[i]
+			positions := mapPositions(existingVariant, mapping)
+
+			// sort by longest length, when equal by smallest start position
+			sort.Slice(positions, func(i, j int) bool {
+				if positions[i].length != positions[j].length {
+					return positions[i].length > positions[j].length
+				}
+				return positions[i].start < positions[j].start
+			})
+
+			for _, newVariant := range generateNewVariants(existingVariant, positions) {
+				if err := ctx.Err(); err != nil {
+					return nil, nil, nil, err // timeout encountered
+				}
+				if !slices.Contains(variants, newVariant) {
+					variants = append(variants, newVariant) // continue for-loop by appending to slice
+					wordsWithSynonyms[word] = append(wordsWithSynonyms[word], newVariant)
+				}
 			}
-			return positions[i].start < positions[j].start
-		})
+		}
+	}
 
-		for _, newVariant := range generateNewVariants(existing, positions) {
-			if !slices.Contains(results, newVariant) {
-				results = append(results, newVariant)
-			}
+	wordsWithoutSynonyms := make(map[string]struct{})
+	for _, word := range words {
+		if _, ok := wordsWithSynonyms[word]; ok {
+			continue
+		}
+		wordsWithoutSynonyms[word] = struct{}{}
+	}
+	return words, wordsWithoutSynonyms, wordsWithSynonyms, ctx.Err()
+}
+
+// replaces all duplicates in a slice (note: slices.compact() only replaces consecutive duplicates).
+func uniqueSlice(s []string) []string {
+	var results []string
+	seen := make(map[string]bool)
+	for _, entry := range s {
+		if !seen[entry] {
+			seen[entry] = true
+			results = append(results, entry)
 		}
 	}
 	return results
@@ -94,10 +148,9 @@ func mapPositions(input string, mapping map[string][]string) []position {
 				break
 			}
 
-			actualPos := i + originalPos
 			for _, alternative := range alternatives {
 				results = append(results, position{
-					start:       actualPos,
+					start:       i + originalPos,
 					length:      len(original),
 					alternative: alternative,
 				})
@@ -156,9 +209,9 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 	result := make(map[string][]string)
 	for _, row := range records {
 		key := strings.ToLower(row[0])
-		result[key] = make([]string, 0)
 
 		// add all alternatives
+		result[key] = make([]string, 0)
 		for i := 1; i < len(row); i++ {
 			result[key] = append(result[key], strings.ToLower(row[i]))
 		}
@@ -182,4 +235,11 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 		}
 	}
 	return result, nil
+}
+
+func assertSynonymLength(syn string) error {
+	if len(syn) < 2 {
+		return fmt.Errorf("failed to parse CSV file: synonym '%s' is too short, should be at least 2 chars long", syn)
+	}
+	return nil
 }

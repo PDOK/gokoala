@@ -1,6 +1,7 @@
 package search
 
 import (
+	"context"
 	"os"
 	"path"
 	"runtime"
@@ -23,6 +24,7 @@ func init() {
 func TestExpand(t *testing.T) {
 	type args struct {
 		searchQuery string
+		wildcard    bool
 	}
 	tests := []struct {
 		name string
@@ -34,121 +36,128 @@ func TestExpand(t *testing.T) {
 			args: args{
 				searchQuery: `Spui 1 den Haag`,
 			},
-			want: `(spui & 1 & gravenhage)`,
+			want: `spui & 1 & gravenhage`,
 		},
 		{
-			name: "remove user provided search operators",
+			name: "rewrite followed by synonym",
 			args: args{
-				searchQuery: `A & B !C D <-> E`,
+				searchQuery: `markt den bosch`,
 			},
-			want: `(a & b & c & d & e)`,
+			want: `markt & (hertogenbosch | den <-> bosch | s-hertogenbosch)`,
 		},
 		{
 			name: "no synonym",
 			args: args{
 				searchQuery: `just some text`,
 			},
-			want: `(just & some & text)`,
+			want: `just & some & text`,
+		},
+		{
+			name: "wildcard",
+			args: args{
+				searchQuery: `just some text`,
+				wildcard:    true,
+			},
+			want: `just:* & some:* & text:*`,
 		},
 		{
 			name: "one synonym",
 			args: args{
 				searchQuery: `Foo`,
 			},
-			want: `(foo) | (foobar) | (foos)`,
+			want: `(foo | foobar | foos)`,
 		},
 		{
 			name: "two the same synonyms",
 			args: args{
 				searchQuery: `Foo FooBar`,
 			},
-			want: `(foo & foo) | (foo & foobar) | (foo & foos) | (foobar & foo) | (foobar & foobar) | (foobar & foos) | (foos & foo) | (foos & foobar) | (foos & foos)`,
+			want: `(foo | foobar | foos) & (foobar | foo | foos)`,
 		},
 		{
 			name: "two-way synonym",
 			args: args{
 				searchQuery: `eerste 2de`,
 			},
-			want: `(1ste & 2de) | (1ste & tweede) | (eerste & 2de) | (eerste & tweede)`,
+			want: `(eerste | 1ste) & (2de | tweede)`,
+		},
+		{
+			name: "nesting",
+			args: args{
+				searchQuery: `oudwesterlijke-goeverneur`,
+			},
+			want: `
+(oudwesterlijke-goeverneur | oudewestelijkelijke-goev | oudewestelijkelijke-goeverneur | oudewestelijkelijke-gouv | 
+oudewestelijkelijke-gouverneur | oudewesterlijke-goev | oudewesterlijke-goeverneur | oudewesterlijke-gouv | 
+oudewesterlijke-gouverneur | oudewestlijke-goev | oudewestlijke-goeverneur | oudewestlijke-gouv | oudewestlijke-gouverneur | 
+oudwestelijkelijke-goev | oudwestelijkelijke-goeverneur | oudwestelijkelijke-gouv | oudwestelijkelijke-gouverneur | 
+oudwesterlijke-goev | oudwesterlijke-gouv | oudwesterlijke-gouverneur | oudwestlijke-goev | 
+oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
+`,
 		},
 		{
 			name: "overlapping synonyms",
 			args: args{
 				searchQuery: `foosball`,
 			},
-			want: `(fooball) | (foobarball) | (foosball)`,
+			want: `(foosball | fooball | foobarball)`,
 		},
 		{
 			name: "synonym with diacritics",
 			args: args{
 				searchQuery: `oude fryslân`,
 			},
-			want: `(oud & friesland) | (oud & fryslân) | (oude & friesland) | (oude & fryslân)`,
+			want: `(oude | oud) & (fryslân | friesland)`,
 		},
 		{
 			name: "case insensitive",
 			args: args{
 				searchQuery: `OudE DeN HaAg`,
 			},
-			want: `(oud & gravenhage) | (oude & gravenhage)`,
+			want: `(oude | oud) & gravenhage`,
 		},
 		{
 			name: "word delimiters",
 			args: args{
 				searchQuery: `ok text with spaces ok`,
 			},
-			want: `(ok & text & with & spaces & ok) | (ok & text-with-delims & ok) | (ok & textwithoutspaces & ok)`,
+			want: `ok & text & with & spaces`,
+		},
+		{
+			name: "long",
+			args: args{
+				searchQuery: `prof dr ir van der 1e noordsteeg`,
+			},
+			want: `prof & dr & ir & van & der & 1e & noordsteeg`,
 		},
 		{
 			name: "one substring",
 			args: args{
-				searchQuery: `1e Gouverneurstraat 1800`,
+				searchQuery: `Piet Gouverneurstraat 1800`,
 			},
 			want: `
-(1e & goeverneurstraat & 1800) | 
-(1e & goevstraat & 1800) | 
-(1e & gouverneurstraat & 1800) | 
-(1e & gouvstraat & 1800)
+piet & (gouverneurstraat | goeverneurstraat | goevstraat | gouvstraat) & 1800
+`,
+		},
+		{
+			name: "two substrings",
+			args: args{
+				searchQuery: `Oude Piet Gouverneurstraat 1800`,
+			},
+			want: `
+(oude | oud) & piet & (gouverneurstraat | goeverneurstraat | goevstraat | gouvstraat) & 1800
 `,
 		},
 		{
 			name: "three substrings",
 			args: args{
-				searchQuery: `Oude Westelijker-Gouverneurstraat`,
+				searchQuery: `Oude Piet Westgouverneurstraat 1800`,
 			},
 			want: `
-(oud & westelijker-goeverneurstraat) | 
-(oud & westelijker-goevstraat) | 
-(oud & westelijker-gouverneurstraat) | 
-(oud & westelijker-gouvstraat) | 
-(oud & westerr-goeverneurstraat) | 
-(oud & westerr-goevstraat) | 
-(oud & westerr-gouverneurstraat) | 
-(oud & westerr-gouvstraat) | 
-(oud & westr-goeverneurstraat) | 
-(oud & westr-goevstraat) | 
-(oud & westr-gouverneurstraat) | 
-(oud & westr-gouvstraat) | 
-(oud & wr-goeverneurstraat) | 
-(oud & wr-goevstraat) | 
-(oud & wr-gouverneurstraat) | 
-(oud & wr-gouvstraat) | 
-(oude & westelijker-goeverneurstraat) | 
-(oude & westelijker-goevstraat) | 
-(oude & westelijker-gouverneurstraat) | 
-(oude & westelijker-gouvstraat) | 
-(oude & westerr-goeverneurstraat) | 
-(oude & westerr-goevstraat) | 
-(oude & westerr-gouverneurstraat) | 
-(oude & westerr-gouvstraat) | 
-(oude & westr-goeverneurstraat) | 
-(oude & westr-goevstraat) | 
-(oude & westr-gouverneurstraat) | 
-(oude & westr-gouvstraat) | 
-(oude & wr-goeverneurstraat) | 
-(oude & wr-goevstraat) | 
-(oude & wr-gouverneurstraat) | 
-(oude & wr-gouvstraat)
+(oude | oud) & piet & 
+(westgouverneurstraat | westelijkegoeverneurstraat | westelijkegoevstraat | westelijkegouverneurstraat | 
+westelijkegouvstraat | westergoeverneurstraat | westergoevstraat | westergouverneurstraat | westergouvstraat | 
+westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 `,
 		},
 		{
@@ -157,54 +166,16 @@ func TestExpand(t *testing.T) {
 				searchQuery: `goev straat 1 in Den Haag niet in Friesland`,
 			},
 			want: `
-(goev & straat & 1 & in & gravenhage & niet & in & friesland) | 
-(goev & straat & 1 & in & gravenhage & niet & in & fryslân) | 
-(goeverneur & straat & 1 & in & gravenhage & niet & in & friesland) | 
-(goeverneur & straat & 1 & in & gravenhage & niet & in & fryslân) | 
-(gouv & straat & 1 & in & gravenhage & niet & in & friesland) | 
-(gouv & straat & 1 & in & gravenhage & niet & in & fryslân) | 
-(gouverneur & straat & 1 & in & gravenhage & niet & in & friesland) | 
-(gouverneur & straat & 1 & in & gravenhage & niet & in & fryslân)
+(goev | goeverneur | gouv | gouverneur) & straat & 1 & in & gravenhage & niet & (friesland | fryslân)
 `,
 		},
 		{
-			name: "lots of synonyms",
+			name: "four synonyms",
 			args: args{
 				searchQuery: `Oud Gouv 2DE 's-Gravenhage Fryslân Nederland`,
 			},
 			want: `
-(oud & goev & 2de & gravenhage & friesland & nederland) | 
-(oud & goev & 2de & gravenhage & fryslân & nederland) | 
-(oud & goev & tweede & gravenhage & friesland & nederland) | 
-(oud & goev & tweede & gravenhage & fryslân & nederland) | 
-(oud & goeverneur & 2de & gravenhage & friesland & nederland) | 
-(oud & goeverneur & 2de & gravenhage & fryslân & nederland) | 
-(oud & goeverneur & tweede & gravenhage & friesland & nederland) | 
-(oud & goeverneur & tweede & gravenhage & fryslân & nederland) | 
-(oud & gouv & 2de & gravenhage & friesland & nederland) | 
-(oud & gouv & 2de & gravenhage & fryslân & nederland) | 
-(oud & gouv & tweede & gravenhage & friesland & nederland) | 
-(oud & gouv & tweede & gravenhage & fryslân & nederland) | 
-(oud & gouverneur & 2de & gravenhage & friesland & nederland) | 
-(oud & gouverneur & 2de & gravenhage & fryslân & nederland) | 
-(oud & gouverneur & tweede & gravenhage & friesland & nederland) | 
-(oud & gouverneur & tweede & gravenhage & fryslân & nederland) | 
-(oude & goev & 2de & gravenhage & friesland & nederland) | 
-(oude & goev & 2de & gravenhage & fryslân & nederland) | 
-(oude & goev & tweede & gravenhage & friesland & nederland) | 
-(oude & goev & tweede & gravenhage & fryslân & nederland) | 
-(oude & goeverneur & 2de & gravenhage & friesland & nederland) | 
-(oude & goeverneur & 2de & gravenhage & fryslân & nederland) | 
-(oude & goeverneur & tweede & gravenhage & friesland & nederland) | 
-(oude & goeverneur & tweede & gravenhage & fryslân & nederland) | 
-(oude & gouv & 2de & gravenhage & friesland & nederland) | 
-(oude & gouv & 2de & gravenhage & fryslân & nederland) | 
-(oude & gouv & tweede & gravenhage & friesland & nederland) | 
-(oude & gouv & tweede & gravenhage & fryslân & nederland) | 
-(oude & gouverneur & 2de & gravenhage & friesland & nederland) | 
-(oude & gouverneur & 2de & gravenhage & fryslân & nederland) | 
-(oude & gouverneur & tweede & gravenhage & friesland & nederland) | 
-(oude & gouverneur & tweede & gravenhage & fryslân & nederland)
+(oud | oude) & (gouv | goev | goeverneur | gouverneur) & (2de | tweede) & gravenhage & (fryslân | friesland) & nederland
 `,
 		},
 	}
@@ -212,8 +183,15 @@ func TestExpand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			queryExpansion, err := NewQueryExpansion("internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
 			assert.NoError(t, err)
-			actual := queryExpansion.Expand(tt.args.searchQuery)
-			assert.Equal(t, strings.ReplaceAll(tt.want, "\n", ""), actual.ToExactMatchQuery(), tt.args.searchQuery)
+			actual, err := queryExpansion.Expand(context.Background(), tt.args.searchQuery)
+			assert.NoError(t, err)
+			var query string
+			if tt.args.wildcard {
+				query = actual.ToWildcardQuery()
+			} else {
+				query = actual.ToExactMatchQuery()
+			}
+			assert.Equal(t, strings.ReplaceAll(tt.want, "\n", ""), query, tt.args.searchQuery)
 		})
 	}
 }

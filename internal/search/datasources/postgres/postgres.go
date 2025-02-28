@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
 
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
@@ -21,9 +22,15 @@ type Postgres struct {
 
 	queryTimeout time.Duration
 	searchIndex  string
+
+	rankNormalization        int
+	exactMatchMultiplier     float64
+	primarySuggestMultiplier float64
+	rankThreshold            int
+	preRankLimit             int
 }
 
-func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string) (*Postgres, error) {
+func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) (*Postgres, error) {
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(dbConn)
 	if err != nil {
@@ -38,7 +45,17 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string) 
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
 
-	return &Postgres{db, ctx, queryTimeout, searchIndex}, nil
+	return &Postgres{
+		db,
+		ctx,
+		queryTimeout,
+		searchIndex,
+		rankNormalization,
+		exactMatchMultiplier,
+		primarySuggestMultiplier,
+		rankThreshold,
+		preRankLimit,
+	}, nil
 }
 
 func (p *Postgres) Close() {
@@ -59,9 +76,20 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	wildcardQuery := searchQuery.ToWildcardQuery()
 	exactMatchQuery := searchQuery.ToExactMatchQuery()
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
+	log.Printf("\nSEARCH QUERY (wildcard): %s\n", wildcardQuery)
 
 	// Execute search query
-	queryArgs := append([]any{limit, wildcardQuery, exactMatchQuery, names, versions, relevance}, bboxQueryArgs...)
+	queryArgs := append([]any{limit,
+		wildcardQuery,
+		exactMatchQuery,
+		names,
+		versions,
+		relevance,
+		p.rankNormalization,
+		p.exactMatchMultiplier,
+		p.primarySuggestMultiplier,
+		p.rankThreshold,
+		p.preRankLimit}, bboxQueryArgs...)
 	rows, err := p.db.Query(queryCtx, sql, queryArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
@@ -94,9 +122,13 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 			r.geometry,
 			r.suggest,
 			CASE WHEN r.display_name = r.suggest THEN
-				(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
+				(
+				    ts_rank_cd(r.ts, (SELECT query FROM query_exact), $7) * $8 * $9 + ts_rank_cd(r.ts, (SELECT query FROM query_wildcard), $7)
+				) * rel.relevance
 			ELSE
-				(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
+				(
+				    ts_rank_cd(r.ts, (SELECT query FROM query_exact), $7) * $8 + ts_rank_cd(r.ts, (SELECT query FROM query_wildcard), $7)
+				) * rel.relevance
 			END AS rank,
 			ts_headline('custom_dict', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
 		FROM
@@ -125,7 +157,7 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 					-- make a virtual table by creating tuples from the provided arrays.
 					SELECT * FROM unnest($4::text[], $5::int[])
 				)
-	        LIMIT 40000
+	        LIMIT $10
 	    )
 	)
 	SELECT
@@ -162,20 +194,20 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 				FROM
 					results r
 				WHERE
-				    -- less then 40000 results don't need to be pre-ranked, they can be ranked based on score
-					CASE WHEN (SELECT c from results_count) < 40000 THEN 1 = 1 END
+				    -- less then rank threshold results don't need to be pre-ranked, they can be ranked based on score
+					CASE WHEN (SELECT c from results_count) < $10 THEN 1 = 1 END
 			) UNION ALL (
 		    	SELECT
 					*
 				FROM
 					results r
 				WHERE
-				    -- pre-rank more then 40000 results by ordering on suggest length and display_name
-					CASE WHEN (SELECT c from results_count) = 40000 THEN 1 = 1 END
+				    -- pre-rank more then rank threshold results by ordering on suggest length and display_name
+					CASE WHEN (SELECT c from results_count) = $10 THEN 1 = 1 END
 				ORDER BY
 					char_length(r.suggest) ASC,
 					r.display_name COLLATE "custom_numeric" ASC
-				LIMIT 400 -- return 400 pre-ranked results for ranking based on score
+				LIMIT $11 -- return limited pre-ranked results for ranking based on score
 			)
 		) r
 	) rn
@@ -221,7 +253,7 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 			&bbox, &geometry, &rank, &highlightedText); err != nil {
 			return nil, err
 		}
-		geojsonBbox, err := geojson.Encode(bbox, geojson.EncodeGeometryWithMaxDecimalDigits(10))
+		geojsonBbox, err := encodeBBox(bbox)
 		if err != nil {
 			return nil, err
 		}
@@ -252,4 +284,21 @@ func getFeatureID(externalFid *string, featureID string) string {
 		return *externalFid
 	}
 	return featureID
+}
+
+// adapted from https://github.com/twpayne/go-geom/blob/b22fd061f1531a51582333b5bd45710a455c4978/encoding/geojson/geojson.go#L525
+// encodeBBox encodes b as a GeoJson Bounding Box.
+func encodeBBox(bbox geom.T) (*[]float64, error) {
+	if bbox == nil {
+		return nil, nil
+	}
+	b := bbox.Bounds()
+	switch l := b.Layout(); l {
+	case geom.XY, geom.XYM:
+		return &[]float64{b.Min(0), b.Min(1), b.Max(0), b.Max(1)}, nil
+	case geom.XYZ, geom.XYZM, geom.NoLayout:
+		return nil, fmt.Errorf("unsupported type: %d", rune(l))
+	default:
+		return nil, fmt.Errorf("unsupported type: %d", rune(l))
+	}
 }

@@ -26,14 +26,23 @@ type Search struct {
 	json           *jsonFeatures
 }
 
-func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile string, synonymsFile string) (*Search, error) {
+func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile string, synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) (*Search, error) {
 	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
 		return nil, err
 	}
 	s := &Search{
-		engine:         e,
-		datasource:     newDatasource(e, dbConn, searchIndex),
+		engine: e,
+		datasource: newDatasource(
+			e,
+			dbConn,
+			searchIndex,
+			rankNormalization,
+			exactMatchMultiplier,
+			primarySuggestMultiplier,
+			rankThreshold,
+			preRankLimit,
+		),
 		json:           newJSONFeatures(e),
 		queryExpansion: queryExpansion,
 	}
@@ -44,6 +53,7 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile
 // Search autosuggest locations based on user input
 func (s *Search) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Validate
 		if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -54,8 +64,15 @@ func (s *Search) Search() http.HandlerFunc {
 			return
 		}
 
-		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(),
-			s.queryExpansion.Expand(searchTerms), collections, outputSRID, bbox, bboxSRID, limit)
+		// Query expansion
+		searchQuery, err := s.queryExpansion.Expand(r.Context(), searchTerms)
+		if err != nil {
+			handleQueryError(w, err)
+			return
+		}
+
+		// Perform actual search
+		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), *searchQuery, collections, outputSRID, bbox, bboxSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return
@@ -65,6 +82,7 @@ func (s *Search) Search() http.HandlerFunc {
 			return
 		}
 
+		// Output
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:
@@ -113,8 +131,17 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection) error {
 	return nil
 }
 
-func newDatasource(e *engine.Engine, dbConn string, searchIndex string) ds.Datasource {
-	datasource, err := postgres.NewPostgres(dbConn, timeout, searchIndex)
+func newDatasource(e *engine.Engine, dbConn string, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) ds.Datasource {
+	datasource, err := postgres.NewPostgres(
+		dbConn,
+		timeout,
+		searchIndex,
+		rankNormalization,
+		exactMatchMultiplier,
+		primarySuggestMultiplier,
+		rankThreshold,
+		preRankLimit,
+	)
 	if err != nil {
 		log.Fatalf("failed to create datasource: %v", err)
 	}

@@ -1,10 +1,11 @@
 # The first column should contain the canonical/original word, subsequent columns
 # should contain synonyms for that canonical word. All words are translated in both ways.
+hertogenbosch,den <-> bosch,s-hertogenbosch
 eerste,1ste
 tweede,2de
 Friesland,fryslân
 goeverneur,goev,gouverneur,gouv
 foo,foos,Foobar
 oud,oude
-west,westelijke,wester,w
+west,westelijke,wester
 text with spaces,textwithoutspaces,text-with-delims
