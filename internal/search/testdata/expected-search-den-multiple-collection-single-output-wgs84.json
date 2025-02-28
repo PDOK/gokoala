@@ -16,45 +16,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 1",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/52?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 1",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/ce73a11e-0dec-54bf-a2a9-19608625018b?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801582205732642,
-              53.061720711961044
-            ],
-            [
-              4.801582181512371,
-              53.06172250908145
-            ],
-            [
-              4.801585164695744,
-              53.061722523672096
-            ],
-            [
-              4.801585188915892,
-              53.0617207265517
-            ],
-            [
-              4.801582205732642,
-              53.061720711961044
-            ]
-          ]
+          4.752783,
+          53.025621
         ]
       },
-      "id": "52",
+      "bbox": null,
+      "id": "ce73a11e-0dec-54bf-a2a9-19608625018b",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/52?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/ce73a11e-0dec-54bf-a2a9-19608625018b?f=json"
         }
       ]
     },
@@ -64,45 +45,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 1",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/51?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 1 A",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/c81730f4-1288-537c-b7ff-6661e5498703?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801582205732642,
-              53.061720711961044
-            ],
-            [
-              4.801582181512371,
-              53.06172250908145
-            ],
-            [
-              4.801585164695744,
-              53.061722523672096
-            ],
-            [
-              4.801585188915892,
-              53.0617207265517
-            ],
-            [
-              4.801582205732642,
-              53.061720711961044
-            ]
-          ]
+          4.752691,
+          53.025704
         ]
       },
-      "id": "51",
+      "bbox": null,
+      "id": "c81730f4-1288-537c-b7ff-6661e5498703",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/51?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/c81730f4-1288-537c-b7ff-6661e5498703?f=json"
         }
       ]
     },
@@ -112,45 +74,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 2",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/16129?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 1 A",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/2470c540-a3bc-52c5-8e65-10231ece37ca?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.802318831500657,
-              53.062087570405374
-            ],
-            [
-              4.802318807310595,
-              53.06208936752577
-            ],
-            [
-              4.8023217905194775,
-              53.06208938209812
-            ],
-            [
-              4.802321814709417,
-              53.062087584977725
-            ],
-            [
-              4.802318831500657,
-              53.062087570405374
-            ]
-          ]
+          4.752691,
+          53.025704
         ]
       },
-      "id": "16129",
+      "bbox": null,
+      "id": "2470c540-a3bc-52c5-8e65-10231ece37ca",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/16129?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/2470c540-a3bc-52c5-8e65-10231ece37ca?f=json"
         }
       ]
     },
@@ -160,45 +103,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 2",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/16130?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 2",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/c23f4305-c253-5f41-a01d-7c1e7dab5084?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.802318831500657,
-              53.062087570405374
-            ],
-            [
-              4.802318807310595,
-              53.06208936752577
-            ],
-            [
-              4.8023217905194775,
-              53.06208938209812
-            ],
-            [
-              4.802321814709417,
-              53.062087584977725
-            ],
-            [
-              4.802318831500657,
-              53.062087570405374
-            ]
-          ]
+          4.752893,
+          53.025386
         ]
       },
-      "id": "16130",
+      "bbox": null,
+      "id": "c23f4305-c253-5f41-a01d-7c1e7dab5084",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/16130?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/c23f4305-c253-5f41-a01d-7c1e7dab5084?f=json"
         }
       ]
     },
@@ -208,45 +132,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 3",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/71?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/7b52c3e2-ca1a-5c0b-b557-bc4246a34cb0?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801719944122861,
-              53.06192140925279
-            ],
-            [
-              4.801719919908144,
-              53.06192320637316
-            ],
-            [
-              4.8017229031053565,
-              53.061923220960395
-            ],
-            [
-              4.80172292731995,
-              53.06192142384005
-            ],
-            [
-              4.801719944122861,
-              53.06192140925279
-            ]
-          ]
+          4.75298,
+          53.025609
         ]
       },
-      "id": "71",
+      "bbox": null,
+      "id": "7b52c3e2-ca1a-5c0b-b557-bc4246a34cb0",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/71?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/7b52c3e2-ca1a-5c0b-b557-bc4246a34cb0?f=json"
         }
       ]
     },
@@ -256,45 +161,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 3",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/72?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/6376eef7-0da6-5fcb-b692-cd92e0260581?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801719944122861,
-              53.06192140925279
-            ],
-            [
-              4.801719919908144,
-              53.06192320637316
-            ],
-            [
-              4.8017229031053565,
-              53.061923220960395
-            ],
-            [
-              4.80172292731995,
-              53.06192142384005
-            ],
-            [
-              4.801719944122861,
-              53.06192140925279
-            ]
-          ]
+          4.75298,
+          53.025609
         ]
       },
-      "id": "72",
+      "bbox": null,
+      "id": "6376eef7-0da6-5fcb-b692-cd92e0260581",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/72?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/6376eef7-0da6-5fcb-b692-cd92e0260581?f=json"
         }
       ]
     },
@@ -304,45 +190,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/81?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/58c12fcc-05ef-558d-ae16-a86c45b4b93b?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.802470571626243,
-              53.06222693253753
-            ],
-            [
-              4.802470547442361,
-              53.06222872965792
-            ],
-            [
-              4.802473530660878,
-              53.062228744226466
-            ],
-            [
-              4.8024735548446404,
-              53.06222694710611
-            ],
-            [
-              4.802470571626243,
-              53.06222693253753
-            ]
-          ]
+          4.752985,
+          53.025604
         ]
       },
-      "id": "81",
+      "bbox": null,
+      "id": "58c12fcc-05ef-558d-ae16-a86c45b4b93b",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/81?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/58c12fcc-05ef-558d-ae16-a86c45b4b93b?f=json"
         }
       ]
     },
@@ -352,45 +219,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/83?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/f4e0fec4-f5ed-5263-9d96-5266163d864d?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.802340057717073,
-              53.06229597403452
-            ],
-            [
-              4.802340033527739,
-              53.06229777115482
-            ],
-            [
-              4.802343016750945,
-              53.06229778572662
-            ],
-            [
-              4.802343040940157,
-              53.062295988606344
-            ],
-            [
-              4.802340057717073,
-              53.06229597403452
-            ]
-          ]
+          4.75298,
+          53.025609
         ]
       },
-      "id": "83",
+      "bbox": null,
+      "id": "f4e0fec4-f5ed-5263-9d96-5266163d864d",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/83?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/f4e0fec4-f5ed-5263-9d96-5266163d864d?f=json"
         }
       ]
     },
@@ -400,45 +248,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/84?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/8320ae3d-878c-5469-b115-0cb73129acd0?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.802340057717073,
-              53.06229597403452
-            ],
-            [
-              4.802340033527739,
-              53.06229777115482
-            ],
-            [
-              4.802343016750945,
-              53.06229778572662
-            ],
-            [
-              4.802343040940157,
-              53.062295988606344
-            ],
-            [
-              4.802340057717073,
-              53.06229597403452
-            ]
-          ]
+          4.752985,
+          53.025604
         ]
       },
-      "id": "84",
+      "bbox": null,
+      "id": "8320ae3d-878c-5469-b115-0cb73129acd0",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/84?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/8320ae3d-878c-5469-b115-0cb73129acd0?f=json"
         }
       ]
     },
@@ -448,45 +277,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/82?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/4f5bf02b-1ab9-502c-b97a-cf3aa1838d78?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.802340057717073,
-              53.06229597403452
-            ],
-            [
-              4.802340033527739,
-              53.06229777115482
-            ],
-            [
-              4.802343016750945,
-              53.06229778572662
-            ],
-            [
-              4.802343040940157,
-              53.062295988606344
-            ],
-            [
-              4.802340057717073,
-              53.06229597403452
-            ]
-          ]
+          4.752985,
+          53.025604
         ]
       },
-      "id": "82",
+      "bbox": null,
+      "id": "4f5bf02b-1ab9-502c-b97a-cf3aa1838d78",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/82?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/4f5bf02b-1ab9-502c-b97a-cf3aa1838d78?f=json"
         }
       ]
     },
@@ -496,45 +306,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4 B",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/16052?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/d30be489-e399-57c2-8d68-307178fd0002?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.802334914492883,
-              53.06244645864386
-            ],
-            [
-              4.802334890303228,
-              53.06244825576407
-            ],
-            [
-              4.802337873536763,
-              53.06244827033607
-            ],
-            [
-              4.802337897726297,
-              53.06244647321586
-            ],
-            [
-              4.802334914492883,
-              53.06244645864386
-            ]
-          ]
+          4.75298,
+          53.025609
         ]
       },
-      "id": "16052",
+      "bbox": null,
+      "id": "d30be489-e399-57c2-8d68-307178fd0002",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/16052?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/d30be489-e399-57c2-8d68-307178fd0002?f=json"
         }
       ]
     },
@@ -544,45 +335,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/30503?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3 A",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/61f6f285-bc56-5abb-b790-01729d9cf4a8?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801763996750011,
-              53.06209391694306
-            ],
-            [
-              4.801763972536991,
-              53.06209571406332
-            ],
-            [
-              4.801766955746069,
-              53.062095728649496
-            ],
-            [
-              4.8017669799589635,
-              53.062093931529226
-            ],
-            [
-              4.801763996750011,
-              53.06209391694306
-            ]
-          ]
+          4.752896,
+          53.02571
         ]
       },
-      "id": "30503",
+      "bbox": null,
+      "id": "61f6f285-bc56-5abb-b790-01729d9cf4a8",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/30503?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/61f6f285-bc56-5abb-b790-01729d9cf4a8?f=json"
         }
       ]
     },
@@ -592,45 +364,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/30504?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 3 A",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/ba2f295f-e752-5543-8181-568cda488ea4?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801763996750011,
-              53.06209391694306
-            ],
-            [
-              4.801763972536991,
-              53.06209571406332
-            ],
-            [
-              4.801766955746069,
-              53.062095728649496
-            ],
-            [
-              4.8017669799589635,
-              53.062093931529226
-            ],
-            [
-              4.801763996750011,
-              53.06209391694306
-            ]
-          ]
+          4.752896,
+          53.02571
         ]
       },
-      "id": "30504",
+      "bbox": null,
+      "id": "ba2f295f-e752-5543-8181-568cda488ea4",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/30504?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/ba2f295f-e752-5543-8181-568cda488ea4?f=json"
         }
       ]
     },
@@ -640,45 +393,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/87?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 4",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/8a2f7390-c191-5a4c-8559-2ce0d63a176d?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.8016769460094,
-              53.06209465050104
-            ],
-            [
-              4.8016769217927795,
-              53.06209644762129
-            ],
-            [
-              4.801679905001871,
-              53.062096462209624
-            ],
-            [
-              4.80167992921837,
-              53.0620946650894
-            ],
-            [
-              4.8016769460094,
-              53.06209465050104
-            ]
-          ]
+          4.753038,
+          53.025421
         ]
       },
-      "id": "87",
+      "bbox": null,
+      "id": "8a2f7390-c191-5a4c-8559-2ce0d63a176d",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/87?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/8a2f7390-c191-5a4c-8559-2ce0d63a176d?f=json"
         }
       ]
     },
@@ -688,45 +422,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/85?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 5",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/d7b2fb6c-a413-5818-8f2f-94a58dc8dfa1?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.8016769460094,
-              53.06209465050104
-            ],
-            [
-              4.8016769217927795,
-              53.06209644762129
-            ],
-            [
-              4.801679905001871,
-              53.062096462209624
-            ],
-            [
-              4.80167992921837,
-              53.0620946650894
-            ],
-            [
-              4.8016769460094,
-              53.06209465050104
-            ]
-          ]
+          4.753148,
+          53.025639
         ]
       },
-      "id": "85",
+      "bbox": null,
+      "id": "d7b2fb6c-a413-5818-8f2f-94a58dc8dfa1",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/85?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/d7b2fb6c-a413-5818-8f2f-94a58dc8dfa1?f=json"
         }
       ]
     },
@@ -736,45 +451,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/86?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 6",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/28837db9-0f9e-5316-a180-48f97e0c3129?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.8016769460094,
-              53.06209465050104
-            ],
-            [
-              4.8016769217927795,
-              53.06209644762129
-            ],
-            [
-              4.801679905001871,
-              53.062096462209624
-            ],
-            [
-              4.80167992921837,
-              53.0620946650894
-            ],
-            [
-              4.8016769460094,
-              53.06209465050104
-            ]
-          ]
+          4.753168,
+          53.025473
         ]
       },
-      "id": "86",
+      "bbox": null,
+      "id": "28837db9-0f9e-5316-a180-48f97e0c3129",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/86?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/28837db9-0f9e-5316-a180-48f97e0c3129?f=json"
         }
       ]
     },
@@ -784,45 +480,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/30508?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 6",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/63f64e5a-9555-5425-8d58-905e742bb735?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801629211939209,
-              53.06217210270506
-            ],
-            [
-              4.801629187720558,
-              53.062173899825225
-            ],
-            [
-              4.801632170934947,
-              53.062173914414764
-            ],
-            [
-              4.8016321951534735,
-              53.06217211729457
-            ],
-            [
-              4.801629211939209,
-              53.06217210270506
-            ]
-          ]
+          4.753183,
+          53.025473
         ]
       },
-      "id": "30508",
+      "bbox": null,
+      "id": "63f64e5a-9555-5425-8d58-905e742bb735",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/30508?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/63f64e5a-9555-5425-8d58-905e742bb735?f=json"
         }
       ]
     },
@@ -832,45 +509,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/30509?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 6",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/e4534ee6-2709-553f-ae8f-fc1ea53d4217?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801629211939209,
-              53.06217210270506
-            ],
-            [
-              4.801629187720558,
-              53.062173899825225
-            ],
-            [
-              4.801632170934947,
-              53.062173914414764
-            ],
-            [
-              4.8016321951534735,
-              53.06217211729457
-            ],
-            [
-              4.801629211939209,
-              53.06217210270506
-            ]
-          ]
+          4.753168,
+          53.025473
         ]
       },
-      "id": "30509",
+      "bbox": null,
+      "id": "e4534ee6-2709-553f-ae8f-fc1ea53d4217",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/30509?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/e4534ee6-2709-553f-ae8f-fc1ea53d4217?f=json"
         }
       ]
     },
@@ -880,45 +538,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/28995?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 6",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/109e5e13-432c-501c-9a66-14952b96de2d?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801629211939209,
-              53.06217210270506
-            ],
-            [
-              4.801629187720558,
-              53.062173899825225
-            ],
-            [
-              4.801632170934947,
-              53.062173914414764
-            ],
-            [
-              4.8016321951534735,
-              53.06217211729457
-            ],
-            [
-              4.801629211939209,
-              53.06217210270506
-            ]
-          ]
+          4.753168,
+          53.025473
         ]
       },
-      "id": "28995",
+      "bbox": null,
+      "id": "109e5e13-432c-501c-9a66-14952b96de2d",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/28995?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/109e5e13-432c-501c-9a66-14952b96de2d?f=json"
         }
       ]
     },
@@ -928,45 +567,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "buildings",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 5 B",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/28994?f=json",
-        "score": 0.0303963553160429
+        "displayName": "Diek - Den Hoorn 6 A",
+        "highlight": "Diek <b>Den</b> Hoorn",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/f720a0b1-a4c9-58c3-b1c6-ef69f478278b?f=json",
+        "score": 0.14426951110363007
       },
       "geometry": {
-        "type": "Polygon",
+        "type": "Point",
         "coordinates": [
-          [
-            [
-              4.801640805937142,
-              53.06221944475373
-            ],
-            [
-              4.801640781718937,
-              53.062221241873914
-            ],
-            [
-              4.801643764936583,
-              53.06222125646317
-            ],
-            [
-              4.801643789154663,
-              53.062219459343
-            ],
-            [
-              4.801640805937142,
-              53.06221944475373
-            ]
-          ]
+          4.75315,
+          53.025472
         ]
       },
-      "id": "28994",
+      "bbox": null,
+      "id": "f720a0b1-a4c9-58c3-b1c6-ef69f478278b",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/28994?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/f720a0b1-a4c9-58c3-b1c6-ef69f478278b?f=json"
         }
       ]
     }

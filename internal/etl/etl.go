@@ -16,7 +16,7 @@ import (
 type Extract interface {
 
 	// Extract raw records from source database to be transformed and loaded into target search index
-	Extract(table config.FeatureTable, fields []string, where string, limit int, offset int) ([]t.RawRecord, error)
+	Extract(table config.FeatureTable, fields []string, externaFidFields []string, where string, limit int, offset int) ([]t.RawRecord, error)
 
 	// Close connection to source database
 	Close()
@@ -38,6 +38,9 @@ type Load interface {
 	// Load records into search index
 	Load(records []t.SearchIndexRecord, index string) (int64, error)
 
+	// Optimize once ETL is completed (optionally)
+	Optimize() error
+
 	// Close connection to target database
 	Close()
 }
@@ -53,8 +56,10 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 }
 
 // ImportFile import source data into target search index using extract-transform-load principle
-func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, substitutionsFile string,
-	synonymsFile string, table config.FeatureTable, pageSize int, dbConn string) error {
+//
+//nolint:funlen
+func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string,
+	table config.FeatureTable, pageSize int, dbConn string) error {
 
 	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
 	log.Printf("start import of %s", details)
@@ -75,17 +80,18 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	}
 	defer target.Close()
 
-	transformer, err := newTransformer(substitutionsFile, synonymsFile)
-	if err != nil {
-		return err
-	}
+	transformer := t.NewTransformer()
 
 	// import records in batches depending on page size
 	offset := 0
 	for {
 		log.Println("---")
 		log.Printf("extracting source records from offset %d", offset)
-		sourceRecords, err := source.Extract(table, collection.Search.Fields, collection.Search.ETL.Filter, pageSize, offset)
+		externalFidFields := []string{}
+		if collection.Search.ETL.ExternalFid != nil {
+			externalFidFields = collection.Search.ETL.ExternalFid.Fields
+		}
+		sourceRecords, err := source.Extract(table, collection.Search.Fields, externalFidFields, collection.Search.ETL.Filter, pageSize, offset)
 		if err != nil {
 			return fmt.Errorf("failed extracting source records: %w", err)
 		}
@@ -106,8 +112,13 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		log.Printf("loaded %d records into target search index: '%s'", loaded, searchIndex)
 		offset += pageSize
 	}
-
 	log.Printf("completed import of %s", details)
+
+	log.Println("start optimizing")
+	if err = target.Optimize(); err != nil {
+		return fmt.Errorf("failed optimizing: %w", err)
+	}
+	log.Println("completed optimizing")
 	return nil
 }
 
@@ -125,8 +136,4 @@ func newTargetToLoad(dbConn string) (Load, error) {
 	}
 	// add new targets here (elasticsearch, solr, etc)
 	return nil, fmt.Errorf("unsupported target database connection: %s", dbConn)
-}
-
-func newTransformer(substitutionsFile string, synonymsFile string) (Transform, error) {
-	return t.NewTransformer(substitutionsFile, synonymsFile)
 }

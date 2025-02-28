@@ -36,10 +36,10 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
 		pgx.Identifier{index},
-		[]string{"feature_id", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox"},
+		[]string{"feature_id", "external_fid", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox", "geometry"},
 		pgx.CopyFromSlice(len(records), func(i int) ([]interface{}, error) {
 			r := records[i]
-			return []any{r.FeatureID, r.CollectionID, r.CollectionVersion, r.DisplayName, r.Suggest, r.GeometryType, r.Bbox}, nil
+			return []any{r.FeatureID, r.ExternalFid, r.CollectionID, r.CollectionVersion, r.DisplayName, r.Suggest, r.GeometryType, r.Bbox, r.Geometry}, nil
 		}),
 	)
 	if err != nil {
@@ -48,10 +48,20 @@ func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, err
 	return loaded, nil
 }
 
-// Init initialize search index
+func (p *Postgres) Optimize() error {
+	_, err := p.db.Exec(p.ctx, `vacuum analyze;`)
+	if err != nil {
+		return fmt.Errorf("error performing vacuum analyze: %w", err)
+	}
+	return nil
+}
+
+// Init initialize search index. Should be idempotent!
+//
+// Since not all DDL in Postgres support the "if not exists" syntax we use a bit
+// of pl/pgsql to make it idempotent.
 func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
-	// since "create type if not exists" isn't supported by Postgres we use a bit
-	// of pl/pgsql to avoid creating the geometry_type when it already exists.
+
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
@@ -63,16 +73,44 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		return fmt.Errorf("error creating geometry type: %w", err)
 	}
 
+	textSearchConfig := `
+		do $$ begin
+		    create text search configuration custom_dict (copy = simple);
+		exception
+		    when unique_violation then null;
+		end $$;`
+	_, err = p.db.Exec(p.ctx, textSearchConfig)
+	if err != nil {
+		return fmt.Errorf("error creating text search configuration: %w", err)
+	}
+
+	// This adds the 'unaccent' extension to allow searching with/without diacritics. Must happen in separate transaction.
+	alterTextSearchConfig := `
+		do $$ begin
+			alter text search configuration custom_dict
+			  alter mapping for hword, hword_part, word
+			  with unaccent, simple;
+		exception
+		    when unique_violation then null;
+		end $$;`
+	_, err = p.db.Exec(p.ctx, alterTextSearchConfig)
+	if err != nil {
+		return fmt.Errorf("error altering text search configuration: %w", err)
+	}
+
 	searchIndexTable := fmt.Sprintf(`
 	create table if not exists %[1]s (
 		id 					serial,
-		feature_id 			text 					not null ,
-		collection_id 		text					not null,
-		collection_version 	int 					not null,
-		display_name 		text					not null,
-		suggest 			text					not null,
-		geometry_type 		geometry_type			not null,
+		feature_id 			text 					 not null,
+		external_fid        text                     null,
+		collection_id 		text					 not null,
+		collection_version 	int 					 not null,
+		display_name 		text					 not null,
+		suggest 			text					 not null,
+		geometry_type 		geometry_type			 not null,
 		bbox 				geometry(polygon, %[2]d) null,
+		geometry            geometry(point, %[2]d)   null,
+	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored,
 		primary key (id, collection_id, collection_version)
 	) -- partition by list(collection_id);`, index, srid) // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
@@ -80,15 +118,8 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		return fmt.Errorf("error creating search index table: %w", err)
 	}
 
-	fullTextSearchColumn := fmt.Sprintf(`
-		alter table %[1]s add column if not exists ts tsvector 
-	    generated always as (to_tsvector('simple', suggest)) stored;`, index)
-	_, err = p.db.Exec(p.ctx, fullTextSearchColumn)
-	if err != nil {
-		return fmt.Errorf("error creating full-text search column: %w", err)
-	}
-
-	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on  %[1]s using gin(ts);`, index)
+	// GIN indexes are best for text search
+	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on %[1]s using gin(ts);`, index)
 	_, err = p.db.Exec(p.ctx, ginIndex)
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)
@@ -100,6 +131,13 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	_, err = p.db.Exec(p.ctx, collation)
 	if err != nil {
 		return fmt.Errorf("error creating numeric collation: %w", err)
+	}
+
+	// index used to pre-rank results when generic search terms are used
+	preRankIndex := fmt.Sprintf(`create index if not exists pre_rank_idx on %[1]s (char_length(suggest) asc, display_name collate "custom_numeric" asc);`, index)
+	_, err = p.db.Exec(p.ctx, preRankIndex)
+	if err != nil {
+		return fmt.Errorf("error creating pre-rank index: %w", err)
 	}
 
 	return err

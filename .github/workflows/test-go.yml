@@ -36,6 +36,9 @@ jobs:
           command: |
             go test -v -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out ./...
 
+      - name: Fuzz
+        run: cd internal/search && go test -fuzz=Fuzz -fuzztime=10s -run=^$
+
       - name: Fail when coverage below threshold
         uses: vladopajic/go-test-coverage@v2
         with:

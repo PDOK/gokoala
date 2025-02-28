@@ -12,33 +12,35 @@ import (
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/google/uuid"
 	"github.com/twpayne/go-geom"
 )
 
 type RawRecord struct {
-	FeatureID    int64
-	FieldValues  []any
-	Bbox         *geom.Bounds
-	GeometryType string
+	FeatureID         int64
+	FieldValues       []any
+	ExternalFidValues []any
+	Bbox              *geom.Bounds
+	GeometryType      string
+	Geometry          *geom.Point
 }
 
 type SearchIndexRecord struct {
 	FeatureID         string
+	ExternalFid       *string
 	CollectionID      string
 	CollectionVersion int
 	DisplayName       string
 	Suggest           string
 	GeometryType      string
 	Bbox              *geom.Polygon
+	Geometry          *geom.Point
 }
 
-type Transformer struct {
-	substAndSynonyms *SubstAndSynonyms
-}
+type Transformer struct{}
 
-func NewTransformer(substitutionsFile string, synonymsFile string) (*Transformer, error) {
-	substAndSynonyms, err := NewSubstAndSynonyms(substitutionsFile, synonymsFile)
-	return &Transformer{substAndSynonyms}, err
+func NewTransformer() *Transformer {
+	return &Transformer{}
 }
 
 func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection) ([]SearchIndexRecord, error) {
@@ -52,16 +54,13 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 		if err != nil {
 			return nil, err
 		}
-		allFieldValuesByName := t.substAndSynonyms.generate(fieldValuesByName)
 		suggestions := make([]string, 0, len(collection.Search.ETL.SuggestTemplates))
-		for i := range allFieldValuesByName {
-			for _, suggestTemplate := range collection.Search.ETL.SuggestTemplates {
-				suggestion, err := t.renderTemplate(suggestTemplate, allFieldValuesByName[i])
-				if err != nil {
-					return nil, err
-				}
-				suggestions = append(suggestions, suggestion)
+		for _, suggestTemplate := range collection.Search.ETL.SuggestTemplates {
+			suggestion, err := t.renderTemplate(suggestTemplate, fieldValuesByName)
+			if err != nil {
+				return nil, err
 			}
+			suggestions = append(suggestions, suggestion)
 		}
 		suggestions = slices.Compact(suggestions)
 
@@ -70,16 +69,25 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 			return nil, err
 		}
 
+		geometry := r.Geometry.SetSRID(WGS84)
+
+		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
+		if err != nil {
+			return nil, err
+		}
+
 		// create target record(s)
 		for _, suggestion := range suggestions {
 			resultRecord := SearchIndexRecord{
 				FeatureID:         strconv.FormatInt(r.FeatureID, 10),
+				ExternalFid:       externalFid,
 				CollectionID:      collection.ID,
 				CollectionVersion: collection.Search.Version,
 				DisplayName:       displayName,
 				Suggest:           suggestion,
 				GeometryType:      r.GeometryType,
 				Bbox:              bbox,
+				Geometry:          geometry,
 			}
 			result = append(result, resultRecord)
 		}
@@ -104,12 +112,7 @@ func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName
 
 func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 	if strings.EqualFold(r.GeometryType, "POINT") {
-		// create valid bbox in case original geom is a point by expanding it a bit (eventually we'll replace this with something better)
-		minx := r.Bbox.Min(0) - 0.1
-		miny := r.Bbox.Min(1) - 0.1
-		maxx := r.Bbox.Max(0) + 0.1
-		maxy := r.Bbox.Max(1) + 0.1
-		r.Bbox = geom.NewBounds(geom.XY).Set(minx, miny, maxx, maxy)
+		return nil, nil // No bbox for point geometries
 	}
 	if surfaceArea(r.Bbox) <= 0 {
 		return nil, errors.New("bbox area must be greater than zero")
@@ -137,4 +140,19 @@ func slicesToStringMap(keys []string, values []any) (map[string]string, error) {
 		}
 	}
 	return result, nil
+}
+
+func generateExternalFid(collectionID string, externalFid *config.ExternalFid, externalFidValues []any) (*string, error) {
+	if externalFid != nil {
+		uuidInput := collectionID
+		if len(externalFid.Fields) != len(externalFidValues) {
+			return nil, fmt.Errorf("slices must be of the same length, got %d keys and %d values", len(externalFid.Fields), len(externalFidValues))
+		}
+		for _, value := range externalFidValues {
+			uuidInput += fmt.Sprint(value)
+		}
+		externalFid := uuid.NewSHA1(externalFid.UUIDNamespace, []byte(uuidInput)).String()
+		return &externalFid, nil
+	}
+	return nil, nil
 }

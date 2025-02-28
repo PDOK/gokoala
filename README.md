@@ -40,7 +40,10 @@ GLOBAL OPTIONS:
 Example (config-file is mandatory):
 
 ```docker
-docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie start-service --config-file /examples/config.yaml
+docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gomagpie start-service \
+  --config-file /examples/config.yaml \
+  --rewrites-file internal/search/testdata/rewrites.csv \
+  --synonyms-file internal/search/testdata/synonyms.csv
 ```
 
 Now open <http://localhost:8080>or open <http://localhost:8080/api> to check the openAPI specification.
@@ -60,10 +63,7 @@ docker run --rm --name postgis -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=test
   --file internal/etl/testdata/addresses-rd.gpkg \
   --feature-table "addresses" \
   --config-file internal/etl/testdata/config.yaml \
-  --collection-id "addresses" \
-  --substitutions-file internal/etl/testdata/substitutions.csv \
-   --synonyms-file internal/etl/testdata/synonyms.csv
- 
+  --collection-id "addresses"
 ```
 
 ## Build

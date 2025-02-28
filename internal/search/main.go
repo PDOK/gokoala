@@ -20,35 +20,59 @@ const (
 )
 
 type Search struct {
-	engine     *engine.Engine
-	datasource ds.Datasource
-
-	json *jsonFeatures
+	engine         *engine.Engine
+	datasource     ds.Datasource
+	queryExpansion *QueryExpansion
+	json           *jsonFeatures
 }
 
-func NewSearch(e *engine.Engine, dbConn string, searchIndex string) *Search {
+func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile string, synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) (*Search, error) {
+	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
+	if err != nil {
+		return nil, err
+	}
 	s := &Search{
-		engine:     e,
-		datasource: newDatasource(e, dbConn, searchIndex),
-		json:       newJSONFeatures(e),
+		engine: e,
+		datasource: newDatasource(
+			e,
+			dbConn,
+			searchIndex,
+			rankNormalization,
+			exactMatchMultiplier,
+			primarySuggestMultiplier,
+			rankThreshold,
+			preRankLimit,
+		),
+		json:           newJSONFeatures(e),
+		queryExpansion: queryExpansion,
 	}
 	e.Router.Get("/search", s.Search())
-	return s
+	return s, nil
 }
 
 // Search autosuggest locations based on user input
 func (s *Search) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Validate
 		if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		collections, searchTerm, outputSRID, outputCRS, limit, err := parseQueryParams(r.URL.Query())
+		collections, searchTerms, outputSRID, outputCRS, limit, err := parseQueryParams(r.URL.Query())
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), searchTerm, collections, outputSRID, limit)
+
+		// Query expansion
+		searchQuery, err := s.queryExpansion.Expand(r.Context(), searchTerms)
+		if err != nil {
+			handleQueryError(w, err)
+			return
+		}
+
+		// Perform actual search
+		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), *searchQuery, collections, outputSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return
@@ -58,6 +82,7 @@ func (s *Search) Search() http.HandlerFunc {
 			return
 		}
 
+		// Output
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:
@@ -110,8 +135,17 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 	return nil
 }
 
-func newDatasource(e *engine.Engine, dbConn string, searchIndex string) ds.Datasource {
-	datasource, err := postgres.NewPostgres(dbConn, timeout, searchIndex)
+func newDatasource(e *engine.Engine, dbConn string, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) ds.Datasource {
+	datasource, err := postgres.NewPostgres(
+		dbConn,
+		timeout,
+		searchIndex,
+		rankNormalization,
+		exactMatchMultiplier,
+		primarySuggestMultiplier,
+		rankThreshold,
+		preRankLimit,
+	)
 	if err != nil {
 		log.Fatalf("failed to create datasource: %v", err)
 	}

@@ -1,11 +1,16 @@
 package domain
 
-import "strconv"
+import (
+	"slices"
+	"strconv"
+	"strings"
+)
 
 const (
 	VersionParam     = "version"
 	RelevanceParam   = "relevance"
 	DefaultRelevance = 0.5
+	Wildcard         = ":*"
 )
 
 // GeoJSON properties in search response
@@ -18,6 +23,56 @@ const (
 	PropScore             = "score"
 	PropHref              = "href"
 )
+
+// SearchQuery based on parsed search terms/words.
+type SearchQuery struct {
+	words           []string
+	withoutSynonyms map[string]struct{}
+	withSynonyms    map[string][]string
+}
+
+func NewSearchQuery(words []string, withoutSynonyms map[string]struct{}, withSynonyms map[string][]string) *SearchQuery {
+	return &SearchQuery{words, withoutSynonyms, withSynonyms}
+}
+
+func (q *SearchQuery) ToWildcardQuery() string {
+	return q.toString(true)
+}
+
+func (q *SearchQuery) ToExactMatchQuery() string {
+	return q.toString(false)
+}
+
+func (q *SearchQuery) toString(wildcard bool) string {
+	sb := &strings.Builder{}
+	for i, word := range q.words {
+		if i > 0 {
+			sb.WriteString(" & ")
+		}
+		if _, ok := q.withoutSynonyms[word]; ok {
+			sb.WriteString(word)
+			if wildcard {
+				sb.WriteString(Wildcard)
+			}
+		} else if synonyms, ok := q.withSynonyms[word]; ok {
+			slices.Sort(synonyms)
+			sb.WriteByte('(')
+			sb.WriteString(word)
+			if wildcard {
+				sb.WriteString(Wildcard)
+			}
+			for _, synonym := range synonyms {
+				sb.WriteString(" | ")
+				sb.WriteString(synonym)
+				if wildcard {
+					sb.WriteString(Wildcard)
+				}
+			}
+			sb.WriteByte(')')
+		}
+	}
+	return sb.String()
+}
 
 // CollectionsWithParams collection name with associated CollectionParams
 // These are provided though a URL query string as "deep object" params, e.g. paramName[prop1]=value1&paramName[prop2]=value2&....

@@ -23,14 +23,17 @@ const (
 
 var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+]`)
+
+	// matches & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
+	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
 )
 
-func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerm string, outputSRID d.SRID, outputCRS string, limit int, err error) {
+func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string, outputSRID d.SRID, outputCRS string, limit int, err error) {
 	err = validateNoUnknownParams(query)
 	if err != nil {
 		return
 	}
-	searchTerm, searchTermErr := parseSearchTerm(query)
+	searchTerms, searchTermErr := parseSearchTerms(query)
 	collections, collErr := parseCollections(query)
 	outputSRID, outputSRIDErr := parseCrsToPostgisSRID(query, crsParam)
 	outputCRS = query.Get(crsParam)
@@ -67,12 +70,16 @@ func parseCollections(query url.Values) (d.CollectionsWithParams, error) {
 	return deepObjectParams, nil
 }
 
-func parseSearchTerm(query url.Values) (searchTerm string, err error) {
-	searchTerm = query.Get(queryParam)
-	if searchTerm == "" {
-		err = fmt.Errorf("no search term provided, '%s' query parameter is required", queryParam)
+func parseSearchTerms(query url.Values) (string, error) {
+	searchTerms := strings.TrimSpace(strings.ToLower(query.Get(queryParam)))
+	if searchTerms == "" {
+		return "", fmt.Errorf("no search terms provided, '%s' query parameter is required", queryParam)
 	}
-	return
+	if searchOperatorsRegex.MatchString(searchTerms) {
+		return "", errors.New("provided search terms contain one ore more boolean operators " +
+			"such as & (AND), | (OR), ! (NOT) which aren't allowed")
+	}
+	return searchTerms, nil
 }
 
 // implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
