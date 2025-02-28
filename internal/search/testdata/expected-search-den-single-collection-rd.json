@@ -18,7 +18,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 1",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -54,7 +54,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -66,7 +66,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 1",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -102,7 +102,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -114,7 +114,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 2",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/16130?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/16130?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -150,7 +150,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/16130?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/16130?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -162,7 +162,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 2",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/16129?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/16129?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -198,7 +198,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/16129?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/16129?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -210,7 +210,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 3",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/72?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/72?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -246,7 +246,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/72?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/72?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -258,7 +258,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 3",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/71?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/71?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -294,7 +294,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/71?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/71?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -306,7 +306,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/81?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/81?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -342,7 +342,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/81?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/81?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -354,7 +354,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4 A",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/82?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/82?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -390,7 +390,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/82?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/82?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -402,7 +402,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4 A",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/83?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/83?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -438,7 +438,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/83?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/83?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -450,7 +450,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4 A",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/84?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/84?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.048634168505668644
       },
       "geometry": {
@@ -486,7 +486,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/84?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/84?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     }
