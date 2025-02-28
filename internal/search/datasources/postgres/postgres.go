@@ -21,9 +21,15 @@ type Postgres struct {
 
 	queryTimeout time.Duration
 	searchIndex  string
+
+	rankNormalization        int
+	exactMatchMultiplier     float64
+	primarySuggestMultiplier float64
+	rankThreshold            int
+	preRankLimit             int
 }
 
-func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string) (*Postgres, error) {
+func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) (*Postgres, error) {
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(dbConn)
 	if err != nil {
@@ -38,7 +44,17 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string) 
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
 
-	return &Postgres{db, ctx, queryTimeout, searchIndex}, nil
+	return &Postgres{
+		db,
+		ctx,
+		queryTimeout,
+		searchIndex,
+		rankNormalization,
+		exactMatchMultiplier,
+		primarySuggestMultiplier,
+		rankThreshold,
+		preRankLimit,
+	}, nil
 }
 
 func (p *Postgres) Close() {
@@ -58,7 +74,21 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	log.Printf("\nSEARCH QUERY (wildcard): %s\n", wildcardQuery)
 
 	// Execute search query
-	rows, err := p.db.Query(queryCtx, sql, limit, wildcardQuery, exactMatchQuery, names, versions, relevance)
+	rows, err := p.db.Query(
+		queryCtx,
+		sql,
+		limit,
+		wildcardQuery,
+		exactMatchQuery,
+		names,
+		versions,
+		relevance,
+		p.rankNormalization,
+		p.exactMatchMultiplier,
+		p.primarySuggestMultiplier,
+		p.rankThreshold,
+		p.preRankLimit,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
 	}
@@ -90,9 +120,13 @@ func makeSQL(index string, srid d.SRID) string {
 			r.geometry,
 			r.suggest,
 			CASE WHEN r.display_name = r.suggest THEN
-				(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + 0.01 + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
+				(
+				    ts_rank_cd(r.ts, (SELECT query FROM query_exact), $7) * $8 * $9 + ts_rank_cd(r.ts, (SELECT query FROM query_wildcard), $7)
+				) * rel.relevance
 			ELSE
-				(ts_rank(r.ts, (SELECT query FROM query_exact), 1) + ts_rank(r.ts, (SELECT query FROM query_wildcard), 1)) * rel.relevance
+				(
+				    ts_rank_cd(r.ts, (SELECT query FROM query_exact), $7) * $8 + ts_rank_cd(r.ts, (SELECT query FROM query_wildcard), $7)
+				) * rel.relevance
 			END AS rank,
 			ts_headline('custom_dict', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
 		FROM
@@ -120,7 +154,7 @@ func makeSQL(index string, srid d.SRID) string {
 					-- make a virtual table by creating tuples from the provided arrays.
 					SELECT * FROM unnest($4::text[], $5::int[])
 				)
-	        LIMIT 40000
+	        LIMIT $10
 	    )
 	)
 	SELECT
@@ -157,20 +191,20 @@ func makeSQL(index string, srid d.SRID) string {
 				FROM
 					results r
 				WHERE
-				    -- less then 40000 results don't need to be pre-ranked, they can be ranked based on score
-					CASE WHEN (SELECT c from results_count) < 40000 THEN 1 = 1 END
+				    -- less then rank threshold results don't need to be pre-ranked, they can be ranked based on score
+					CASE WHEN (SELECT c from results_count) < $10 THEN 1 = 1 END
 			) UNION ALL (
 		    	SELECT
 					*
 				FROM
 					results r
 				WHERE
-				    -- pre-rank more then 40000 results by ordering on suggest length and display_name
-					CASE WHEN (SELECT c from results_count) = 40000 THEN 1 = 1 END
+				    -- pre-rank more then rank threshold results by ordering on suggest length and display_name
+					CASE WHEN (SELECT c from results_count) = $10 THEN 1 = 1 END
 				ORDER BY
 					char_length(r.suggest) ASC,
 					r.display_name COLLATE "custom_numeric" ASC
-				LIMIT 400 -- return 400 pre-ranked results for ranking based on score
+				LIMIT $11 -- return limited pre-ranked results for ranking based on score
 			)
 		) r
 	) rn
