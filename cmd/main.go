@@ -23,29 +23,34 @@ import (
 const (
 	appName = "gomagpie"
 
-	hostFlag                = "host"
-	portFlag                = "port"
-	debugPortFlag           = "debug-port"
-	shutdownDelayFlag       = "shutdown-delay"
-	configFileFlag          = "config-file"
-	collectionIDFlag        = "collection-id"
-	enableTrailingSlashFlag = "enable-trailing-slash"
-	enableCorsFlag          = "enable-cors"
-	dbHostFlag              = "db-host"
-	dbNameFlag              = "db-name"
-	dbPasswordFlag          = "db-password"
-	dbPortFlag              = "db-port"
-	dbSslModeFlag           = "db-ssl-mode"
-	dbUsernameFlag          = "db-username"
-	searchIndexFlag         = "search-index"
-	fileFlag                = "file"
-	featureTableFlag        = "feature-table"
-	featureTableFidFlag     = "fid"
-	featureTableGeomFlag    = "geom"
-	pageSizeFlag            = "page-size"
-	rewritesFileFlag        = "rewrites-file"
-	synonymsFileFlag        = "synonyms-file"
-	languageFlag            = "lang"
+	hostFlag                 = "host"
+	portFlag                 = "port"
+	debugPortFlag            = "debug-port"
+	shutdownDelayFlag        = "shutdown-delay"
+	configFileFlag           = "config-file"
+	collectionIDFlag         = "collection-id"
+	enableTrailingSlashFlag  = "enable-trailing-slash"
+	enableCorsFlag           = "enable-cors"
+	dbHostFlag               = "db-host"
+	dbNameFlag               = "db-name"
+	dbPasswordFlag           = "db-password"
+	dbPortFlag               = "db-port"
+	dbSslModeFlag            = "db-ssl-mode"
+	dbUsernameFlag           = "db-username"
+	searchIndexFlag          = "search-index"
+	fileFlag                 = "file"
+	featureTableFlag         = "feature-table"
+	featureTableFidFlag      = "fid"
+	featureTableGeomFlag     = "geom"
+	pageSizeFlag             = "page-size"
+	rewritesFileFlag         = "rewrites-file"
+	synonymsFileFlag         = "synonyms-file"
+	languageFlag             = "lang"
+	rankNormalization        = "rank-normalization"
+	exactMatchMultiplier     = "exact-match-multiplier"
+	primarySuggestMultiplier = "primary-suggest-multiplier"
+	rankThreshold            = "rank-threshold"
+	preRankLimit             = "pre-rank-limit"
 )
 
 var (
@@ -189,6 +194,41 @@ func main() {
 					Usage:    "Path to csv file containing synonyms used to generate suggestions",
 					Required: true,
 				},
+				&cli.IntFlag{
+					Name:     rankNormalization,
+					EnvVars:  []string{strcase.ToScreamingSnake(rankNormalization)},
+					Usage:    "Normalization specifies whether and how a document's length should impact its rank. Possible values are 0, 1, 2, 4, 8, 16 and 32. For more information see https://www.postgresql.org/docs/current/textsearch-controls.html",
+					Required: false,
+					Value:    1,
+				},
+				&cli.Float64Flag{
+					Name:     exactMatchMultiplier,
+					EnvVars:  []string{strcase.ToScreamingSnake(exactMatchMultiplier)},
+					Usage:    "Multiply the exact match rank to boost is above the wildcard matches",
+					Required: false,
+					Value:    3.0,
+				},
+				&cli.Float64Flag{
+					Name:     primarySuggestMultiplier,
+					EnvVars:  []string{strcase.ToScreamingSnake(primarySuggestMultiplier)},
+					Usage:    "The primary suggest is equal to the display name. With this multiplier you can boost is above other suggests",
+					Required: false,
+					Value:    1.01,
+				},
+				&cli.IntFlag{
+					Name:     rankThreshold,
+					EnvVars:  []string{strcase.ToScreamingSnake(rankThreshold)},
+					Usage:    "The threshold above which results are pre-ranked instead ranked exactly",
+					Required: false,
+					Value:    40000,
+				},
+				&cli.IntFlag{
+					Name:     preRankLimit,
+					EnvVars:  []string{strcase.ToScreamingSnake(preRankLimit)},
+					Usage:    "The number of results which are pre-ranked when the rank threshold is hit",
+					Required: false,
+					Value:    400,
+				},
 			},
 			Action: func(c *cli.Context) error {
 				log.Println(c.Command.Usage)
@@ -210,7 +250,18 @@ func main() {
 				// Each OGC API building block makes use of said Engine
 				ogc.SetupBuildingBlocks(engine, dbConn)
 				// Create search endpoint
-				_, err = search.NewSearch(engine, dbConn, c.String(searchIndexFlag), c.Path(rewritesFileFlag), c.Path(synonymsFileFlag))
+				_, err = search.NewSearch(
+					engine,
+					dbConn,
+					c.String(searchIndexFlag),
+					c.Path(rewritesFileFlag),
+					c.Path(synonymsFileFlag),
+					c.Int(rankNormalization),
+					c.Float64(exactMatchMultiplier),
+					c.Float64(primarySuggestMultiplier),
+					c.Int(rankThreshold),
+					c.Int(preRankLimit),
+				)
 				if err != nil {
 					return err
 				}
