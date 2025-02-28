@@ -43,7 +43,7 @@ func TestExpand(t *testing.T) {
 			args: args{
 				searchQuery: `markt den bosch`,
 			},
-			want: `markt & (hertogenbosch | 's-hertogenbosch | den <-> bosch)`,
+			want: `markt & (hertogenbosch | den <-> bosch | s-hertogenbosch)`,
 		},
 		{
 			name: "no synonym",
