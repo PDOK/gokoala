@@ -69,7 +69,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 			return nil, err
 		}
 
-		geometry := r.Geometry.SetSRID(WGS84)
+		geometry := r.Geometry
 
 		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
 		if err != nil {

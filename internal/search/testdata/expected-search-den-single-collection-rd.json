@@ -18,14 +18,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 1",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/18680?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/18680?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112433.5178709489,
-          560042.5507990314
+          112433.545171,
+          560042.5230780001
         ]
       },
       "bbox": null,
@@ -35,7 +35,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/18680?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/18680?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -47,14 +47,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 1 A",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/3377?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/3377?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112427.4265011091,
-          560051.8413341795
+          112427.438171,
+          560051.8710780001
         ]
       },
       "bbox": null,
@@ -64,7 +64,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/3377?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/3377?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -76,14 +76,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 1 A",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/3376?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/3376?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112427.4265011091,
-          560051.8413341795
+          112427.438171,
+          560051.8710780001
         ]
       },
       "bbox": null,
@@ -93,7 +93,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/3376?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/3376?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -105,14 +105,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 2",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/3176?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/3176?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112440.6682361294,
-          560016.3350723344
+          112440.678171,
+          560016.326077
         ]
       },
       "bbox": null,
@@ -122,7 +122,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/3176?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/3176?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -134,14 +134,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 3",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/24839?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/24839?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112447.0541263542,
-          560040.5398773659
+          112447.075171,
+          560040.499078
         ]
       },
       "bbox": null,
@@ -151,7 +151,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/24839?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/24839?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -163,14 +163,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 3",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/18446?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/18446?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112446.7235499837,
-          560041.0992271238
+          112446.726171,
+          560041.136078
         ]
       },
       "bbox": null,
@@ -180,7 +180,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/18446?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/18446?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -192,14 +192,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 3",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/18444?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/18444?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112446.7235499837,
-          560041.0992271238
+          112446.726171,
+          560041.136078
         ]
       },
       "bbox": null,
@@ -209,7 +209,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/18444?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/18444?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -221,14 +221,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 3",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/18443?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/18443?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112446.7235499837,
-          560041.0992271238
+          112446.726171,
+          560041.136078
         ]
       },
       "bbox": null,
@@ -238,7 +238,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/18443?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/18443?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -250,14 +250,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 3",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/18445?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/18445?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112446.7235499837,
-          560041.0992271238
+          112446.726171,
+          560041.136078
         ]
       },
       "bbox": null,
@@ -267,7 +267,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/18445?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/18445?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -279,14 +279,14 @@
         "collectionVersion": "1",
         "displayName": "Diek - Den Hoorn 3",
         "highlight": "Diek <b>Den</b> Hoorn",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/24840?f=json",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/24840?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
         "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          112447.0541263542,
-          560040.5398773659
+          112447.075171,
+          560040.499078
         ]
       },
       "bbox": null,
@@ -296,7 +296,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/24840?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/24840?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     }
