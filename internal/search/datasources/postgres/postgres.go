@@ -225,11 +225,11 @@ func parseBbox(bbox *geom.Bounds, bboxSRID d.SRID) (string, []any, error) {
 	if bbox != nil {
 		if bboxSRID != d.WGS84SRIDPostgis {
 			bboxFilter = `AND
-				(st_intersects(st_transform(r.geometry, $8::int), st_geomfromtext($7::text, $8::int)) OR st_intersects(st_transform(r.bbox, $8::int), st_geomfromtext($7::text, $8::int)))
+				(st_intersects(st_transform(r.geometry, $13::int), st_geomfromtext($12::text, $13::int)) OR st_intersects(st_transform(r.bbox, $13::int), st_geomfromtext($12::text, $13::int)))
 			`
 		} else {
 			bboxFilter = `AND
-				(st_intersects(r.geometry, st_geomfromtext($7::text, $8::int)) OR st_intersects(r.bbox, st_geomfromtext($7::text, $8::int)))
+				(st_intersects(r.geometry, st_geomfromtext($12::text, $13::int)) OR st_intersects(r.bbox, st_geomfromtext($12::text, $13::int)))
 			`
 		}
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
