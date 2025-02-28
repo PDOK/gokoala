@@ -39,6 +39,13 @@ func TestExpand(t *testing.T) {
 			want: `spui & 1 & gravenhage`,
 		},
 		{
+			name: "rewrite followed by synonym",
+			args: args{
+				searchQuery: `markt den bosch`,
+			},
+			want: `markt & (hertogenbosch | 's-hertogenbosch | den <-> bosch)`,
+		},
+		{
 			name: "no synonym",
 			args: args{
 				searchQuery: `just some text`,
