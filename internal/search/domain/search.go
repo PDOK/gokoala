@@ -61,10 +61,8 @@ func (q *SearchQuery) toString(wildcard bool) string {
 			if wildcard {
 				sb.WriteString(Wildcard)
 			}
-			for j, synonym := range synonyms {
-				if j != len(synonym)-1 {
-					sb.WriteString(" | ")
-				}
+			for _, synonym := range synonyms {
+				sb.WriteString(" | ")
 				sb.WriteString(synonym)
 				if wildcard {
 					sb.WriteString(Wildcard)

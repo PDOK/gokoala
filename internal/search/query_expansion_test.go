@@ -24,6 +24,7 @@ func init() {
 func TestExpand(t *testing.T) {
 	type args struct {
 		searchQuery string
+		wildcard    bool
 	}
 	tests := []struct {
 		name string
@@ -43,6 +44,14 @@ func TestExpand(t *testing.T) {
 				searchQuery: `just some text`,
 			},
 			want: `just & some & text`,
+		},
+		{
+			name: "wildcard",
+			args: args{
+				searchQuery: `just some text`,
+				wildcard:    true,
+			},
+			want: `just:* & some:* & text:*`,
 		},
 		{
 			name: "one synonym",
@@ -76,7 +85,7 @@ oudewestelijkelijke-gouverneur | oudewesterlijke-goev | oudewesterlijke-goeverne
 oudewesterlijke-gouverneur | oudewestlijke-goev | oudewestlijke-goeverneur | oudewestlijke-gouv | oudewestlijke-gouverneur | 
 oudwestelijkelijke-goev | oudwestelijkelijke-goeverneur | oudwestelijkelijke-gouv | oudwestelijkelijke-gouverneur | 
 oudwesterlijke-goev | oudwesterlijke-gouv | oudwesterlijke-gouverneur | oudwestlijke-goev | 
-oudwestlijke-goeverneur | oudwestlijke-gouvoudwestlijke-gouverneur)
+oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
 `,
 		},
 		{
@@ -169,7 +178,13 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 			assert.NoError(t, err)
 			actual, err := queryExpansion.Expand(context.Background(), tt.args.searchQuery)
 			assert.NoError(t, err)
-			assert.Equal(t, strings.ReplaceAll(tt.want, "\n", ""), actual.ToExactMatchQuery(), tt.args.searchQuery)
+			var query string
+			if tt.args.wildcard {
+				query = actual.ToWildcardQuery()
+			} else {
+				query = actual.ToExactMatchQuery()
+			}
+			assert.Equal(t, strings.ReplaceAll(tt.want, "\n", ""), query, tt.args.searchQuery)
 		})
 	}
 }
