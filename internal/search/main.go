@@ -94,6 +94,7 @@ func (s *Search) Search() http.HandlerFunc {
 	}
 }
 
+//nolint:nestif
 func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS string) error {
 	for _, feat := range fc.Features {
 		collectionID, ok := feat.Properties[domain.PropCollectionID]
