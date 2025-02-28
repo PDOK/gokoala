@@ -34,7 +34,7 @@ type Feature struct {
 	Type       featureType       `json:"type"`
 	Properties map[string]any    `json:"properties"`
 	Geometry   *geojson.Geometry `json:"geometry"`
-	Bbox       *geojson.Geometry `json:"bbox"`
+	Bbox       *[]float64        `json:"bbox"`
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
 	ID    string `json:"id"`
