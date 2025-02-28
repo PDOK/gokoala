@@ -204,14 +204,14 @@ func main() {
 				&cli.Float64Flag{
 					Name:     exactMatchMultiplier,
 					EnvVars:  []string{strcase.ToScreamingSnake(exactMatchMultiplier)},
-					Usage:    "Multiply the exact match rank to boost is above the wildcard matches",
+					Usage:    "Multiply the exact match rank to boost it above the wildcard matches",
 					Required: false,
 					Value:    3.0,
 				},
 				&cli.Float64Flag{
 					Name:     primarySuggestMultiplier,
 					EnvVars:  []string{strcase.ToScreamingSnake(primarySuggestMultiplier)},
-					Usage:    "The primary suggest is equal to the display name. With this multiplier you can boost is above other suggests",
+					Usage:    "The primary suggest is equal to the display name. With this multiplier you can boost it above other suggests",
 					Required: false,
 					Value:    1.01,
 				},
