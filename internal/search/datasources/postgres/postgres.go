@@ -3,13 +3,13 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"log"
 
 	d "github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
+	"github.com/twpayne/go-geom/encoding/wkt"
 	pgxgeom "github.com/twpayne/pgx-geom"
 
 	"time"
@@ -51,13 +51,18 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
-	sql := makeSQL(p.searchIndex, srid, bbox, bboxSRID)
+	bboxFilter, bboxQueryArgs, err := parseBbox(bbox, bboxSRID)
+	if err != nil {
+		return nil, err
+	}
+	sql := makeSQL(p.searchIndex, srid, bboxFilter)
 	wildcardQuery := searchQuery.ToWildcardQuery()
 	exactMatchQuery := searchQuery.ToExactMatchQuery()
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
 
 	// Execute search query
-	rows, err := p.db.Query(queryCtx, sql, limit, wildcardQuery, exactMatchQuery, names, versions, relevance)
+	queryArgs := append([]any{limit, wildcardQuery, exactMatchQuery, names, versions, relevance}, bboxQueryArgs...)
+	rows, err := p.db.Query(queryCtx, sql, queryArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
 	}
@@ -68,8 +73,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 }
 
 //nolint:funlen
-func makeSQL(index string, srid d.SRID, bbox *geom.Bounds, bboxSRID d.SRID) string {
-	log.Printf("TODO: query on bbox (%v/%d)\n", bbox, bboxSRID)
+func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 	// language=postgresql
 	return fmt.Sprintf(`
 	WITH query_wildcard AS (
@@ -106,6 +110,7 @@ func makeSQL(index string, srid d.SRID, bbox *geom.Bounds, bboxSRID d.SRID) stri
 				-- make a virtual table by creating tuples from the provided arrays.
 				SELECT * FROM unnest($4::text[], $5::int[])
 			)
+		%[3]s -- bounding box intersect filter
 	),
 	results_count AS (
 	    SELECT
@@ -178,7 +183,30 @@ func makeSQL(index string, srid d.SRID, bbox *geom.Bounds, bboxSRID d.SRID) stri
 	ORDER BY -- use same "order by" clause everywhere
 	    rn.rank DESC,
 	    rn.display_name COLLATE "custom_numeric" ASC
-	LIMIT $1`, index, srid) // don't add user input here, use $X params for user input!
+	LIMIT $1`, index, srid, bboxFilter) // don't add user input here, use $X params for user input!
+}
+
+func parseBbox(bbox *geom.Bounds, bboxSRID d.SRID) (string, []any, error) {
+	var bboxFilter, bboxWkt string
+	var bboxQueryArgs []any
+	var err error
+	if bbox != nil {
+		if bboxSRID != d.WGS84SRIDPostgis {
+			bboxFilter = `AND
+				(st_intersects(st_transform(r.geometry, $8::int), st_geomfromtext($7::text, $8::int)) OR st_intersects(st_transform(r.bbox, $8::int), st_geomfromtext($7::text, $8::int)))
+			`
+		} else {
+			bboxFilter = `AND
+				(st_intersects(r.geometry, st_geomfromtext($7::text, $8::int)) OR st_intersects(r.bbox, st_geomfromtext($7::text, $8::int)))
+			`
+		}
+		bboxWkt, err = wkt.Marshal(bbox.Polygon())
+		if err != nil {
+			return "", []any{}, err
+		}
+		bboxQueryArgs = append(bboxQueryArgs, bboxWkt, bboxSRID)
+	}
+	return bboxFilter, bboxQueryArgs, err
 }
 
 func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureCollection, error) {
