@@ -225,7 +225,7 @@ func main() {
 				&cli.PathFlag{
 					Name:     sridFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
-					Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage it's bbox should be in the same SRID.",
+					Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage its bbox should be in the same SRID.",
 					Required: false,
 					Value:    "28992",
 				},
