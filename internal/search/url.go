@@ -9,13 +9,17 @@ import (
 	"strings"
 
 	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gomagpie/internal/engine/util"
 	d "github.com/PDOK/gomagpie/internal/search/domain"
+	"github.com/twpayne/go-geom"
 )
 
 const (
-	queryParam = "q"
-	limitParam = "limit"
-	crsParam   = "crs"
+	queryParam   = "q"
+	limitParam   = "limit"
+	crsParam     = "crs"
+	bboxParam    = "bbox"
+	bboxCrsParam = "bbox-crs"
 
 	limitDefault = 10
 	limitMax     = 50
@@ -28,7 +32,7 @@ var (
 	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
 )
 
-func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string, outputSRID d.SRID, outputCRS string, limit int, err error) {
+func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string, outputSRID d.SRID, outputCRS string, bbox *geom.Bounds, bboxSRID d.SRID, limit int, err error) {
 	err = validateNoUnknownParams(query)
 	if err != nil {
 		return
@@ -38,7 +42,9 @@ func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, se
 	outputSRID, outputSRIDErr := parseCrsToPostgisSRID(query, crsParam)
 	outputCRS = query.Get(crsParam)
 	limit, limitErr := parseLimit(query)
-	err = errors.Join(collErr, searchTermErr, limitErr, outputSRIDErr)
+	bbox, bboxSRID, bboxErr := parseBbox(query)
+
+	err = errors.Join(collErr, searchTermErr, limitErr, outputSRIDErr, bboxErr)
 	return
 }
 
@@ -89,6 +95,8 @@ func validateNoUnknownParams(query url.Values) error {
 	copyParams.Del(queryParam)
 	copyParams.Del(limitParam)
 	copyParams.Del(crsParam)
+	copyParams.Del(bboxParam)
+	copyParams.Del(bboxCrsParam)
 	for key := range query {
 		if deepObjectParamRegex.MatchString(key) {
 			copyParams.Del(key)
@@ -151,4 +159,34 @@ func parseLimit(params url.Values) (int, error) {
 		err = errors.New("limit can't be negative")
 	}
 	return limit, err
+}
+
+func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
+	bboxSRID, err := parseCrsToPostgisSRID(params, bboxCrsParam)
+	if err != nil {
+		return nil, d.UndefinedSRID, err
+	}
+
+	if params.Get(bboxParam) == "" {
+		return nil, d.UndefinedSRID, nil
+	}
+	bboxValues := strings.Split(params.Get(bboxParam), ",")
+	if len(bboxValues) != 4 {
+		return nil, bboxSRID, errors.New("bbox should contain exactly 4 values " +
+			"separated by commas: minx,miny,maxx,maxy")
+	}
+
+	bboxFloats := make([]float64, len(bboxValues))
+	for i, v := range bboxValues {
+		bboxFloats[i], err = strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, bboxSRID, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
+		}
+	}
+
+	bbox := geom.NewBounds(geom.XY).Set(bboxFloats...)
+	if util.SurfaceArea(bbox) <= 0 {
+		return nil, bboxSRID, errors.New("bbox has no surface area")
+	}
+	return bbox, bboxSRID, nil
 }

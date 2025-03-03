@@ -156,6 +156,26 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
+			name: "Search: 'Den' for a single collection in WGS84 (default) with bounding box in WGS84",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&limit=10&bbox=4.2888981083359194%2C52.74465818263613%2C5.571330972812564%2C53.391238307109006&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-den-single-collection-wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search: 'Den' for a single collection in WGS84 (default) with bounding box in RD",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&limit=10&bbox=108379.69%2C558718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-search-den-single-collection-wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Search: 'Den' for a single collection in RD",
 			fields: fields{
 				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",

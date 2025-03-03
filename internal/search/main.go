@@ -58,7 +58,7 @@ func (s *Search) Search() http.HandlerFunc {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		collections, searchTerms, outputSRID, outputCRS, limit, err := parseQueryParams(r.URL.Query())
+		collections, searchTerms, outputSRID, outputCRS, bbox, bboxSRID, limit, err := parseQueryParams(r.URL.Query())
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -72,7 +72,7 @@ func (s *Search) Search() http.HandlerFunc {
 		}
 
 		// Perform actual search
-		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), *searchQuery, collections, outputSRID, limit)
+		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), *searchQuery, collections, outputSRID, bbox, bboxSRID, limit)
 		if err != nil {
 			handleQueryError(w, err)
 			return

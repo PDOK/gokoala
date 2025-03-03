@@ -125,6 +125,18 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		return fmt.Errorf("error creating GIN index: %w", err)
 	}
 
+	// GIST indexes for bbox and geometry columns, to support search within a bounding box
+	geometryIndex := fmt.Sprintf(`create index if not exists geometry_idx on %[1]s using gist(geometry);`, index)
+	_, err = p.db.Exec(p.ctx, geometryIndex)
+	if err != nil {
+		return fmt.Errorf("error creating GIST index: %w", err)
+	}
+	bboxIndex := fmt.Sprintf(`create index if not exists bbox_idx on %[1]s using gist(bbox);`, index)
+	_, err = p.db.Exec(p.ctx, bboxIndex)
+	if err != nil {
+		return fmt.Errorf("error creating GIST index: %w", err)
+	}
+
 	// create custom collation to correctly handle "numbers in strings" when sorting results
 	// see https://www.postgresql.org/docs/12/collation.html#id-1.6.10.4.5.7.5
 	collation := fmt.Sprintf(`create collation if not exists custom_numeric (provider = icu, locale = '%s-u-kn-true');`, lang.String())

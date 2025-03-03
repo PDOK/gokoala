@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gomagpie/internal/engine/util"
 	"github.com/google/uuid"
 	"github.com/twpayne/go-geom"
 )
@@ -114,17 +114,10 @@ func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 	if strings.EqualFold(r.GeometryType, "POINT") {
 		return nil, nil // No bbox for point geometries
 	}
-	if surfaceArea(r.Bbox) <= 0 {
+	if util.SurfaceArea(r.Bbox) <= 0 {
 		return nil, errors.New("bbox area must be greater than zero")
 	}
 	return r.Bbox.Polygon(), nil
-}
-
-// Copied from https://github.com/PDOK/gokoala/blob/070ec77b2249553959330ff8029bfdf48d7e5d86/internal/ogc/features/url.go#L264
-func surfaceArea(bbox *geom.Bounds) float64 {
-	// Use the same logic as bbox.Area() in https://github.com/go-spatial/geom to calculate surface area.
-	// The bounds.Area() in github.com/twpayne/go-geom behaves differently and is not what we're looking for.
-	return math.Abs((bbox.Max(1) - bbox.Min(1)) * (bbox.Max(0) - bbox.Min(0)))
 }
 
 func slicesToStringMap(keys []string, values []any) (map[string]string, error) {
