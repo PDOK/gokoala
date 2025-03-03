@@ -20,8 +20,9 @@ type Postgres struct {
 	db  *pgxpool.Pool
 	ctx context.Context
 
-	queryTimeout time.Duration
-	searchIndex  string
+	queryTimeout    time.Duration
+	searchIndex     string
+	searchIndexSrid d.SRID
 
 	rankNormalization        int
 	exactMatchMultiplier     float64
@@ -30,7 +31,7 @@ type Postgres struct {
 	preRankLimitMultiplier   int
 }
 
-func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Postgres, error) {
+func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, searchIndexSrid d.SRID, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Postgres, error) {
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(dbConn)
 	if err != nil {
@@ -50,6 +51,7 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, 
 		ctx,
 		queryTimeout,
 		searchIndex,
+		searchIndexSrid,
 		rankNormalization,
 		exactMatchMultiplier,
 		primarySuggestMultiplier,
@@ -68,7 +70,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
-	bboxFilter, bboxQueryArgs, err := parseBbox(bbox, bboxSRID)
+	bboxFilter, bboxQueryArgs, err := parseBbox(bbox, bboxSRID, p.searchIndexSrid)
 	if err != nil {
 		return nil, err
 	}
@@ -215,14 +217,14 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 	LIMIT $1`, index, srid, bboxFilter) // don't add user input here, use $X params for user input!
 }
 
-func parseBbox(bbox *geom.Bounds, bboxSRID d.SRID) (string, []any, error) {
+func parseBbox(bbox *geom.Bounds, bboxSRID d.SRID, searchIndexSRID d.SRID) (string, []any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxQueryArgs []any
 	var err error
 	if bbox != nil {
-		bboxFilter = `AND
-			(st_intersects(st_transform(r.geometry, $13::int), st_geomfromtext($12::text, $13::int)) OR st_intersects(st_transform(r.bbox, $13::int), st_geomfromtext($12::text, $13::int)))
-		`
+		bboxFilter = fmt.Sprintf(`AND
+			(st_intersects(r.geometry, st_transform(st_geomfromtext($12::text, $13::int), %[1]d)) OR st_intersects(r.bbox, st_transform(st_geomfromtext($12::text, $13::int), %[1]d)))
+		`, searchIndexSRID)
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
 			return "", []any{}, err

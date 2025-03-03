@@ -110,6 +110,13 @@ var (
 			Required: false,
 			EnvVars:  []string{strcase.ToScreamingSnake(enableCorsFlag)},
 		},
+		sridFlag: &cli.IntFlag{
+			Name:     sridFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
+			Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage its bbox should be in the same SRID.",
+			Required: false,
+			Value:    28992,
+		},
 	}
 
 	commonDBFlags = map[string]cli.Flag{
@@ -171,6 +178,7 @@ func main() {
 				serviceFlags[configFileFlag],
 				serviceFlags[enableTrailingSlashFlag],
 				serviceFlags[enableCorsFlag],
+				serviceFlags[sridFlag],
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
 				commonDBFlags[dbNameFlag],
@@ -255,6 +263,7 @@ func main() {
 					engine,
 					dbConn,
 					c.String(searchIndexFlag),
+					c.Int(sridFlag),
 					c.Path(rewritesFileFlag),
 					c.Path(synonymsFileFlag),
 					c.Int(rankNormalization),
@@ -287,13 +296,7 @@ func main() {
 					Required: false,
 					Value:    "search_index",
 				},
-				&cli.PathFlag{
-					Name:     sridFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
-					Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage its bbox should be in the same SRID.",
-					Required: false,
-					Value:    "28992",
-				},
+				serviceFlags[sridFlag],
 				&cli.StringFlag{
 					Name:     languageFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(languageFlag)},

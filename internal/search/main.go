@@ -26,7 +26,7 @@ type Search struct {
 	json           *jsonFeatures
 }
 
-func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile string, synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Search, error) {
+func NewSearch(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rewritesFile string, synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Search, error) {
 	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
 		return nil, err
@@ -37,6 +37,7 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string, rewritesFile
 			e,
 			dbConn,
 			searchIndex,
+			searchIndexSrid,
 			rankNormalization,
 			exactMatchMultiplier,
 			primarySuggestMultiplier,
@@ -136,11 +137,12 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 	return nil
 }
 
-func newDatasource(e *engine.Engine, dbConn string, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) ds.Datasource {
+func newDatasource(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) ds.Datasource {
 	datasource, err := postgres.NewPostgres(
 		dbConn,
 		timeout,
 		searchIndex,
+		domain.SRID(searchIndexSrid),
 		rankNormalization,
 		exactMatchMultiplier,
 		primarySuggestMultiplier,
