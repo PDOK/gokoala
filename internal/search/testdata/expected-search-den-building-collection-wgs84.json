@@ -18,7 +18,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 1",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/d731442a-4505-52c2-b6c6-2a06dc8c92ef?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/edeb9d6b-e2c1-567e-a381-9df2a276490d?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -29,13 +29,13 @@
         ]
       },
       "bbox": null,
-      "id": "d731442a-4505-52c2-b6c6-2a06dc8c92ef",
+      "id": "edeb9d6b-e2c1-567e-a381-9df2a276490d",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/d731442a-4505-52c2-b6c6-2a06dc8c92ef?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/edeb9d6b-e2c1-567e-a381-9df2a276490d?f=json"
         }
       ]
     },
@@ -47,7 +47,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 1",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/67f0c3f1-f2cd-5002-90b4-9a344c66dbf0?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/2d254321-120d-550a-9b7b-3bc7e7c9dfd1?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -58,13 +58,13 @@
         ]
       },
       "bbox": null,
-      "id": "67f0c3f1-f2cd-5002-90b4-9a344c66dbf0",
+      "id": "2d254321-120d-550a-9b7b-3bc7e7c9dfd1",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/67f0c3f1-f2cd-5002-90b4-9a344c66dbf0?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/2d254321-120d-550a-9b7b-3bc7e7c9dfd1?f=json"
         }
       ]
     },
@@ -76,7 +76,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 2",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/9f4bbf2b-79dc-57c2-b96a-34b5c6ef09ea?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/96e99bb3-95cc-573b-a16d-3b7d930443cc?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -87,13 +87,13 @@
         ]
       },
       "bbox": null,
-      "id": "9f4bbf2b-79dc-57c2-b96a-34b5c6ef09ea",
+      "id": "96e99bb3-95cc-573b-a16d-3b7d930443cc",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/9f4bbf2b-79dc-57c2-b96a-34b5c6ef09ea?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/96e99bb3-95cc-573b-a16d-3b7d930443cc?f=json"
         }
       ]
     },
@@ -105,7 +105,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 2",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/410a6a8e-045c-5bdc-8ae9-49e323c9a117?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/e2090965-5a66-57b4-ade8-ca94a5f6deac?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -116,13 +116,13 @@
         ]
       },
       "bbox": null,
-      "id": "410a6a8e-045c-5bdc-8ae9-49e323c9a117",
+      "id": "e2090965-5a66-57b4-ade8-ca94a5f6deac",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/410a6a8e-045c-5bdc-8ae9-49e323c9a117?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/e2090965-5a66-57b4-ade8-ca94a5f6deac?f=json"
         }
       ]
     },
@@ -134,7 +134,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 3",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/0bc2b40f-2da3-52d0-93c4-877d4cfbf289?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/9058626b-3217-549b-9732-4e58e9303d95?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -145,13 +145,13 @@
         ]
       },
       "bbox": null,
-      "id": "0bc2b40f-2da3-52d0-93c4-877d4cfbf289",
+      "id": "9058626b-3217-549b-9732-4e58e9303d95",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/0bc2b40f-2da3-52d0-93c4-877d4cfbf289?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/9058626b-3217-549b-9732-4e58e9303d95?f=json"
         }
       ]
     },
@@ -163,7 +163,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 3",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/fdb22c13-bcd0-5409-b9f8-a11cddee9d68?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/cc085f6e-16bd-56df-b69f-cbc181098359?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -174,13 +174,13 @@
         ]
       },
       "bbox": null,
-      "id": "fdb22c13-bcd0-5409-b9f8-a11cddee9d68",
+      "id": "cc085f6e-16bd-56df-b69f-cbc181098359",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/fdb22c13-bcd0-5409-b9f8-a11cddee9d68?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/cc085f6e-16bd-56df-b69f-cbc181098359?f=json"
         }
       ]
     },
@@ -192,7 +192,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/098f570f-790d-5b6f-b4c7-1abcb3dd6f70?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/7f514f2b-7d82-5874-bebb-0e423f08c901?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -203,13 +203,13 @@
         ]
       },
       "bbox": null,
-      "id": "098f570f-790d-5b6f-b4c7-1abcb3dd6f70",
+      "id": "7f514f2b-7d82-5874-bebb-0e423f08c901",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/098f570f-790d-5b6f-b4c7-1abcb3dd6f70?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/7f514f2b-7d82-5874-bebb-0e423f08c901?f=json"
         }
       ]
     },
@@ -221,7 +221,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4 A",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/0f1fa0ef-dfe0-5edd-aa5a-f861e6139e31?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/63b9fa8f-7693-510c-be11-2f8ffec21fe0?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -232,13 +232,13 @@
         ]
       },
       "bbox": null,
-      "id": "0f1fa0ef-dfe0-5edd-aa5a-f861e6139e31",
+      "id": "63b9fa8f-7693-510c-be11-2f8ffec21fe0",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/0f1fa0ef-dfe0-5edd-aa5a-f861e6139e31?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/63b9fa8f-7693-510c-be11-2f8ffec21fe0?f=json"
         }
       ]
     },
@@ -250,7 +250,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4 A",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/1c46c774-2088-50d6-8af9-b6bc9802da2e?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/7eac3ad0-e13c-54a9-9a27-558bdba2a1f5?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -261,13 +261,13 @@
         ]
       },
       "bbox": null,
-      "id": "1c46c774-2088-50d6-8af9-b6bc9802da2e",
+      "id": "7eac3ad0-e13c-54a9-9a27-558bdba2a1f5",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/1c46c774-2088-50d6-8af9-b6bc9802da2e?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/7eac3ad0-e13c-54a9-9a27-558bdba2a1f5?f=json"
         }
       ]
     },
@@ -279,7 +279,7 @@
         "collectionVersion": "1",
         "displayName": "Abbewaal - Den Burg 4 A",
         "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/1a37ee51-d22b-568d-bc58-e705bc959e57?f=json",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/1bccc02c-4be3-523b-a4d1-21edae710d3d?f=json",
         "score": 0.14426951110363007
       },
       "geometry": {
@@ -290,13 +290,13 @@
         ]
       },
       "bbox": null,
-      "id": "1a37ee51-d22b-568d-bc58-e705bc959e57",
+      "id": "1bccc02c-4be3-523b-a4d1-21edae710d3d",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/1a37ee51-d22b-568d-bc58-e705bc959e57?f=json"
+          "href": "https://example.com/ogc/v1/collections/buildings/items/1bccc02c-4be3-523b-a4d1-21edae710d3d?f=json"
         }
       ]
     }

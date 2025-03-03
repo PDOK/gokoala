@@ -20,6 +20,7 @@ type RawRecord struct {
 	FeatureID         int64
 	FieldValues       []any
 	ExternalFidValues []any
+	ExternalFidBase   string
 	Bbox              *geom.Bounds
 	GeometryType      string
 	Geometry          *geom.Point
@@ -71,7 +72,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 
 		geometry := r.Geometry
 
-		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
+		externalFid, err := generateExternalFid(r.ExternalFidBase, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
 		if err != nil {
 			return nil, err
 		}
