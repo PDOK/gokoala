@@ -7,6 +7,7 @@ availableLanguages:
   - en
 collections:
   - id: addresses
+    table: addresses_point
     metadata:
       title: Addresses
       description: These are example addresses
@@ -18,17 +19,14 @@ collections:
           - 7.37403
     search:
       fields:
-        - component_thoroughfarename
-        - component_postaldescriptor
-        - component_addressareaname
-        - locator_designator_addressnumber
-        - locator_designator_addressnumberextension
-        - locator_designator_addressnumber2ndextension
-      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }} {{ .locator_designator_addressnumber }} {{ .locator_designator_addressnumberextension }} {{ .locator_designator_addressnumber2ndextension }}"
+        - address_street
+        - address_postal
+        - address_place
+      displayNameTemplate: "{{ .address_street | firstupper  }} - {{ .address_postal}} {{ .address_place }}"
       etl:
         suggestTemplates:
-          - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
-          - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+          - "{{ .address_street }} {{ .address_postal }}"
+          - "{{ .address_postal }}, {{ .address_place }}"
       ogcCollections:
         - api: https://example.com/ogc/v1
           collection: addresses
@@ -45,17 +43,14 @@ collections:
           - 7.37403
     search:
       fields:
-        - component_thoroughfarename
-        - component_postaldescriptor
-        - component_addressareaname
-        - locator_designator_addressnumber
-        - locator_designator_addressnumberextension
-        - locator_designator_addressnumber2ndextension
-      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }} {{ .locator_designator_addressnumber }} {{ .locator_designator_addressnumberextension }} {{ .locator_designator_addressnumber2ndextension }}"
+        - address_street
+        - address_postal
+        - address_place
+      displayNameTemplate: "{{ .address_street | firstupper  }} - {{ .address_postal}} {{ .address_place }}"
       etl:
         suggestTemplates:
-          - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
-          - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+          - "{{ .address_street }} {{ .address_postal }}"
+          - "{{ .address_postal }}, {{ .address_place }}"
         externalFid:
           uuidNamespace: "098c4e26-6e36-5693-bae9-df35db0bee49"
           fields:
