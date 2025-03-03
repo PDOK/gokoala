@@ -16,8 +16,6 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
-const WGS84 = 4326
-
 type RawRecord struct {
 	FeatureID         int64
 	FieldValues       []any
@@ -71,7 +69,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 			return nil, err
 		}
 
-		geometry := r.Geometry.SetSRID(WGS84)
+		geometry := r.Geometry
 
 		externalFid, err := generateExternalFid(collection.ID, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
 		if err != nil {
@@ -119,7 +117,7 @@ func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 	if util.SurfaceArea(r.Bbox) <= 0 {
 		return nil, errors.New("bbox area must be greater than zero")
 	}
-	return r.Bbox.Polygon().SetSRID(WGS84), nil
+	return r.Bbox.Polygon(), nil
 }
 
 func slicesToStringMap(keys []string, values []any) (map[string]string, error) {

@@ -60,7 +60,7 @@ func (p *Postgres) Optimize() error {
 //
 // Since not all DDL in Postgres support the "if not exists" syntax we use a bit
 // of pl/pgsql to make it idempotent.
-func (p *Postgres) Init(index string, lang language.Tag) error {
+func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 
 	geometryType := `
 		do $$ begin
@@ -112,7 +112,7 @@ func (p *Postgres) Init(index string, lang language.Tag) error {
 		geometry            geometry(point, %[2]d)   null,
 	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored,
 		primary key (id, collection_id, collection_version)
-	) -- partition by list(collection_id);`, index, t.WGS84) // TODO partitioning comes later
+	) -- partition by list(collection_id);`, index, srid) // TODO partitioning comes later
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
 	if err != nil {
 		return fmt.Errorf("error creating search index table: %w", err)

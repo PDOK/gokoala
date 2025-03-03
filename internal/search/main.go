@@ -58,7 +58,7 @@ func (s *Search) Search() http.HandlerFunc {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		collections, searchTerms, outputSRID, bbox, bboxSRID, limit, err := parseQueryParams(r.URL.Query())
+		collections, searchTerms, outputSRID, outputCRS, bbox, bboxSRID, limit, err := parseQueryParams(r.URL.Query())
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -77,7 +77,7 @@ func (s *Search) Search() http.HandlerFunc {
 			handleQueryError(w, err)
 			return
 		}
-		if err = s.enrichFeaturesWithHref(fc); err != nil {
+		if err = s.enrichFeaturesWithHref(fc, outputCRS); err != nil {
 			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
 			return
 		}
@@ -94,7 +94,8 @@ func (s *Search) Search() http.HandlerFunc {
 	}
 }
 
-func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection) error {
+//nolint:nestif
+func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS string) error {
 	for _, feat := range fc.Features {
 		collectionID, ok := feat.Properties[domain.PropCollectionID]
 		if !ok || collectionID == "" {
@@ -113,6 +114,10 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection) error {
 						return fmt.Errorf("failed to construct API url %w", err)
 					}
 					href += "?f=json"
+
+					if outputCRS != "" {
+						href += "&crs=" + outputCRS
+					}
 
 					// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
 					feat.Properties[domain.PropHref] = href
