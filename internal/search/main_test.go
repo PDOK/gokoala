@@ -62,6 +62,7 @@ func TestSearch(t *testing.T) {
 		eng,
 		dbConn,
 		testSearchIndex,
+		28992,
 		"internal/search/testdata/rewrites.csv",
 		"internal/search/testdata/synonyms.csv",
 		1,
