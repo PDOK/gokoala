@@ -27,10 +27,10 @@ type Postgres struct {
 	exactMatchMultiplier     float64
 	primarySuggestMultiplier float64
 	rankThreshold            int
-	preRankLimit             int
+	preRankLimitMultiplier   int
 }
 
-func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) (*Postgres, error) {
+func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Postgres, error) {
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(dbConn)
 	if err != nil {
@@ -54,7 +54,7 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, 
 		exactMatchMultiplier,
 		primarySuggestMultiplier,
 		rankThreshold,
-		preRankLimit,
+		preRankLimitMultiplier,
 	}, nil
 }
 
@@ -89,7 +89,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 		p.exactMatchMultiplier,
 		p.primarySuggestMultiplier,
 		p.rankThreshold,
-		p.preRankLimit}, bboxQueryArgs...)
+		p.preRankLimitMultiplier}, bboxQueryArgs...)
 	rows, err := p.db.Query(queryCtx, sql, queryArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
@@ -199,7 +199,7 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 					ORDER BY
 						array_length(string_to_array(r.suggest, ' '), 1) ASC,
 						r.display_name COLLATE "custom_numeric" ASC
-					LIMIT $11 -- return limited pre-ranked results for ranking based on score
+					LIMIT $1::int * $11::int -- return limited pre-ranked results for ranking based on score
 				)
 			) u
 			LEFT JOIN

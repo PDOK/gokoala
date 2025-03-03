@@ -68,7 +68,7 @@ func TestSearch(t *testing.T) {
 		3.0,
 		1.01,
 		4000,
-		400,
+		10,
 	)
 	assert.NoError(t, err)
 

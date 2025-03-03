@@ -51,7 +51,7 @@ const (
 	exactMatchMultiplier     = "exact-match-multiplier"
 	primarySuggestMultiplier = "primary-suggest-multiplier"
 	rankThreshold            = "rank-threshold"
-	preRankLimit             = "pre-rank-limit"
+	preRankLimitMultiplier   = "pre-rank-limit-multiplier"
 )
 
 var (
@@ -224,11 +224,11 @@ func main() {
 					Value:    40000,
 				},
 				&cli.IntFlag{
-					Name:     preRankLimit,
-					EnvVars:  []string{strcase.ToScreamingSnake(preRankLimit)},
+					Name:     preRankLimitMultiplier,
+					EnvVars:  []string{strcase.ToScreamingSnake(preRankLimitMultiplier)},
 					Usage:    "The number of results which are pre-ranked when the rank threshold is hit",
 					Required: false,
-					Value:    400,
+					Value:    10,
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -261,7 +261,7 @@ func main() {
 					c.Float64(exactMatchMultiplier),
 					c.Float64(primarySuggestMultiplier),
 					c.Int(rankThreshold),
-					c.Int(preRankLimit),
+					c.Int(preRankLimitMultiplier),
 				)
 				if err != nil {
 					return err
