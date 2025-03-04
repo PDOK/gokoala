@@ -204,6 +204,7 @@ func insertTestData(ctx context.Context, conn string) error {
 	// 	log.Printf("Error creating partitions: %v\n", err)
 	// }
 
+	// language=postgresql
 	testData := `
 	insert into search_index(feature_id, collection_id, collection_version, display_name, suggest, geometry_type, bbox)
 	values

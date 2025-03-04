@@ -16,26 +16,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 1",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/435?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115740.345171,
-          564032.186125
+          4.801867,
+          53.019143
         ]
       },
       "bbox": null,
-      "id": "51",
+      "id": "435",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/435?f=json"
         }
       ]
     },
@@ -45,26 +45,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 1",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/436?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115740.345171,
-          564032.186125
+          4.789116,
+          53.024499
         ]
       },
       "bbox": null,
-      "id": "52",
+      "id": "436",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/436?f=json"
         }
       ]
     },
@@ -74,26 +74,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 2",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/16130?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/437?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115790.058171,
-          564072.610126
+          4.789116,
+          53.024499
         ]
       },
       "bbox": null,
-      "id": "16130",
+      "id": "437",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/16130?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/437?f=json"
         }
       ]
     },
@@ -103,26 +103,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 2",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/16129?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/438?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115790.058171,
-          564072.610126
+          4.789116,
+          53.024499
         ]
       },
       "bbox": null,
-      "id": "16129",
+      "id": "438",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/16129?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/438?f=json"
         }
       ]
     },
@@ -132,26 +132,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 3",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/72?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/439?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115749.760171,
-          564054.445125
+          4.789116,
+          53.024499
         ]
       },
       "bbox": null,
-      "id": "72",
+      "id": "439",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/72?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/439?f=json"
         }
       ]
     },
@@ -161,26 +161,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 3",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/71?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/440?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115749.760171,
-          564054.445125
+          4.788701,
+          53.024307
         ]
       },
       "bbox": null,
-      "id": "71",
+      "id": "440",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/71?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/440?f=json"
         }
       ]
     },
@@ -190,26 +190,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/81?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/441?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115800.356171,
-          564088.036126
+          4.789033,
+          53.024178
         ]
       },
       "bbox": null,
-      "id": "81",
+      "id": "441",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/81?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/441?f=json"
         }
       ]
     },
@@ -219,26 +219,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/82?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/442?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115791.669171,
-          564095.7901259999
+          4.789033,
+          53.024178
         ]
       },
       "bbox": null,
-      "id": "82",
+      "id": "442",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/82?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/442?f=json"
         }
       ]
     },
@@ -248,26 +248,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/83?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/443?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115791.669171,
-          564095.7901259999
+          4.788972,
+          53.023876
         ]
       },
       "bbox": null,
-      "id": "83",
+      "id": "443",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/83?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/443?f=json"
         }
       ]
     },
@@ -277,26 +277,26 @@
         "collectionGeometryType": "POINT",
         "collectionId": "addresses",
         "collectionVersion": "1",
-        "displayName": "Abbewaal - Den Burg 4 A",
-        "highlight": "Abbewaal <b>Den</b> Burg",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/84?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
-        "score": 0.23083121776580812
+        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "highlight": "<b>Amaliaweg</b> 1797SW",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/434?f=json",
+        "score": 0.2912765502929688
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          115791.669171,
-          564095.7901259999
+          4.801867,
+          53.019143
         ]
       },
       "bbox": null,
-      "id": "84",
+      "id": "434",
       "links": [
         {
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/84?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/434?f=json"
         }
       ]
     }
