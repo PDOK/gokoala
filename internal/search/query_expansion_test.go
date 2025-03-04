@@ -34,16 +34,16 @@ func TestExpand(t *testing.T) {
 		{
 			name: "rewrite",
 			args: args{
-				searchQuery: `Spui 1 den Haag`,
+				searchQuery: `markt den bosch`,
 			},
-			want: `spui & 1 & gravenhage`,
+			want: `markt & hertogenbosch`,
 		},
 		{
 			name: "rewrite followed by synonym",
 			args: args{
-				searchQuery: `markt den bosch`,
+				searchQuery: `Spui 1 den Haag`,
 			},
-			want: `markt & (hertogenbosch | den <-> bosch | s-hertogenbosch)`,
+			want: `spui & 1 & (gravenhage | den <-> haag | s-gravenhage)`,
 		},
 		{
 			name: "no synonym",
@@ -114,7 +114,7 @@ oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
 			args: args{
 				searchQuery: `OudE DeN HaAg`,
 			},
-			want: `(oude | oud) & gravenhage`,
+			want: `(oude | oud) & (gravenhage | den <-> haag | s-gravenhage)`,
 		},
 		{
 			name: "word delimiters",
@@ -166,16 +166,16 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 				searchQuery: `goev straat 1 in Den Haag niet in Friesland`,
 			},
 			want: `
-(goev | goeverneur | gouv | gouverneur) & straat & 1 & in & gravenhage & niet & (friesland | fryslân)
+(goev | goeverneur | gouv | gouverneur) & straat & 1 & in & (gravenhage | den <-> haag | s-gravenhage) & niet & (friesland | fryslân)
 `,
 		},
 		{
-			name: "four synonyms",
+			name: "five synonyms",
 			args: args{
 				searchQuery: `Oud Gouv 2DE 's-Gravenhage Fryslân Nederland`,
 			},
 			want: `
-(oud | oude) & (gouv | goev | goeverneur | gouverneur) & (2de | tweede) & gravenhage & (fryslân | friesland) & nederland
+(oud | oude) & (gouv | goev | goeverneur | gouverneur) & (2de | tweede) & (gravenhage | den <-> haag | s-gravenhage) & (fryslân | friesland) & nederland
 `,
 		},
 	}
