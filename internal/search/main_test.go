@@ -156,42 +156,62 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search: 'Den' for a single collection in RD",
+			name: "Search exact match before should be ranked before wildcard match",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=Holland Den Burg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-den-single-collection-rd.json",
+				body:       "internal/search/testdata/expected-exact-match.json",
 				statusCode: http.StatusOK,
 			},
 		},
 		{
-			name: "Search: 'Den' in another collection in WGS84",
+			name: "Short results should rank above longer results (for example housenr 1 should rank before 1A)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Den&buildings[version]=1&limit=10&f=json",
+				url: "http://localhost:8080/search?q=Akenbuurt 1&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-den-building-collection-wgs84.json",
+				body:       "internal/search/testdata/expected-short-before-long.json",
 				statusCode: http.StatusOK,
 			},
 		},
 		{
-			name: "Search: 'Den' in multiple collections: with one non-existing collection, so same output as single collection) in RD",
+			name: "Search for house numbers, should rank in logical order",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Den&addresses[version]=1&addresses[relevance]=0.8&foo[version]=2&foo[relevance]=0.8&limit=10&f=json&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
+				url: "http://localhost:8080/search?q=Amaliaweg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-den-single-collection-rd.json",
+				body:       "internal/search/testdata/expected-housenumber-ranking-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
 		{
-			name: "Search: 'Den' in multiple collections: collection addresses + collection buildings, but addresses with non-existing version",
+			name: "Search for house numbers, should rank in logical order - second test",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Den&addresses[version]=2&buildings[version]=1&limit=20&f=json",
+				url: "http://localhost:8080/search?q=Abbewaal&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-den-multiple-collection-single-output-wgs84.json", // only expect building results since addresses version doesn't exist.
+				body:       "internal/search/testdata/expected-housenumber-ranking-2.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search for house numbers, should rank in logical order - third test",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Amstel Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-housenumber-ranking-3.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search for house numbers, should rank in logical order - fourth test",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-housenumber-ranking-4.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -281,6 +301,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 
 	log.Println("Giving postgres a few extra seconds to fully start")
 	time.Sleep(2 * time.Second)
+	log.Printf("Postgres running at port %s", port.Port())
 
 	return port, container, err
 }

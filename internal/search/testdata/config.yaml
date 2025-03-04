@@ -22,9 +22,11 @@ collections:
         - address_street
         - address_postal
         - address_place
-      displayNameTemplate: "{{ .address_street | firstupper  }} - {{ .address_postal}} {{ .address_place }}"
+      displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
       etl:
         suggestTemplates:
+          - "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}" # equal to display name
+          - "{{ .address_street | firstupper  }} {{ .address_postal}}, {{ .address_place }}"
           - "{{ .address_street }} {{ .address_postal }}"
           - "{{ .address_postal }}, {{ .address_place }}"
       ogcCollections:
@@ -46,9 +48,11 @@ collections:
         - address_street
         - address_postal
         - address_place
-      displayNameTemplate: "{{ .address_street | firstupper  }} - {{ .address_postal}} {{ .address_place }}"
+      displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
       etl:
         suggestTemplates:
+          - "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}" # equal to display name
+          - "{{ .address_street | firstupper  }} {{ .address_postal}}, {{ .address_place }}"
           - "{{ .address_street }} {{ .address_postal }}"
           - "{{ .address_postal }}, {{ .address_place }}"
         externalFid:
