@@ -17,6 +17,7 @@ import (
 	"github.com/PDOK/gomagpie/config"
 	"github.com/PDOK/gomagpie/internal/engine"
 	"github.com/PDOK/gomagpie/internal/etl"
+	"github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -62,7 +63,7 @@ func TestSearch(t *testing.T) {
 		eng,
 		dbConn,
 		testSearchIndex,
-		28992,
+		domain.WGS84SRIDPostgis,
 		"internal/search/testdata/rewrites.csv",
 		"internal/search/testdata/synonyms.csv",
 		1,
@@ -74,13 +75,13 @@ func TestSearch(t *testing.T) {
 	assert.NoError(t, err)
 
 	// given empty search index
-	err = etl.CreateSearchIndex(dbConn, testSearchIndex, 28992, language.Dutch)
+	err = etl.CreateSearchIndex(dbConn, testSearchIndex, domain.WGS84SRIDPostgis, language.Dutch)
 	assert.NoError(t, err)
 
 	// given imported geopackage
-	err = importGpkg("addresses", dbConn)
+	err = importGpkg("addresses", dbConn) // in CRS84
 	assert.NoError(t, err)
-	err = importGpkg("buildings", dbConn)
+	err = importGpkg("buildings", dbConn) // in EPSG:4326
 	assert.NoError(t, err)
 
 	// run test cases
@@ -343,6 +344,16 @@ func TestSearch(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/search/testdata/expected-one-collection.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search and get output in RD",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-rd.json",
 				statusCode: http.StatusOK,
 			},
 		},

@@ -24,8 +24,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          3.3136021054,
-          47.9752433987
+          4.799879,
+          53.054911
         ]
       },
       "bbox": null,
@@ -53,8 +53,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          3.3136021264,
-          47.9752433937
+          4.801433,
+          53.054312
         ]
       },
       "bbox": null,
@@ -82,8 +82,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          3.3136021046,
-          47.9752433962
+          4.799813,
+          53.054632
         ]
       },
       "bbox": null,

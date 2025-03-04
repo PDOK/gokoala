@@ -18,14 +18,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AL Den Burg",
         "highlight": "<b>Achterom</b> 1791AL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/107?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/107?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.800955,
-          53.054524
+          115691.6896427651,
+          563231.5659543173
         ]
       },
       "bbox": null,
@@ -35,7 +35,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/107?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/107?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -47,14 +47,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/104?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/104?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.799879,
-          53.054911
+          115619.8953973732,
+          563275.2187948506
         ]
       },
       "bbox": null,
@@ -64,7 +64,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/104?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/104?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -76,14 +76,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/105?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/105?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.799325,
-          53.05505
+          115582.8765594472,
+          563290.9895153774
         ]
       },
       "bbox": null,
@@ -93,7 +93,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/105?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/105?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -105,14 +105,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/106?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/106?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.79933,
-          53.055361
+          115583.4938544535,
+          563325.5953518209
         ]
       },
       "bbox": null,
@@ -122,7 +122,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/106?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/106?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -134,14 +134,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/108?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/108?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.799019,
-          53.055373
+          115562.6528584084,
+          563327.1007147749
         ]
       },
       "bbox": null,
@@ -151,7 +151,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/108?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/108?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -163,14 +163,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/109?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/109?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.798911,
-          53.055734
+          115555.7393251998,
+          563367.3324157153
         ]
       },
       "bbox": null,
@@ -180,7 +180,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/109?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/109?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -192,14 +192,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/110?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/110?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.798911,
-          53.055734
+          115555.7393251998,
+          563367.3324157153
         ]
       },
       "bbox": null,
@@ -209,7 +209,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/110?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/110?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -221,14 +221,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/111?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/111?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.798911,
-          53.055734
+          115555.7393251998,
+          563367.3324157153
         ]
       },
       "bbox": null,
@@ -238,7 +238,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/111?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/111?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -250,14 +250,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/112?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/112?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.798911,
-          53.055734
+          115555.7393251998,
+          563367.3324157153
         ]
       },
       "bbox": null,
@@ -267,7 +267,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/112?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/112?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -279,14 +279,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/113?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/113?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.798911,
-          53.055734
+          115555.7393251998,
+          563367.3324157153
         ]
       },
       "bbox": null,
@@ -296,7 +296,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/113?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/113?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -308,14 +308,14 @@
         "collectionVersion": "1",
         "displayName": "Achterom 1791AN Den Burg",
         "highlight": "<b>Achterom</b> 1791AN",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.798911,
-          53.055734
+          115555.7393251998,
+          563367.3324157153
         ]
       },
       "bbox": null,
@@ -325,7 +325,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -337,14 +337,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.87327,
-          53.083485
+          120563.32641069,
+          566417.4478945638
         ]
       },
       "bbox": null,
@@ -354,7 +354,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -366,14 +366,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.874297,
-          53.08353
+          120632.1759858888,
+          566421.9657726863
         ]
       },
       "bbox": null,
@@ -383,7 +383,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -395,14 +395,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.874417,
-          53.08355
+          120640.2323819274,
+          566424.1342617087
         ]
       },
       "bbox": null,
@@ -412,7 +412,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -424,14 +424,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.8746,
-          53.083432
+          120652.4009188798,
+          566410.9156833359
         ]
       },
       "bbox": null,
@@ -441,7 +441,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -453,14 +453,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.8746,
-          53.083432
+          120652.4009188798,
+          566410.9156833359
         ]
       },
       "bbox": null,
@@ -470,7 +470,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -482,14 +482,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.87327,
-          53.083485
+          120563.32641069,
+          566417.4478945638
         ]
       },
       "bbox": null,
@@ -499,7 +499,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -511,14 +511,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.87327,
-          53.083485
+          120563.32641069,
+          566417.4478945638
         ]
       },
       "bbox": null,
@@ -528,7 +528,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -540,14 +540,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.87327,
-          53.083485
+          120563.32641069,
+          566417.4478945638
         ]
       },
       "bbox": null,
@@ -557,7 +557,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -569,14 +569,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.87345,
-          53.083498
+          120575.3975852209,
+          566418.8086473367
         ]
       },
       "bbox": null,
@@ -586,7 +586,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -598,14 +598,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> 1794BL",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.87362,
-          53.083561
+          120586.8383268315,
+          566425.7383595088
         ]
       },
       "bbox": null,
@@ -615,7 +615,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -627,14 +627,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BM Oosterend",
         "highlight": "<b>Achtertune</b> 1794BM",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/116?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/116?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.875148,
-          53.083281
+          120689.0003120355,
+          566393.8510926027
         ]
       },
       "bbox": null,
@@ -644,7 +644,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/116?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/116?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -656,14 +656,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BM Oosterend",
         "highlight": "<b>Achtertune</b> 1794BM",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/5?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/5?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.874831,
-          53.083246
+          120667.7320087506,
+          566390.1070317028
         ]
       },
       "bbox": null,
@@ -673,7 +673,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/5?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/5?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -685,14 +685,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BM Oosterend",
         "highlight": "<b>Achtertune</b> 1794BM",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/6?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/6?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.874774,
-          53.083292
+          120663.9490823281,
+          566395.2531912831
         ]
       },
       "bbox": null,
@@ -702,7 +702,7 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/6?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/6?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     },
@@ -714,14 +714,14 @@
         "collectionVersion": "1",
         "displayName": "Achtertune 1794BM Oosterend",
         "highlight": "<b>Achtertune</b> 1794BM",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/7?f=json",
-        "score": 0.0728191375732422
+        "href": "https://example.com/ogc/v1/collections/addresses/items/7?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+        "score": 0.04551196098327637
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.874774,
-          53.083292
+          120663.9490823281,
+          566395.2531912831
         ]
       },
       "bbox": null,
@@ -731,44 +731,10 @@
           "rel": "canonical",
           "title": "The actual feature in the corresponding OGC API",
           "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/7?f=json"
-        }
-      ]
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "collectionGeometryType": "POLYGON",
-        "collectionId": "buildings",
-        "collectionVersion": "1",
-        "displayName": "Achterweg Oosterend",
-        "highlight": "<b>Achterweg</b> Oosterend",
-        "href": "https://example.com/ogc/v1/collections/buildings/items/16c531ff-b6ad-51c3-b000-e650086712c1?f=json",
-        "score": 0.0728191375732422
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          4.779573,
-          53.003995
-        ]
-      },
-      "bbox": [
-        4.779332890357867,
-        53.00388426530902,
-        4.779812361584029,
-        53.00410390075021
-      ],
-      "id": "16c531ff-b6ad-51c3-b000-e650086712c1",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/buildings/items/16c531ff-b6ad-51c3-b000-e650086712c1?f=json"
+          "href": "https://example.com/ogc/v1/collections/addresses/items/7?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992"
         }
       ]
     }
   ],
-  "numberReturned": 26
+  "numberReturned": 25
 }
