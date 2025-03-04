@@ -77,10 +77,10 @@ func TestSearch(t *testing.T) {
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex, 28992, language.Dutch)
 	assert.NoError(t, err)
 
-	// given imported geopackage (creates two collections in search_index with identical data)
-	err = importAddressesGpkg("addresses", dbConn)
+	// given imported geopackage
+	err = importGpkg("addresses", dbConn)
 	assert.NoError(t, err)
-	err = importAddressesGpkg("buildings", dbConn)
+	err = importGpkg("buildings", dbConn)
 	assert.NoError(t, err)
 
 	// run test cases
@@ -316,6 +316,36 @@ func TestSearch(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Search building with polygon output",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Molwerk&buildings[version]=1&buildings[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-polygon.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search in two collections, with matches in both collections",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Achter&addresses[version]=1&addresses[relevance]=0.8&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-two-collections.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search in one collections (while another collection also has a match but that one shouldn't appear in the results)",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Achter&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-one-collection.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -346,13 +376,13 @@ func TestSearch(t *testing.T) {
 	}
 }
 
-func importAddressesGpkg(collectionName string, dbConn string) error {
+func importGpkg(collectionName string, dbConn string) error {
 	conf, err := config.NewConfig(configFile)
 	if err != nil {
 		return err
 	}
 	collection := config.CollectionByID(conf, collectionName)
-	table := config.FeatureTable{Name: "addresses_point", FID: "fid", Geom: "geom"}
+	table := config.FeatureTable{Name: collectionName, FID: "fid", Geom: "geom"}
 	return etl.ImportFile(*collection, testSearchIndex,
 		"internal/search/testdata/fake-addresses-crs84.gpkg", table, 5000, dbConn)
 }
