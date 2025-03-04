@@ -99,7 +99,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, externa
 		if len(row) != len(fields)+len(externalFidFields)+nrOfStandardFieldsInQuery {
 			return nil, fmt.Errorf("unexpected row length (%v)", len(row))
 		}
-		record, err := mapRowToRawRecord(row, fields, externalFidFields)
+		record, err := mapRowToRawRecord(row, fields, externalFidFields, table.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, externa
 	return result, nil
 }
 
-func mapRowToRawRecord(row []any, fields []string, externalFidFields []string) (t.RawRecord, error) {
+func mapRowToRawRecord(row []any, fields []string, externalFidFields []string, tableName string) (t.RawRecord, error) {
 	bbox := row[1:5]
 
 	fid := row[0].(int64)
@@ -135,5 +135,6 @@ func mapRowToRawRecord(row []any, fields []string, externalFidFields []string) (
 		Geometry:          geometry.(*geom.Point),
 		FieldValues:       row[nrOfStandardFieldsInQuery : nrOfStandardFieldsInQuery+len(fields)],
 		ExternalFidValues: row[nrOfStandardFieldsInQuery+len(fields) : nrOfStandardFieldsInQuery+len(fields)+len(externalFidFields)],
+		ExternalFidBase:   tableName,
 	}, nil
 }

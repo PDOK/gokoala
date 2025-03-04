@@ -20,17 +20,18 @@ type Postgres struct {
 	db  *pgxpool.Pool
 	ctx context.Context
 
-	queryTimeout time.Duration
-	searchIndex  string
+	queryTimeout    time.Duration
+	searchIndex     string
+	searchIndexSrid d.SRID
 
 	rankNormalization        int
 	exactMatchMultiplier     float64
 	primarySuggestMultiplier float64
 	rankThreshold            int
-	preRankLimit             int
+	preRankLimitMultiplier   int
 }
 
-func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimit int) (*Postgres, error) {
+func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, searchIndexSrid d.SRID, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Postgres, error) {
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(dbConn)
 	if err != nil {
@@ -50,11 +51,12 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, 
 		ctx,
 		queryTimeout,
 		searchIndex,
+		searchIndexSrid,
 		rankNormalization,
 		exactMatchMultiplier,
 		primarySuggestMultiplier,
 		rankThreshold,
-		preRankLimit,
+		preRankLimitMultiplier,
 	}, nil
 }
 
@@ -68,7 +70,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	queryCtx, cancel := context.WithTimeout(ctx, p.queryTimeout)
 	defer cancel()
 
-	bboxFilter, bboxQueryArgs, err := parseBbox(bbox, bboxSRID)
+	bboxFilter, bboxQueryArgs, err := parseBbox(bbox, bboxSRID, p.searchIndexSrid)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +91,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 		p.exactMatchMultiplier,
 		p.primarySuggestMultiplier,
 		p.rankThreshold,
-		p.preRankLimit}, bboxQueryArgs...)
+		p.preRankLimitMultiplier}, bboxQueryArgs...)
 	rows, err := p.db.Query(queryCtx, sql, queryArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
@@ -121,22 +123,9 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 			r.bbox,
 			r.geometry,
 			r.suggest,
-			CASE WHEN r.display_name = r.suggest THEN
-				(
-				    ts_rank_cd(r.ts, (SELECT query FROM query_exact), $7) * $8 * $9 + ts_rank_cd(r.ts, (SELECT query FROM query_wildcard), $7)
-				) * rel.relevance
-			ELSE
-				(
-				    ts_rank_cd(r.ts, (SELECT query FROM query_exact), $7) * $8 + ts_rank_cd(r.ts, (SELECT query FROM query_wildcard), $7)
-				) * rel.relevance
-			END AS rank,
-			ts_headline('custom_dict', r.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
+			r.ts
 		FROM
 			%[1]s r
-		LEFT JOIN
-			(SELECT * FROM unnest($4::text[], $6::float[]) rel(collection_id,relevance)) rel
-		ON
-			rel.collection_id = r.collection_id
 		WHERE
 			r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
 				-- make a virtual table by creating tuples from the provided arrays.
@@ -149,14 +138,9 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 	    	COUNT(*) c
 	    FROM (
 	        SELECT
-	        	r.id
+				r.feature_id
 	        FROM
-	        	%[1]s r
-			WHERE
-				r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
-					-- make a virtual table by creating tuples from the provided arrays.
-					SELECT * FROM unnest($4::text[], $5::int[])
-				)
+				results r
 	        LIMIT $10
 	    )
 	)
@@ -170,10 +154,10 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 		st_transform(rn.bbox, %[2]d)::geometry AS bbox,
 		st_transform(rn.geometry, %[2]d)::geometry AS geometry,
 		rn.rank,
-		rn.highlighted_text
+		ts_headline('custom_dict', rn.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
 	FROM (
 		SELECT
-			*,
+			r.*,
 			ROW_NUMBER() OVER (
 				PARTITION BY
 					r.display_name,
@@ -186,29 +170,44 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 					r.display_name COLLATE "custom_numeric" ASC
 			) AS row_number
 		FROM (
-		    -- a UNION ALL is used, because a CASE in the ORDER BY clause causes a sequence scan instead of an index scan
-			-- because of 1 = 1 in the WHERE clauses below the results are only added if WHEN is true, otherwise the results are ignored
-			(
-				SELECT
-					*
-				FROM
-					results r
-				WHERE
-				    -- less then rank threshold results don't need to be pre-ranked, they can be ranked based on score
-					CASE WHEN (SELECT c from results_count) < $10 THEN 1 = 1 END
-			) UNION ALL (
-		    	SELECT
-					*
-				FROM
-					results r
-				WHERE
-				    -- pre-rank more then rank threshold results by ordering on suggest length and display_name
-					CASE WHEN (SELECT c from results_count) = $10 THEN 1 = 1 END
-				ORDER BY
-					char_length(r.suggest) ASC,
-					r.display_name COLLATE "custom_numeric" ASC
-				LIMIT $11 -- return limited pre-ranked results for ranking based on score
-			)
+			SELECT
+				u.*,
+				CASE WHEN u.display_name = u.suggest THEN (
+					ts_rank_cd(u.ts, (SELECT query FROM query_exact), $7) * $8 * $9 + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), $7)
+				) * rel.relevance
+				ELSE (
+					ts_rank_cd(u.ts, (SELECT query FROM query_exact), $7) * $8 + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), $7)
+				) * rel.relevance
+				END AS rank
+			FROM (
+				-- a UNION ALL is used, because a CASE in the ORDER BY clause causes a sequence scan instead of an index scan
+				-- because of 1 = 1 in the WHERE clauses below the results are only added if WHEN is true, otherwise the results are ignored
+				(
+					SELECT
+						*
+					FROM
+						results r
+					WHERE
+						-- less then rank threshold results don't need to be pre-ranked, they can be ranked based on score
+						CASE WHEN (SELECT c from results_count) < $10 THEN 1 = 1 END
+				) UNION ALL (
+					SELECT
+						*
+					FROM
+						results r
+					WHERE
+						-- pre-rank more then rank threshold results by ordering on suggest length and display_name
+						CASE WHEN (SELECT c from results_count) = $10 THEN 1 = 1 END
+					ORDER BY
+						array_length(string_to_array(r.suggest, ' '), 1) ASC,
+						r.display_name COLLATE "custom_numeric" ASC
+					LIMIT $1::int * $11::int -- return limited pre-ranked results for ranking based on score
+				)
+			) u
+			LEFT JOIN
+				(SELECT * FROM unnest($4::text[], $6::float[]) rel(collection_id,relevance)) rel
+			ON
+				rel.collection_id = u.collection_id
 		) r
 	) rn
 	WHERE rn.row_number = 1
@@ -218,14 +217,14 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 	LIMIT $1`, index, srid, bboxFilter) // don't add user input here, use $X params for user input!
 }
 
-func parseBbox(bbox *geom.Bounds, bboxSRID d.SRID) (string, []any, error) {
+func parseBbox(bbox *geom.Bounds, bboxSRID d.SRID, searchIndexSRID d.SRID) (string, []any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxQueryArgs []any
 	var err error
 	if bbox != nil {
-		bboxFilter = `AND
-			(st_intersects(st_transform(r.geometry, $13::int), st_geomfromtext($12::text, $13::int)) OR st_intersects(st_transform(r.bbox, $13::int), st_geomfromtext($12::text, $13::int)))
-		`
+		bboxFilter = fmt.Sprintf(`AND
+			(st_intersects(r.geometry, st_transform(st_geomfromtext($12::text, $13::int), %[1]d)) OR st_intersects(r.bbox, st_transform(st_geomfromtext($12::text, $13::int), %[1]d)))
+		`, searchIndexSRID)
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
 			return "", []any{}, err

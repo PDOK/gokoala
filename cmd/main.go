@@ -51,7 +51,7 @@ const (
 	exactMatchMultiplier     = "exact-match-multiplier"
 	primarySuggestMultiplier = "primary-suggest-multiplier"
 	rankThreshold            = "rank-threshold"
-	preRankLimit             = "pre-rank-limit"
+	preRankLimitMultiplier   = "pre-rank-limit-multiplier"
 )
 
 var (
@@ -109,6 +109,13 @@ var (
 			Value:    false,
 			Required: false,
 			EnvVars:  []string{strcase.ToScreamingSnake(enableCorsFlag)},
+		},
+		sridFlag: &cli.IntFlag{
+			Name:     sridFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
+			Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage its bbox should be in the same SRID.",
+			Required: false,
+			Value:    28992,
 		},
 	}
 
@@ -171,6 +178,7 @@ func main() {
 				serviceFlags[configFileFlag],
 				serviceFlags[enableTrailingSlashFlag],
 				serviceFlags[enableCorsFlag],
+				serviceFlags[sridFlag],
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
 				commonDBFlags[dbNameFlag],
@@ -224,11 +232,11 @@ func main() {
 					Value:    40000,
 				},
 				&cli.IntFlag{
-					Name:     preRankLimit,
-					EnvVars:  []string{strcase.ToScreamingSnake(preRankLimit)},
+					Name:     preRankLimitMultiplier,
+					EnvVars:  []string{strcase.ToScreamingSnake(preRankLimitMultiplier)},
 					Usage:    "The number of results which are pre-ranked when the rank threshold is hit",
 					Required: false,
-					Value:    400,
+					Value:    10,
 				},
 			},
 			Action: func(c *cli.Context) error {
@@ -255,13 +263,14 @@ func main() {
 					engine,
 					dbConn,
 					c.String(searchIndexFlag),
+					c.Int(sridFlag),
 					c.Path(rewritesFileFlag),
 					c.Path(synonymsFileFlag),
 					c.Int(rankNormalization),
 					c.Float64(exactMatchMultiplier),
 					c.Float64(primarySuggestMultiplier),
 					c.Int(rankThreshold),
-					c.Int(preRankLimit),
+					c.Int(preRankLimitMultiplier),
 				)
 				if err != nil {
 					return err
@@ -287,13 +296,7 @@ func main() {
 					Required: false,
 					Value:    "search_index",
 				},
-				&cli.PathFlag{
-					Name:     sridFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
-					Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage its bbox should be in the same SRID.",
-					Required: false,
-					Value:    "28992",
-				},
+				serviceFlags[sridFlag],
 				&cli.StringFlag{
 					Name:     languageFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(languageFlag)},

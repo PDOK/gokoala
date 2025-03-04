@@ -62,13 +62,14 @@ func TestSearch(t *testing.T) {
 		eng,
 		dbConn,
 		testSearchIndex,
+		28992,
 		"internal/search/testdata/rewrites.csv",
 		"internal/search/testdata/synonyms.csv",
 		1,
 		3.0,
 		1.01,
 		4000,
-		400,
+		10,
 	)
 	assert.NoError(t, err)
 
