@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?f=json"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "addresses",
+        "collectionVersion": "1",
+        "displayName": "Brânbuorren 2 9131EE Ie",
+        "highlight": "<b>Brânbuorren</b> 2 9131EE",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/160?f=json",
+        "score": 0.23083121776580812
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.3136020124,
+          47.975243361
+        ]
+      },
+      "bbox": null,
+      "id": "160",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/160?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 1
+}

@@ -147,6 +147,16 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
+			name: "Complex search term with synonyms and rewrites, should not result in error",
+			fields: fields{
+				url: "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-complex-search-term.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Search matches multiple suggests, the suggest which equals the display name should be the first result",
 			fields: fields{
 				url: "http://localhost:8080/search?q=Achtertune 1794BL Oosterend&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
@@ -217,12 +227,92 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search: complex search term with synonyms and rewrites, should not result in error",
+			name: "Search for house numbers, should rank in logical order - fourth test",
 			fields: fields{
-				url: "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
+				url: "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-complex-search-term.json",
+				body:       "internal/search/testdata/expected-housenumber-ranking-4.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search short streetname",
+			fields: fields{
+				url: "http://localhost:8080/search?q=A Ottoland&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-short-streetname.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search synonym with space",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Spui Den Haag&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-synonym-with-space.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search synonym with space - second test",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Spui 's-Gravenhage&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-synonym-with-space.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search streetname with dots",
+			fields: fields{
+				url: "http://localhost:8080/search?q=A.B.C straat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-streetname-with-dots.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search streetname with number (not housenumber)",
+			fields: fields{
+				url: "http://localhost:8080/search?q=1944&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-streetname-with-number.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search long street",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Ir. Mr. Dr. van Waterschoot van der Grachtstraat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-long-street.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search frisian street - with frisian input",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Brânbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-frisian-street.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search frisian street - with dutch input",
+			fields: fields{
+				url: "http://localhost:8080/search?q=Branbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+			},
+			want: want{
+				body:       "internal/search/testdata/expected-frisian-street.json",
 				statusCode: http.StatusOK,
 			},
 		},
