@@ -29,6 +29,12 @@
             "$ref": "#/components/parameters/limit-search"
           },
           {
+            "$ref": "#/components/parameters/bbox"
+          }
+          {
+            "$ref": "#/components/parameters/bbox-crs"
+          }
+          {
             "$ref": "#/components/parameters/crs"
           }
         ],
