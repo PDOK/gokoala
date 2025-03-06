@@ -45,7 +45,7 @@ type GeoPackage struct {
 func NewGeoPackage(path string) (*GeoPackage, error) {
 	loadDriver()
 
-	conn := fmt.Sprintf("file:%s?mode=ro", path)
+	conn := fmt.Sprintf("file:%s?immutable=1", path)
 	db, err := sqlx.Open(sqliteDriverName, conn)
 	if err != nil {
 		return nil, err
@@ -69,7 +69,6 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, externa
 	extraFields := fields
 	extraFields = append(extraFields, externalFidFields...)
 
-	// TODO we might need WGS84 transformation here of bbox
 	query := fmt.Sprintf(`
 		select %[3]s as fid,
 		    st_minx(castautomagic(%[4]s)) as bbox_minx,
