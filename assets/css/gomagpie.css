@@ -12,6 +12,9 @@
 .navbar {
     background-color: var(--bs-blue);
 }
+.navbar .navbar-outputs {
+    --bs-breadcrumb-divider: '|'
+}
 .navbar .breadcrumb .breadcrumb-item,
 .navbar .breadcrumb .breadcrumb-item a {
     color: var(--bs-white);
