@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/docker/go-units"
+	"gopkg.in/yaml.v3"
 )
 
 // +kubebuilder:object:generate=true
@@ -81,7 +83,7 @@ type CollectionEntryFeatures struct {
 
 	// Optional way to exclude feature properties and/or determine the ordering of properties in the response.
 	// +optional
-	FeatureProperties *FeatureProperties `yaml:",inline" json:",inline"`
+	*FeatureProperties `yaml:",inline" json:",inline"`
 
 	// Downloads available for this collection through map sheets. Note that 'map sheets' refer to a map
 	// divided in rectangle areas that can be downloaded individually.
@@ -91,6 +93,17 @@ type CollectionEntryFeatures struct {
 	// Configuration specifically related to HTML/Web representation
 	// +optional
 	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
+}
+
+// MarshalJSON custom because inlining only works on embedded structs.
+// Value instead of pointer receiver because only that way it can be used for both.
+func (c CollectionEntryFeatures) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c)
+}
+
+// UnmarshalJSON parses a string to OgcAPITiles
+func (c *CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, c)
 }
 
 // +kubebuilder:object:generate=true
