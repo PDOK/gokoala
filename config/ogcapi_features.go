@@ -101,7 +101,7 @@ func (c CollectionEntryFeatures) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-// UnmarshalJSON parses a string to OgcAPITiles
+// UnmarshalJSON parses a string to CollectionEntryFeatures
 func (c *CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }

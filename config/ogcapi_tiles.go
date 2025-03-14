@@ -72,7 +72,7 @@ func (c CollectionEntryTiles) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON parses a string to OgcAPITiles
+// UnmarshalJSON parses a string to CollectionEntryTiles
 func (c *CollectionEntryTiles) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }
