@@ -1,11 +1,13 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
 	"sort"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"gopkg.in/yaml.v3"
 )
 
 // +kubebuilder:object:generate=true
@@ -17,6 +19,25 @@ type OgcAPITiles struct {
 	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
 	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty"`
+}
+
+type OgcAPITilesJSON struct {
+	*Tiles      `json:",inline"`
+	Collections GeoSpatialCollections `json:"collections,omitempty"`
+}
+
+// MarshalJSON custom because inlining only works on embedded structs.
+// Value instead of pointer receiver because only that way it can be used for both.
+func (o OgcAPITiles) MarshalJSON() ([]byte, error) {
+	return json.Marshal(OgcAPITilesJSON{
+		Tiles:       o.DatasetTiles,
+		Collections: o.Collections,
+	})
+}
+
+// UnmarshalJSON parses a string to OgcAPITiles
+func (o *OgcAPITiles) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, o)
 }
 
 func (o *OgcAPITiles) Defaults() {
@@ -37,6 +58,23 @@ type CollectionEntryTiles struct {
 
 	// Tiles specific to this collection. Called 'geodata tiles' in OGC spec.
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
+}
+
+type CollectionEntryTilesJSON struct {
+	Tiles `json:",inline"`
+}
+
+// MarshalJSON custom because inlining only works on embedded structs.
+// Value instead of pointer receiver because only that way it can be used for both.
+func (c CollectionEntryTiles) MarshalJSON() ([]byte, error) {
+	return json.Marshal(CollectionEntryTilesJSON{
+		Tiles: c.GeoDataTiles,
+	})
+}
+
+// UnmarshalJSON parses a string to CollectionEntryTiles
+func (c *CollectionEntryTiles) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, c)
 }
 
 // +kubebuilder:validation:Enum=raster;vector
