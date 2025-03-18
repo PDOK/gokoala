@@ -176,7 +176,7 @@
       ]
     }
     {{end}}
-    {{ if and (le $type.ZoomLevelRange.Start 11) (ge $type.ZoomLevelRange.End 12) }}
+    {{ if and (le $type.ZoomLevelRange.Start 11) (ge $type.ZoomLevelRange.End 11) }}
     {{ if not $first }}, {{else}} {{$first = false}} {{end}}
     {
       "id": "11",
