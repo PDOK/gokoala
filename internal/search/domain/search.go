@@ -10,7 +10,6 @@ const (
 	VersionParam     = "version"
 	RelevanceParam   = "relevance"
 	DefaultRelevance = 0.5
-	Wildcard         = ":*"
 )
 
 // GeoJSON properties in search response
@@ -36,14 +35,19 @@ func NewSearchQuery(words []string, withoutSynonyms map[string]struct{}, withSyn
 }
 
 func (q *SearchQuery) ToWildcardQuery() string {
-	return q.toString(true)
+	return q.toString(true, true)
 }
 
-func (q *SearchQuery) ToExactMatchQuery() string {
-	return q.toString(false)
+func (q *SearchQuery) ToExactMatchQuery(useSynonyms bool) string {
+	return q.toString(false, useSynonyms)
 }
 
-func (q *SearchQuery) toString(wildcard bool) string {
+func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
+	wildcard := ""
+	if useWildcard {
+		wildcard = ":*"
+	}
+
 	sb := &strings.Builder{}
 	for i, word := range q.words {
 		if i > 0 {
@@ -51,21 +55,17 @@ func (q *SearchQuery) toString(wildcard bool) string {
 		}
 		if _, ok := q.withoutSynonyms[word]; ok {
 			sb.WriteString(word)
-			if wildcard {
-				sb.WriteString(Wildcard)
-			}
+			sb.WriteString(wildcard)
 		} else if synonyms, ok := q.withSynonyms[word]; ok {
 			slices.Sort(synonyms)
 			sb.WriteByte('(')
 			sb.WriteString(word)
-			if wildcard {
-				sb.WriteString(Wildcard)
-			}
-			for _, synonym := range synonyms {
-				sb.WriteString(" | ")
-				sb.WriteString(synonym)
-				if wildcard {
-					sb.WriteString(Wildcard)
+			sb.WriteString(wildcard)
+			if useSynonyms {
+				for _, synonym := range synonyms {
+					sb.WriteString(" | ")
+					sb.WriteString(synonym)
+					sb.WriteString(wildcard)
 				}
 			}
 			sb.WriteByte(')')

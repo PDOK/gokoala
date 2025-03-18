@@ -189,7 +189,7 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 			if tt.args.wildcard {
 				query = actual.ToWildcardQuery()
 			} else {
-				query = actual.ToExactMatchQuery()
+				query = actual.ToExactMatchQuery(true)
 			}
 			assert.Equal(t, strings.ReplaceAll(tt.want, "\n", ""), query, tt.args.searchQuery)
 		})
