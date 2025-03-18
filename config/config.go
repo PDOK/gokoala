@@ -256,8 +256,16 @@ func validate(config *Config) error {
 	}
 
 	// custom validations
+	var errs []error
 	if config.OgcAPI.Features != nil {
-		return validateFeatureCollections(config.OgcAPI.Features.Collections)
+		errs = append(errs, validateFeatureCollections(config.OgcAPI.Features.Collections))
+	}
+	if config.OgcAPI.Tiles != nil {
+		errs = append(errs, validateTileProjections(config.OgcAPI.Tiles))
+	}
+	err = errors.Join(errs...)
+	if err != nil {
+		return err
 	}
 	return nil
 }
