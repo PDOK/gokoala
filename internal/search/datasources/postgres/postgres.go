@@ -29,9 +29,13 @@ type Postgres struct {
 	primarySuggestMultiplier float64
 	rankThreshold            int
 	preRankLimitMultiplier   int
+	synonymsExactMatch       bool
 }
 
-func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, searchIndexSrid d.SRID, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Postgres, error) {
+func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, searchIndexSrid d.SRID,
+	rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int,
+	preRankLimitMultiplier int, synonymsExactMatch bool) (*Postgres, error) {
+
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(dbConn)
 	if err != nil {
@@ -57,6 +61,7 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, 
 		primarySuggestMultiplier,
 		rankThreshold,
 		preRankLimitMultiplier,
+		synonymsExactMatch,
 	}, nil
 }
 
@@ -76,7 +81,7 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 	}
 	sql := makeSQL(p.searchIndex, srid, bboxFilter)
 	wildcardQuery := searchQuery.ToWildcardQuery()
-	exactMatchQuery := searchQuery.ToExactMatchQuery()
+	exactMatchQuery := searchQuery.ToExactMatchQuery(p.synonymsExactMatch)
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
 	log.Printf("\nSEARCH QUERY (wildcard): %s\n", wildcardQuery)
 

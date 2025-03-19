@@ -52,6 +52,7 @@ const (
 	primarySuggestMultiplier = "primary-suggest-multiplier"
 	rankThreshold            = "rank-threshold"
 	preRankLimitMultiplier   = "pre-rank-limit-multiplier"
+	synonymsExactMatch       = "synonyms-exact-match"
 )
 
 var (
@@ -238,6 +239,13 @@ func main() {
 					Required: false,
 					Value:    10,
 				},
+				&cli.BoolFlag{
+					Name:     synonymsExactMatch,
+					EnvVars:  []string{strcase.ToScreamingSnake(synonymsExactMatch)},
+					Usage:    "When true synonyms are taken into account during exact match calculation",
+					Required: false,
+					Value:    false,
+				},
 			},
 			Action: func(c *cli.Context) error {
 				log.Println(c.Command.Usage)
@@ -271,6 +279,7 @@ func main() {
 					c.Float64(primarySuggestMultiplier),
 					c.Int(rankThreshold),
 					c.Int(preRankLimitMultiplier),
+					c.Bool(synonymsExactMatch),
 				)
 				if err != nil {
 					return err

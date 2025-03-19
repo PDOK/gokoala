@@ -26,7 +26,10 @@ type Search struct {
 	json           *jsonFeatures
 }
 
-func NewSearch(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rewritesFile string, synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) (*Search, error) {
+func NewSearch(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rewritesFile string,
+	synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64,
+	rankThreshold int, preRankLimitMultiplier int, synonymsExactMatch bool) (*Search, error) {
+
 	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
 		return nil, err
@@ -43,6 +46,7 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string, searchIndexS
 			primarySuggestMultiplier,
 			rankThreshold,
 			preRankLimitMultiplier,
+			synonymsExactMatch,
 		),
 		json:           newJSONFeatures(e),
 		queryExpansion: queryExpansion,
@@ -137,7 +141,10 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 	return nil
 }
 
-func newDatasource(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int, preRankLimitMultiplier int) ds.Datasource {
+func newDatasource(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rankNormalization int,
+	exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int,
+	preRankLimitMultiplier int, synonymsExactMatch bool) ds.Datasource {
+
 	datasource, err := postgres.NewPostgres(
 		dbConn,
 		timeout,
@@ -148,6 +155,7 @@ func newDatasource(e *engine.Engine, dbConn string, searchIndex string, searchIn
 		primarySuggestMultiplier,
 		rankThreshold,
 		preRankLimitMultiplier,
+		synonymsExactMatch,
 	)
 	if err != nil {
 		log.Fatalf("failed to create datasource: %v", err)

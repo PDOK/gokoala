@@ -34,7 +34,7 @@ func FuzzExpand(f *testing.F) {
 	f.Fuzz(func(t *testing.T, input string) {
 		expanded, err := queryExpansion.Expand(context.Background(), input)
 		assert.NoError(t, err)
-		query := expanded.ToExactMatchQuery()
+		query := expanded.ToExactMatchQuery(true)
 
 		assert.Truef(t, utf8.ValidString(query), "valid string")
 		if strings.TrimSpace(input) != "" {

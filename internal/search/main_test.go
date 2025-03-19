@@ -59,19 +59,11 @@ func TestSearch(t *testing.T) {
 	assert.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint, err := NewSearch(
-		eng,
-		dbConn,
-		testSearchIndex,
-		domain.WGS84SRIDPostgis,
+	searchEndpoint, err := NewSearch(eng, dbConn, testSearchIndex, domain.WGS84SRIDPostgis,
 		"internal/search/testdata/rewrites.csv",
 		"internal/search/testdata/synonyms.csv",
-		1,
-		3.0,
-		1.01,
-		4000,
-		10,
-	)
+		1, 3.0, 1.01,
+		4000, 10, false)
 	assert.NoError(t, err)
 
 	// given empty search index

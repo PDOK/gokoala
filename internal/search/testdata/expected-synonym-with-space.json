@@ -19,7 +19,7 @@
         "displayName": "Spui 70 2511 BT s-Gravenhage",
         "highlight": "<b>Spui</b> 70 2511 BT <b>s</b>-<b>Gravenhage</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/154?f=json",
-        "score": 0.038760408759117126
+        "score": 0.029046258330345156
       },
       "geometry": {
         "type": "Point",
@@ -48,7 +48,7 @@
         "displayName": "Spui 180 2511 BW 's-Gravenhage",
         "highlight": "<b>Spui</b> 180 2511 BW '<b>s</b>-<b>Gravenhage</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/155?f=json",
-        "score": 0.038760408759117126
+        "score": 0.029046258330345156
       },
       "geometry": {
         "type": "Point",
