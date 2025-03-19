@@ -24,7 +24,8 @@ func init() {
 func TestExpand(t *testing.T) {
 	type args struct {
 		searchQuery string
-		wildcard    bool
+		useWildcard bool
+		useSynonyms bool
 	}
 	tests := []struct {
 		name string
@@ -35,6 +36,7 @@ func TestExpand(t *testing.T) {
 			name: "rewrite",
 			args: args{
 				searchQuery: `markt den bosch`,
+				useSynonyms: true,
 			},
 			want: `markt & hertogenbosch`,
 		},
@@ -42,6 +44,7 @@ func TestExpand(t *testing.T) {
 			name: "rewrite followed by synonym",
 			args: args{
 				searchQuery: `Spui 1 den Haag`,
+				useSynonyms: true,
 			},
 			want: `spui & 1 & (gravenhage | den <-> haag | s-gravenhage)`,
 		},
@@ -49,6 +52,7 @@ func TestExpand(t *testing.T) {
 			name: "no synonym",
 			args: args{
 				searchQuery: `just some text`,
+				useSynonyms: true,
 			},
 			want: `just & some & text`,
 		},
@@ -56,7 +60,7 @@ func TestExpand(t *testing.T) {
 			name: "wildcard",
 			args: args{
 				searchQuery: `just some text`,
-				wildcard:    true,
+				useWildcard: true,
 			},
 			want: `just:* & some:* & text:*`,
 		},
@@ -64,6 +68,7 @@ func TestExpand(t *testing.T) {
 			name: "one synonym",
 			args: args{
 				searchQuery: `Foo`,
+				useSynonyms: true,
 			},
 			want: `(foo | foobar | foos)`,
 		},
@@ -71,6 +76,7 @@ func TestExpand(t *testing.T) {
 			name: "two the same synonyms",
 			args: args{
 				searchQuery: `Foo FooBar`,
+				useSynonyms: true,
 			},
 			want: `(foo | foobar | foos) & (foobar | foo | foos)`,
 		},
@@ -78,6 +84,7 @@ func TestExpand(t *testing.T) {
 			name: "two-way synonym",
 			args: args{
 				searchQuery: `eerste 2de`,
+				useSynonyms: true,
 			},
 			want: `(eerste | 1ste) & (2de | tweede)`,
 		},
@@ -85,6 +92,7 @@ func TestExpand(t *testing.T) {
 			name: "nesting",
 			args: args{
 				searchQuery: `oudwesterlijke-goeverneur`,
+				useSynonyms: true,
 			},
 			want: `
 (oudwesterlijke-goeverneur | oudewestelijkelijke-goev | oudewestelijkelijke-goeverneur | oudewestelijkelijke-gouv | 
@@ -99,6 +107,7 @@ oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
 			name: "overlapping synonyms",
 			args: args{
 				searchQuery: `foosball`,
+				useSynonyms: true,
 			},
 			want: `(foosball | fooball | foobarball)`,
 		},
@@ -106,13 +115,23 @@ oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
 			name: "synonym with diacritics",
 			args: args{
 				searchQuery: `oude fryslân`,
+				useSynonyms: true,
 			},
 			want: `(oude | oud) & (fryslân | friesland)`,
+		},
+		{
+			name: "no synonyms for exact matches",
+			args: args{
+				searchQuery: `oude fryslân abc`,
+				useSynonyms: false,
+			},
+			want: `(oude) & (fryslân) & abc`,
 		},
 		{
 			name: "case insensitive",
 			args: args{
 				searchQuery: `OudE DeN HaAg`,
+				useSynonyms: true,
 			},
 			want: `(oude | oud) & (gravenhage | den <-> haag | s-gravenhage)`,
 		},
@@ -120,6 +139,7 @@ oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
 			name: "word delimiters",
 			args: args{
 				searchQuery: `ok text with spaces ok`,
+				useSynonyms: true,
 			},
 			want: `ok & text & with & spaces`,
 		},
@@ -127,6 +147,7 @@ oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
 			name: "long",
 			args: args{
 				searchQuery: `prof dr ir van der 1e noordsteeg`,
+				useSynonyms: true,
 			},
 			want: `prof & dr & ir & van & der & 1e & noordsteeg`,
 		},
@@ -134,6 +155,7 @@ oudwestlijke-goeverneur | oudwestlijke-gouv | oudwestlijke-gouverneur)
 			name: "one substring",
 			args: args{
 				searchQuery: `Piet Gouverneurstraat 1800`,
+				useSynonyms: true,
 			},
 			want: `
 piet & (gouverneurstraat | goeverneurstraat | goevstraat | gouvstraat) & 1800
@@ -143,6 +165,7 @@ piet & (gouverneurstraat | goeverneurstraat | goevstraat | gouvstraat) & 1800
 			name: "two substrings",
 			args: args{
 				searchQuery: `Oude Piet Gouverneurstraat 1800`,
+				useSynonyms: true,
 			},
 			want: `
 (oude | oud) & piet & (gouverneurstraat | goeverneurstraat | goevstraat | gouvstraat) & 1800
@@ -152,6 +175,7 @@ piet & (gouverneurstraat | goeverneurstraat | goevstraat | gouvstraat) & 1800
 			name: "three substrings",
 			args: args{
 				searchQuery: `Oude Piet Westgouverneurstraat 1800`,
+				useSynonyms: true,
 			},
 			want: `
 (oude | oud) & piet & 
@@ -164,6 +188,7 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 			name: "one rewrite and multiple synonyms",
 			args: args{
 				searchQuery: `goev straat 1 in Den Haag niet in Friesland`,
+				useSynonyms: true,
 			},
 			want: `
 (goev | goeverneur | gouv | gouverneur) & straat & 1 & in & (gravenhage | den <-> haag | s-gravenhage) & niet & (friesland | fryslân)
@@ -173,6 +198,7 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 			name: "five synonyms",
 			args: args{
 				searchQuery: `Oud Gouv 2DE 's-Gravenhage Fryslân Nederland`,
+				useSynonyms: true,
 			},
 			want: `
 (oud | oude) & (gouv | goev | goeverneur | gouverneur) & (2de | tweede) & (gravenhage | den <-> haag | s-gravenhage) & (fryslân | friesland) & nederland
@@ -186,10 +212,10 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 			actual, err := queryExpansion.Expand(context.Background(), tt.args.searchQuery)
 			assert.NoError(t, err)
 			var query string
-			if tt.args.wildcard {
+			if tt.args.useWildcard {
 				query = actual.ToWildcardQuery()
 			} else {
-				query = actual.ToExactMatchQuery(true)
+				query = actual.ToExactMatchQuery(tt.args.useSynonyms)
 			}
 			assert.Equal(t, strings.ReplaceAll(tt.want, "\n", ""), query, tt.args.searchQuery)
 		})
