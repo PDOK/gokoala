@@ -38,10 +38,14 @@ type SearchIndexRecord struct {
 	Geometry          *geom.Point
 }
 
-type Transformer struct{}
+type Transformer struct {
+	parsedTemplates map[string]*template.Template
+}
 
 func NewTransformer() *Transformer {
-	return &Transformer{}
+	return &Transformer{
+		parsedTemplates: make(map[string]*template.Template),
+	}
 }
 
 func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection) ([]SearchIndexRecord, error) {
@@ -97,18 +101,23 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 }
 
 func (t Transformer) renderTemplate(templateFromConfig string, fieldValuesByName map[string]string) (string, error) {
-	parsedTemplate, err := template.New("").
-		Funcs(engine.GlobalTemplateFuncs).
-		Option("missingkey=zero").
-		Parse(templateFromConfig)
-	if err != nil {
-		return "", err
+	parsedTemplate, ok := t.parsedTemplates[templateFromConfig]
+	if !ok {
+		newTemplate, err := template.New("").
+			Funcs(engine.GlobalTemplateFuncs).
+			Option("missingkey=zero").
+			Parse(templateFromConfig)
+		if err != nil {
+			return "", err
+		}
+		t.parsedTemplates[templateFromConfig] = newTemplate
+		parsedTemplate = newTemplate
 	}
 	var b bytes.Buffer
-	if err = parsedTemplate.Execute(&b, fieldValuesByName); err != nil {
+	if err := parsedTemplate.Execute(&b, fieldValuesByName); err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(b.String()), err
+	return strings.TrimSpace(b.String()), nil
 }
 
 func (r RawRecord) transformBbox() (*geom.Polygon, error) {
