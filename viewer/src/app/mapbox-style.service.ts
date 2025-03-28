@@ -49,14 +49,14 @@ export type Filter = filterval[]
 type filterval = string | bigint | filterval[]
 
 export interface Paint {
-  'fill-color'?: FillPattern | string
+  'fill-color'?: StopsPattern | string
   'fill-opacity'?: number
-  'line-color'?: string
+  'line-color'?: StopsPattern | string
   'line-width'?: number
   'fill-outline-color'?: string
-  'fill-pattern'?: FillPattern
+  'fill-pattern'?: StopsPattern
   'circle-radius'?: number
-  'circle-color'?: FillPattern | string
+  'circle-color'?: StopsPattern | string
 }
 
 export enum Line {
@@ -76,7 +76,7 @@ export interface Layout {
   'text-offset'?: number[]
 }
 
-export interface FillPattern {
+export interface StopsPattern {
   property: string
   type: string
   stops: Array<string[]>
@@ -117,12 +117,12 @@ export class MapboxStyleService {
     return style
   }
 
-  isFillPatternWithStops(paint: string | FillPattern | undefined): paint is FillPattern {
-    return (paint as FillPattern).stops !== undefined
+  isPatternWithStops(paint: string | StopsPattern | undefined): paint is StopsPattern {
+    return (paint as StopsPattern).stops !== undefined
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  getItems(style: MapboxStyle, titleFunction: Function, customTitlePart: string[]): LegendItem[] {
+  getItems(style: MapboxStyle, titleFunction: Function, customTitlePart: string[], addLayerName: boolean): LegendItem[] {
     const names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
       const p: IProperties = extractPropertiesFromFilter({}, layer.filter)
@@ -130,24 +130,29 @@ export class MapboxStyleService {
       if (layer.layout?.['text-field']) {
         const label = layer.layout?.['text-field'].replace('{', '').replace('}', '')
         p['' + label + ''] = label.substring(0, 6)
-        const labelTitle = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'])
+        const labelTitle = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'], addLayerName)
         const showLabel = label[0].toUpperCase() + label.substring(1)
         this.pushItem(labelTitle + ' ' + showLabel, layer, names, p)
       } else {
-        let title = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'])
-        this.pushItem(title, layer, names, p)
-        let paint: FillPattern = {} as FillPattern
+        let title = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'], addLayerName)
+        if (addLayerName) {
+          this.pushItem(title, layer, names, p)
+        }
+        let paint: StopsPattern = {} as StopsPattern
         if (layer.type == LayerType.Circle) {
-          paint = layer.paint['circle-color'] as FillPattern
+          paint = layer.paint['circle-color'] as StopsPattern
+        }
+        if (layer.type == LayerType.Line) {
+          paint = layer.paint['line-color'] as StopsPattern
         }
         if (layer.type == LayerType.Fill) {
-          paint = layer.paint['fill-color'] as FillPattern
+          paint = layer.paint['fill-color'] as StopsPattern
           if (!paint) {
-            paint = layer.paint['fill-pattern'] as FillPattern
+            paint = layer.paint['fill-pattern'] as StopsPattern
           }
         }
         if (paint) {
-          if (this.isFillPatternWithStops(paint)) {
+          if (this.isPatternWithStops(paint)) {
             paint.stops.forEach(stop => {
               const prop: IProperties = {}
               prop['' + paint.property + ''] = stop[0]
@@ -169,7 +174,7 @@ export class MapboxStyleService {
     return id
   }
 
-  customTitle(layername: string, props: IProperties, customTitlePart: string[]): string {
+  customTitle(layername: string, props: IProperties, customTitlePart: string[], addLayerName: boolean): string {
     function gettext(intitle: string, index: string): string {
       if (props[index]) {
         return intitle + ' ' + props[index]
@@ -181,8 +186,10 @@ export class MapboxStyleService {
     customTitlePart.forEach(element => {
       title = gettext(title, element)
     })
-    if (title === '') {
-      title = layername + ' '
+    if (addLayerName) {
+      if (title === '') {
+        title = layername + ' '
+      }
     }
     title = title.trimStart()
     title = title.replace('_', ' ')
