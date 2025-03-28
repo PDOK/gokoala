@@ -61,15 +61,17 @@ export class LegendViewComponent implements OnInit, OnChanges {
         if (this.mapboxStyle.metadata?.['gokoala:title-items']) {
           this.titleItems = this.mapboxStyle.metadata?.['gokoala:title-items']
         }
+        const titlepart = this.titleItems.split(',')
         if (this.titleItems) {
           if (this.titleItems.toLocaleLowerCase() === 'id') {
-            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, [])
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, titlepart, true)
+          } else if (this.titleItems.toLocaleLowerCase() === 'no-id') {
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, false)
           } else {
-            const titlepart = this.titleItems.split(',')
-            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, true)
           }
         } else {
-          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [])
+          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [], true)
         }
       })
     } else {
