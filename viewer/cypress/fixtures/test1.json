@@ -1,0 +1,345 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2025-02-25T11:18:11Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod/search?f=json"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POLYGON",
+        "collectionId": "functioneel_gebied",
+        "collectionVersion": "1",
+        "displayName": "Windturbinepark Amsterdam",
+        "highlight": "Windturbinepark <b>Amsterdam</b>",
+        "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/functioneel_gebied_vlak/items/0b3a1280-3f85-5fc2-b774-cabc02054fd9?f=json",
+        "score": 0.014588982909917832
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [113046.114437498, 491475.816500001],
+            [113046.114437498, 493053.6796875],
+            [113960.79025, 493053.6796875],
+            [113960.79025, 491475.816500001],
+            [113046.114437498, 491475.816500001]
+          ]
+        ]
+      },
+      "id": "0b3a1280-3f85-5fc2-b774-cabc02054fd9",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/brt/top10nl/ogc/v1/collections/functioneel_gebied_vlak/items/0b3a1280-3f85-5fc2-b774-cabc02054fd9?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Abberdaan 1, Amsterdam (Amsterdam)",
+        "highlight": "Abberdaan 1, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/ad93943a-98b5-5998-bd1a-b10a7c1c0020?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [114357.829, 489487.566],
+            [114357.829, 489487.766],
+            [114358.029, 489487.766],
+            [114358.029, 489487.566],
+            [114357.829, 489487.566]
+          ]
+        ]
+      },
+      "id": "ad93943a-98b5-5998-bd1a-b10a7c1c0020",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/ad93943a-98b5-5998-bd1a-b10a7c1c0020?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Accraweg 2T, Amsterdam (Amsterdam)",
+        "highlight": "Accraweg 2T, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/66ea2237-5da8-5e30-8d5b-330187119eac?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [111857.108, 491408.046],
+            [111857.108, 491408.246],
+            [111857.308, 491408.246],
+            [111857.308, 491408.046],
+            [111857.108, 491408.046]
+          ]
+        ]
+      },
+      "id": "66ea2237-5da8-5e30-8d5b-330187119eac",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/66ea2237-5da8-5e30-8d5b-330187119eac?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Amstel 64, Amsterdam (Amsterdam)",
+        "highlight": "Amstel 64, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/cf3e540e-2d8f-56b4-8dc9-a1c426b56b0b?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [121565.494, 486674.136],
+            [121565.494, 486674.336],
+            [121565.694, 486674.336],
+            [121565.694, 486674.136],
+            [121565.494, 486674.136]
+          ]
+        ]
+      },
+      "id": "cf3e540e-2d8f-56b4-8dc9-a1c426b56b0b",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/cf3e540e-2d8f-56b4-8dc9-a1c426b56b0b?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Amstel 298P, Amsterdam (Amsterdam)",
+        "highlight": "Amstel 298P, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/6e3a4446-c9fa-5503-b34e-154d5686cb8f?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [121993.532, 486140.5550000001],
+            [121993.532, 486140.755],
+            [121993.732, 486140.755],
+            [121993.732, 486140.5550000001],
+            [121993.532, 486140.5550000001]
+          ]
+        ]
+      },
+      "id": "6e3a4446-c9fa-5503-b34e-154d5686cb8f",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/6e3a4446-c9fa-5503-b34e-154d5686cb8f?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Ankerweg 4, Amsterdam (Amsterdam)",
+        "highlight": "Ankerweg 4, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/c2b386f5-d3d2-5b0e-8996-345811b371d3?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [117059.983, 492192.599],
+            [117059.983, 492192.799],
+            [117060.183, 492192.799],
+            [117060.183, 492192.599],
+            [117059.983, 492192.599]
+          ]
+        ]
+      },
+      "id": "c2b386f5-d3d2-5b0e-8996-345811b371d3",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/c2b386f5-d3d2-5b0e-8996-345811b371d3?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Asterweg 15F, Amsterdam (Amsterdam)",
+        "highlight": "Asterweg 15F, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/fea4f732-22c2-5570-84f1-e535ffccfb62?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [122092.127, 489184.083],
+            [122092.127, 489184.283],
+            [122092.327, 489184.283],
+            [122092.327, 489184.083],
+            [122092.127, 489184.083]
+          ]
+        ]
+      },
+      "id": "fea4f732-22c2-5570-84f1-e535ffccfb62",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/fea4f732-22c2-5570-84f1-e535ffccfb62?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Asterweg 15H, Amsterdam (Amsterdam)",
+        "highlight": "Asterweg 15H, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/94ac26ad-3413-5207-b1dc-0a8f0da21fff?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [122079.463, 489178.369],
+            [122079.463, 489178.569],
+            [122079.663, 489178.569],
+            [122079.663, 489178.369],
+            [122079.463, 489178.369]
+          ]
+        ]
+      },
+      "id": "94ac26ad-3413-5207-b1dc-0a8f0da21fff",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/94ac26ad-3413-5207-b1dc-0a8f0da21fff?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Asterweg 143, Amsterdam (Amsterdam)",
+        "highlight": "Asterweg 143, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/68e58a15-479d-5951-833b-92ba0c4cff70?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [122009.367, 489581.613],
+            [122009.367, 489581.813],
+            [122009.567, 489581.813],
+            [122009.567, 489581.613],
+            [122009.367, 489581.613]
+          ]
+        ]
+      },
+      "id": "68e58a15-479d-5951-833b-92ba0c4cff70",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/68e58a15-479d-5951-833b-92ba0c4cff70?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Azartplein 4, Amsterdam (Amsterdam)",
+        "highlight": "Azartplein 4, <b>Amsterdam</b> (<b>Amsterdam</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/2790ee43-3ed4-59f0-9f86-3d4946e828d4?f=json",
+        "score": 0.013181873708963395
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [124381.977, 487836.164],
+            [124381.977, 487836.364],
+            [124382.177, 487836.364],
+            [124382.177, 487836.164],
+            [124381.977, 487836.164]
+          ]
+        ]
+      },
+      "id": "2790ee43-3ed4-59f0-9f86-3d4946e828d4",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/2790ee43-3ed4-59f0-9f86-3d4946e828d4?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 10
+}

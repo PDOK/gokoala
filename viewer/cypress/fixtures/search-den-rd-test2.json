@@ -1,0 +1,345 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?f=json"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Op den Berg 78, Ede (Ede)",
+        "highlight": "Op <b>den</b> Berg 78, Ede (Ede)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/5c05081e-f3b4-5cd6-83de-8121371d4f3a?f=json",
+        "score": 0.015827399557456375
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [175169.9, 451035.9],
+            [175169.9, 451036.1],
+            [175170.1, 451036.1],
+            [175170.1, 451035.9],
+            [175169.9, 451035.9]
+          ]
+        ]
+      },
+      "id": "5c05081e-f3b4-5cd6-83de-8121371d4f3a",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/5c05081e-f3b4-5cd6-83de-8121371d4f3a?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "Deltaweg 2, Delft (Delft)",
+        "highlight": "<b>Deltaweg</b> 2, <b>Delft</b> (<b>Delft</b>)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/f1beab05-57b6-5e85-96e4-d7f1622b5819?f=json",
+        "score": 0.014818248450756074
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [84440.771, 446259.545],
+            [84440.771, 446259.745],
+            [84440.971, 446259.745],
+            [84440.971, 446259.545],
+            [84440.771, 446259.545]
+          ]
+        ]
+      },
+      "id": "f1beab05-57b6-5e85-96e4-d7f1622b5819",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/f1beab05-57b6-5e85-96e4-d7f1622b5819?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "De Aa 1a, Boekel (Boekel)",
+        "highlight": "<b>De</b> Aa 1a, Boekel (Boekel)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/3c7bfd42-0fb8-58d8-8aaf-5baa750d5878?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [172961.432, 401211.212],
+            [172961.432, 401211.412],
+            [172961.632, 401211.412],
+            [172961.632, 401211.212],
+            [172961.432, 401211.212]
+          ]
+        ]
+      },
+      "id": "3c7bfd42-0fb8-58d8-8aaf-5baa750d5878",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/3c7bfd42-0fb8-58d8-8aaf-5baa750d5878?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "de Akker 57A, Lopik (Lopik)",
+        "highlight": "<b>de</b> Akker 57A, Lopik (Lopik)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/ae36f82c-b434-52bf-8635-fed4a8dc5fde?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [125426.169, 443043.701],
+            [125426.169, 443043.901],
+            [125426.369, 443043.901],
+            [125426.369, 443043.701],
+            [125426.169, 443043.701]
+          ]
+        ]
+      },
+      "id": "ae36f82c-b434-52bf-8635-fed4a8dc5fde",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/ae36f82c-b434-52bf-8635-fed4a8dc5fde?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "De Bus 3a, Waalre (Waalre)",
+        "highlight": "<b>De</b> Bus 3a, Waalre (Waalre)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/08b2ccb8-cadc-50ae-a4cf-2f439a0730d5?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [159123.616, 377530.271],
+            [159123.616, 377530.471],
+            [159123.816, 377530.471],
+            [159123.816, 377530.271],
+            [159123.616, 377530.271]
+          ]
+        ]
+      },
+      "id": "08b2ccb8-cadc-50ae-a4cf-2f439a0730d5",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/08b2ccb8-cadc-50ae-a4cf-2f439a0730d5?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "de Dieze 500, Best (Best)",
+        "highlight": "<b>de</b> Dieze 500, Best (Best)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/251c24a2-9c67-5019-a923-b0c8af4ab705?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [156753.582, 389938.397],
+            [156753.582, 389938.597],
+            [156753.782, 389938.597],
+            [156753.782, 389938.397],
+            [156753.582, 389938.397]
+          ]
+        ]
+      },
+      "id": "251c24a2-9c67-5019-a923-b0c8af4ab705",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/251c24a2-9c67-5019-a923-b0c8af4ab705?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "de Dintel 500, Best (Best)",
+        "highlight": "<b>de</b> Dintel 500, Best (Best)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/89618af4-bd24-5577-b878-e855e3bf74e2?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [156296.901, 388755.902],
+            [156296.901, 388756.102],
+            [156297.101, 388756.102],
+            [156297.101, 388755.902],
+            [156296.901, 388755.902]
+          ]
+        ]
+      },
+      "id": "89618af4-bd24-5577-b878-e855e3bf74e2",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/89618af4-bd24-5577-b878-e855e3bf74e2?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "de Maas 500, Best (Best)",
+        "highlight": "<b>de</b> Maas 500, Best (Best)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/4d62b355-3531-52b9-8531-3ef03837de33?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [155843.441, 388693.822],
+            [155843.441, 388694.022],
+            [155843.641, 388694.022],
+            [155843.641, 388693.822],
+            [155843.441, 388693.822]
+          ]
+        ]
+      },
+      "id": "4d62b355-3531-52b9-8531-3ef03837de33",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/4d62b355-3531-52b9-8531-3ef03837de33?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "De Pier 2, Huizen (Huizen)",
+        "highlight": "<b>De</b> Pier 2, Huizen (Huizen)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/a6c6849e-ced6-5f8d-a5d1-1d10c05d57c6?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [145371.866, 480274.069],
+            [145371.866, 480274.269],
+            [145372.066, 480274.269],
+            [145372.066, 480274.069],
+            [145371.866, 480274.069]
+          ]
+        ]
+      },
+      "id": "a6c6849e-ced6-5f8d-a5d1-1d10c05d57c6",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/a6c6849e-ced6-5f8d-a5d1-1d10c05d57c6?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collectionGeometryType": "POINT",
+        "collectionId": "verblijfsobject",
+        "collectionVersion": "1",
+        "displayName": "De Poel 1, Gennep (Gennep)",
+        "highlight": "<b>De</b> Poel 1, Gennep (Gennep)",
+        "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/2016a464-4da2-5f44-9c72-04feb902fa64?f=json",
+        "score": 0.01283927645534277
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [195193.9, 412584.9],
+            [195193.9, 412585.1],
+            [195194.1, 412585.1],
+            [195194.1, 412584.9],
+            [195193.9, 412584.9]
+          ]
+        ]
+      },
+      "id": "2016a464-4da2-5f44-9c72-04feb902fa64",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://api.pdok.nl/lv/bag/ogc/v1-demo/collections/verblijfsobject/items/2016a464-4da2-5f44-9c72-04feb902fa64?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 10
+}

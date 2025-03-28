@@ -18,7 +18,8 @@
     "format": "npx prettier --write .",
     "upgrade": "ng update @angular/cli @angular/core angular-cli-ghpages @angular-devkit/build-angular @angular/elements @angular-eslint/eslint-plugin @angular-eslint/eslint-plugin-template @angular-eslint/schematics --force && npm update && npm audit fix --force",
     "bundle-size": "ng build && esbuild-visualizer --metadata ./dist/view-component/stats.json",
-    "apigen": "ng-openapi-gen --input https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod/api?f=json --output ./src/app/api"
+    "apigen1": "ng-openapi-gen --input https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod/api?f=json --output ./src/app/api",
+    "apigen2-no-deepobject-yet": "npx @openapitools/openapi-generator-cli generate -i https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod/api?f=json -g typescript -o ./src/app/api1"
   },
   "private": true,
   "dependencies": {
@@ -33,7 +34,9 @@
     "ol-mapbox-style": "^12.3.5",
     "proj4": "^2.11.0",
     "rxjs": "^7.8.1",
-    "tslib": "^2.6.3"
+    "stacktrace-js": "^2.0.2",
+    "tslib": "^2.6.3",
+    "whatwg-fetch": "^3.6.20"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.1.8",
@@ -44,6 +47,7 @@
     "@angular-eslint/template-parser": "19.1.0",
     "@angular/cli": "^19.1.8",
     "@angular/compiler-cli": "19.1.7",
+    "@openapitools/openapi-generator-cli": "^2.17.0",
     "@types/jest": "^29.5.12",
     "@types/proj4": "2.5.5",
     "@typescript-eslint/eslint-plugin": "8.3.0",
