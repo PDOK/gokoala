@@ -36,7 +36,7 @@ type Load interface {
 	Init(index string, srid int, lang language.Tag) error
 
 	// Load records into search index
-	Load(records []t.SearchIndexRecord, index string) (int64, error)
+	Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error)
 
 	// Optimize once ETL is completed (optionally)
 	Optimize() error
@@ -105,7 +105,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 		}
 		log.Printf("transform completed, %d source records transformed into %d target records", sourceRecordCount, len(targetRecords))
-		loaded, err := target.Load(targetRecords, searchIndex)
+		loaded, err := target.Load(collection.ID, targetRecords, searchIndex)
 		if err != nil {
 			return fmt.Errorf("failed loading records into target: %w", err)
 		}

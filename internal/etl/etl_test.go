@@ -182,38 +182,39 @@ func terminateContainer(ctx context.Context, t *testing.T, container testcontain
 
 func insertTestData(ctx context.Context, conn string) error {
 	db, err := pgx.Connect(ctx, conn)
+
 	if err != nil {
 		return fmt.Errorf("unable to connect to database: %w", err)
 	}
 	defer db.Close(ctx)
 
-	// TODO: Disabled since partitioning is disabled for now (see)
-	// // Create required partitions for testData
-	// //nolint:misspell
-	// partitions := `
-	// create table search_index_addres partition of search_index
-	// 	for values in ('adres');
-	// 	-- partition by list(collection_version);
+	var partitions = [3]string{"addresses", "roads"}
+
+	for i, _ := range partitions {
+		partition := `create table if not exists search_index_` + partitions[i] + ` partition of search_index for values in ('` + partitions[i] + `');`
+		_, err = db.Exec(ctx, partition)
+		if err != nil {
+			log.Printf("Error creating partition: %s Error: %v\n", partitions[i], err)
+		}
+	}
+
+	//-- partition by list(collection_version);`
 	// create table search_index_weg partition of search_index
 	// 	for values in ('weg');
 	// 	-- partition by list(collection_version);
 	// `
 	//
-	// _, err = db.Exec(ctx, partitions)
-	// if err != nil {
-	// 	log.Printf("Error creating partitions: %v\n", err)
-	// }
 
 	// language=postgresql
 	testData := `
 	insert into search_index(feature_id, collection_id, collection_version, display_name, suggest, geometry_type, bbox)
 	values
-	  ('408f5e13', 'adres', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
-	  ('408f5e13', 'adres', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
-	  ('408f5e13', 'adres', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
-	  ('408f5e13', 'adres', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
-	  ('1e99b620', 'weg'  , 2, 'Daendelsweg, 7315AJ Apeldoorn'   , 'Daendelsweg 4A, 7315AJ Apeldoorn', 'LINESTRING', 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
-	  ('1e99b620', 'weg'  , 2, 'Daendelsweg, 7315AJ Apeldoorn'   , 'Daendelsweg 4A, 7315AJ Apeldoorn', 'LINESTRING', 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))');
+	  ('408f5e13', 'addresses', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
+	  ('408f5e13', 'addresses', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
+	  ('408f5e13', 'addresses', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
+	  ('408f5e13', 'addresses', 1, 'Daendelsweg 4A, 7315AJ Apeldoorn', 'Daendelsweg 4A, 7315AJ Apeldoorn', 'POINT'     , 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
+	  ('1e99b620', 'roads'  , 2, 'Daendelsweg, 7315AJ Apeldoorn'   , 'Daendelsweg 4A, 7315AJ Apeldoorn', 'LINESTRING', 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))'),
+	  ('1e99b620', 'roads'  , 2, 'Daendelsweg, 7315AJ Apeldoorn'   , 'Daendelsweg 4A, 7315AJ Apeldoorn', 'LINESTRING', 'POLYGON((-180 -90, -180 90, 180 90, 180 -90, -180 -90))');
     `
 
 	_, err = db.Exec(ctx, testData)

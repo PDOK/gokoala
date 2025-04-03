@@ -32,7 +32,14 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, error) {
+func (p *Postgres) Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error) {
+
+	partition := `create table if not exists search_index_` + collectionID + ` partition of search_index for values in ('` + collectionID + `');`
+	_, err := p.db.Exec(p.ctx, partition)
+	if err != nil {
+		fmt.Errorf("Error creating partition: %s Error: %v\n", collectionID, err)
+	}
+
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
 		pgx.Identifier{index},
@@ -85,6 +92,12 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	// This adds the 'unaccent' extension to allow searching with/without diacritics. Must happen in separate transaction.
+	addUnaccent := `create extension if not exists unaccent;`
+	_, err = p.db.Exec(p.ctx, addUnaccent)
+	if err != nil {
+		return fmt.Errorf("error creating unaccent extension: %w", err)
+	}
+
 	alterTextSearchConfig := `
 		do $$ begin
 			alter text search configuration custom_dict
@@ -112,7 +125,8 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		geometry            geometry(point, %[2]d)   null,
 	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored,
 		primary key (id, collection_id, collection_version)
-	) -- partition by list(collection_id);`, index, srid) // TODO partitioning comes later
+	) partition by list(collection_id);`, index, srid)
+
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
 	if err != nil {
 		return fmt.Errorf("error creating search index table: %w", err)
