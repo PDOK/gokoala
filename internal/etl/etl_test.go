@@ -190,7 +190,7 @@ func insertTestData(ctx context.Context, conn string) error {
 
 	var partitions = [3]string{"addresses", "roads"}
 
-	for i, _ := range partitions {
+	for i := range partitions {
 		partition := `create table if not exists search_index_` + partitions[i] + ` partition of search_index for values in ('` + partitions[i] + `');`
 		_, err = db.Exec(ctx, partition)
 		if err != nil {
@@ -198,14 +198,6 @@ func insertTestData(ctx context.Context, conn string) error {
 		}
 	}
 
-	//-- partition by list(collection_version);`
-	// create table search_index_weg partition of search_index
-	// 	for values in ('weg');
-	// 	-- partition by list(collection_version);
-	// `
-	//
-
-	// language=postgresql
 	testData := `
 	insert into search_index(feature_id, collection_id, collection_version, display_name, suggest, geometry_type, bbox)
 	values

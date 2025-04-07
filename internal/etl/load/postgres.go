@@ -37,7 +37,7 @@ func (p *Postgres) Load(collectionID string, records []t.SearchIndexRecord, inde
 	partition := `create table if not exists search_index_` + collectionID + ` partition of search_index for values in ('` + collectionID + `');`
 	_, err := p.db.Exec(p.ctx, partition)
 	if err != nil {
-		fmt.Errorf("Error creating partition: %s Error: %v\n", collectionID, err)
+		return -1, fmt.Errorf("error creating partition: %s Error: %v", collectionID, err)
 	}
 
 	loaded, err := p.db.CopyFrom(
@@ -59,6 +59,20 @@ func (p *Postgres) Optimize() error {
 	_, err := p.db.Exec(p.ctx, `vacuum analyze;`)
 	if err != nil {
 		return fmt.Errorf("error performing vacuum analyze: %w", err)
+	}
+	return nil
+}
+
+func (p *Postgres) CreateExtensions() error {
+
+	var extensions = [2]string{"postgis", "unaccent"}
+
+	for i := range extensions {
+		addExtension := `create extension if not exists ` + extensions[i] + `;`
+		_, err := p.db.Exec(p.ctx, addExtension)
+		if err != nil {
+			return fmt.Errorf("error creating "+extensions[i]+" extension: %w", err)
+		}
 	}
 	return nil
 }
@@ -91,13 +105,13 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		return fmt.Errorf("error creating text search configuration: %w", err)
 	}
 
-	// This adds the 'unaccent' extension to allow searching with/without diacritics. Must happen in separate transaction.
-	addUnaccent := `create extension if not exists unaccent;`
-	_, err = p.db.Exec(p.ctx, addUnaccent)
+	//Create extensions
+	err = p.CreateExtensions()
 	if err != nil {
-		return fmt.Errorf("error creating unaccent extension: %w", err)
+		return err
 	}
 
+	// This adds the 'unaccent' extension to allow searching with/without diacritics. Must happen in separate transaction.
 	alterTextSearchConfig := `
 		do $$ begin
 			alter text search configuration custom_dict
