@@ -21,6 +21,10 @@ func NewPostgres(dbConn string) (*Postgres, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
+	err = createExtensions(ctx, db)
+	if err != nil {
+		return nil, err
+	}
 	// add support for Go <-> PostGIS conversions
 	if err := pgxgeom.Register(ctx, db); err != nil {
 		return nil, err
@@ -32,7 +36,14 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(p.ctx)
 }
 
-func (p *Postgres) Load(records []t.SearchIndexRecord, index string) (int64, error) {
+func (p *Postgres) Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error) {
+	partition := `create table if not exists search_index_` + collectionID +
+		` partition of search_index for values in ('` + collectionID + `');`
+	_, err := p.db.Exec(p.ctx, partition)
+	if err != nil {
+		return -1, fmt.Errorf("error creating partition: %s Error: %w", collectionID, err)
+	}
+
 	loaded, err := p.db.CopyFrom(
 		p.ctx,
 		pgx.Identifier{index},
@@ -61,7 +72,6 @@ func (p *Postgres) Optimize() error {
 // Since not all DDL in Postgres support the "if not exists" syntax we use a bit
 // of pl/pgsql to make it idempotent.
 func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
-
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
@@ -112,7 +122,8 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		geometry            geometry(point, %[2]d)   null,
 	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored,
 		primary key (id, collection_id, collection_version)
-	) -- partition by list(collection_id);`, index, srid) // TODO partitioning comes later
+	) partition by list(collection_id);`, index, srid)
+
 	_, err = p.db.Exec(p.ctx, searchIndexTable)
 	if err != nil {
 		return fmt.Errorf("error creating search index table: %w", err)
@@ -153,4 +164,14 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	return err
+}
+
+func createExtensions(ctx context.Context, db *pgx.Conn) error {
+	for _, ext := range []string{"postgis", "unaccent"} {
+		_, err := db.Exec(ctx, `create extension if not exists `+ext+`;`)
+		if err != nil {
+			return fmt.Errorf("error creating %s extension: %w", ext, err)
+		}
+	}
+	return nil
 }
