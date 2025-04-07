@@ -63,7 +63,7 @@ func (p *Postgres) Optimize() error {
 	return nil
 }
 
-func (p *Postgres) CreateExtensions() error {
+func (p *Postgres) createExtensions() error {
 
 	var extensions = [2]string{"postgis", "unaccent"}
 
@@ -71,7 +71,7 @@ func (p *Postgres) CreateExtensions() error {
 		addExtension := `create extension if not exists ` + extensions[i] + `;`
 		_, err := p.db.Exec(p.ctx, addExtension)
 		if err != nil {
-			return fmt.Errorf("error creating "+extensions[i]+" extension: %w", err)
+			return fmt.Errorf("error creating %s extension: %w", extensions[i], err)
 		}
 	}
 	return nil
@@ -83,13 +83,18 @@ func (p *Postgres) CreateExtensions() error {
 // of pl/pgsql to make it idempotent.
 func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 
+	err := p.createExtensions()
+	if err != nil {
+		return err
+	}
+
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
 		exception
 		    when duplicate_object then null;
 		end $$;`
-	_, err := p.db.Exec(p.ctx, geometryType)
+	_, err = p.db.Exec(p.ctx, geometryType)
 	if err != nil {
 		return fmt.Errorf("error creating geometry type: %w", err)
 	}
@@ -103,12 +108,6 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	_, err = p.db.Exec(p.ctx, textSearchConfig)
 	if err != nil {
 		return fmt.Errorf("error creating text search configuration: %w", err)
-	}
-
-	//Create extensions
-	err = p.CreateExtensions()
-	if err != nil {
-		return err
 	}
 
 	// This adds the 'unaccent' extension to allow searching with/without diacritics. Must happen in separate transaction.
