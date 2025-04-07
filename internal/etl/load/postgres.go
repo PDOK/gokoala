@@ -21,6 +21,10 @@ func NewPostgres(dbConn string) (*Postgres, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
+	err = createExtensions(ctx, db)
+	if err != nil {
+		return nil, err
+	}
 	// add support for Go <-> PostGIS conversions
 	if err := pgxgeom.Register(ctx, db); err != nil {
 		return nil, err
@@ -33,11 +37,11 @@ func (p *Postgres) Close() {
 }
 
 func (p *Postgres) Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error) {
-
-	partition := `create table if not exists search_index_` + collectionID + ` partition of search_index for values in ('` + collectionID + `');`
+	partition := `create table if not exists search_index_` + collectionID +
+		` partition of search_index for values in ('` + collectionID + `');`
 	_, err := p.db.Exec(p.ctx, partition)
 	if err != nil {
-		return -1, fmt.Errorf("error creating partition: %s Error: %v", collectionID, err)
+		return -1, fmt.Errorf("error creating partition: %s Error: %w", collectionID, err)
 	}
 
 	loaded, err := p.db.CopyFrom(
@@ -63,38 +67,18 @@ func (p *Postgres) Optimize() error {
 	return nil
 }
 
-func (p *Postgres) createExtensions() error {
-
-	var extensions = [2]string{"postgis", "unaccent"}
-
-	for i := range extensions {
-		addExtension := `create extension if not exists ` + extensions[i] + `;`
-		_, err := p.db.Exec(p.ctx, addExtension)
-		if err != nil {
-			return fmt.Errorf("error creating %s extension: %w", extensions[i], err)
-		}
-	}
-	return nil
-}
-
 // Init initialize search index. Should be idempotent!
 //
 // Since not all DDL in Postgres support the "if not exists" syntax we use a bit
 // of pl/pgsql to make it idempotent.
 func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
-
-	err := p.createExtensions()
-	if err != nil {
-		return err
-	}
-
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
 		exception
 		    when duplicate_object then null;
 		end $$;`
-	_, err = p.db.Exec(p.ctx, geometryType)
+	_, err := p.db.Exec(p.ctx, geometryType)
 	if err != nil {
 		return fmt.Errorf("error creating geometry type: %w", err)
 	}
@@ -180,4 +164,14 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	return err
+}
+
+func createExtensions(ctx context.Context, db *pgx.Conn) error {
+	for _, ext := range []string{"postgis", "unaccent"} {
+		_, err := db.Exec(ctx, `create extension if not exists `+ext+`;`)
+		if err != nil {
+			return fmt.Errorf("error creating %s extension: %w", ext, err)
+		}
+	}
+	return nil
 }
