@@ -284,7 +284,7 @@
 
                     {{ $value := $feat.Properties.Value $key }}
                     {{- if isdate $value -}}
-                    <td>{{ $value | date "2006-01-02 15:04:05" }}</td>
+                    <td>{{ dateInZone "2006-01-02T15:04:05Z" $value "UTC" }}</td>
 
                     {{- else if hasSuffix ".href" $key -}}
                     {{- /* render links for relations between features (OGC API part 5) */ -}}
