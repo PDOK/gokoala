@@ -156,7 +156,9 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				if !isFloat64(columnValue.(float64)) {
 					feature.Properties.Set(columnName, int64(v))
 					// Log this event to track occurance.
-					log.Println("ATTENTION - mapper.go - mapColumnsToFeature - Data type of column " + columnName + " is float64 but value is non floating. Data type converted to int64")
+					log.Println("ATTENTION - Data type of column " + columnName + " is float64 but value is non floating. Data type converted to int64")
+				} else {
+					feature.Properties.Set(columnName, v)
 				}
 			case time.Time:
 				feature.Properties.Set(columnName, v)
