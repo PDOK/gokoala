@@ -24,7 +24,7 @@
   </head>
 
   <body onload="load()">
-    <!--h2>Legend sample</h2>
+   <!--h2>Legend sample</h2>
     <app-legend-view id="legendview1" style-url="assets/dkk_standaardvissualisatie.json"> </app-legend-view-->
 
     <!--app-legend-view id="legendview1" style-url="http://127.0.0.1:4200/styles/brk/dkk_kwaliteitsvissualisatie_nederlandsRDNewQuad.json">
@@ -35,6 +35,7 @@
     <a id="search-url" href="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod"
       >https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod</a
     >
+    <app-status-box id="status-box"></app-status-box>
 
     <h3>Search</h3>
     <div class="area">
@@ -59,28 +60,33 @@
       locationsearch.addEventListener('activeFeatureHovered', e => {
         console.log('activeFeatureHovered')
         console.log(JSON.stringify(e.detail))
-        const feature = e.detail
-        objectinfooutside.feature = feature
-        console.log('href hovered ' + feature.getProperties().href)
-
-        featureview.setAttribute('items-url', feature.getProperties().href)
+        const featureHovered = e.detail
+        objectinfooutside.feature = featureHovered
+        console.log('href hovered ' + featureHovered.getProperties().href)
+        featureview.setAttribute('items-url', featureHovered.getProperties().href)
+        featureview.drawFeature = undefined
         featureview.style.visibility = 'visible'
       })
 
       featureview.style.visibility = 'hidden'
+
       locationsearch.addEventListener('activeFeatureSelected', e => {
         console.log('activeFeatureSelected')
         console.log(JSON.stringify(e.detail))
-        const feature = e.detail
-        objectinfooutside.feature = feature
-        console.log('href selected ' + feature.getProperties().href)
+        const selectedFeature = e.detail
+        objectinfooutside.feature = selectedFeature
+
+        console.log('href selected ' + selectedFeature.getProperties().href)
         featureview.setAttribute('items-url', feature.getProperties().href)
         featureview.style.visibility = 'visible'
+        featureview.drawFeature = selectedFeature
       })
 
       locationsearch.addEventListener('activeSearchUrl', u => {
         console.log(JSON.stringify(u.detail))
-        document.getElementById('search-url').innerHTML = u.detail
+        document.getElementById('search-url').innerHTML = u.detail.url
+        document.getElementById('search-status').innerHTML = u.detail.status
+        document.getElementById('search-errors').innerHTML = u.detail.error
         document.getElementById('search-url').href = u.detail + '&f=json'
         // history.replaceState(null, '', u.detail)
       })
