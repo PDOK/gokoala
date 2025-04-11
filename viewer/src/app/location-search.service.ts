@@ -1,11 +1,3 @@
-import { Injectable } from '@angular/core'
-import { NGXLogger } from 'ngx-logger'
-import { GeoJSON } from 'ol/format'
-import { map as rxjsmap, Observable } from 'rxjs'
-import { DataUrl, featureCollectionGeoJSON } from './feature.service'
-import { Feature } from 'ol'
-import { Geometry } from 'ol/geom' */
-
 export interface Search {
   type: string
   timeStamp: Date
@@ -43,4 +35,3 @@ export interface SearchProperties {
   href: string
   score: number
 }
-
