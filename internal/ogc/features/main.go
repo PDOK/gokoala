@@ -11,6 +11,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/google/uuid"
+	"github.com/twpayne/go-geom"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -19,7 +20,6 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgis"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-spatial/geom"
 )
 
 const (
@@ -214,7 +214,7 @@ func (f *Features) Feature() http.HandlerFunc {
 }
 
 func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
-	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Extent, time.Time, map[string]string, error) {
+	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Bounds, time.Time, map[string]string, error) {
 
 	url := featureCollectionURL{
 		*f.engine.Config.BaseURL.URL,
@@ -369,7 +369,7 @@ func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig
 	return datasource
 }
 
-func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Extent) bool {
+func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {
 	return bbox == nil ||
 		int(input) == int(output) ||
 		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||

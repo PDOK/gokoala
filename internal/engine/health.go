@@ -8,19 +8,23 @@ import (
 )
 
 func newHealthEndpoint(e *Engine) {
-	if tilesConfig := e.Config.OgcAPI.Tiles; tilesConfig != nil { //nolint:nestif
-		client := &http.Client{Timeout: time.Duration(500) * time.Millisecond}
-		var target *url.URL
+	var target *url.URL
+	if tilesConfig := e.Config.OgcAPI.Tiles; tilesConfig != nil {
 		var err error
-		if tilesConfig.DatasetTiles != nil {
+		switch {
+		case tilesConfig.DatasetTiles != nil:
 			target, err = url.Parse(tilesConfig.DatasetTiles.TileServer.String() + *tilesConfig.DatasetTiles.HealthCheck.TilePath)
-		} else if tilesConfig.Collections != nil {
+		case len(tilesConfig.Collections) > 0 && tilesConfig.Collections[0].Tiles != nil:
 			target, err = url.Parse(tilesConfig.Collections[0].Tiles.GeoDataTiles.TileServer.String() + *tilesConfig.Collections[0].Tiles.GeoDataTiles.HealthCheck.TilePath)
+		default:
+			log.Println("cannot determine health check tilepath, falling back to basic check")
 		}
 		if err != nil {
 			log.Fatalf("invalid health check tilepath: %v", err)
 		}
-
+	}
+	if target != nil {
+		client := &http.Client{Timeout: time.Duration(500) * time.Millisecond}
 		e.Router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 			resp, err := client.Head(target.String())
 			if err != nil {

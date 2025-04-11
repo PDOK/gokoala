@@ -3,8 +3,11 @@ package tiles
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
@@ -12,6 +15,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	g "github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/go-chi/chi/v5"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -23,6 +27,7 @@ const (
 	defaultTilesTmpl        = "{tms}/{z}/{x}/{y}." + engine.FormatMVTAlternative
 	collectionsCrumb        = "collections/"
 	tilesCrumbTitle         = "Tiles"
+	tmsLimitsDir            = "internal/ogc/tiles/tileMatrixSetLimits/"
 )
 
 var (
@@ -58,11 +63,23 @@ type templateData struct {
 }
 
 type Tiles struct {
-	engine *engine.Engine
+	engine              *engine.Engine
+	tileMatrixSetLimits map[string]map[int]TileMatrixSetLimits
+}
+
+type TileMatrixSetLimits struct {
+	MinCol int `yaml:"minCol" json:"minCol"`
+	MaxCol int `yaml:"maxCol" json:"maxCol"`
+	MinRow int `yaml:"minRow" json:"minRow"`
+	MaxRow int `yaml:"maxRow" json:"maxRow"`
 }
 
 func NewTiles(e *engine.Engine) *Tiles {
 	tiles := &Tiles{engine: e}
+
+	// TileMatrixSetLimits
+	supportedProjections := e.Config.OgcAPI.Tiles.GetProjections()
+	tiles.tileMatrixSetLimits = readTileMatrixSetLimits(supportedProjections)
 
 	// TileMatrixSets
 	renderTileMatrixTemplates(e)
@@ -163,6 +180,23 @@ func (t *Tiles) Tile(tilesConfig config.Tiles) http.HandlerFunc {
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
 			return
 		}
+		tm, tr, tc, err := parseTileParams(tileMatrix, tileRow, tileCol)
+		if err != nil {
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, strings.ReplaceAll(err.Error(), "strconv.Atoi: ", ""))
+			return
+		}
+
+		if _, ok := t.tileMatrixSetLimits[tileMatrixSetID]; !ok {
+			// unknown tileMatrixSet
+			err = fmt.Errorf("unknown tileMatrixSet '%s'", tileMatrixSetID)
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+			return
+		}
+		err = checkTileMatrixSetLimits(t.tileMatrixSetLimits, tileMatrixSetID, tm, tr, tc)
+		if err != nil {
+			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
+			return
+		}
 
 		target, err := createTilesURL(tileMatrixSetID, tileMatrix, tileCol, tileRow, tilesConfig)
 		if err != nil {
@@ -184,6 +218,23 @@ func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tile
 		tileCol, err := getTileColumn(r, t.engine.CN.NegotiateFormat(r))
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+			return
+		}
+		tm, tr, tc, err := parseTileParams(tileMatrix, tileRow, tileCol)
+		if err != nil {
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, strings.ReplaceAll(err.Error(), "strconv.Atoi: ", ""))
+			return
+		}
+
+		if _, ok := t.tileMatrixSetLimits[tileMatrixSetID]; !ok {
+			// unknown tileMatrixSet
+			err = fmt.Errorf("unknown tileMatrixSet '%s'", tileMatrixSetID)
+			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+			return
+		}
+		err = checkTileMatrixSetLimits(t.tileMatrixSetLimits, tileMatrixSetID, tm, tr, tc)
+		if err != nil {
+			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
 			return
 		}
 
@@ -300,6 +351,13 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 				},
 			}...)
 			path = g.CollectionsPath + "/" + collectionID + tilesPath + "/" + projection
+		} else {
+			projectionBreadcrumbs = append(projectionBreadcrumbs, []engine.Breadcrumb{
+				{
+					Name: projection,
+					Path: tilesLocalPath + projection,
+				},
+			}...)
 		}
 		e.RenderTemplatesWithParams(path,
 			data,
@@ -318,4 +376,46 @@ func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollecti
 		return *metadata.Title
 	}
 	return collectionID
+}
+
+func readTileMatrixSetLimits(supportedProjections []config.SupportedSrs) map[string]map[int]TileMatrixSetLimits {
+	tileMatrixSetLimits := make(map[string]map[int]TileMatrixSetLimits)
+	for _, supportedSrs := range supportedProjections {
+		tileMatrixSetID := config.AllTileProjections[supportedSrs.Srs]
+		yamlFile, err := os.ReadFile(tmsLimitsDir + tileMatrixSetID + ".yaml")
+		if err != nil {
+			log.Fatalf("unable to read file %s", tileMatrixSetID+".yaml")
+		}
+		tmsLimits := make(map[int]TileMatrixSetLimits)
+		err = yaml.Unmarshal(yamlFile, &tmsLimits)
+		if err != nil {
+			log.Fatalf("cannot unmarshal yaml: %v", err)
+		}
+		// keep only the zoomlevels supported
+		for tm := range tmsLimits {
+			if tm < supportedSrs.ZoomLevelRange.Start || tm > supportedSrs.ZoomLevelRange.End {
+				delete(tmsLimits, tm)
+			}
+		}
+		tileMatrixSetLimits[tileMatrixSetID] = tmsLimits
+	}
+	return tileMatrixSetLimits
+}
+
+func parseTileParams(tileMatrix, tileRow, tileCol string) (int, int, int, error) {
+	tm, tmErr := strconv.Atoi(tileMatrix)
+	tr, trErr := strconv.Atoi(tileRow)
+	tc, tcErr := strconv.Atoi(tileCol)
+	return tm, tr, tc, errors.Join(tmErr, trErr, tcErr)
+}
+
+func checkTileMatrixSetLimits(tileMatrixSetLimits map[string]map[int]TileMatrixSetLimits, tileMatrixSetID string, tileMatrix, tileRow, tileCol int) error {
+	if limits, ok := tileMatrixSetLimits[tileMatrixSetID][tileMatrix]; !ok {
+		// tileMatrix out of supported range
+		return fmt.Errorf("tileMatrix %d is out of range", tileMatrix)
+	} else if tileRow < limits.MinRow || tileRow > limits.MaxRow || tileCol < limits.MinCol || tileCol > limits.MaxCol {
+		// tileRow and/or tileCol out of supported range
+		return fmt.Errorf("tileRow/tileCol %d/%d is out of range", tileRow, tileCol)
+	}
+	return nil
 }

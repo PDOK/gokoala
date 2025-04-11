@@ -1,11 +1,13 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
 	"sort"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"gopkg.in/yaml.v3"
 )
 
 // +kubebuilder:object:generate=true
@@ -19,13 +21,32 @@ type OgcAPITiles struct {
 	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty"`
 }
 
+type OgcAPITilesJSON struct {
+	*Tiles      `json:",inline"`
+	Collections GeoSpatialCollections `json:"collections,omitempty"`
+}
+
+// MarshalJSON custom because inlining only works on embedded structs.
+// Value instead of pointer receiver because only that way it can be used for both.
+func (o OgcAPITiles) MarshalJSON() ([]byte, error) {
+	return json.Marshal(OgcAPITilesJSON{
+		Tiles:       o.DatasetTiles,
+		Collections: o.Collections,
+	})
+}
+
+// UnmarshalJSON parses a string to OgcAPITiles
+func (o *OgcAPITiles) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, o)
+}
+
 func (o *OgcAPITiles) Defaults() {
 	if o.DatasetTiles != nil && o.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
 		o.DatasetTiles.HealthCheck.TilePath == nil {
 		o.DatasetTiles.deriveHealthCheckTilePath()
 	} else if o.Collections != nil {
 		for _, coll := range o.Collections {
-			if coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
+			if coll.Tiles != nil && coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
 				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
 			}
 		}
@@ -37,6 +58,23 @@ type CollectionEntryTiles struct {
 
 	// Tiles specific to this collection. Called 'geodata tiles' in OGC spec.
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
+}
+
+type CollectionEntryTilesJSON struct {
+	Tiles `json:",inline"`
+}
+
+// MarshalJSON custom because inlining only works on embedded structs.
+// Value instead of pointer receiver because only that way it can be used for both.
+func (c CollectionEntryTiles) MarshalJSON() ([]byte, error) {
+	return json.Marshal(CollectionEntryTilesJSON{
+		Tiles: c.GeoDataTiles,
+	})
+}
+
+// UnmarshalJSON parses a string to CollectionEntryTiles
+func (c *CollectionEntryTiles) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, c)
 }
 
 // +kubebuilder:validation:Enum=raster;vector
@@ -196,4 +234,26 @@ type HealthCheck struct {
 	// Path to specific tile used for healthcheck
 	// +optional
 	TilePath *string `yaml:"tilePath,omitempty" json:"tilePath,omitempty" validate:"required_unless=Srs EPSG:28992"`
+}
+
+func validateTileProjections(tiles *OgcAPITiles) error {
+	var errMessages []string
+	if tiles.DatasetTiles != nil {
+		for _, srs := range tiles.DatasetTiles.SupportedSrs {
+			if _, ok := AllTileProjections[srs.Srs]; !ok {
+				errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
+			}
+		}
+	}
+	for _, collection := range tiles.Collections {
+		for _, srs := range collection.Tiles.GeoDataTiles.SupportedSrs {
+			if _, ok := AllTileProjections[srs.Srs]; !ok {
+				errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
+			}
+		}
+	}
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+	return nil
 }

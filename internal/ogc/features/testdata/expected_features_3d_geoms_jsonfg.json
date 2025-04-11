@@ -1,0 +1,75 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "coordRefSys": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/foo/items?f=jsonfg&limit=5"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/foo/items?f=json&limit=5"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/foo/items?f=html&limit=5"
+    }
+  ],
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+  ],
+  "features": [
+    {
+      "id": "1",
+      "type": "Feature",
+      "time": null,
+      "place": null,
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "properties": {}
+    },
+    {
+      "id": "2",
+      "type": "Feature",
+      "time": null,
+      "place": null,
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            2,
+            2,
+            2
+          ],
+          [
+            3,
+            3,
+            3
+          ]
+        ]
+      },
+      "properties": {}
+    }
+  ],
+  "numberReturned": 2
+}

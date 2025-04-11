@@ -68,6 +68,14 @@ func TestNewConfig(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "fail on invalid config with unsupported tile projection",
+			args: args{
+				configFile: "internal/engine/testdata/config_invalid_tiles_projection.yaml",
+			},
+			wantErr:    true,
+			wantErrMsg: "validation failed for srs 'EPSG:99999'; srs is not supported",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
