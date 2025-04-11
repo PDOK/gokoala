@@ -3,12 +3,17 @@ import { LoggerModule } from 'ngx-logger'
 import { LegendViewComponent } from './../src/app/legend-view/legend-view.component'
 
 import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared'
-import { initialCurrentHttp } from '../src/app/app.module'
+import { environment } from '../src/environments/environment'
 
 function loadlegend(fixture: string) {
   cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: fixture }).as('geo')
   cy.mount(LegendViewComponent, {
-    imports: [HttpClientModule, LoggerModule.forRoot({})],
+    imports: [
+      HttpClientModule,
+      LoggerModule.forRoot({
+        level: environment.loglevel,
+      }),
+    ],
     componentProperties: {
       styleUrl: 'https://visualisation.example.com/teststyle/',
     },
@@ -30,7 +35,12 @@ describe('Legend-view-test', () => {
     injectAxe()
 
     cy.mount(LegendViewComponent, {
-      imports: [HttpClientModule, LoggerModule.forRoot({})],
+      imports: [
+        HttpClientModule,
+        LoggerModule.forRoot({
+          level: environment.loglevel,
+        }),
+      ],
       componentProperties: {
         styleUrl: 'https://visualisation.example.com/teststyle/',
       },
