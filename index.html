@@ -24,8 +24,8 @@
   <style>:root{--ol-background-color:white;--ol-accent-background-color:#F5F5F5;--ol-subtle-background-color:rgba(128, 128, 128, .25);--ol-partial-background-color:rgba(255, 255, 255, .75);--ol-foreground-color:#333333;--ol-subtle-foreground-color:#666666;--ol-brand-color:#00AAFF}</style><link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.css"></noscript></head>
 
   <body onload="load()">
-    <!--h2>Legend sample</h2>
-    <app-legend-view id="legendview1" style-url="assets/dkk_standaardvissualisatie.json"> </app-legend-view-->
+    <h2>Legend sample</h2>
+    <app-legend-view id="legendview1" style-url="assets/brt_achtergrondkaart_standaard_nederlandsRDNewQuad.json"> </app-legend-view>
 
     <!--app-legend-view id="legendview1" style-url="http://127.0.0.1:4200/styles/brk/dkk_kwaliteitsvissualisatie_nederlandsRDNewQuad.json">
     </app-legend-view-->
@@ -33,6 +33,7 @@
     <h2>Location API sample to test <a href="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod">location api (preprod)</a></h2>
     Used search url:
     <a id="search-url" href="https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod">https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod</a>
+    <app-status-box id="status-box"></app-status-box>
 
     <h3>Search</h3>
     <div class="area">
@@ -65,19 +66,21 @@
 
       locationsearch.addEventListener('activeFeatureSelected', e => {
         console.log('activeFeatureSelected')
-        //console.log(JSON.stringify(e.detail))
+        console.log(JSON.stringify(e.detail))
         const selectedFeature = e.detail
         objectinfooutside.feature = selectedFeature
 
         console.log('href selected ' + selectedFeature.getProperties().href)
-        //featureview.setAttribute('items-url', feature.getProperties().href)
+        featureview.setAttribute('items-url', feature.getProperties().href)
         featureview.style.visibility = 'visible'
         featureview.drawFeature = selectedFeature
       })
 
       locationsearch.addEventListener('activeSearchUrl', u => {
         console.log(JSON.stringify(u.detail))
-        document.getElementById('search-url').innerHTML = u.detail
+        document.getElementById('search-url').innerHTML = u.detail.url
+        document.getElementById('search-status').innerHTML = u.detail.status
+        document.getElementById('search-errors').innerHTML = u.detail.error
         document.getElementById('search-url').href = u.detail + '&f=json'
         // history.replaceState(null, '', u.detail)
       })

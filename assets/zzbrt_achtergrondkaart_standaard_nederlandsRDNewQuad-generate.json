@@ -1,0 +1,610 @@
+{
+  "version": 8,
+  "metadata": {
+    "ol:webfonts": "http://localhost:4200/assets/fonts/{font-family}/{fontweight}{-fontstyle}.css",
+    "gokoala:title-items": "id"
+  },
+  "name": "",
+  "id": "",
+  "pitch": 0,
+  "center": [],
+  "sprite": "https://api.pdok.nl/brt/top10nl/ogc/v1/resources/standaardsprites/sprite@1",
+  "glyphs": "https://api.pdok.nl/brt/top10nl/ogc/v1/resources/fonts/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "%scale% nederland",
+      "type": "fill",
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "18080 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FFFFFF"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "18081 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#80BDE3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "16290 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#A4A4A4"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "15250 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FDF6BB"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "15240 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#DDA1C1"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "15020 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#C3DBB5"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "11070 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#DBC77A"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "11010 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#E3DCE7"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "15021 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#C3DBB5"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "15242 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#DDA1C1"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "15252 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FDF6BB"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "16000 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#80BDE3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "16110 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#80BDE3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "16310 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#80BDE3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "14008 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-pattern": "tunnel_Dove_Gray"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "14268_14308 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-pattern": "tunnel_Dove_Gray"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12000-12100 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#F9E11E"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "00008 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#E1E1E1",
+        "fill-outline-color": "#CCCCCC"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "13900 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FFFFFF",
+        "fill-outline-color": "#D1C1BE"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "13530 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FFFFFF",
+        "fill-outline-color": "#D1C1BE"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12750 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FCEF84",
+        "fill-outline-color": "#D1C1BE"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "16020 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#80BDE3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "18089 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#B2B2B2"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12001 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FCEF84"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12000 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#F9E11E"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12007 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#F9E11E"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12100 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FCEF84"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12107 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FCEF84"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12009 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#F9E11E"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12109 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FCEF84"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12757 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FCEF84"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12008 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#E1E1E1"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12758 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#E1E1E1"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12088 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#E1E1E1"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12108 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#E1E1E1"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12080 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FFFFFF"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12087 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FFFFFF"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "12759 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FCEF84"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "13538 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#E1E1E1"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "13537 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#FFFFFF"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "13640 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#D1C1BE"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "14000 nederland",
+      "type": "fill",
+      "paint": {
+        "line-dasharray": [10, 10],
+        "line-color": "#828282",
+        "line-width": 12
+      },
+      "layout": {
+        "line-join": "miter"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "14260 nederland",
+      "type": "fill",
+      "paint": {
+        "line-dasharray": [40, 10],
+        "line-color": "#FFFFFF",
+        "line-width": 8
+      },
+      "layout": {
+        "line-join": "miter"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "18190 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#A4A4A4"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "17160 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#828282"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "16520 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#B2B2B2"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "14810 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#828282"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "14410 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#000000"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterlabellijn_2 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#000000"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterlabellijn_3 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterlabellijn_4 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterlabellijn_5 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterlabellijn_6 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterlabellijn_7 nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_2_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_3_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_4_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_5_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_6_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_7_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_8_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "waterdeelvlak_9_14_label nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#004de3"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    },
+    {
+      "id": "nederland",
+      "type": "fill",
+      "paint": {
+        "fill-color": "#000000"
+      },
+      "source": "brt",
+      "source-layer": "nederland"
+    }
+  ],
+  "sources": {
+    "brt": {
+      "type": "vector",
+      "tiles": ["https://localhost/brt/{z}/{x}/{y}?f=mvt"],
+      "minzoom": 0,
+      "maxzoom": 14
+    }
+  }
+}
