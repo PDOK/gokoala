@@ -1,18 +1,14 @@
 import { HttpClientModule } from '@angular/common/http'
 import { LoggerModule } from 'ngx-logger'
 import { LegendViewComponent } from './../src/app/legend-view/legend-view.component'
-import { environment } from './../src/environments/environment'
+
 import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared'
+import { initialCurrentHttp } from '../src/app/app.module'
 
 function loadlegend(fixture: string) {
   cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: fixture }).as('geo')
   cy.mount(LegendViewComponent, {
-    imports: [
-      HttpClientModule,
-      LoggerModule.forRoot({
-        level: environment.loglevel,
-      }),
-    ],
+    imports: [HttpClientModule, LoggerModule.forRoot({})],
     componentProperties: {
       styleUrl: 'https://visualisation.example.com/teststyle/',
     },
@@ -34,12 +30,7 @@ describe('Legend-view-test', () => {
     injectAxe()
 
     cy.mount(LegendViewComponent, {
-      imports: [
-        HttpClientModule,
-        LoggerModule.forRoot({
-          level: environment.loglevel,
-        }),
-      ],
+      imports: [HttpClientModule, LoggerModule.forRoot({})],
       componentProperties: {
         styleUrl: 'https://visualisation.example.com/teststyle/',
       },

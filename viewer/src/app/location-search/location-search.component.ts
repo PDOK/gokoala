@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core'
 
 import { CommonModule } from '@angular/common'
 
@@ -7,29 +7,31 @@ import { FeaturesService } from '../api/services'
 
 import { defaultMapping, ProjectionMapping } from '../feature.service'
 
-import { BackgroundMap, FeatureViewComponent } from '../feature-view/feature-view.component'
+import { BackgroundMap } from '../feature-view/feature-view.component'
 import { SafeHtmlPipe } from '../safe-html.pipe'
 import { SearchOptionsComponent } from './search-options/search-options.component'
 
 import { FeatureLike } from 'ol/Feature'
 import { GeoJSON } from 'ol/format'
-import { Observable } from 'rxjs'
 import { Search$Json$Params } from '../api/fn/features/search-json'
 import { FeatureCollectionJsonfg, FeatureJsonfg } from '../api/models'
 
-import { environment } from 'src/environments/environment'
+import { HttpHeaders } from '@angular/common/http'
+
+import { currentHttp, CurrentHttp } from '../app.module'
+import { Observable } from 'rxjs'
 
 @Component({
   selector: 'app-location-search',
-  imports: [CommonModule, SafeHtmlPipe, FeatureViewComponent, SearchOptionsComponent],
+  imports: [CommonModule, SafeHtmlPipe, SearchOptionsComponent],
   templateUrl: './location-search.component.html',
   styleUrl: './location-search.component.css',
 })
-export class LocationSearchComponent implements OnInit, AfterViewChecked {
+export class LocationSearchComponent implements OnInit {
   selectedResultUrl: string | undefined = undefined
   @Output() activeFeatureHovered = new EventEmitter<FeatureLike>()
   @Output() activeFeatureSelected = new EventEmitter<FeatureLike>()
-  @Output() activeSearchUrl = new EventEmitter<string>()
+  @Output() activeSearchUrl = new EventEmitter<CurrentHttp>()
   @Output() activeSearchText = new EventEmitter<string>()
   @Input() url: string | undefined = undefined
   @Input() label: string = 'Search location'
@@ -52,7 +54,7 @@ export class LocationSearchComponent implements OnInit, AfterViewChecked {
 
   projection: ProjectionMapping = defaultMapping
   results: Observable<FeatureCollectionJsonfg> | undefined = undefined
-  activeSearchUrlEmited: string = ''
+  activeSearchUrlEmited: CurrentHttp = { url: '', headers: new HttpHeaders() }
 
   constructor(
     private logger: NGXLogger,
@@ -61,6 +63,7 @@ export class LocationSearchComponent implements OnInit, AfterViewChecked {
   ) {}
   ngOnInit(): void {
     this.logger.debug('LocationSearchComponent initialized with URL:', this.url)
+    this.activeSearchUrl.emit(currentHttp)
   }
 
   updateSearchField(event: KeyboardEvent) {
@@ -73,11 +76,11 @@ export class LocationSearchComponent implements OnInit, AfterViewChecked {
     this.lookup()
   }
 
-  ngAfterViewChecked() {
-    if (environment.currenturl.includes('search')) {
-      if (this.activeSearchUrlEmited !== environment.currenturl) {
-        this.activeSearchUrlEmited = environment.currenturl
-        this.activeSearchUrl.emit(environment.currenturl)
+  private emitCurrentUrl() {
+    if (currentHttp.url.includes('search')) {
+      if (this.activeSearchUrlEmited !== currentHttp) {
+        this.activeSearchUrlEmited = currentHttp
+        this.activeSearchUrl.emit(currentHttp)
       }
     }
   }
@@ -142,6 +145,7 @@ export class LocationSearchComponent implements OnInit, AfterViewChecked {
   }
 
   getResults(f: FeatureCollectionJsonfg | null): FeatureJsonfg[] {
+    this.emitCurrentUrl()
     if (f) {
       return f?.features
     } else {

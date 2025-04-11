@@ -1,11 +1,10 @@
-import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
 import { GeoJSON } from 'ol/format'
 import { map as rxjsmap, Observable } from 'rxjs'
 import { DataUrl, featureCollectionGeoJSON } from './feature.service'
 import { Feature } from 'ol'
-import { Geometry } from 'ol/geom'
+import { Geometry } from 'ol/geom' */
 
 export interface Search {
   type: string
@@ -45,24 +44,3 @@ export interface SearchProperties {
   score: number
 }
 
-@Injectable({
-  providedIn: 'root',
-})
-export class LocationSearchService {
-  constructor(
-    private logger: NGXLogger,
-    private http: HttpClient
-  ) {}
-
-  getResults(url: DataUrl): Observable<Feature<Geometry>[]> {
-    this.logger.log(JSON.stringify(url))
-    return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
-      rxjsmap(data => {
-        return new GeoJSON().readFeatures(data, {
-          dataProjection: url.dataMapping.dataProjection,
-          featureProjection: url.dataMapping.visualProjection,
-        })
-      })
-    )
-  }
-}
