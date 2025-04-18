@@ -1,7 +1,6 @@
 package styles
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"slices"
@@ -144,7 +143,7 @@ func (s *Styles) Legend() http.HandlerFunc {
 			}
 		}
 		if legend == "" {
-			engine.RenderProblem(engine.ProblemNotFound, w, fmt.Sprintf("no legend available for style %s", styleID))
+			engine.RenderProblem(engine.ProblemNotFound, w, "no legend available for style "+styleID)
 			return
 		}
 
