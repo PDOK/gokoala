@@ -21,8 +21,16 @@
         ,{
             "rel": "preview",
             "type": "image/png",
-            "title": "Preview of {{ $style }}",
+            "title": "Thumbnail of {{ $style }}",
             "href": "{{ $baseUrl }}/resources/{{ .Params.Metadata.Thumbnail }}"
+        }
+        {{ end }}
+        {{ if .Params.Metadata.Legend }}
+        ,{
+          "rel": "http://www.opengis.net/def/rel/ogc/1.0/legend",
+          "type": "image/png",
+          "title": "Style Legend of {{ $style }}",
+          "href": "{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}/legend"
         }
         {{ end }}
   ],

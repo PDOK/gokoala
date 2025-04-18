@@ -10,6 +10,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var DefaultSrs = "EPSG:28992"
+
 // +kubebuilder:object:generate=true
 type OgcAPITiles struct {
 	// Tiles for the entire dataset, these are hosted at the root of the API (/tiles endpoint).

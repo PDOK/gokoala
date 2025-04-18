@@ -62,26 +62,44 @@
                 </td>
             </tr>
         {{ end }}
-        </tbody>
-    </table>
-    <ul>
         {{ $style := .Params.Metadata.ID }}
         {{ $projection := .Params.Projection }}
         {{ range $sh_index, $styleFormat := .Params.Metadata.Formats }}
             {{ if eq $styleFormat.Format "mapbox" }}
-                <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=mapbox" aria-label="{{ i18n "To" }} Mapbox Style">Mapbox Style</a> (<a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=html" aria-label="{{ i18n "To" }} style {{ i18n "Legend" }}">{{ i18n "Legend" }}</a>)</li>
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        Styling
+                    </td>
+                    <td>
+                        <a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=mapbox" aria-label="{{ i18n "To" }} Mapbox Style">{{ i18n "View" }} Mapbox Style</a>
+                    </td>
+                </tr>
             {{ else if eq $styleFormat.Format "sld10" }}
-                <li><a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" aria-label="OpenGIS Styled Layer Descriptor 1.0 Style">SLD 1.0 Style</a></li>
+                <tr>
+                    <td class="w-25 text-nowrap fw-bold">
+                        Styling
+                    </td>
+                    <td>
+                        <a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" aria-label="OpenGIS Styled Layer Descriptor 1.0 Style">{{ i18n "View" }} SLD 1.0 Style</a>
+                    </td>
+                </tr>
             {{ end }}
             {{/* Add support for more style formats here */}}
         {{ end }}
-    </ul>
+        </tbody>
+    </table>
+    {{ if and .Params.Metadata.Legend .Config.Resources }}
+        <h2>{{ i18n "Legend" }}</h2>
+        <img src="resources/{{ .Params.Metadata.Legend }}" class="img-fluid" alt="{{ .Params.Metadata.Legend }} {{ i18n "Legend" }}"/>
+    {{ end }}
     </div>
+
 {{ if and .Params.Metadata.Thumbnail .Config.Resources }}
     <div class="col-md-4">
         <img src="resources/{{ .Params.Metadata.Thumbnail }}" class="img-fluid" alt="{{ .Params.Metadata.Title }} Thumbnail"/>
     </div>
 {{ end }}
+
 </div>
 {{end}}
 {{end}}

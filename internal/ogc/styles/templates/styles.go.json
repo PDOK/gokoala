@@ -33,6 +33,14 @@
           "title": "Style Metadata for {{ $style.ID }}",
           "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}/metadata"
         }
+        {{ if $style.Legend }}
+        ,{
+          "rel": "http://www.opengis.net/def/rel/ogc/1.0/legend",
+          "type": "image/png",
+          "title": "Style Legend for {{ $style.ID }}",
+          "href": "{{ $baseUrl }}/styles/{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}/legend"
+        }
+        {{ end }}
         {{ if $style.Formats }},{{ end }}
         {{ range $sh_index, $stylesheet := $style.Formats }}
         {{ if $sh_index }},{{ end }}

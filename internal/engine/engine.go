@@ -153,6 +153,12 @@ func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
 }
 
+// GetResourceHandler returns the underlying HTTP handler used by the /resources endpoint to serve resources/assets
+// Useful to 'rewrite' urls to resources/assets.
+func (e *Engine) GetResourceHandler() http.Handler {
+	return resourcesHandler
+}
+
 // RebuildOpenAPI rebuild the full OpenAPI spec with the newly given parameters.
 // Use only once during bootstrap for specific use cases! For example: when you want to expand a
 // specific part of the OpenAPI spec with data outside the configuration file (e.g. from a database).
@@ -345,11 +351,11 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 	reverseProxy.ServeHTTP(w, r)
 }
 
-func removeBody(proxyRes *http.Response) {
+func removeBody(r *http.Response) {
 	buf := bytes.NewBuffer(make([]byte, 0))
-	proxyRes.Body = io.NopCloser(buf)
-	proxyRes.Header[HeaderContentLength] = []string{"0"}
-	proxyRes.Header[HeaderContentType] = []string{}
+	r.Body = io.NopCloser(buf)
+	r.Header[HeaderContentLength] = []string{"0"}
+	r.Header[HeaderContentType] = []string{}
 }
 
 func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) error {

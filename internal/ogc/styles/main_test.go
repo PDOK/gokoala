@@ -232,7 +232,7 @@ func TestStyles_StyleMetadata(t *testing.T) {
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
 			assert.NoError(t, err)
 			styles := NewStyles(newEngine)
-			handler := styles.StyleMetadata()
+			handler := styles.Metadata()
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)

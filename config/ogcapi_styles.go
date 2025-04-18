@@ -44,6 +44,11 @@ type Style struct {
 	// +optional
 	Thumbnail *string `yaml:"thumbnail,omitempty" json:"thumbnail,omitempty"`
 
+	// Reference to a PNG image to offer as legend to end users.
+	// The full path is constructed by appending Resources + Legend.
+	// +optional
+	Legend *string `yaml:"legend,omitempty" json:"legend,omitempty" validate:"omitempty,endswith=.png"`
+
 	// This style is offered in the following formats
 	Formats []StyleFormat `yaml:"formats" json:"formats" validate:"required,dive"`
 }

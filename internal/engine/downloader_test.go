@@ -66,7 +66,7 @@ func TestDownload(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			outputFile, err := os.CreateTemp("", "gpkg")
+			outputFile, err := os.CreateTemp(t.TempDir(), "gpkg")
 			assert.NoError(t, err)
 			defer os.Remove(outputFile.Name())
 
