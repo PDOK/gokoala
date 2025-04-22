@@ -2,7 +2,6 @@ package datasources
 
 import (
 	"bytes"
-	"context"
 	"log"
 	"os"
 	"testing"
@@ -50,7 +49,7 @@ func TestSQLLog_CheckLogMessageWhenExplicitEnabled(t *testing.T) {
 
 	s := &SQLLog{LogSQL: true, SlowQueryTime: 10 * time.Hour}
 
-	ctx, err := s.Before(context.Background(), "SELECT * FROM test WHERE id = ?", 123)
+	ctx, err := s.Before(t.Context(), "SELECT * FROM test WHERE id = ?", 123)
 	assert.NoError(t, err)
 
 	_, err = s.After(ctx, "SELECT * FROM test WHERE id = ?", 123)
@@ -66,7 +65,7 @@ func TestSQLLog_CheckLogInCaseOfSlowQuery(t *testing.T) {
 
 	s := &SQLLog{LogSQL: false, SlowQueryTime: 1 * time.Nanosecond}
 
-	ctx, err := s.Before(context.Background(), "SELECT * FROM test WHERE id = ?", 123)
+	ctx, err := s.Before(t.Context(), "SELECT * FROM test WHERE id = ?", 123)
 	assert.NoError(t, err)
 
 	_, err = s.After(ctx, "SELECT * FROM test WHERE id = ?", 123)

@@ -1,7 +1,6 @@
 package geopackage
 
 import (
-	"context"
 	"sync"
 	"testing"
 
@@ -31,7 +30,7 @@ func TestPreparedStatementCache(t *testing.T) {
 			db, err := sqlx.Connect("sqlite3", ":memory:")
 			assert.NoError(t, err)
 
-			stmt, err := c.Lookup(context.Background(), db, tt.query)
+			stmt, err := c.Lookup(t.Context(), db, tt.query)
 			assert.NoError(t, err)
 			assert.NotNil(t, stmt)
 
@@ -53,11 +52,11 @@ func TestPreparedStatementCache(t *testing.T) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				stmt1, err := c.Lookup(context.Background(), db, "SELECT * FROM main.sqlite_master WHERE name = :n")
+				stmt1, err := c.Lookup(t.Context(), db, "SELECT * FROM main.sqlite_master WHERE name = :n")
 				assert.NoError(t, err)
 				assert.NotNil(t, stmt1)
 
-				stmt2, err := c.Lookup(context.Background(), db, "SELECT * FROM main.sqlite_master WHERE type = :t")
+				stmt2, err := c.Lookup(t.Context(), db, "SELECT * FROM main.sqlite_master WHERE type = :t")
 				assert.NoError(t, err)
 				assert.NotNil(t, stmt2)
 			}()
