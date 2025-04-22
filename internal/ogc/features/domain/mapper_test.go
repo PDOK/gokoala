@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"time"
@@ -112,7 +111,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			prevNextID, err := mapColumnsToFeature(context.Background(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, tt.mapGeom, nil)
+			prevNextID, err := mapColumnsToFeature(t.Context(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, tt.mapGeom, nil)
 
 			if tt.expectedError != nil {
 				assert.Nil(t, prevNextID)

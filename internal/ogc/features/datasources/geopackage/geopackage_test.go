@@ -105,7 +105,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
@@ -145,7 +145,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{
@@ -195,7 +195,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
@@ -240,7 +240,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "vakantiehuizen", // not in gpkg
 				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
@@ -260,7 +260,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
@@ -294,7 +294,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "ligplaatsen",
 				queryParams: datasources.FeaturesCriteria{
 					Cursor: domain.DecodedCursor{FID: 6436, FiltersChecksum: []byte{}},
@@ -381,7 +381,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "ligplaatsen",
 				featureID:  3837,
 			},
@@ -404,7 +404,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "ligplaatsen",
 				featureID:  999991111111111111,
 			},
@@ -420,7 +420,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
-				ctx:        context.Background(),
+				ctx:        t.Context(),
 				collection: "vakantieparken", // not in gpkg
 				featureID:  3837,
 			},
