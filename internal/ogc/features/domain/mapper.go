@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
