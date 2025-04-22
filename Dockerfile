@@ -8,7 +8,7 @@ RUN npm config set registry http://registry.npmjs.org && \
     npm run build
 
 ####### Go build
-FROM docker.io/golang:1.23-bookworm AS build-env
+FROM docker.io/golang:1.24-bookworm AS build-env
 WORKDIR /go/src/service
 COPY . /go/src/service
 
