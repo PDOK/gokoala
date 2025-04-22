@@ -103,6 +103,35 @@
           {{block "problems" . }}{{end}}
         }
       }
+    },
+    "/styles/{styleId}/legend": {
+      "get": {
+        "tags": [
+          "Styles"
+        ],
+        "summary": "fetch the legend of the style",
+        "description": "Fetches the legend for a style as a PNG image (when available). The legend describes the symbols, colors and texts used in the style.",
+        "operationId": "getStyleLegend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/styleId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The legend for the style.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
     }
   },
   "components": {
