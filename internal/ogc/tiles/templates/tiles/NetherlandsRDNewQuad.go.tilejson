@@ -29,7 +29,7 @@
       "tile_size": [256, 256],
       {{/*  "extent": [0, 0, 0, 0],*/}}
       {{/*  "pixel_size": [0, 0],*/}}
-      "scale_denominator": 1.2288e7,
+      "scale_denominator": 12288000.0,
       "origin": [
         -285401.92,
         903401.92
