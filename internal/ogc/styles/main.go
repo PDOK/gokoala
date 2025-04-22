@@ -137,7 +137,7 @@ func (s *Styles) Legend() http.HandlerFunc {
 		// search matching legend when configured
 		var legend string
 		for _, supportedStyle := range s.engine.Config.OgcAPI.Styles.SupportedStyles {
-			if supportedStyle.ID == styleID {
+			if supportedStyle.ID == styleID && supportedStyle.Legend != nil {
 				legend = *supportedStyle.Legend
 				break
 			}

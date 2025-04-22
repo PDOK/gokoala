@@ -168,7 +168,7 @@ func TestStyles_Style(t *testing.T) {
 	}
 }
 
-func TestStyles_StyleMetadata(t *testing.T) {
+func TestStyles_Metadata(t *testing.T) {
 	type fields struct {
 		configFile string
 		url        string
@@ -233,6 +233,68 @@ func TestStyles_StyleMetadata(t *testing.T) {
 			assert.NoError(t, err)
 			styles := NewStyles(newEngine)
 			handler := styles.Metadata()
+			handler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want.statusCode, rr.Code)
+			for _, c := range tt.want.bodyContains {
+				assert.Contains(t, rr.Body.String(), c)
+			}
+		})
+	}
+}
+
+func TestStyles_Legend(t *testing.T) {
+	type fields struct {
+		configFile string
+		url        string
+		style      string
+	}
+	type want struct {
+		bodyContains []string
+		statusCode   int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "with legend",
+			fields: fields{
+				configFile: "internal/ogc/styles/testdata/config_legend.yaml",
+				url:        "http://localhost:8080/styles/default__netherlandsrdnewquad/legend",
+				style:      "default__netherlandsrdnewquad",
+			},
+			want: want{
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "without legend",
+			fields: fields{
+				configFile: "internal/ogc/styles/testdata/config_legend.yaml",
+				url:        "http://localhost:8080/styles/alternative__webmercatorquad/legend",
+				style:      "alternative__webmercatorquad",
+			},
+			want: want{
+				statusCode:   http.StatusNotFound,
+				bodyContains: []string{"no legend available for style alternative"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := createStyleRequest(tt.fields.url, tt.fields.style)
+			if err != nil {
+				log.Fatal(err)
+			}
+			rr, ts := createMockServer()
+			defer ts.Close()
+
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			assert.NoError(t, err)
+			styles := NewStyles(newEngine)
+			handler := styles.Legend()
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
