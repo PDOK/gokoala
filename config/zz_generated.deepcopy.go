@@ -953,6 +953,11 @@ func (in *Style) DeepCopyInto(out *Style) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Legend != nil {
+		in, out := &in.Legend, &out.Legend
+		*out = new(string)
+		**out = **in
+	}
 	if in.Formats != nil {
 		in, out := &in.Formats, &out.Formats
 		*out = make([]StyleFormat, len(*in))

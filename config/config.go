@@ -14,7 +14,6 @@ import (
 
 const (
 	CookieMaxAge = 60 * 60 * 24
-	DefaultSrs   = "EPSG:28992"
 )
 
 // NewConfig read YAML config file, required to start GoKoala
