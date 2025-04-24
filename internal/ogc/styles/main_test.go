@@ -278,7 +278,7 @@ func TestStyles_Legend(t *testing.T) {
 			},
 			want: want{
 				statusCode:   http.StatusNotFound,
-				bodyContains: []string{"no legend available for style alternative"},
+				bodyContains: []string{"no legend configured for style alternative"},
 			},
 		},
 	}
