@@ -31,20 +31,20 @@ func assertIndexesExist(
 				if coll.Metadata != nil && coll.Metadata.TemporalProperties != nil {
 					temporalBtreeColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
 					spatialBtreeColumns = strings.Join([]string{defaultSpatialBtreeColumns, coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
-					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns, true); err != nil {
+					if err := assertIndexExists(table.TableName, db, temporalBtreeColumns, true, false); err != nil {
 						return err
 					}
 				}
 
 				// assert spatial b-tree index exists, this index substitutes the r-tree when querying large bounding boxes
 				// if temporal columns are configured, they must be included in this index as well
-				if err := assertIndexExists(table.TableName, db, spatialBtreeColumns, true); err != nil {
+				if err := assertIndexExists(table.TableName, db, spatialBtreeColumns, true, false); err != nil {
 					return err
 				}
 
 				// assert the column for each property filter is indexed.
 				for _, propertyFilter := range coll.Features.Filters.Properties {
-					if err := assertIndexExists(table.TableName, db, propertyFilter.Name, false); err != nil && *propertyFilter.IndexRequired {
+					if err := assertIndexExists(table.TableName, db, propertyFilter.Name, false, true); err != nil && *propertyFilter.IndexRequired {
 						return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
 					}
 				}
@@ -55,7 +55,7 @@ func assertIndexesExist(
 	return nil
 }
 
-func assertIndexExists(tableName string, db *sqlx.DB, columns string, prefixMatch bool) error {
+func assertIndexExists(tableName string, db *sqlx.DB, columns string, prefixMatch bool, containsMatch bool) error {
 	query := fmt.Sprintf(`
 select group_concat(info.name) as indexed_columns
 from pragma_index_list('%s') as list,
@@ -74,6 +74,8 @@ group by list.name`, tableName)
 			exists = true // index on expected columns
 		} else if prefixMatch && strings.HasPrefix(indexedColumns, columns) {
 			exists = true // index with expected prefix columns
+		} else if containsMatch && strings.Contains(indexedColumns, columns) {
+			exists = true // multi-column index on expected columns
 		}
 	}
 	defer rows.Close()
