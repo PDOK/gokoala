@@ -153,12 +153,6 @@ func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
 }
 
-// GetResourceHandler returns the underlying HTTP handler used by the /resources endpoint to serve resources/assets
-// Useful to 'rewrite' urls to resources/assets.
-func (e *Engine) GetResourceHandler() http.Handler {
-	return resourcesHandler
-}
-
 // RebuildOpenAPI rebuild the full OpenAPI spec with the newly given parameters.
 // Use only once during bootstrap for specific use cases! For example: when you want to expand a
 // specific part of the OpenAPI spec with data outside the configuration file (e.g. from a database).

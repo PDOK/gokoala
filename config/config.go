@@ -77,7 +77,7 @@ type Config struct {
 	// Reference to a PNG image to use a thumbnail on the landing page.
 	// The full path is constructed by appending Resources + Thumbnail.
 	// +optional
-	Thumbnail *string `yaml:"thumbnail,omitempty" json:"thumbnail,omitempty"`
+	Thumbnail *string `yaml:"thumbnail,omitempty" json:"thumbnail,omitempty" validate:"omitempty"`
 
 	// Keywords to make this API beter discoverable
 	// +optional
@@ -276,12 +276,39 @@ func validateLocalPaths(config *Config) error {
 	// Could use a deep dive and reflection.
 	// But the settings with a path are not recursive and relatively limited in numbers.
 	// GeoPackageCloudCache.Path is not verified. It will be created anyway in cloud_sqlite_vfs.createCacheDir during startup time.
-	if config.Resources != nil && config.Resources.Directory != nil && *config.Resources.Directory != "" &&
-		!isExistingLocalDir(*config.Resources.Directory) {
-		return errors.New("Config.Resources.Directory should be an existing directory: " + *config.Resources.Directory)
+	if config.Resources != nil {
+		if config.Resources.Directory != nil && *config.Resources.Directory != "" &&
+			!isExistingLocalDir(*config.Resources.Directory) {
+			return errors.New("resources.directory should be an existing directory: " + *config.Resources.Directory)
+		}
+	} else if err := validateConfiguredResources(config); err != nil {
+		return err
 	}
 	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.StylesDir) {
-		return errors.New("Config.OgcAPI.Styles.StylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
+		return errors.New("stylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
+	}
+	return nil
+}
+
+// make sure resources dir/url is configured when config contains references to files like thumbnails or legends.
+func validateConfiguredResources(config *Config) error {
+	if config.Thumbnail != nil {
+		return errors.New("thumbnail cannot be used when 'resources' isn't specified")
+	}
+	for _, coll := range config.AllCollections() {
+		if coll.Metadata != nil && coll.Metadata.Thumbnail != nil {
+			return fmt.Errorf("thumbnail for collection %s cannot be used when 'resources' isn't specified", coll.ID)
+		}
+	}
+	if config.OgcAPI.Styles != nil {
+		for _, style := range config.OgcAPI.Styles.SupportedStyles {
+			if style.Thumbnail != nil {
+				return fmt.Errorf("thumbnail for style %s option cannot be used when 'resources' isn't specified", style.ID)
+			}
+			if style.Legend != nil {
+				return fmt.Errorf("legend for style %s option cannot be used when 'resources' isn't specified", style.ID)
+			}
+		}
 	}
 	return nil
 }

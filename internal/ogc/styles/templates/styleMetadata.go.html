@@ -90,7 +90,7 @@
     </table>
     {{ if and .Params.Metadata.Legend .Config.Resources }}
         <h2>{{ i18n "Legend" }}</h2>
-        <img src="resources/{{ .Params.Metadata.Legend }}" class="img-fluid" alt="{{ .Params.Metadata.Legend }} {{ i18n "Legend" }}"/>
+        <img src="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}/legend" class="img-fluid" alt="{{ .Params.Metadata.Legend }} {{ i18n "Legend" }}"/>
     {{ end }}
     </div>
 

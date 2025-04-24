@@ -3,6 +3,7 @@ package styles
 import (
 	"log"
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 
@@ -50,7 +51,8 @@ type stylesMetadataTemplateData struct {
 }
 
 type Styles struct {
-	engine *engine.Engine
+	engine                *engine.Engine
+	localResourcesHandler http.Handler
 }
 
 func NewStyles(e *engine.Engine) *Styles {
@@ -82,6 +84,13 @@ func NewStyles(e *engine.Engine) *Styles {
 	e.Router.Get(stylesPath+"/{style}", styles.Style())
 	e.Router.Get(stylesPath+"/{style}/metadata", styles.Metadata())
 	e.Router.Get(stylesPath+"/{style}/legend", styles.Legend())
+
+	if res := e.Config.Resources; e.Config.Resources != nil {
+		if res != nil && res.Directory != nil && *res.Directory != "" {
+			resourcesPath := *res.Directory
+			styles.localResourcesHandler = http.FileServer(http.Dir(resourcesPath))
+		}
+	}
 	return styles
 }
 
@@ -132,7 +141,7 @@ func (s *Styles) Metadata() http.HandlerFunc {
 
 func (s *Styles) Legend() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		style, styleID := parseStyleParam(r)
+		_, styleID := parseStyleParam(r)
 
 		// search matching legend when configured
 		var legend string
@@ -142,17 +151,26 @@ func (s *Styles) Legend() http.HandlerFunc {
 				break
 			}
 		}
+		if s.engine.Config.Resources == nil {
+			engine.RenderProblem(engine.ProblemNotFound, w, "no legends configured")
+			return
+		}
 		if legend == "" {
-			engine.RenderProblem(engine.ProblemNotFound, w, "no legend available for style "+styleID)
+			engine.RenderProblem(engine.ProblemNotFound, w, "no legend configured for style "+styleID)
 			return
 		}
 
-		oldPath := stylesPath + "/" + style + "/legend"
-		newPath := "/resources/" + legend
-		r.URL.Path = strings.Replace(r.URL.Path, oldPath, newPath, 1)
-
 		// rewrite legend url to configured legend resource (png file).
-		s.engine.GetResourceHandler().ServeHTTP(w, r)
+		switch {
+		case s.localResourcesHandler != nil:
+			s.localResourcesHandler.ServeHTTP(w, r)
+		case s.engine.Config.Resources.URL != nil:
+			legendURL, _ := url.JoinPath(s.engine.Config.Resources.URL.String(), legend)
+			target, _ := url.ParseRequestURI(legendURL)
+			s.engine.ReverseProxy(w, r, target, false, "")
+		default:
+			engine.RenderProblem(engine.ProblemServerError, w, "legend not properly configured")
+		}
 	}
 }
 

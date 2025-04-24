@@ -8,14 +8,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-var resourcesHandler http.Handler
-
 // Resources endpoint to serve static assets, either from local storage or through reverse proxy
 func newResourcesEndpoint(e *Engine) {
 	res := e.Config.Resources
 	if res == nil {
 		return
 	}
+	var resourcesHandler http.Handler
 	if res.Directory != nil && *res.Directory != "" {
 		resourcesPath := *res.Directory
 		resourcesHandler = http.StripPrefix("/resources", http.FileServer(http.Dir(resourcesPath)))
@@ -36,6 +35,6 @@ func proxy(reverseProxy revProxy, resourcesURL string) http.HandlerFunc {
 			RenderProblem(ProblemServerError, w)
 			return
 		}
-		reverseProxy(w, r, target, true, "")
+		reverseProxy(w, r, target, false, "")
 	}
 }
