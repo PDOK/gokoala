@@ -163,6 +163,7 @@ func (s *Styles) Legend() http.HandlerFunc {
 		// rewrite legend url to configured legend resource (png file).
 		switch {
 		case s.localResourcesHandler != nil:
+			r.URL.Path = legend
 			s.localResourcesHandler.ServeHTTP(w, r)
 		case s.engine.Config.Resources.URL != nil:
 			legendURL, _ := url.JoinPath(s.engine.Config.Resources.URL.String(), legend)
