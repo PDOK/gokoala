@@ -173,6 +173,9 @@
         "required": [
           "id",
           "links"
+          {{- if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections -}}
+          ,"crs"
+          {{- end -}}
         ],
         "properties": {
           "id": {
@@ -253,20 +256,6 @@
           {{- end -}}
         }
       },
-      "collection-link": {
-        "type": "object",
-        "required": [
-          "links"
-        ],
-        "properties": {
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/link"
-            }
-          }
-        }
-      },
       "collections": {
         "type": "object",
         "required": [
@@ -311,14 +300,7 @@
           "collections": {
             "type": "array",
             "items": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/collection"
-                },
-                {
-                  "$ref": "#/components/schemas/collection-link"
-                }
-              ]
+              "$ref": "#/components/schemas/collection"
             }
           }
         }
