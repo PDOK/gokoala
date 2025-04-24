@@ -70,12 +70,13 @@ group by list.name`, tableName)
 	for rows.Next() {
 		var indexedColumns string
 		_ = rows.Scan(&indexedColumns)
-		if columns == indexedColumns {
-			exists = true // index on expected columns
-		} else if prefixMatch && strings.HasPrefix(indexedColumns, columns) {
-			exists = true // index with expected prefix columns
-		} else if containsMatch && strings.Contains(indexedColumns, columns) {
-			exists = true // multi-column index on expected columns
+		switch {
+		case columns == indexedColumns:
+			exists = true
+		case prefixMatch && strings.HasPrefix(indexedColumns, columns):
+			exists = true
+		case containsMatch && strings.Contains(indexedColumns, columns):
+			exists = true
 		}
 	}
 	defer rows.Close()
