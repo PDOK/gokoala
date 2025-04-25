@@ -84,6 +84,10 @@ func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, e
 	return result, prevNextID, ctx.Err()
 }
 
+func isFloat64(f float64) bool {
+	return f != float64(int64(f))
+}
+
 //nolint:cyclop,funlen
 func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any,
 	fidColumn string, externalFidColumn string, geomColumn string, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
@@ -146,7 +150,13 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			case int64:
 				feature.Properties.Set(columnName, v)
 			case float64:
-				feature.Properties.Set(columnName, v)
+				// Check to determine whether or not the content of the columnvalue is truly a floating point value.
+				// (Because of non strict tables in SQLite)
+				if !isFloat64(columnValue.(float64)) {
+					feature.Properties.Set(columnName, int64(v))
+				} else {
+					feature.Properties.Set(columnName, v)
+				}
 			case time.Time:
 				feature.Properties.Set(columnName, v)
 			case string:

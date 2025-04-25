@@ -16,7 +16,7 @@ Max: max
 ViewInThe: Bekijk in het
 SubjectToChange: naam/definitie kan in toekomst mogelijk wijzigen
 LinkToExternalWebsite: link naar externe website
-Description: Omschrijving
+DescriptionLabel: Omschrijving
 None: Geen
 Example: Voorbeeld
 "On": op
@@ -94,6 +94,7 @@ LayerName: Laagnaam
 Format: Formaat
 Version: Versie
 Legend: legenda
+MapboxStyleText: Onderstaande legenda is automatisch gegenereerd op basis van de Mapbox style. De daadwerkelijke Mapbox style is beschikbaar via bovenstaande JSON link.
 
 # Collections/Collection page
 ViewCollectionAs: Bekijk collectie als

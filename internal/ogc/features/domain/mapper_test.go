@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"time"
@@ -100,11 +99,19 @@ func TestMapColumnsToFeature(t *testing.T) {
 			values:        []any{"str", []complex128{complex(1, 2)}},
 			expectedError: errors.New("unexpected type for sqlite column data: unexpected_col: []complex128"),
 		},
+		{
+			name:             "Test conversion of float64 with non floating point value to int64",
+			feature:          &Feature{Properties: NewFeatureProperties(false)},
+			columns:          []string{"float_col"},
+			values:           []any{float64(376422001)},
+			expectedFeature:  &Feature{Properties: NewFeaturePropertiesWithData(false, map[string]any{"float_col": int64(376422001)})},
+			expectedPrevNext: &PrevNextFID{},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			prevNextID, err := mapColumnsToFeature(context.Background(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, tt.mapGeom, nil)
+			prevNextID, err := mapColumnsToFeature(t.Context(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, tt.mapGeom, nil)
 
 			if tt.expectedError != nil {
 				assert.Nil(t, prevNextID)

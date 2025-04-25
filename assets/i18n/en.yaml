@@ -16,7 +16,7 @@ Max: max
 ViewInThe: View in the
 SubjectToChange: name/definition may change in future
 LinkToExternalWebsite: link to external website
-Description: Description
+DescriptionLabel: Description
 None: None
 Example: Example
 "On": "on"
@@ -95,6 +95,7 @@ LayerName: Layer name
 Format: Format
 Version: Version
 Legend: legend
+MapboxStyleText: The following legend has been automatically generated based on the Mapbox style. The actual Mapbox style is available via the JSON link above.
 
 # Collections/Collection page
 ViewCollectionAs: View collection as

@@ -103,7 +103,7 @@ linters:
     - sqlclosecheck  # checks that sql.Rows and sql.Stmt are closed
     - sloglint  # A Go linter that ensures consistent code style when using log/slog
     - tagliatelle  # checks the struct tags.
-    - tenv  # detects using os.Setenv instead of t.Setenv since Go1.17
+    - usetesting  # detects using os.Setenv instead of t.Setenv since Go1.17
     - testableexamples  # checks if examples are testable (have an expected output)
     - tparallel  # detects inappropriate usage of t.Parallel() method in your Go test codes
     - unconvert  # removes unnecessary type conversions

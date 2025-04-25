@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,7 +34,7 @@ func TestContentNegotiation_NegotiateFormat(t *testing.T) {
 }
 
 func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, givenURL string, expectedFormat string) {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, givenURL, nil)
 	req.Header.Set(HeaderAccept, acceptHeader)
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +46,7 @@ func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, given
 }
 
 func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader string, givenURL string, expectedLanguage language.Tag) {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, givenURL, nil)
 	req.Header.Set(HeaderAcceptLanguage, acceptLanguageHeader)
 	if err != nil {
 		t.Fatal(err)
@@ -59,7 +58,7 @@ func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader str
 }
 
 func testLanguageWithCookie(t *testing.T, cn *ContentNegotiation, cookieLanguage string, givenURL string, expectedLanguage language.Tag) {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, givenURL, nil)
 	req.AddCookie(&http.Cookie{
 		Name:     languageParam,
 		Value:    cookieLanguage,

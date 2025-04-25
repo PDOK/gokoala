@@ -26,6 +26,8 @@ license:
   name: CC0 1.0
   url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
 baseUrl: http://localhost:8180
+resources:
+  directory: examples/resources
 ogcApi:
   3dgeovolumes:
     tileServer: https://maps.ecere.com/3DAPI/collections/

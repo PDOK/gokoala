@@ -97,7 +97,7 @@ func TestProxy(t *testing.T) {
 			// given
 			mockReverseProxy := MockReverseProxy{}
 			if tt.expectProxy {
-				mockReverseProxy.On("Proxy", mock.Anything, mock.Anything, mock.Anything, true, "").Return()
+				mockReverseProxy.On("Proxy", mock.Anything, mock.Anything, mock.Anything, false, "").Return()
 			}
 			r := httptest.NewRequest(http.MethodGet, "/resources/"+tt.urlParam, nil)
 			w := httptest.NewRecorder()
@@ -114,9 +114,9 @@ func TestProxy(t *testing.T) {
 				assert.Contains(t, logOutput.String(), tt.expectedLog)
 			}
 			if tt.expectProxy {
-				mockReverseProxy.AssertCalled(t, "Proxy", w, r, mock.Anything, true, "")
+				mockReverseProxy.AssertCalled(t, "Proxy", w, r, mock.Anything, false, "")
 			} else {
-				mockReverseProxy.AssertNotCalled(t, "Proxy", w, r, mock.Anything, true, "")
+				mockReverseProxy.AssertNotCalled(t, "Proxy", w, r, mock.Anything, false, "")
 			}
 		})
 	}

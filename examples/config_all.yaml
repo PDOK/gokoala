@@ -136,5 +136,6 @@ ogcApi:
           - keyword1
           - keyword2
         lastUpdated: "2023-02-24T11:27:00Z"
+        legend: 3d.png # not a real legenda, just an image for demo purposes
         formats:
           - format: "mapbox"

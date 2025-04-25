@@ -3,6 +3,7 @@ package styles
 import (
 	"log"
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 
@@ -50,7 +51,8 @@ type stylesMetadataTemplateData struct {
 }
 
 type Styles struct {
-	engine *engine.Engine
+	engine                *engine.Engine
+	localResourcesHandler http.Handler
 }
 
 func NewStyles(e *engine.Engine) *Styles {
@@ -80,7 +82,15 @@ func NewStyles(e *engine.Engine) *Styles {
 	}
 	e.Router.Get(stylesPath, styles.Styles())
 	e.Router.Get(stylesPath+"/{style}", styles.Style())
-	e.Router.Get(stylesPath+"/{style}/metadata", styles.StyleMetadata())
+	e.Router.Get(stylesPath+"/{style}/metadata", styles.Metadata())
+	e.Router.Get(stylesPath+"/{style}/legend", styles.Legend())
+
+	if res := e.Config.Resources; e.Config.Resources != nil {
+		if res != nil && res.Directory != nil && *res.Directory != "" {
+			resourcesPath := *res.Directory
+			styles.localResourcesHandler = http.FileServer(http.Dir(resourcesPath))
+		}
+	}
 	return styles
 }
 
@@ -94,15 +104,7 @@ func (s *Styles) Styles() http.HandlerFunc {
 
 func (s *Styles) Style() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		style := chi.URLParam(r, "style")
-		styleID := strings.Split(style, projectionDelimiter)[0]
-		// Previously, the API did not utilise separate styles per projection; whereas the current implementation
-		// advertises all possible combinations of available styles and available projections as separate styles.
-		// To ensure that the use of style URLs without projection remains possible for previously published APIs,
-		// URLs without an explicit projection are defaulted to the first configured projection.
-		if style == styleID {
-			style += projectionDelimiter + defaultProjection
-		}
+		style, styleID := parseStyleParam(r)
 		styleFormat := s.engine.CN.NegotiateFormat(r)
 		var key engine.TemplateKey
 		if styleFormat == engine.FormatHTML {
@@ -128,21 +130,63 @@ func (s *Styles) Style() http.HandlerFunc {
 	}
 }
 
-func (s *Styles) StyleMetadata() http.HandlerFunc {
+func (s *Styles) Metadata() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		style := chi.URLParam(r, "style")
-		styleID := strings.Split(style, projectionDelimiter)[0]
-		// Previously, the API did not utilise separate styles per projection; whereas the current implementation
-		// advertises all possible combinations of available styles and available projections as separate styles.
-		// To ensure that the use of style URLs without projection remains possible for previously published APIs,
-		// URLs without an explicit projection are defaulted to the first configured projection.
-		if style == styleID {
-			style += projectionDelimiter + defaultProjection
-		}
+		style, _ := parseStyleParam(r)
 		key := engine.NewTemplateKeyWithNameAndLanguage(
 			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), style, s.engine.CN.NegotiateLanguage(w, r))
 		s.engine.ServePage(w, r, key)
 	}
+}
+
+func (s *Styles) Legend() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, styleID := parseStyleParam(r)
+
+		// search matching legend when configured
+		var legend string
+		for _, supportedStyle := range s.engine.Config.OgcAPI.Styles.SupportedStyles {
+			if supportedStyle.ID == styleID && supportedStyle.Legend != nil {
+				legend = *supportedStyle.Legend
+				break
+			}
+		}
+		if s.engine.Config.Resources == nil {
+			engine.RenderProblem(engine.ProblemNotFound, w, "no legends configured")
+			return
+		}
+		if legend == "" {
+			engine.RenderProblem(engine.ProblemNotFound, w, "no legend configured for style "+styleID)
+			return
+		}
+
+		// rewrite legend url to configured legend resource (png file).
+		switch {
+		case s.localResourcesHandler != nil:
+			r.URL.Path = legend
+			s.localResourcesHandler.ServeHTTP(w, r)
+		case s.engine.Config.Resources.URL != nil:
+			legendURL, _ := url.JoinPath(s.engine.Config.Resources.URL.String(), legend)
+			target, _ := url.ParseRequestURI(legendURL)
+			s.engine.ReverseProxy(w, r, target, false, "")
+		default:
+			engine.RenderProblem(engine.ProblemServerError, w, "legend not properly configured")
+		}
+	}
+}
+
+func parseStyleParam(r *http.Request) (style string, styleID string) {
+	style = chi.URLParam(r, "style")
+	styleID = strings.Split(style, projectionDelimiter)[0]
+
+	// Previously, the API did not utilise separate styles per projection; whereas the current implementation
+	// advertises all possible combinations of available styles and available projections as separate styles.
+	// To ensure that the use of style URLs without projection remains possible for previously published APIs,
+	// URLs without an explicit projection are defaulted to the first configured projection.
+	if style == styleID {
+		style += projectionDelimiter + defaultProjection
+	}
+	return style, styleID
 }
 
 func renderStylesPerProjection(e *engine.Engine, supportedProjections []config.SupportedSrs) {
