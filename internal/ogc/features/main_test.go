@@ -106,13 +106,12 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
-				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				collectionID: "foo",
 				format:       "docx",
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -964,7 +963,7 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{
