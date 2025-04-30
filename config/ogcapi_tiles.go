@@ -44,11 +44,13 @@ func (o *OgcAPITiles) UnmarshalJSON(b []byte) error {
 
 func (o *OgcAPITiles) Defaults() {
 	if o.DatasetTiles != nil && o.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
-		o.DatasetTiles.HealthCheck.TilePath == nil {
+		o.DatasetTiles.HealthCheck.TilePath == nil && *o.DatasetTiles.HealthCheck.Enabled {
 		o.DatasetTiles.deriveHealthCheckTilePath()
 	} else if o.Collections != nil {
 		for _, coll := range o.Collections {
-			if coll.Tiles != nil && coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
+			if coll.Tiles != nil && coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs &&
+				coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil &&
+				*coll.Tiles.GeoDataTiles.HealthCheck.Enabled {
 				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
 			}
 		}
@@ -227,6 +229,9 @@ var HealthCheckDefaultTiles = map[int]TileCoordinates{
 
 // +kubebuilder:object:generate=true
 type HealthCheck struct {
+	// Enable/disable healthcheck on tiles. Defaults to true.
+	Enabled *bool `yaml:"enabled" json:"enabled" default:"true"`
+
 	// Projection (SRS/CRS) used for tile healthcheck
 	// +kubebuilder:default="EPSG:28992"
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
