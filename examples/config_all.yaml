@@ -106,6 +106,10 @@ ogcApi:
         metadata: *addressMetadata
         web:
           urlAsHyperlink: true
+        filters:
+          properties:
+            - name: locator_designator_addressnumberextension
+              indexRequired: false
       - id: addresses2
         tableName: addresses
         metadata:
