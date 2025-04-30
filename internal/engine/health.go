@@ -12,12 +12,13 @@ func newHealthEndpoint(e *Engine) {
 	if tilesConfig := e.Config.OgcAPI.Tiles; tilesConfig != nil {
 		var err error
 		switch {
-		case tilesConfig.DatasetTiles != nil:
+		case tilesConfig.DatasetTiles != nil && *tilesConfig.DatasetTiles.HealthCheck.Enabled:
 			target, err = url.Parse(tilesConfig.DatasetTiles.TileServer.String() + *tilesConfig.DatasetTiles.HealthCheck.TilePath)
-		case len(tilesConfig.Collections) > 0 && tilesConfig.Collections[0].Tiles != nil:
+		case len(tilesConfig.Collections) > 0 && tilesConfig.Collections[0].Tiles != nil &&
+			*tilesConfig.Collections[0].Tiles.GeoDataTiles.HealthCheck.Enabled:
 			target, err = url.Parse(tilesConfig.Collections[0].Tiles.GeoDataTiles.TileServer.String() + *tilesConfig.Collections[0].Tiles.GeoDataTiles.HealthCheck.TilePath)
 		default:
-			log.Println("cannot determine health check tilepath, falling back to basic check")
+			log.Println("cannot determine health check tilepath or tiles health check is disabled, falling back to basic check")
 		}
 		if err != nil {
 			log.Fatalf("invalid health check tilepath: %v", err)
@@ -28,7 +29,7 @@ func newHealthEndpoint(e *Engine) {
 		e.Router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 			resp, err := client.Head(target.String())
 			if err != nil {
-				// exact error is irrelevant for health monitoring, but log it for insight
+				// the exact error is irrelevant for health monitoring, but log it for insight
 				log.Printf("healthcheck failed: %v", err)
 				w.WriteHeader(http.StatusNotFound)
 			} else {

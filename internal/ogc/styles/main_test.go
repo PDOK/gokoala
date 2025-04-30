@@ -68,7 +68,7 @@ func TestNewStyles(t *testing.T) {
 										},
 									},
 								},
-								HealthCheck: config.HealthCheck{Srs: "EPSG:28992", TilePath: &tilePath},
+								HealthCheck: config.HealthCheck{Enabled: ptrTo(true), Srs: "EPSG:28992", TilePath: &tilePath},
 							},
 						},
 						Styles: &config.OgcAPIStyles{
