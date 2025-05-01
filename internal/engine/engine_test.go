@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
@@ -117,11 +118,15 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 	assert.Equal(t, "audio/wav", rec.Header().Get(HeaderContentType))
 }
 
+type mockShutdownHook struct 
 type mockShutdownHook struct {
+	mutex  sync.Mutex
 	called bool
 }
 
 func (m *mockShutdownHook) Shutdown() {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	m.called = true
 }
 
@@ -160,7 +165,10 @@ func TestEngine_Start(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Check that the shutdown hook was called
-			assert.True(t, mockHook.called)
+			mockHook.mutex.Lock()
+			called := mockHook.called
+			mockHook.mutex.Unlock()
+			assert.True(t, called)
 		})
 	}
 }
