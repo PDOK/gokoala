@@ -41,9 +41,9 @@ func TestPostGIS(t *testing.T) {
 		assert.Nil(t, f)
 	})
 
-	t.Run("GetFeatureTableMetadata", func(t *testing.T) {
-		metadata, err := pg.GetFeatureTableMetadata("")
+	t.Run("GetSchema", func(t *testing.T) {
+		metadata, err := pg.GetSchema("")
 		assert.NoError(t, err)
-		assert.Nil(t, metadata)
+		assert.Nil(t, metadata.Fields)
 	})
 }

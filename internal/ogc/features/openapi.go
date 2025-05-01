@@ -39,11 +39,11 @@ func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasour
 		if len(configuredPropertyFilters) == 0 {
 			continue
 		}
-		featTable, err := datasource.GetFeatureTableMetadata(k.collectionID)
+		featTable, err := datasource.GetSchema(k.collectionID)
 		if err != nil {
 			continue
 		}
-		featTableColumns := featTable.ColumnsWithDataType()
+		featTableColumns := featTable.FieldsWithDataType()
 		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTableColumns))
 		for _, fc := range configuredPropertyFilters {
 			match := false

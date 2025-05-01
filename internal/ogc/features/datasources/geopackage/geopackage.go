@@ -67,11 +67,7 @@ type featureTable struct {
 	MaxY               sql.NullFloat64 `db:"max_y"` // bbox
 	SRS                sql.NullInt64   `db:"srs_id"`
 
-	ColumnsWithDateType map[string]string
-}
-
-func (ft featureTable) ColumnsWithDataType() map[string]string {
-	return ft.ColumnsWithDateType
+	Schema domain.Schema
 }
 
 type GeoPackage struct {
@@ -292,12 +288,12 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], queryCtx.Err()
 }
 
-func (g *GeoPackage) GetFeatureTableMetadata(collection string) (datasources.FeatureTableMetadata, error) {
-	val, ok := g.featureTableByCollectionID[collection]
+func (g *GeoPackage) GetSchema(collection string) (domain.Schema, error) {
+	featTable, ok := g.featureTableByCollectionID[collection]
 	if !ok {
-		return nil, fmt.Errorf("no metadata for %s", collection)
+		return domain.Schema{}, fmt.Errorf("no metadata for %s", collection)
 	}
-	return val, nil
+	return featTable.Schema, nil
 }
 
 func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {

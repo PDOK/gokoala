@@ -10,7 +10,7 @@ import (
 )
 
 // FeatureProperties the properties of a GeoJSON Feature. Properties are either unordered
-// (default, and has the best performance!) or ordered in a specific way as described in the config.
+// (default, and have the best performance!) or ordered in a specific way as described in the config.
 type FeatureProperties struct {
 	unordered map[string]any
 	ordered   orderedmap.OrderedMap[string, any]

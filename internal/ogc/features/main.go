@@ -69,12 +69,13 @@ func NewFeatures(e *engine.Engine) *Features {
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
 	return f
 }
 
 // Features serve a FeatureCollection with the given collectionId
 //
-// Beware: this is one of the most performance sensitive pieces of code in the system.
+// Beware: this is one of the most performance-sensitive pieces of code in the system.
 // Try to do as much initialization work outside the hot path, and only do essential
 // operations inside this method.
 func (f *Features) Features() http.HandlerFunc {

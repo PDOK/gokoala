@@ -7,6 +7,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -62,16 +63,15 @@ where
 
 	result := make(map[string]*featureTable, 10)
 	for rows.Next() {
-		row := featureTable{
-			ColumnsWithDateType: make(map[string]string),
-		}
+		row := featureTable{}
 		if err = rows.StructScan(&row); err != nil {
 			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 		}
 		if row.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
-		if err = readFeatureTableInfo(db, row); err != nil {
+		row.Schema, err = readFeatureTableInfo(db, row)
+		if err != nil {
 			return nil, fmt.Errorf("failed to read feature table metadata, error: %w", err)
 		}
 
@@ -113,7 +113,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 		featTable := featTableByCollection[collection.ID]
 
 		for _, pf := range collection.Features.Filters.Properties {
-			// result should contain ALL configured property filters, with or without allowed values.
+			// the result should contain ALL configured property filters, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
 			result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
 			if pf.AllowedValues != nil {
@@ -140,22 +140,28 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readFeatureTableInfo(db *sqlx.DB, table featureTable) error {
-	rows, err := db.Queryx(fmt.Sprintf("select name, type from pragma_table_info('%s')", table.TableName))
+func readFeatureTableInfo(db *sqlx.DB, table featureTable) (domain.Schema, error) {
+	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
-		return err
+		return domain.Schema{}, err
 	}
 	defer rows.Close()
 
+	fields := make(map[string]domain.Field)
 	for rows.Next() {
-		var colName, colType string
-		err = rows.Scan(&colName, &colType)
+		var colName, colType, colNotNull string
+		err = rows.Scan(&colName, &colType, &colNotNull)
 		if err != nil {
-			return err
+			return domain.Schema{}, err
 		}
-		table.ColumnsWithDateType[colName] = colType
+		fields[colName] = domain.Field{
+			Name:            colName,
+			Type:            colType,
+			Required:        colNotNull == "1",
+			PrimaryGeometry: colName == table.GeometryColumnName,
+		}
 	}
-	return nil
+	return domain.Schema{Fields: fields}, nil
 }
 
 func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
