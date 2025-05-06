@@ -64,7 +64,7 @@ func NewCollections(e *engine.Engine) *Collections {
 func (c *Collections) Collections() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := engine.NewTemplateKeyWithLanguage(templatesDir+"collections.go."+c.engine.CN.NegotiateFormat(r), c.engine.CN.NegotiateLanguage(w, r))
-		c.engine.ServePage(w, r, key)
+		c.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -81,6 +81,6 @@ func (c *Collections) Collection() http.HandlerFunc {
 		collectionID := chi.URLParam(r, "collectionId")
 
 		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"collection.go."+c.engine.CN.NegotiateFormat(r), collectionID, c.engine.CN.NegotiateLanguage(w, r))
-		c.engine.ServePage(w, r, key)
+		c.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }

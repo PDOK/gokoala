@@ -7,7 +7,7 @@ func newSitemap(e *Engine) {
 		key := NewTemplateKey(templatesDir + template)
 		e.renderTemplates(path, nil, nil, false, key)
 		e.Router.Get(path, func(w http.ResponseWriter, r *http.Request) {
-			e.serve(w, r, &key, false, false, "", nil)
+			e.Serve(w, r, ServeTemplate(key), ServeValidation(false, false))
 		})
 	}
 }

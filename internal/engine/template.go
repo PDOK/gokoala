@@ -31,6 +31,9 @@ type TemplateKey struct {
 	// Format the file format based on the filename extension, 'html' or 'json'
 	Format string
 
+	// Optional. Use with caution, overwrite the Media-Type associated with the Format of this template.
+	MediaTypeOverwrite string
+
 	// Language of the contents of the template
 	Language language.Tag
 

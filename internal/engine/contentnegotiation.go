@@ -160,8 +160,11 @@ func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http
 	return requestedLanguage
 }
 
-func (cn *ContentNegotiation) formatToMediaType(format string) string {
-	return cn.mediaTypesByFormat[format]
+func (cn *ContentNegotiation) formatToMediaType(key TemplateKey) string {
+	if key.MediaTypeOverwrite != "" {
+		return key.MediaTypeOverwrite
+	}
+	return cn.mediaTypesByFormat[key.Format]
 }
 
 func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string {
@@ -170,7 +173,7 @@ func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string 
 	if queryParams.Get(FormatParam) != "" {
 		requestedFormat = queryParams.Get(FormatParam)
 
-		// remove ?f= parameter, to prepare for rewrite
+		// remove ?f= parameter to prepare for rewrite
 		queryParams.Del(FormatParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}

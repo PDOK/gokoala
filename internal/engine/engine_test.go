@@ -39,7 +39,7 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		engine.ServePage(w, r, templateKey)
+		engine.Serve(w, r, ServeTemplate(templateKey))
 	})
 
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/", nil)
@@ -118,7 +118,6 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 	assert.Equal(t, "audio/wav", rec.Header().Get(HeaderContentType))
 }
 
-type mockShutdownHook struct 
 type mockShutdownHook struct {
 	mutex  sync.Mutex
 	called bool

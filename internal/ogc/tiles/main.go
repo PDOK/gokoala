@@ -125,7 +125,7 @@ func NewTiles(e *engine.Engine) *Tiles {
 func (t *Tiles) TileMatrixSets() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -133,14 +133,14 @@ func (t *Tiles) TileMatrixSet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
 		key := engine.NewTemplateKeyWithLanguage(templatesDir+tileMatrixSetsLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
 func (t *Tiles) TilesetsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -148,7 +148,7 @@ func (t *Tiles) TilesetsListForCollection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -156,7 +156,7 @@ func (t *Tiles) Tileset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
 		key := engine.NewTemplateKeyWithLanguage(templatesDir+tilesLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -165,7 +165,7 @@ func (t *Tiles) TilesetForCollection() http.HandlerFunc {
 		collectionID := chi.URLParam(r, "collectionId")
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
 		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+tilesLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 

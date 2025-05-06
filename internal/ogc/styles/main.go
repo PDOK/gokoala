@@ -98,7 +98,7 @@ func (s *Styles) Styles() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := engine.NewTemplateKeyWithLanguage(
 			templatesDir+"styles.go."+s.engine.CN.NegotiateFormat(r), s.engine.CN.NegotiateLanguage(w, r))
-		s.engine.ServePage(w, r, key)
+		s.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -126,7 +126,7 @@ func (s *Styles) Style() http.HandlerFunc {
 				Language:     s.engine.CN.NegotiateLanguage(w, r),
 			}
 		}
-		s.engine.ServePage(w, r, key)
+		s.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -135,7 +135,7 @@ func (s *Styles) Metadata() http.HandlerFunc {
 		style, _ := parseStyleParam(r)
 		key := engine.NewTemplateKeyWithNameAndLanguage(
 			templatesDir+"styleMetadata.go."+s.engine.CN.NegotiateFormat(r), style, s.engine.CN.NegotiateLanguage(w, r))
-		s.engine.ServePage(w, r, key)
+		s.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 

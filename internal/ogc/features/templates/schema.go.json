@@ -1,0 +1,4 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+    "key": "value"
+}

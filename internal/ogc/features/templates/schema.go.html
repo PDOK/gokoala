@@ -1,0 +1,24 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+    {{ $cfg := .Config }}
+    {{ $baseUrl := $cfg.BaseURL }}
+
+    <hgroup>
+        <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
+    </hgroup>
+
+    <section class="row">
+        <!-- results/features -->
+        <div class="col-md-12">
+            {{ range $feat := .Params.Fields }}
+                <table class="table table-striped">
+                    <tbody>
+                            <tr>
+                                <td>Bla bla</td>
+                            </tr>
+                    </tbody>
+                </table>
+            {{ end }}
+        </div>
+    </section>
+{{end}}
