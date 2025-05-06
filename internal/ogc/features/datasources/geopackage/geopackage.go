@@ -291,7 +291,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 func (g *GeoPackage) GetSchema(collection string) (domain.Schema, error) {
 	featTable, ok := g.featureTableByCollectionID[collection]
 	if !ok {
-		return domain.Schema{}, fmt.Errorf("no metadata for %s", collection)
+		return domain.Schema{}, fmt.Errorf("no metadata in GeoPackage for %s", collection)
 	}
 	return featTable.Schema, nil
 }

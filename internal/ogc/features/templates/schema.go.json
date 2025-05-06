@@ -1,4 +1,18 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {
-    "key": "value"
+  "$id": "https://example.com/address.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Dummy",
+  "type": "object",
+  "properties": {
+    "postOfficeBox": {
+      "type": "string"
+    },
+    "extendedAddress": {
+      "type": "string"
+    },
+    "streetAddress": {
+      "type": "string"
+    }
+  }
 }

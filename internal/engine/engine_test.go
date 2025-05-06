@@ -15,6 +15,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/text/language"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +35,7 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "", false, true)
 	assert.NoError(t, err)
 
-	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json")
+	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json") // Using the backward-compatible API
 	engine.RenderTemplates("/", nil, templateKey)
 
 	recorder := httptest.NewRecorder()
@@ -54,6 +55,45 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	assert.Equal(t, "application/json", recorder.Header().Get(HeaderContentType))
 	assert.Contains(t, recorder.Body.String(), "This is a minimal OGC API, offering only OGC API Common")
+}
+
+func TestTemplateKeyWithOptions(t *testing.T) {
+	// Test creating a TemplateKey with the new functional options pattern
+	path := "internal/ogc/common/core/templates/landing-page.go.json"
+
+	// Create a TemplateKey with no options (default values)
+	key1 := NewTemplateKey(path)
+	assert.Equal(t, "landing-page.go.json", key1.Name)
+	assert.Equal(t, "internal/ogc/common/core/templates", key1.Directory)
+	assert.Equal(t, "json", key1.Format)
+	assert.Equal(t, language.Dutch, key1.Language)
+	assert.Equal(t, "", key1.InstanceName)
+	assert.Equal(t, "", key1.MediaTypeOverwrite)
+
+	// Create a TemplateKey with language option
+	key2 := NewTemplateKey(path, WithLanguage(language.English))
+	assert.Equal(t, "landing-page.go.json", key2.Name)
+	assert.Equal(t, language.English, key2.Language)
+
+	// Create a TemplateKey with instance name option
+	key3 := NewTemplateKey(path, WithInstanceName("test-instance"))
+	assert.Equal(t, "landing-page.go.json", key3.Name)
+	assert.Equal(t, "test-instance", key3.InstanceName)
+
+	// Create a TemplateKey with media type overwrite option
+	key4 := NewTemplateKey(path, WithMediaTypeOverwrite("application/custom+json"))
+	assert.Equal(t, "landing-page.go.json", key4.Name)
+	assert.Equal(t, "application/custom+json", key4.MediaTypeOverwrite)
+
+	// Create a TemplateKey with multiple options
+	key5 := NewTemplateKey(path,
+		WithLanguage(language.English),
+		WithInstanceName("test-instance"),
+		WithMediaTypeOverwrite("application/custom+json"))
+	assert.Equal(t, "landing-page.go.json", key5.Name)
+	assert.Equal(t, language.English, key5.Language)
+	assert.Equal(t, "test-instance", key5.InstanceName)
+	assert.Equal(t, "application/custom+json", key5.MediaTypeOverwrite)
 }
 
 func TestEngine_ReverseProxy(t *testing.T) {

@@ -1,6 +1,7 @@
 package features
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/PDOK/gokoala/config"
@@ -20,7 +21,7 @@ type schemaTemplateData struct {
 	Metadata     *config.GeoSpatialCollectionMetadata
 }
 
-func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource) error {
+func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource) {
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		breadcrumbs := collectionsBreadcrumb
 		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
@@ -38,7 +39,8 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 		datasource := datasources[DatasourceKey{srid: domain.WGS84SRID, collectionID: collection.ID}]
 		schema, err := datasource.GetSchema(collection.ID)
 		if err != nil {
-			return err
+			log.Printf("Failed to render OGC API Features part 5 Schema for collection %s: %v", collection.ID, err)
+			continue
 		}
 
 		schemaTemplateData := schemaTemplateData{
@@ -50,10 +52,14 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 		e.RenderTemplatesWithParams(geospatial.CollectionsPath+"/"+collection.ID+schemasPath,
 			schemaTemplateData,
 			breadcrumbs,
-			engine.NewTemplateKeyWithName(templatesDir+"schema.go.json", collection.ID),
-			engine.NewTemplateKeyWithName(templatesDir+"schema.go.html", collection.ID))
+			engine.NewTemplateKey(templatesDir+"schema.go.json",
+				engine.WithInstanceName(collection.ID),
+				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema),
+			),
+			engine.NewTemplateKey(templatesDir+"schema.go.html",
+				engine.WithInstanceName(collection.ID),
+			))
 	}
-	return nil
 }
 
 // Schema serves a schema that describes the features in the collection, either as HTML
@@ -72,8 +78,19 @@ func (f *Features) Schema() http.HandlerFunc {
 			return
 		}
 
-		key := engine.NewTemplateKeyWithNameAndLanguage(
-			templatesDir+"schema.go."+f.engine.CN.NegotiateFormat(r), collection.ID, f.engine.CN.NegotiateLanguage(w, r))
+		var key engine.TemplateKey
+		switch f.engine.CN.NegotiateFormat(r) {
+		case engine.FormatHTML:
+			key = engine.NewTemplateKey(templatesDir+"schema.go.html",
+				engine.WithInstanceName(collection.ID), f.engine.WithNegotiatedLanguage(w, r))
+		case engine.FormatJSON:
+			key = engine.NewTemplateKey(templatesDir+"schema.go.json",
+				engine.WithInstanceName(collection.ID), f.engine.WithNegotiatedLanguage(w, r),
+				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema))
+		default:
+			engine.RenderProblem(engine.ProblemNotAcceptable, w, "format is not supported")
+			return
+		}
 		f.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }

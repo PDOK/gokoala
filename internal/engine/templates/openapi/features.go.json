@@ -977,23 +977,7 @@
           },
           "properties": {
             "type": "object",
-            "description": "Schema for object properties",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/jsonSchema",
-              "description": "Schema for additional properties if they're allowed"
-            }
-          },
-          "additionalProperties": {
-            "$ref": "#/components/schemas/jsonSchema",
-            "description": "Schema for additional properties if they're allowed"
-          },
-          "patternProperties": {
-            "type": "object",
-            "description": "Schema for properties matching regex patterns",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/jsonSchema",
-              "description": "Schema for additional properties if they're allowed"
-            }
+            "description": "Schema for object properties"
           }
         }
       }

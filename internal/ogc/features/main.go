@@ -57,9 +57,7 @@ func NewFeatures(e *engine.Engine) *Features {
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
 	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
-	// if err := renderSchemas(e, datasources); err != nil {
-	//	 log.Fatal(err)
-	// }
+	renderSchemas(e, datasources)
 
 	f := &Features{
 		engine:                    e,
