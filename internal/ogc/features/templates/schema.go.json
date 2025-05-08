@@ -26,9 +26,11 @@
         {{ $typeFormat := $feat.ToJSONSchemaTypeFormat }}
 
         {{ if $feat.PrimaryGeometry }}
+          {{/* Each spatial property SHALL not include a "type" or "$ref" member.*/ }}
           "x-ogc-role": "primary-geometry",
           "format": "{{ $typeFormat.Format }}"
         {{ else }}
+          {{/* Each property SHALL include a "type" member, except for spatial properties.*/}}
           "type": "{{ $typeFormat.Type }}"
           {{ if $typeFormat.Format }}
             ,
