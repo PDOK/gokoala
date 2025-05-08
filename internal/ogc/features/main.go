@@ -56,8 +56,8 @@ func NewFeatures(e *engine.Engine) *Features {
 	configuredCollections = cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
-	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
 	renderSchemas(e, datasources)
+	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
 
 	f := &Features{
 		engine:                    e,

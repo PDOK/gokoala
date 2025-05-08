@@ -1,18 +1,42 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {
-  "$id": "https://example.com/address.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Dummy",
+  "$id": "{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/schema",
+  "title": "{{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}",
+  {{ if and .Params.Metadata .Params.Metadata.Description }}
+  "description": "{{ unmarkdown .Params.Metadata.Description }}",
+  {{ end }}
   "type": "object",
+  "required": [
+    {{ $first := true }}
+    {{ range $idx, $feat := .Params.Fields }}
+      {{ if $feat.Required }}
+        {{ if not $first }},{{ else }}{{ $first = false }}{{ end }} {{/* avoid first comma */}}
+
+        "{{ $feat.Name }}"
+      {{ end }}
+    {{ end }}
+  ],
   "properties": {
-    "postOfficeBox": {
-      "type": "string"
-    },
-    "extendedAddress": {
-      "type": "string"
-    },
-    "streetAddress": {
-      "type": "string"
-    }
+    {{ $firstProp := true }}
+    {{ range $idx, $feat := .Params.Fields }}
+      {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }} {{/* avoid first comma */}}
+
+      "{{ $feat.Name }}": {
+        {{ $typeFormat := $feat.ToJSONSchemaTypeFormat }}
+
+        {{ if $feat.PrimaryGeometry }}
+          "x-ogc-role": "primary-geometry",
+          "format": "{{ $typeFormat.Format }}"
+        {{ else }}
+          "type": "{{ $typeFormat.Type }}"
+          {{ if $typeFormat.Format }}
+            ,
+            "format": "{{ $typeFormat.Format }}"
+          {{ end }}
+        {{ end }}
+      }
+
+    {{ end }}
   }
 }

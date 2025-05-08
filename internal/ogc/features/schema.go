@@ -6,13 +6,50 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
+	g "github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
 
 const schemasPath = "/schema"
+const schemaHTML = templatesDir + "schema.go.html"
+const schemaJSON = templatesDir + "schema.go.json"
+
+// Schema serves a schema that describes the features in the collection, either as HTML
+// or as JSON schema (https://json-schema.org/)
+func (f *Features) Schema() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			return
+		}
+
+		collectionID := chi.URLParam(r, "collectionId")
+		collection, ok := configuredCollections[collectionID]
+		if !ok {
+			handleCollectionNotFound(w, collectionID)
+			return
+		}
+
+		var key engine.TemplateKey
+		switch f.engine.CN.NegotiateFormat(r) {
+		case engine.FormatHTML:
+			key = engine.NewTemplateKey(schemaHTML,
+				engine.WithInstanceName(collection.ID),
+				f.engine.WithNegotiatedLanguage(w, r))
+		case engine.FormatJSON:
+			key = engine.NewTemplateKey(schemaJSON,
+				engine.WithInstanceName(collection.ID),
+				f.engine.WithNegotiatedLanguage(w, r),
+				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema))
+		default:
+			engine.RenderProblem(engine.ProblemNotAcceptable, w, "format is not supported")
+			return
+		}
+		f.engine.Serve(w, r, engine.ServeTemplate(key))
+	}
+}
 
 type schemaTemplateData struct {
 	domain.Schema
@@ -21,6 +58,7 @@ type schemaTemplateData struct {
 	Metadata     *config.GeoSpatialCollectionMetadata
 }
 
+// renderSchemas pre-renders HTML and JSON schemas describing each feature collection.
 func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource) {
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		breadcrumbs := collectionsBreadcrumb
@@ -43,54 +81,19 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 			continue
 		}
 
-		schemaTemplateData := schemaTemplateData{
-			schema,
-			collection.ID,
-			collection.Metadata,
-		}
-
-		e.RenderTemplatesWithParams(geospatial.CollectionsPath+"/"+collection.ID+schemasPath,
-			schemaTemplateData,
+		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,
+			schemaTemplateData{
+				schema,
+				collection.ID,
+				collection.Metadata,
+			},
 			breadcrumbs,
-			engine.NewTemplateKey(templatesDir+"schema.go.json",
+			engine.NewTemplateKey(schemaJSON,
 				engine.WithInstanceName(collection.ID),
 				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema),
 			),
-			engine.NewTemplateKey(templatesDir+"schema.go.html",
+			engine.NewTemplateKey(schemaHTML,
 				engine.WithInstanceName(collection.ID),
 			))
-	}
-}
-
-// Schema serves a schema that describes the features in the collection, either as HTML
-// or as JSON schema (https://json-schema.org/)
-func (f *Features) Schema() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-
-		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
-		if !ok {
-			handleCollectionNotFound(w, collectionID)
-			return
-		}
-
-		var key engine.TemplateKey
-		switch f.engine.CN.NegotiateFormat(r) {
-		case engine.FormatHTML:
-			key = engine.NewTemplateKey(templatesDir+"schema.go.html",
-				engine.WithInstanceName(collection.ID), f.engine.WithNegotiatedLanguage(w, r))
-		case engine.FormatJSON:
-			key = engine.NewTemplateKey(templatesDir+"schema.go.json",
-				engine.WithInstanceName(collection.ID), f.engine.WithNegotiatedLanguage(w, r),
-				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema))
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, "format is not supported")
-			return
-		}
-		f.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }

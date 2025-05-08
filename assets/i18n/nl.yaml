@@ -119,3 +119,11 @@ Size: omvang
 ApplyFilters: Filters toepassen
 ResetFilter: Filters wissen
 BrowseSuffix: of ga direct naar de features in
+
+# Schema page
+Required: Verplicht
+RequiredYes: ja
+RequiredNo: nee
+FieldName: Veldnaam
+DataType: Datatype
+SchemaDescription: Onderstaande tabel beschrijft de aanwezige velden in deze collectie. Deze informatie is ook beschikbaar als

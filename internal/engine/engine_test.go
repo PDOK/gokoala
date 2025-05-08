@@ -58,42 +58,88 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 }
 
 func TestTemplateKeyWithOptions(t *testing.T) {
-	// Test creating a TemplateKey with the new functional options pattern
-	path := "internal/ogc/common/core/templates/landing-page.go.json"
+	tests := []struct {
+		name     string
+		options  []TemplateKeyOption
+		expected TemplateKey
+	}{
+		{
+			name:    "default values",
+			options: nil,
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.Dutch,
+				InstanceName:       "",
+				MediaTypeOverwrite: "",
+			},
+		},
+		{
+			name:    "with language",
+			options: []TemplateKeyOption{WithLanguage(language.English)},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.English,
+				InstanceName:       "",
+				MediaTypeOverwrite: "",
+			},
+		},
+		{
+			name:    "with instance name",
+			options: []TemplateKeyOption{WithInstanceName("test-instance")},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.Dutch,
+				InstanceName:       "test-instance",
+				MediaTypeOverwrite: "",
+			},
+		},
+		{
+			name:    "with media type",
+			options: []TemplateKeyOption{WithMediaTypeOverwrite("application/docx")},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.Dutch,
+				InstanceName:       "",
+				MediaTypeOverwrite: "application/docx",
+			},
+		},
+		{
+			name: "with multiple options",
+			options: []TemplateKeyOption{
+				WithLanguage(language.English),
+				WithInstanceName("test-instance"),
+				WithMediaTypeOverwrite("application/docx"),
+			},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.English,
+				InstanceName:       "test-instance",
+				MediaTypeOverwrite: "application/docx",
+			},
+		},
+	}
 
-	// Create a TemplateKey with no options (default values)
-	key1 := NewTemplateKey(path)
-	assert.Equal(t, "landing-page.go.json", key1.Name)
-	assert.Equal(t, "internal/ogc/common/core/templates", key1.Directory)
-	assert.Equal(t, "json", key1.Format)
-	assert.Equal(t, language.Dutch, key1.Language)
-	assert.Equal(t, "", key1.InstanceName)
-	assert.Equal(t, "", key1.MediaTypeOverwrite)
-
-	// Create a TemplateKey with language option
-	key2 := NewTemplateKey(path, WithLanguage(language.English))
-	assert.Equal(t, "landing-page.go.json", key2.Name)
-	assert.Equal(t, language.English, key2.Language)
-
-	// Create a TemplateKey with instance name option
-	key3 := NewTemplateKey(path, WithInstanceName("test-instance"))
-	assert.Equal(t, "landing-page.go.json", key3.Name)
-	assert.Equal(t, "test-instance", key3.InstanceName)
-
-	// Create a TemplateKey with media type overwrite option
-	key4 := NewTemplateKey(path, WithMediaTypeOverwrite("application/custom+json"))
-	assert.Equal(t, "landing-page.go.json", key4.Name)
-	assert.Equal(t, "application/custom+json", key4.MediaTypeOverwrite)
-
-	// Create a TemplateKey with multiple options
-	key5 := NewTemplateKey(path,
-		WithLanguage(language.English),
-		WithInstanceName("test-instance"),
-		WithMediaTypeOverwrite("application/custom+json"))
-	assert.Equal(t, "landing-page.go.json", key5.Name)
-	assert.Equal(t, language.English, key5.Language)
-	assert.Equal(t, "test-instance", key5.InstanceName)
-	assert.Equal(t, "application/custom+json", key5.MediaTypeOverwrite)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			key := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json", tt.options...)
+			assert.Equal(t, tt.expected.Name, key.Name)
+			assert.Equal(t, tt.expected.Directory, key.Directory)
+			assert.Equal(t, tt.expected.Format, key.Format)
+			assert.Equal(t, tt.expected.Language, key.Language)
+			assert.Equal(t, tt.expected.InstanceName, key.InstanceName)
+			assert.Equal(t, tt.expected.MediaTypeOverwrite, key.MediaTypeOverwrite)
+		})
+	}
 }
 
 func TestEngine_ReverseProxy(t *testing.T) {

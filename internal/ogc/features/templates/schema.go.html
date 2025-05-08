@@ -1,24 +1,33 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{define "content"}}
-    {{ $cfg := .Config }}
-    {{ $baseUrl := $cfg.BaseURL }}
-
-    <hgroup>
-        <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
-    </hgroup>
-
-    <section class="row">
-        <!-- results/features -->
-        <div class="col-md-12">
+<hgroup>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
+</hgroup>
+<div class="row py-3">
+    <div class="col-md-12">
+        <p>
+            {{ i18n "SchemaDescription" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/schema?f=json" aria-label="Open JSON Schema">JSON Schema</a>.
+        </p>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">{{ i18n "FieldName" }}</th>
+                    <th scope="col">{{ i18n "DataType" }}</th>
+                    <th scope="col">{{ i18n "Required" }}</th>
+                    <th scope="col">{{ i18n "DescriptionLabel" }}</th>
+                </tr>
+            </thead>
+            <tbody>
             {{ range $feat := .Params.Fields }}
-                <table class="table table-striped">
-                    <tbody>
-                            <tr>
-                                <td>Bla bla</td>
-                            </tr>
-                    </tbody>
-                </table>
+                <tr>
+                    <td>{{ $feat.Name }}</td>
+                    <td>{{ $feat.ToJSONSchemaTypeFormat.Type }}</td>
+                    <td>{{ if $feat.Required }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
+                    <td>{{ $feat.Description }}</td>
+                </tr>
             {{ end }}
-        </div>
-    </section>
+            </tbody>
+        </table>
+    </div>
+</div>
 {{end}}

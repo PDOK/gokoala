@@ -120,3 +120,11 @@ Size: size
 ApplyFilters: Apply filters
 ResetFilter: Reset filter
 BrowseSuffix: or go straight to the features in
+
+# Schema page
+Required: Required
+RequiredYes: "yes"
+RequiredNo: "no"
+FieldName: Property
+DataType: Data type
+SchemaDescription: Onderstaande tabel describes the fields present in this collection. This information is also available as
