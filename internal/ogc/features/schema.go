@@ -83,7 +83,7 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 
 		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,
 			schemaTemplateData{
-				schema,
+				*schema,
 				collection.ID,
 				collection.Metadata,
 			},

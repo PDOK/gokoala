@@ -70,9 +70,9 @@ where
 		if row.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
-		row.Schema, err = readFeatureTableInfo(db, row)
+		row.Schema, err = readSchema(db, row)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read feature table metadata, error: %w", err)
+			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", row.TableName, err)
 		}
 
 		for _, collection := range collections {
@@ -140,10 +140,10 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readFeatureTableInfo(db *sqlx.DB, table featureTable) (domain.Schema, error) {
+func readSchema(db *sqlx.DB, table featureTable) (*domain.Schema, error) {
 	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
-		return domain.Schema{}, err
+		return nil, fmt.Errorf("failed to query table schema, error: %w", err)
 	}
 	defer rows.Close()
 
@@ -152,7 +152,7 @@ func readFeatureTableInfo(db *sqlx.DB, table featureTable) (domain.Schema, error
 		var colName, colType, colNotNull string
 		err = rows.Scan(&colName, &colType, &colNotNull)
 		if err != nil {
-			return domain.Schema{}, err
+			return nil, fmt.Errorf("failed to read table schema, error: %w", err)
 		}
 		fields[colName] = domain.Field{
 			Name:            colName,
@@ -161,7 +161,11 @@ func readFeatureTableInfo(db *sqlx.DB, table featureTable) (domain.Schema, error
 			PrimaryGeometry: colName == table.GeometryColumnName,
 		}
 	}
-	return domain.Schema{Fields: fields}, nil
+	schema, err := domain.NewSchema(fields)
+	if err != nil {
+		return nil, err
+	}
+	return schema, nil
 }
 
 func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {

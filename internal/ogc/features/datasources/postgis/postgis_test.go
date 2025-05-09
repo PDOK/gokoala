@@ -42,8 +42,8 @@ func TestPostGIS(t *testing.T) {
 	})
 
 	t.Run("GetSchema", func(t *testing.T) {
-		metadata, err := pg.GetSchema("")
+		schema, err := pg.GetSchema("")
 		assert.NoError(t, err)
-		assert.Nil(t, metadata.Fields)
+		assert.Nil(t, schema)
 	})
 }

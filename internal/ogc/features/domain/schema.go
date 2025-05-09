@@ -1,6 +1,28 @@
 package domain
 
-import "strings"
+import (
+	"errors"
+	"slices"
+	"strings"
+)
+
+func NewSchema(fields map[string]Field) (*Schema, error) {
+	publicFields := make(map[string]Field)
+	nrOfGeomsFound := 0
+	for name, field := range fields {
+		if slices.Contains([]string{"minx", "miny", "maxx", "maxy"}, strings.ToLower(name)) {
+			continue
+		}
+		if slices.Contains([]string{"geometry", "geometrycollection", "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon"}, strings.ToLower(field.Type)) {
+			nrOfGeomsFound++
+			if nrOfGeomsFound > 1 {
+				return nil, errors.New("more than one geometry field found! Currently only a single geometry per collection is supported (also a restriction of GeoJSON and GeoPackage)")
+			}
+		}
+		publicFields[name] = field
+	}
+	return &Schema{Fields: publicFields}, nil
+}
 
 type Schema struct {
 	Fields map[string]Field
@@ -37,9 +59,7 @@ func (f Field) ToJSONSchemaTypeFormat() TypeFormat {
 		return TypeFormat{Type: "string"}
 	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "int2", "int8":
 		return TypeFormat{Type: "integer"}
-	case "real", "float":
-		return TypeFormat{Type: "number", Format: "float"}
-	case "double", "double precision", "numeric", "decimal":
+	case "real", "float", "double", "double precision", "numeric", "decimal":
 		return TypeFormat{Type: "number", Format: "double"}
 	case "uuid":
 		// From OAF Part 5: Properties that represent a UUID SHOULD be represented as a string with format "uuid".

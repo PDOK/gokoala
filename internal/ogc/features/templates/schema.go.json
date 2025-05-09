@@ -26,7 +26,7 @@
         {{ $typeFormat := $feat.ToJSONSchemaTypeFormat }}
 
         {{ if $feat.PrimaryGeometry }}
-          {{/* Each spatial property SHALL not include a "type" or "$ref" member.*/ }}
+          {{/* Each spatial property SHALL not include a "type" or "$ref" member.*/}}
           "x-ogc-role": "primary-geometry",
           "format": "{{ $typeFormat.Format }}"
         {{ else }}
@@ -40,5 +40,6 @@
       }
 
     {{ end }}
-  }
+  },
+  "additionalProperties": true {{/* Also the default in JSON Schema, just to make it explicit */}}
 }

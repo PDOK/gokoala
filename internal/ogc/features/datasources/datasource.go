@@ -27,7 +27,7 @@ type Datasource interface {
 	GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error)
 
 	// GetSchema returns metadata about a feature table associated with the given collection
-	GetSchema(collection string) (domain.Schema, error)
+	GetSchema(collection string) (*domain.Schema, error)
 
 	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values.
 	// When enrichments don't apply, the returned result should still contain all property filters as specified in the (YAML) config.
