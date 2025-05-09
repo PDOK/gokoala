@@ -120,7 +120,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				}
 			}
 
-		case "minx", "miny", "maxx", "maxy":
+		case minxField, minyField, maxxField, maxyField:
 			// Skip these columns used for bounding box handling
 			continue
 
@@ -150,7 +150,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			case int64:
 				feature.Properties.Set(columnName, v)
 			case float64:
-				// Check to determine whether the content of the columnvalue is truly a floating point value.
+				// Check to determine whether the content of the columnValue is truly a floating point value.
 				// (Because of non-strict tables in SQLite)
 				if !isFloat64(columnValue.(float64)) {
 					feature.Properties.Set(columnName, int64(v))

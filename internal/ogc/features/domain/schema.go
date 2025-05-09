@@ -6,29 +6,69 @@ import (
 	"strings"
 )
 
-func NewSchema(fields map[string]Field) (*Schema, error) {
+const (
+	minxField = "minx"
+	minyField = "miny"
+	maxxField = "maxx"
+	maxyField = "maxy"
+)
+
+var fieldsToSkip = []string{
+	minxField,
+	minyField,
+	maxxField,
+	maxyField,
+}
+
+const (
+	geometryField           = "geometry"
+	geometryCollectionField = "geometrycollection"
+	pointField              = "point"
+	linestringField         = "linestring"
+	polygonField            = "polygon"
+	multipointField         = "multipoint"
+	multilinestringField    = "multilinestring"
+	multipolygonField       = "multipolygon"
+)
+
+var fieldsGeometry = []string{
+	geometryField,
+	geometryCollectionField,
+	pointField,
+	linestringField,
+	polygonField,
+	multipointField,
+	multilinestringField,
+	multipolygonField,
+}
+
+func NewSchema(fields map[string]Field, fidColumn, externalFidColumn string) (*Schema, error) {
 	publicFields := make(map[string]Field)
 	nrOfGeomsFound := 0
 	for name, field := range fields {
-		if slices.Contains([]string{"minx", "miny", "maxx", "maxy"}, strings.ToLower(name)) {
+		if slices.Contains(fieldsToSkip, strings.ToLower(name)) {
 			continue
 		}
-		if slices.Contains([]string{"geometry", "geometrycollection", "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon"}, strings.ToLower(field.Type)) {
+		if slices.Contains(fieldsGeometry, strings.ToLower(field.Type)) {
 			nrOfGeomsFound++
 			if nrOfGeomsFound > 1 {
-				return nil, errors.New("more than one geometry field found! Currently only a single geometry per collection is supported (also a restriction of GeoJSON and GeoPackage)")
+				return nil, errors.New("more than one geometry field found! Currently only a single geometry " +
+					"per collection is supported (also a restriction of GeoJSON and GeoPackage)")
 			}
 		}
+		field.Fid = name == fidColumn
+		field.ExternalFid = name == externalFidColumn
+
 		publicFields[name] = field
 	}
-	return &Schema{Fields: publicFields}, nil
+	return &Schema{publicFields}, nil
 }
 
 type Schema struct {
 	Fields map[string]Field
 }
 
-func (s *Schema) FieldsWithDataType() map[string]string {
+func (s Schema) FieldsWithDataType() map[string]string {
 	result := make(map[string]string)
 	for _, field := range s.Fields {
 		result[field.Name] = field.Type
@@ -36,12 +76,24 @@ func (s *Schema) FieldsWithDataType() map[string]string {
 	return result
 }
 
+func (s Schema) HasExternalFid() bool {
+	for _, field := range s.Fields {
+		if field.ExternalFid {
+			return true
+		}
+	}
+	return false
+}
+
 type Field struct {
-	Name            string
-	Type            string
-	Description     string
+	Name        string
+	Type        string
+	Description string
+
 	Required        bool
 	PrimaryGeometry bool
+	Fid             bool
+	ExternalFid     bool
 }
 
 type TypeFormat struct {
@@ -76,10 +128,10 @@ func (f Field) ToJSONSchemaTypeFormat() TypeFormat {
 		// From OAF Part 5: Each temporal property SHALL be a "string" literal with the appropriate format
 		// (e.g., "date-time" or "date" for instances, depending on the temporal granularity).
 		return TypeFormat{Type: "string", Format: "date-time"}
-	case "geometry", "geometrycollection":
+	case geometryField, geometryCollectionField:
 		// From OAF Part 5: the following special value is supported: "geometry-any" as the wildcard for any geometry type
 		return TypeFormat{Type: lowerCaseType, Format: "geometry-any"}
-	case "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon":
+	case pointField, linestringField, polygonField, multipointField, multilinestringField, multipolygonField:
 		// From OAF Part 5: Each spatial property SHALL include a "format" member with a string value "geometry",
 		// followed by a hyphen, followed by the name of the geometry type in lower case
 		return TypeFormat{Type: lowerCaseType, Format: "geometry-" + lowerCaseType}

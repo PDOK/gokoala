@@ -101,6 +101,7 @@ ogcApi:
         geopackage:
           local:
             file: ./examples/resources/addresses-crs84.gpkg
+            externalFid: external_fid
     collections:
       - id: addresses  # same collection as the geovolumes/tiles
         metadata: *addressMetadata

@@ -45,7 +45,9 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'table_name' column. Also, in case there's no exact match between 'collection ID' and 'table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readGpkgContents(collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
+func readGpkgContents(collections config.GeoSpatialCollections, db *sqlx.DB,
+	fidColumn, externalFidColumn string) (map[string]*featureTable, error) {
+
 	query := `
 select
 	c.table_name, c.data_type, c.identifier, c.description, c.last_change,
@@ -70,7 +72,7 @@ where
 		if row.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
-		row.Schema, err = readSchema(db, row)
+		row.Schema, err = readSchema(db, row, fidColumn, externalFidColumn)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", row.TableName, err)
 		}
@@ -140,7 +142,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readSchema(db *sqlx.DB, table featureTable) (*domain.Schema, error) {
+func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string) (*domain.Schema, error) {
 	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
 		return nil, err
@@ -161,7 +163,7 @@ func readSchema(db *sqlx.DB, table featureTable) (*domain.Schema, error) {
 			PrimaryGeometry: colName == table.GeometryColumnName,
 		}
 	}
-	schema, err := domain.NewSchema(fields)
+	schema, err := domain.NewSchema(fields, fidColumn, externalFidColumn)
 	if err != nil {
 		return nil, err
 	}

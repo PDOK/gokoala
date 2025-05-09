@@ -118,7 +118,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	}
 	log.Println(metadata)
 
-	g.featureTableByCollectionID, err = readGpkgContents(collections, g.backend.getDB())
+	g.featureTableByCollectionID, err = readGpkgContents(collections, g.backend.getDB(), g.fidColumn, g.externalFidColumn)
 	if err != nil {
 		log.Fatal(err)
 	}
