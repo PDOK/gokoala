@@ -310,6 +310,8 @@ func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.
 	return result
 }
 
+// configureTopLevelDatasources configures top-level datasources - in one or multiple CRS's - which can be
+// used by one or multiple collections (e.g., one GPKG that covers holds an entire dataset)
 func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	if cfg.Datasources == nil {
@@ -340,6 +342,8 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 	}
 }
 
+// configureCollectionDatasources configures datasources - in one or multiple CRS's - which are specific
+// to a certain collection (e.g., a separate GPKG per collection)
 func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	for _, coll := range cfg.Collections {

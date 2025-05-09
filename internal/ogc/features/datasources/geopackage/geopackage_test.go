@@ -26,7 +26,9 @@ func newTestGeoPackage(file string) geoPackageBackend {
 	loadDriver()
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
-			Fid:                       "feature_id",
+			DatasourceCommon: config.DatasourceCommon{
+				Fid: "feature_id",
+			},
 			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
 			MaxBBoxSizeToUseWithRTree: 30000,
 			InMemoryCacheSize:         -2000,
@@ -51,7 +53,9 @@ func TestNewGeoPackage(t *testing.T) {
 				config: config.GeoPackage{
 					Local: &config.GeoPackageLocal{
 						GeoPackageCommon: config.GeoPackageCommon{
-							Fid:               "feature_id",
+							DatasourceCommon: config.DatasourceCommon{
+								Fid: "feature_id",
+							},
 							InMemoryCacheSize: -2000,
 						},
 						File: pwd + "/testdata/bag.gpkg",

@@ -26,7 +26,7 @@ type Datasource interface {
 	// GetFeature returns a specific Feature, based on its feature id
 	GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error)
 
-	// GetSchema returns metadata about a feature table associated with the given collection
+	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
 
 	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values.
