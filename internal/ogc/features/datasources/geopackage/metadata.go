@@ -41,10 +41,10 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 		gpkgVersion.UserVersion, m.Sqlite, m.Spatialite, m.Arch), nil
 }
 
-// Read gpkg_contents table. This table contains metadata about feature tables. The result is a mapping from
+// Read "gpkg_contents" table. This table contains metadata about feature tables. The result is a mapping from
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
-// 'identifier' column. Also in case there's no exact match between 'collection ID' and 'identifier' we use
-// the explicitly configured table name.
+// 'table_name' column. Also, in case there's no exact match between 'collection ID' and 'table_name' we use
+// the explicitly configured table name (from the YAML config).
 func readGpkgContents(collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]*featureTable, error) {
 	query := `
 select
@@ -143,7 +143,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 func readSchema(db *sqlx.DB, table featureTable) (*domain.Schema, error) {
 	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
-		return nil, fmt.Errorf("failed to query table schema, error: %w", err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -152,7 +152,7 @@ func readSchema(db *sqlx.DB, table featureTable) (*domain.Schema, error) {
 		var colName, colType, colNotNull string
 		err = rows.Scan(&colName, &colType, &colNotNull)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read table schema, error: %w", err)
+			return nil, err
 		}
 		fields[colName] = domain.Field{
 			Name:            colName,
