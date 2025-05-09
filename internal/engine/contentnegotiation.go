@@ -24,6 +24,7 @@ const (
 	MediaTypeOpenAPI       = "application/vnd.oai.openapi+json;version=3.0"
 	MediaTypeGeoJSON       = "application/geo+json"
 	MediaTypeJSONFG        = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
+	MediaTypeJSONSchema    = "application/schema+json"
 	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
 
 	FormatHTML           = "html"
@@ -40,7 +41,13 @@ const (
 )
 
 var (
-	MediaTypeJSONFamily    = []string{MediaTypeTileJSON, MediaTypeMapboxStyle, MediaTypeGeoJSON, MediaTypeJSONFG}
+	MediaTypeJSONFamily = []string{
+		MediaTypeTileJSON,
+		MediaTypeMapboxStyle,
+		MediaTypeGeoJSON,
+		MediaTypeJSONFG,
+		MediaTypeJSONSchema,
+	}
 	OutputFormatDefault    = map[string]string{FormatJSON: "JSON"}
 	OutputFormatFeatures   = map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
 	CompressibleMediaTypes = []string{
@@ -48,6 +55,7 @@ var (
 		MediaTypeGeoJSON,
 		MediaTypeJSONFG,
 		MediaTypeTileJSON,
+		MediaTypeJSONSchema,
 		MediaTypeMapboxStyle,
 		MediaTypeOpenAPI,
 		MediaTypeHTML,
@@ -152,8 +160,11 @@ func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http
 	return requestedLanguage
 }
 
-func (cn *ContentNegotiation) formatToMediaType(format string) string {
-	return cn.mediaTypesByFormat[format]
+func (cn *ContentNegotiation) formatToMediaType(key TemplateKey) string {
+	if key.MediaTypeOverwrite != "" {
+		return key.MediaTypeOverwrite
+	}
+	return cn.mediaTypesByFormat[key.Format]
 }
 
 func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string {
@@ -162,7 +173,7 @@ func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string 
 	if queryParams.Get(FormatParam) != "" {
 		requestedFormat = queryParams.Get(FormatParam)
 
-		// remove ?f= parameter, to prepare for rewrite
+		// remove ?f= parameter to prepare for rewrite
 		queryParams.Del(FormatParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}

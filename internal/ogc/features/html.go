@@ -117,7 +117,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featuresKey, lang), pageContent, breadcrumbs)
+	hf.engine.RenderAndServe(w, r, engine.ExpandTemplateKey(featuresKey, lang), pageContent, breadcrumbs)
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
@@ -159,7 +159,7 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collecti
 	}
 
 	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featureKey, lang), pageContent, breadcrumbs)
+	hf.engine.RenderAndServe(w, r, engine.ExpandTemplateKey(featureKey, lang), pageContent, breadcrumbs)
 }
 
 func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollectionMetadata) string {

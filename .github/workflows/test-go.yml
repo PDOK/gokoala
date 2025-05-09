@@ -37,7 +37,7 @@ jobs:
           max_attempts: 2
           retry_on: error
           command: |
-            go test -v -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
+            go test -v -race -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
             # remove generate code from coverage results
             grep -v "zz_generated" cover.out.tmp > cover.out
 

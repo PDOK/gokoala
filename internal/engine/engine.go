@@ -161,7 +161,7 @@ func (e *Engine) RebuildOpenAPI(openAPIParams any) {
 }
 
 // ParseTemplate parses both HTML and non-HTML templates depending on the format given in the TemplateKey and
-// stores it in the engine for future rendering using RenderAndServePage.
+// stores it in the engine for future rendering using RenderAndServe.
 func (e *Engine) ParseTemplate(key TemplateKey) {
 	e.Templates.parseAndSaveTemplate(key)
 }
@@ -173,7 +173,7 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 	e.renderTemplates(urlPath, nil, breadcrumbs, true, keys...)
 }
 
-// RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
+// RenderTemplatesWithParams renders both HTML and non-HTML templates depending on the format given in the TemplateKey.
 func (e *Engine) RenderTemplatesWithParams(urlPath string, params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	e.renderTemplates(urlPath, params, breadcrumbs, true, keys...)
 }
@@ -196,12 +196,12 @@ func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Bread
 	}
 }
 
-// RenderAndServePage renders an already parsed HTML or non-HTML template on-the-fly depending
+// RenderAndServe renders an already parsed HTML or non-HTML template on-the-fly depending
 // on the format in the given TemplateKey. The result isn't store in engine, it's served directly to the client.
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a datastore),
 // otherwise use ServePage for pre-rendered pages.
-func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key TemplateKey,
+func (e *Engine) RenderAndServe(w http.ResponseWriter, r *http.Request, key TemplateKey,
 	params any, breadcrumbs []Breadcrumb) {
 
 	// validate request
@@ -227,7 +227,7 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 		jsonTmpl := parsedTemplate.(*texttemplate.Template)
 		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")
 	}
-	contentType := e.CN.formatToMediaType(key.Format)
+	contentType := e.CN.formatToMediaType(key)
 
 	// validate response
 	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
@@ -238,21 +238,18 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	writeResponse(w, contentType, output)
 }
 
-// ServePage serves a pre-rendered template while also validating against the OpenAPI spec
-func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
-	e.serve(w, r, &templateKey, true, true, "", nil)
-}
+// Serve serves a response (which is either a pre-rendered template based on TemplateKey or a slice of arbitrary bytes)
+// while also validating against the OpenAPI spec.
+func (e *Engine) Serve(w http.ResponseWriter, r *http.Request, opt ...ServeOption) {
+	s := &serve{
+		validateRequest:  true,
+		validateResponse: true,
+	}
+	for _, o := range opt {
+		o(s)
+	}
 
-// Serve serves the given response (arbitrary bytes) while also validating against the OpenAPI spec
-func (e *Engine) Serve(w http.ResponseWriter, r *http.Request,
-	validateRequest bool, validateResponse bool, contentType string, output []byte) {
-	e.serve(w, r, nil, validateRequest, validateResponse, contentType, output)
-}
-
-func (e *Engine) serve(w http.ResponseWriter, r *http.Request, templateKey *TemplateKey,
-	validateRequest bool, validateResponse bool, contentType string, output []byte) {
-
-	if validateRequest {
+	if s.validateRequest {
 		if err := e.OpenAPI.ValidateRequest(r); err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemBadRequest, w, err.Error())
@@ -260,26 +257,66 @@ func (e *Engine) serve(w http.ResponseWriter, r *http.Request, templateKey *Temp
 		}
 	}
 
-	if templateKey != nil {
+	output := s.output
+	if s.templateKey != nil {
 		// render output
 		var err error
-		output, err = e.Templates.getRenderedTemplate(*templateKey)
+		output, err = e.Templates.getRenderedTemplate(*s.templateKey)
 		if err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemNotFound, w)
 			return
 		}
-		contentType = e.CN.formatToMediaType(templateKey.Format)
+		if s.contentType == "" {
+			s.contentType = e.CN.formatToMediaType(*s.templateKey)
+		}
 	}
 
-	if validateResponse {
-		if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
+	if s.validateResponse {
+		if err := e.OpenAPI.ValidateResponse(s.contentType, output, r); err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemServerError, w, err.Error())
 			return
 		}
 	}
-	writeResponse(w, contentType, output)
+	writeResponse(w, s.contentType, output)
+}
+
+type serve struct {
+	templateKey *TemplateKey
+	output      []byte
+
+	validateRequest  bool
+	validateResponse bool
+
+	contentType string
+}
+
+type ServeOption func(*serve)
+
+func ServeTemplate(templateKey TemplateKey) ServeOption {
+	return func(s *serve) {
+		s.templateKey = &templateKey
+	}
+}
+
+func ServeOutput(output []byte) ServeOption {
+	return func(s *serve) {
+		s.output = output
+	}
+}
+
+func ServeValidation(validateRequest bool, validateResponse bool) ServeOption {
+	return func(s *serve) {
+		s.validateRequest = validateRequest
+		s.validateResponse = validateResponse
+	}
+}
+
+func ServeContentType(contentType string) ServeOption {
+	return func(s *serve) {
+		s.contentType = contentType
+	}
 }
 
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
@@ -332,7 +369,7 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			if err != nil {
 				return err
 			}
-			e.Serve(w, r, false, true, contentType, res)
+			e.Serve(w, r, ServeValidation(false, true), ServeContentType(contentType), ServeOutput(res))
 		}
 		return nil
 	}
@@ -360,7 +397,7 @@ func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) error {
 		return fmt.Errorf("failed to construct request to validate %s "+
 			"template against OpenAPI spec %v", key.Name, err)
 	}
-	err = e.OpenAPI.ValidateResponse(e.CN.formatToMediaType(key.Format), template, req)
+	err = e.OpenAPI.ValidateResponse(e.CN.formatToMediaType(key), template, req)
 	if err != nil {
 		return fmt.Errorf("validation of template %s failed: %w", key.Name, err)
 	}

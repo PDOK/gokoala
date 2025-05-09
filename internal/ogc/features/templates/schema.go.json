@@ -1,0 +1,76 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/schema",
+  "title": "{{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}",
+  {{ if and .Params.Metadata .Params.Metadata.Description }}
+  "description": "{{ unmarkdown .Params.Metadata.Description }}",
+  {{ end }}
+  "type": "object",
+  "required": [
+    "id"
+    {{ range $idx, $feat := .Params.Fields }}
+      {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
+      {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
+      {{ if $feat.Fid }}
+        {{ continue }}
+      {{ end }}
+      {{ if $feat.ExternalFid }}
+        {{ continue }}
+      {{ end }}
+
+      {{ if $feat.Required }}
+        ,
+        "{{ $feat.Name }}"
+      {{ end }}
+    {{ end }}
+  ],
+  "properties": {
+    "id": {
+      {{/* OAF part 5: A property with "x-ogc-role" set to "id" SHALL be the identifier of the item in the collection that contains the item.*/}}
+      {{/* Only one property in a schema SHALL have "x-ogc-role" with a value "id".*/}}
+      "x-ogc-role": "id",
+      {{ if .Params.HasExternalFid }}
+      "type": "string", {{/* OAF part 5: A property with role "id" SHALL either be a string or integer.*/}}
+      "format": "uuid"
+      {{ else }}
+      "type": "integer", {{/* OAF part 5: A property with role "id" SHALL either be a string or integer.*/}}
+      "minimum": 0
+      {{ end }}
+    },
+    {{ $firstProp := true }}
+    {{ range $idx, $feat := .Params.Fields }}
+      {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
+      {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
+      {{ if $feat.Fid }}
+        {{ continue }}
+      {{ end }}
+      {{ if $feat.ExternalFid }}
+        {{ continue }}
+      {{ end }}
+
+      {{/* Avoid first comma */}}
+      {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }}
+
+      {{/* Now include the property definition for this field.*/}}
+      "{{ $feat.Name }}": {
+        {{ $typeFormat := $feat.ToJSONSchemaTypeFormat }}
+
+        {{ if $feat.PrimaryGeometry }}
+          {{/* OAF part 5: Each spatial property SHALL not include a "type" or "$ref" member.*/}}
+          "x-ogc-role": "primary-geometry",
+          "format": "{{ $typeFormat.Format }}"
+        {{ else }}
+          {{/* OAF part 5: Each property SHALL include a "type" member, except for spatial properties.*/}}
+          "type": "{{ $typeFormat.Type }}"
+          {{ if $typeFormat.Format }}
+            ,
+            "format": "{{ $typeFormat.Format }}"
+          {{ end }}
+        {{ end }}
+      }
+
+    {{ end }}
+  },
+  "additionalProperties": true {{/* The default in JSON Schema, just to make it explicit */}}
+}

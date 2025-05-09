@@ -239,6 +239,9 @@ func (o *OpenAPI) ValidateRequest(r *http.Request) error {
 func (o *OpenAPI) ValidateResponse(contentType string, body []byte, r *http.Request) error {
 	requestValidationInput, _ := o.getRequestValidationInput(r)
 	if requestValidationInput != nil {
+		if contentType == "" {
+			contentType = MediaTypeJSON
+		}
 		responseHeaders := http.Header{HeaderContentType: []string{contentType}}
 		responseCode := 200
 

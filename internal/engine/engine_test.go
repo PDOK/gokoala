@@ -8,12 +8,14 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/text/language"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -33,12 +35,12 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "", false, true)
 	assert.NoError(t, err)
 
-	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json")
+	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json") // Using the backward-compatible API
 	engine.RenderTemplates("/", nil, templateKey)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		engine.ServePage(w, r, templateKey)
+		engine.Serve(w, r, ServeTemplate(templateKey))
 	})
 
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/", nil)
@@ -53,6 +55,91 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	assert.Equal(t, "application/json", recorder.Header().Get(HeaderContentType))
 	assert.Contains(t, recorder.Body.String(), "This is a minimal OGC API, offering only OGC API Common")
+}
+
+func TestTemplateKeyWithOptions(t *testing.T) {
+	tests := []struct {
+		name     string
+		options  []TemplateKeyOption
+		expected TemplateKey
+	}{
+		{
+			name:    "default values",
+			options: nil,
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.Dutch,
+				InstanceName:       "",
+				MediaTypeOverwrite: "",
+			},
+		},
+		{
+			name:    "with language",
+			options: []TemplateKeyOption{WithLanguage(language.English)},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.English,
+				InstanceName:       "",
+				MediaTypeOverwrite: "",
+			},
+		},
+		{
+			name:    "with instance name",
+			options: []TemplateKeyOption{WithInstanceName("test-instance")},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.Dutch,
+				InstanceName:       "test-instance",
+				MediaTypeOverwrite: "",
+			},
+		},
+		{
+			name:    "with media type",
+			options: []TemplateKeyOption{WithMediaTypeOverwrite("application/docx")},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.Dutch,
+				InstanceName:       "",
+				MediaTypeOverwrite: "application/docx",
+			},
+		},
+		{
+			name: "with multiple options",
+			options: []TemplateKeyOption{
+				WithLanguage(language.English),
+				WithInstanceName("test-instance"),
+				WithMediaTypeOverwrite("application/docx"),
+			},
+			expected: TemplateKey{
+				Name:               "landing-page.go.json",
+				Directory:          "internal/ogc/common/core/templates",
+				Format:             "json",
+				Language:           language.English,
+				InstanceName:       "test-instance",
+				MediaTypeOverwrite: "application/docx",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			key := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json", tt.options...)
+			assert.Equal(t, tt.expected.Name, key.Name)
+			assert.Equal(t, tt.expected.Directory, key.Directory)
+			assert.Equal(t, tt.expected.Format, key.Format)
+			assert.Equal(t, tt.expected.Language, key.Language)
+			assert.Equal(t, tt.expected.InstanceName, key.InstanceName)
+			assert.Equal(t, tt.expected.MediaTypeOverwrite, key.MediaTypeOverwrite)
+		})
+	}
 }
 
 func TestEngine_ReverseProxy(t *testing.T) {
@@ -118,10 +205,13 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 }
 
 type mockShutdownHook struct {
+	mutex  sync.Mutex
 	called bool
 }
 
 func (m *mockShutdownHook) Shutdown() {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	m.called = true
 }
 
@@ -160,7 +250,10 @@ func TestEngine_Start(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Check that the shutdown hook was called
-			assert.True(t, mockHook.called)
+			mockHook.mutex.Lock()
+			called := mockHook.called
+			mockHook.mutex.Unlock()
+			assert.True(t, called)
 		})
 	}
 }

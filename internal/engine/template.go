@@ -5,6 +5,7 @@ import (
 	"fmt"
 	htmltemplate "html/template"
 	"log"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -31,6 +32,9 @@ type TemplateKey struct {
 	// Format the file format based on the filename extension, 'html' or 'json'
 	Format string
 
+	// Optional. Use with caution, overwrite the Media-Type associated with the Format of this template.
+	MediaTypeOverwrite string
+
 	// Language of the contents of the template
 	Language language.Tag
 
@@ -38,6 +42,9 @@ type TemplateKey struct {
 	// By specifying an 'instance name' you can refer to a certain instance of a rendered template later on.
 	InstanceName string
 }
+
+// TemplateKeyOption implements the functional option pattern for TemplateKey.
+type TemplateKeyOption func(*TemplateKey)
 
 // TemplateData the data/variables passed as an argument into the template.
 type TemplateData struct {
@@ -85,29 +92,46 @@ type Breadcrumb struct {
 	Path string
 }
 
-// NewTemplateKey build TemplateKeys
-func NewTemplateKey(path string) TemplateKey {
-	return NewTemplateKeyWithName(path, "")
-}
-
-func NewTemplateKeyWithLanguage(path string, language language.Tag) TemplateKey {
-	return NewTemplateKeyWithNameAndLanguage(path, "", language)
-}
-
-// NewTemplateKeyWithName build TemplateKey with InstanceName (see docs in struct)
-func NewTemplateKeyWithName(path string, instanceName string) TemplateKey {
-	return NewTemplateKeyWithNameAndLanguage(path, instanceName, language.Dutch)
-}
-
-func NewTemplateKeyWithNameAndLanguage(path string, instanceName string, language language.Tag) TemplateKey {
-	cleanPath := filepath.Clean(path)
-	return TemplateKey{
-		Name:         filepath.Base(cleanPath),
-		Directory:    filepath.Dir(cleanPath),
-		Format:       strings.TrimPrefix(filepath.Ext(path), "."),
-		Language:     language,
-		InstanceName: instanceName,
+// WithLanguage sets the language of a TemplateKey
+func WithLanguage(language language.Tag) TemplateKeyOption {
+	return func(tk *TemplateKey) {
+		tk.Language = language
 	}
+}
+
+// WithNegotiatedLanguage sets the language of a TemplateKey based on content-negotiation.
+func (e *Engine) WithNegotiatedLanguage(w http.ResponseWriter, r *http.Request) TemplateKeyOption {
+	return WithLanguage(e.CN.NegotiateLanguage(w, r))
+}
+
+// WithInstanceName sets the instance name of a TemplateKey
+func WithInstanceName(instanceName string) TemplateKeyOption {
+	return func(tk *TemplateKey) {
+		tk.InstanceName = instanceName
+	}
+}
+
+// WithMediaTypeOverwrite overwrites the mediatype of the Format in a TemplateKey
+func WithMediaTypeOverwrite(mediaType string) TemplateKeyOption {
+	return func(tk *TemplateKey) {
+		tk.MediaTypeOverwrite = mediaType
+	}
+}
+
+// NewTemplateKey builds a TemplateKey with the given path and options
+func NewTemplateKey(path string, opts ...TemplateKeyOption) TemplateKey {
+	cleanPath := filepath.Clean(path)
+	tk := TemplateKey{
+		Name:      filepath.Base(cleanPath),
+		Directory: filepath.Dir(cleanPath),
+		Format:    strings.TrimPrefix(filepath.Ext(path), "."),
+		Language:  language.Dutch, // Default language
+	}
+
+	for _, opt := range opts {
+		opt(&tk)
+	}
+	return tk
 }
 
 func ExpandTemplateKey(key TemplateKey, language language.Tag) TemplateKey {
