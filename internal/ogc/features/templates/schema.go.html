@@ -22,7 +22,7 @@
                 <tr>
                     <td>{{ $feat.Name }}</td>
                     <td>{{ $feat.ToTypeFormat.Type }}</td>
-                    <td>{{ if $feat.Required }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
+                    <td>{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
                     <td>{{ $feat.Description }}</td>
                 </tr>
             {{ end }}

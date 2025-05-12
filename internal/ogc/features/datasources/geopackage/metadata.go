@@ -157,10 +157,10 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 			return nil, err
 		}
 		fields = append(fields, d.Field{
-			Name:            colName,
-			Type:            colType,
-			Required:        colNotNull == "1",
-			PrimaryGeometry: colName == table.GeometryColumnName,
+			Name:              colName,
+			Type:              colType,
+			IsRequired:        colNotNull == "1",
+			IsPrimaryGeometry: colName == table.GeometryColumnName,
 		})
 	}
 	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)

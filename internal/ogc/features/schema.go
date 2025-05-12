@@ -90,9 +90,9 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 				// OAF part 5: If the features have multiple temporal properties, the roles "primary-interval-start"
 				// and "primary-interval-end" can be used to identify the primary temporal information of the features.
 				if collection.Metadata.TemporalProperties.StartDate == field.Name {
-					field.PrimaryIntervalStart = true
+					field.IsPrimaryIntervalStart = true
 				} else if collection.Metadata.TemporalProperties.EndDate == field.Name {
-					field.PrimaryIntervalEnd = true
+					field.IsPrimaryIntervalEnd = true
 				}
 			}
 		}

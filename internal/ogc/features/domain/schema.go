@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"log"
 	"slices"
 	"strings"
 )
@@ -59,8 +60,8 @@ func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, er
 			}
 		}
 
-		field.Fid = field.Name == fidColumn
-		field.ExternalFid = field.Name == externalFidColumn
+		field.IsFid = field.Name == fidColumn
+		field.IsExternalFid = field.Name == externalFidColumn
 
 		publicFields[field.Name] = field
 	}
@@ -72,6 +73,7 @@ type Schema struct {
 	Fields map[string]Field
 }
 
+// FieldsWithDataType flatten fields to name=>datatype
 func (s Schema) FieldsWithDataType() map[string]string {
 	result := make(map[string]string)
 	for _, field := range s.Fields {
@@ -80,26 +82,28 @@ func (s Schema) FieldsWithDataType() map[string]string {
 	return result
 }
 
+// HasExternalFid convenience function
 func (s Schema) HasExternalFid() bool {
 	for _, field := range s.Fields {
-		if field.ExternalFid {
+		if field.IsExternalFid {
 			return true
 		}
 	}
 	return false
 }
 
+// Field a field/column/property in the schema. Contains at least a name and data type.
 type Field struct {
 	Name        string
 	Type        string // can be data source specific
 	Description string
 
-	Required             bool
-	PrimaryGeometry      bool
-	PrimaryIntervalStart bool
-	PrimaryIntervalEnd   bool
-	Fid                  bool
-	ExternalFid          bool
+	IsRequired             bool
+	IsPrimaryGeometry      bool
+	IsPrimaryIntervalStart bool
+	IsPrimaryIntervalEnd   bool
+	IsFid                  bool
+	IsExternalFid          bool
 }
 
 // TypeFormat type and optional format according to JSON schema (https://json-schema.org/).
@@ -143,6 +147,7 @@ func (f Field) ToTypeFormat() TypeFormat {
 		// followed by a hyphen, followed by the name of the geometry type in lower case
 		return TypeFormat{Type: lowerCaseType, Format: "geometry-" + lowerCaseType}
 	default:
-		return TypeFormat{Type: lowerCaseType}
+		log.Printf("Warning: unknown data type '%s' for field '%s', falling back to string", f.Type, f.Name)
+		return TypeFormat{Type: "string"}
 	}
 }

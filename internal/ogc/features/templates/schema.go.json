@@ -12,14 +12,14 @@
     {{ range $feat := .Params.Fields }}
       {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
       {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
-      {{ if $feat.Fid }}
+      {{ if $feat.IsFid }}
         {{ continue }}
       {{ end }}
-      {{ if $feat.ExternalFid }}
+      {{ if $feat.IsExternalFid }}
         {{ continue }}
       {{ end }}
 
-      {{ if $feat.Required }}
+      {{ if $feat.IsRequired }}
         ,
         "{{ $feat.Name }}"
       {{ end }}
@@ -42,10 +42,10 @@
     {{ range $feat := .Params.Fields }}
       {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
       {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
-      {{ if $feat.Fid }}
+      {{ if $feat.IsFid }}
         {{ continue }}
       {{ end }}
-      {{ if $feat.ExternalFid }}
+      {{ if $feat.IsExternalFid }}
         {{ continue }}
       {{ end }}
 
@@ -56,15 +56,15 @@
       "{{ $feat.Name }}": {
         {{ $typeFormat := $feat.ToTypeFormat }}
 
-        {{ if $feat.PrimaryIntervalStart }}
+        {{ if $feat.IsPrimaryIntervalStart }}
           {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-start" SHALL be a temporal property. */}}
           "x-ogc-role": "primary-interval-start"
-        {{ else if $feat.PrimaryIntervalEnd }}
+        {{ else if $feat.IsPrimaryIntervalEnd }}
           {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-end" SHALL be a temporal property. */}}
           "x-ogc-role": "primary-interval-end",
         {{ end }}
 
-        {{ if $feat.PrimaryGeometry }}
+        {{ if $feat.IsPrimaryGeometry }}
           {{/* OAF part 5: Each spatial property SHALL not include a "type" or "$ref" member.*/}}
           "x-ogc-role": "primary-geometry",
           "format": "{{ $typeFormat.Format }}"
