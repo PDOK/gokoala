@@ -9,7 +9,7 @@
   "type": "object",
   "required": [
     "id"
-    {{ range $idx, $feat := .Params.Fields }}
+    {{ range $feat := .Params.Fields }}
       {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
       {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
       {{ if $feat.Fid }}
@@ -39,7 +39,7 @@
       {{ end }}
     },
     {{ $firstProp := true }}
-    {{ range $idx, $feat := .Params.Fields }}
+    {{ range $feat := .Params.Fields }}
       {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
       {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
       {{ if $feat.Fid }}

@@ -149,19 +149,19 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 	}
 	defer rows.Close()
 
-	fields := make(map[string]d.Field)
+	fields := make([]d.Field, 0)
 	for rows.Next() {
 		var colName, colType, colNotNull string
 		err = rows.Scan(&colName, &colType, &colNotNull)
 		if err != nil {
 			return nil, err
 		}
-		fields[colName] = d.Field{
+		fields = append(fields, d.Field{
 			Name:            colName,
 			Type:            colType,
 			Required:        colNotNull == "1",
 			PrimaryGeometry: colName == table.GeometryColumnName,
-		}
+		})
 	}
 	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)
 	if err != nil {

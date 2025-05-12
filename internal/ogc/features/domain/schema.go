@@ -42,12 +42,12 @@ var geometryTypes = []string{
 	multipolygonType,
 }
 
-func NewSchema(fields map[string]Field, fidColumn, externalFidColumn string) (*Schema, error) {
+func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, error) {
 	publicFields := make(map[string]Field)
 	nrOfGeomsFound := 0
-	for name, field := range fields {
+	for _, field := range fields {
 		// Don't include internal/non-public fields in schema
-		if slices.Contains(fieldsToSkip, strings.ToLower(name)) {
+		if slices.Contains(fieldsToSkip, strings.ToLower(field.Name)) {
 			continue
 		}
 		// Don't allow multiple geometries. OAF Part 5 does support multiple geometries, but GeoPackage and GeoJSON don't
@@ -59,10 +59,10 @@ func NewSchema(fields map[string]Field, fidColumn, externalFidColumn string) (*S
 			}
 		}
 
-		field.Fid = name == fidColumn
-		field.ExternalFid = name == externalFidColumn
+		field.Fid = field.Name == fidColumn
+		field.ExternalFid = field.Name == externalFidColumn
 
-		publicFields[name] = field
+		publicFields[field.Name] = field
 	}
 	return &Schema{publicFields}, nil
 }
