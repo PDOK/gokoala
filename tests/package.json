@@ -10,9 +10,9 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "cypress": "^13.6.6",
-    "cypress-axe": "^1.5.0",
-    "cypress-html-validate": "^6.1.0",
+    "cypress": "^14.3.3",
+    "cypress-axe": "^1.6.0",
+    "cypress-html-validate": "^7.1.0",
     "html-validate": "^8.24.0",
     "typescript": "^5.3.3"
   }
