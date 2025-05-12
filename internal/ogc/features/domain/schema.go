@@ -112,6 +112,7 @@ type TypeFormat struct {
 	Format string
 }
 
+// ToTypeFormat converts the Field's data type to a valid JSON data type and optional format as specified in OAF Part 5.
 func (f Field) ToTypeFormat() TypeFormat {
 	lowerCaseType := strings.ToLower(f.Type)
 
