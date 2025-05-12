@@ -127,3 +127,5 @@ RequiredNo: nee
 FieldName: Veldnaam
 DataType: Datatype
 SchemaDescription: Onderstaande tabel beschrijft de aanwezige velden in deze collectie. Deze informatie is ook beschikbaar als
+FeatureIdDescription: De unieke identificatie van dit feature.
+StableFeatureIdOverTime: Dit ID zou stabiel moeten zijn door de tijd heen en altijd naar hetzelfde feature moeten verwijzen.

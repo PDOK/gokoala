@@ -18,7 +18,23 @@
                 </tr>
             </thead>
             <tbody>
+            <tr>
+                <td>id</td>
+                {{ if .Params.HasExternalFid }}
+                    <td>uuid</td>
+                {{ else }}
+                    <td>integer</td>
+                {{ end }}
+                <td>{{ i18n "RequiredYes"}}</td>
+                <td>{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "StableFeatureIdOverTime"}}{{ end }}</td>
+            </tr>
             {{ range $feat := .Params.Fields }}
+                {{ if $feat.IsFid }}
+                    {{ continue }}
+                {{ end }}
+                {{ if $feat.IsExternalFid }}
+                    {{ continue }}
+                {{ end }}
                 <tr>
                     <td>{{ $feat.Name }}</td>
                     <td>{{ $feat.ToTypeFormat.Type }}</td>

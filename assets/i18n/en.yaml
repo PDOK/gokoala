@@ -126,5 +126,7 @@ Required: Required
 RequiredYes: "yes"
 RequiredNo: "no"
 FieldName: Property
-DataType: Data type
+DataType: Type
 SchemaDescription: The table below describes the fields present in this collection. This information is also available as
+FeatureIdDescription: The unique identifier of this feature.
+StableFeatureIdOverTime: This ID should be stable over time and always refer tot the same feature.
