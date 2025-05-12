@@ -7,7 +7,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -142,28 +142,28 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string) (*domain.Schema, error) {
+func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string) (*d.Schema, error) {
 	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	fields := make(map[string]domain.Field)
+	fields := make(map[string]d.Field)
 	for rows.Next() {
 		var colName, colType, colNotNull string
 		err = rows.Scan(&colName, &colType, &colNotNull)
 		if err != nil {
 			return nil, err
 		}
-		fields[colName] = domain.Field{
+		fields[colName] = d.Field{
 			Name:            colName,
 			Type:            colType,
 			Required:        colNotNull == "1",
 			PrimaryGeometry: colName == table.GeometryColumnName,
 		}
 	}
-	schema, err := domain.NewSchema(fields, fidColumn, externalFidColumn)
+	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)
 	if err != nil {
 		return nil, err
 	}

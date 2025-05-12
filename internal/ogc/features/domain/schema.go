@@ -7,55 +7,58 @@ import (
 )
 
 const (
-	minxField = "minx"
-	minyField = "miny"
-	maxxField = "maxx"
-	maxyField = "maxy"
+	MinxField = "minx"
+	MinyField = "miny"
+	MaxxField = "maxx"
+	MaxyField = "maxy"
 )
 
 var fieldsToSkip = []string{
-	minxField,
-	minyField,
-	maxxField,
-	maxyField,
+	MinxField,
+	MinyField,
+	MaxxField,
+	MaxyField,
 }
 
 const (
-	geometryField           = "geometry"
-	geometryCollectionField = "geometrycollection"
-	pointField              = "point"
-	linestringField         = "linestring"
-	polygonField            = "polygon"
-	multipointField         = "multipoint"
-	multilinestringField    = "multilinestring"
-	multipolygonField       = "multipolygon"
+	geometryType           = "geometry"
+	geometryCollectionType = "geometrycollection"
+	pointType              = "point"
+	linestringType         = "linestring"
+	polygonType            = "polygon"
+	multipointType         = "multipoint"
+	multilinestringType    = "multilinestring"
+	multipolygonType       = "multipolygon"
 )
 
-var fieldsGeometry = []string{
-	geometryField,
-	geometryCollectionField,
-	pointField,
-	linestringField,
-	polygonField,
-	multipointField,
-	multilinestringField,
-	multipolygonField,
+var geometryTypes = []string{
+	geometryType,
+	geometryCollectionType,
+	pointType,
+	linestringType,
+	polygonType,
+	multipointType,
+	multilinestringType,
+	multipolygonType,
 }
 
 func NewSchema(fields map[string]Field, fidColumn, externalFidColumn string) (*Schema, error) {
 	publicFields := make(map[string]Field)
 	nrOfGeomsFound := 0
 	for name, field := range fields {
+		// Don't include internal/non-public fields in schema
 		if slices.Contains(fieldsToSkip, strings.ToLower(name)) {
 			continue
 		}
-		if slices.Contains(fieldsGeometry, strings.ToLower(field.Type)) {
+		// Don't allow multiple geometries. OAF Part 5 does support multiple geometries, but GeoPackage and GeoJSON don't
+		if slices.Contains(geometryTypes, strings.ToLower(field.Type)) {
 			nrOfGeomsFound++
 			if nrOfGeomsFound > 1 {
 				return nil, errors.New("more than one geometry field found! Currently only a single geometry " +
 					"per collection is supported (also a restriction of GeoJSON and GeoPackage)")
 			}
 		}
+
 		field.Fid = name == fidColumn
 		field.ExternalFid = name == externalFidColumn
 
@@ -64,6 +67,7 @@ func NewSchema(fields map[string]Field, fidColumn, externalFidColumn string) (*S
 	return &Schema{publicFields}, nil
 }
 
+// Schema derived from the data source (database) schema.
 type Schema struct {
 	Fields map[string]Field
 }
@@ -87,21 +91,24 @@ func (s Schema) HasExternalFid() bool {
 
 type Field struct {
 	Name        string
-	Type        string
+	Type        string // can be data source specific
 	Description string
 
-	Required        bool
-	PrimaryGeometry bool
-	Fid             bool
-	ExternalFid     bool
+	Required             bool
+	PrimaryGeometry      bool
+	PrimaryIntervalStart bool
+	PrimaryIntervalEnd   bool
+	Fid                  bool
+	ExternalFid          bool
 }
 
+// TypeFormat type and optional format according to JSON schema (https://json-schema.org/).
 type TypeFormat struct {
 	Type   string
 	Format string
 }
 
-func (f Field) ToJSONSchemaTypeFormat() TypeFormat {
+func (f Field) ToTypeFormat() TypeFormat {
 	lowerCaseType := strings.ToLower(f.Type)
 
 	switch lowerCaseType {
@@ -128,10 +135,10 @@ func (f Field) ToJSONSchemaTypeFormat() TypeFormat {
 		// From OAF Part 5: Each temporal property SHALL be a "string" literal with the appropriate format
 		// (e.g., "date-time" or "date" for instances, depending on the temporal granularity).
 		return TypeFormat{Type: "string", Format: "date-time"}
-	case geometryField, geometryCollectionField:
+	case geometryType, geometryCollectionType:
 		// From OAF Part 5: the following special value is supported: "geometry-any" as the wildcard for any geometry type
 		return TypeFormat{Type: lowerCaseType, Format: "geometry-any"}
-	case pointField, linestringField, polygonField, multipointField, multilinestringField, multipolygonField:
+	case pointType, linestringType, polygonType, multipointType, multilinestringType, multipolygonType:
 		// From OAF Part 5: Each spatial property SHALL include a "format" member with a string value "geometry",
 		// followed by a hyphen, followed by the name of the geometry type in lower case
 		return TypeFormat{Type: lowerCaseType, Format: "geometry-" + lowerCaseType}

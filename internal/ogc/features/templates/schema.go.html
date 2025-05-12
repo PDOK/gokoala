@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{ .Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ .Params.CollectionTitle }}</h1>
 </hgroup>
 <div class="row py-3">
     <div class="col-md-12">
@@ -21,7 +21,7 @@
             {{ range $feat := .Params.Fields }}
                 <tr>
                     <td>{{ $feat.Name }}</td>
-                    <td>{{ $feat.ToJSONSchemaTypeFormat.Type }}</td>
+                    <td>{{ $feat.ToTypeFormat.Type }}</td>
                     <td>{{ if $feat.Required }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
                     <td>{{ $feat.Description }}</td>
                 </tr>

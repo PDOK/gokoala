@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
+	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -17,7 +18,7 @@ func assertIndexesExist(
 	db *sqlx.DB, fidColumn string) error {
 
 	// index needs to contain these columns in the given order
-	defaultSpatialBtreeColumns := strings.Join([]string{fidColumn, "minx", "maxx", "miny", "maxy"}, ",")
+	defaultSpatialBtreeColumns := strings.Join([]string{fidColumn, d.MinxField, d.MaxxField, d.MinyField, d.MaxyField}, ",")
 
 	for collID, table := range featureTableByCollectionID {
 		if table == nil {

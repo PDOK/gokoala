@@ -120,7 +120,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				}
 			}
 
-		case minxField, minyField, maxxField, maxyField:
+		case MinxField, MinyField, MaxxField, MaxyField:
 			// Skip these columns used for bounding box handling
 			continue
 

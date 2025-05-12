@@ -407,14 +407,14 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
 		return "", nil, err
 	}
 	namedParams := map[string]any{
-		"fid":      criteria.Cursor.FID,
-		"limit":    criteria.Limit,
-		"bboxWkt":  bboxAsWKT,
-		"maxx":     criteria.Bbox.Max(0),
-		"minx":     criteria.Bbox.Min(0),
-		"maxy":     criteria.Bbox.Max(1),
-		"miny":     criteria.Bbox.Min(1),
-		"bboxSrid": criteria.InputSRID}
+		"fid":            criteria.Cursor.FID,
+		"limit":          criteria.Limit,
+		"bboxWkt":        bboxAsWKT,
+		domain.MaxxField: criteria.Bbox.Max(0),
+		domain.MinxField: criteria.Bbox.Min(0),
+		domain.MaxyField: criteria.Bbox.Max(1),
+		domain.MinyField: criteria.Bbox.Min(1),
+		"bboxSrid":       criteria.InputSRID}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
 	return bboxQuery, namedParams, nil
