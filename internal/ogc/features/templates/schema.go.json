@@ -27,10 +27,11 @@
   ],
   "properties": {
     "id": {
+      "readOnly": true,
       {{/* OAF part 5: A property with "x-ogc-role" set to "id" SHALL be the identifier of the item in the collection that contains the item.*/}}
       {{/* Only one property in a schema SHALL have "x-ogc-role" with a value "id".*/}}
       "x-ogc-role": "id",
-      "description": "{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "StableFeatureIdOverTime"}}{{ end }}",
+      "description": "{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "FeatureIdStableOverTime"}}{{ end }}",
       {{ if .Params.HasExternalFid }}
       "type": "string", {{/* OAF part 5: A property with role "id" SHALL either be a string or integer.*/}}
       "format": "uuid"

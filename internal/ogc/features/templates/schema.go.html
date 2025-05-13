@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{define "content"}}
 <hgroup>
-    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ .Params.CollectionTitle }}</h1>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ .Params.CollectionTitle }} - Schema</h1>
 </hgroup>
 <div class="row py-3">
     <div class="col-md-12">
@@ -19,14 +19,14 @@
             </thead>
             <tbody>
             <tr>
-                <td>id</td>
+                <td class="text-nowrap">id</td>
                 {{ if .Params.HasExternalFid }}
-                    <td>uuid</td>
+                    <td class="text-nowrap">uuid</td>
                 {{ else }}
-                    <td>integer</td>
+                    <td class="text-nowrap">integer</td>
                 {{ end }}
-                <td>{{ i18n "RequiredYes"}}</td>
-                <td>{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "StableFeatureIdOverTime"}}{{ end }}</td>
+                <td class="text-nowrap">{{ i18n "RequiredYes"}}</td>
+                <td class="text-wrap">{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "FeatureIdStableOverTime"}}{{ end }}</td>
             </tr>
             {{ range $feat := .Params.Fields }}
                 {{ if $feat.IsFid }}
@@ -35,11 +35,20 @@
                 {{ if $feat.IsExternalFid }}
                     {{ continue }}
                 {{ end }}
+
                 <tr>
-                    <td>{{ $feat.Name }}</td>
-                    <td>{{ $feat.ToTypeFormat.Type }}</td>
-                    <td>{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
-                    <td>{{ $feat.Description }}</td>
+                    <td class="text-nowrap">{{ $feat.Name }}</td>
+                    <td class="text-nowrap">{{ $feat.ToTypeFormat.Type }}</td>
+                    <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
+                    <td class="text-wrap">
+                        {{ if $feat.IsPrimaryIntervalStart }}
+                            {{ i18n "FeatureIntervalStartDescription"}}
+                        {{ else if $feat.IsPrimaryIntervalEnd }}
+                            {{ i18n "FeatureIntervalEndDescription"}}
+                        {{ end }}
+
+                        {{ $feat.Description }}
+                    </td>
                 </tr>
             {{ end }}
             </tbody>
