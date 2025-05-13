@@ -86,13 +86,13 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 
 		// expand the schema with details about temporal fields
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil {
-			for _, field := range schema.Fields {
+			for i := range schema.Fields {
 				// OAF part 5: If the features have multiple temporal properties, the roles "primary-interval-start"
 				// and "primary-interval-end" can be used to identify the primary temporal information of the features.
-				if collection.Metadata.TemporalProperties.StartDate == field.Name {
-					field.IsPrimaryIntervalStart = true
-				} else if collection.Metadata.TemporalProperties.EndDate == field.Name {
-					field.IsPrimaryIntervalEnd = true
+				if collection.Metadata.TemporalProperties.StartDate == schema.Fields[i].Name {
+					schema.Fields[i].IsPrimaryIntervalStart = true
+				} else if collection.Metadata.TemporalProperties.EndDate == schema.Fields[i].Name {
+					schema.Fields[i].IsPrimaryIntervalEnd = true
 				}
 			}
 		}

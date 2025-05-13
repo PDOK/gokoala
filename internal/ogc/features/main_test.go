@@ -829,7 +829,7 @@ func BenchmarkFeatures(b *testing.B) {
 	for _, tt := range tests {
 		req, err := createRequest(tt.fields.url, "dutch-addresses", "", "json")
 		if err != nil {
-			log.Fatal(err)
+			assert.Fail(b, err.Error())
 		}
 		rr, ts := createMockServer()
 
@@ -1156,7 +1156,7 @@ func TestFeatures_Feature(t *testing.T) {
 
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
 			if err != nil {
-				log.Fatal(err)
+				assert.Fail(t, err.Error())
 			}
 			rr, ts := createMockServer()
 			defer ts.Close()
@@ -1179,7 +1179,7 @@ func TestFeatures_Feature(t *testing.T) {
 				case tt.fields.format == "html":
 					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 				default:
-					log.Fatalf("implement support to test format: %s", tt.fields.format)
+					assert.Fail(t, "implement support to test format: %s", tt.fields.format)
 				}
 			}
 		})

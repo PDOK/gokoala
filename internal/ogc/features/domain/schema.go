@@ -44,7 +44,7 @@ var geometryTypes = []string{
 }
 
 func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, error) {
-	publicFields := make(map[string]Field)
+	publicFields := make([]Field, 0, len(fields))
 	nrOfGeomsFound := 0
 	for _, field := range fields {
 		// Don't include internal/non-public fields in schema
@@ -63,14 +63,14 @@ func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, er
 		field.IsFid = field.Name == fidColumn
 		field.IsExternalFid = field.Name == externalFidColumn
 
-		publicFields[field.Name] = field
+		publicFields = append(publicFields, field)
 	}
 	return &Schema{publicFields}, nil
 }
 
 // Schema derived from the data source (database) schema.
 type Schema struct {
-	Fields map[string]Field
+	Fields []Field
 }
 
 // FieldsWithDataType flatten fields to name=>datatype

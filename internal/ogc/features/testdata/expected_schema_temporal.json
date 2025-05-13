@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8080/collections/standplaatsen/schema",
+  "title": "standplaatsen",
+  "description": "standplaatsen",
+  "type": "object",
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "readOnly": true,
+      "x-ogc-role": "id",
+      "description": "De unieke identificatie van dit feature.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "geom": {
+      "x-ogc-role": "primary-geometry",
+      "format": "geometry-point"
+    },
+    "nummer_id": {
+      "type": "string"
+    },
+    "straatnaam": {
+      "type": "string"
+    },
+    "huisnummer": {
+      "type": "integer"
+    },
+    "huisletter": {
+      "type": "string"
+    },
+    "toevoeging": {
+      "type": "string"
+    },
+    "woonplaats": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "datum_strt": {
+      "x-ogc-role": "primary-interval-start",
+      "type": "string"
+    },
+    "datum_eind": {
+      "x-ogc-role": "primary-interval-end",
+      "type": "string"
+    },
+    "document": {
+      "type": "string"
+    },
+    "datum_doc": {
+      "type": "string"
+    },
+    "rdf_seealso": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

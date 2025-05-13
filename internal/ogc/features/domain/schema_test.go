@@ -27,10 +27,10 @@ func TestNewSchema(t *testing.T) {
 			externalFid:   "",
 			expectedError: false,
 			expectedSchema: &Schema{
-				Fields: map[string]Field{
-					"id":       {Name: "id", Type: "integer", IsFid: true, IsExternalFid: false},
-					"location": {Name: "location", Type: "Point", IsFid: false, IsExternalFid: false},
-					"name":     {Name: "name", Type: "string", IsFid: false, IsExternalFid: false},
+				Fields: []Field{
+					{Name: "id", Type: "integer", IsFid: true, IsExternalFid: false},
+					{Name: "location", Type: "Point", IsFid: false, IsExternalFid: false},
+					{Name: "name", Type: "string", IsFid: false, IsExternalFid: false},
 				},
 			},
 		},
@@ -57,9 +57,9 @@ func TestNewSchema(t *testing.T) {
 			externalFid:   "",
 			expectedError: false,
 			expectedSchema: &Schema{
-				Fields: map[string]Field{
-					"id":       {Name: "id", Type: "integer", IsFid: true, IsExternalFid: false},
-					"location": {Name: "location", Type: "Point", IsFid: false, IsExternalFid: false},
+				Fields: []Field{
+					{Name: "id", Type: "integer", IsFid: true, IsExternalFid: false},
+					{Name: "location", Type: "Point", IsFid: false, IsExternalFid: false},
 				},
 			},
 		},
@@ -74,10 +74,10 @@ func TestNewSchema(t *testing.T) {
 			externalFid:   "ext_id",
 			expectedError: false,
 			expectedSchema: &Schema{
-				Fields: map[string]Field{
-					"id":       {Name: "id", Type: "integer", IsFid: true, IsExternalFid: false},
-					"ext_id":   {Name: "ext_id", Type: "string", IsFid: false, IsExternalFid: true},
-					"location": {Name: "location", Type: "Point", IsFid: false, IsExternalFid: false},
+				Fields: []Field{
+					{Name: "id", Type: "integer", IsFid: true, IsExternalFid: false},
+					{Name: "ext_id", Type: "string", IsFid: false, IsExternalFid: true},
+					{Name: "location", Type: "Point", IsFid: false, IsExternalFid: false},
 				},
 			},
 		},
@@ -107,16 +107,16 @@ func TestFieldsWithDataType(t *testing.T) {
 		{
 			name: "empty schema",
 			schema: Schema{
-				Fields: map[string]Field{},
+				Fields: []Field{},
 			},
 			expectedDataTypes: map[string]string{},
 		},
 		{
 			name: "schema with fields",
 			schema: Schema{
-				Fields: map[string]Field{
-					"id":   {Name: "id", Type: "integer"},
-					"name": {Name: "name", Type: "string"},
+				Fields: []Field{
+					{Name: "id", Type: "integer"},
+					{Name: "name", Type: "string"},
 				},
 			},
 			expectedDataTypes: map[string]string{
@@ -142,9 +142,9 @@ func TestHasExternalFid(t *testing.T) {
 		{
 			name: "no external FID",
 			schema: Schema{
-				Fields: map[string]Field{
-					"id":   {Name: "id", Type: "integer", IsExternalFid: false},
-					"name": {Name: "name", Type: "string", IsExternalFid: false},
+				Fields: []Field{
+					{Name: "id", Type: "integer", IsExternalFid: false},
+					{Name: "name", Type: "string", IsExternalFid: false},
 				},
 			},
 			expectedValue: false,
@@ -152,10 +152,10 @@ func TestHasExternalFid(t *testing.T) {
 		{
 			name: "has external FID",
 			schema: Schema{
-				Fields: map[string]Field{
-					"id":       {Name: "id", Type: "integer", IsExternalFid: false},
-					"ext_id":   {Name: "ext_id", Type: "string", IsExternalFid: true},
-					"location": {Name: "location", Type: "Point", IsExternalFid: false},
+				Fields: []Field{
+					{Name: "id", Type: "integer", IsExternalFid: false},
+					{Name: "ext_id", Type: "string", IsExternalFid: true},
+					{Name: "location", Type: "Point", IsExternalFid: false},
 				},
 			},
 			expectedValue: true,

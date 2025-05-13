@@ -42,9 +42,9 @@
                     <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
                     <td class="text-wrap">
                         {{ if $feat.IsPrimaryIntervalStart }}
-                            {{ i18n "FeatureIntervalStartDescription"}}
+                            {{ i18n "FeatureIntervalStartDescription"}}<br/>
                         {{ else if $feat.IsPrimaryIntervalEnd }}
-                            {{ i18n "FeatureIntervalEndDescription"}}
+                            {{ i18n "FeatureIntervalEndDescription"}}<br/>
                         {{ end }}
 
                         {{ $feat.Description }}
