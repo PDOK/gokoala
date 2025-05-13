@@ -82,6 +82,18 @@
       "type": "text/html",
       "title": "The HTML representation of the newyork features served from this endpoint",
       "href": "http://localhost:8180/collections/newyork/items?f=html"
+    },
+    {
+      "rel": "http://www.opengis.net/def/rel/ogc/1.0/schema",
+      "type": "application/schema+json",
+      "title": "The JSON representation of the newyork schema",
+      "href": "http://localhost:8180/collections/newyork/schema?f=json"
+    },
+    {
+      "rel": "http://www.opengis.net/def/rel/ogc/1.0/schema",
+      "type": "text/html",
+      "title": "The HTML representation of the newyork schema",
+      "href": "http://localhost:8180/collections/newyork/schema?f=html"
     }
   ],
   "content": [

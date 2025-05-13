@@ -106,6 +106,9 @@ TemporalExtent: Temporal extent
 GoTo: Go to the
 ViewIn: View in the
 Browse: Browse through the
+BrowseSuffix: or go straight to the features in
+BrowseSchema: View the
+BrowseSchemaSuffix: of the features for mer details
 FeaturesExplanation: GeoJSON is an open and widely accepted format for feature data and the first choice for many (web) applications. However, it formally only supports the WGS84 projection. JSON-FG is an extension of GeoJSON and does offer official support for other projections. Since JSON-FG is a recent development, from a compatibility point of view GeoJSON is also offered in other projections for the time being.
 CollectionTilesHTML: This collection is available as vector tiles in one or multiple projections.
 CollectionTilesPlain: This collection is available as vector tiles in one or multiple projections.
@@ -119,7 +122,7 @@ ReferenceDate: Date
 Size: size
 ApplyFilters: Apply filters
 ResetFilter: Reset filter
-BrowseSuffix: or go straight to the features in
+
 
 # Schema page
 Required: Required

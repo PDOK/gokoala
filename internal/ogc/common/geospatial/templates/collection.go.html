@@ -193,6 +193,9 @@
                             {{ end }}
                             </ul>
                         </p>
+                        <p>
+                            {{ i18n "BrowseSchema" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.ID }}/schema">Schema</a> {{ i18n "BrowseSchemaSuffix" }}.
+                        </p>
                         <div class="alert alert-primary" role="alert">
                             <small>{{ i18n "FeaturesExplanation" }}</small>
                         </div>
