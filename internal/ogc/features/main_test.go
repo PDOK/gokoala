@@ -756,9 +756,9 @@ func TestFeatures(t *testing.T) {
 
 				printActual(rr)
 				switch {
-				case tt.fields.format == "json":
+				case tt.fields.format == engine.FormatJSON:
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
-				case tt.fields.format == "html":
+				case tt.fields.format == engine.FormatHTML:
 					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 				default:
 					log.Fatalf("implement support to test format: %s", tt.fields.format)
@@ -1174,9 +1174,9 @@ func TestFeatures_Feature(t *testing.T) {
 
 				printActual(rr)
 				switch {
-				case tt.fields.format == "json":
+				case tt.fields.format == engine.FormatJSON:
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
-				case tt.fields.format == "html":
+				case tt.fields.format == engine.FormatHTML:
 					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 				default:
 					assert.Fail(t, "implement support to test format: %s", tt.fields.format)
