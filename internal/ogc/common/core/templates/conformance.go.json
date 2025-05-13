@@ -37,10 +37,11 @@
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters"*/}}
-    ,"http://www.opengis.net/spec/json-fg-1/0.2"
     ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/schemas"
     ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/core-roles-features"
     ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/returnables-and-receivables"
+    {{/* Add more part 5 above this line */}}
+    ,"http://www.opengis.net/spec/json-fg-1/0.2"
     {{ end }}
 
     {{ if .Config.OgcAPI.Styles }}
