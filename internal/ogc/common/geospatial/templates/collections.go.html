@@ -39,7 +39,11 @@
                         <strong>{{ i18n "Keywords" }}</strong>: {{ $coll.Metadata.Keywords | join ", " }}
                     </li>
                     {{ end }}
-                    {{/* <li class="list-group-item"><b>Schema</b>: TODO link to collection schema</li> */}}
+                    {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
+                        {{ if $cfg.OgcAPI.Features.Collections.ContainsID $coll.ID }}
+                            <li class="list-group-item"><b>Schema</b>: <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}/schema" aria-label="{{ i18n "View" }} Schema">{{ i18n "View" }} schema</a></li>
+                        {{ end }}
+                    {{ end }}
                     {{ if and $coll.Metadata $coll.Metadata.LastUpdated }}
                     <li class="list-group-item">
                         {{ if and $coll.Metadata $coll.Metadata.LastUpdatedBy }}

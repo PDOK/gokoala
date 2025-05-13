@@ -26,11 +26,11 @@ type Datasource interface {
 	// GetFeature returns a specific Feature, based on its feature id
 	GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error)
 
-	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
-	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
+	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
+	GetSchema(collection string) (*domain.Schema, error)
 
 	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values.
-	// When enrichments don't apply the returned result should still contain all property filters as specified in the (YAML) config.
+	// When enrichments don't apply, the returned result should still contain all property filters as specified in the (YAML) config.
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
 
 	// Close closes (connections to) the datasource gracefully
@@ -39,18 +39,18 @@ type Datasource interface {
 
 // FeaturesCriteria to select a certain set of Features
 type FeaturesCriteria struct {
-	// pagination
+	// pagination (OAF part 1)
 	Cursor domain.DecodedCursor
 	Limit  int
 
-	// multiple projections support
+	// multiple projections support (OAF part 2)
 	InputSRID  int // derived from bbox or filter param when available, or WGS84 as default
 	OutputSRID int // derived from crs param when available, or WGS84 as default
 
-	// filtering by bounding box
+	// filtering by bounding box (OAF part 1)
 	Bbox *geom.Bounds
 
-	// filtering by reference date/time
+	// filtering by reference date/time (OAF part 1)
 	TemporalCriteria TemporalCriteria
 
 	// filtering by properties (OAF part 1)
@@ -69,14 +69,6 @@ type TemporalCriteria struct {
 	// startDate and endDate properties
 	StartDateProperty string
 	EndDateProperty   string
-}
-
-// FeatureTableMetadata abstraction to access metadata of a feature table (aka attribute table)
-type FeatureTableMetadata interface {
-
-	// ColumnsWithDataType returns a mapping from column names to column data types.
-	// Note: data types can be datasource specific.
-	ColumnsWithDataType() map[string]string
 }
 
 // PropertyFilterWithAllowedValues property filter as configured in the (YAML) config, but enriched with allowed values

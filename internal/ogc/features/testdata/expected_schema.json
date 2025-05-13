@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8080/collections/foo/schema",
+  "title": "Foooo",
+  "description": "Foooo",
+  "type": "object",
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "readOnly": true,
+      "x-ogc-role": "id",
+      "description": "De unieke identificatie van dit feature.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "datum_doc": {
+      "type": "string"
+    },
+    "datum_eind": {
+      "type": "string"
+    },
+    "datum_strt": {
+      "type": "string"
+    },
+    "document": {
+      "type": "string"
+    },
+    "geom": {
+      "x-ogc-role": "primary-geometry",
+      "format": "geometry-point"
+    },
+    "huisletter": {
+      "type": "string"
+    },
+    "huisnummer": {
+      "type": "integer"
+    },
+    "nummer_id": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "rdf_seealso": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "straatnaam": {
+      "type": "string"
+    },
+    "toevoeging": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "woonplaats": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

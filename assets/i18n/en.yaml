@@ -106,6 +106,9 @@ TemporalExtent: Temporal extent
 GoTo: Go to the
 ViewIn: View in the
 Browse: Browse through the
+BrowseSuffix: or go straight to the features in
+BrowseSchema: View the
+BrowseSchemaSuffix: of the features for more details
 FeaturesExplanation: GeoJSON is an open and widely accepted format for feature data and the first choice for many (web) applications. However, it formally only supports the WGS84 projection. JSON-FG is an extension of GeoJSON and does offer official support for other projections. Since JSON-FG is a recent development, from a compatibility point of view GeoJSON is also offered in other projections for the time being.
 CollectionTilesHTML: This collection is available as vector tiles in one or multiple projections.
 CollectionTilesPlain: This collection is available as vector tiles in one or multiple projections.
@@ -119,4 +122,16 @@ ReferenceDate: Date
 Size: size
 ApplyFilters: Apply filters
 ResetFilter: Reset filter
-BrowseSuffix: or go straight to the features in
+
+
+# Schema page
+Required: Required
+RequiredYes: "yes"
+RequiredNo: "no"
+FieldName: Property
+DataType: Type
+SchemaDescription: The table below describes the fields present in this collection. This information is also available as
+FeatureIdDescription: The unique identifier of this feature.
+FeatureIdStableOverTime: This ID should be stable over time and always refer tot the same feature.
+FeatureIntervalStartDescription: This property is as the start date when executing a temporal filter, e.g. ?datetime=2050-01-01T00:00:00Z.
+FeatureIntervalEndDescription: This property is as the end date when executing a temporal filter, e.g. ?datetime=2050-01-01T00:00:00Z.

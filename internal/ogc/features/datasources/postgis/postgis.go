@@ -40,7 +40,7 @@ func (pg PostGIS) GetFeature(_ context.Context, _ string, _ any, _ domain.Profil
 	return nil, nil
 }
 
-func (pg PostGIS) GetFeatureTableMetadata(_ string) (datasources.FeatureTableMetadata, error) {
+func (pg PostGIS) GetSchema(_ string) (*domain.Schema, error) {
 	log.Println("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return nil, nil
 }

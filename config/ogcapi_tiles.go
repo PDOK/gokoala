@@ -230,6 +230,8 @@ var HealthCheckDefaultTiles = map[int]TileCoordinates{
 // +kubebuilder:object:generate=true
 type HealthCheck struct {
 	// Enable/disable healthcheck on tiles. Defaults to true.
+	// +kubebuilder:default=true
+	// +optional
 	Enabled *bool `yaml:"enabled" json:"enabled" default:"true"`
 
 	// Projection (SRS/CRS) used for tile healthcheck

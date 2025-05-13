@@ -120,8 +120,8 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				}
 			}
 
-		case "minx", "miny", "maxx", "maxy", "min_zoom", "max_zoom":
-			// Skip these columns used for bounding box and zoom filtering
+		case MinxField, MinyField, MaxxField, MaxyField:
+			// Skip these columns used for bounding box handling
 			continue
 
 		case PrevFid:
@@ -141,7 +141,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
-			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a tag
+			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a feature property
 			switch v := columnValue.(type) {
 			case []uint8:
 				asBytes := make([]byte, len(v))
@@ -150,8 +150,8 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			case int64:
 				feature.Properties.Set(columnName, v)
 			case float64:
-				// Check to determine whether or not the content of the columnvalue is truly a floating point value.
-				// (Because of non strict tables in SQLite)
+				// Check to determine whether the content of the columnValue is truly a floating point value.
+				// (Because of non-strict tables in SQLite)
 				if !isFloat64(columnValue.(float64)) {
 					feature.Properties.Set(columnName, int64(v))
 				} else {

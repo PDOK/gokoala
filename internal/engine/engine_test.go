@@ -8,13 +8,13 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/go-chi/chi/v5"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,7 +38,7 @@ func TestEngine_ServePage_LandingPage(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		engine.ServePage(w, r, templateKey)
+		engine.Serve(w, r, ServeTemplate(templateKey))
 	})
 
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/", nil)
@@ -118,10 +118,13 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 }
 
 type mockShutdownHook struct {
+	mutex  sync.Mutex
 	called bool
 }
 
 func (m *mockShutdownHook) Shutdown() {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	m.called = true
 }
 
@@ -160,7 +163,10 @@ func TestEngine_Start(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Check that the shutdown hook was called
-			assert.True(t, mockHook.called)
+			mockHook.mutex.Lock()
+			called := mockHook.called
+			mockHook.mutex.Unlock()
+			assert.True(t, called)
 		})
 	}
 }

@@ -124,39 +124,45 @@ func NewTiles(e *engine.Engine) *Tiles {
 
 func (t *Tiles) TileMatrixSets() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tileMatrixSets.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKey(templatesDir+"tileMatrixSets.go."+t.engine.CN.NegotiateFormat(r),
+			t.engine.WithNegotiatedLanguage(w, r))
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
 func (t *Tiles) TileMatrixSet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+tileMatrixSetsLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r),
+			t.engine.WithNegotiatedLanguage(w, r))
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
 func (t *Tiles) TilesetsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKey(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r),
+			t.engine.WithNegotiatedLanguage(w, r))
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
 func (t *Tiles) TilesetsListForCollection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
-		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKey(templatesDir+"tiles.go."+t.engine.CN.NegotiateFormat(r),
+			engine.WithInstanceName(collectionID),
+			t.engine.WithNegotiatedLanguage(w, r))
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
 func (t *Tiles) Tileset() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
-		key := engine.NewTemplateKeyWithLanguage(templatesDir+tilesLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKey(templatesDir+tilesLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r),
+			t.engine.WithNegotiatedLanguage(w, r))
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -164,8 +170,10 @@ func (t *Tiles) TilesetForCollection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")
 		tileMatrixSetID := chi.URLParam(r, "tileMatrixSetId")
-		key := engine.NewTemplateKeyWithNameAndLanguage(templatesDir+tilesLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r), collectionID, t.engine.CN.NegotiateLanguage(w, r))
-		t.engine.ServePage(w, r, key)
+		key := engine.NewTemplateKey(templatesDir+tilesLocalPath+tileMatrixSetID+".go."+t.engine.CN.NegotiateFormat(r),
+			engine.WithInstanceName(collectionID),
+			t.engine.WithNegotiatedLanguage(w, r))
+		t.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
@@ -335,8 +343,8 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 	e.RenderTemplatesWithParams(path,
 		data,
 		breadcrumbs,
-		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.json", collectionID),
-		engine.NewTemplateKeyWithName(templatesDir+"tiles.go.html", collectionID))
+		engine.NewTemplateKey(templatesDir+"tiles.go.json", engine.WithInstanceName(collectionID)),
+		engine.NewTemplateKey(templatesDir+"tiles.go.html", engine.WithInstanceName(collectionID)))
 
 	// Now render metadata about tiles per projection/SRS.
 	for _, projection := range config.AllTileProjections {
@@ -362,12 +370,12 @@ func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollect
 		e.RenderTemplatesWithParams(path,
 			data,
 			projectionBreadcrumbs,
-			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.json", collectionID),
-			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.html", collectionID))
+			engine.NewTemplateKey(templatesDir+tilesLocalPath+projection+".go.json", engine.WithInstanceName(collectionID)),
+			engine.NewTemplateKey(templatesDir+tilesLocalPath+projection+".go.html", engine.WithInstanceName(collectionID)))
 		e.RenderTemplatesWithParams(path,
 			data,
 			projectionBreadcrumbs,
-			engine.NewTemplateKeyWithName(templatesDir+tilesLocalPath+projection+".go.tilejson", collectionID))
+			engine.NewTemplateKey(templatesDir+tilesLocalPath+projection+".go.tilejson", engine.WithInstanceName(collectionID)))
 	}
 }
 
@@ -409,7 +417,9 @@ func parseTileParams(tileMatrix, tileRow, tileCol string) (int, int, int, error)
 	return tm, tr, tc, errors.Join(tmErr, trErr, tcErr)
 }
 
-func checkTileMatrixSetLimits(tileMatrixSetLimits map[string]map[int]TileMatrixSetLimits, tileMatrixSetID string, tileMatrix, tileRow, tileCol int) error {
+func checkTileMatrixSetLimits(tileMatrixSetLimits map[string]map[int]TileMatrixSetLimits,
+	tileMatrixSetID string, tileMatrix, tileRow, tileCol int) error {
+
 	if limits, ok := tileMatrixSetLimits[tileMatrixSetID][tileMatrix]; !ok {
 		// tileMatrix out of supported range
 		return fmt.Errorf("tileMatrix %d is out of range", tileMatrix)

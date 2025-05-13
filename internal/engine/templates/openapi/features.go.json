@@ -22,6 +22,9 @@
         "operationId": "{{ $coll.ID }}.getFeatures",
         "parameters": [
           {
+            "$ref": "#/components/parameters/f-features"
+          },
+          {
             "$ref": "#/components/parameters/limit"
           },
           {
@@ -250,6 +253,9 @@
             }
           },
           {
+            "$ref": "#/components/parameters/f-features"
+          },
+          {
             "$ref": "#/components/parameters/crs"
           }
         ],
@@ -356,6 +362,37 @@
                     "floors": "2",
                     "lastUpdate": "2015-08-01T12:34:56Z"
                   }
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/collections/{{ $coll.ID }}/schema": {
+      "get": {
+        "tags" : [ "Features" ],
+        "summary": "fetch the schema of this collection",
+        "description": "Fetch the schema of the collection with id `{{ $coll.ID }}`. The schema describes the features such as the available fields and data types.\n\nUse content negotiation to request HTML or JSON schema.",
+        "operationId": "{{ $coll.ID }}.getSchema",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response is a document containing the schema that describes the features in this collection.",
+            "content": {
+              "application/schema+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jsonSchema"
                 }
               },
               "text/html": {
@@ -902,6 +939,47 @@
           }
         },
         "description": "The temporal extent of the features in the collection."
+      },
+      "jsonSchema": {
+        "required": [
+          "type",
+          "$id",
+          "$schema"
+        ],
+        "type": "object",
+        "description": "A JSON Schema definition",
+        "properties": {
+          "$id": {
+            "type": "string",
+            "description": "URI that serves as the schema identifier"
+          },
+          "$schema": {
+            "type": "string",
+            "description": "URI that identifies the JSON Schema version"
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable title of the schema"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the schema"
+          },
+          "type": {
+            "type": "string"
+          },
+          "required": {
+            "type": "array",
+            "description": "List of required property names",
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "description": "Schema for object properties"
+          }
+        }
       }
     },
     "parameters": {
@@ -1046,6 +1124,23 @@
         "schema": {
           "type": "string"
         }
+      },
+      "f-features": {
+        "description": "The optional f parameter indicates the output format that the server shall provide as part of the response document.  The default format is JSON.",
+        "explode": false,
+        "in": "query",
+        "name": "f",
+        "required": false,
+        "schema": {
+          "default": "json",
+          "enum": [
+            "json",
+            "jsonfg",
+            "html"
+          ],
+          "type": "string"
+        },
+        "style": "form"
       }
     }
   }

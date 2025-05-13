@@ -106,13 +106,12 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
-				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				collectionID: "foo",
 				format:       "docx",
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -757,9 +756,9 @@ func TestFeatures(t *testing.T) {
 
 				printActual(rr)
 				switch {
-				case tt.fields.format == "json":
+				case tt.fields.format == engine.FormatJSON:
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
-				case tt.fields.format == "html":
+				case tt.fields.format == engine.FormatHTML:
 					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 				default:
 					log.Fatalf("implement support to test format: %s", tt.fields.format)
@@ -830,7 +829,7 @@ func BenchmarkFeatures(b *testing.B) {
 	for _, tt := range tests {
 		req, err := createRequest(tt.fields.url, "dutch-addresses", "", "json")
 		if err != nil {
-			log.Fatal(err)
+			assert.Fail(b, err.Error())
 		}
 		rr, ts := createMockServer()
 
@@ -964,7 +963,7 @@ func TestFeatures_Feature(t *testing.T) {
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -1157,7 +1156,7 @@ func TestFeatures_Feature(t *testing.T) {
 
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
 			if err != nil {
-				log.Fatal(err)
+				assert.Fail(t, err.Error())
 			}
 			rr, ts := createMockServer()
 			defer ts.Close()
@@ -1175,12 +1174,12 @@ func TestFeatures_Feature(t *testing.T) {
 
 				printActual(rr)
 				switch {
-				case tt.fields.format == "json":
+				case tt.fields.format == engine.FormatJSON:
 					assert.JSONEq(t, string(expectedBody), rr.Body.String())
-				case tt.fields.format == "html":
+				case tt.fields.format == engine.FormatHTML:
 					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 				default:
-					log.Fatalf("implement support to test format: %s", tt.fields.format)
+					assert.Fail(t, "implement support to test format: %s", tt.fields.format)
 				}
 			}
 		})

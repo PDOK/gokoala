@@ -56,6 +56,7 @@ func NewFeatures(e *engine.Engine) *Features {
 	configuredCollections = cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
+	renderSchemas(e, datasources)
 	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
 
 	f := &Features{
@@ -69,12 +70,13 @@ func NewFeatures(e *engine.Engine) *Features {
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
 	return f
 }
 
 // Features serve a FeatureCollection with the given collectionId
 //
-// Beware: this is one of the most performance sensitive pieces of code in the system.
+// Beware: this is one of the most performance-sensitive pieces of code in the system.
 // Try to do as much initialization work outside the hot path, and only do essential
 // operations inside this method.
 func (f *Features) Features() http.HandlerFunc {
@@ -308,6 +310,8 @@ func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.
 	return result
 }
 
+// configureTopLevelDatasources configures top-level datasources - in one or multiple CRS's - which can be
+// used by one or multiple collections (e.g., one GPKG that covers holds an entire dataset)
 func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	if cfg.Datasources == nil {
@@ -338,6 +342,8 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 	}
 }
 
+// configureCollectionDatasources configures datasources - in one or multiple CRS's - which are specific
+// to a certain collection (e.g., a separate GPKG per collection)
 func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	for _, coll := range cfg.Collections {

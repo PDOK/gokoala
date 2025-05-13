@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8080/collections/foo/schema",
+  "title": "Foo",
+  "description": "Contains 3D linestrings",
+  "type": "object",
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "readOnly": true,
+      "x-ogc-role": "id",
+      "description": "De unieke identificatie van dit feature.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "geom": {
+      "x-ogc-role": "primary-geometry",
+      "format": "geometry-linestring"
+    }
+  },
+  "additionalProperties": true
+}
