@@ -46,7 +46,14 @@ var geometryTypes = []string{
 func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, error) {
 	publicFields := make([]Field, 0, len(fields))
 	nrOfGeomsFound := 0
+
 	for _, field := range fields {
+		if field.Name == "" {
+			return nil, errors.New("empty field name found, field name is required")
+		}
+		if field.Type == "" {
+			return nil, errors.New("empty field type found, field type is required")
+		}
 		// Don't include internal/non-public fields in schema
 		if slices.Contains(fieldsToSkip, strings.ToLower(field.Name)) {
 			continue
@@ -94,9 +101,9 @@ func (s Schema) HasExternalFid() bool {
 
 // Field a field/column/property in the schema. Contains at least a name and data type.
 type Field struct {
-	Name        string
-	Type        string // can be data source specific
-	Description string
+	Name        string // required
+	Type        string // required, can be data source specific
+	Description string // optional
 
 	IsRequired             bool
 	IsPrimaryGeometry      bool

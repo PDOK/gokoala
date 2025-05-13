@@ -35,7 +35,7 @@ func TestNewSchema(t *testing.T) {
 			},
 		},
 		{
-			name: "multiple geometry fields",
+			name: "fail on multiple geometry fields",
 			fields: []Field{
 				{Name: "id", Type: "integer"},
 				{Name: "location", Type: "Point"},
@@ -45,6 +45,30 @@ func TestNewSchema(t *testing.T) {
 			externalFid:    "",
 			expectedError:  true,
 			expectedErrMsg: "more than one geometry field found",
+		},
+		{
+			name: "fail on empty field name",
+			fields: []Field{
+				{Name: "id", Type: "integer"},
+				{Name: "", Type: "Point"},
+				{Name: "shape", Type: "Polygon"},
+			},
+			fidColumn:      "id",
+			externalFid:    "",
+			expectedError:  true,
+			expectedErrMsg: "empty field name found, field name is required",
+		},
+		{
+			name: "fail on empty field type",
+			fields: []Field{
+				{Name: "id", Type: "integer"},
+				{Name: "location", Type: "Point"},
+				{Name: "shape", Type: ""},
+			},
+			fidColumn:      "id",
+			externalFid:    "",
+			expectedError:  true,
+			expectedErrMsg: "empty field type found, field type is required",
 		},
 		{
 			name: "fields to skip are ignored",
