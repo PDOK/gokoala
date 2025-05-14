@@ -1,25 +1,18 @@
 package features
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/google/uuid"
-	"github.com/twpayne/go-geom"
-
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgis"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/go-chi/chi/v5"
 )
 
 const (
@@ -27,8 +20,7 @@ const (
 )
 
 var (
-	configuredCollections  map[string]config.GeoSpatialCollection
-	emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
+	configuredCollections map[string]config.GeoSpatialCollection
 )
 
 type DatasourceKey struct {
@@ -74,182 +66,6 @@ func NewFeatures(e *engine.Engine) *Features {
 	return f
 }
 
-// Features serve a FeatureCollection with the given collectionId
-//
-// Beware: this is one of the most performance-sensitive pieces of code in the system.
-// Try to do as much initialization work outside the hot path, and only do essential
-// operations inside this method.
-func (f *Features) Features() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-
-		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
-		if !ok {
-			handleCollectionNotFound(w, collectionID)
-			return
-		}
-		url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
-			referenceDate, propertyFilters, err := f.parseFeaturesURL(r, collection)
-		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
-
-		var newCursor domain.Cursors
-		var fc *domain.FeatureCollection
-		if querySingleDatasource(inputSRID, outputSRID, bbox) {
-			// fast path
-			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:           encodedCursor.Decode(url.checksum()),
-				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
-				Bbox:             bbox,
-				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
-				PropertyFilters:  propertyFilters,
-				// Add filter, filter-lang
-			}, f.defaultProfile)
-			if err != nil {
-				handleFeaturesQueryError(w, collectionID, err)
-				return
-			}
-		} else {
-			// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
-			var fids []int64
-			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
-			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:           encodedCursor.Decode(url.checksum()),
-				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
-				Bbox:             bbox,
-				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
-				PropertyFilters:  propertyFilters,
-				// Add filter, filter-lang
-			})
-			if err == nil && fids != nil {
-				datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.defaultProfile)
-			}
-			if err != nil {
-				handleFeaturesQueryError(w, collectionID, err)
-				return
-			}
-		}
-		if fc == nil {
-			fc = emptyFeatureCollection
-		}
-
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
-		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.configuredPropertyFilters[collectionID], collection.Features, fc)
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
-		case engine.FormatJSONFG:
-			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, collection.Features, fc, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-			return
-		}
-	}
-}
-
-// Feature serves a single Feature
-func (f *Features) Feature() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-
-		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
-		if !ok {
-			handleCollectionNotFound(w, collectionID)
-			return
-		}
-		featureID, err := parseFeatureID(r)
-		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		outputSRID, contentCrs, err := url.parse()
-		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
-
-		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.defaultProfile)
-		if err != nil {
-			handleFeatureQueryError(w, collectionID, featureID, err)
-			return
-		}
-		if feat == nil {
-			handleFeatureNotFound(w, collectionID, featureID)
-			return
-		}
-
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
-		case engine.FormatHTML:
-			f.html.feature(w, r, collectionID, collection.Features, feat)
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
-		case engine.FormatJSONFG:
-			f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-			return
-		}
-	}
-}
-
-func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
-	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Bounds, time.Time, map[string]string, error) {
-
-	url := featureCollectionURL{
-		*f.engine.Config.BaseURL.URL,
-		r.URL.Query(),
-		f.engine.Config.OgcAPI.Features.Limit,
-		f.configuredPropertyFilters[collection.ID],
-		collection.HasDateTime(),
-	}
-	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
-	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err
-}
-
-func parseFeatureID(r *http.Request) (any, error) {
-	var featureID any
-	featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
-	if err != nil {
-		// fallback to numerical feature id
-		featureID, err = strconv.ParseInt(chi.URLParam(r, "featureId"), 10, 0)
-		if err != nil {
-			return nil, errors.New("feature ID must be a UUID or number")
-		}
-	}
-	return featureID, nil
-}
-
-func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {
-	result := make(map[string]config.GeoSpatialCollection)
-	for _, collection := range e.Config.OgcAPI.Features.Collections {
-		result[collection.ID] = collection
-	}
-	return result
-}
-
 func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 	configured := make(map[DatasourceKey]*DatasourceConfig, len(e.Config.OgcAPI.Features.Collections))
 
@@ -283,6 +99,14 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 		} else {
 			result[k] = existing
 		}
+	}
+	return result
+}
+
+func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {
+	result := make(map[string]config.GeoSpatialCollection)
+	for _, collection := range e.Config.OgcAPI.Features.Collections {
+		result[collection.ID] = collection
 	}
 	return result
 }
@@ -375,20 +199,8 @@ func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig
 	return datasource
 }
 
-func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {
-	return bbox == nil ||
-		int(input) == int(output) ||
-		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||
-		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
-}
-
-func getTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {
-	var temporalCriteria ds.TemporalCriteria
-	if collection.HasDateTime() {
-		temporalCriteria = ds.TemporalCriteria{
-			ReferenceDate:     referenceDate,
-			StartDateProperty: collection.Metadata.TemporalProperties.StartDate,
-			EndDateProperty:   collection.Metadata.TemporalProperties.EndDate}
-	}
-	return temporalCriteria
+func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
+	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }

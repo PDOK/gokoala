@@ -16,7 +16,7 @@ const schemasPath = "/schema"
 const schemaHTML = templatesDir + "schema.go.html"
 const schemaJSON = templatesDir + "schema.go.json"
 
-// Schema serves a schema that describes the features in the collection, either as HTML
+// Schema endpoint serves a schema that describes the features in the collection, either as HTML
 // or as JSON schema (https://json-schema.org/)
 func (f *Features) Schema() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
