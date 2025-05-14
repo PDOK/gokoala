@@ -8,7 +8,13 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
+
+type openAPIParams struct {
+	PropertyFiltersByCollection map[string][]OpenAPIPropertyFilter
+	SchemasByCollection         map[string]domain.Schema
+}
 
 type OpenAPIPropertyFilter struct {
 	Name          string
@@ -17,20 +23,23 @@ type OpenAPIPropertyFilter struct {
 	AllowedValues []string
 }
 
-// rebuildOpenAPIForFeatures Rebuild OpenAPI spec with additional info from given datasources
-func rebuildOpenAPIForFeatures(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource, filters map[string]ds.PropertyFiltersWithAllowedValues) {
+// rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters
+func rebuildOpenAPI(e *engine.Engine,
+	datasources map[datasourceKey]ds.Datasource,
+	filters map[string]ds.PropertyFiltersWithAllowedValues,
+	schemas map[string]domain.Schema) {
+
 	propertyFiltersByCollection, err := createPropertyFiltersByCollection(datasources, filters)
 	if err != nil {
 		log.Fatal(err)
 	}
-	e.RebuildOpenAPI(struct {
-		PropertyFiltersByCollection map[string][]OpenAPIPropertyFilter
-	}{
+	e.RebuildOpenAPI(openAPIParams{
 		PropertyFiltersByCollection: propertyFiltersByCollection,
+		SchemasByCollection:         schemas,
 	})
 }
 
-func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasource,
+func createPropertyFiltersByCollection(datasources map[datasourceKey]ds.Datasource,
 	filters map[string]ds.PropertyFiltersWithAllowedValues) (map[string][]OpenAPIPropertyFilter, error) {
 
 	result := make(map[string][]OpenAPIPropertyFilter)

@@ -60,7 +60,8 @@ type schemaTemplateData struct {
 }
 
 // renderSchemas pre-renders HTML and JSON schemas describing each feature collection.
-func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource) {
+func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource) map[string]domain.Schema {
+	schemasByCollection := make(map[string]domain.Schema)
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		title, description := getCollectionTitleAndDesc(collection)
 
@@ -77,7 +78,7 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 		}...)
 
 		// the schema should be the same regardless of CRS, so we use WGS84 as it's the default and always present
-		datasource := datasources[DatasourceKey{srid: domain.WGS84SRID, collectionID: collection.ID}]
+		datasource := datasources[datasourceKey{srid: domain.WGS84SRID, collectionID: collection.ID}]
 		schema, err := datasource.GetSchema(collection.ID)
 		if err != nil {
 			log.Printf("Failed to render OGC API Features part 5 Schema for collection %s: %v", collection.ID, err)
@@ -112,8 +113,12 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 			),
 			engine.NewTemplateKey(schemaHTML,
 				engine.WithInstanceName(collection.ID),
-			))
+			),
+		)
+
+		schemasByCollection[collection.ID] = *schema
 	}
+	return schemasByCollection
 }
 
 func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, *string) {
