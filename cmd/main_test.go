@@ -25,7 +25,7 @@ func init() {
 	}
 }
 
-func Test_newRouter(t *testing.T) {
+func TestBuildingBlocks(t *testing.T) {
 	tests := []struct {
 		name       string
 		configFile string

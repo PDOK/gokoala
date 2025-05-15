@@ -92,135 +92,12 @@
             "content": {
               "application/geo+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureCollectionGeoJSON"
-                },
-                "example": {
-                  "type": "FeatureCollection",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
-                      "rel": "next",
-                      "type": "application/geo+json",
-                      "title": "next page"
-                    }
-                  ],
-                  "timeStamp": "2018-04-03T14:52:23Z",
-{{/*                  "numberMatched": 123,*/}}
-                  "numberReturned": 2,
-                  "features": [
-                    {
-                      "type": "Feature",
-                      "id": "123",
-                      "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "properties": {
-                        "function": "residential",
-                        "floors": "2",
-                        "lastUpdate": "2015-08-01T12:34:56Z"
-                      }
-                    },
-                    {
-                      "type": "Feature",
-                      "id": "132",
-                      "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "properties": {
-                        "function": "public use",
-                        "floors": "10",
-                        "lastUpdate": "2013-12-03T10:15:37Z"
-                      }
-                    }
-                  ]
+                  "$ref": "#/components/schemas/featureCollectionGeoJSON_{{ $coll.ID }}"
                 }
               },
               "application/vnd.ogc.fg+json": {
                 "schema": {
                   "$ref": "#/components/schemas/featureCollectionJSONFG"
-                },
-                "example": {
-                  "conformsTo": [
-                    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
-                  ],
-                  "type": "FeatureCollection",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
-                      "rel": "next",
-                      "type": "application/geo+json",
-                      "title": "next page"
-                    }
-                  ],
-                  "timeStamp": "2018-04-03T14:52:23Z",
-                  {{/*                  "numberMatched": 123,*/}}
-                  "numberReturned": 2,
-                  "features": [
-                    {
-                      "type": "Feature",
-                      "id": "123",
-                      "place": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "geometry": null,
-                      "time": null,
-                      "properties": {
-                        "function": "residential",
-                        "floors": "2",
-                        "lastUpdate": "2015-08-01T12:34:56Z"
-                      }
-                    },
-                    {
-                      "type": "Feature",
-                      "id": "132",
-                      "place": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "geometry": null,
-                      "time": null,
-                      "properties": {
-                        "function": "public use",
-                        "floors": "10",
-                        "lastUpdate": "2013-12-03T10:15:37Z"
-                      }
-                    }
-                  ]
                 }
               },
               "text/html": {
@@ -274,94 +151,12 @@
             "content": {
               "application/geo+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureGeoJSON"
-                },
-                "example": {
-                  "type": "Feature",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/id/building/123",
-                      "rel": "canonical",
-                      "title": "canonical URI of the building"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings",
-                      "rel": "collection",
-                      "type": "application/geo+json",
-                      "title": "the collection document"
-                    }
-                  ],
-                  "id": "123",
-                  "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                      "..."
-                    ]
-                  },
-                  "properties": {
-                    "function": "residential",
-                    "floors": "2",
-                    "lastUpdate": "2015-08-01T12:34:56Z"
-                  }
+                  "$ref": "#/components/schemas/featureGeoJSON_{{ $coll.ID }}"
                 }
               },
               "application/vnd.ogc.fg+json": {
                 "schema": {
                   "$ref": "#/components/schemas/featureJSONFG"
-                },
-                "example": {
-                  "type": "Feature",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/id/building/123",
-                      "rel": "canonical",
-                      "title": "canonical URI of the building"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings",
-                      "rel": "collection",
-                      "type": "application/geo+json",
-                      "title": "the collection document"
-                    }
-                  ],
-                  "id": "123",
-                  "place": {
-                    "type": "Polygon",
-                    "coordinates": [
-                      "..."
-                    ]
-                  },
-                  "geometry": null,
-                  "time": null,
-                  "properties": {
-                    "function": "residential",
-                    "floors": "2",
-                    "lastUpdate": "2015-08-01T12:34:56Z"
-                  }
                 }
               },
               "text/html": {
@@ -464,7 +259,9 @@
           }
         }
       },
-      "featureCollectionGeoJSON": {
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureCollectionGeoJSON_{{ $coll.ID }}": {
         "required": [
           "features",
           "type"
@@ -480,7 +277,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureGeoJSON"
+              "$ref": "#/components/schemas/featureGeoJSON_{{ $coll.ID }}"
             }
           },
           "links": {
@@ -499,7 +296,9 @@
             "$ref": "#/components/schemas/numberReturned"
           }
         }
-      },
+      }
+      {{ end }}
+      ,
       "featureJSONFG": {
         "required": [
             "time",
@@ -572,7 +371,9 @@
           }
         }
       },
-      "featureGeoJSON": {
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureGeoJSON_{{ $coll.ID }}": {
         "required": [
           "geometry",
           "properties",
@@ -596,7 +397,43 @@
           },
           "properties": {
             "type": "object",
-            "nullable": true
+            "properties": {
+              {{ if and $.Params $.Params.SchemasByCollection -}}
+                {{ range $schemaColl, $schema := $.Params.SchemasByCollection -}}
+                  {{ if eq $coll.ID $schemaColl -}}
+
+                    {{ $firstProp := true -}}
+                    {{ range $index, $schemaField := $schema.Fields -}}
+                      {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
+                      {{/* We always use an 'id' field as required by GeoJSON / JSON-FG.*/}}
+                      {{ if $schemaField.IsFid -}}
+                        {{ continue }}
+                      {{ end -}}
+                      {{ if $schemaField.IsExternalFid -}}
+                        {{ continue }}
+                      {{ end -}}
+                      {{/* Skip geometry fields, since we don't include those directly. */}}
+                      {{/* We always use an 'geometry' field as required by GeoJSON / JSON-FG.*/}}
+                      {{ if $schemaField.IsPrimaryGeometry -}}
+                        {{ continue }}
+                      {{ end -}}
+
+                      {{/* Avoid first comma */}}
+                      {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }}
+
+                      "{{ $schemaField.Name }}": {
+                        {{ $typeFormat := $schemaField.ToTypeFormat -}}
+                        "type": "{{ $typeFormat.Type }}",
+                        {{ if $typeFormat.Format }}"format": "{{ $typeFormat.Format }}", {{ end }}
+                        "nullable": {{ not $schemaField.IsRequired }},
+                        "description": "{{ $schemaField.Description }}"
+                      }
+                    {{ end -}}
+
+                  {{ end -}}
+                {{ end -}}
+              {{ end -}}
+            }
           },
           "id": {
             "oneOf": [
@@ -615,7 +452,9 @@
             }
           }
         }
-      },
+      }
+      {{ end }}
+      ,
       "geometryGeoJSON": {
         "oneOf": [
           {
