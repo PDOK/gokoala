@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>http://localhost:8080/</loc>
@@ -21,10 +22,16 @@
         <loc>http://localhost:8080/collections/addresses/items?f=html</loc>
     </url>
     <url>
+        <loc>http://localhost:8080/collections/addresses/schema?f=html</loc>
+    </url>
+    <url>
         <loc>http://localhost:8080/collections/addresses2?f=html</loc>
     </url>
     <url>
         <loc>http://localhost:8080/collections/addresses2/items?f=html</loc>
+    </url>
+    <url>
+        <loc>http://localhost:8080/collections/addresses2/schema?f=html</loc>
     </url>
     <url>
         <loc>http://localhost:8080/tiles?f=html</loc>

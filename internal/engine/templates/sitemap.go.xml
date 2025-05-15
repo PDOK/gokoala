@@ -27,6 +27,9 @@
     <url>
         <loc>{{- $.Config.BaseURL -}}/collections/{{- $coll.ID -}}/items?f=html</loc>
     </url>
+    <url>
+        <loc>{{- $.Config.BaseURL -}}/collections/{{- $coll.ID -}}/schema?f=html</loc>
+    </url>
         {{- end -}}
         {{/* don't list /collections/<name>/3dtiles since it has no HTML representation */}}
     {{- end -}}

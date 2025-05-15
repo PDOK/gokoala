@@ -22,7 +22,7 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 	tests := []struct {
 		name        string
 		config      *config.OgcAPIFeatures
-		datasources map[DatasourceKey]ds.Datasource
+		datasources map[datasourceKey]ds.Datasource
 		pf          map[string]ds.PropertyFiltersWithAllowedValues
 		wantResult  map[string][]OpenAPIPropertyFilter
 		wantErr     bool
@@ -38,7 +38,7 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 		{
 			name:   "Valid property filters",
 			config: oaf,
-			datasources: map[DatasourceKey]ds.Datasource{
+			datasources: map[datasourceKey]ds.Datasource{
 				{collectionID: "foo"}: geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage),
 			},
 			// keep this in line with the filters in "internal/ogc/features/testdata/config_features_bag.yaml"
@@ -63,7 +63,7 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 		{
 			name:   "Invalid property filter defined in config",
 			config: oafWithInvalidPropertyFilter,
-			datasources: map[DatasourceKey]ds.Datasource{
+			datasources: map[datasourceKey]ds.Datasource{
 				{collectionID: "foo"}: geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage),
 			},
 			// keep this in line with the filters in "internal/ogc/features/testdata/config_features_bag_invalid_filters.yaml"

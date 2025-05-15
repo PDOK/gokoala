@@ -23,19 +23,19 @@ var (
 	configuredCollections map[string]config.GeoSpatialCollection
 )
 
-type DatasourceKey struct {
+type datasourceKey struct {
 	srid         int
 	collectionID string
 }
 
-type DatasourceConfig struct {
+type datasourceConfig struct {
 	collections config.GeoSpatialCollections
 	ds          config.Datasource
 }
 
 type Features struct {
 	engine                    *engine.Engine
-	datasources               map[DatasourceKey]ds.Datasource
+	datasources               map[datasourceKey]ds.Datasource
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 	defaultProfile            domain.Profile
 
@@ -48,8 +48,8 @@ func NewFeatures(e *engine.Engine) *Features {
 	configuredCollections = cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
-	renderSchemas(e, datasources)
-	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
+	schemas := renderSchemas(e, datasources)
+	rebuildOpenAPI(e, datasources, configuredPropertyFilters, schemas)
 
 	f := &Features{
 		engine:                    e,
@@ -66,8 +66,8 @@ func NewFeatures(e *engine.Engine) *Features {
 	return f
 }
 
-func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
-	configured := make(map[DatasourceKey]*DatasourceConfig, len(e.Config.OgcAPI.Features.Collections))
+func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
+	configured := make(map[datasourceKey]*datasourceConfig, len(e.Config.OgcAPI.Features.Collections))
 
 	// configure collection specific datasources first
 	configureCollectionDatasources(e, configured)
@@ -85,7 +85,7 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 	// are instantiated, since multiple collection can point to the same datasource and we only what to have a single
 	// datasource/connection-pool serving those collections.
 	createdDatasources := make(map[config.Datasource]ds.Datasource)
-	result := make(map[DatasourceKey]ds.Datasource, len(configured))
+	result := make(map[datasourceKey]ds.Datasource, len(configured))
 	for k, cfg := range configured {
 		if cfg == nil {
 			continue
@@ -111,7 +111,7 @@ func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSp
 	return result
 }
 
-func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource,
+func configurePropertyFiltersWithAllowedValues(datasources map[datasourceKey]ds.Datasource,
 	collections map[string]config.GeoSpatialCollection) map[string]ds.PropertyFiltersWithAllowedValues {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
@@ -136,17 +136,17 @@ func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.
 
 // configureTopLevelDatasources configures top-level datasources - in one or multiple CRS's - which can be
 // used by one or multiple collections (e.g., one GPKG that covers holds an entire dataset)
-func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
+func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*datasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	if cfg.Datasources == nil {
 		return
 	}
-	var defaultDS *DatasourceConfig
+	var defaultDS *datasourceConfig
 	for _, coll := range cfg.Collections {
-		key := DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+		key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
 		if result[key] == nil {
 			if defaultDS == nil {
-				defaultDS = &DatasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84}
+				defaultDS = &datasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84}
 			}
 			result[key] = defaultDS
 		}
@@ -158,9 +158,9 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 			if err != nil {
 				log.Fatal(err)
 			}
-			key := DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
+			key := datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
 			if result[key] == nil {
-				result[key] = &DatasourceConfig{cfg.Collections, additional.Datasource}
+				result[key] = &datasourceConfig{cfg.Collections, additional.Datasource}
 			}
 		}
 	}
@@ -168,22 +168,22 @@ func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*Da
 
 // configureCollectionDatasources configures datasources - in one or multiple CRS's - which are specific
 // to a certain collection (e.g., a separate GPKG per collection)
-func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
+func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*datasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	for _, coll := range cfg.Collections {
 		if coll.Features == nil || coll.Features.Datasources == nil {
 			continue
 		}
-		defaultDS := &DatasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84}
-		result[DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
+		defaultDS := &datasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84}
+		result[datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
 
 		for _, additional := range coll.Features.Datasources.Additional {
 			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
-			additionalDS := &DatasourceConfig{cfg.Collections, additional.Datasource}
-			result[DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
+			additionalDS := &datasourceConfig{cfg.Collections, additional.Datasource}
+			result[datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
 		}
 	}
 }
