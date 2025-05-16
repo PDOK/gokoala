@@ -10,3 +10,5 @@ viewer/dist
 viewer/node_modules
 viewer/cypress.env.json
 hack/tmp
+viewer/src/assets/*.json
+viewer/view-component-*.tgz
