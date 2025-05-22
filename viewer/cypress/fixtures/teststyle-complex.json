@@ -7,10 +7,7 @@
   "name": "",
   "id": "achtergrondkaart_standaard",
   "pitch": 0,
-  "center": [
-    5.3878,
-    52.1561
-  ],
+  "center": [5.3878, 52.1561],
   "glyphs": "https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/resources/fonts/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -19,10 +16,7 @@
       "paint": {
         "fill-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "land/grens (NL)",
           "#FFFFFF",
           "(zee)water",
@@ -41,10 +35,7 @@
       "paint": {
         "fill-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "zee",
           "#80BDE3",
           "meer, plas",
@@ -65,10 +56,7 @@
       "paint": {
         "fill-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "steenglooing",
           "#A4A4A4",
           "zand",
@@ -112,26 +100,10 @@
       "source": "brt",
       "source-layer": "wegdeellijn",
       "paint": {
-        "line-width": [
-          "match",
-          [
-            "get",
-            "vistext"
-          ],
-          "E-weg",
-          5,
-          "autosnelweg",
-          4,
-          "autosnelweg op brug",
-          4,
-          1
-        ],
+        "line-width": ["match", ["get", "vistext"], "E-weg", 5, "autosnelweg", 4, "autosnelweg op brug", 4, 1],
         "line-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "E-weg",
           "#E69800",
           "autosnelweg",
@@ -184,26 +156,10 @@
       "source": "brt",
       "source-layer": "wegdeellijn",
       "paint": {
-        "line-width": [
-          "match",
-          [
-            "get",
-            "vistext"
-          ],
-          "E-weg",
-          3,
-          "autosnelweg",
-          2,
-          "autosnelweg op brug",
-          2,
-          1
-        ],
+        "line-width": ["match", ["get", "vistext"], "E-weg", 3, "autosnelweg", 2, "autosnelweg op brug", 2, 1],
         "line-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "E-weg",
           "#FCEF84",
           "autosnelweg",
@@ -256,10 +212,7 @@
       "paint": {
         "fill-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "E-weg",
           "#FCEF84",
           "autosnelweg",
@@ -306,10 +259,7 @@
         ],
         "fill-outline-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "E-weg",
           "#E69800",
           "autosnelweg",
@@ -366,10 +316,7 @@
       "paint": {
         "line-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "land/grens (NL)",
           "#808080",
           "landsgrens (NL-BE, NL-DE)",
@@ -380,42 +327,12 @@
         ],
         "line-width": [
           "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
+          ["linear"],
+          ["zoom"],
           0,
-          [
-            "match",
-            [
-              "get",
-              "vistext"
-            ],
-            "land/grens (NL)",
-            0.1,
-            "landsgrens (NL-BE, NL-DE)",
-            0.5,
-            "provinciegrens",
-            0.1,
-            0.05
-          ],
+          ["match", ["get", "vistext"], "land/grens (NL)", 0.1, "landsgrens (NL-BE, NL-DE)", 0.5, "provinciegrens", 0.1, 0.05],
           14,
-          [
-            "match",
-            [
-              "get",
-              "vistext"
-            ],
-            "land/grens (NL)",
-            0.2,
-            "landsgrens (NL-BE, NL-DE)",
-            1,
-            "provinciegrens",
-            0.4,
-            0.1
-          ]
+          ["match", ["get", "vistext"], "land/grens (NL)", 0.2, "landsgrens (NL-BE, NL-DE)", 1, "provinciegrens", 0.4, 0.1]
         ]
       }
     },
@@ -427,10 +344,7 @@
       "paint": {
         "line-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "treinspoor",
           "#828282",
           "metro / sneltram",
@@ -445,39 +359,20 @@
           "#AEA9A9",
           "#828282"
         ],
-        "line-width": [
-          "match",
-          [
-            "get",
-            "vistext"
-          ],
-          "tram",
-          1,
-          "metro / sneltram in tunnel",
-          6,
-          4
-        ]
+        "line-width": ["match", ["get", "vistext"], "tram", 1, "metro / sneltram in tunnel", 6, 4]
       }
     },
     {
       "id": "treinspoor",
       "type": "line",
       "source": "brt",
-      "filter": [
-        "in",
-        "vistext",
-        "treinspoor",
-        "overig"
-      ],
+      "filter": ["in", "vistext", "treinspoor", "overig"],
       "source-layer": "spoorbaandeellijn",
       "layout": {
         "line-join": "round"
       },
       "paint": {
-        "line-dasharray": [
-          12,
-          10
-        ],
+        "line-dasharray": [12, 10],
         "line-color": "#FFFFFF",
         "line-width": 1.8
       }
@@ -486,20 +381,13 @@
       "id": "metro",
       "type": "line",
       "source": "brt",
-      "filter": [
-        "in",
-        "vistext",
-        "metro / sneltram"
-      ],
+      "filter": ["in", "vistext", "metro / sneltram"],
       "source-layer": "spoorbaandeellijn",
       "layout": {
         "line-join": "round"
       },
       "paint": {
-        "line-dasharray": [
-          12,
-          12
-        ],
+        "line-dasharray": [12, 12],
         "line-color": "#828282",
         "line-width": 6
       }
@@ -509,19 +397,12 @@
       "type": "line",
       "source": "brt",
       "source-layer": "spoorbaandeellijn",
-      "filter": [
-        "in",
-        "vistext",
-        "tram"
-      ],
+      "filter": ["in", "vistext", "tram"],
       "layout": {
         "line-join": "miter"
       },
       "paint": {
-        "line-dasharray": [
-          0.2,
-          8
-        ],
+        "line-dasharray": [0.2, 8],
         "line-color": "#3F4029",
         "line-width": 8
       }
@@ -531,19 +412,12 @@
       "type": "line",
       "source": "brt",
       "source-layer": "spoorbaandeellijn",
-      "filter": [
-        "in",
-        "vistext",
-        "metro / sneltram in tunnel"
-      ],
+      "filter": ["in", "vistext", "metro / sneltram in tunnel"],
       "layout": {
         "line-join": "miter"
       },
       "paint": {
-        "line-dasharray": [
-          0.8,
-          2
-        ],
+        "line-dasharray": [0.8, 2],
         "line-color": "#FFFFFF",
         "line-width": 8
       }
@@ -553,11 +427,7 @@
       "type": "line",
       "source": "brt",
       "source-layer": "spoorbaandeellijn",
-      "filter": [
-        "in",
-        "vistext",
-        "metro / sneltram in tunnel"
-      ],
+      "filter": ["in", "vistext", "metro / sneltram in tunnel"],
       "layout": {
         "line-join": "miter"
       },
@@ -574,10 +444,7 @@
       "paint": {
         "line-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "hekwerk",
           "#A4A4A4",
           "geluidswering",
@@ -595,10 +462,7 @@
       },
       "line-width": [
         "match",
-        [
-          "get",
-          "vistext"
-        ],
+        ["get", "vistext"],
         "hekwerk",
         0.5,
         "geluidswering",
@@ -619,11 +483,7 @@
       "type": "circle",
       "source": "brt",
       "source-layer": "inrichtingselementpunt",
-      "filter": [
-        "==",
-        "vistext",
-        "hoogspanningsmast"
-      ],
+      "filter": ["==", "vistext", "hoogspanningsmast"],
       "paint": {
         "circle-color": "#828282",
         "circle-radius": 2
@@ -635,63 +495,15 @@
       "source": "brt",
       "source-layer": "waterdeelvlak_label",
       "layout": {
-        "text-field": [
-          "get",
-          "naam"
-        ],
-        "text-font": [
-          "Liberation Sans Italic"
-        ],
+        "text-field": ["get", "naam"],
+        "text-font": ["Liberation Sans Italic"],
         "text-size": [
           "case",
-          [
-            ">",
-            [
-              "get",
-              "area"
-            ],
-            1000000000
-          ],
+          [">", ["get", "area"], 1000000000],
           15,
-          [
-            "all",
-            [
-              "<",
-              [
-                "get",
-                "area"
-              ],
-              1000000000
-            ],
-            [
-              ">",
-              [
-                "get",
-                "area"
-              ],
-              800000
-            ]
-          ],
+          ["all", ["<", ["get", "area"], 1000000000], [">", ["get", "area"], 800000]],
           11,
-          [
-            "all",
-            [
-              "<",
-              [
-                "get",
-                "area"
-              ],
-              800000
-            ],
-            [
-              ">",
-              [
-                "get",
-                "area"
-              ],
-              700000
-            ]
-          ],
+          ["all", ["<", ["get", "area"], 800000], [">", ["get", "area"], 700000]],
           10,
           9
         ]
@@ -707,21 +519,8 @@
       "source-layer": "straatnamen",
       "layout": {
         "text-field": "{label}",
-        "text-size": [
-          "*",
-          [
-            "coalesce",
-            [
-              "get",
-              "size"
-            ],
-            0
-          ],
-          1.3
-        ],
-        "text-font": [
-          "Liberation Sans Regular"
-        ],
+        "text-size": ["*", ["coalesce", ["get", "size"], 0], 1.3],
+        "text-font": ["Liberation Sans Regular"],
         "symbol-placement": "line"
       }
     },
@@ -734,74 +533,27 @@
         "text-allow-overlap": true,
         "text-ignore-placement": true,
         "text-field": " {label} ",
-        "text-size": [
-          "*",
-          [
-            "coalesce",
-            [
-              "get",
-              "size"
-            ],
-            10
-          ],
-          1.3
-        ],
+        "text-size": ["*", ["coalesce", ["get", "size"], 10], 1.3],
         "text-font": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "plaatsnamen",
-          [
-            "literal",
-            [
-              "Liberation Sans Regular"
-            ]
-          ],
+          ["literal", ["Liberation Sans Regular"]],
           "wijknamen",
-          [
-            "literal",
-            [
-              "Liberation Sans Italic"
-            ]
-          ],
+          ["literal", ["Liberation Sans Italic"]],
           "A-wegnummers",
-          [
-            "literal",
-            [
-              "Liberation Sans Bold"
-            ]
-          ],
+          ["literal", ["Liberation Sans Bold"]],
           "N-wegnummers",
-          [
-            "literal",
-            [
-              "Liberation Sans Bold"
-            ]
-          ],
+          ["literal", ["Liberation Sans Bold"]],
           "fingerprint",
-          [
-            "literal",
-            [
-              "Liberation Sans Regular"
-            ]
-          ],
-          [
-            "literal",
-            [
-              "Liberation Sans Regular"
-            ]
-          ]
+          ["literal", ["Liberation Sans Regular"]],
+          ["literal", ["Liberation Sans Regular"]]
         ]
       },
       "paint": {
         "text-color": [
           "match",
-          [
-            "get",
-            "vistext"
-          ],
+          ["get", "vistext"],
           "plaatsnamen",
           "#000000",
           "wijknamen",
@@ -816,39 +568,15 @@
           "#004de3",
           "transparent"
         ],
-        "text-halo-color": [
-          "match",
-          [
-            "get",
-            "vistext"
-          ],
-          "A-wegnummers",
-          "#FF7F7F",
-          "N-wegnummers",
-          "#FFFFBE",
-          "transparent"
-        ],
-        "text-halo-width": [
-          "match",
-          [
-            "get",
-            "vistext"
-          ],
-          "A-wegnummers",
-          24,
-          "N-wegnummers",
-          14,
-          0
-        ]
+        "text-halo-color": ["match", ["get", "vistext"], "A-wegnummers", "#FF7F7F", "N-wegnummers", "#FFFFBE", "transparent"],
+        "text-halo-width": ["match", ["get", "vistext"], "A-wegnummers", 24, "N-wegnummers", 14, 0]
       }
     }
   ],
   "sources": {
     "brt": {
       "type": "vector",
-      "tiles": [
-        "https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"
-      ],
+      "tiles": ["https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"],
       "minzoom": 0,
       "maxzoom": 12
     }
