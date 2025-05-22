@@ -145,8 +145,8 @@ export class MapboxStyleService {
     style.layers.forEach((layer: Layer) => {
       const p: IProperties = extractPropertiesFromFilter({}, layer.filter, this.logger)
 
-      if (layer.layout?.['text-field']) {
-        const label = layer.layout?.['text-field'].replace('{', '').replace('}', '')
+      if (layer.layout?.['text-field'] && typeof layer.layout['text-field'] === 'string') {
+        const label = layer.layout['text-field'].replace('{', '').replace('}', '')
         p['' + label + ''] = label.substring(0, 6)
         const labelTitle = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'], addLayerName)
         const showLabel = label[0].toUpperCase() + label.substring(1)

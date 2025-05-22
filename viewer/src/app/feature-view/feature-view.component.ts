@@ -383,7 +383,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     if (this.labelField) {
       eventType = 'click'
     }
-    this.map.on(eventType, (evt: MapBrowserEvent<UIEvent>) => {
+    this.map.on(eventType, (evt: MapBrowserEvent<KeyboardEvent | WheelEvent | PointerEvent>) => {
       this.map.forEachFeatureAtPixel(
         evt.pixel,
         (feature: FeatureLike) => {

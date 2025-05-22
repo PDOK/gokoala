@@ -100,7 +100,7 @@ export class LocationSearchComponent implements OnInit {
     // Read the GeoJSON data and create an OpenLayers feature
     const feature = geoJsonFormat.readFeature(item) //, { featureProjection: 'EPSG:3857'}//
 
-    this.activeFeatureHovered.emit(feature)
+    this.activeFeatureHovered.emit(feature as FeatureLike)
     //if (item.links![0].href) {
     // this.selectedResultUrl = item.links![0].href as string
     //e.g: this.selectedResultUrl =
@@ -111,7 +111,7 @@ export class LocationSearchComponent implements OnInit {
   selectResultClick(item: FeatureJsonfg) {
     const geoJsonFormat = new GeoJSON()
     const feature = geoJsonFormat.readFeature(item)
-    this.activeFeatureSelected.emit(feature)
+    this.activeFeatureSelected.emit(feature as FeatureLike)
   }
 
   deSelectResult() {

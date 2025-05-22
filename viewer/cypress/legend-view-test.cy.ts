@@ -73,4 +73,10 @@ describe('Legend-view-test', () => {
 
     screenshot('legend')
   })
+
+  it('mounts and shows legend a complex json" ', () => {
+    loadlegend('teststyle-complex.json')
+    cy.get(':nth-child(65) > .legendText').contains('zee')
+    screenshot('legend')
+  })
 })

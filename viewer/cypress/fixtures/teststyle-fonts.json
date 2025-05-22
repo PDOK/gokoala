@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "name": "",
+  "id": "Kadastrale kaart standaardvisualisatie NetherlandsRDNewQuad",
+  "metadata": {
+    "ol:webfonts": "https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/resources/fonts/{font-family}/{fontweight}{-fontstyle}.css",
+    "gokoala:title-items": "id"
+  },
+  "center": [],
+  "pitch": 0,
+  "sources": {
+    "dkk": {
+      "type": "vector",
+      "tiles": [
+        "https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"
+      ],
+      "minzoom": 12,
+      "maxzoom": 13
+    }
+  },
+  "glyphs": "https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/resources/fonts/{fontstack}/{range}.pbf",
+  "layers":
+  [
+    {
+      "id": "Nummeraanduidingreeks",
+      "type": "symbol",
+      "source": "dkk",
+      "source-layer": "pand_nummeraanduiding",
+      "layout": {
+        "text-field": "{tekst}",
+   "text-size": [
+      "step",
+      ["zoom"],
+      16,
+      12, 6,
+      13, 8,
+      20, 36
+   ]
+          },
+
+
+
+      "paint": { "text-color": "#222020" }
+    }
+
+  ]
+}
