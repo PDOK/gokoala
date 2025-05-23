@@ -1,13 +1,46 @@
-import { BrowserModule } from '@angular/platform-browser'
-import { VectortileViewComponent } from './vectortile-view/vectortile-view.component'
+import {
+  HttpEvent,
+  HttpEventType,
+  HttpHandlerFn,
+  HttpHeaders,
+  HttpRequest,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http'
+import { ErrorHandler, Injector, NgModule } from '@angular/core'
 import { createCustomElement } from '@angular/elements'
-import { ObjectInfoComponent } from './object-info/object-info.component'
-import { NgModule, Injector } from '@angular/core'
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
-import { LegendViewComponent } from './legend-view/legend-view.component'
+import { BrowserModule } from '@angular/platform-browser'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
+import { LegendViewComponent } from './legend-view/legend-view.component'
+import { ObjectInfoComponent } from './object-info/object-info.component'
+import { VectortileViewComponent } from './vectortile-view/vectortile-view.component'
+
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
-import { environment } from 'src/environments/environment'
+
+import { Observable, tap } from 'rxjs'
+
+import { GlobalErrorHandlerService } from './global-error-handler.service'
+export type CurrentHttp = {
+  url: string
+  headers: HttpHeaders
+}
+export const initialCurrentHttp: CurrentHttp = { url: '', headers: new HttpHeaders() }
+export let currentHttp: CurrentHttp = initialCurrentHttp
+
+export class GlobalHttpInterceptor {
+  static loggingInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
+    return next(req).pipe(
+      tap(event => {
+        if (event.type === HttpEventType.Response) {
+          currentHttp = { url: req.urlWithParams, headers: event.headers }
+        }
+        if (event.type === HttpEventType.ResponseHeader) {
+          currentHttp = { url: req.urlWithParams, headers: event.headers }
+        }
+      })
+    )
+  }
+}
 
 @NgModule({
   declarations: [],
@@ -16,11 +49,15 @@ import { environment } from 'src/environments/environment'
     BrowserModule,
     LoggerModule.forRoot({
       serverLoggingUrl: '/api/logs',
-      level: environment.loglevel,
+      level: NgxLoggerLevel.LOG,
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
   ],
-  providers: [provideHttpClient(withInterceptorsFromDi())],
+
+  providers: [
+    { provide: ErrorHandler, useClass: GlobalErrorHandlerService },
+    provideHttpClient(withInterceptors([GlobalHttpInterceptor.loggingInterceptor])),
+  ],
 })
 export class AppModule {
   constructor(private injector: Injector) {

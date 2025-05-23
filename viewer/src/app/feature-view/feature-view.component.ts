@@ -5,7 +5,7 @@ import { defaults as defaultControls } from 'ol/control'
 
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
-import { Extent, getCenter, getTopLeft } from 'ol/extent'
+import { extend, Extent, getCenter, getTopLeft } from 'ol/extent'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 import { Tile, Vector as VectorLayer } from 'ol/layer'
@@ -25,6 +25,7 @@ import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { getPointResolution, get as getProjection, transform } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
+import RenderFeature from 'ol/render/Feature'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,6 +49,7 @@ export type BackgroundMap = 'BRT' | 'OSM'
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
+  private _drawFeature: FeatureLike | undefined = undefined
 
   @Input() set showBoundingBoxButton(showBox) {
     this._showBoundingBoxButton = coerceBooleanProperty(showBox)
@@ -81,6 +83,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this._projection = this.featureService.getProjectionMapping(value)
   }
 
+  @Input() set drawFeature(drawfeature: RenderFeature | undefined) {
+    this._drawFeature = drawfeature
+  }
+
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
   mapHeight = 400
@@ -98,6 +104,39 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     private featureService: FeatureService,
     private logger: NGXLogger
   ) {}
+
+  private isFeatureLike(value: FeatureLike | undefined) {
+    return value instanceof Feature || value instanceof RenderFeature
+  }
+
+  private drawExtraFeature(): Extent | undefined {
+    if (this.isFeatureLike(this._drawFeature)) {
+      const drawfeatures: FeatureLike[] = []
+      drawfeatures.push(this._drawFeature)
+      const vectorSource = new VectorSource({
+        features: drawfeatures,
+      })
+      const drawFeatureLayer = new VectorLayer({
+        source: vectorSource,
+        zIndex: 9,
+
+        properties: {
+          id: 'drawFeatureLayer',
+        },
+      })
+
+      this.map.addLayer(drawFeatureLayer)
+      this.logger.log('drawlayer added')
+      return vectorSource.getExtent()
+    } else {
+      this.map.getLayers().forEach(layer => {
+        if (layer.get('id') === 'drawFeatureLayer') {
+          this.map.removeLayer(layer)
+        }
+      })
+    }
+    return undefined
+  }
 
   private getMap(): OLMap {
     return new OLMap({
@@ -118,6 +157,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       .pipe(take(1))
       .subscribe(data => {
         this.features = data
+        this.map.getLayers().clear()
         this.changeView()
         this.loadFeatures(this.features)
         this.loadBackground()
@@ -157,7 +197,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
     if (
       changes.itemsUrl?.previousValue !== changes.itemsUrl?.currentValue ||
-      changes.projection?.previousValue !== changes.projection?.currentValue
+      changes.projection?.previousValue !== changes.projection?.currentValue ||
+      changes.drawFeature?.previousValue !== changes.drawFeature?.currentValue
     ) {
       if (changes.itemsUrl?.currentValue) {
         this.init()
@@ -203,19 +244,26 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         zIndex: 10,
       })
     )
-    const extent = vsource.getExtent()
-    if (this.mode === 'default') {
-      if (features.length > 0) {
-        if (features.length < 3) {
-          this.setViewExtent(extent, 10)
-        } else {
-          this.setViewExtent(extent, 1.05)
-        }
-      }
+    const extent1 = vsource.getExtent()
+    const extent2 = this.drawExtraFeature()
+    let combinedExtent = extent1
+    if (extent2) {
+      combinedExtent = extend(extent1, extent2)
+      this.setViewExtent(combinedExtent, 2)
     } else {
-      if (this.initial) {
-        this.setViewExtent(extent, 1)
-        this.initial = false
+      if (this.mode === 'default') {
+        if (features.length > 0) {
+          if (features.length < 3) {
+            this.setViewExtent(combinedExtent, 10)
+          } else {
+            this.setViewExtent(combinedExtent, 1.05)
+          }
+        }
+      } else {
+        if (this.initial) {
+          this.setViewExtent(combinedExtent, 1)
+          this.initial = false
+        }
       }
     }
   }
@@ -335,7 +383,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     if (this.labelField) {
       eventType = 'click'
     }
-    this.map.on(eventType, (evt: MapBrowserEvent<UIEvent>) => {
+    this.map.on(eventType, (evt: MapBrowserEvent<KeyboardEvent | WheelEvent | PointerEvent>) => {
       this.map.forEachFeatureAtPixel(
         evt.pixel,
         (feature: FeatureLike) => {
