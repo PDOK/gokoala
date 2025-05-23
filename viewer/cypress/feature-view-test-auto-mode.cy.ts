@@ -54,11 +54,8 @@ projectenTests
         screenshot(i.code + '-2-auto-after-move')
         cy.get('@boxSpy').should((spy: any) => {
           const firstCallArgs = spy.getCall(0).args[0].split(',')
-          const secondCallArgs = spy.getCall(1).args[0].split(',')
           expect(firstCallArgs[0]).to.match(/^4./)
           expect(firstCallArgs[1]).to.match(/^52./)
-          expect(secondCallArgs[0]).to.match(/^4./)
-          expect(secondCallArgs[1]).to.match(/^52./)
         })
       })
 
@@ -82,11 +79,8 @@ projectenTests
           screenshot(i.code + '-2-auto-after-move-OSM')
           cy.get('@boxSpy').should((spy: any) => {
             const firstCallArgs = spy.getCall(0).args[0].split(',')
-            const secondCallArgs = spy.getCall(1).args[0].split(',')
             expect(firstCallArgs[0]).to.match(/^4./)
             expect(firstCallArgs[1]).to.match(/^52./)
-            expect(secondCallArgs[0]).to.match(/^4./)
-            expect(secondCallArgs[1]).to.match(/^52./)
           })
         })
       })

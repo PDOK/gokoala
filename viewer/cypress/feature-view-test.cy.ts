@@ -1,4 +1,6 @@
+import { Feature } from 'ol'
 import { idle, injectAxe, intercept, logAccessibility, mountFeatureComponent, screenshot } from './shared'
+import { Polygon } from 'ol/geom'
 
 type ProjectionTest = { code: string; projection: string; geofix: string }
 
@@ -35,5 +37,26 @@ tests.forEach(i => {
           expect(firstCallArgs[1]).to.match(/^52.37/)
         })
     })
+  })
+})
+
+describe('searchbox for location API', () => {
+  it('It can draw feature on it', () => {
+    intercept('amsterdam-epgs28992.json')
+
+    const coordinates = [
+      [115000, 500000], // Top-left corner (northwest)
+      [125000, 500000], // Top-right corner (northeast)
+      [125000, 480000], // Bottom-right corner (southeast)
+      [115000, 480000], // Bottom-left corner (southwest)
+      [115000, 500000], // Closing the polygon by returning to the first point
+    ]
+
+    const drawFeature = new Feature({
+      geometry: new Polygon([coordinates]),
+    })
+
+    mountFeatureComponent('http://www.opengis.net/def/crs/EPSG/0/28992', 'BRT', 'default', { itemsUrl: 'https://test/items' }, drawFeature)
+    screenshot('drawFeature')
   })
 })

@@ -1,8 +1,9 @@
 import { HttpClientModule } from '@angular/common/http'
 import { LoggerModule } from 'ngx-logger'
 import { LegendViewComponent } from './../src/app/legend-view/legend-view.component'
-import { environment } from './../src/environments/environment'
+
 import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared'
+import { environment } from '../src/environments/environment'
 
 function loadlegend(fixture: string) {
   cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: fixture }).as('geo')
@@ -70,6 +71,12 @@ describe('Legend-view-test', () => {
     cy.get(':nth-child(2) > .legendText').contains('Red A')
     cy.get(':nth-child(3) > .legendText').contains('Red A Name')
 
+    screenshot('legend')
+  })
+
+  it('mounts and shows legend a complex json" ', () => {
+    loadlegend('teststyle-complex.json')
+    cy.get(':nth-child(65) > .legendText').contains('zee')
     screenshot('legend')
   })
 })
