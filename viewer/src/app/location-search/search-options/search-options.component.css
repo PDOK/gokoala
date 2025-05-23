@@ -1,0 +1,17 @@
+.search-options {
+}
+.search-options-button {
+  padding: var(--ls-searchbox-padding, 2px);
+  margin: var(--ls-searchbox-margin, 2px);
+  border: var(--ls-search-box-border, thin);
+}
+svg {
+  height: var(--ls-searchbox-height, auto);
+  width: var(--ls-searchbox-height, auto);
+}
+.collections {
+  position: absolute;
+  z-index: var(--ls-searchbox-collections-z-index, 9999);
+  left: var(--ls-searchbox-collections-left, 40vw);
+  background-color: var(--ls-options-background-color, rgba(245, 245, 245, 0.6));
+}
