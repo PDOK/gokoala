@@ -1,6 +1,6 @@
 import {
-  // ChangeDetectionStrategy,
-  // ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
   ElementRef,
@@ -64,7 +64,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './vectortile-view.component.html',
   styleUrls: ['./vectortile-view.component.css'],
-  //  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
@@ -108,7 +108,7 @@ export class VectortileViewComponent implements OnChanges {
 
     this.map.getView().setZoom(value)
     this.logger.log('set zoom ' + value)
-    //this.cdf.detectChanges()
+    this.cdf.detectChanges()
     this.currentZoomLevel.next(value)
   }
   get zoom(): number {
@@ -129,8 +129,8 @@ export class VectortileViewComponent implements OnChanges {
   constructor(
     private logger: NGXLogger,
     private elementRef: ElementRef,
-    private matrixsetService: MatrixSetService
-    // private cdf: ChangeDetectorRef
+    private matrixsetService: MatrixSetService,
+    private cdf: ChangeDetectorRef
   ) {
     //empty constructor
   }
@@ -168,7 +168,7 @@ export class VectortileViewComponent implements OnChanges {
         }
         this.drawFromMatrixUrl(tile, matrixUrl)
         this.setZoomLevel(tile)
-        //this.cdf.detectChanges()
+        this.cdf.detectChanges()
       },
       error: msg => {
         this.logger.log(this.id + 'error: ' + JSON.stringify(msg))
@@ -254,7 +254,7 @@ export class VectortileViewComponent implements OnChanges {
           if (feature) {
             if (this._showObjectInfo) {
               this.curFeature = feature
-              //this.cdf.detectChanges()
+              this.cdf.detectChanges()
             }
             this.activeFeature.emit(feature)
           }
@@ -277,7 +277,7 @@ export class VectortileViewComponent implements OnChanges {
     this.mapWidth = this.elementRef.nativeElement.offsetWidth
     this.mapHeight = this.elementRef.nativeElement.offsetWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     map.setTarget(mapElm)
-    //this.cdf.detectChanges()
+    this.cdf.detectChanges()
   }
 
   private checkParams(): void {
@@ -357,7 +357,7 @@ export class VectortileViewComponent implements OnChanges {
   private setStyle(vectorTileLayer: VectorTileLayer) {
     if (this.styleUrl) {
       const projection = vectorTileLayer.getSource()?.getProjection()
-      applyStyle(vectorTileLayer, this.styleUrl)
+      applyStyle(vectorTileLayer, this.styleUrl, undefined, undefined, this.calcResolutions(this.projection))
         .then(() => {
           //overrule source url and zoom from style
           if (this.tileUrl !== NetherlandsRDNewQuadDefault) {

@@ -11,13 +11,25 @@
   "sources": {
     "dkk": {
       "type": "vector",
-      "tiles": ["https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"],
+      "tiles": [
+        "https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"
+      ],
       "minzoom": 12,
-      "maxzoom": 13
+      "maxzoom": 12
     }
   },
   "glyphs": "https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/resources/fonts/{fontstack}/{range}.pbf",
   "layers": [
+    {
+      "id": "Bebouwing",
+      "type": "line",
+      "source": "dkk",
+      "source-layer": "pand",
+      "paint": {
+        "line-color": "#C10101",
+        "line-width": 1
+      }
+    },
     {
       "id": "Nummeraanduidingreeks",
       "type": "symbol",
@@ -25,10 +37,182 @@
       "source-layer": "pand_nummeraanduiding",
       "layout": {
         "text-field": "{tekst}",
-        "text-size": ["step", ["zoom"], 16, 12, 6, 13, 8, 20, 36]
+          "text-size": [
+            "step",
+            ["zoom"],
+            6,
+            12, 6,
+            13, 7,
+            14, 8,
+            15, 11,
+            16, 13
+          ],
+        "text-rotate": ["get", "hoek"],
+        "text-font": [
+          "Liberation Sans",
+          "system-ui",
+          "Roboto",
+          "Arial",
+          "Noto Sans",
+          "Liberation Sans",
+          "sans-serif",
+          "Noto Color Emoji"
+        ],
+        "text-allow-overlap": true,
+        "icon-allow-overlap": true
       },
-
-      "paint": { "text-color": "#222020" }
+      "paint": { "text-color": "#C10101" }
+    },
+    {
+      "id": "Water openbareruimtelabel",
+      "type": "symbol",
+      "source": "dkk",
+      "source-layer": "openbareruimtelabel",
+      "paint": {
+        "text-color": "#000000"
+      },
+      "filter": [
+        "all",
+        ["==", "openbare_ruimte_type", "Water"],
+        ["==", "bgt_status", "bestaand"]
+      ],
+      "layout": {
+        "text-field": "{tekst}",
+        "text-font": [
+          "Liberation Sans Italic",
+          "system-ui",
+          "Roboto",
+          "Arial",
+          "Noto Sans",
+          "Liberation Sans",
+          "sans-serif",
+          "Noto Color Emoji"
+        ],
+        "text-size": [
+           "step",
+           ["zoom"],
+           11,
+            12, 11,
+            13, 11,
+            14, 12,
+            15, 14
+          ],
+        "text-rotate": ["-", 360, ["get", "mshoek"]]
+      }
+    },
+    {
+      "id": "Weg openbareruimtelabel",
+      "type": "symbol",
+      "source": "dkk",
+      "source-layer": "openbareruimtelabel",
+      "paint": {
+        "text-color": "#000000"
+      },
+      "filter": [
+        "all",
+        ["==", "openbare_ruimte_type", "Weg"],
+        ["==", "bgt_status", "bestaand"]
+      ],
+      "layout": {
+        "text-field": "{tekst}",
+        "text-font": [
+          "Liberation Sans",
+          "system-ui",
+          "Roboto",
+          "Arial",
+          "Noto Sans",
+          "Liberation Sans",
+          "sans-serif",
+          "Noto Color Emoji"
+        ],
+        "text-size": [
+           "step",
+           ["zoom"],
+           11,
+            12, 11,
+            13, 11,
+            14, 12,
+            15, 14
+          ],
+        "text-rotate": ["-", 360, ["get", "mshoek"]]
+      }
+    },
+    {
+      "id": "Bijpijling",
+      "type": "line",
+      "source": "dkk",
+      "source-layer": "perceel_bijpijling",
+      "paint": {"line-color": "#000001", "line-width": 1}
+    },
+    {
+      "id": "Kadastrale grens Voorlopig",
+      "type": "line",
+      "source": "dkk",
+      "source-layer": "kadastrale_grens",
+      "filter": ["==", "type_grens_waarde", "Voorlopig"],
+      "paint": {"line-color": "#CC9900", "line-width": 1.5}
+    },
+    {
+      "id": "Kadastrale grens Administratief",
+      "type": "line",
+      "source": "dkk",
+      "source-layer": "kadastrale_grens",
+      "filter": ["==", "type_grens_waarde", "Administratief"],
+      "paint": {"line-color": "#5CF6D1", "line-width": 1.5}
+    },
+    {
+      "id": "Kadastrale grens Definitief",
+      "type": "line",
+      "source": "dkk",
+      "source-layer": "kadastrale_grens",
+      "filter": ["==", "type_grens_waarde", "Definitief"],
+      "paint": {"line-color": "#000001", "line-width": 1.5}
+    },
+    {
+      "id": "Perceel Label",
+      "type": "symbol",
+      "source": "dkk",
+      "source-layer": "perceel_label",
+      "layout": {
+        "text-field": "{perceelnummer}",
+        "text-allow-overlap": true,
+        "icon-allow-overlap": true,
+        "text-size": [
+           "step",
+           ["zoom"],
+           6,
+            12, 8,
+            13, 8,
+            14, 9,
+            15, 12,
+            16, 14
+          ],
+        "text-font": [
+          "Liberation Sans Italic",
+          "system-ui",
+          "Roboto",
+          "Arial",
+          "Noto Sans",
+          "Liberation Sans",
+          "sans-serif",
+          "Noto Color Emoji"
+        ]
+      },
+      "paint": {
+        "text-color": "#000000",
+        "text-halo-color": "#FFFFFF",
+          "text-halo-width":  [
+           "step",
+           ["zoom"],
+           4,
+            12, 6,
+            13, 6,
+            14, 12,
+            15, 14,
+            16, 16
+          ]
+        
+      }
     }
   ]
 }

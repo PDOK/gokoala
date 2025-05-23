@@ -41,7 +41,7 @@ describe('Vectortiled-view-test.cy.ts', () => {
       cy.log(`left: ${position.left}, top: ${position.top}, width: ${position.width}, height: ${position.height}`)
     })
   })
-  it.skip('show achtergrond', () => {
+  it('show achtergrond', () => {
     cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: 'teststyle-fonts.json' }).as('style')
     cy.mount(VectortileViewComponent, {
       imports: [
@@ -51,6 +51,7 @@ describe('Vectortiled-view-test.cy.ts', () => {
         }),
       ],
       componentProperties: {
+        id: 'test',
         tileUrl: 'https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/tiles/NetherlandsRDNewQuad',
         styleUrl: 'https://visualisation.example.com/teststyle/',
         zoom: 12,

@@ -495,7 +495,7 @@
       "source": "brt",
       "source-layer": "waterdeelvlak_label",
       "layout": {
-        "text-field": ["get", "naam"],
+        "text-field": "{naam}",
         "text-font": ["Liberation Sans Italic"],
         "text-size": [
           "case",
