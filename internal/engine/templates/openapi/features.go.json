@@ -444,7 +444,7 @@
                   {{ if $schemaField.IsExternalFid -}}
                     {{ continue }}
                   {{ end -}}
-                  {{/* Skip geometry fields, since we don't include those directly. */}}
+                  {{/* Skip geometry field, since we don't include this directly. */}}
                   {{/* We always use an 'geometry' field as required by GeoJSON / JSON-FG.*/}}
                   {{ if $schemaField.IsPrimaryGeometry -}}
                     {{ continue }}

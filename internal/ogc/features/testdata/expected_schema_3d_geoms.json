@@ -15,7 +15,7 @@
       "type": "integer",
       "minimum": 0
     },
-    "geom": {
+    "geometry": {
       "x-ogc-role": "primary-geometry",
       "format": "geometry-linestring"
     }
