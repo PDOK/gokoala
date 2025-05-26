@@ -97,7 +97,7 @@
               },
               "application/vnd.ogc.fg+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureCollectionJSONFG"
+                  "$ref": "#/components/schemas/featureCollectionJSONFG_{{ $coll.ID }}"
                 }
               },
               "text/html": {
@@ -156,7 +156,7 @@
               },
               "application/vnd.ogc.fg+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureJSONFG"
+                  "$ref": "#/components/schemas/featureJSONFG_{{ $coll.ID }}"
                 }
               },
               "text/html": {
@@ -217,7 +217,9 @@
         },
         "description": "The extent of the features in the collection. In the Core only spatial and temporal\nextents are specified. Extensions may add additional members to represent other\nextents, for example, thermal or pressure ranges."
       },
-      "featureCollectionJSONFG": {
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureCollectionJSONFG_{{ $coll.ID }}": {
         "required": [
           "features",
           "type"
@@ -239,7 +241,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureJSONFG"
+              "$ref": "#/components/schemas/featureJSONFG_{{ $coll.ID }}"
             }
           },
           "links": {
@@ -258,7 +260,9 @@
             "$ref": "#/components/schemas/numberReturned"
           }
         }
-      },
+      }
+      {{- end -}}
+      ,
       {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
       {{- if $index -}},{{- end -}}
       "featureCollectionGeoJSON_{{ $coll.ID }}": {
@@ -299,7 +303,9 @@
       }
       {{ end }}
       ,
-      "featureJSONFG": {
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureJSONFG_{{ $coll.ID }}": {
         "required": [
             "time",
             "place",
@@ -350,8 +356,7 @@
             ]
           },
           "properties": {
-            "type": "object",
-            "nullable": true
+            "$ref": "#/components/schemas/propertiesGeoJSON_{{ $coll.ID }}"
           },
           "id": {
             "oneOf": [
@@ -370,7 +375,9 @@
             }
           }
         }
-      },
+      }
+      {{- end -}}
+      ,
       {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
       {{- if $index -}},{{- end -}}
       "featureGeoJSON_{{ $coll.ID }}": {
@@ -396,44 +403,7 @@
             ]
           },
           "properties": {
-            "type": "object",
-            "properties": {
-              {{ if and $.Params $.Params.SchemasByCollection -}}
-                {{ range $schemaColl, $schema := $.Params.SchemasByCollection -}}
-                  {{ if eq $coll.ID $schemaColl -}}
-
-                    {{ $firstProp := true -}}
-                    {{ range $index, $schemaField := $schema.Fields -}}
-                      {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
-                      {{/* We always use an 'id' field as required by GeoJSON / JSON-FG.*/}}
-                      {{ if $schemaField.IsFid -}}
-                        {{ continue }}
-                      {{ end -}}
-                      {{ if $schemaField.IsExternalFid -}}
-                        {{ continue }}
-                      {{ end -}}
-                      {{/* Skip geometry fields, since we don't include those directly. */}}
-                      {{/* We always use an 'geometry' field as required by GeoJSON / JSON-FG.*/}}
-                      {{ if $schemaField.IsPrimaryGeometry -}}
-                        {{ continue }}
-                      {{ end -}}
-
-                      {{/* Avoid first comma */}}
-                      {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }}
-
-                      "{{ $schemaField.Name }}": {
-                        {{ $typeFormat := $schemaField.ToTypeFormat -}}
-                        "type": "{{ $typeFormat.Type }}",
-                        {{ if $typeFormat.Format }}"format": "{{ $typeFormat.Format }}", {{ end }}
-                        "nullable": {{ not $schemaField.IsRequired }},
-                        "description": "{{ $schemaField.Description }}"
-                      }
-                    {{ end -}}
-
-                  {{ end -}}
-                {{ end -}}
-              {{ end -}}
-            }
+            "$ref": "#/components/schemas/propertiesGeoJSON_{{ $coll.ID }}"
           },
           "id": {
             "oneOf": [
@@ -454,6 +424,50 @@
         }
       }
       {{ end }}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "propertiesGeoJSON_{{ $coll.ID }}": {
+        "type": "object",
+        "properties": {
+          {{ if and $.Params $.Params.SchemasByCollection -}}
+            {{ range $schemaColl, $schema := $.Params.SchemasByCollection -}}
+              {{ if eq $coll.ID $schemaColl -}}
+
+                {{ $firstProp := true -}}
+                {{ range $index, $schemaField := $schema.Fields -}}
+                  {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
+                  {{/* We always use an 'id' field as required by GeoJSON / JSON-FG.*/}}
+                  {{ if $schemaField.IsFid -}}
+                    {{ continue }}
+                  {{ end -}}
+                  {{ if $schemaField.IsExternalFid -}}
+                    {{ continue }}
+                  {{ end -}}
+                  {{/* Skip geometry fields, since we don't include those directly. */}}
+                  {{/* We always use an 'geometry' field as required by GeoJSON / JSON-FG.*/}}
+                  {{ if $schemaField.IsPrimaryGeometry -}}
+                    {{ continue }}
+                  {{ end -}}
+
+                  {{/* Avoid first comma */}}
+                  {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }}
+
+                  "{{ $schemaField.Name }}": {
+                    {{ $typeFormat := $schemaField.ToTypeFormat -}}
+                    "type": "{{ $typeFormat.Type }}",
+                    {{ if $typeFormat.Format }}"format": "{{ $typeFormat.Format }}", {{ end }}
+                    "nullable": {{ not $schemaField.IsRequired }},
+                    "description": "{{ $schemaField.Description }}"
+                  }
+                {{ end -}}
+
+              {{ end -}}
+            {{ end -}}
+          {{ end -}}
+        }
+      }
+      {{- end -}}
       ,
       "geometryGeoJSON": {
         "oneOf": [
