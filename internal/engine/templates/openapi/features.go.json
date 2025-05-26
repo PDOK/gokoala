@@ -541,37 +541,6 @@
           }
         }
       },
-      "link": {
-        "required": [
-          "href"
-        ],
-        "type": "object",
-        "properties": {
-          "href": {
-            "type": "string",
-            "example": "http://data.example.com/buildings/123"
-          },
-          "rel": {
-            "type": "string",
-            "example": "alternate"
-          },
-          "type": {
-            "type": "string",
-            "example": "application/geo+json"
-          },
-          "hreflang": {
-            "type": "string",
-            "example": "en"
-          },
-          "title": {
-            "type": "string",
-            "example": "Trierer Strasse 70, 53115 Bonn"
-          },
-          "length": {
-            "type": "integer"
-          }
-        }
-      },
       "multilinestringGeoJSON": {
         "required": [
           "coordinates",

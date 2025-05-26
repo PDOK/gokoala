@@ -504,52 +504,6 @@
           ]
         }
       },
-      "link": {
-        "type": "object",
-        "required": [
-          "href"
-        ],
-        "properties": {
-          "href": {
-            "type": "string",
-            "example": "http://data.example.com/buildings/123"
-          },
-          "rel": {
-            "type": "string",
-            "example": "alternate"
-          },
-          "type": {
-            "type": "string",
-            "example": "application/geo+json"
-          },
-          "hreflang": {
-            "type": "string",
-            "example": "en"
-          },
-          "title": {
-            "type": "string",
-            "example": "Trierer Strasse 70, 53115 Bonn"
-          },
-          "length": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "templated": {
-            "description": "Use `true` if the `href` property contains a URI template with variables that needs to be substituted by values to get a URI",
-            "type": "boolean",
-            "default": false,
-            "example": false
-          },
-          "types": {
-            "description": "Without this parameter you should repeat a link for each media type the resource is offered. \nAdding this parameter allows listing alternative media types that you can use for this resource. The value in the `type` parameter becomes the recommended media type.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "example": "image/png, image/jpeg, image/tiff"
-          }
-        }
-      },
       "keyword": {
         "required": [
           "keyword"
