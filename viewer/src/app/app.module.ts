@@ -49,7 +49,7 @@ export class GlobalHttpInterceptor {
     BrowserModule,
     LoggerModule.forRoot({
       serverLoggingUrl: '/api/logs',
-      level: NgxLoggerLevel.LOG,
+      level: NgxLoggerLevel.OFF,
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
   ],
