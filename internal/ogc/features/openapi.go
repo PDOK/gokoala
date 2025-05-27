@@ -43,18 +43,16 @@ func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasour
 		if err != nil {
 			continue
 		}
-		featTableColumns := featTable.FieldsWithDataType()
-		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTableColumns))
+		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTable.Fields))
 		for _, fc := range configuredPropertyFilters {
 			match := false
-			for name, dataType := range featTableColumns {
-				if fc.Name == name {
+			for _, field := range featTable.Fields {
+				if fc.Name == field.Name {
 					// match found between property filter in config file and database column name
-					dataType = datasourceToOpenAPI(dataType)
 					propertyFilters = append(propertyFilters, OpenAPIPropertyFilter{
-						Name:          name,
+						Name:          field.Name,
 						Description:   fc.Description,
-						DataType:      dataType,
+						DataType:      field.ToTypeFormat().Type,
 						AllowedValues: fc.AllowedValues,
 					})
 					match = true
@@ -72,19 +70,4 @@ func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasour
 		result[k.collectionID] = propertyFilters
 	}
 	return result, nil
-}
-
-// translate database data types to OpenAPI data types
-func datasourceToOpenAPI(dataType string) string {
-	switch strings.ToUpper(dataType) {
-	case "INTEGER":
-		dataType = "integer"
-	case "REAL", "NUMERIC":
-		dataType = "number"
-	case "TEXT", "VARCHAR":
-		dataType = "string"
-	default:
-		dataType = "string"
-	}
-	return dataType
 }

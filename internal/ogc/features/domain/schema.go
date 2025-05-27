@@ -80,15 +80,6 @@ type Schema struct {
 	Fields []Field
 }
 
-// FieldsWithDataType flatten fields to name=>datatype
-func (s Schema) FieldsWithDataType() map[string]string {
-	result := make(map[string]string)
-	for _, field := range s.Fields {
-		result[field.Name] = field.Type
-	}
-	return result
-}
-
 // HasExternalFid convenience function
 func (s Schema) HasExternalFid() bool {
 	for _, field := range s.Fields {
