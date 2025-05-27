@@ -10,7 +10,7 @@ GoKoala with a custom OpenAPI spec (using a CLI flag) and overwrite any defaults
 
 ## Sources
 
-While the OpenAPI specs/templates are modified to match the capabilities of GoKoala, it might be useful to now their origins:
+While the OpenAPI specs/templates are modified to match the capabilities of GoKoala, it might be useful to know their origins:
 
 - OGC Common Core (Part 1): `common.go.json` is based on [common-1.0](https://developer.ogc.org/api/common/openapi.yaml)
 - OGC Common Core (Part 2): `common-collections.go.json` is based on [common-part-2-draft](https://developer.ogc.org/api/common/openapi2.yaml)
