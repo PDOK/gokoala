@@ -13,17 +13,23 @@ func TestContentNegotiation_NegotiateFormat(t *testing.T) {
 	// given
 	cn := newContentNegotiation([]config.Language{{Tag: language.Dutch}, {Tag: language.English}})
 	chromeAcceptHeader := "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+	userAgentHeader := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.3"
 
 	// when/then
-	testFormat(t, cn, "application/json", "http://pdok.example/ogc/api", "json")
-	testFormat(t, cn, "application/json", "http://pdok.example/ogc/api/", "json")
-	testFormat(t, cn, chromeAcceptHeader, "http://pdok.example/ogc/api", "html")
-	testFormat(t, cn, chromeAcceptHeader, "http://pdok.example/ogc/api/", "html")
-	testFormat(t, cn, "application/json", "http://pdok.example/ogc/api.json", "json")
-	testFormat(t, cn, "application/json", "http://pdok.example/ogc/api?f=json", "json")
-	testFormat(t, cn, "", "http://pdok.example/ogc/api?f=json", "json")
-	testFormat(t, cn, "application/xml, application/json, text/css, text/html", "http://pdok.example/ogc/api/", "xml")
-	testFormat(t, cn, "application/json, application/xml, text/css, text/html", "http://pdok.example/ogc/api/", "json")
+	testFormat(t, cn, "application/json", "", "http://pdok.example/ogc/api", "json")
+	testFormat(t, cn, "application/json", "", "http://pdok.example/ogc/api/", "json")
+	testFormat(t, cn, "application/json", userAgentHeader, "http://pdok.example/ogc/api/", "json")
+	testFormat(t, cn, chromeAcceptHeader, "", "http://pdok.example/ogc/api", "html")
+	testFormat(t, cn, chromeAcceptHeader, "", "http://pdok.example/ogc/api/", "html")
+	testFormat(t, cn, "*/*", "", "http://pdok.example/ogc/api", "json")
+	testFormat(t, cn, "*/*", userAgentHeader, "http://pdok.example/ogc/api", "json")
+	testFormat(t, cn, "", userAgentHeader, "http://pdok.example/ogc/api", "html")
+	testFormat(t, cn, "application/*", "", "http://pdok.example/ogc/api", "json")
+	testFormat(t, cn, "application/json", "", "http://pdok.example/ogc/api.json", "json")
+	testFormat(t, cn, "application/json", "", "http://pdok.example/ogc/api?f=json", "json")
+	testFormat(t, cn, "", "", "http://pdok.example/ogc/api?f=json", "json")
+	testFormat(t, cn, "application/xml, application/json, text/css, text/html", "", "http://pdok.example/ogc/api/", "xml")
+	testFormat(t, cn, "application/json, application/xml, text/css, text/html", "", "http://pdok.example/ogc/api/", "json")
 	testLanguage(t, cn, "nl;q=1", "http://pdok.example/ogc/api", language.Dutch)
 	testLanguage(t, cn, "fr;q=0.8, de;q=0.5", "http://pdok.example/ogc/api", language.Dutch)
 	testLanguage(t, cn, "en;q=1", "http://pdok.example/ogc/api", language.English)
@@ -33,9 +39,10 @@ func TestContentNegotiation_NegotiateFormat(t *testing.T) {
 	testLanguageWithCookie(t, cn, "en", "http://pdok.example/ogc/api", language.English)
 }
 
-func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, givenURL string, expectedFormat string) {
+func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, userAgentHeader string, givenURL string, expectedFormat string) {
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, givenURL, nil)
 	req.Header.Set(HeaderAccept, acceptHeader)
+	req.Header.Set(HeaderUserAgent, userAgentHeader)
 	if err != nil {
 		t.Fatal(err)
 	}

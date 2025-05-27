@@ -40,6 +40,7 @@ const (
 	HeaderBaseURL         = "X-BaseUrl"
 	HeaderRequestedWith   = "X-Requested-With"
 	HeaderAPIVersion      = "API-Version"
+	HeaderUserAgent       = "User-Agent"
 )
 
 // Engine encapsulates shared non-OGC API specific logic

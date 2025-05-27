@@ -3,6 +3,7 @@ package engine
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
@@ -135,29 +136,30 @@ func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
 
 // NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param)
 func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
-	requestedFormat := cn.getFormatFromQueryParam(req)
-	if requestedFormat == "" {
-		requestedFormat = cn.getFormatFromAcceptHeader(req)
+	if requestedFormat := cn.getFormatFromQueryParam(req); requestedFormat != "" {
+		return requestedFormat
 	}
-	if requestedFormat == "" {
-		requestedFormat = FormatJSON // default
+	if requestedFormat := cn.getFormatFromAcceptHeader(req); requestedFormat != "" {
+		return requestedFormat
 	}
-	return requestedFormat
+	if isProbablyBrowser(req) {
+		return FormatHTML
+	}
+	return FormatJSON
 }
 
 // NegotiateLanguage performs language negotiation, not idempotent (since it removes the ?lang= param)
 func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http.Request) language.Tag {
-	requestedLanguage := cn.getLanguageFromQueryParam(w, req)
-	if requestedLanguage == language.Und {
-		requestedLanguage = cn.getLanguageFromCookie(req)
+	if requestedLanguage := cn.getLanguageFromQueryParam(w, req); requestedLanguage != language.Und {
+		return requestedLanguage
 	}
-	if requestedLanguage == language.Und {
-		requestedLanguage = cn.getLanguageFromHeader(req)
+	if requestedLanguage := cn.getLanguageFromCookie(req); requestedLanguage != language.Und {
+		return requestedLanguage
 	}
-	if requestedLanguage == language.Und {
-		requestedLanguage = language.Dutch // default
+	if requestedLanguage := cn.getLanguageFromHeader(req); requestedLanguage == language.Und {
+		return requestedLanguage
 	}
-	return requestedLanguage
+	return language.Dutch // default
 }
 
 func (cn *ContentNegotiation) formatToMediaType(key TemplateKey) string {
@@ -256,4 +258,17 @@ func (cn *ContentNegotiation) getLanguageFromHeader(req *http.Request) language.
 		requestedLanguage = cn.availableLanguages[langIndex]
 	}
 	return requestedLanguage
+}
+
+func isProbablyBrowser(r *http.Request) bool {
+	ua := r.Header.Get(HeaderUserAgent)
+	if ua == "" {
+		return false
+	}
+	for _, browser := range []string{"Mozilla", "Chrome", "Safari", "Opera"} {
+		if strings.Contains(ua, browser) {
+			return true
+		}
+	}
+	return false
 }
