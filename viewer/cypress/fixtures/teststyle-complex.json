@@ -1,14 +1,14 @@
 {
   "version": 8,
   "metadata": {
-    "ol:webfonts": "https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/resources/fonts/{font-family}/{fontweight}{-fontstyle}.css",
+    "ol:webfonts": "https://data.example.com/dataset/ogc/v1-preprod/resources/fonts/{font-family}/{fontweight}{-fontstyle}.css",
     "gokoala:title-items": "id"
   },
   "name": "",
   "id": "achtergrondkaart_standaard",
   "pitch": 0,
   "center": [5.3878, 52.1561],
-  "glyphs": "https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/resources/fonts/{fontstack}/{range}.pbf",
+  "glyphs": "https://data.example.com/dataset/ogc/v1-preprod/resources/fonts/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "Onderlegger Nederland",
@@ -576,7 +576,7 @@
   "sources": {
     "brt": {
       "type": "vector",
-      "tiles": ["https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"],
+      "tiles": ["https://data.example.com/dataset/ogc/v1-preprod/tiles/NetherlandsRDNewQuad/{z}/{y}/{x}?f=mvt"],
       "minzoom": 0,
       "maxzoom": 12
     }
