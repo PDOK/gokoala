@@ -199,7 +199,6 @@ Design principles:
   of during request handling.
 - Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
-- Document your changes to [OGC OpenAPI example specs](engine/templates/openapi/README.md).
 
 ### Build/run as Go application
 

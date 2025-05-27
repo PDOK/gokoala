@@ -54,35 +54,38 @@
       {{/* Avoid first comma */}}
       {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }}
 
-      {{/* Now include the property definition for this field.*/}}
-      "{{ $feat.Name }}": {
-        {{ if $feat.IsPrimaryIntervalStart }}
-          "description": "{{ i18n "FeatureIntervalStartDescription"}} {{ $feat.Description }}",
-          {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-start" SHALL be a temporal property. */}}
-          "x-ogc-role": "primary-interval-start",
-        {{ else if $feat.IsPrimaryIntervalEnd }}
-          "description":"{{ i18n "FeatureIntervalEndDescription"}} {{ $feat.Description }}",
-          {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-end" SHALL be a temporal property. */}}
-          "x-ogc-role": "primary-interval-end",
-        {{ else if $feat.Description }}
-          "description": "{{ $feat.Description }}",
-        {{ end }}
+      {{ $typeFormat := $feat.ToTypeFormat }}
 
-        {{ $typeFormat := $feat.ToTypeFormat }}
-        {{ if $feat.IsPrimaryGeometry }}
+      {{ if $feat.IsPrimaryGeometry }}
+        {{/* Just like 'id', we call the geometry field always 'geometry' regardless of the column name in the data source */}}
+        "geometry": {
           {{/* OAF part 5: Each spatial property SHALL not include a "type" or "$ref" member.*/}}
           "x-ogc-role": "primary-geometry",
           "format": "{{ $typeFormat.Format }}"
-        {{ else }}
+        }
+      {{ else }}
+        {{/* Now include the property definition for this field.*/}}
+        "{{ $feat.Name }}": {
+          {{ if $feat.IsPrimaryIntervalStart }}
+            "description": "{{ i18n "FeatureIntervalStartDescription"}} {{ $feat.Description }}",
+            {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-start" SHALL be a temporal property. */}}
+            "x-ogc-role": "primary-interval-start",
+          {{ else if $feat.IsPrimaryIntervalEnd }}
+            "description":"{{ i18n "FeatureIntervalEndDescription"}} {{ $feat.Description }}",
+            {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-end" SHALL be a temporal property. */}}
+            "x-ogc-role": "primary-interval-end",
+          {{ else if $feat.Description }}
+            "description": "{{ $feat.Description }}",
+          {{ end }}
+
           {{/* OAF part 5: Each property SHALL include a "type" member, except for spatial properties.*/}}
           "type": "{{ $typeFormat.Type }}"
           {{ if $typeFormat.Format }}
             ,
             "format": "{{ $typeFormat.Format }}"
           {{ end }}
-        {{ end }}
-      }
-
+        }
+      {{ end }}
     {{ end }}
   },
   "additionalProperties": true {{/* The default in JSON Schema, just to make it explicit */}}

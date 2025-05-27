@@ -27,7 +27,7 @@
     "document": {
       "type": "string"
     },
-    "geom": {
+    "geometry": {
       "x-ogc-role": "primary-geometry",
       "format": "geometry-point"
     },

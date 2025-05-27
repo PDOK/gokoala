@@ -48,7 +48,7 @@ func (f *Features) Features() http.HandlerFunc {
 		var fc *domain.FeatureCollection
 		if querySingleDatasource(inputSRID, outputSRID, bbox) {
 			// fast path
-			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
+			datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
 				Cursor:           encodedCursor.Decode(url.checksum()),
 				Limit:            limit,
@@ -66,7 +66,7 @@ func (f *Features) Features() http.HandlerFunc {
 		} else {
 			// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
 			var fids []int64
-			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
+			datasource := f.datasources[datasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
 				Cursor:           encodedCursor.Decode(url.checksum()),
 				Limit:            limit,
@@ -78,7 +78,7 @@ func (f *Features) Features() http.HandlerFunc {
 				// Add filter, filter-lang
 			})
 			if err == nil && fids != nil {
-				datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
+				datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.defaultProfile)
 			}
 			if err != nil {
