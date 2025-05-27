@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, ElementRef, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
+import { Component, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { LegendItemComponent } from './legend-item/legend-item.component'
@@ -11,7 +11,6 @@ import { NGXLogger } from 'ngx-logger'
   templateUrl: './legend-view.component.html',
   styleUrls: ['./legend-view.component.css'],
   imports: [CommonModule, LegendItemComponent],
-  standalone: true,
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {
@@ -31,8 +30,7 @@ export class LegendViewComponent implements OnInit, OnChanges {
 
   constructor(
     private logger: NGXLogger,
-    private mapboxStyleService: MapboxStyleService,
-    private elementRef: ElementRef
+    private mapboxStyleService: MapboxStyleService
   ) {
     recordStyleLayer(true)
   }
@@ -63,15 +61,17 @@ export class LegendViewComponent implements OnInit, OnChanges {
         if (this.mapboxStyle.metadata?.['gokoala:title-items']) {
           this.titleItems = this.mapboxStyle.metadata?.['gokoala:title-items']
         }
+        const titlepart = this.titleItems ? this.titleItems.split(',') : []
         if (this.titleItems) {
           if (this.titleItems.toLocaleLowerCase() === 'id') {
-            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, [])
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, titlepart, true)
+          } else if (this.titleItems.toLocaleLowerCase().includes('no-id')) {
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, false)
           } else {
-            const titlepart = this.titleItems.split(',')
-            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart)
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, true)
           }
         } else {
-          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [])
+          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [], true)
         }
       })
     } else {

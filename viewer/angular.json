@@ -18,7 +18,7 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets"],
-            "styles": ["node_modules/ol/ol.css", "src/styles.css"],
+            "styles": ["src/styles.css", "node_modules/ol/ol.css"],
             "scripts": [],
             "browser": "src/main.ts"
           },
@@ -95,6 +95,9 @@
   },
   "cli": {
     "schematicCollections": ["@angular-eslint/schematics"],
-    "analytics": false
+    "analytics": false,
+    "cache": {
+      "enabled": true
+    }
   }
 }
