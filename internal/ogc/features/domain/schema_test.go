@@ -122,41 +122,6 @@ func TestNewSchema(t *testing.T) {
 	}
 }
 
-func TestFieldsWithDataType(t *testing.T) {
-	tests := []struct {
-		name              string
-		schema            Schema
-		expectedDataTypes map[string]string
-	}{
-		{
-			name: "empty schema",
-			schema: Schema{
-				Fields: []Field{},
-			},
-			expectedDataTypes: map[string]string{},
-		},
-		{
-			name: "schema with fields",
-			schema: Schema{
-				Fields: []Field{
-					{Name: "id", Type: "integer"},
-					{Name: "name", Type: "string"},
-				},
-			},
-			expectedDataTypes: map[string]string{
-				"id":   "integer",
-				"name": "string",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expectedDataTypes, tt.schema.FieldsWithDataType())
-		})
-	}
-}
-
 func TestHasExternalFid(t *testing.T) {
 	tests := []struct {
 		name          string
