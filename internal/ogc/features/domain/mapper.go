@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/twpayne/go-geom"
@@ -53,8 +54,8 @@ func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int
 }
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
-func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, externalFidColumn string,
-	geomColumn string, propConfig *config.FeatureProperties, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
+func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, externalFidColumn string, geomColumn string,
+	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -71,8 +72,7 @@ func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, e
 			return result, nil, err
 		}
 		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
-		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn, externalFidColumn,
-			geomColumn, mapGeom, mapRel)
+		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn, externalFidColumn, geomColumn, schema, mapGeom, mapRel)
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
@@ -84,13 +84,9 @@ func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, e
 	return result, prevNextID, ctx.Err()
 }
 
-func isFloat64(f float64) bool {
-	return f != float64(int64(f))
-}
-
 //nolint:cyclop,funlen
-func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any,
-	fidColumn string, externalFidColumn string, geomColumn string, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
+func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any, fidColumn string,
+	externalFidColumn string, geomColumn string, schema *Schema, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
@@ -152,13 +148,18 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			case float64:
 				// Check to determine whether the content of the columnValue is truly a floating point value.
 				// (Because of non-strict tables in SQLite)
-				if !isFloat64(columnValue.(float64)) {
+				if !types.IsFloat(v) {
 					feature.Properties.Set(columnName, int64(v))
 				} else {
 					feature.Properties.Set(columnName, v)
 				}
 			case time.Time:
-				feature.Properties.Set(columnName, v)
+				// Map as date (= without time) only when defined as such in the schema AND when no time component is present
+				if t := schema.GetType(columnName); t.Format == formatDateOnly && types.IsDate(v) {
+					feature.Properties.Set(columnName, types.NewDate(v))
+				} else {
+					feature.Properties.Set(columnName, v)
+				}
 			case string:
 				feature.Properties.Set(columnName, v)
 			case bool:

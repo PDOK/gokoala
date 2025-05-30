@@ -1,15 +1,35 @@
 package geopackage
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jmoiron/sqlx"
 )
+
+// featureTable according to spec https://www.geopackage.org/spec121/index.html#_contents
+type featureTable struct {
+	TableName          string          `db:"table_name"`
+	DataType           string          `db:"data_type"` // always 'features'
+	Identifier         string          `db:"identifier"`
+	Description        string          `db:"description"`
+	GeometryColumnName string          `db:"column_name"`
+	GeometryType       string          `db:"geometry_type_name"`
+	LastChange         time.Time       `db:"last_change"`
+	MinX               sql.NullFloat64 `db:"min_x"` // bbox
+	MinY               sql.NullFloat64 `db:"min_y"` // bbox
+	MaxX               sql.NullFloat64 `db:"max_x"` // bbox
+	MaxY               sql.NullFloat64 `db:"max_y"` // bbox
+	SRS                sql.NullInt64   `db:"srs_id"`
+
+	Schema *d.Schema // required
+}
 
 // Read metadata about gpkg and sqlite driver
 func readDriverMetadata(db *sqlx.DB) (string, error) {
