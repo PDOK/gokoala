@@ -265,6 +265,28 @@ func TestToTypeFormat(t *testing.T) {
 			},
 		},
 		{
+			name: "text with length field type",
+			field: Field{
+				Name: "description",
+				Type: "text(33)",
+			},
+			expectedValue: TypeFormat{
+				Type:   "string",
+				Format: "",
+			},
+		},
+		{
+			name: "varchar with length field type",
+			field: Field{
+				Name: "description",
+				Type: "varchar(33)",
+			},
+			expectedValue: TypeFormat{
+				Type:   "string",
+				Format: "",
+			},
+		},
+		{
 			name: "char field type",
 			field: Field{
 				Name: "code",
