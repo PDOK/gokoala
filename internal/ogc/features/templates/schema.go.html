@@ -29,6 +29,8 @@
                 <td class="text-wrap">{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "FeatureIdStableOverTime"}}{{ end }}</td>
             </tr>
             {{ range $feat := .Params.Fields }}
+                {{ $typeFormat := $feat.ToTypeFormat }}
+
                 {{/* Skip feature id and external feature id fields, since we don't include those directly. We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
                 {{ if $feat.IsFid }}
                     {{ continue }}
@@ -41,14 +43,14 @@
                     {{/* Just like 'id', we call the geometry field always 'geometry' regardless of the column name in the data source */}}
                     <tr>
                         <td class="text-nowrap">geometry</td>
-                        <td class="text-nowrap">{{ $feat.ToTypeFormat.Type }}</td>
+                        <td class="text-nowrap">{{ $typeFormat.Type }}</td>
                         <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
                         <td class="text-wrap">{{ $feat.Description }}</td>
                     </tr>
                 {{ else }}
                     <tr>
                         <td class="text-nowrap">{{ $feat.Name }}</td>
-                        <td class="text-nowrap">{{ $feat.ToTypeFormat.Type }}</td>
+                        <td class="text-nowrap">{{ if $typeFormat.Format }}{{ $typeFormat.Format }}{{ else }}{{ $typeFormat.Type }}{{ end }}</td>
                         <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
                         <td class="text-wrap">
                             {{ if $feat.IsPrimaryIntervalStart }}

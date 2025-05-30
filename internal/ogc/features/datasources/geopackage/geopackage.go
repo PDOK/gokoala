@@ -52,24 +52,6 @@ type geoPackageBackend interface {
 	close()
 }
 
-// featureTable according to spec https://www.geopackage.org/spec121/index.html#_contents
-type featureTable struct {
-	TableName          string          `db:"table_name"`
-	DataType           string          `db:"data_type"` // always 'features'
-	Identifier         string          `db:"identifier"`
-	Description        string          `db:"description"`
-	GeometryColumnName string          `db:"column_name"`
-	GeometryType       string          `db:"geometry_type_name"`
-	LastChange         time.Time       `db:"last_change"`
-	MinX               sql.NullFloat64 `db:"min_x"` // bbox
-	MinY               sql.NullFloat64 `db:"min_y"` // bbox
-	MaxX               sql.NullFloat64 `db:"max_x"` // bbox
-	MaxY               sql.NullFloat64 `db:"max_y"` // bbox
-	SRS                sql.NullInt64   `db:"srs_id"`
-
-	Schema *domain.Schema
-}
-
 type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
@@ -202,7 +184,8 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer rows.Close()
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
+	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		g.propertiesByCollectionID[collection], g.featureTableByCollectionID[collection].Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +216,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
 	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
+		g.propertiesByCollectionID[collection], g.featureTableByCollectionID[collection].Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -278,7 +261,8 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, _, err := domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName, g.propertiesByCollectionID[collection], mapGpkgGeometry, profile.MapRelationUsingProfile)
+	features, _, err := domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		g.propertiesByCollectionID[collection], g.featureTableByCollectionID[collection].Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
