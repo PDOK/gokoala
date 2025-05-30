@@ -113,9 +113,9 @@ type TypeFormat struct {
 // ToTypeFormat converts the Field's data type (from SQLite or Postgres) to a valid JSON data type
 // and optional format as specified in OAF Part 5.
 func (f Field) ToTypeFormat() TypeFormat {
-	lowerCaseType := strings.ToLower(f.Type)
+	normalizedType := strings.ReplaceAll(strings.ToLower(f.Type), " ", "")
 
-	switch lowerCaseType {
+	switch normalizedType {
 	case "boolean", "bool":
 		return TypeFormat{Type: "boolean"}
 	case "text", "char", "character", "character varying", "varchar", "nvarchar", "clob":
@@ -141,12 +141,17 @@ func (f Field) ToTypeFormat() TypeFormat {
 		return TypeFormat{Type: "string", Format: "date-time"}
 	case geometryType, geometryCollectionType:
 		// From OAF Part 5: the following special value is supported: "geometry-any" as the wildcard for any geometry type
-		return TypeFormat{Type: lowerCaseType, Format: "geometry-any"}
+		return TypeFormat{Type: normalizedType, Format: "geometry-any"}
 	case pointType, linestringType, polygonType, multipointType, multilinestringType, multipolygonType:
 		// From OAF Part 5: Each spatial property SHALL include a "format" member with a string value "geometry",
 		// followed by a hyphen, followed by the name of the geometry type in lower case
-		return TypeFormat{Type: lowerCaseType, Format: "geometry-" + lowerCaseType}
+		return TypeFormat{Type: normalizedType, Format: "geometry-" + normalizedType}
 	default:
+		if strings.Contains(normalizedType, "text(") || strings.Contains(normalizedType, "varchar(") {
+			// Sometimes datasources mention the length of fields, this is irrelevant.
+			// Also, SQLite accepts for example TEXT(5) but ignores the length: https://sqlite.org/datatype3.html#affinity_name_examples
+			return TypeFormat{Type: "string"}
+		}
 		log.Printf("Warning: unknown data type '%s' for field '%s', falling back to string", f.Type, f.Name)
 		return TypeFormat{Type: "string"}
 	}
