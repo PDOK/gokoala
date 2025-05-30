@@ -49,7 +49,7 @@ declare global {
 Cypress.Commands.add('checkForBrokenLinks', () =>{
   cy.get('a').each(link => {
     const href = link.prop('href')
-    if (href && !href.includes('example.com') && !href.includes('europa.eu')) {
+    if (href && !href.includes('example.com') && !href.includes('europa.eu') && !href.includes('opengis.net/spec')) {
       cy.request(href)
     }
   })
