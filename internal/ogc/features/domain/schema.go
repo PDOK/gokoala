@@ -106,6 +106,12 @@ func (s Schema) GetType(field string) TypeFormat {
 	return TypeFormat{}
 }
 
+// IsDate convenience function to check if field is a Date
+func (s Schema) IsDate(field string) bool {
+	t := s.GetType(field)
+	return t.Format == formatDateOnly
+}
+
 // Field a field/column/property in the schema. Contains at least a name and data type.
 type Field struct {
 	Name        string // required

@@ -155,7 +155,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				}
 			case time.Time:
 				// Map as date (= without time) only when defined as such in the schema AND when no time component is present
-				if t := schema.GetType(columnName); t.Format == formatDateOnly && types.IsDate(v) {
+				if types.IsDate(v) && schema.IsDate(columnName) {
 					feature.Properties.Set(columnName, types.NewDate(v))
 				} else {
 					feature.Properties.Set(columnName, v)
