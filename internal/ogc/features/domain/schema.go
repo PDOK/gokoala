@@ -8,6 +8,12 @@ import (
 )
 
 const (
+	formatDateOnly = "date"
+	formatTimeOnly = "time"
+	formatDateTime = "date-time"
+)
+
+const (
 	MinxField = "minx"
 	MinyField = "miny"
 	MaxxField = "maxx"
@@ -80,7 +86,7 @@ type Schema struct {
 	Fields []Field
 }
 
-// HasExternalFid convenience function
+// HasExternalFid convenience function to check if this schema defines an external feature ID
 func (s Schema) HasExternalFid() bool {
 	for _, field := range s.Fields {
 		if field.IsExternalFid {
@@ -88,6 +94,22 @@ func (s Schema) HasExternalFid() bool {
 		}
 	}
 	return false
+}
+
+// GetType convenience function to get TypeFormat of field
+func (s Schema) GetType(field string) TypeFormat {
+	for _, f := range s.Fields {
+		if f.Name == field {
+			return f.ToTypeFormat()
+		}
+	}
+	return TypeFormat{}
+}
+
+// IsDate convenience function to check if field is a Date
+func (s Schema) IsDate(field string) bool {
+	t := s.GetType(field)
+	return t.Format == formatDateOnly
 }
 
 // Field a field/column/property in the schema. Contains at least a name and data type.
@@ -113,6 +135,7 @@ type TypeFormat struct {
 // ToTypeFormat converts the Field's data type (from SQLite or Postgres) to a valid JSON data type
 // and optional format as specified in OAF Part 5.
 func (f Field) ToTypeFormat() TypeFormat {
+	// lowercase, no spaces
 	normalizedType := strings.ReplaceAll(strings.ToLower(f.Type), " ", "")
 
 	switch normalizedType {
@@ -122,7 +145,7 @@ func (f Field) ToTypeFormat() TypeFormat {
 		return TypeFormat{Type: "string"}
 	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "int2", "int8":
 		return TypeFormat{Type: "integer"}
-	case "real", "float", "double", "double precision", "numeric", "decimal":
+	case "real", "float", "double", "doubleprecision", "numeric", "decimal":
 		return TypeFormat{Type: "number", Format: "double"}
 	case "uuid":
 		// From OAF Part 5: Properties that represent a UUID SHOULD be represented as a string with format "uuid".
@@ -130,15 +153,15 @@ func (f Field) ToTypeFormat() TypeFormat {
 	case "date":
 		// From OAF Part 5: Each temporal property SHALL be a "string" literal with the appropriate format
 		// (e.g., "date-time" or "date" for instances, depending on the temporal granularity).
-		return TypeFormat{Type: "string", Format: "date"}
+		return TypeFormat{Type: "string", Format: formatDateOnly}
 	case "time":
 		// From OAF Part 5: Each temporal property SHALL be a "string" literal with the appropriate format
 		// (e.g., "date-time" or "date" for instances, depending on the temporal granularity).
-		return TypeFormat{Type: "string", Format: "time"}
+		return TypeFormat{Type: "string", Format: formatTimeOnly}
 	case "datetime", "timestamp":
 		// From OAF Part 5: Each temporal property SHALL be a "string" literal with the appropriate format
 		// (e.g., "date-time" or "date" for instances, depending on the temporal granularity).
-		return TypeFormat{Type: "string", Format: "date-time"}
+		return TypeFormat{Type: "string", Format: formatDateTime}
 	case geometryType, geometryCollectionType:
 		// From OAF Part 5: the following special value is supported: "geometry-any" as the wildcard for any geometry type
 		return TypeFormat{Type: normalizedType, Format: "geometry-any"}
