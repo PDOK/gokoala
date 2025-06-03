@@ -15,7 +15,6 @@ import VectorTileSource from 'ol/source/VectorTile.js'
 import View from 'ol/View'
 import { Subject } from 'rxjs'
 import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../map-projection'
-
 import { CommonModule } from '@angular/common'
 import { NGXLogger } from 'ngx-logger'
 import { MapBrowserEvent } from 'ol'
@@ -64,6 +63,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './vectortile-view.component.html',
   styleUrls: ['./vectortile-view.component.css'],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   schemas: [
@@ -81,7 +81,7 @@ export class VectortileViewComponent implements OnChanges {
   tileGrid: TileGrid | undefined
   minZoom?: number
   maxZoom?: number
-  private _zoom: number | undefined = undefined
+  private _zoom = -1
   private projection!: Projection
 
   @Input() set showGrid(showGrid: boolean) {
@@ -105,17 +105,13 @@ export class VectortileViewComponent implements OnChanges {
   @Input()
   set zoom(value: number) {
     this._zoom = value
-
-    this.map.getView().setZoom(value)
-    this.logger.log('set zoom ' + value)
-    this.cdf.detectChanges()
-    this.currentZoomLevel.next(value)
+    if (value != -1) {
+      this.map.getView().setZoom(value)
+      this.currentZoomLevel.next(value)
+    }
   }
   get zoom(): number {
-    if (this._zoom === undefined) {
-      this._zoom = this.minZoom ?? 0
-    }
-    return this._zoom as number
+    return this._zoom
   }
 
   @Output() currentZoomLevel = new EventEmitter<number>()
@@ -137,7 +133,7 @@ export class VectortileViewComponent implements OnChanges {
 
   ngOnChanges(changes: NgChanges<VectortileViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
-      this.logger.log(this.id + ' style changed')
+      // this.logger.log(this.id + ' style changed')
       if (!changes.styleUrl.isFirstChange()) {
         if (this.vectorTileLayer) {
           this.setStyle(this.vectorTileLayer)
@@ -148,7 +144,7 @@ export class VectortileViewComponent implements OnChanges {
       // this.logger.log(this.id + ' projection changed')
       this.maxZoom = undefined
       this.minZoom = undefined
-      this._zoom = undefined
+      this.zoom = -1
       this.checkParams()
       this.initialize()
     }
@@ -180,10 +176,7 @@ export class VectortileViewComponent implements OnChanges {
     tile.tileMatrixSetLimits.forEach(limit => {
       if (!this.minZoom) {
         this.minZoom = parseFloat(limit.tileMatrix) + 0.01
-        if (this._zoom === undefined || this._zoom < this.minZoom!) {
-          this.zoom = this.minZoom
-        }
-        this.logger.log('setZoomlevel zoom' + this.zoom)
+        this.zoom = this.minZoom
       }
       this.maxZoom = parseFloat(limit.tileMatrix) + 1
     })
@@ -265,7 +258,7 @@ export class VectortileViewComponent implements OnChanges {
 
     map.getView().on('change:resolution', () => {
       const zoom = this.map.getView().getZoom()
-      this.logger.log('change: resolution zoom' + zoom)
+      this.logger.log('zoom' + zoom)
       if (zoom) {
         this._zoom = zoom
         this.currentZoomLevel.next(zoom)
@@ -320,10 +313,6 @@ export class VectortileViewComponent implements OnChanges {
         projection: this.projection,
       }),
     })
-    this.logger.log('map created')
-    this.logger.log('zoom' + this.zoom)
-    this.logger.log('maxzoom' + this.maxZoom)
-    this.logger.log('minzoom' + this.minZoom)
     return this.map
   }
 
@@ -386,7 +375,7 @@ export class VectortileViewComponent implements OnChanges {
       renderMode: 'hybrid',
       declutter: true,
       useInterimTilesOnError: false,
-      minZoom: undefined,
+      minZoom: -1,
     })
   }
 
