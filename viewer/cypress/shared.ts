@@ -1,11 +1,10 @@
 import { HttpClientModule } from '@angular/common/http'
 import { createOutputSpy } from 'cypress/angular'
-import { Feature, Map as OLMap } from 'ol'
+import { Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
 import 'cypress-network-idle'
 import { LoggerModule } from 'ngx-logger'
 import { environment } from 'src/environments/environment'
-import { Geometry } from 'ol/geom'
 
 export type ProjectionTest = { code: string; projection: string; geofix: string }
 
@@ -35,23 +34,20 @@ export function intercept(geofix: string, realmaps: boolean = Cypress.env('realm
 }
 
 interface Prop {
-  [key: string]: string | number | Feature<Geometry> | undefined
+  [key: string]: string | number
 }
 
 export function mountFeatureComponent(
   aprojection: string,
   abackground: 'OSM' | 'BRT' | undefined = 'OSM',
   amode: 'auto' | 'default' | undefined = 'default',
-
-  aprop: Prop = { itemsUrl: 'https://test/items' },
-  adrawFeature: Feature<Geometry> | undefined = undefined
+  aprop: Prop = { itemsUrl: 'https://test/items' }
 ) {
   const prop: Prop = {
     box: createOutputSpy('boxSpy'),
     backgroundMap: abackground,
     projection: aprojection,
     mode: amode,
-    drawFeature: adrawFeature,
   }
 
   const allprop = { ...prop, ...aprop }

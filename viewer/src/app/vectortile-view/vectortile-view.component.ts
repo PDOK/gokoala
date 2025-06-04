@@ -64,6 +64,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './vectortile-view.component.html',
   styleUrls: ['./vectortile-view.component.css'],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   schemas: [
@@ -76,7 +77,7 @@ export class VectortileViewComponent implements OnChanges {
   xyzSelector = '/{z}/{y}/{x}?f=mvt'
   private _showGrid = false
   private _showObjectInfo = false
-  vectorTileLayer: VectorTileLayer | undefined
+  vectorTileLayer: VectorTileLayer<FeatureLike> | undefined
   curFeature!: FeatureLike
   tileGrid: TileGrid | undefined
   minZoom?: number
@@ -354,7 +355,7 @@ export class VectortileViewComponent implements OnChanges {
     return { vectorTileLayer: vectorTileLayer, layers: layers }
   }
 
-  private setStyle(vectorTileLayer: VectorTileLayer) {
+  private setStyle(vectorTileLayer: VectorTileLayer<FeatureLike>) {
     if (this.styleUrl) {
       const projection = vectorTileLayer.getSource()?.getProjection()
       applyStyle(vectorTileLayer, this.styleUrl, undefined, undefined, this.calcResolutions(this.projection))

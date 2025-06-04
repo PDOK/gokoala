@@ -1,6 +1,6 @@
 import { HttpClientModule } from '@angular/common/http'
 import { LoggerModule } from 'ngx-logger'
-import { LegendViewComponent } from './../src/app/legend-view/legend-view.component'
+import { LegendViewComponent } from '../src/app/legend-view/legend-view.component'
 
 import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared'
 import { environment } from '../src/environments/environment'

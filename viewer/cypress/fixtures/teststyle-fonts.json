@@ -18,7 +18,6 @@
   },
   "glyphs": "https://data.example.com/dataset/ogc/v1-demo/resources/fonts/{fontstack}/{range}.pbf",
   "layers": [
-
     {
       "id": "a label",
       "type": "symbol",
