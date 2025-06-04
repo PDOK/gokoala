@@ -8,7 +8,7 @@ GOKOALA_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 cd "${GOKOALA_ROOT}"
 
 echo "npm install"
-npm install --force --prefix viewer
+npm install --prefix viewer
 
 echo "angular build"
 npm run build --prefix viewer
