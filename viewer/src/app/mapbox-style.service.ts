@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
 import { Feature } from 'ol'
 import { StyleLike } from 'ol/style/Style'
-import { NGXLogger } from 'ngx-logger'
 
 export interface IProperties {
   [key: string]: string
@@ -50,14 +49,14 @@ export type Filter = filterval[]
 type filterval = string | bigint | filterval[]
 
 export interface Paint {
-  'fill-color'?: StopsPattern | string
+  'fill-color'?: FillPattern | string
   'fill-opacity'?: number
-  'line-color'?: StopsPattern | string
+  'line-color'?: string
   'line-width'?: number
   'fill-outline-color'?: string
-  'fill-pattern'?: StopsPattern
+  'fill-pattern'?: FillPattern
   'circle-radius'?: number
-  'circle-color'?: StopsPattern | string
+  'circle-color'?: FillPattern | string
 }
 
 export enum Line {
@@ -77,15 +76,11 @@ export interface Layout {
   'text-offset'?: number[]
 }
 
-export interface StopsPattern {
+export interface FillPattern {
   property: string
   type: string
   stops: Array<string[]>
 }
-
-export type MatchPattern = Array<string | string>
-
-export type Pattern = MatchPattern | StopsPattern
 
 export enum LayerType {
   Circle = 'circle',
@@ -103,10 +98,7 @@ export function exhaustiveGuard(_value: never): never {
   providedIn: 'root',
 })
 export class MapboxStyleService {
-  constructor(
-    private http: HttpClient,
-    private logger: NGXLogger
-  ) {}
+  constructor(private http: HttpClient) {}
 
   getMapboxStyle(url: string): Observable<MapboxStyle> {
     return this.http.get<MapboxStyle>(url)
@@ -125,97 +117,48 @@ export class MapboxStyleService {
     return style
   }
 
-  isPatternWithStops(paint: string | Pattern | undefined): paint is StopsPattern {
-    return (paint as StopsPattern).stops !== undefined
-  }
-
-  isPatternWithMatch(paint: string | Pattern | undefined): paint is MatchPattern {
-    if (!paint || typeof paint === 'string') {
-      return false
-    }
-    if ((paint as MatchPattern) && (paint as MatchPattern).length > 0 && (paint as MatchPattern)[0] === 'match') {
-      return true
-    }
-    return false
+  isFillPatternWithStops(paint: string | FillPattern | undefined): paint is FillPattern {
+    return (paint as FillPattern).stops !== undefined
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  getItems(style: MapboxStyle, titleFunction: Function, customTitlePart: string[], addLayerName: boolean): LegendItem[] {
+  getItems(style: MapboxStyle, titleFunction: Function, customTitlePart: string[]): LegendItem[] {
     const names: LegendItem[] = []
     style.layers.forEach((layer: Layer) => {
-      const p: IProperties = extractPropertiesFromFilter({}, layer.filter, this.logger)
+      const p: IProperties = extractPropertiesFromFilter({}, layer.filter)
 
-      if (layer.layout?.['text-field'] && typeof layer.layout['text-field'] === 'string') {
-        const label = layer.layout['text-field'].replace('{', '').replace('}', '')
+      if (layer.layout?.['text-field']) {
+        const label = layer.layout?.['text-field'].replace('{', '').replace('}', '')
         p['' + label + ''] = label.substring(0, 6)
-        const labelTitle = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'], addLayerName)
+        const labelTitle = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'])
         const showLabel = label[0].toUpperCase() + label.substring(1)
         this.pushItem(labelTitle + ' ' + showLabel, layer, names, p)
       } else {
-        let title = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'], addLayerName)
-        if (addLayerName) {
-          this.pushItem(title, layer, names, p)
-        }
-        let paint: Pattern | undefined = undefined
-        paint = layer.paint['circle-color'] as Pattern
-
-        if (layer.type == LayerType.Line) {
-          paint = layer.paint['line-color'] as Pattern
+        let title = titleFunction(layer['source-layer'], p, customTitlePart, layer['id'])
+        this.pushItem(title, layer, names, p)
+        let paint: FillPattern = {} as FillPattern
+        if (layer.type == LayerType.Circle) {
+          paint = layer.paint['circle-color'] as FillPattern
         }
         if (layer.type == LayerType.Fill) {
-          paint = layer.paint['fill-color'] as Pattern
+          paint = layer.paint['fill-color'] as FillPattern
           if (!paint) {
-            paint = layer.paint['fill-pattern'] as Pattern
+            paint = layer.paint['fill-pattern'] as FillPattern
           }
         }
-        if (paint !== undefined) {
-          if (paint && this.isPatternWithStops(paint)) {
+        if (paint) {
+          if (this.isFillPatternWithStops(paint)) {
             paint.stops.forEach(stop => {
               const prop: IProperties = {}
               prop['' + paint.property + ''] = stop[0]
               title = stop[0]
               this.pushItem(title, layer, names, prop)
             })
-          } else if (this.isPatternWithMatch(paint)) {
-            if (this.isPatternWithMatch(paint)) {
-              this.domatch(paint, layer, names)
-            } else {
-              this.logger.warn('Invalid paint pattern detected:', paint)
-            }
           }
         }
       }
     })
     return names.sort((a, b) => a.title.localeCompare(b.title))
-  }
-
-  domatch(paint: MatchPattern, layer: Layer, names: LegendItem[]): void {
-    this.logger.log('match', paint)
-    if (paint.length < 3) {
-      this.logger.warn('Invalid match pattern:', paint)
-      return
-    }
-
-    const matchField = paint[1].slice(1)
-    this.logger.log('matchField', matchField)
-
-    let title = ''
-    paint.forEach((m: string, i) => {
-      if (i < 2) {
-        this.logger.log('skip', m)
-      } else {
-        if (m.startsWith('#')) {
-          const prop: IProperties = {}
-          if (title !== '') {
-            prop[matchField] = title
-            this.pushItem(title, layer, names, prop)
-            title = ''
-          }
-        } else {
-          title = m + ''
-        }
-      }
-    })
   }
 
   capitalizeFirstLetter(str: string): string {
@@ -226,7 +169,7 @@ export class MapboxStyleService {
     return id
   }
 
-  customTitle(layername: string, props: IProperties, customTitlePart: string[], addLayerName: boolean): string {
+  customTitle(layername: string, props: IProperties, customTitlePart: string[]): string {
     function gettext(intitle: string, index: string): string {
       if (props[index]) {
         return intitle + ' ' + props[index]
@@ -238,10 +181,8 @@ export class MapboxStyleService {
     customTitlePart.forEach(element => {
       title = gettext(title, element)
     })
-    if (addLayerName) {
-      if (title === '') {
-        title = layername + ' '
-      }
+    if (title === '') {
+      title = layername + ' '
     }
     title = title.trimStart()
     title = title.replace('_', ' ')
@@ -249,7 +190,6 @@ export class MapboxStyleService {
   }
 
   private pushItem(title: string, layer: Layer, names: LegendItem[], properties: IProperties = {}) {
-    properties['size'] = '1'
     if (!names.find(e => e.title === title)) {
       const i: LegendItem = {
         name: layer.id,
@@ -265,23 +205,23 @@ export class MapboxStyleService {
   }
 }
 
-function extractPropertiesFromFilter(prop: IProperties, filter: Filter, logger: NGXLogger) {
-  function traverseFilter(filter: filterval): void {
+function extractPropertiesFromFilter(prop: IProperties, filter: Filter) {
+  function traverseFilter(filter: filterval) {
     if (Array.isArray(filter)) {
       const operator = filter[0]
       const conditions = filter.slice(1)
       if (operator === 'all' || operator === 'any') {
-        conditions.forEach(traverseFilter)
+        conditions.forEach(i => traverseFilter(i))
       } else {
-        if (typeof filter[1] === 'string') {
+        if (typeof filter[1] === 'string' && typeof filter[2] === 'string') {
           const key: string = filter[1]
-          if (typeof filter[2] === 'string' || typeof filter[2] === 'number') {
-            prop[key] = filter[2]
-          } else {
-            logger.warn(`Unexpected filter value type for key "${key}":`, filter[2])
-          }
-        } else {
-          logger.warn('Unexpected filter key type:', filter[1])
+
+          prop[key] = filter[2]
+        }
+        if (typeof filter[1] === 'string' && typeof filter[2] === 'number') {
+          const key: string = filter[1]
+
+          prop[key] = filter[2]
         }
       }
     }

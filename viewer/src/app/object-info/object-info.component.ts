@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import RenderFeature from 'ol/render/Feature'
-import { WKT } from 'ol/format'
 
 type propRow = {
   title: string
@@ -10,6 +9,7 @@ type propRow = {
 
 @Component({
   selector: 'app-object-info',
+  standalone: true,
   encapsulation: ViewEncapsulation.ShadowDom,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,18 +26,10 @@ export class ObjectInfoComponent {
 
       for (const val in prop) {
         if (val !== 'mapbox-layer') {
-          if (val === 'geometry') {
-            const wktFormat = new WKT()
-            const wktString = wktFormat.writeGeometry(prop[val])
-            const geop: propRow = { title: val, value: wktString }
-            propTable.push(geop)
-          } else {
-            const p: propRow = { title: val, value: prop[val] }
-            propTable.push(p)
-          }
+          const p: propRow = { title: val, value: prop[val] }
+          propTable.push(p)
         }
       }
-
       return propTable
     } else {
       return []

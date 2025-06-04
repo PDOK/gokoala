@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
-import { Feature, Map as OLMap, VectorTile, View } from 'ol'
+import { Feature, Map as OLMap, Tile, VectorTile, View } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
 import { getCenter } from 'ol/extent'
 import { MVT } from 'ol/format'
@@ -72,8 +72,8 @@ export class LegendItemComponent implements OnInit {
       }),
     })
 
-    this.vectorLayer.getSource()?.setTileLoadFunction(tile => {
-      const vectorTile = tile as VectorTile<Feature<Geometry>>
+    this.vectorLayer.getSource()?.setTileLoadFunction((tile: Tile) => {
+      const vectorTile = tile as VectorTile
       vectorTile.setLoader(() => {
         const features: Feature<Geometry>[] = []
         features.push(feature)
