@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
-import { Feature, Map as OLMap, Tile, VectorTile, View } from 'ol'
+import { Feature, Map as OLMap, VectorTile, View } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
 import { getCenter } from 'ol/extent'
 import { MVT } from 'ol/format'
@@ -9,7 +9,7 @@ import { fromExtent } from 'ol/geom/Polygon'
 import VectorTileLayer from 'ol/layer/VectorTile'
 import { Projection } from 'ol/proj'
 import VectorTileSource from 'ol/source/VectorTile.js'
-import { LayerType, LegendItem, MapboxStyle, MapboxStyleService, exhaustiveGuard } from '../../mapbox-style.service'
+import { exhaustiveGuard, LayerType, LegendItem, MapboxStyle, MapboxStyleService } from '../../mapbox-style.service'
 
 @Component({
   selector: 'app-legend-item',
@@ -72,7 +72,7 @@ export class LegendItemComponent implements OnInit {
       }),
     })
 
-    this.vectorLayer.getSource()?.setTileLoadFunction((tile: Tile) => {
+    this.vectorLayer.getSource()?.setTileLoadFunction(tile => {
       const vectorTile = tile as VectorTile
       vectorTile.setLoader(() => {
         const features: Feature<Geometry>[] = []

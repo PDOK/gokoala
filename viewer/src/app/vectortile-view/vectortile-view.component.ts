@@ -15,11 +15,10 @@ import VectorTileSource from 'ol/source/VectorTile.js'
 import View from 'ol/View'
 import { Subject } from 'rxjs'
 import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../map-projection'
-import { ObjectInfoComponent } from '../object-info/object-info.component'
 
 import { CommonModule } from '@angular/common'
 import { NGXLogger } from 'ngx-logger'
-import { MapBrowserEvent, VectorTile } from 'ol'
+import { MapBrowserEvent } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
 import Collection from 'ol/Collection'
 import { defaults as defaultControls, FullScreen } from 'ol/control.js'
@@ -67,7 +66,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   styleUrls: ['./vectortile-view.component.css'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ObjectInfoComponent],
+  imports: [CommonModule],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
   ],
@@ -83,7 +82,7 @@ export class VectortileViewComponent implements OnChanges {
   tileGrid: TileGrid | undefined
   minZoom?: number
   maxZoom?: number
-  private _zoom = -1
+  private _zoom: number | undefined = undefined
   private projection!: Projection
 
   @Input() set showGrid(showGrid: boolean) {
@@ -107,13 +106,17 @@ export class VectortileViewComponent implements OnChanges {
   @Input()
   set zoom(value: number) {
     this._zoom = value
-    if (value != -1) {
-      this.map.getView().setZoom(value)
-      this.currentZoomLevel.next(value)
-    }
+
+    this.map.getView().setZoom(value)
+    this.logger.log('set zoom ' + value)
+    this.cdf.detectChanges()
+    this.currentZoomLevel.next(value)
   }
   get zoom(): number {
-    return this._zoom
+    if (this._zoom === undefined) {
+      this._zoom = this.minZoom ?? 0
+    }
+    return this._zoom as number
   }
 
   @Output() currentZoomLevel = new EventEmitter<number>()
@@ -135,7 +138,7 @@ export class VectortileViewComponent implements OnChanges {
 
   ngOnChanges(changes: NgChanges<VectortileViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
-      // this.logger.log(this.id + ' style changed')
+      this.logger.log(this.id + ' style changed')
       if (!changes.styleUrl.isFirstChange()) {
         if (this.vectorTileLayer) {
           this.setStyle(this.vectorTileLayer)
@@ -146,7 +149,7 @@ export class VectortileViewComponent implements OnChanges {
       // this.logger.log(this.id + ' projection changed')
       this.maxZoom = undefined
       this.minZoom = undefined
-      this.zoom = -1
+      this._zoom = undefined
       this.checkParams()
       this.initialize()
     }
@@ -178,7 +181,10 @@ export class VectortileViewComponent implements OnChanges {
     tile.tileMatrixSetLimits.forEach(limit => {
       if (!this.minZoom) {
         this.minZoom = parseFloat(limit.tileMatrix) + 0.01
-        this.zoom = this.minZoom
+        if (this._zoom === undefined || this._zoom < this.minZoom!) {
+          this.zoom = this.minZoom
+        }
+        this.logger.log('setZoomlevel zoom' + this.zoom)
       }
       this.maxZoom = parseFloat(limit.tileMatrix) + 1
     })
@@ -260,7 +266,7 @@ export class VectortileViewComponent implements OnChanges {
 
     map.getView().on('change:resolution', () => {
       const zoom = this.map.getView().getZoom()
-      this.logger.log('zoom' + zoom)
+      this.logger.log('change: resolution zoom' + zoom)
       if (zoom) {
         this._zoom = zoom
         this.currentZoomLevel.next(zoom)
@@ -315,6 +321,10 @@ export class VectortileViewComponent implements OnChanges {
         projection: this.projection,
       }),
     })
+    this.logger.log('map created')
+    this.logger.log('zoom' + this.zoom)
+    this.logger.log('maxzoom' + this.maxZoom)
+    this.logger.log('minzoom' + this.minZoom)
     return this.map
   }
 
@@ -348,7 +358,7 @@ export class VectortileViewComponent implements OnChanges {
   private setStyle(vectorTileLayer: VectorTileLayer<FeatureLike>) {
     if (this.styleUrl) {
       const projection = vectorTileLayer.getSource()?.getProjection()
-      applyStyle(vectorTileLayer, this.styleUrl)
+      applyStyle(vectorTileLayer, this.styleUrl, undefined, undefined, this.calcResolutions(this.projection))
         .then(() => {
           //overrule source url and zoom from style
           if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
@@ -371,13 +381,13 @@ export class VectortileViewComponent implements OnChanges {
     }
   }
 
-  getVectorTileLayer(projection: Projection): VectorTileLayer<FeatureLike> {
+  getVectorTileLayer(projection: Projection) {
     return new VectorTileLayer({
       source: this.getVectorTileSource(projection, this.tileUrl),
       renderMode: 'hybrid',
       declutter: true,
       useInterimTilesOnError: false,
-      minZoom: -1,
+      minZoom: undefined,
     })
   }
 
@@ -399,9 +409,9 @@ export class VectortileViewComponent implements OnChanges {
       url: url + this.xyzSelector,
       cacheSize: 0,
     })
-    source.on(['tileloadend'], e => {
-      const evt: { type: 'tileloadend'; target: VectorTile; tile: VectorTile } = e as never
-      this.activeTileUrl.next(evt.tile.key)
+    source.on(['tileloadend'], (e: unknown) => {
+      const evt = e as { tile: { key: string } }
+      this.activeTileUrl.next(evt.tile.key as string)
     })
     return source
   }
