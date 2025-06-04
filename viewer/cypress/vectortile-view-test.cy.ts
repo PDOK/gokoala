@@ -52,7 +52,7 @@ describe('Vectortiled-view-test.cy.ts', () => {
       ],
       componentProperties: {
         id: 'test',
-        tileUrl: 'https://data.example.com/dataset/ogc/v1/tiles/NetherlandsRDNewQuad',
+        tileUrl: 'https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/tiles/NetherlandsRDNewQuad',
         styleUrl: 'https://visualisation.example.com/teststyle/',
         zoom: 12,
         centerX: 5.3896944,

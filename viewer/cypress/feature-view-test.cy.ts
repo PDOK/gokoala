@@ -40,9 +40,10 @@ tests.forEach(i => {
   })
 })
 
-describe('It can draw a feature', () => {
+describe('searchbox for location API', () => {
   it('It can draw feature on it', () => {
     intercept('amsterdam-epgs28992.json')
+
     const coordinates = [
       [115000, 500000], // Top-left corner (northwest)
       [125000, 500000], // Top-right corner (northeast)
@@ -50,9 +51,11 @@ describe('It can draw a feature', () => {
       [115000, 480000], // Bottom-left corner (southwest)
       [115000, 500000], // Closing the polygon by returning to the first point
     ]
+
     const drawFeature = new Feature({
       geometry: new Polygon([coordinates]),
     })
+
     mountFeatureComponent('http://www.opengis.net/def/crs/EPSG/0/28992', 'BRT', 'default', { itemsUrl: 'https://test/items' }, drawFeature)
     screenshot('drawFeature')
   })

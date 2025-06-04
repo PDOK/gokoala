@@ -185,7 +185,7 @@ export class VectortileViewComponent implements OnChanges {
         }
         this.logger.log('setZoomlevel zoom' + this.zoom)
       }
-      this.maxZoom = parseFloat(limit.tileMatrix) + 1
+      this.maxZoom = parseFloat(limit.tileMatrix) + 5
     })
   }
 
