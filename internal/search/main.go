@@ -28,7 +28,7 @@ type Search struct {
 
 func NewSearch(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rewritesFile string,
 	synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64,
-	rankThreshold int, preRankLimitMultiplier int, synonymsExactMatch bool) (*Search, error) {
+	rankThreshold int, preRankLimitMultiplier int, preRankWordCountCutoff int, synonymsExactMatch bool) (*Search, error) {
 
 	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
@@ -46,6 +46,7 @@ func NewSearch(e *engine.Engine, dbConn string, searchIndex string, searchIndexS
 			primarySuggestMultiplier,
 			rankThreshold,
 			preRankLimitMultiplier,
+			preRankWordCountCutoff,
 			synonymsExactMatch,
 		),
 		json:           newJSONFeatures(e),
@@ -143,7 +144,7 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 
 func newDatasource(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rankNormalization int,
 	exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int,
-	preRankLimitMultiplier int, synonymsExactMatch bool) ds.Datasource {
+	preRankLimitMultiplier int, preRankWordCountCutoff int, synonymsExactMatch bool) ds.Datasource {
 
 	datasource, err := postgres.NewPostgres(
 		dbConn,
@@ -155,6 +156,7 @@ func newDatasource(e *engine.Engine, dbConn string, searchIndex string, searchIn
 		primarySuggestMultiplier,
 		rankThreshold,
 		preRankLimitMultiplier,
+		preRankWordCountCutoff,
 		synonymsExactMatch,
 	)
 	if err != nil {

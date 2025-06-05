@@ -52,6 +52,7 @@ const (
 	primarySuggestMultiplier = "primary-suggest-multiplier"
 	rankThreshold            = "rank-threshold"
 	preRankLimitMultiplier   = "pre-rank-limit-multiplier"
+	preRankWordCountCutoff   = "pre-rank-word-count-cutoff"
 	synonymsExactMatch       = "synonyms-exact-match"
 )
 
@@ -239,6 +240,13 @@ func main() {
 					Required: false,
 					Value:    10,
 				},
+				&cli.IntFlag{
+					Name:     preRankWordCountCutoff,
+					EnvVars:  []string{strcase.ToScreamingSnake(preRankWordCountCutoff)},
+					Usage:    "Pre-ranking is based on word count. Results with a word count above this cutoff are not eligible for pre-ranking",
+					Required: false,
+					Value:    3,
+				},
 				&cli.BoolFlag{
 					Name:     synonymsExactMatch,
 					EnvVars:  []string{strcase.ToScreamingSnake(synonymsExactMatch)},
@@ -279,6 +287,7 @@ func main() {
 					c.Float64(primarySuggestMultiplier),
 					c.Int(rankThreshold),
 					c.Int(preRankLimitMultiplier),
+					c.Int(preRankWordCountCutoff),
 					c.Bool(synonymsExactMatch),
 				)
 				if err != nil {

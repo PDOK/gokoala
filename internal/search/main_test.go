@@ -63,7 +63,7 @@ func TestSearch(t *testing.T) {
 		"internal/search/testdata/rewrites.csv",
 		"internal/search/testdata/synonyms.csv",
 		1, 3.0, 1.01,
-		4000, 10, false)
+		4000, 10, 3, false)
 	assert.NoError(t, err)
 
 	// given empty search index

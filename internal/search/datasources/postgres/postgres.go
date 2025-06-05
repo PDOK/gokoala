@@ -29,12 +29,13 @@ type Postgres struct {
 	primarySuggestMultiplier float64
 	rankThreshold            int
 	preRankLimitMultiplier   int
+	preRankWordCountCutoff   int
 	synonymsExactMatch       bool
 }
 
 func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, searchIndexSrid d.SRID,
 	rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int,
-	preRankLimitMultiplier int, synonymsExactMatch bool) (*Postgres, error) {
+	preRankLimitMultiplier int, preRankWordCountCutoff int, synonymsExactMatch bool) (*Postgres, error) {
 
 	ctx := context.Background()
 	config, err := pgxpool.ParseConfig(dbConn)
@@ -61,6 +62,7 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, 
 		primarySuggestMultiplier,
 		rankThreshold,
 		preRankLimitMultiplier,
+		preRankWordCountCutoff,
 		synonymsExactMatch,
 	}, nil
 }
@@ -96,7 +98,8 @@ func (p *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQu
 		p.exactMatchMultiplier,
 		p.primarySuggestMultiplier,
 		p.rankThreshold,
-		p.preRankLimitMultiplier}, bboxQueryArgs...)
+		p.preRankLimitMultiplier,
+		p.preRankWordCountCutoff}, bboxQueryArgs...)
 	rows, err := p.db.Query(queryCtx, sql, queryArgs...)
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
@@ -202,7 +205,8 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 						results r
 					WHERE
 						-- pre-rank more then rank threshold results by ordering on suggest length and display_name
-						CASE WHEN (SELECT c from results_count) = $10 THEN 1 = 1 END
+						CASE WHEN (SELECT c from results_count) = $10 THEN 1 = 1 END AND
+						array_length(string_to_array(r.suggest, ' '), 1) <= $12
 					ORDER BY
 						array_length(string_to_array(r.suggest, ' '), 1) ASC,
 						r.display_name COLLATE "custom_numeric" ASC
