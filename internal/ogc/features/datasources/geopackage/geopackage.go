@@ -8,7 +8,6 @@ import (
 	"maps"
 	"os"
 	"path"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -61,6 +60,7 @@ type GeoPackage struct {
 	featureTableByCollectionID    map[string]*featureTable
 	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	propertiesByCollectionID      map[string]*config.FeatureProperties
+	swapXY                        map[domain.SRID]bool
 	queryTimeout                  time.Duration
 	maxBBoxSizeToUseWithRTree     int
 	selectClauseFids              []string
@@ -109,6 +109,14 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		log.Fatal(err)
 	}
 
+	// TODO make dynamic
+	g.swapXY = map[domain.SRID]bool{
+		domain.SRID(domain.WGS84SRID): false,
+		domain.SRID(28992):            false,
+		domain.SRID(4258):             true,
+		domain.SRID(3857):             false,
+	}
+
 	if err = assertIndexesExist(collections, g.featureTableByCollectionID, g.backend.getDB(), g.fidColumn); err != nil {
 		log.Fatal(err)
 	}
@@ -137,7 +145,8 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, g.propertiesByCollectionID[collection], table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	propConfig := g.propertiesByCollectionID[collection]
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -185,7 +194,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 
 	fc := domain.FeatureCollection{}
 	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		g.propertiesByCollectionID[collection], g.featureTableByCollectionID[collection].Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
+		g.propertiesByCollectionID[collection], table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +211,8 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	queryCtx, cancel := context.WithTimeout(ctx, g.queryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, g.propertiesByCollectionID[collection], table, false, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	propConfig := g.propertiesByCollectionID[collection]
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, false, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -216,7 +226,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
 	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		g.propertiesByCollectionID[collection], g.featureTableByCollectionID[collection].Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
+		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -262,7 +272,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	defer rows.Close()
 
 	features, _, err := domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		g.propertiesByCollectionID[collection], g.featureTableByCollectionID[collection].Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
+		g.propertiesByCollectionID[collection], table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
 	}
@@ -289,11 +299,11 @@ func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) data
 func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *featureTable,
 	onlyFIDs bool, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
-	selectClause := selectAll
+	var selectClause string
 	if onlyFIDs {
 		selectClause = columnsToSQL(g.selectClauseFids)
-	} else if propConfig != nil && propConfig.Properties != nil {
-		selectClause = g.selectSpecificColumnsInOrder(propConfig, table)
+	} else {
+		selectClause = g.selectColumns(table, criteria.OutputSRID, propConfig)
 	}
 
 	// make query
@@ -413,14 +423,38 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 	return table, nil
 }
 
-func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProperties, table *featureTable) string {
-	clause := g.selectClauseFids
-	clause = append(clause, propConfig.Properties...)
-	if !slices.Contains(clause, table.GeometryColumnName) {
-		clause = append(clause, table.GeometryColumnName)
+func (g *GeoPackage) selectColumns(table *featureTable, outputSRID domain.SRID, propConfig *config.FeatureProperties) string {
+	var columns = g.selectClauseFids
+	switch {
+	case propConfig != nil:
+		// Select columns in specif corder
+		for _, prop := range propConfig.Properties {
+			if prop != table.GeometryColumnName {
+				columns = append(columns, prop)
+			}
+		}
+	case table.Schema != nil:
+		// Select all columns according to schema
+		for _, field := range table.Schema.Fields {
+			if field.Name != table.GeometryColumnName {
+				columns = append(columns, field.Name)
+			}
+		}
+	default:
+		log.Println("Warning: table doesn't have a schema. Can't select columns by name, selecting all")
+		return selectAll
 	}
-	result := columnsToSQL(clause)
-	if !propConfig.PropertiesExcludeUnknown {
+	result := columnsToSQL(columns)
+
+	// Add geometry column, and swap coordinated when needed. The latter requires
+	// casting to a SpatiaLite geometry first, executing the swap and then back to a GeoPackage geometry.
+	if swapXY, ok := g.swapXY[outputSRID]; ok && swapXY {
+		result += fmt.Sprintf(", asgpb(swapcoords(castautomagic(\"%[1]s\"))) as \"%[1]s\"", table.GeometryColumnName)
+	} else {
+		result += ", " + table.GeometryColumnName
+	}
+
+	if propConfig != nil && !propConfig.PropertiesExcludeUnknown {
 		result += ", " + selectAll
 	}
 	return result

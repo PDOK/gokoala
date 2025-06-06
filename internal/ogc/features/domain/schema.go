@@ -81,7 +81,8 @@ func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, er
 	return &Schema{publicFields}, nil
 }
 
-// Schema derived from the data source (database) schema.
+// Schema derived from the data source schema.
+// Describes the schema of a single collection (table in the data source).
 type Schema struct {
 	Fields []Field
 }
@@ -141,7 +142,7 @@ func (f Field) ToTypeFormat() TypeFormat {
 	switch normalizedType {
 	case "boolean", "bool":
 		return TypeFormat{Type: "boolean"}
-	case "text", "char", "character", "character varying", "varchar", "nvarchar", "clob":
+	case "text", "char", "character", "charactervarying", "varchar", "nvarchar", "clob":
 		return TypeFormat{Type: "string"}
 	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "int2", "int8":
 		return TypeFormat{Type: "integer"}

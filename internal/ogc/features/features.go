@@ -52,8 +52,8 @@ func (f *Features) Features() http.HandlerFunc {
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
 				Cursor:           encodedCursor.Decode(url.checksum()),
 				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
+				InputSRID:        inputSRID,
+				OutputSRID:       outputSRID,
 				Bbox:             bbox,
 				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
@@ -70,8 +70,8 @@ func (f *Features) Features() http.HandlerFunc {
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
 				Cursor:           encodedCursor.Decode(url.checksum()),
 				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
+				InputSRID:        inputSRID,
+				OutputSRID:       outputSRID,
 				Bbox:             bbox,
 				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,

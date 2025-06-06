@@ -44,8 +44,8 @@ type FeaturesCriteria struct {
 	Limit  int
 
 	// multiple projections support (OAF part 2)
-	InputSRID  int // derived from bbox or filter param when available, or WGS84 as default
-	OutputSRID int // derived from crs param when available, or WGS84 as default
+	InputSRID  domain.SRID // derived from bbox or filter param when available, or WGS84 as default
+	OutputSRID domain.SRID // derived from crs param when available, or WGS84 as default
 
 	// filtering by bounding box (OAF part 1)
 	Bbox *geom.Bounds
