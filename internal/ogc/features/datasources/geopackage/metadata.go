@@ -31,6 +31,29 @@ type featureTable struct {
 	Schema *d.Schema // required
 }
 
+// readMetadata reads metadata such as available feature tables, the schema of each table,
+// available filters, etc. from the GeoPackage. Terminates on failure.
+func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColumn, externalFidColumn string) (
+	featureTableByCollectionID map[string]*featureTable,
+	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
+
+	metadata, err := readDriverMetadata(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(metadata)
+
+	featureTableByCollectionID, err = readGpkgContents(collections, db, fidColumn, externalFidColumn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
+
 // Read metadata about gpkg and sqlite driver
 func readDriverMetadata(db *sqlx.DB) (string, error) {
 	type pragma struct {
@@ -48,7 +71,7 @@ select sqlite_version() as sqlite,
 spatialite_version() as spatialite,
 spatialite_target_cpu() as arch`).StructScan(&m)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to connect with GeoPackage: %w", err)
 	}
 
 	var gpkgVersion pragma

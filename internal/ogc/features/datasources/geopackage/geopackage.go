@@ -94,20 +94,8 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 
 	g.selectClauseFids = []string{g.fidColumn, domain.PrevFid, domain.NextFid}
 
-	metadata, err := readDriverMetadata(g.backend.getDB())
-	if err != nil {
-		log.Fatalf("failed to connect with GeoPackage: %v", err)
-	}
-	log.Println(metadata)
-
-	g.featureTableByCollectionID, err = readGpkgContents(collections, g.backend.getDB(), g.fidColumn, g.externalFidColumn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	g.propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(g.featureTableByCollectionID, collections, g.backend.getDB())
-	if err != nil {
-		log.Fatal(err)
-	}
+	g.featureTableByCollectionID, g.propertyFiltersByCollectionID = readMetadata(
+		g.backend.getDB(), collections, g.fidColumn, g.externalFidColumn)
 
 	// TODO make dynamic
 	g.swapXY = map[domain.SRID]bool{
@@ -117,13 +105,13 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		domain.SRID(3857):             false,
 	}
 
-	if err = assertIndexesExist(collections, g.featureTableByCollectionID, g.backend.getDB(), g.fidColumn); err != nil {
+	if err := assertIndexesExist(collections, g.featureTableByCollectionID, g.backend.getDB(), g.fidColumn); err != nil {
 		log.Fatal(err)
 	}
 	if warmUp {
 		// perform warmup async since it can take a long time
 		go func() {
-			if err = warmUpFeatureTables(collections, g.featureTableByCollectionID, g.backend.getDB()); err != nil {
+			if err := warmUpFeatureTables(collections, g.featureTableByCollectionID, g.backend.getDB()); err != nil {
 				log.Fatal(err)
 			}
 		}()
@@ -427,14 +415,14 @@ func (g *GeoPackage) selectColumns(table *featureTable, outputSRID domain.SRID, 
 	var columns = g.selectClauseFids
 	switch {
 	case propConfig != nil:
-		// Select columns in specif corder
+		// Select columns in specific order
 		for _, prop := range propConfig.Properties {
 			if prop != table.GeometryColumnName {
 				columns = append(columns, prop)
 			}
 		}
 	case table.Schema != nil:
-		// Select all columns according to schema
+		// Select all columns according to table schema
 		for _, field := range table.Schema.Fields {
 			if field.Name != table.GeometryColumnName {
 				columns = append(columns, field.Name)
@@ -446,8 +434,8 @@ func (g *GeoPackage) selectColumns(table *featureTable, outputSRID domain.SRID, 
 	}
 	result := columnsToSQL(columns)
 
-	// Add geometry column, and swap coordinated when needed. The latter requires
-	// casting to a SpatiaLite geometry first, executing the swap and then back to a GeoPackage geometry.
+	// Add geometry column, and swap coordinates when needed. The latter requires casting to
+	// a SpatiaLite geometry first, executing the swap and then casting back to a GeoPackage geometry.
 	if swapXY, ok := g.swapXY[outputSRID]; ok && swapXY {
 		result += fmt.Sprintf(", asgpb(swapcoords(castautomagic(\"%[1]s\"))) as \"%[1]s\"", table.GeometryColumnName)
 	} else {
