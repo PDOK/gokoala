@@ -300,13 +300,10 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	onlyFIDs bool, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
 	var selectClause string
-	switch {
-	case onlyFIDs:
+	if onlyFIDs {
 		selectClause = columnsToSQL(g.selectClauseFids)
-	case propConfig != nil && propConfig.Properties != nil:
-		selectClause = g.selectSpecificColumnsInOrder(propConfig, table, criteria.OutputSRID)
-	default:
-		selectClause = g.selectAllColumns(table, criteria.OutputSRID)
+	} else {
+		selectClause = g.selectColumns(table, criteria.OutputSRID, propConfig)
 	}
 
 	// make query
@@ -426,42 +423,38 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 	return table, nil
 }
 
-func (g *GeoPackage) selectAllColumns(table *featureTable, outputSRID domain.SRID) string {
-	clause := g.selectClauseFids
-	if table.Schema == nil {
-		log.Println("Warning: table doesn't have a schema, can't select columns by name")
+func (g *GeoPackage) selectColumns(table *featureTable, outputSRID domain.SRID, propConfig *config.FeatureProperties) string {
+	var columns = g.selectClauseFids
+	switch {
+	case propConfig != nil:
+		// Select columns in specif corder
+		for _, prop := range propConfig.Properties {
+			if prop != table.GeometryColumnName {
+				columns = append(columns, prop)
+			}
+		}
+	case table.Schema != nil:
+		// Select all columns according to schema
+		for _, field := range table.Schema.Fields {
+			if field.Name != table.GeometryColumnName {
+				columns = append(columns, field.Name)
+			}
+		}
+	default:
+		log.Println("Warning: table doesn't have a schema. Can't select columns by name, selecting all")
 		return selectAll
 	}
-	for _, field := range table.Schema.Fields {
-		if field.Name == table.GeometryColumnName {
-			continue // skip, since it will be added with swapped coordinates
-		}
-		clause = append(clause, field.Name)
-	}
-	result := columnsToSQL(clause)
-	if swapXY, ok := g.swapXY[outputSRID]; ok && swapXY {
-		result += ", AsGPB(swapcoords(castautomagic(" + table.GeometryColumnName + "))) as " + table.GeometryColumnName
-	} else {
-		result += ", AsGPB(castautomagic(" + table.GeometryColumnName + ")) as " + table.GeometryColumnName
-	}
-	return result
-}
+	result := columnsToSQL(columns)
 
-func (g *GeoPackage) selectSpecificColumnsInOrder(propConfig *config.FeatureProperties, table *featureTable, outputSRID domain.SRID) string {
-	clause := g.selectClauseFids
-	for _, prop := range propConfig.Properties {
-		if prop == table.GeometryColumnName {
-			continue // skip, since it will be added with swapped coordinates
-		}
-		clause = append(clause, prop)
-	}
-	result := columnsToSQL(clause)
+	// Add geometry column, and swap coordinated when needed. The latter requires
+	// casting to a SpatiaLite geometry first, executing the swap and then back to a GeoPackage geometry.
 	if swapXY, ok := g.swapXY[outputSRID]; ok && swapXY {
-		result += ", AsGPB(swapcoords(castautomagic(" + table.GeometryColumnName + "))) as " + table.GeometryColumnName
+		result += fmt.Sprintf(", asgpb(swapcoords(castautomagic(\"%[1]s\"))) as \"%[1]s\"", table.GeometryColumnName)
 	} else {
-		result += ", AsGPB(castautomagic(" + table.GeometryColumnName + ")) as " + table.GeometryColumnName
+		result += ", " + table.GeometryColumnName
 	}
-	if !propConfig.PropertiesExcludeUnknown {
+
+	if propConfig != nil && !propConfig.PropertiesExcludeUnknown {
 		result += ", " + selectAll
 	}
 	return result
