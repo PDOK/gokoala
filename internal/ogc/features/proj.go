@@ -30,7 +30,7 @@ type ProjInfo struct {
 
 // GetAxisOrder return XY or YX axis order for the given SRID
 func GetAxisOrder(srid domain.SRID) (domain.AxisOrder, error) {
-	epsgCode := fmt.Sprintf("%s:%d", domain.EPSGPrefix, srid)
+	epsgCode := fmt.Sprintf("%s%d", domain.EPSGPrefix, srid)
 	info, err := execProjInfo(epsgCode)
 	if err != nil {
 		return -1, err
