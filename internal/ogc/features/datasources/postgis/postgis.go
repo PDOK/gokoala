@@ -35,7 +35,7 @@ func (pg PostGIS) GetFeatures(_ context.Context, _ string, _ datasources.Feature
 	return nil, domain.Cursors{}, nil
 }
 
-func (pg PostGIS) GetFeature(__ context.Context, _ string, _ any, _ domain.AxisOrder, _ domain.Profile) (*domain.Feature, error) {
+func (pg PostGIS) GetFeature(_ context.Context, _ string, _ any, _ domain.AxisOrder, _ domain.Profile) (*domain.Feature, error) {
 	log.Println("PostGIS support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return nil, nil
 }
