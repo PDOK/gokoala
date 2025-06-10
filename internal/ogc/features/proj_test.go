@@ -22,7 +22,7 @@ func TestHelperProcess(*testing.T) {
 	os.Exit(i)
 }
 
-func TestShouldSwapXY(t *testing.T) {
+func TestAxisOrder(t *testing.T) {
 	// Save original functions and restore them after all tests in this function are done
 	originalCmdFunc := execCommand
 	originalLookPathFunc := execLookPath
@@ -32,30 +32,38 @@ func TestShouldSwapXY(t *testing.T) {
 	}()
 
 	tests := []struct {
-		name            string
-		srid            domain.SRID
-		mockLookPathErr error
-		mockCmdOutput   string
-		mockCmdExitCode int
-		expectedSwap    bool
-		expectedError   bool
-		expectedErrMsg  string
+		name              string
+		srid              domain.SRID
+		mockLookPathErr   error
+		mockCmdOutput     string
+		mockCmdExitCode   int
+		expectedAxisOrder domain.AxisOrder
+		expectedError     bool
+		expectedErrMsg    string
 	}{
 		{
-			name:            "should swap - first axis direction is east",
-			srid:            domain.SRID(28992),
-			mockCmdOutput:   `{"coordinate_system":{"axis":[{"direction":"east"}, {"direction":"north"}]}}`,
-			mockCmdExitCode: 0,
-			expectedSwap:    false,
-			expectedError:   false,
+			name:              "should not swap - first axis direction is east",
+			srid:              domain.SRID(28992),
+			mockCmdOutput:     `{"coordinate_system":{"axis":[{"direction":"east"}, {"direction":"north"}]}}`,
+			mockCmdExitCode:   0,
+			expectedAxisOrder: domain.AxisOrderXY,
+			expectedError:     false,
 		},
 		{
-			name:            "should not swap - first axis direction is north",
-			srid:            domain.SRID(4258),
-			mockCmdOutput:   `{"coordinate_system":{"axis":[{"direction":"north"}, {"direction":"east"}]}}`,
-			mockCmdExitCode: 0,
-			expectedSwap:    true,
-			expectedError:   false,
+			name:              "should swap - first axis direction is north (for wgs84)",
+			srid:              domain.WGS84SRID,
+			mockCmdOutput:     `{"coordinate_system":{"axis":[{"direction":"east"}, {"direction":"north"}]}}`,
+			mockCmdExitCode:   0,
+			expectedAxisOrder: domain.AxisOrderXY,
+			expectedError:     false,
+		},
+		{
+			name:              "should swap - first axis direction is north",
+			srid:              domain.SRID(4258),
+			mockCmdOutput:     `{"coordinate_system":{"axis":[{"direction":"north"}, {"direction":"east"}]}}`,
+			mockCmdExitCode:   0,
+			expectedAxisOrder: domain.AxisOrderYX,
+			expectedError:     false,
 		},
 		{
 			name:            "error - projinfo not found (LookPath fails)",
@@ -126,12 +134,11 @@ func TestShouldSwapXY(t *testing.T) {
 				return originalCmdFunc(name, arg...)
 			}
 
-			swap, err := ShouldSwapXY(tt.srid)
-
+			axisOrder, err := GetAxisOrder(tt.srid)
 			if tt.expectedError {
 				assert.Contains(t, err.Error(), tt.expectedErrMsg)
 			} else {
-				assert.Equal(t, tt.expectedSwap, swap)
+				assert.Equal(t, tt.expectedAxisOrder, axisOrder)
 			}
 		})
 	}

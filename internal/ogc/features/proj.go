@@ -18,31 +18,28 @@ var (
 
 // ProjInfo output in PROJJSON format. Note: only relevant fields are mapped in this struct.
 type ProjInfo struct {
-	CoordinateSystem CoordinateSystem `json:"coordinate_system"` //nolint:tagliatelle
+	CoordinateSystem struct {
+		Axis []struct {
+			Name         string `json:"name"`
+			Abbreviation string `json:"abbreviation"`
+			Direction    string `json:"direction"`
+			Unit         string `json:"unit"`
+		} `json:"axis"`
+	} `json:"coordinate_system"` //nolint:tagliatelle
 }
 
-// CoordinateSystem represents the CRS definition
-type CoordinateSystem struct {
-	Axis []Axis `json:"axis"`
-}
-
-// Axis represents an X or Y axis
-type Axis struct {
-	Name         string `json:"name"`
-	Abbreviation string `json:"abbreviation"`
-	Direction    string `json:"direction"`
-	Unit         string `json:"unit"`
-}
-
-// ShouldSwapXY true when given SRID should be YX, false when SRID should be XY.
-func ShouldSwapXY(srid domain.SRID) (bool, error) {
-	epsgCode := fmt.Sprintf("EPSG:%d", srid)
+// GetAxisOrder return XY or YX axis order for the given SRID
+func GetAxisOrder(srid domain.SRID) (domain.AxisOrder, error) {
+	epsgCode := fmt.Sprintf("%s:%d", domain.EPSGPrefix, srid)
 	info, err := execProjInfo(epsgCode)
 	if err != nil {
-		return false, err
+		return -1, err
 	}
 	// east/north == XY, north/east == YX.
-	return info.CoordinateSystem.Axis[0].Direction == "north", nil
+	if info.CoordinateSystem.Axis[0].Direction == "north" {
+		return domain.AxisOrderYX, nil
+	}
+	return domain.AxisOrderXY, nil
 }
 
 func execProjInfo(epsgCode string) (*ProjInfo, error) {

@@ -112,16 +112,12 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 	}
 	for key := range datasources {
 		if _, ok := order[key.srid]; !ok {
-			swapXY, err := ShouldSwapXY(domain.SRID(key.srid))
+			axisOrder, err := GetAxisOrder(domain.SRID(key.srid))
 			if err != nil {
 				log.Printf("Warning: failed to determine whether EPSG:%d needs "+
 					"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
 			}
-			if swapXY {
-				order[key.srid] = domain.AxisOrderYX
-			} else {
-				order[key.srid] = domain.AxisOrderXY
-			}
+			order[key.srid] = axisOrder
 		}
 	}
 	return order

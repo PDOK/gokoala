@@ -13,8 +13,10 @@ const (
 	CrsURIPrefix = "http://www.opengis.net/def/crs/"
 	WGS84CodeOGC = "CRS84"
 	WGS84CrsURI  = CrsURIPrefix + "OGC/1.3/" + WGS84CodeOGC
+	EPSGPrefix   = "EPSG:"
 )
 
+// AxisOrder the order of axis for a certain CRS
 type AxisOrder int
 
 const (
@@ -35,10 +37,9 @@ func (s SRID) GetOrDefault() int {
 }
 
 func EpsgToSrid(srs string) (SRID, error) {
-	prefix := "EPSG:"
-	srsCode, found := strings.CutPrefix(srs, prefix)
+	srsCode, found := strings.CutPrefix(srs, EPSGPrefix)
 	if !found {
-		return -1, fmt.Errorf("expected SRS to start with '%s', got %s", prefix, srs)
+		return -1, fmt.Errorf("expected SRS to start with '%s', got %s", EPSGPrefix, srs)
 	}
 	srid, err := strconv.Atoi(srsCode)
 	if err != nil {
