@@ -36,7 +36,7 @@ type datasourceConfig struct {
 type Features struct {
 	engine                    *engine.Engine
 	datasources               map[datasourceKey]ds.Datasource
-	swapXY                    map[domain.SRID]bool
+	axisOrderBySRID           map[domain.SRID]domain.AxisOrder
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 	defaultProfile            domain.Profile
 
@@ -46,7 +46,7 @@ type Features struct {
 
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
-	swapXY := createSwapXY(datasources)
+	axisOrderBySRID := determineAxisOrder(datasources)
 	configuredCollections = cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
@@ -56,7 +56,7 @@ func NewFeatures(e *engine.Engine) *Features {
 	f := &Features{
 		engine:                    e,
 		datasources:               datasources,
-		swapXY:                    swapXY,
+		axisOrderBySRID:           axisOrderBySRID,
 		configuredPropertyFilters: configuredPropertyFilters,
 		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL, util.Keys(configuredCollections)),
 		html:                      newHTMLFeatures(e),
@@ -106,20 +106,22 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	return result
 }
 
-func createSwapXY(datasources map[datasourceKey]ds.Datasource) map[domain.SRID]bool {
-	swapXY := map[domain.SRID]bool{
-		domain.WGS84SRID: false, // We know OGC:CRS84 is XY (https://spatialreference.org/ref/ogc/CRS84/)
+func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[domain.SRID]domain.AxisOrder {
+	swapXY := map[domain.SRID]domain.AxisOrder{
+		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
 	for key := range datasources {
 		datasourceSRID := domain.SRID(key.srid)
 		if _, ok := swapXY[datasourceSRID]; !ok {
 			swap, err := ShouldSwapXY(datasourceSRID)
 			if err != nil {
-				log.Printf("Warning: failed to determine if EPSG:%d needs "+
+				log.Printf("Warning: failed to determine whether EPSG:%d needs "+
 					"swap of X/Y axis: %v. Defaulting to XY order.", datasourceSRID, err)
-				swap = false
 			}
-			swapXY[datasourceSRID] = swap
+			if swap {
+				swapXY[datasourceSRID] = domain.AxisOrderYX
+			}
+			swapXY[datasourceSRID] = domain.AxisOrderXY
 		}
 	}
 	return swapXY

@@ -7,11 +7,19 @@ import (
 )
 
 const (
-	CrsURIPrefix  = "http://www.opengis.net/def/crs/"
 	UndefinedSRID = 0
 	WGS84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
-	WGS84CodeOGC  = "CRS84"
-	WGS84CrsURI   = CrsURIPrefix + "OGC/1.3/" + WGS84CodeOGC
+
+	CrsURIPrefix = "http://www.opengis.net/def/crs/"
+	WGS84CodeOGC = "CRS84"
+	WGS84CrsURI  = CrsURIPrefix + "OGC/1.3/" + WGS84CodeOGC
+)
+
+type AxisOrder int
+
+const (
+	AxisOrderXY AxisOrder = iota
+	AxisOrderYX
 )
 
 // SRID Spatial Reference System Identifier: a unique value to unambiguously identify a spatial coordinate system.

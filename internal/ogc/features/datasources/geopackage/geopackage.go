@@ -122,7 +122,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	defer cancel()
 
 	propConfig := g.propertiesByCollectionID[collection]
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, true, false, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, true, -1, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -144,7 +144,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 }
 
 func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64,
-	swapXY bool, profile domain.Profile) (*domain.FeatureCollection, error) {
+	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, error) {
 
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
@@ -155,7 +155,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer cancel()
 
 	propConfig := g.propertiesByCollectionID[collection]
-	selectClause := g.selectColumns(table, swapXY, propConfig, false)
+	selectClause := g.selectColumns(table, axisOrder, propConfig, false)
 	fids := map[string]any{"fids": featureIDs}
 
 	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select %s from %s where %s in (:fids)", selectClause, table.TableName, g.fidColumn), fids)
@@ -184,7 +184,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 }
 
 func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria,
-	swapXY bool, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
+	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
 
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
@@ -195,7 +195,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	defer cancel()
 
 	propConfig := g.propertiesByCollectionID[collection]
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, false, swapXY, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, false, axisOrder, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -221,7 +221,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any,
-	swapXY bool, profile domain.Profile) (*domain.Feature, error) {
+	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error) {
 
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
@@ -250,7 +250,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 
 	propConfig := g.propertiesByCollectionID[collection]
-	selectClause := g.selectColumns(table, swapXY, propConfig, false)
+	selectClause := g.selectColumns(table, axisOrder, propConfig, false)
 
 	query := fmt.Sprintf("select %s from %s f where f.%s = :fid limit 1", selectClause, table.TableName, fidColumn)
 	rows, err := g.backend.getDB().NamedQueryContext(queryCtx, query, map[string]any{"fid": featureID})
@@ -285,13 +285,13 @@ func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) data
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
 func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *featureTable,
-	onlyFIDs bool, swapXY bool, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
+	onlyFIDs bool, axisOrder domain.AxisOrder, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
 	var selectClause string
 	if onlyFIDs {
 		selectClause = columnsToSQL([]string{g.fidColumn, domain.PrevFid, domain.NextFid})
 	} else {
-		selectClause = g.selectColumns(table, swapXY, propConfig, true)
+		selectClause = g.selectColumns(table, axisOrder, propConfig, true)
 	}
 
 	// make query
@@ -411,7 +411,9 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 	return table, nil
 }
 
-func (g *GeoPackage) selectColumns(table *featureTable, swapXY bool, propConfig *config.FeatureProperties, includePrevNext bool) string {
+func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrder,
+	propConfig *config.FeatureProperties, includePrevNext bool) string {
+
 	columns := make(map[string]struct{}) // map (actually a set) to prevent accidental duplicate columns
 	switch {
 	case propConfig != nil:
@@ -441,9 +443,10 @@ func (g *GeoPackage) selectColumns(table *featureTable, swapXY bool, propConfig 
 
 	result := columnsToSQL(util.Keys(columns))
 
-	// Add the geometry column and swap coordinates when needed. The latter requires casting to
-	// a SpatiaLite geometry first, executing the swap and then casting back to a GeoPackage geometry.
-	if swapXY {
+	// Add the geometry column. GeoPackage geometries are stored in WKB format and WKB is always XY.
+	// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing
+	// the swap and then casting back to a GeoPackage geometry.
+	if axisOrder == domain.AxisOrderYX {
 		result += fmt.Sprintf(", asgpb(swapcoords(castautomagic(\"%[1]s\"))) as \"%[1]s\"", table.GeometryColumnName)
 	} else {
 		result += fmt.Sprintf(", \"%s\"", table.GeometryColumnName)
