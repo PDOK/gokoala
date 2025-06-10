@@ -46,6 +46,7 @@ type FeaturesCriteria struct {
 	// multiple projections support (OAF part 2)
 	InputSRID  domain.SRID // derived from bbox or filter param when available, or WGS84 as default
 	OutputSRID domain.SRID // derived from crs param when available, or WGS84 as default
+	SwapXY     bool        // XY = false, YX = true
 
 	// filtering by bounding box (OAF part 1)
 	Bbox *geom.Bounds
