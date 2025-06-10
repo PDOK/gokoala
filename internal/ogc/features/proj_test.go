@@ -31,7 +31,7 @@ func TestShouldSwapXY(t *testing.T) {
 		execLookPath = originalLookPathFunc
 	}()
 
-	type args struct {
+	tests := []struct {
 		name            string
 		srid            domain.SRID
 		mockLookPathErr error
@@ -40,8 +40,7 @@ func TestShouldSwapXY(t *testing.T) {
 		expectedSwap    bool
 		expectedError   bool
 		expectedErrMsg  string
-	}
-	tests := []args{
+	}{
 		{
 			name:            "should swap - first axis direction is east",
 			srid:            domain.SRID(28992),
@@ -98,14 +97,13 @@ func TestShouldSwapXY(t *testing.T) {
 			expectedErrMsg:  "invalid projinfo output: axis not found",
 		},
 	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			// Setup mocks for execLookPath and execCommand for this specific test case
 			execLookPath = func(file string) (string, error) {
 				if file == projInfoTool {
-					if tc.mockLookPathErr != nil {
-						return "", tc.mockLookPathErr
+					if tt.mockLookPathErr != nil {
+						return "", tt.mockLookPathErr
 					}
 					return "/test/projinfo", nil
 				}
@@ -120,20 +118,20 @@ func TestShouldSwapXY(t *testing.T) {
 					cmd := exec.Command(os.Args[0], cs...) //nolint:gosec    // Use test binary itself
 					cmd.Env = []string{
 						"GO_WANT_HELPER_PROCESS=1",
-						"STDOUT=" + tc.mockCmdOutput,
-						"EXIT_CODE=" + strconv.Itoa(tc.mockCmdExitCode),
+						"STDOUT=" + tt.mockCmdOutput,
+						"EXIT_CODE=" + strconv.Itoa(tt.mockCmdExitCode),
 					}
 					return cmd
 				}
 				return originalCmdFunc(name, arg...)
 			}
 
-			swap, err := ShouldSwapXY(tc.srid)
+			swap, err := ShouldSwapXY(tt.srid)
 
-			if tc.expectedError {
-				assert.Contains(t, err.Error(), tc.expectedErrMsg, "Test: %s. Error message mismatch for SRID %d", tc.name, tc.srid)
+			if tt.expectedError {
+				assert.Contains(t, err.Error(), tt.expectedErrMsg)
 			} else {
-				assert.Equal(t, tc.expectedSwap, swap, "Test: %s. Swap value mismatch for SRID %d", tc.name, tc.srid)
+				assert.Equal(t, tt.expectedSwap, swap)
 			}
 		})
 	}

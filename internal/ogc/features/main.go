@@ -113,13 +113,13 @@ func createSwapXY(datasources map[datasourceKey]ds.Datasource) map[domain.SRID]b
 	for key := range datasources {
 		datasourceSRID := domain.SRID(key.srid)
 		if _, ok := swapXY[datasourceSRID]; !ok {
-			shouldSwap, err := ShouldSwapXY(datasourceSRID)
+			swap, err := ShouldSwapXY(datasourceSRID)
 			if err != nil {
 				log.Printf("Warning: failed to determine if EPSG:%d needs "+
 					"swap of X/Y axis: %v. Defaulting to XY order.", datasourceSRID, err)
-				shouldSwap = false
+				swap = false
 			}
-			swapXY[datasourceSRID] = shouldSwap
+			swapXY[datasourceSRID] = swap
 		}
 	}
 	return swapXY

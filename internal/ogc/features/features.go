@@ -58,7 +58,7 @@ func (f *Features) Features() http.HandlerFunc {
 				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
-			}, f.defaultProfile)
+			}, f.swapXY[outputSRID], f.defaultProfile)
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
 				return
@@ -78,8 +78,9 @@ func (f *Features) Features() http.HandlerFunc {
 				// Add filter, filter-lang
 			})
 			if err == nil && fids != nil {
+				// this is step 2: get the actual features in output CRS by feature ID
 				datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.defaultProfile)
+				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.swapXY[outputSRID], f.defaultProfile)
 			}
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)

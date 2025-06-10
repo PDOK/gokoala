@@ -26,7 +26,7 @@ type CoordinateSystem struct {
 	Axis []Axis `json:"axis"`
 }
 
-// Axis represents a CRS axis
+// Axis represents an X or Y axis
 type Axis struct {
 	Name         string `json:"name"`
 	Abbreviation string `json:"abbreviation"`
