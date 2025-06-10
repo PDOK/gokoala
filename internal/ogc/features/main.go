@@ -36,7 +36,7 @@ type datasourceConfig struct {
 type Features struct {
 	engine                    *engine.Engine
 	datasources               map[datasourceKey]ds.Datasource
-	axisOrderBySRID           map[domain.SRID]domain.AxisOrder
+	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 	defaultProfile            domain.Profile
 
@@ -106,22 +106,21 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	return result
 }
 
-func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[domain.SRID]domain.AxisOrder {
-	order := map[domain.SRID]domain.AxisOrder{
+func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]domain.AxisOrder {
+	order := map[int]domain.AxisOrder{
 		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
 	for key := range datasources {
-		datasourceSRID := domain.SRID(key.srid)
-		if _, ok := order[datasourceSRID]; !ok {
-			swapXY, err := ShouldSwapXY(datasourceSRID)
+		if _, ok := order[key.srid]; !ok {
+			swapXY, err := ShouldSwapXY(domain.SRID(key.srid))
 			if err != nil {
 				log.Printf("Warning: failed to determine whether EPSG:%d needs "+
-					"swap of X/Y axis: %v. Defaulting to XY order.", datasourceSRID, err)
+					"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
 			}
 			if swapXY {
-				order[datasourceSRID] = domain.AxisOrderYX
+				order[key.srid] = domain.AxisOrderYX
 			} else {
-				order[datasourceSRID] = domain.AxisOrderXY
+				order[key.srid] = domain.AxisOrderXY
 			}
 		}
 	}
