@@ -107,24 +107,25 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 }
 
 func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[domain.SRID]domain.AxisOrder {
-	swapXY := map[domain.SRID]domain.AxisOrder{
+	order := map[domain.SRID]domain.AxisOrder{
 		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
 	for key := range datasources {
 		datasourceSRID := domain.SRID(key.srid)
-		if _, ok := swapXY[datasourceSRID]; !ok {
-			swap, err := ShouldSwapXY(datasourceSRID)
+		if _, ok := order[datasourceSRID]; !ok {
+			swapXY, err := ShouldSwapXY(datasourceSRID)
 			if err != nil {
 				log.Printf("Warning: failed to determine whether EPSG:%d needs "+
 					"swap of X/Y axis: %v. Defaulting to XY order.", datasourceSRID, err)
 			}
-			if swap {
-				swapXY[datasourceSRID] = domain.AxisOrderYX
+			if swapXY {
+				order[datasourceSRID] = domain.AxisOrderYX
+			} else {
+				order[datasourceSRID] = domain.AxisOrderXY
 			}
-			swapXY[datasourceSRID] = domain.AxisOrderXY
 		}
 	}
-	return swapXY
+	return order
 }
 
 func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {
