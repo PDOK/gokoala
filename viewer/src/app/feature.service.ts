@@ -7,6 +7,8 @@ import { NGXLogger } from 'ngx-logger'
 import { initProj4 } from './map-projection'
 import { FeatureLike } from 'ol/Feature'
 import { Link } from './link'
+import { coordEach } from '@turf/meta'
+import { clone } from '@turf/clone'
 
 export type pointGeoJSON = {
   coordinates: Array<number>
@@ -84,10 +86,27 @@ export class FeatureService {
     this.logger.log(JSON.stringify(url))
     return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
       map(data => {
-        return new GeoJSON().readFeatures(data, {
+        const olFeatures = new GeoJSON().readFeatures(data, {
           dataProjection: url.dataMapping.dataProjection,
           featureProjection: url.dataMapping.visualProjection,
         })
+        if (url.dataMapping.dataProjection == 'EPSG:4258') {
+          // eslint-disable-next-line
+          const olGeoJSON = new GeoJSON().writeFeaturesObject(olFeatures)
+          const flipped = clone(olGeoJSON)
+          // eslint-disable-next-line
+          console.log('before', olGeoJSON)
+          coordEach(flipped, function (coord) {
+            const y = coord[0]
+            const x = coord[1]
+            coord[0] = x
+            coord[1] = y
+          })
+          // eslint-disable-next-line
+          console.log('after', flipped)
+          return new GeoJSON().readFeatures(flipped) // wat te doen met projecties??
+        }
+        return olFeatures
       })
     )
   }
