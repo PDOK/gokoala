@@ -107,6 +107,11 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 }
 
 func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]domain.AxisOrder {
+	// TODO: disable swapping x/y axis until https://github.com/PDOK/gokoala/pull/312 is resolved.
+	if true {
+		return map[int]domain.AxisOrder{}
+	}
+	log.Println("start determining axis order for all configured CRS's")
 	order := map[int]domain.AxisOrder{
 		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
@@ -120,6 +125,7 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 			order[key.srid] = axisOrder
 		}
 	}
+	log.Println("done determining axis order for all configured CRS's")
 	return order
 }
 
