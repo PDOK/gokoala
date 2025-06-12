@@ -46,6 +46,9 @@
           },
           {{ end }}
           {
+            "$ref": "#/components/parameters/profile"
+          },
+          {
             "$ref": "#/components/parameters/cursor"
           }
           {{ if and $.Params $.Params.PropertyFiltersByCollection }}
@@ -79,7 +82,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include information about the number of selected and\nreturned features (`numberMatched` and `numberReturned`) as well as\nlinks to support paging (link relation `next`).",
+            "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include links to support paging (link relation `next`).",
             "headers": {
               "Content-Crs": {
                 "description": "a URI, in angular brackets, identifying the coordinate reference system used in the content / payload",
@@ -134,6 +137,9 @@
           },
           {
             "$ref": "#/components/parameters/crs"
+          },
+          {
+            "$ref": "#/components/parameters/profile"
           }
         ],
         "responses": {
@@ -945,6 +951,25 @@
         "explode": false,
         "schema": {
           "type": "string"
+        }
+      },
+      "profile" : {
+        "name" : "profile",
+        "in" : "query",
+        "description" : "Select the profile to be used for the response. Available profiles:\n\n* `rel-as-link`: When the data contains relations between features, each relation is represented by a property with suffix `.href` which contains a URL to the linked feature.\n* `rel-as-uri`: When the data contains relations between features, each relation is represented by a property containing the URL to the linked feature.\n* `rel-as-key`: When the data contains relations between features, each relation is represented by a property containing only the ID of the linked feature.",
+        "required" : false,
+        "style" : "form",
+        "explode" : false,
+        "schema" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "rel-as-link",
+              "rel-as-uri",
+              "rel-as-key"
+            ]
+          }
         }
       },
       "f-features": {
