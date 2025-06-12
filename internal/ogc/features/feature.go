@@ -33,7 +33,7 @@ func (f *Features) Feature() http.HandlerFunc {
 			return
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		outputSRID, contentCrs, err := url.parse()
+		outputSRID, contentCrs, profile, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -41,7 +41,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
+		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 		if err != nil {
 			handleFeatureQueryError(w, collectionID, featureID, err)
 			return

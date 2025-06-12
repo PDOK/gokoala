@@ -7,7 +7,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
@@ -38,7 +37,6 @@ type Features struct {
 	datasources               map[datasourceKey]ds.Datasource
 	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
-	defaultProfile            domain.Profile
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -58,7 +56,6 @@ func NewFeatures(e *engine.Engine) *Features {
 		datasources:               datasources,
 		axisOrderBySRID:           axisOrderBySRID,
 		configuredPropertyFilters: configuredPropertyFilters,
-		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL, util.Keys(configuredCollections)),
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}

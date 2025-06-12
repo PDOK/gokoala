@@ -37,7 +37,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 		url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
-			referenceDate, propertyFilters, err := f.parseFeaturesURL(r, collection)
+			referenceDate, propertyFilters, profile, err := f.parseFeaturesURL(r, collection)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -58,7 +58,7 @@ func (f *Features) Features() http.HandlerFunc {
 				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
-			}, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
+			}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
 				return
@@ -80,7 +80,7 @@ func (f *Features) Features() http.HandlerFunc {
 			if err == nil && fids != nil {
 				// this is step 2: get the actual features in output CRS by feature ID
 				datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
+				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 			}
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
@@ -108,7 +108,8 @@ func (f *Features) Features() http.HandlerFunc {
 }
 
 func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
-	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Bounds, time.Time, map[string]string, error) {
+	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Bounds, time.Time,
+	map[string]string, domain.Profile, error) {
 
 	url := featureCollectionURL{
 		*f.engine.Config.BaseURL.URL,
@@ -117,8 +118,8 @@ func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatia
 		f.configuredPropertyFilters[collection.ID],
 		collection.HasDateTime(),
 	}
-	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
-	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err
+	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, profile, err := url.parse()
+	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, profile, err
 }
 
 func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {

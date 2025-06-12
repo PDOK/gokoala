@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_featureCollectionURL_parseParams(t *testing.T) {
+func TestParseFeatures(t *testing.T) {
 	type fields struct {
 		baseURL   url.URL
 		params    url.Values
@@ -22,6 +22,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 		dtSupport bool
 	}
 	host, _ := url.Parse("http://ogc.example")
+	defaultProfile := domain.NewProfile(domain.RelAsLink, *host, []string{})
 	tests := []struct {
 		name              string
 		fields            fields
@@ -32,6 +33,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 		wantInputCrs      int
 		wantRefDate       *time.Time
 		wantPropFilters   map[string]string
+		wantProfile       domain.Profile
 		wantErr           assert.ErrorAssertionFunc
 	}{
 		{
@@ -50,6 +52,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantBbox:          nil,
 			wantRefDate:       nil,
 			wantInputCrs:      100000,
+			wantProfile:       defaultProfile,
 			wantErr:           success(),
 		},
 		{
@@ -64,6 +67,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantOutputCrs: 28992,
 			wantBbox:      geom.NewBounds(geom.XY).Set(5.375925226997315, 51.505264437720115, 5.38033585204785, 51.50760171277042),
 			wantInputCrs:  100000,
+			wantProfile:   defaultProfile,
 			wantErr:       success(),
 		},
 		{
@@ -78,6 +82,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantInputCrs:  100000,
 			wantBbox:      geom.NewBounds(geom.XY).Set(177, 65, -177, 70),
 			wantRefDate:   nil,
+			wantProfile:   defaultProfile,
 			wantErr:       success(),
 		},
 		{
@@ -102,6 +107,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      28992,
+			wantProfile:       defaultProfile,
 			wantErr:           success(),
 		},
 		{
@@ -125,6 +131,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      28992,
+			wantProfile:       defaultProfile,
 			wantErr:           success(),
 		},
 		{
@@ -148,6 +155,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      100000,
+			wantProfile:       defaultProfile,
 			wantErr:           success(),
 		},
 		{
@@ -172,6 +180,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
 			wantRefDate:       nil,
 			wantInputCrs:      28992,
+			wantProfile:       defaultProfile,
 			wantErr:           success(),
 		},
 		{
@@ -191,6 +200,27 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
 			wantRefDate:   &time.Time{},
+			wantProfile:   defaultProfile,
+			wantErr:       success(),
+		},
+		{
+			name: "Parse profile",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"profile": []string{"rel-as-key"},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				dtSupport: true,
+			},
+			wantLimit:     1,
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantRefDate:   &time.Time{},
+			wantProfile:   domain.NewProfile(domain.RelAsKey, *host, []string{}),
 			wantErr:       success(),
 		},
 		{
@@ -210,6 +240,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantInputCrs:    100000,
 			wantRefDate:     nil,
 			wantPropFilters: map[string]string{"foo": "baz"},
+			wantProfile:     defaultProfile,
 			wantErr:         success(),
 		},
 		{
@@ -230,6 +261,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			wantInputCrs:    100000,
 			wantRefDate:     nil,
 			wantPropFilters: map[string]string{"foo": "baz", "bar": "bazz"},
+			wantProfile:     defaultProfile,
 			wantErr:         success(),
 		},
 		{
@@ -245,7 +277,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.EqualError(t, err, "unknown query parameter(s) found: non_existent=baz", "parse()")
+				assert.EqualError(t, err, "unknown query parameter(s) found: non_existent", "parse()")
 				return false
 			},
 		},
@@ -476,7 +508,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.EqualError(t, err, "unknown query parameter(s) found: this_param_does_not_exist_in_openapi_spec=foobar", "parse()")
+				assert.EqualError(t, err, "unknown query parameter(s) found: this_param_does_not_exist_in_openapi_spec", "parse()")
 				return false
 			},
 		},
@@ -499,7 +531,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 				},
 				supportsDatetime: tt.fields.dtSupport,
 			}
-			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, err := fc.parse()
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, gotProfile, err := fc.parse()
 			if !tt.wantErr(t, err, "parse()") {
 				return
 			}
@@ -508,6 +540,7 @@ func Test_featureCollectionURL_parseParams(t *testing.T) {
 			assert.Equalf(t, tt.wantOutputCrs, gotOutputCrs.GetOrDefault(), "parse()")
 			assert.Equalf(t, tt.wantBbox, gotBbox, "parse()")
 			assert.Equalf(t, tt.wantInputCrs, gotInputCrs.GetOrDefault(), "parse()")
+			assert.Equalf(t, tt.wantProfile, gotProfile, "parse()")
 			if tt.wantPropFilters != nil {
 				assert.Equalf(t, tt.wantPropFilters, gotPF, "parse()")
 			}
