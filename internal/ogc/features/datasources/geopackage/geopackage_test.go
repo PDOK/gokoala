@@ -335,7 +335,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			g.preparedStmtCache = NewCache()
 			url, _ := neturl.Parse("http://example.com")
 			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
-			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, p)
+			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, domain.AxisOrderXY, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeatures, error %v, wantErr %v", err, tt.wantErr)
@@ -442,7 +442,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 			}
 			url, _ := neturl.Parse("http://example.com")
 			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
-			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, p)
+			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, domain.AxisOrderXY, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeature, error %v, wantErr %v", err, tt.wantErr)

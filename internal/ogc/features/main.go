@@ -36,6 +36,7 @@ type datasourceConfig struct {
 type Features struct {
 	engine                    *engine.Engine
 	datasources               map[datasourceKey]ds.Datasource
+	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 	defaultProfile            domain.Profile
 
@@ -45,6 +46,7 @@ type Features struct {
 
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
+	axisOrderBySRID := determineAxisOrder(datasources)
 	configuredCollections = cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
@@ -54,6 +56,7 @@ func NewFeatures(e *engine.Engine) *Features {
 	f := &Features{
 		engine:                    e,
 		datasources:               datasources,
+		axisOrderBySRID:           axisOrderBySRID,
 		configuredPropertyFilters: configuredPropertyFilters,
 		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL, util.Keys(configuredCollections)),
 		html:                      newHTMLFeatures(e),
@@ -101,6 +104,29 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 		}
 	}
 	return result
+}
+
+func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]domain.AxisOrder {
+	// TODO: disable swapping x/y axis until https://github.com/PDOK/gokoala/pull/312 is resolved.
+	if true {
+		return map[int]domain.AxisOrder{}
+	}
+	log.Println("start determining axis order for all configured CRS's")
+	order := map[int]domain.AxisOrder{
+		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
+	}
+	for key := range datasources {
+		if _, ok := order[key.srid]; !ok {
+			axisOrder, err := GetAxisOrder(domain.SRID(key.srid))
+			if err != nil {
+				log.Printf("Warning: failed to determine whether EPSG:%d needs "+
+					"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
+			}
+			order[key.srid] = axisOrder
+		}
+	}
+	log.Println("done determining axis order for all configured CRS's")
+	return order
 }
 
 func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {

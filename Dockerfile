@@ -19,7 +19,10 @@ ENV GOOS=linux
 # install sqlite-related compile-time dependencies
 RUN set -eux && \
     apt-get update && \
-    apt-get install --no-install-recommends -y libcurl4-openssl-dev=* libssl-dev=* libsqlite3-mod-spatialite=* && \
+    apt-get install --no-install-recommends -y  \
+      libcurl4-openssl-dev=*  \
+      libssl-dev=*  \
+      libsqlite3-mod-spatialite=* && \
     rm -rf /var/lib/apt/lists/*
 
 # install controller-gen (used by go generate)
@@ -41,7 +44,13 @@ FROM docker.io/debian:bookworm-slim
 # install sqlite-related runtime dependencies
 RUN set -eux && \
     apt-get update && \
-    apt-get install --no-install-recommends -y libcurl4=* curl=* openssl=* ca-certificates=* libsqlite3-mod-spatialite=* && \
+    apt-get install --no-install-recommends -y  \
+      libcurl4=*  \
+      curl=*  \
+      openssl=*  \
+      ca-certificates=*  \
+      libsqlite3-mod-spatialite=* \
+      proj-bin=* && \
     rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080

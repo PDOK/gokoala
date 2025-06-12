@@ -7,11 +7,21 @@ import (
 )
 
 const (
-	CrsURIPrefix  = "http://www.opengis.net/def/crs/"
 	UndefinedSRID = 0
 	WGS84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
-	WGS84CodeOGC  = "CRS84"
-	WGS84CrsURI   = CrsURIPrefix + "OGC/1.3/" + WGS84CodeOGC
+
+	CrsURIPrefix = "http://www.opengis.net/def/crs/"
+	WGS84CodeOGC = "CRS84"
+	WGS84CrsURI  = CrsURIPrefix + "OGC/1.3/" + WGS84CodeOGC
+	EPSGPrefix   = "EPSG:"
+)
+
+// AxisOrder the order of axis for a certain CRS
+type AxisOrder int
+
+const (
+	AxisOrderXY AxisOrder = iota
+	AxisOrderYX
 )
 
 // SRID Spatial Reference System Identifier: a unique value to unambiguously identify a spatial coordinate system.
@@ -27,10 +37,9 @@ func (s SRID) GetOrDefault() int {
 }
 
 func EpsgToSrid(srs string) (SRID, error) {
-	prefix := "EPSG:"
-	srsCode, found := strings.CutPrefix(srs, prefix)
+	srsCode, found := strings.CutPrefix(srs, EPSGPrefix)
 	if !found {
-		return -1, fmt.Errorf("expected SRS to start with '%s', got %s", prefix, srs)
+		return -1, fmt.Errorf("expected SRS to start with '%s', got %s", EPSGPrefix, srs)
 	}
 	srid, err := strconv.Atoi(srsCode)
 	if err != nil {

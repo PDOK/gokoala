@@ -41,7 +41,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.defaultProfile)
+		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
 		if err != nil {
 			handleFeatureQueryError(w, collectionID, featureID, err)
 			return

@@ -18,13 +18,13 @@ type Datasource interface {
 	GetFeatureIDs(ctx context.Context, collection string, criteria FeaturesCriteria) ([]int64, domain.Cursors, error)
 
 	// GetFeaturesByID returns a collection of Features with the given IDs. To be used in concert with GetFeatureIDs
-	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, profile domain.Profile) (*domain.FeatureCollection, error)
+	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, error)
 
 	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
-	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
+	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
 
 	// GetFeature returns a specific Feature, based on its feature id
-	GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error)
+	GetFeature(ctx context.Context, collection string, featureID any, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
@@ -44,8 +44,8 @@ type FeaturesCriteria struct {
 	Limit  int
 
 	// multiple projections support (OAF part 2)
-	InputSRID  int // derived from bbox or filter param when available, or WGS84 as default
-	OutputSRID int // derived from crs param when available, or WGS84 as default
+	InputSRID  domain.SRID // derived from bbox or filter param when available, or WGS84 as default
+	OutputSRID domain.SRID // derived from crs param when available, or WGS84 as default
 
 	// filtering by bounding box (OAF part 1)
 	Bbox *geom.Bounds

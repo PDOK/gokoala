@@ -52,13 +52,13 @@ func (f *Features) Features() http.HandlerFunc {
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
 				Cursor:           encodedCursor.Decode(url.checksum()),
 				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
+				InputSRID:        inputSRID,
+				OutputSRID:       outputSRID,
 				Bbox:             bbox,
 				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
-			}, f.defaultProfile)
+			}, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
 				return
@@ -70,16 +70,17 @@ func (f *Features) Features() http.HandlerFunc {
 			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
 				Cursor:           encodedCursor.Decode(url.checksum()),
 				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
+				InputSRID:        inputSRID,
+				OutputSRID:       outputSRID,
 				Bbox:             bbox,
 				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
 			})
 			if err == nil && fids != nil {
+				// this is step 2: get the actual features in output CRS by feature ID
 				datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.defaultProfile)
+				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
 			}
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
