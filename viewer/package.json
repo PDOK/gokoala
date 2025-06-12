@@ -23,6 +23,7 @@
     "@angular/elements": "18.2.2",
     "@angular/platform-browser": "18.2.2",
     "@angular/platform-browser-dynamic": "18.2.2",
+    "@turf/flip": "^7.2.0",
     "ngx-logger": "^5.0.12",
     "ol": "^9.2.4",
     "ol-mapbox-style": "^12.3.5",
