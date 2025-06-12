@@ -111,6 +111,7 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 	if true {
 		return map[int]domain.AxisOrder{}
 	}
+	log.Println("start determining axis order for all configured CRS's")
 	order := map[int]domain.AxisOrder{
 		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
@@ -124,6 +125,7 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 			order[key.srid] = axisOrder
 		}
 	}
+	log.Println("done determining axis order for all configured CRS's")
 	return order
 }
 
