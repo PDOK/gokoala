@@ -17,10 +17,10 @@ _Cloud Native OGC APIs server, written in Go._
 ## Description
 
 This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes
-in a cloud-native way. It contains a complete implementation of OGC API Features (part 1 and 2). With respect to
+in a cloud-native way. It contains a complete implementation of OGC API Features (part 1, 2 and 5). With respect to
 OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other
-implementations. For example vector tile hosting may be delegated to a vector tile engine, 3D tile hosting to object storage,
-raster map hosting to a WMS server, etc.
+implementations. For example, vector tile hosting may be delegated to a vector tile engine, 3D tile hosting 
+to object storage, raster map hosting to a WMS server, etc.
 
 This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
 datasets? Spin up a separate instance/container.
@@ -29,19 +29,19 @@ datasets? Spin up a separate instance/container.
 
 - [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
-- [OGC API Features](https://ogcapi.ogc.org/features/) supports part 1 and part 2 of the spec.
+- [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG
   - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
   - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
-  - Supports property and temporal filtering.
-  - Uses cursor-based pagination in order to support browsing large datasets.
+  - Supports property (`/items?property=<value>`) and temporal filtering (`/items?datetime=<timestamp>`.
+  - Implements cursor-based pagination in order to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
   of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing.
-  Currently, 3 projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
+  Currently, three projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
   geodata tiles (= tiles per collection) are supported.
-- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML - including legends -
+- [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML (including legends)
   and JSON representation of supported (Mapbox) styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
@@ -202,7 +202,7 @@ Design principles:
 
 ### Build/run as Go application
 
-Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), `openssl` and `curl` are installed.
+Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), [PROJ](https://proj.org/en/stable/install.html), `openssl` and `curl` are installed.
 Also make sure `gcc` or similar is available since the application uses cgo.
 
 ```bash
@@ -260,7 +260,7 @@ Also:
 
 ### OGC compliance validation
 
-See our [end-to-end tests](tests/README.md).
+See our [end-to-end tests](tests/README.md) for details.
 
 ## Misc
 
