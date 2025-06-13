@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -22,7 +23,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
+		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
 			return
@@ -32,8 +33,11 @@ func (f *Features) Feature() http.HandlerFunc {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		outputSRID, contentCrs, err := url.parse()
+		url := featureURL{*f.engine.Config.BaseURL.URL,
+			r.URL.Query(),
+			util.Keys(f.configuredCollections),
+		}
+		outputSRID, contentCrs, profile, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -41,7 +45,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
+		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 		if err != nil {
 			handleFeatureQueryError(w, collectionID, featureID, err)
 			return
@@ -54,7 +58,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.feature(w, r, collectionID, collection.Features, feat)
+			f.html.feature(w, r, collection, feat)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
 		case engine.FormatJSONFG:

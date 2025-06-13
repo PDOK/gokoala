@@ -26,7 +26,7 @@ func (f *Features) Schema() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
+		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
 			return
