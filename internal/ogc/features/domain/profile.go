@@ -28,6 +28,9 @@ type Profile struct {
 }
 
 func NewProfile(profileName ProfileName, baseURL url.URL, collectionNames []string) Profile {
+	if collectionNames == nil {
+		collectionNames = []string{}
+	}
 	sort.Slice(collectionNames, func(i, j int) bool {
 		return len(collectionNames[i]) > len(collectionNames[j])
 	})

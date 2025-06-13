@@ -18,10 +18,6 @@ const (
 	templatesDir = "internal/ogc/features/templates/"
 )
 
-var (
-	configuredCollections map[string]config.GeoSpatialCollection
-)
-
 type datasourceKey struct {
 	srid         int
 	collectionID string
@@ -36,6 +32,7 @@ type Features struct {
 	engine                    *engine.Engine
 	datasources               map[datasourceKey]ds.Datasource
 	axisOrderBySRID           map[int]domain.AxisOrder
+	configuredCollections     map[string]config.GeoSpatialCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 
 	html *htmlFeatures
@@ -45,7 +42,7 @@ type Features struct {
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
 	axisOrderBySRID := determineAxisOrder(datasources)
-	configuredCollections = cacheConfiguredFeatureCollections(e)
+	configuredCollections := cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
 	schemas := renderSchemas(e, datasources)
@@ -55,6 +52,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		engine:                    e,
 		datasources:               datasources,
 		axisOrderBySRID:           axisOrderBySRID,
+		configuredCollections:     configuredCollections,
 		configuredPropertyFilters: configuredPropertyFilters,
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),

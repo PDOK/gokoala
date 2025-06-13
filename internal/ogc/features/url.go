@@ -15,7 +15,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
@@ -73,6 +72,7 @@ type featureCollectionURL struct {
 	params                    url.Values
 	limit                     config.Limit
 	configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
+	configuredCollectionNames []string
 	supportsDatetime          bool
 }
 
@@ -91,7 +91,7 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
-	profile = parseProfile(fc.params, fc.baseURL)
+	profile = parseProfile(fc.params, fc.baseURL, fc.configuredCollectionNames)
 	referenceDate, dateTimeErr := parseDateTime(fc.params, fc.supportsDatetime)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
@@ -169,8 +169,9 @@ func (fc featureCollectionURL) validateNoUnknownParams() error {
 
 // URL to a specific Feature
 type featureURL struct {
-	baseURL url.URL
-	params  url.Values
+	baseURL                   url.URL
+	params                    url.Values
+	configuredCollectionNames []string
 }
 
 // parse the given URL to values required to delivery a specific Feature
@@ -182,7 +183,7 @@ func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Pro
 
 	srid, err = parseCrsToSRID(f.params, crsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
-	profile = parseProfile(f.params, f.baseURL)
+	profile = parseProfile(f.params, f.baseURL, f.configuredCollectionNames)
 	return
 }
 
@@ -369,10 +370,10 @@ func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error
 	return filter, filterSRID, nil
 }
 
-func parseProfile(params url.Values, baseURL url.URL) d.Profile {
+func parseProfile(params url.Values, baseURL url.URL, configuredCollectionNames []string) d.Profile {
 	profile := d.RelAsLink
 	if params.Has(profileParam) {
 		profile = d.ProfileName(params.Get(profileParam))
 	}
-	return d.NewProfile(profile, baseURL, util.Keys(configuredCollections))
+	return d.NewProfile(profile, baseURL, configuredCollectionNames)
 }
