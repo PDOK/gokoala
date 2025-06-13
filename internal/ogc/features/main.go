@@ -18,16 +18,6 @@ const (
 	templatesDir = "internal/ogc/features/templates/"
 )
 
-type datasourceKey struct {
-	srid         int
-	collectionID string
-}
-
-type datasourceConfig struct {
-	collections config.GeoSpatialCollections
-	ds          config.Datasource
-}
-
 type Features struct {
 	engine                    *engine.Engine
 	datasources               map[datasourceKey]ds.Datasource
@@ -39,6 +29,7 @@ type Features struct {
 	json *jsonFeatures
 }
 
+// NewFeatures Bootstraps OGC API Features logic
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
 	axisOrderBySRID := determineAxisOrder(datasources)
@@ -64,6 +55,16 @@ func NewFeatures(e *engine.Engine) *Features {
 	return f
 }
 
+type datasourceKey struct {
+	srid         int
+	collectionID string
+}
+
+type datasourceConfig struct {
+	collections config.GeoSpatialCollections
+	ds          config.Datasource
+}
+
 func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	configured := make(map[datasourceKey]*datasourceConfig, len(e.Config.OgcAPI.Features.Collections))
 
@@ -80,7 +81,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	// now we have a mapping from collection+projection => desired datasource (the 'configured' map).
 	// but the actual datasource connection still needs to be CREATED and associated with these collections.
 	// this is what we'll going to do now, but in the process we need to make sure no duplicate datasources
-	// are instantiated, since multiple collection can point to the same datasource and we only what to have a single
+	// are instantiated: since multiple collections can point to the same datasource and we only what to have a single
 	// datasource/connection-pool serving those collections.
 	createdDatasources := make(map[config.Datasource]ds.Datasource)
 	result := make(map[datasourceKey]ds.Datasource, len(configured))

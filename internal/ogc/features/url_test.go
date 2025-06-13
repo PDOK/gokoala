@@ -204,7 +204,7 @@ func TestParseFeatures(t *testing.T) {
 			wantErr:       success(),
 		},
 		{
-			name: "Parse profile",
+			name: "Parse profile - rel-as-key",
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
@@ -221,6 +221,26 @@ func TestParseFeatures(t *testing.T) {
 			wantInputCrs:  100000,
 			wantRefDate:   &time.Time{},
 			wantProfile:   domain.NewProfile(domain.RelAsKey, *host, []string{}),
+			wantErr:       success(),
+		},
+		{
+			name: "Parse profile - rel-as-uri",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"profile": []string{"rel-as-uri"},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				dtSupport: true,
+			},
+			wantLimit:     1,
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantRefDate:   &time.Time{},
+			wantProfile:   domain.NewProfile(domain.RelAsURI, *host, []string{}),
 			wantErr:       success(),
 		},
 		{
@@ -263,6 +283,23 @@ func TestParseFeatures(t *testing.T) {
 			wantPropFilters: map[string]string{"foo": "baz", "bar": "bazz"},
 			wantProfile:     defaultProfile,
 			wantErr:         success(),
+		},
+		{
+			name: "Fail on invalid profile",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"profile": []string{"non-existent"},
+				},
+				limit: config.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
+				assert.EqualError(t, err, "profile non-existent is not supported, only supporting [rel-as-key rel-as-uri rel-as-link]", "parse()")
+				return false
+			},
 		},
 		{
 			name: "Fail on invalid property filters",

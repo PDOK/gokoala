@@ -91,12 +91,12 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
-	profile = parseProfile(fc.params, fc.baseURL, fc.configuredCollectionNames)
-	referenceDate, dateTimeErr := parseDateTime(fc.params, fc.supportsDatetime)
+	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.configuredCollectionNames)
+	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
-	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, dateTimeErr, filterErr, inputSRIDErr)
+	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, referenceDateErr, filterErr, inputSRIDErr)
 	return
 }
 
@@ -181,9 +181,10 @@ func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Pro
 		return
 	}
 
-	srid, err = parseCrsToSRID(f.params, crsParam)
+	srid, crsErr := parseCrsToSRID(f.params, crsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
-	profile = parseProfile(f.params, f.baseURL, f.configuredCollectionNames)
+	profile, profileErr := parseProfile(f.params, f.baseURL, f.configuredCollectionNames)
+	err = errors.Join(crsErr, profileErr)
 	return
 }
 
@@ -370,10 +371,13 @@ func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error
 	return filter, filterSRID, nil
 }
 
-func parseProfile(params url.Values, baseURL url.URL, configuredCollectionNames []string) d.Profile {
+func parseProfile(params url.Values, baseURL url.URL, configuredCollectionNames []string) (d.Profile, error) {
 	profile := d.RelAsLink
 	if params.Has(profileParam) {
 		profile = d.ProfileName(params.Get(profileParam))
+		if !slices.Contains(d.SupportedProfiles, profile) {
+			return d.Profile{}, fmt.Errorf("profile %s is not supported, only supporting %s", profile, d.SupportedProfiles)
+		}
 	}
-	return d.NewProfile(profile, baseURL, configuredCollectionNames)
+	return d.NewProfile(profile, baseURL, configuredCollectionNames), nil
 }

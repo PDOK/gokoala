@@ -20,6 +20,10 @@ const (
 	RelAsLink ProfileName = "rel-as-link" // RelAsLink a feature reference in the response SHALL be represented by: an object with the property "href" and, optionally a "title"
 )
 
+var SupportedProfiles = []ProfileName{
+	RelAsKey, RelAsURI, RelAsLink,
+}
+
 // Profile from OAF Part 5, used to express relations between features
 type Profile struct {
 	profileName     ProfileName
