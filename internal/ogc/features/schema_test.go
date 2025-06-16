@@ -117,6 +117,19 @@ func TestSchema(t *testing.T) {
 			},
 		},
 		{
+			name: "Request schema in JSON format with external FID for collection with x-ogc-role=reference",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/schema",
+				collectionID: "standplaatsen",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_schema_external_fid_reference.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request schema in JSON format with 3D geoms",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_3d_geoms.yaml",

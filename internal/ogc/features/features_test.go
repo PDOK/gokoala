@@ -559,6 +559,34 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request features with relation to other feature (URL based on external FID)",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?profile=rel-as-uri",
+				collectionID: "standplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_with_rel_as_uri.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features with relation to other feature (ID/key based on external FID)",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?profile=rel-as-key",
+				collectionID: "standplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_with_rel_as_key.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request features for collection with specific viewer configuration, to make sure this is reflected in the HTML output",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
