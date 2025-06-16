@@ -3,12 +3,8 @@ package domain
 import (
 	"fmt"
 	"net/url"
-	"regexp"
-	"sort"
-	"strings"
 )
 
-const regexRemoveSeparators = "[^a-z0-9]?"
 const featurePath = "%s/collections/%s/items/%s"
 
 type ProfileName string
@@ -26,63 +22,40 @@ var SupportedProfiles = []ProfileName{
 
 // Profile from OAF Part 5, used to express relations between features
 type Profile struct {
-	profileName     ProfileName
-	baseURL         string
-	collectionNames []string
+	profileName ProfileName
+	baseURL     string
+	schema      Schema
 }
 
-func NewProfile(profileName ProfileName, baseURL url.URL, collectionNames []string) Profile {
-	if collectionNames == nil {
-		collectionNames = []string{}
-	}
-	sort.Slice(collectionNames, func(i, j int) bool {
-		return len(collectionNames[i]) > len(collectionNames[j])
-	})
+func NewProfile(profileName ProfileName, baseURL url.URL, schema Schema) Profile {
 	return Profile{
-		profileName:     profileName,
-		baseURL:         baseURL.String(),
-		collectionNames: collectionNames,
+		profileName: profileName,
+		baseURL:     baseURL.String(),
+		schema:      schema,
 	}
 }
 
-func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any) {
-	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
+func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (newColumnName, relationName string, newColumnValue any) {
 	switch p.profileName {
 	case RelAsLink:
-		newColumnNameWithoutProfile = regex.ReplaceAllString(columnName, "")
-		collectionName := p.findCollection(newColumnNameWithoutProfile)
-		newColumnName = newColumnNameWithoutProfile + ".href"
-		if columnValue != nil && collectionName != "" {
-			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
+		relationName = newFeatureRelationName(columnName, externalFidColumn)
+		featureRelation := p.schema.findFeatureRelation(relationName)
+		newColumnName = relationName + ".href"
+		if columnValue != nil && featureRelation != nil {
+			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
 		}
 	case RelAsKey:
-		newColumnNameWithoutProfile = regex.ReplaceAllString(columnName, "")
-		newColumnName = newColumnNameWithoutProfile
+		relationName = newFeatureRelationName(columnName, externalFidColumn)
+		newColumnName = relationName
 		newColumnValue = columnValue
 	case RelAsURI:
 		// almost identical to rel-as-link except that there's no ".href" suffix (and potentially a title in the future)
-		newColumnNameWithoutProfile = regex.ReplaceAllString(columnName, "")
-		newColumnName = newColumnNameWithoutProfile
-		collectionName := p.findCollection(newColumnNameWithoutProfile)
-		if columnValue != nil {
-			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
+		relationName = newFeatureRelationName(columnName, externalFidColumn)
+		featureRelation := p.schema.findFeatureRelation(relationName)
+		newColumnName = relationName
+		if columnValue != nil && featureRelation != nil {
+			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
 		}
 	}
 	return
-}
-
-func (p *Profile) findCollection(name string) string {
-	// prefer exact matches first
-	for _, collName := range p.collectionNames {
-		if name == collName {
-			return collName
-		}
-	}
-	// then prefer fuzzy match (to support infix)
-	for _, collName := range p.collectionNames {
-		if strings.HasPrefix(name, collName) {
-			return collName
-		}
-	}
-	return ""
 }

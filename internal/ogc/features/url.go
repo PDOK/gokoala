@@ -72,7 +72,7 @@ type featureCollectionURL struct {
 	params                    url.Values
 	limit                     config.Limit
 	configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
-	configuredCollectionNames []string
+	schema                    d.Schema
 	supportsDatetime          bool
 }
 
@@ -91,7 +91,7 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
-	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.configuredCollectionNames)
+	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
 	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
@@ -169,9 +169,9 @@ func (fc featureCollectionURL) validateNoUnknownParams() error {
 
 // URL to a specific Feature
 type featureURL struct {
-	baseURL                   url.URL
-	params                    url.Values
-	configuredCollectionNames []string
+	baseURL url.URL
+	params  url.Values
+	schema  d.Schema
 }
 
 // parse the given URL to values required to delivery a specific Feature
@@ -183,7 +183,7 @@ func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Pro
 
 	srid, crsErr := parseCrsToSRID(f.params, crsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
-	profile, profileErr := parseProfile(f.params, f.baseURL, f.configuredCollectionNames)
+	profile, profileErr := parseProfile(f.params, f.baseURL, f.schema)
 	err = errors.Join(crsErr, profileErr)
 	return
 }
@@ -371,7 +371,7 @@ func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error
 	return filter, filterSRID, nil
 }
 
-func parseProfile(params url.Values, baseURL url.URL, configuredCollectionNames []string) (d.Profile, error) {
+func parseProfile(params url.Values, baseURL url.URL, schema d.Schema) (d.Profile, error) {
 	profile := d.RelAsLink
 	if params.Has(profileParam) {
 		profile = d.ProfileName(params.Get(profileParam))
@@ -379,5 +379,5 @@ func parseProfile(params url.Values, baseURL url.URL, configuredCollectionNames 
 			return d.Profile{}, fmt.Errorf("profile %s is not supported, only supporting %s", profile, d.SupportedProfiles)
 		}
 	}
-	return d.NewProfile(profile, baseURL, configuredCollectionNames), nil
+	return d.NewProfile(profile, baseURL, schema), nil
 }

@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -35,7 +34,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
-			util.Keys(f.configuredCollections),
+			f.schemas[collectionID],
 		}
 		outputSRID, contentCrs, profile, err := url.parse()
 		if err != nil {

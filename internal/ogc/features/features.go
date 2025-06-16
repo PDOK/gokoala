@@ -10,7 +10,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/engine/util"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
@@ -42,7 +41,7 @@ func (f *Features) Features() http.HandlerFunc {
 			r.URL.Query(),
 			f.engine.Config.OgcAPI.Features.Limit,
 			f.configuredPropertyFilters[collection.ID],
-			util.Keys(f.configuredCollections),
+			f.schemas[collectionID],
 			collection.HasDateTime(),
 		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, profile, err := url.parse()

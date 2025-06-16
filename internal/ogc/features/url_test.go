@@ -22,7 +22,9 @@ func TestParseFeatures(t *testing.T) {
 		dtSupport bool
 	}
 	host, _ := url.Parse("http://ogc.example")
-	defaultProfile := domain.NewProfile(domain.RelAsLink, *host, []string{})
+	s, err := domain.NewSchema(nil, "fid", "")
+	assert.NoError(t, err)
+	defaultProfile := domain.NewProfile(domain.RelAsLink, *host, *s)
 	tests := []struct {
 		name              string
 		fields            fields
@@ -220,7 +222,7 @@ func TestParseFeatures(t *testing.T) {
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
 			wantRefDate:   &time.Time{},
-			wantProfile:   domain.NewProfile(domain.RelAsKey, *host, []string{}),
+			wantProfile:   domain.NewProfile(domain.RelAsKey, *host, *s),
 			wantErr:       success(),
 		},
 		{
@@ -240,7 +242,7 @@ func TestParseFeatures(t *testing.T) {
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
 			wantRefDate:   &time.Time{},
-			wantProfile:   domain.NewProfile(domain.RelAsURI, *host, []string{}),
+			wantProfile:   domain.NewProfile(domain.RelAsURI, *host, *s),
 			wantErr:       success(),
 		},
 		{
@@ -566,6 +568,7 @@ func TestParseFeatures(t *testing.T) {
 						AllowedValues:  nil,
 					},
 				},
+				schema:           *s,
 				supportsDatetime: tt.fields.dtSupport,
 			}
 			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, gotProfile, err := fc.parse()

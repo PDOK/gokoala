@@ -13,7 +13,9 @@ import (
 func TestPostGIS(t *testing.T) {
 	pg := PostGIS{}
 	url, _ := neturl.Parse("http://example.com")
-	p := domain.NewProfile(domain.RelAsLink, *url, []string{})
+	s, err := domain.NewSchema([]domain.Field{}, "", "")
+	assert.NoError(t, err)
+	p := domain.NewProfile(domain.RelAsLink, *url, *s)
 
 	t.Run("GetFeatureIDs", func(t *testing.T) {
 		ids, cursors, err := pg.GetFeatureIDs(t.Context(), "", datasources.FeaturesCriteria{})

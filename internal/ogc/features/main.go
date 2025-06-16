@@ -24,6 +24,7 @@ type Features struct {
 	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredCollections     map[string]config.GeoSpatialCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
+	schemas                   map[string]domain.Schema
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -45,6 +46,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		axisOrderBySRID:           axisOrderBySRID,
 		configuredCollections:     configuredCollections,
 		configuredPropertyFilters: configuredPropertyFilters,
+		schemas:                   schemas,
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}

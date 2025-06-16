@@ -104,7 +104,14 @@ func TestMapRelationUsingProfile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			url, err := neturl.Parse("http://example.com")
 			assert.NoError(t, err)
-			profile := NewProfile(tt.profile, *url, []string{"some_collection", "another_collection", "foo", "bar", "baz_bazoo", "baz_bazoo_boo", "baz_bazoo_boo_foo"})
+			schema, err := NewSchema([]Field{
+				{
+					Name:            tt.columnName,
+					Type:            "string",
+					FeatureRelation: NewFeatureRelation(tt.columnName, tt.externalFidCol, []string{"some_collection", "another_collection", "foo", "bar", "baz_bazoo", "baz_bazoo_boo", "baz_bazoo_boo_foo"}),
+				}}, "fid", "")
+			assert.NoError(t, err)
+			profile := NewProfile(tt.profile, *url, *schema)
 			newColName, newColNameUnformatted, newColVal := profile.MapRelationUsingProfile(tt.columnName, tt.columnValue, tt.externalFidCol)
 			assert.Equal(t, tt.expectedColName, newColName)
 			assert.Equal(t, tt.expectedColNameUnformatted, newColNameUnformatted)

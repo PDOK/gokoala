@@ -3,7 +3,6 @@ package domain
 import (
 	"errors"
 	"log"
-	"regexp"
 	"slices"
 	"strings"
 )
@@ -50,6 +49,12 @@ var geometryTypes = []string{
 	multipolygonType,
 }
 
+// Schema derived from the data source schema.
+// Describes the schema of a single collection (table in the data source).
+type Schema struct {
+	Fields []Field
+}
+
 func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, error) {
 	publicFields := make([]Field, 0, len(fields))
 	nrOfGeomsFound := 0
@@ -82,12 +87,6 @@ func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, er
 	return &Schema{publicFields}, nil
 }
 
-// Schema derived from the data source schema.
-// Describes the schema of a single collection (table in the data source).
-type Schema struct {
-	Fields []Field
-}
-
 // HasExternalFid convenience function to check if this schema defines an external feature ID
 func (s Schema) HasExternalFid() bool {
 	for _, field := range s.Fields {
@@ -98,8 +97,13 @@ func (s Schema) HasExternalFid() bool {
 	return false
 }
 
-// FindField convenience function to get a Field by name
-func (s Schema) FindField(name string) Field {
+// IsDate convenience function to check if the given field is a Date
+func (s Schema) IsDate(field string) bool {
+	f := s.findField(field)
+	return f.ToTypeFormat().Format == formatDateOnly
+}
+
+func (s Schema) findField(name string) Field {
 	for _, f := range s.Fields {
 		if f.Name == name {
 			return f
@@ -108,10 +112,13 @@ func (s Schema) FindField(name string) Field {
 	return Field{}
 }
 
-// IsDate convenience function to check if field is a Date
-func (s Schema) IsDate(field string) bool {
-	f := s.FindField(field)
-	return f.ToTypeFormat().Format == formatDateOnly
+func (s Schema) findFeatureRelation(name string) *FeatureRelation {
+	for _, field := range s.Fields {
+		if field.FeatureRelation != nil && field.FeatureRelation.Name == name {
+			return field.FeatureRelation
+		}
+	}
+	return nil
 }
 
 // Field a field/column/property in the schema. Contains at least a name and data type.
@@ -128,53 +135,6 @@ type Field struct {
 	IsExternalFid          bool
 
 	FeatureRelation *FeatureRelation
-}
-
-// FeatureRelation a relation/reference from one feature to another in a different
-// collection, according to OAF Part 5: https://docs.ogc.org/DRAFTS/23-058r1.html#rc_feature-references.
-type FeatureRelation struct {
-	Name         string
-	CollectionID string
-}
-
-func NewFeatureRelation(name, externalFidColumn string, collectionNames []string) *FeatureRelation {
-	if !isFeatureRelation(name, externalFidColumn) {
-		return nil
-	}
-	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
-	referencePropertyName := regex.ReplaceAllString(name, "")
-	return &FeatureRelation{
-		Name:         referencePropertyName,
-		CollectionID: findReferencedCollection(collectionNames, referencePropertyName),
-	}
-}
-
-// isFeatureRelation "Algorithm" to determine feature reference:
-//
-//	When externalFidColumn (e.g. 'external_fid') is part of the column name (e.g. 'foobar_external_fid')
-//	we treat the field as a relation/reference to another feature.
-func isFeatureRelation(columnName string, externalFidColumn string) bool {
-	if externalFidColumn == "" || columnName == externalFidColumn {
-		return false
-	}
-	return strings.Contains(columnName, externalFidColumn)
-}
-
-func findReferencedCollection(collectionNames []string, name string) string {
-	// prefer exact matches first
-	for _, collName := range collectionNames {
-		if name == collName {
-			return collName
-		}
-	}
-	// then prefer fuzzy match (to support infix)
-	for _, collName := range collectionNames {
-		if strings.HasPrefix(name, collName) {
-			return collName
-		}
-	}
-	log.Printf("Warning: could not find collection for feature reference '%s'", name)
-	return ""
 }
 
 // TypeFormat type and optional format according to JSON schema (https://json-schema.org/).
