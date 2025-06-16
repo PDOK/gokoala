@@ -7,7 +7,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
@@ -19,35 +18,23 @@ const (
 	templatesDir = "internal/ogc/features/templates/"
 )
 
-var (
-	configuredCollections map[string]config.GeoSpatialCollection
-)
-
-type datasourceKey struct {
-	srid         int
-	collectionID string
-}
-
-type datasourceConfig struct {
-	collections config.GeoSpatialCollections
-	ds          config.Datasource
-}
-
 type Features struct {
 	engine                    *engine.Engine
 	datasources               map[datasourceKey]ds.Datasource
 	axisOrderBySRID           map[int]domain.AxisOrder
+	configuredCollections     map[string]config.GeoSpatialCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
-	defaultProfile            domain.Profile
+	schemas                   map[string]domain.Schema
 
 	html *htmlFeatures
 	json *jsonFeatures
 }
 
+// NewFeatures Bootstraps OGC API Features logic
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
 	axisOrderBySRID := determineAxisOrder(datasources)
-	configuredCollections = cacheConfiguredFeatureCollections(e)
+	configuredCollections := cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
 
 	schemas := renderSchemas(e, datasources)
@@ -57,8 +44,9 @@ func NewFeatures(e *engine.Engine) *Features {
 		engine:                    e,
 		datasources:               datasources,
 		axisOrderBySRID:           axisOrderBySRID,
+		configuredCollections:     configuredCollections,
 		configuredPropertyFilters: configuredPropertyFilters,
-		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL, util.Keys(configuredCollections)),
+		schemas:                   schemas,
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}
@@ -67,6 +55,16 @@ func NewFeatures(e *engine.Engine) *Features {
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
 	return f
+}
+
+type datasourceKey struct {
+	srid         int
+	collectionID string
+}
+
+type datasourceConfig struct {
+	collections config.GeoSpatialCollections
+	ds          config.Datasource
 }
 
 func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
@@ -85,7 +83,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	// now we have a mapping from collection+projection => desired datasource (the 'configured' map).
 	// but the actual datasource connection still needs to be CREATED and associated with these collections.
 	// this is what we'll going to do now, but in the process we need to make sure no duplicate datasources
-	// are instantiated, since multiple collection can point to the same datasource and we only what to have a single
+	// are instantiated: since multiple collections can point to the same datasource and we only what to have a single
 	// datasource/connection-pool serving those collections.
 	createdDatasources := make(map[config.Datasource]ds.Datasource)
 	result := make(map[datasourceKey]ds.Datasource, len(configured))

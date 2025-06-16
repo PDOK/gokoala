@@ -70,22 +70,22 @@ type featurePage struct {
 	WebConfig          *config.WebConfig
 }
 
-func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time, propertyFilters map[string]string,
-	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues, configuredFC *config.CollectionEntryFeatures,
+func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
+	collection config.GeoSpatialCollection, cursor domain.Cursors,
+	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	propertyFilters map[string]string,
+	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
 	fc *domain.FeatureCollection) {
-
-	collection := configuredCollections[collectionID]
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collectionID, collection.Metadata),
-			Path: collectionsCrumb + collectionID,
+			Name: getCollectionTitle(collection.ID, collection.Metadata),
+			Path: collectionsCrumb + collection.ID,
 		},
 		{
 			Name: "Items",
-			Path: collectionsCrumb + collectionID + "/items",
+			Path: collectionsCrumb + collection.ID + "/items",
 		},
 	}...)
 
@@ -94,20 +94,20 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	}
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
-	if configuredFC != nil {
-		if configuredFC.MapSheetDownloads != nil {
-			mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+	if collection.Features != nil {
+		if collection.Features.MapSheetDownloads != nil {
+			mapSheetProps = &collection.Features.MapSheetDownloads.Properties
 		}
-		wc = configuredFC.Web
+		wc = collection.Features.Web
 	}
 
 	pageContent := &featureCollectionPage{
 		*fc,
-		collectionID,
+		collection.ID,
 		collection.Metadata,
 		cursor,
-		featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatHTML),
-		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
+		featuresURL.toPrevNextURL(collection.ID, cursor.Prev, engine.FormatHTML),
+		featuresURL.toPrevNextURL(collection.ID, cursor.Next, engine.FormatHTML),
 		limit,
 		referenceDate,
 		mapSheetProps,
@@ -120,38 +120,37 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	hf.engine.RenderAndServe(w, r, engine.ExpandTemplateKey(featuresKey, lang), pageContent, breadcrumbs)
 }
 
-func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
-	configuredFC *config.CollectionEntryFeatures, feat *domain.Feature) {
-	collection := configuredCollections[collectionID]
+func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
+	collection config.GeoSpatialCollection, feat *domain.Feature) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collectionID, collection.Metadata),
-			Path: collectionsCrumb + collectionID,
+			Name: getCollectionTitle(collection.ID, collection.Metadata),
+			Path: collectionsCrumb + collection.ID,
 		},
 		{
 			Name: "Items",
-			Path: collectionsCrumb + collectionID + "/items",
+			Path: collectionsCrumb + collection.ID + "/items",
 		},
 		{
 			Name: feat.ID,
-			Path: collectionsCrumb + collectionID + "/items/" + feat.ID,
+			Path: collectionsCrumb + collection.ID + "/items/" + feat.ID,
 		},
 	}...)
 
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
-	if configuredFC != nil {
-		if configuredFC.MapSheetDownloads != nil {
-			mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+	if collection.Features != nil {
+		if collection.Features.MapSheetDownloads != nil {
+			mapSheetProps = &collection.Features.MapSheetDownloads.Properties
 		}
-		wc = configuredFC.Web
+		wc = collection.Features.Web
 	}
 
 	pageContent := &featurePage{
 		*feat,
-		collectionID,
+		collection.ID,
 		feat.ID,
 		collection.Metadata,
 		mapSheetProps,

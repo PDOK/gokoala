@@ -271,11 +271,11 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 }
 
 func (g *GeoPackage) GetSchema(collection string) (*domain.Schema, error) {
-	featTable, ok := g.featureTableByCollectionID[collection]
-	if !ok {
-		return nil, fmt.Errorf("no metadata in GeoPackage for %s", collection)
+	table, err := g.getFeatureTable(collection)
+	if err != nil {
+		return nil, err
 	}
-	return featTable.Schema, nil
+	return table.Schema, nil
 }
 
 func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
@@ -411,6 +411,7 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 	return table, nil
 }
 
+// selectColumns build select clause
 func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrder,
 	propConfig *config.FeatureProperties, includePrevNext bool) string {
 
@@ -458,6 +459,7 @@ func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrd
 	return result
 }
 
+// mapGpkgGeometry GeoPackage specific way to read geometries
 func mapGpkgGeometry(rawGeom []byte) (geom.T, error) {
 	geomWithMetadata, err := encoding.DecodeGeometry(rawGeom)
 	if err != nil {

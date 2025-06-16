@@ -31,13 +31,20 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 
 		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
+		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
-		url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
-			referenceDate, propertyFilters, err := f.parseFeaturesURL(r, collection)
+		url := featureCollectionURL{
+			*f.engine.Config.BaseURL.URL,
+			r.URL.Query(),
+			f.engine.Config.OgcAPI.Features.Limit,
+			f.configuredPropertyFilters[collection.ID],
+			f.schemas[collectionID],
+			collection.HasDateTime(),
+		}
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, profile, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -58,7 +65,7 @@ func (f *Features) Features() http.HandlerFunc {
 				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 				PropertyFilters:  propertyFilters,
 				// Add filter, filter-lang
-			}, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
+			}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
 				return
@@ -80,7 +87,7 @@ func (f *Features) Features() http.HandlerFunc {
 			if err == nil && fids != nil {
 				// this is step 2: get the actual features in output CRS by feature ID
 				datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], f.defaultProfile)
+				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 			}
 			if err != nil {
 				handleFeaturesQueryError(w, collectionID, err)
@@ -94,8 +101,8 @@ func (f *Features) Features() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.configuredPropertyFilters[collectionID], collection.Features, fc)
+			f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
+				propertyFilters, f.configuredPropertyFilters[collectionID], fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
 		case engine.FormatJSONFG:
@@ -105,20 +112,6 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 	}
-}
-
-func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
-	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Bounds, time.Time, map[string]string, error) {
-
-	url := featureCollectionURL{
-		*f.engine.Config.BaseURL.URL,
-		r.URL.Query(),
-		f.engine.Config.OgcAPI.Features.Limit,
-		f.configuredPropertyFilters[collection.ID],
-		collection.HasDateTime(),
-	}
-	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
-	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err
 }
 
 func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {

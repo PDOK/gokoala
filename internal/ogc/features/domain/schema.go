@@ -49,6 +49,12 @@ var geometryTypes = []string{
 	multipolygonType,
 }
 
+// Schema derived from the data source schema.
+// Describes the schema of a single collection (table in the data source).
+type Schema struct {
+	Fields []Field
+}
+
 func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, error) {
 	publicFields := make([]Field, 0, len(fields))
 	nrOfGeomsFound := 0
@@ -81,12 +87,6 @@ func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, er
 	return &Schema{publicFields}, nil
 }
 
-// Schema derived from the data source schema.
-// Describes the schema of a single collection (table in the data source).
-type Schema struct {
-	Fields []Field
-}
-
 // HasExternalFid convenience function to check if this schema defines an external feature ID
 func (s Schema) HasExternalFid() bool {
 	for _, field := range s.Fields {
@@ -97,27 +97,36 @@ func (s Schema) HasExternalFid() bool {
 	return false
 }
 
-// GetType convenience function to get TypeFormat of field
-func (s Schema) GetType(field string) TypeFormat {
-	for _, f := range s.Fields {
-		if f.Name == field {
-			return f.ToTypeFormat()
-		}
-	}
-	return TypeFormat{}
+// IsDate convenience function to check if the given field is a Date
+func (s Schema) IsDate(field string) bool {
+	f := s.findField(field)
+	return f.ToTypeFormat().Format == formatDateOnly
 }
 
-// IsDate convenience function to check if field is a Date
-func (s Schema) IsDate(field string) bool {
-	t := s.GetType(field)
-	return t.Format == formatDateOnly
+func (s Schema) findField(name string) Field {
+	for _, f := range s.Fields {
+		if f.Name == name {
+			return f
+		}
+	}
+	return Field{}
+}
+
+func (s Schema) findFeatureRelation(name string) *FeatureRelation {
+	for _, field := range s.Fields {
+		if field.FeatureRelation != nil && field.FeatureRelation.Name == name {
+			return field.FeatureRelation
+		}
+	}
+	return nil
 }
 
 // Field a field/column/property in the schema. Contains at least a name and data type.
 type Field struct {
-	Name        string // required
-	Type        string // required, can be data source specific
-	Description string // optional
+	FeatureRelation *FeatureRelation
+	Name            string // required
+	Type            string // required, can be data source specific
+	Description     string // optional
 
 	IsRequired             bool
 	IsPrimaryGeometry      bool
