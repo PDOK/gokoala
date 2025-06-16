@@ -123,9 +123,10 @@ func (s Schema) findFeatureRelation(name string) *FeatureRelation {
 
 // Field a field/column/property in the schema. Contains at least a name and data type.
 type Field struct {
-	Name        string // required
-	Type        string // required, can be data source specific
-	Description string // optional
+	FeatureRelation *FeatureRelation
+	Name            string // required
+	Type            string // required, can be data source specific
+	Description     string // optional
 
 	IsRequired             bool
 	IsPrimaryGeometry      bool
@@ -133,8 +134,6 @@ type Field struct {
 	IsPrimaryIntervalEnd   bool
 	IsFid                  bool
 	IsExternalFid          bool
-
-	FeatureRelation *FeatureRelation
 }
 
 // TypeFormat type and optional format according to JSON schema (https://json-schema.org/).

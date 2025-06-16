@@ -32,7 +32,7 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
 
-      - name: Check optimal struct field alignment (for crucial structs)
+      - name: Check optimal field alignment for crucial structs (when this fails => run 'betteralign -apply <path>').
         run: |
           GOPATH_BIN=$(go env GOPATH)/bin
           export PATH="${GOPATH_BIN}:${PATH}"

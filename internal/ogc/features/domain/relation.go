@@ -27,6 +27,11 @@ func NewFeatureRelation(name, externalFidColumn string, collectionNames []string
 	}
 }
 
+// newFeatureRelationName derive name of the feature relation.
+//
+// In the datasource we have fields named 'foobar_external_fid' or 'foobar_sometext_external_fid' containing UUID's to
+// features in the 'foobar' collection. The feature relation field name will be 'foobar' or 'foobar_sometext'. This is
+// the name of expose in the feature data (GeoJSON) and the schema (JSON-Schema).
 func newFeatureRelationName(name string, externalFidColumn string) string {
 	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
 	return regex.ReplaceAllString(name, "")
@@ -34,11 +39,11 @@ func newFeatureRelationName(name string, externalFidColumn string) string {
 
 // isFeatureRelation "Algorithm" to determine feature reference:
 //
-//	When externalFidColumn (e.g. 'external_fid') is part of the column name (e.g. 'foobar_external_fid')
-//	we treat the field as a relation/reference to another feature.
+// When externalFidColumn (e.g. 'external_fid') is part of the column name (e.g. 'foobar_external_fid' or
+// 'foobar_sometext_external_fid') we treat the field as a reference to another feature in the 'foobar' collection.
 //
-// Meaning the data source should be pre-populated with a 'foobar_external_fid' field containing
-// UUID's of other features. Creating these fields in the data source is outside the scope of this application.
+// Meaning data sources should be pre-populated with a 'foobar_external_fid' field containing UUIDs of other features.
+// Creating these fields in the data source is beyond the scope of this application.
 func isFeatureRelation(columnName string, externalFidColumn string) bool {
 	if externalFidColumn == "" || columnName == externalFidColumn {
 		return false
