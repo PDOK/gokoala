@@ -115,7 +115,7 @@ where
 		if row.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
-		row.Schema, err = readSchema(db, row, fidColumn, externalFidColumn)
+		row.Schema, err = readSchema(db, row, fidColumn, externalFidColumn, collections)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", row.TableName, err)
 		}
@@ -185,7 +185,12 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string) (*d.Schema, error) {
+func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string, collections config.GeoSpatialCollections) (*d.Schema, error) {
+	collectionNames := make([]string, 0, len(collections))
+	for _, collection := range collections {
+		collectionNames = append(collectionNames, collection.ID)
+	}
+
 	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
 		return nil, err
@@ -204,7 +209,7 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 			Type:              colType,
 			IsRequired:        colNotNull == "1",
 			IsPrimaryGeometry: colName == table.GeometryColumnName,
-			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn),
+			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn, collectionNames),
 		})
 	}
 	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)

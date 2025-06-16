@@ -137,23 +137,44 @@ type FeatureRelation struct {
 	CollectionID string
 }
 
-func NewFeatureRelation(name, externalFidColumn string) *FeatureRelation {
+func NewFeatureRelation(name, externalFidColumn string, collectionNames []string) *FeatureRelation {
 	if !isFeatureRelation(name, externalFidColumn) {
 		return nil
 	}
 	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
 	referencePropertyName := regex.ReplaceAllString(name, "")
-	return &FeatureRelation{Name: referencePropertyName}
+	return &FeatureRelation{
+		Name:         referencePropertyName,
+		CollectionID: findReferencedCollection(collectionNames, referencePropertyName),
+	}
 }
 
+// isFeatureRelation "Algorithm" to determine feature reference:
+//
+//	When externalFidColumn (e.g. 'external_fid') is part of the column name (e.g. 'foobar_external_fid')
+//	we treat the field as a relation/reference to another feature.
 func isFeatureRelation(columnName string, externalFidColumn string) bool {
-	// "Algorithm" to determine feature reference:
-	//		When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat
-	// 		it as a relation/reference to another feature.
-	if externalFidColumn == "" {
+	if externalFidColumn == "" || columnName == externalFidColumn {
 		return false
 	}
 	return strings.Contains(columnName, externalFidColumn)
+}
+
+func findReferencedCollection(collectionNames []string, name string) string {
+	// prefer exact matches first
+	for _, collName := range collectionNames {
+		if name == collName {
+			return collName
+		}
+	}
+	// then prefer fuzzy match (to support infix)
+	for _, collName := range collectionNames {
+		if strings.HasPrefix(name, collName) {
+			return collName
+		}
+	}
+	log.Printf("Warning: could not find collection for feature reference '%s'", name)
+	return ""
 }
 
 // TypeFormat type and optional format according to JSON schema (https://json-schema.org/).
