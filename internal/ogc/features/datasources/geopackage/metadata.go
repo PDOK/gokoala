@@ -204,6 +204,7 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 			Type:              colType,
 			IsRequired:        colNotNull == "1",
 			IsPrimaryGeometry: colName == table.GeometryColumnName,
+			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn),
 		})
 	}
 	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)

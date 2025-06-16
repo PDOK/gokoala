@@ -97,6 +97,12 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 				}
 			}
 		}
+		// expand the schema with details about feature relations
+		for i := range schema.Fields {
+			if schema.Fields[i].FeatureRelation != nil {
+				schema.Fields[i].FeatureRelation.CollectionID = "aap"
+			}
+		}
 
 		// pre-render the schema, catches issues early on during start-up.
 		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,

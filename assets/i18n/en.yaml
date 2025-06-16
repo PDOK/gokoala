@@ -135,3 +135,4 @@ FeatureIdDescription: The unique identifier of this feature.
 FeatureIdStableOverTime: This ID should be stable over time and always refer tot the same feature.
 FeatureIntervalStartDescription: This property acts as the start date when executing a temporal filter, e.g. ?datetime=2050-01-01T00:00:00Z.
 FeatureIntervalEndDescription: This property acts as the end date when executing a temporal filter, e.g. ?datetime=2050-01-01T00:00:00Z.
+FeatureRelationDescription: Represents a relation between this feature and the referenced feature.

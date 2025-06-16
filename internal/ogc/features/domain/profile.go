@@ -45,23 +45,25 @@ func NewProfile(profileName ProfileName, baseURL url.URL, collectionNames []stri
 	}
 }
 
-func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (newColumnName string, newColumnValue any) {
+func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any) {
 	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
 	switch p.profileName {
 	case RelAsLink:
-		newColumnName = regex.ReplaceAllString(columnName, "")
-		collectionName := p.findCollection(newColumnName)
-		newColumnName += ".href"
+		newColumnNameWithoutProfile = regex.ReplaceAllString(columnName, "")
+		collectionName := p.findCollection(newColumnNameWithoutProfile)
+		newColumnName = newColumnNameWithoutProfile + ".href"
 		if columnValue != nil && collectionName != "" {
 			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
 		}
 	case RelAsKey:
-		newColumnName = regex.ReplaceAllString(columnName, "")
+		newColumnNameWithoutProfile = regex.ReplaceAllString(columnName, "")
+		newColumnName = newColumnNameWithoutProfile
 		newColumnValue = columnValue
 	case RelAsURI:
 		// almost identical to rel-as-link except that there's no ".href" suffix (and potentially a title in the future)
-		newColumnName = regex.ReplaceAllString(columnName, "")
-		collectionName := p.findCollection(newColumnName)
+		newColumnNameWithoutProfile = regex.ReplaceAllString(columnName, "")
+		newColumnName = newColumnNameWithoutProfile
+		collectionName := p.findCollection(newColumnNameWithoutProfile)
 		if columnValue != nil {
 			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, collectionName, columnValue)
 		}

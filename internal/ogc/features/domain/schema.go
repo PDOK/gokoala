@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"log"
+	"regexp"
 	"slices"
 	"strings"
 )
@@ -97,20 +98,20 @@ func (s Schema) HasExternalFid() bool {
 	return false
 }
 
-// GetType convenience function to get TypeFormat of field
-func (s Schema) GetType(field string) TypeFormat {
+// FindField convenience function to get a Field by name
+func (s Schema) FindField(name string) Field {
 	for _, f := range s.Fields {
-		if f.Name == field {
-			return f.ToTypeFormat()
+		if f.Name == name {
+			return f
 		}
 	}
-	return TypeFormat{}
+	return Field{}
 }
 
 // IsDate convenience function to check if field is a Date
 func (s Schema) IsDate(field string) bool {
-	t := s.GetType(field)
-	return t.Format == formatDateOnly
+	f := s.FindField(field)
+	return f.ToTypeFormat().Format == formatDateOnly
 }
 
 // Field a field/column/property in the schema. Contains at least a name and data type.
@@ -125,6 +126,34 @@ type Field struct {
 	IsPrimaryIntervalEnd   bool
 	IsFid                  bool
 	IsExternalFid          bool
+
+	FeatureRelation *FeatureRelation
+}
+
+// FeatureRelation a relation/reference from one feature to another in a different
+// collection, according to OAF Part 5: https://docs.ogc.org/DRAFTS/23-058r1.html#rc_feature-references.
+type FeatureRelation struct {
+	Name         string
+	CollectionID string
+}
+
+func NewFeatureRelation(name, externalFidColumn string) *FeatureRelation {
+	if !isFeatureRelation(name, externalFidColumn) {
+		return nil
+	}
+	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
+	referencePropertyName := regex.ReplaceAllString(name, "")
+	return &FeatureRelation{Name: referencePropertyName}
+}
+
+func isFeatureRelation(columnName string, externalFidColumn string) bool {
+	// "Algorithm" to determine feature reference:
+	//		When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat
+	// 		it as a relation/reference to another feature.
+	if externalFidColumn == "" {
+		return false
+	}
+	return strings.Contains(columnName, externalFidColumn)
 }
 
 // TypeFormat type and optional format according to JSON schema (https://json-schema.org/).

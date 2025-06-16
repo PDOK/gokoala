@@ -133,3 +133,4 @@ FeatureIdDescription: De unieke identificatie van dit feature.
 FeatureIdStableOverTime: Dit ID zou stabiel moeten zijn door de tijd heen en altijd naar hetzelfde feature moeten verwijzen.
 FeatureIntervalStartDescription: Betreft startdatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z.
 FeatureIntervalEndDescription: Betreft einddatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z.
+FeatureRelationDescription: Representeert een relatie tussen dit feature en het gerefereerde feature.

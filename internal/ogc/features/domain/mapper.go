@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
@@ -15,7 +14,7 @@ import (
 )
 
 // MapRelation abstract function type to map feature relations
-type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName string, newColumnValue any)
+type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any)
 
 // MapGeom abstract function type to map geometry from bytes to Geometry
 type MapGeom func([]byte) (geom.T, error)
@@ -188,13 +187,12 @@ func mapExternalFid(columns []string, values []any, externalFidColumn string, fe
 			// feature ID irrespective of the order of columns in the table
 			feature.ID = fmt.Sprint(columnValue)
 			feature.Properties.Delete(columnName)
-		case strings.Contains(columnName, externalFidColumn):
+		case isFeatureRelation(columnName, externalFidColumn):
 			// When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat
 			// it as a relation to another feature.
-			newColumnName, newColumnValue := mapRel(columnName, columnValue, externalFidColumn)
+			newColumnName, newColumnNameWithoutProfile, newColumnValue := mapRel(columnName, columnValue, externalFidColumn)
 			if newColumnName != "" {
-				columnNameWithoutExternalFID := strings.ReplaceAll(columnName, externalFidColumn, "")
-				feature.Properties.SetRelation(newColumnName, newColumnValue, columnNameWithoutExternalFID)
+				feature.Properties.SetRelation(newColumnName, newColumnValue, newColumnNameWithoutProfile)
 				feature.Properties.Delete(columnName)
 			}
 		}
