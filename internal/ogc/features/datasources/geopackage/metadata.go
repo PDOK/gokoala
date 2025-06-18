@@ -194,6 +194,9 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 
 	// if table gpkg_data_columns is included in geopackage, use it's description field to supplement the schema.
 	schemaDataColumns, err := hasSchemaDataColumnsTable(db)
+	if err != nil {
+		return nil, err
+	}
 
 	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
@@ -214,8 +217,8 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 			err := db.Get(&colDescription, "SELECT IFNULL(description, '') description FROM gpkg_data_columns WHERE table_name='"+table.TableName+"' AND column_name=?;", colName)
 			if err != nil {
 				// Do not throw an error if no row or column is found
-				if err != sql.ErrNoRows || strings.Contains(err.Error(), "no such column") {
-					// Other error occured
+				if !errors.Is(err, sql.ErrNoRows) || strings.Contains(err.Error(), "no such column") {
+					// Other error occurred
 					return nil, err
 				}
 			}
