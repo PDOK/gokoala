@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
@@ -191,6 +192,9 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 		collectionNames = append(collectionNames, collection.ID)
 	}
 
+	// if table gpkg_data_columns is included in geopackage, use it's description field to supplement the schema.
+	schemaDataColumns, err := hasSchemaDataColumnsTable(db)
+
 	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
 	if err != nil {
 		return nil, err
@@ -204,9 +208,23 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 		if err != nil {
 			return nil, err
 		}
+
+		colDescription := ""
+		if schemaDataColumns {
+			err := db.Get(&colDescription, "SELECT IFNULL(description, '') description FROM gpkg_data_columns WHERE table_name='"+table.TableName+"' AND column_name=?;", colName)
+			if err != nil {
+				// Do not throw an error if no row or column is found
+				if err != sql.ErrNoRows || strings.Contains(err.Error(), "no such column") {
+					// Other error occured
+					return nil, err
+				}
+			}
+		}
+
 		fields = append(fields, d.Field{
 			Name:              colName,
 			Type:              colType,
+			Description:       colDescription,
 			IsRequired:        colNotNull == "1",
 			IsPrimaryGeometry: colName == table.GeometryColumnName,
 			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn, collectionNames),
@@ -222,4 +240,16 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
 	return collection.Features != nil && collection.Features.TableName != nil &&
 		row.TableName == *collection.Features.TableName
+}
+
+func hasSchemaDataColumnsTable(db *sqlx.DB) (bool, error) {
+	var count int
+	err := db.Get(&count, "SELECT COUNT(name) FROM sqlite_master WHERE type='table' AND name=?;", "gpkg_data_columns")
+	if err != nil {
+		return false, err
+	}
+	if count == 0 {
+		return false, nil
+	}
+	return true, nil
 }
