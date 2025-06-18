@@ -30,8 +30,8 @@ func NewFeatureRelation(name, externalFidColumn string, collectionNames []string
 // newFeatureRelationName derive name of the feature relation.
 //
 // In the datasource we have fields named 'foobar_external_fid' or 'foobar_sometext_external_fid' containing UUID's to
-// features in the 'foobar' collection. The feature relation field name will be 'foobar' or 'foobar_sometext'. This is
-// the name of expose in the feature data (GeoJSON) and the schema (JSON-Schema).
+// features in the 'foobar' collection. The field containing this relation will be named 'foobar' or 'foobar_sometext'.
+// This name will appear in the feature data (GeoJSON) and the schema (JSON-Schema) to represent the feature relation.
 func newFeatureRelationName(name string, externalFidColumn string) string {
 	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
 	return regex.ReplaceAllString(name, "")

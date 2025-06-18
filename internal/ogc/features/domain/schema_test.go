@@ -71,6 +71,17 @@ func TestNewSchema(t *testing.T) {
 			expectedErrMsg: "empty field type found, field type is required",
 		},
 		{
+			name: "fail on non-existing external fid",
+			fields: []Field{
+				{Name: "id", Type: "integer"},
+				{Name: "location", Type: "Point"},
+			},
+			fidColumn:      "id",
+			externalFid:    "ext_fid", // not present
+			expectedError:  true,
+			expectedErrMsg: "external feature ID column 'ext_fid' configured but not found in schema",
+		},
+		{
 			name: "fields to skip are ignored",
 			fields: []Field{
 				{Name: "id", Type: "integer"},
