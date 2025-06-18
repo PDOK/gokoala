@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"slices"
 	"strings"
@@ -84,7 +85,18 @@ func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, er
 
 		publicFields = append(publicFields, field)
 	}
-	return &Schema{publicFields}, nil
+
+	schema := &Schema{publicFields}
+	if externalFidColumn != "" && !schema.HasExternalFid() {
+		return nil, fmt.Errorf("external feature ID column '%s' configured but not found in schema", externalFidColumn)
+	}
+	return schema, nil
+}
+
+// IsDate convenience function to check if the given field is a Date
+func (s Schema) IsDate(field string) bool {
+	f := s.findField(field)
+	return f.ToTypeFormat().Format == formatDateOnly
 }
 
 // HasExternalFid convenience function to check if this schema defines an external feature ID
@@ -95,12 +107,6 @@ func (s Schema) HasExternalFid() bool {
 		}
 	}
 	return false
-}
-
-// IsDate convenience function to check if the given field is a Date
-func (s Schema) IsDate(field string) bool {
-	f := s.findField(field)
-	return f.ToTypeFormat().Format == formatDateOnly
 }
 
 func (s Schema) findField(name string) Field {
