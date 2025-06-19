@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
@@ -187,18 +186,26 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 }
 
 func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string, collections config.GeoSpatialCollections) (*d.Schema, error) {
+	var query string
 	collectionNames := make([]string, 0, len(collections))
 	for _, collection := range collections {
 		collectionNames = append(collectionNames, collection.ID)
 	}
 
 	// if table gpkg_data_columns is included in geopackage, use it's description field to supplement the schema.
-	schemaDataColumns, err := hasSchemaDataColumnsTable(db)
+	schemaExtension, err := hasSchemaExtension(db)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
+	if schemaExtension {
+		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", IFNULL(b.description, '') from pragma_table_info('%[1]s') a LEFT JOIN gpkg_data_columns b ON b.column_name = a.name AND b.table_name='%[1]s'", table.TableName)
+	} else {
+		query = fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName)
+	}
+
+	rows, err := db.Queryx(query)
+
 	if err != nil {
 		return nil, err
 	}
@@ -206,22 +213,15 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 
 	fields := make([]d.Field, 0)
 	for rows.Next() {
-		var colName, colType, colNotNull string
-		err = rows.Scan(&colName, &colType, &colNotNull)
+		var colName, colType, colNotNull, colDescription string
+		if schemaExtension {
+			err = rows.Scan(&colName, &colType, &colNotNull, &colDescription)
+		} else {
+			err = rows.Scan(&colName, &colType, &colNotNull)
+			colDescription = ""
+		}
 		if err != nil {
 			return nil, err
-		}
-
-		colDescription := ""
-		if schemaDataColumns {
-			err := db.Get(&colDescription, "SELECT IFNULL(description, '') description FROM gpkg_data_columns WHERE table_name='"+table.TableName+"' AND column_name=?;", colName)
-			if err != nil {
-				// Do not throw an error if no row or column is found
-				if !errors.Is(err, sql.ErrNoRows) || strings.Contains(err.Error(), "no such column") {
-					// Other error occurred
-					return nil, err
-				}
-			}
 		}
 
 		fields = append(fields, d.Field{
@@ -245,14 +245,11 @@ func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTab
 		row.TableName == *collection.Features.TableName
 }
 
-func hasSchemaDataColumnsTable(db *sqlx.DB) (bool, error) {
-	var count int
-	err := db.Get(&count, "SELECT COUNT(name) FROM sqlite_master WHERE type='table' AND name=?;", "gpkg_data_columns")
+func hasSchemaExtension(db *sqlx.DB) (bool, error) {
+	var hasExtension bool
+	err := db.Get(&hasExtension, "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name=?);", "gpkg_data_columns")
 	if err != nil {
 		return false, err
 	}
-	if count == 0 {
-		return false, nil
-	}
-	return true, nil
+	return hasExtension, nil
 }
