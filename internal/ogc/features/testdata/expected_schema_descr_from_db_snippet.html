@@ -1,528 +1,247 @@
-<!DOCTYPE html>
-<html lang="nl" class="h-100">
-<head>
-    <base href="http://localhost:8080/">
+<table class="table table-striped">
+  <thead>
+  <tr>
+    <th scope="col">Veldnaam</th>
+    <th scope="col">Datatype</th>
+    <th scope="col">Verplicht</th>
+    <th scope="col">Omschrijving</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="text-nowrap">id</td>
 
-    <title>OGC API Features (OGC API)</title>
+    <td class="text-nowrap">integer</td>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <td class="text-nowrap">ja</td>
+    <td class="text-wrap">De unieke identificatie van dit feature.</td>
+  </tr>
 
-    
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="http://localhost:8080">
-    <meta property="og:title" content="OGC API Features (OGC API)">
-    <meta property="og:description" content="Contains a slimmed-down/example version of the BAG-dataset">
-    <meta property="og:logo" content="http://localhost:8080/img/logo-opengraph.png">
-    <meta property="og:image" content="http://localhost:8080/img/logo-opengraph.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:alt" content="Logo PDOK: Ga naar de landingspagina">
 
-    
-    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-    <link rel="icon" href="favicon.ico">
+  <tr>
+    <td class="text-nowrap">geometry</td>
+    <td class="text-nowrap">point</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap"></td>
+  </tr>
 
-    
-    <link rel="canonical" href="http://localhost:8080">
-    
-        <link rel="alternate" hreflang="nl" href="http://localhost:8080?f=html&lang=nl">
-    
 
-    
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/gokoala.css" rel="stylesheet">
+  <tr>
+    <td class="text-nowrap">
 
-    <script>
-        
-        window.addEventListener("load", (event) => {
-            if (document.getElementById("title")) {
-                document.title = document.getElementById("title").innerHTML;
-            }
-        });
+      nummer_id
 
-        function setLanguage(lang) {
-            document.cookie = 'lang='+lang+';path=/;max-age=86400;same-site=strict;secure';
-            return true;
-        }
-    </script>
-</head>
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-<body class="d-flex flex-column h-100">
-    
-    <header>
-        
-        <a class="visually-hidden visually-hidden-focusable" href="#main" aria-label="Naar hoofdinhoud">Naar hoofdinhoud</a>
 
-        <nav class="navbar d-flex flex-column w-100" aria-label="top navigation">
-            
-            <div class="container">
-                <a class="navbar-brand py-3" href="http://localhost:8080" aria-label="Logo PDOK: Ga naar de landingspagina">
-                    <img src="img/logo-header.svg" alt="Logo PDOK: Ga naar de landingspagina">
-                </a>
-            </div>
+    </td>
+  </tr>
 
-            
-            <div class="container">
-                
-                
 
-                
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb" vocab="https://schema.org/" typeof="BreadcrumbList">
-                        
-                        
-                            
-                            <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
-                                <a href="http://localhost:8080" aria-label="Ga naar Feats" property="item" typeof="WebPage">
-                                    <span property="name">Feats</span>
-                                </a>
-                                <meta property="position" content="1">
-                            </li>
-                        
+  <tr>
+    <td class="text-nowrap">
 
-                        
-                            
-                            
-                                <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
-                                    <a href="collections" aria-label="Ga naar Collections" property="item" typeof="WebPage">
-                                        <span property="name">Collections</span>
-                                    </a>
-                                    <meta property="position" content="2">
-                                </li>
-                            
-                        
-                            
-                            
-                                <li class="breadcrumb-item" property="itemListElement" typeof="ListItem">
-                                    <a href="collections/foo" aria-label="Ga naar Foooo" property="item" typeof="WebPage">
-                                        <span property="name">Foooo</span>
-                                    </a>
-                                    <meta property="position" content="3">
-                                </li>
-                            
-                        
-                            
-                            
-                                <li class="breadcrumb-item active" property="itemListElement" typeof="ListItem">
-                                    <span property="name">Schema</span>
-                                    <meta property="position" content="4">
-                                </li>
-                            
-                        
-                    </ol>
-                </nav>
+      straatnaam
 
-                <nav class="navbar-outputs" aria-label="switch language or format">
-                    <ol class="breadcrumb">
-                        
-                        
-                        
-                            <li class="breadcrumb-item"><a href="collections/foo/schema?f=json" target="_blank"
-                                                           aria-label="Deze pagina als JSON" id="format-json">JSON</a></li>
-                        
-                    </ol>
-                </nav>
-            </div>
-        </nav>
-    </header>
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-    
-    <main id="main">
-        <div class="container py-3">
-            
-            
-<hgroup>
-    <h1 class="title h2" id="title">OGC API Features - Foooo - Schema</h1>
-</hgroup>
-<div class="row py-3">
-    <div class="col-md-12">
-        <p>
-            Onderstaande tabel beschrijft de aanwezige velden in deze collectie. Deze informatie is ook beschikbaar als <a href="http://localhost:8080/collections/foo/schema?f=json" aria-label="Open JSON Schema">JSON Schema</a>.
-        </p>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">Veldnaam</th>
-                    <th scope="col">Datatype</th>
-                    <th scope="col">Verplicht</th>
-                    <th scope="col">Omschrijving</th>
-                </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td class="text-nowrap">id</td>
-                
-                    <td class="text-nowrap">integer</td>
-                
-                <td class="text-nowrap">ja</td>
-                <td class="text-wrap">De unieke identificatie van dit feature.</td>
-            </tr>
-            
-                
 
-                
-                
-                    
-                
+      This is a placeholder that describes the straatnaam field
+    </td>
+  </tr>
 
-                
-                
-                
 
-                
-                    
-                    <tr>
-                        <td class="text-nowrap">geometry</td>
-                        <td class="text-nowrap">point</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap"></td>
-                    </tr>
-                
-            
-                
+  <tr>
+    <td class="text-nowrap">
 
-                
-                
-                
+      huisnummer
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            nummer_id
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
+    </td>
+    <td class="text-nowrap">integer</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
 
-                
-                
-                
+    </td>
+  </tr>
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            straatnaam
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
 
-                            This is a placeholder that describes the straatnaam field
-                        </td>
-                    </tr>
-                
-            
-                
+  <tr>
+    <td class="text-nowrap">
 
-                
-                
-                
+      huisletter
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            huisnummer
-                        
-                        </td>
-                        <td class="text-nowrap">integer</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
 
-                
-                
-                
+      This is a placeholder that describes the huisletter field.
+    </td>
+  </tr>
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            huisletter
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
 
-                            This is a placeholder that describes the huisletter field.
-                        </td>
-                    </tr>
-                
-            
-                
+  <tr>
+    <td class="text-nowrap">
 
-                
-                
-                
+      toevoeging
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            toevoeging
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
 
-                
-                
-                
+    </td>
+  </tr>
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            woonplaats
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
+  <tr>
+    <td class="text-nowrap">
 
-                
-                
-                
+      woonplaats
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            postcode
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
 
-                
-                
-                
+    </td>
+  </tr>
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            type
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
+  <tr>
+    <td class="text-nowrap">
 
-                
-                
-                
+      postcode
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            status
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
 
-                
-                
-                
+    </td>
+  </tr>
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            datum_strt
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
+  <tr>
+    <td class="text-nowrap">
 
-                
-                
-                
+      type
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            datum_eind
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
 
-                
-                
-                
+    </td>
+  </tr>
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            document
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
 
-                            This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.
-                        </td>
-                    </tr>
-                
-            
-                
+  <tr>
+    <td class="text-nowrap">
 
-                
-                
-                
+      status
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            datum_doc
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-                            
-                        </td>
-                    </tr>
-                
-            
-                
 
-                
-                
-                
+    </td>
+  </tr>
 
-                
-                    <tr>
-                        <td class="text-nowrap">
-                        
-                            rdf_seealso
-                        
-                        </td>
-                        <td class="text-nowrap">string</td>
-                        <td class="text-nowrap">nee</td>
-                        <td class="text-wrap">
-                            
 
-                            
-                        </td>
-                    </tr>
-                
-            
-            </tbody>
-        </table>
-    </div>
-</div>
+  <tr>
+    <td class="text-nowrap">
 
-        </div>
-    </main>
+      datum_strt
 
-    
-    <footer class="footer mt-auto py-3">
-        <div class="container">
-            <div class="row">
-                <div class="col-1">
-                    &nbsp; 
-                </div>
-                <div class="col-11 text-end">
-                    <img src="img/logo-footer.png" alt="Logo van het Kadaster">
-                </div>
-            </div>
-        </div>
-    </footer>
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
 
-</body>
-</html>
+
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="text-nowrap">
+
+      datum_eind
+
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
+
+
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="text-nowrap">
+
+      document
+
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
+
+
+      This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes
+      the document field.This is a multi line placeholder that describes the document field.This is a multi line
+      placeholder that describes the document field.This is a multi line placeholder that describes the document
+      field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that
+      describes the document field.This is a multi line placeholder that describes the document field.
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="text-nowrap">
+
+      datum_doc
+
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
+
+
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="text-nowrap">
+
+      rdf_seealso
+
+    </td>
+    <td class="text-nowrap">string</td>
+    <td class="text-nowrap">nee</td>
+    <td class="text-wrap">
+
+
+    </td>
+  </tr>
+
+
+  </tbody>
+</table>
