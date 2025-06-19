@@ -199,13 +199,14 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 	}
 
 	if schemaExtension {
-		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", IFNULL(b.description, '') from pragma_table_info('%[1]s') a LEFT JOIN gpkg_data_columns b ON b.column_name = a.name AND b.table_name='%[1]s'", table.TableName)
+		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", ifnull(b.description, '') "+
+			"from pragma_table_info('%[1]s') a "+
+			"left join gpkg_data_columns b on b.column_name = a.name and b.table_name='%[1]s'", table.TableName)
 	} else {
 		query = fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName)
 	}
 
 	rows, err := db.Queryx(query)
-
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +219,6 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 			err = rows.Scan(&colName, &colType, &colNotNull, &colDescription)
 		} else {
 			err = rows.Scan(&colName, &colType, &colNotNull)
-			colDescription = ""
 		}
 		if err != nil {
 			return nil, err
