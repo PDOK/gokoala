@@ -142,6 +142,32 @@ func TestSchema(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request schema in HTML format with descriptions from gpkg_data_columns table",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag_schema_extension.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/schema",
+				collectionID: "foo",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_schema_descr_from_db_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request schema in JSON format with descriptions from gpkg_data_columns table",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_bag_schema_extension.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/schema",
+				collectionID: "foo",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_schema_descr_from_db.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

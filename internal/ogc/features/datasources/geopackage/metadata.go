@@ -186,12 +186,26 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 }
 
 func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string, collections config.GeoSpatialCollections) (*d.Schema, error) {
+	var query string
 	collectionNames := make([]string, 0, len(collections))
 	for _, collection := range collections {
 		collectionNames = append(collectionNames, collection.ID)
 	}
 
-	rows, err := db.Queryx(fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName))
+	// if table gpkg_data_columns is included in geopackage, use it's description field to supplement the schema.
+	schemaExtension, err := hasSchemaExtension(db)
+	if err != nil {
+		return nil, err
+	}
+
+	if schemaExtension {
+		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", IFNULL(b.description, '') from pragma_table_info('%[1]s') a LEFT JOIN gpkg_data_columns b ON b.column_name = a.name AND b.table_name='%[1]s'", table.TableName)
+	} else {
+		query = fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName)
+	}
+
+	rows, err := db.Queryx(query)
+
 	if err != nil {
 		return nil, err
 	}
@@ -199,14 +213,21 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 
 	fields := make([]d.Field, 0)
 	for rows.Next() {
-		var colName, colType, colNotNull string
-		err = rows.Scan(&colName, &colType, &colNotNull)
+		var colName, colType, colNotNull, colDescription string
+		if schemaExtension {
+			err = rows.Scan(&colName, &colType, &colNotNull, &colDescription)
+		} else {
+			err = rows.Scan(&colName, &colType, &colNotNull)
+			colDescription = ""
+		}
 		if err != nil {
 			return nil, err
 		}
+
 		fields = append(fields, d.Field{
 			Name:              colName,
 			Type:              colType,
+			Description:       colDescription,
 			IsRequired:        colNotNull == "1",
 			IsPrimaryGeometry: colName == table.GeometryColumnName,
 			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn, collectionNames),
@@ -222,4 +243,13 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
 	return collection.Features != nil && collection.Features.TableName != nil &&
 		row.TableName == *collection.Features.TableName
+}
+
+func hasSchemaExtension(db *sqlx.DB) (bool, error) {
+	var hasExtension bool
+	err := db.Get(&hasExtension, "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name=?);", "gpkg_data_columns")
+	if err != nil {
+		return false, err
+	}
+	return hasExtension, nil
 }
