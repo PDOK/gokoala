@@ -71,7 +71,8 @@ func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, e
 			return result, nil, err
 		}
 		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
-		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn, externalFidColumn, geomColumn, schema, mapGeom, mapRel)
+		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn,
+			externalFidColumn, geomColumn, schema, mapGeom, mapRel)
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
