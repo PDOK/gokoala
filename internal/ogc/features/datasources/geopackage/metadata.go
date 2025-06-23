@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
@@ -12,6 +13,8 @@ import (
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jmoiron/sqlx"
 )
+
+var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // featureTable according to spec https://www.geopackage.org/spec121/index.html#_contents
 type featureTable struct {
@@ -177,6 +180,13 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 				err := db.Select(&values, query)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
+				}
+				// make sure values are valid
+				for _, v := range values {
+					if newlineRegex.MatchString(v) {
+						return nil, fmt.Errorf("failed to derive allowed values, one value contains a "+
+							"newline which isn't a valid (OpenAPI) enum value. The value is: %s", v)
+					}
 				}
 				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
 				continue
