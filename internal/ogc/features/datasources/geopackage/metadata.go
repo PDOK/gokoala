@@ -104,45 +104,46 @@ where
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", query, err)
 	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 	defer rows.Close()
 
 	result := make(map[string]*featureTable, 10)
 	for rows.Next() {
-		row := featureTable{}
-		if err = rows.StructScan(&row); err != nil {
+		table := featureTable{}
+		if err = rows.StructScan(&table); err != nil {
 			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 		}
-		if row.TableName == "" {
+		if table.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
-		row.Schema, err = readSchema(db, row, fidColumn, externalFidColumn, collections)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", row.TableName, err)
-		}
-
+		hasCollection := false
 		for _, collection := range collections {
-			if row.TableName == collection.ID {
-				result[collection.ID] = &row
-			} else if hasMatchingTableName(collection, row) {
-				result[collection.ID] = &row
+			if table.TableName == collection.ID {
+				result[collection.ID] = &table
+				hasCollection = true
+			} else if hasMatchingTableName(collection, table) {
+				result[collection.ID] = &table
+				hasCollection = true
 			}
 		}
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
+		if !hasCollection {
+			log.Printf("Warning: table %s is present in GeoPackage but not configured as a collection", table.TableName)
+		}
 	}
 	if len(result) == 0 {
 		return nil, errors.New("no records for 'features' found in gpkg_contents and/or gpkg_geometry_columns")
 	}
-	uniqueTables := make(map[string]struct{})
+
 	for _, table := range result {
-		uniqueTables[table.TableName] = struct{}{}
+		table.Schema, err = readSchema(db, *table, fidColumn, externalFidColumn, collections)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.TableName, err)
+		}
 	}
-	if len(uniqueTables) != len(result) {
-		log.Printf("Warning: found %d unique table names for %d collections, "+
-			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
-	}
+
+	validateUniqueness(result)
 	return result, nil
 }
 
@@ -185,19 +186,21 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string, collections config.GeoSpatialCollections) (*d.Schema, error) {
-	var query string
+func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string,
+	collections config.GeoSpatialCollections) (*d.Schema, error) {
+
 	collectionNames := make([]string, 0, len(collections))
 	for _, collection := range collections {
 		collectionNames = append(collectionNames, collection.ID)
 	}
 
-	// if table gpkg_data_columns is included in geopackage, use it's description field to supplement the schema.
+	// if table "gpkg_data_columns" is included in geopackage, use its description field to supplement the schema.
 	schemaExtension, err := hasSchemaExtension(db)
 	if err != nil {
 		return nil, err
 	}
 
+	var query string
 	if schemaExtension {
 		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", ifnull(b.description, '') "+
 			"from pragma_table_info('%[1]s') a "+
@@ -247,9 +250,20 @@ func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTab
 
 func hasSchemaExtension(db *sqlx.DB) (bool, error) {
 	var hasExtension bool
-	err := db.Get(&hasExtension, "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name=?);", "gpkg_data_columns")
+	err := db.Get(&hasExtension, "select exists (select 1 from sqlite_master where type='table' and name='gpkg_data_columns')")
 	if err != nil {
 		return false, err
 	}
 	return hasExtension, nil
+}
+
+func validateUniqueness(result map[string]*featureTable) {
+	uniqueTables := make(map[string]struct{})
+	for _, table := range result {
+		uniqueTables[table.TableName] = struct{}{}
+	}
+	if len(uniqueTables) != len(result) {
+		log.Printf("Warning: found %d unique table names for %d collections, "+
+			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
+	}
 }
