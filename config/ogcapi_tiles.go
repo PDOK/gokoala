@@ -255,9 +255,11 @@ func validateTileProjections(tiles *OgcAPITiles) error {
 		}
 	}
 	for _, collection := range tiles.Collections {
-		for _, srs := range collection.Tiles.GeoDataTiles.SupportedSrs {
-			if _, ok := AllTileProjections[srs.Srs]; !ok {
-				errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
+		if collection.Tiles != nil {
+			for _, srs := range collection.Tiles.GeoDataTiles.SupportedSrs {
+				if _, ok := AllTileProjections[srs.Srs]; !ok {
+					errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
+				}
 			}
 		}
 	}
