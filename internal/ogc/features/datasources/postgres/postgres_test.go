@@ -1,4 +1,4 @@
-package postgis
+package postgres
 
 import (
 	neturl "net/url"
@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// PostGIS !!! Placeholder implementation, for future reference !!!
-func TestPostGIS(t *testing.T) {
-	pg := PostGIS{}
+// Postgres !!! Placeholder implementation, for future reference !!!
+func TestPostgres(t *testing.T) {
+	pg := Postgres{}
 	url, _ := neturl.Parse("http://example.com")
 	s, err := domain.NewSchema([]domain.Field{}, "", "")
 	assert.NoError(t, err)
