@@ -11,7 +11,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgis"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
@@ -234,8 +234,8 @@ func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig
 	var datasource ds.Datasource
 	if dsConfig.GeoPackage != nil {
 		datasource = geopackage.NewGeoPackage(coll, *dsConfig.GeoPackage)
-	} else if dsConfig.PostGIS != nil {
-		datasource = postgis.NewPostGIS()
+	} else if dsConfig.Postgres != nil {
+		datasource = postgres.NewPostgres()
 	}
 	e.RegisterShutdownHook(datasource.Close)
 	return datasource

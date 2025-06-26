@@ -122,13 +122,13 @@ type Datasources struct {
 type Datasource struct {
 	// GeoPackage to get the features from.
 	// +optional
-	GeoPackage *GeoPackage `yaml:"geopackage,omitempty" json:"geopackage,omitempty" validate:"required_without_all=PostGIS"`
+	GeoPackage *GeoPackage `yaml:"geopackage,omitempty" json:"geopackage,omitempty" validate:"required_without_all=Postgres"`
 
-	// PostGIS database to get the features from (not implemented yet).
+	// Postgres database to get the features from.
 	// +optional
-	PostGIS *PostGIS `yaml:"postgis,omitempty" json:"postgis,omitempty" validate:"required_without_all=GeoPackage"`
+	Postgres *Postgres `yaml:"postgres,omitempty" json:"postgres,omitempty" validate:"required_without_all=GeoPackage"`
 
-	// Add more datasources here such as Mongo, Elastic, etc
+	// Add more data sources here such as Mongo, Elastic, etc.
 }
 
 // +kubebuilder:object:generate=true
@@ -155,7 +155,7 @@ type DatasourceCommon struct {
 }
 
 // +kubebuilder:object:generate=true
-type PostGIS struct {
+type Postgres struct {
 	DatasourceCommon `yaml:",inline" json:",inline"`
 
 	// placeholder
