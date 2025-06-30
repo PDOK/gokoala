@@ -291,14 +291,17 @@ type GeoPackageCloud struct {
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
 	// Reference to the cloud storage (either azure or google at the moment).
-	// For example 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'
+	// For example 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'.
+	// Optionally, this setting may be omitted and set directly via environment variable "GPKG_CLOUD_CONNECTION"
 	Connection string `yaml:"connection" json:"connection" validate:"required" env:"GPKG_CLOUD_CONNECTION"`
 
-	// Username of the storage account, like devstoreaccount1 when using Azurite
+	// Username of the storage account, like devstoreaccount1 when using Azurite.
+	// Optionally, this setting may be omitted and set directly via environment variable "GPKG_CLOUD_USER"
 	User string `yaml:"user" json:"user" validate:"required" env:"GPKG_CLOUD_USER"`
 
 	// Some kind of credential like a password or key to authenticate with the storage backend, e.g:
-	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite
+	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite.
+	// Optionally, this setting may be omitted and set directly via environment variable "GPKG_CLOUD_AUTH"
 	Auth string `yaml:"auth" json:"auth" validate:"required" env:"GPKG_CLOUD_AUTH"`
 
 	// Container/bucket on the storage account
