@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Postgres !!! Placeholder implementation, for future reference !!!
 func TestPostgres(t *testing.T) {
 	pg := Postgres{}
 	url, _ := neturl.Parse("http://example.com")

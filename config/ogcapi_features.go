@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net"
 	"os"
 	"path/filepath"
 	"slices"
@@ -152,13 +153,52 @@ type DatasourceCommon struct {
 	// It allows one to offer a more stable ID to clients instead of an auto-generated FID. External FID column should contain UUIDs.
 	// +optional
 	ExternalFid string `yaml:"externalFid" json:"externalFid"`
+
+	// Optional timeout after which queries are canceled
+	// +kubebuilder:default="15s"
+	// +optional
+	QueryTimeout Duration `yaml:"queryTimeout,omitempty" json:"queryTimeout,omitempty" validate:"required" default:"15s"`
 }
 
 // +kubebuilder:object:generate=true
 type Postgres struct {
 	DatasourceCommon `yaml:",inline" json:",inline"`
 
-	// placeholder
+	// Hostname of the PostgreSQL server.
+	// Optionally, this setting may be omitted and set directly via environment variable "DB_HOST"
+	// +kubebuilder:default="localhost"
+	Host string `yaml:"host" json:"host" validate:"required,hostname_rfc1123" default:"localhost" env:"DB_HOST"`
+
+	// Port number of the PostgreSQL server.
+	// Optionally, this setting may be omitted and set directly via environment variable "DB_PORT"
+	// +kubebuilder:default="5432"
+	Port int `yaml:"port" json:"port" validate:"required,hostname_port" default:"5432" env:"DB_PORT"`
+
+	// Name of the PostgreSQL database containing the data.
+	// Optionally, this setting may be omitted and set directly via environment variable "DB_NAME"
+	// +kubebuilder:default="postgres"
+	DatabaseName string `yaml:"connection" json:"connection" validate:"required" default:"postgres" env:"DB_NAME"`
+
+	// The SSL mode to use, e.g. 'disable', 'allow', 'prefer', 'require', 'verify-ca' or 'verify-full'.
+	// Optionally, this setting may be omitted and set directly via environment variable "DB_SSL_MODE"
+	// +kubebuilder:validation:Enum=disable;allow;prefer;require;verify-ca;verify-full
+	// +kubebuilder:default="disable"
+	SSLMode string `yaml:"sslMode" json:"sslMode" validate:"required" default:"disable" env:"DB_SSL_MODE"`
+
+	// Username when connecting to the PostgreSQL server.
+	// Optionally, this setting may be omitted and set directly via environment variable "DB_USERNAME"
+	// +kubebuilder:default="postgres"
+	User string `yaml:"user" json:"user" validate:"required" default:"postgres" env:"DB_USERNAME"`
+
+	// Password when connecting to the PostgreSQL server.
+	// Optionally, this setting may be omitted and set directly via environment variable "DB_PASSWORD"
+	// +kubebuilder:default="postgres"
+	Pass string `yaml:"pass" json:"pass" validate:"required" default:"postgres" env:"DB_PASSWORD"`
+}
+
+func (p *Postgres) ConnectionString() string {
+	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&application_name=%s",
+		p.User, p.Pass, net.JoinHostPort(p.Host, strconv.Itoa(p.Port)), p.DatabaseName, p.SSLMode, AppName)
 }
 
 // +kubebuilder:object:generate=true
@@ -175,11 +215,6 @@ type GeoPackage struct {
 // +kubebuilder:object:generate=true
 type GeoPackageCommon struct {
 	DatasourceCommon `yaml:",inline" json:",inline"`
-
-	// Optional timeout after which queries are canceled
-	// +kubebuilder:default="15s"
-	// +optional
-	QueryTimeout Duration `yaml:"queryTimeout,omitempty" json:"queryTimeout,omitempty" validate:"required" default:"15s"`
 
 	// ADVANCED SETTING. When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index.
 	// +kubebuilder:default=8000
@@ -257,14 +292,14 @@ type GeoPackageCloud struct {
 
 	// Reference to the cloud storage (either azure or google at the moment).
 	// For example 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'
-	Connection string `yaml:"connection" json:"connection" validate:"required"`
+	Connection string `yaml:"connection" json:"connection" validate:"required" env:"GPKG_CLOUD_CONNECTION"`
 
 	// Username of the storage account, like devstoreaccount1 when using Azurite
-	User string `yaml:"user" json:"user" validate:"required"`
+	User string `yaml:"user" json:"user" validate:"required" env:"GPKG_CLOUD_USER"`
 
 	// Some kind of credential like a password or key to authenticate with the storage backend, e.g:
 	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite
-	Auth string `yaml:"auth" json:"auth" validate:"required"`
+	Auth string `yaml:"auth" json:"auth" validate:"required" env:"GPKG_CLOUD_AUTH"`
 
 	// Container/bucket on the storage account
 	Container string `yaml:"container" json:"container" validate:"required"`
