@@ -3,6 +3,7 @@ package geopackage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"maps"
@@ -66,7 +67,7 @@ type GeoPackage struct {
 	maxBBoxSizeToUseWithRTree     int
 }
 
-func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
+func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) (*GeoPackage, error) {
 	loadDriver()
 
 	g := &GeoPackage{}
@@ -89,14 +90,14 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 		warmUp = gpkgConfig.Cloud.Cache.WarmUp
 	default:
-		log.Fatal("unknown GeoPackage config encountered")
+		return nil, errors.New("unknown GeoPackage config encountered")
 	}
 
 	g.featureTableByCollectionID, g.propertyFiltersByCollectionID = readMetadata(
 		g.backend.getDB(), collections, g.fidColumn, g.externalFidColumn)
 
 	if err := assertIndexesExist(collections, g.featureTableByCollectionID, g.backend.getDB(), g.fidColumn); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	if warmUp {
 		// perform warmup async since it can take a long time
@@ -106,7 +107,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 			}
 		}()
 	}
-	return g
+	return g, nil
 }
 
 func (g *GeoPackage) Close() {

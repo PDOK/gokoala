@@ -27,9 +27,9 @@ func newTestGeoPackage(file string) geoPackageBackend {
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
 			DatasourceCommon: config.DatasourceCommon{
-				Fid: "feature_id",
+				Fid:          "feature_id",
+				QueryTimeout: config.Duration{Duration: 15 * time.Second},
 			},
-			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
 			MaxBBoxSizeToUseWithRTree: 30000,
 			InMemoryCacheSize:         -2000,
 		},
@@ -73,7 +73,9 @@ func TestNewGeoPackage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(tt.args.collection, tt.args.config).featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
+			g, err := NewGeoPackage(tt.args.collection, tt.args.config)
+			assert.NoError(t, err)
+			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(g.featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
 		})
 	}
 }

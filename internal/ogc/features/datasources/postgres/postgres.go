@@ -2,18 +2,43 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/jackc/pgx/v5/pgxpool"
+	pgxgeom "github.com/twpayne/pgx-geom"
 )
 
-// Postgres !!! Placeholder implementation, for future reference !!!
 type Postgres struct {
+	db  *pgxpool.Pool
+	ctx context.Context
+
+	queryTimeout time.Duration
 }
 
-func NewPostgres() *Postgres {
-	return &Postgres{}
+func NewPostgres(_ config.GeoSpatialCollections, postgresConfig config.Postgres) (*Postgres, error) {
+	ctx := context.Background()
+	pgxConfig, err := pgxpool.ParseConfig(postgresConfig.ConnectionString())
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse database config: %w", err)
+	}
+	// add support for Go <-> PostGIS conversions
+	pgxConfig.AfterConnect = pgxgeom.Register
+
+	db, err := pgxpool.NewWithConfig(ctx, pgxConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to connect to database: %w", err)
+	}
+
+	return &Postgres{
+		db,
+		ctx,
+		postgresConfig.QueryTimeout.Duration,
+	}, nil
 }
 
 func (Postgres) Close() {

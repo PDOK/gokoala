@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/text/language"
@@ -13,6 +14,7 @@ import (
 )
 
 const (
+	AppName      = "GoKoala"
 	CookieMaxAge = 60 * 60 * 24
 )
 
@@ -31,6 +33,12 @@ func NewConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
+
+	err = env.Parse(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve environment variables to fields in the config: %w", err)
+	}
+
 	err = validateLocalPaths(config)
 	if err != nil {
 		return nil, fmt.Errorf("validation error in config file, error: %w", err)

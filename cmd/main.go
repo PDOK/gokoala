@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/PDOK/gokoala/config"
 	eng "github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc"
 	"github.com/urfave/cli/v2"
@@ -81,7 +82,7 @@ var (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "GoKoala"
+	app.Name = config.AppName
 	app.Usage = "Cloud Native OGC APIs server, written in Go"
 	app.Flags = cliFlags
 	app.Action = func(c *cli.Context) error {

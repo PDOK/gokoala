@@ -230,12 +230,16 @@ func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*
 	}
 }
 
-func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig config.Datasource) ds.Datasource {
+func newDatasource(e *engine.Engine, collections config.GeoSpatialCollections, dsConfig config.Datasource) ds.Datasource {
 	var datasource ds.Datasource
+	var err error
 	if dsConfig.GeoPackage != nil {
-		datasource = geopackage.NewGeoPackage(coll, *dsConfig.GeoPackage)
+		datasource, err = geopackage.NewGeoPackage(collections, *dsConfig.GeoPackage)
 	} else if dsConfig.Postgres != nil {
-		datasource = postgres.NewPostgres()
+		datasource, err = postgres.NewPostgres(collections, *dsConfig.Postgres)
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 	e.RegisterShutdownHook(datasource.Close)
 	return datasource
