@@ -112,8 +112,8 @@ type Datasources struct {
 	// Features should always be available in WGS84 (according to spec). This specifies the
 	// datasource to be used for features in the WGS84 coordinate reference system.
 	//
-	// No on-the-fly reprojection is performed, so the features in theis datasource need to be
-	// reprojected/transformed to WGS84 ahead of time. For example, using ogr2ogr.
+	// No on-the-fly reprojection is performed, so the features in this datasource need to be
+	// either native WGS84 or reprojected/transformed to WGS84 ahead of time. For example, using ogr2ogr.
 	DefaultWGS84 Datasource `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"` //nolint:tagliatelle // grandfathered
 
 	// One or more additional datasources for features in other coordinate reference systems.
@@ -127,7 +127,7 @@ type Datasources struct {
 	// coordinate reference systems. No need to reproject/transform ahead of time.
 	// Note: On-the-fly reprojection may impact performance when using (very) large geometries.
 	// +optional
-	OnTheFly []OnTheFly `yaml:"onthefly" json:"onthefly" validate:"dive"`
+	OnTheFly OnTheFly `yaml:"on-the-fly" json:"on-the-fly" validate:"dive"`
 }
 
 // +kubebuilder:object:generate=true
