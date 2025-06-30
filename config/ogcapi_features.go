@@ -31,7 +31,7 @@ type OgcAPIFeatures struct {
 	// +optional
 	Limit Limit `yaml:"limit,omitempty" json:"limit,omitempty"`
 
-	// One or more datasources to get the features from (geopackages, postgis, etc).
+	// One or more datasources to get the features from (geopackages, postgres, etc).
 	// Optional since you can also define datasources at the collection level
 	// +optional
 	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
@@ -74,7 +74,7 @@ type CollectionEntryFeatures struct {
 	// +optional
 	TableName *string `yaml:"tableName,omitempty" json:"tableName,omitempty"`
 
-	// Optional collection specific datasources. Mutually exclusive with top-level defined datasources.
+	// Optional collection-specific datasources. Mutually exclusive with top-level defined datasources.
 	// +optional
 	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
 
@@ -109,14 +109,25 @@ func (c *CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
 
 // +kubebuilder:object:generate=true
 type Datasources struct {
-	// Features should always be available in WGS84 (according to spec).
-	// This specifies the datasource to be used for features in the WGS84 projection
+	// Features should always be available in WGS84 (according to spec). This specifies the
+	// datasource to be used for features in the WGS84 coordinate reference system.
+	//
+	// No on-the-fly reprojection is performed, so the features in theis datasource need to be
+	// reprojected/transformed to WGS84 ahead of time. For example, using ogr2ogr.
 	DefaultWGS84 Datasource `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"` //nolint:tagliatelle // grandfathered
 
-	// One or more additional datasources for features in other projections. GoKoala doesn't do
-	// any on-the-fly reprojection so additional datasources need to be reprojected ahead of time.
+	// One or more additional datasources for features in other coordinate reference systems.
+	//
+	// No on-the-fly reprojection is performed, so the features in these additional datasources need to be
+	// reprojected/transformed ahead of time. For example, using ogr2ogr.
 	// +optional
 	Additional []AdditionalDatasource `yaml:"additional" json:"additional" validate:"dive"`
+
+	// Datasource containing features which will be reprojected on-the-fly to the specified
+	// coordinate reference systems. No need to reproject/transform ahead of time.
+	// Note: On-the-fly reprojection may impact performance when using (very) large geometries.
+	// +optional
+	OnTheFly []OnTheFly `yaml:"onthefly" json:"onthefly" validate:"dive"`
 }
 
 // +kubebuilder:object:generate=true
@@ -134,12 +145,27 @@ type Datasource struct {
 
 // +kubebuilder:object:generate=true
 type AdditionalDatasource struct {
-	// Projection (SRS/CRS) used for the features in this datasource
+	// SRS/CRS used for the features in this datasource
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
 
 	// The additional datasource
 	Datasource `yaml:",inline" json:",inline"`
+}
+
+// +kubebuilder:object:generate=true
+type OnTheFly struct {
+	// List of supported SRS/CRS
+	SupportedSrs []OnTheFlySupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
+
+	// The datasource capable of on-the-fly reprojection/transformation
+	Datasource `yaml:",inline" json:",inline"`
+}
+
+type OnTheFlySupportedSrs struct {
+	// SRS/CRS supported for on-the-fly reprojection/transformation
+	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
+	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
 }
 
 // +kubebuilder:object:generate=true

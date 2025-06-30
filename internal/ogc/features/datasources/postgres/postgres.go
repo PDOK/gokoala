@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -14,14 +15,16 @@ import (
 )
 
 type Postgres struct {
-	db  *pgxpool.Pool
-	ctx context.Context
-
+	db           *pgxpool.Pool
 	queryTimeout time.Duration
 }
 
-func NewPostgres(_ config.GeoSpatialCollections, postgresConfig config.Postgres) (*Postgres, error) {
-	ctx := context.Background()
+func NewPostgres(_ config.GeoSpatialCollections, postgresConfig config.Postgres, transformOnTheFly bool) (*Postgres, error) {
+	if !transformOnTheFly {
+		return nil, errors.New("ahead-of-time reprojected features are currently not supported for PostgreSQL, " +
+			"reprojection/transformation is always applied")
+	}
+
 	pgxConfig, err := pgxpool.ParseConfig(postgresConfig.ConnectionString())
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
@@ -29,14 +32,13 @@ func NewPostgres(_ config.GeoSpatialCollections, postgresConfig config.Postgres)
 	// add support for Go <-> PostGIS conversions
 	pgxConfig.AfterConnect = pgxgeom.Register
 
-	db, err := pgxpool.NewWithConfig(ctx, pgxConfig)
+	db, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
 
 	return &Postgres{
 		db,
-		ctx,
 		postgresConfig.QueryTimeout.Duration,
 	}, nil
 }

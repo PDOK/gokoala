@@ -67,8 +67,12 @@ type GeoPackage struct {
 	maxBBoxSizeToUseWithRTree     int
 }
 
-func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) (*GeoPackage, error) {
+func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage, transformOnTheFly bool) (*GeoPackage, error) {
 	loadDriver()
+
+	if transformOnTheFly {
+		return nil, errors.New("on the fly reprojection/transformation is currently not supported for GeoPackages")
+	}
 
 	g := &GeoPackage{}
 	g.preparedStmtCache = NewCache()

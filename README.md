@@ -31,10 +31,12 @@ datasets? Spin up a separate instance/container.
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG
-  - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
-  - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
-  - Supports property (`/items?property=<value>`) and temporal filtering (`/items?datetime=<timestamp>`.
-  - Implements cursor-based pagination in order to support browsing large datasets.
+  - Supported datastores:
+    - [GeoPackage](https://www.geopackage.org/). These can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. 
+      No on-the-fly reprojections are applied, separate GeoPackages should be configured in each CRS ahead-of-time.
+    - [PostgreSQL](https://postgis.net/) (PostGIS). Supports on-the-fly reprojections of features.
+  - Supports property (`/items?<property>=<value>`) and temporal filtering (`/items?datetime=<timestamp>`.
+  - Implements _cursor_-based pagination (also known as _keyset_ pagination) to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
@@ -182,15 +184,15 @@ binds to localhost and a different port which you must specify using the
 through a tunnel/port-forward. The debug server exposes `/debug` for use by
 [pprof](https://go.dev/blog/pprof). For example with `--debug-port 9001`:
 
-- Create a tunnel to the debug server e.g. in k8s: `kubectl port-forward
+- Create a tunnel to the debug server e.g., in k8s: `kubectl port-forward
 gokoala-75f59d57f4-4nd6q 9001:9001`
-- Create CPU profile: `go tool pprof
+- Capture CPU profile: `go tool pprof
 http://localhost:9001/debug/pprof/profile?seconds=20`
+- Capture Memory profile: `go tool pprof
+http://localhost:9001/debug/pprof/heap?seconds=20`
 - Start pprof visualization `go tool pprof -http=":8000" pprofbin <path to pb.gz
 file>`
-- Open <http://localhost:8000> to explore CPU flamegraphs and such.
-
-A similar flow can be used to profile memory issues.
+- Open <http://localhost:8000> to explore CPU flamegraphs or Heap details.
 
 #### SQL query logging
 
