@@ -32,9 +32,9 @@ datasets? Spin up a separate instance/container.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG
   - Supported datastores:
-    - [GeoPackage](https://www.geopackage.org/). These can be regular/local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. 
-      No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each CRS.
-    - [PostgreSQL](https://postgis.net/) (PostGIS). Supports on-the-fly reprojection of features.
+    - [GeoPackage](https://www.geopackage.org/). These can be regular/local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. No on-the-fly 
+      reprojection/transformation is applied, separate GeoPackages should be configured ahead-of-time in each CRS.
+    - [PostgreSQL](https://postgis.net/) (PostGIS). Supports on-the-fly reprojection/transformation of features.
   - Supports property filtering (`/items?<property>=<value>`) and temporal filtering (`/items?datetime=<timestamp>`).
   - Implements _cursor_-based pagination (also known as _keyset_ pagination) to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain

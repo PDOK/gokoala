@@ -88,6 +88,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	// are instantiated: since multiple collections can point to the same datasource and we only what to have a single
 	// datasource/connection-pool serving those collections.
 	createdDatasources := make(map[config.Datasource]ds.Datasource)
+
 	result := make(map[datasourceKey]ds.Datasource, len(configured))
 	for k, cfg := range configured {
 		if cfg == nil {
@@ -95,7 +96,8 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 		}
 		existing, ok := createdDatasources[cfg.ds]
 		if !ok {
-			// make sure to only create a new datasource when it hasn't already been done before (for another collection)
+			// make sure to only create a new datasource when it hasn't already been done before
+			// since we only want a single connection-pool per (geopackage/postgresql) database.
 			created := newDatasource(e, cfg.collections, cfg.ds, cfg.transformOnTheFly)
 			createdDatasources[cfg.ds] = created
 			result[k] = created
@@ -185,14 +187,16 @@ func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*da
 		return
 	}
 	// Ahead-of-time WGS84
-	var defaultDS *datasourceConfig
-	for _, coll := range cfg.Collections {
-		key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
-		if result[key] == nil {
-			if defaultDS == nil {
-				defaultDS = &datasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84, false}
+	if cfg.Datasources.DefaultWGS84 != nil {
+		var defaultDS *datasourceConfig
+		for _, coll := range cfg.Collections {
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				if defaultDS == nil {
+					defaultDS = &datasourceConfig{cfg.Collections, *cfg.Datasources.DefaultWGS84, false}
+				}
+				result[key] = defaultDS
 			}
-			result[key] = defaultDS
 		}
 	}
 
@@ -236,8 +240,10 @@ func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*
 			continue
 		}
 		// Ahead-of-time WGS84
-		defaultDS := &datasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84, false}
-		result[datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
+		if coll.Features.Datasources.DefaultWGS84 != nil {
+			defaultDS := &datasourceConfig{cfg.Collections, *coll.Features.Datasources.DefaultWGS84, false}
+			result[datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
+		}
 
 		// Ahead-of-time additional SRSs
 		for _, additional := range coll.Features.Datasources.Additional {
