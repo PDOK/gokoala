@@ -32,7 +32,7 @@ type Datasources struct {
 	// coordinate reference systems. No need to reproject/transform ahead of time.
 	// Note: On-the-fly reprojection may impact performance when using (very) large geometries.
 	// +optional
-	OnTheFly []OnTheFlyDatasource `yaml:"on-the-fly" json:"on-the-fly" validate:"dive"`
+	OnTheFly []OnTheFlyDatasource `yaml:"onTheFly" json:"onTheFly" validate:"dive"`
 }
 
 // +kubebuilder:object:generate=true
