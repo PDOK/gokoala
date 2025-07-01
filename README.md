@@ -32,10 +32,10 @@ datasets? Spin up a separate instance/container.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG
   - Supported datastores:
-    - [GeoPackage](https://www.geopackage.org/). These can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. 
-      No on-the-fly reprojections are applied, separate GeoPackages should be configured in each CRS ahead-of-time.
-    - [PostgreSQL](https://postgis.net/) (PostGIS). Supports on-the-fly reprojections of features.
-  - Supports property (`/items?<property>=<value>`) and temporal filtering (`/items?datetime=<timestamp>`.
+    - [GeoPackage](https://www.geopackage.org/). These can be regular/local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. 
+      No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each CRS.
+    - [PostgreSQL](https://postgis.net/) (PostGIS). Supports on-the-fly reprojection of features.
+  - Supports property filtering (`/items?<property>=<value>`) and temporal filtering (`/items?datetime=<timestamp>`).
   - Implements _cursor_-based pagination (also known as _keyset_ pagination) to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
@@ -239,11 +239,11 @@ from the root.
 ### Viewer
 
 GoKoala includes a [viewer](viewer) which is available
-as a [Web Component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for embedding in HTML pages. 
+as a set of [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for embedding in HTML pages. 
 To use the viewer locally when running GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will 
 build the viewer and add it to the GoKoala assets.
 
-Note this is only required for local development. When running GoKoala as a container this is
+Note this is only required for local development. When running GoKoala in a container this is
 already being taken care of when building the Docker container image.
 
 ### IntelliJ / GoLand
