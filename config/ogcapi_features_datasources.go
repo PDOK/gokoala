@@ -17,22 +17,23 @@ type Datasources struct {
 	// Features should always be available in WGS84 (according to spec). This specifies the
 	// datasource to be used for features in the WGS84 coordinate reference system.
 	//
-	// No on-the-fly reprojection is performed, so the features in this datasource need to be
+	// No on-the-fly transformation/reprojection is performed, so the features in this datasource need to be
 	// either native WGS84 or reprojected/transformed to WGS84 ahead of time. For example, using ogr2ogr.
-	DefaultWGS84 Datasource `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"` //nolint:tagliatelle // grandfathered
+	// +optional
+	DefaultWGS84 *Datasource `yaml:"defaultWGS84" json:"defaultWGS84"` //nolint:tagliatelle // grandfathered
 
-	// One or more additional datasources for features in other coordinate reference systems.
+	// One or more additional datasources for features in other (non-WGS84) coordinate reference systems.
 	//
-	// No on-the-fly reprojection is performed, so the features in these additional datasources need to be
-	// reprojected/transformed ahead of time. For example, using ogr2ogr.
+	// No on-the-fly transformation/reprojection is performed, so the features in these additional datasources
+	// need to be transformed/reprojected ahead of time. For example, using ogr2ogr.
 	// +optional
 	Additional []AdditionalDatasource `yaml:"additional" json:"additional" validate:"dive"`
 
-	// Datasource containing features which will be reprojected on-the-fly to the specified
-	// coordinate reference systems. No need to reproject/transform ahead of time.
-	// Note: On-the-fly reprojection may impact performance when using (very) large geometries.
+	// Datasource containing features which will be transformed/reprojected on-the-fly to the specified
+	// coordinate reference systems. No need to transform/reproject ahead of time.
+	// Note: On-the-fly transformation/reprojection may impact performance when using (very) large geometries.
 	// +optional
-	OnTheFly []OnTheFlyDatasource `yaml:"onTheFly" json:"onTheFly" validate:"dive"`
+	OnTheFly []OnTheFlyDatasource `yaml:"transformOnTheFly" json:"transformOnTheFly" validate:"dive"`
 }
 
 // +kubebuilder:object:generate=true
@@ -67,6 +68,7 @@ type OnTheFlyDatasource struct {
 	Datasource `yaml:",inline" json:",inline"`
 }
 
+// +kubebuilder:object:generate=true
 type OnTheFlySupportedSrs struct {
 	// SRS/CRS supported for on-the-fly reprojection/transformation
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`

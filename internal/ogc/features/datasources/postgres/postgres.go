@@ -19,32 +19,39 @@ type Postgres struct {
 	queryTimeout time.Duration
 }
 
-func NewPostgres(_ config.GeoSpatialCollections, postgresConfig config.Postgres, transformOnTheFly bool) (*Postgres, error) {
+func NewPostgres(_ config.GeoSpatialCollections, pgConfig config.Postgres, transformOnTheFly bool) (*Postgres, error) {
 	if !transformOnTheFly {
-		return nil, errors.New("ahead-of-time reprojected features are currently not supported for PostgreSQL, " +
-			"reprojection/transformation is always applied")
+		return nil, errors.New("ahead-of-time transformed features are currently not " +
+			"supported for PostgreSQL, reprojection/transformation is always applied")
 	}
 
-	pgxConfig, err := pgxpool.ParseConfig(postgresConfig.ConnectionString())
+	pgxConfig, err := pgxpool.ParseConfig(pgConfig.ConnectionString())
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
 	}
 	// add support for Go <-> PostGIS conversions
 	pgxConfig.AfterConnect = pgxgeom.Register
 
-	db, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
+	ctx := context.Background()
+	db, err := pgxpool.NewWithConfig(ctx, pgxConfig)
 	if err != nil {
-		return nil, fmt.Errorf("unable to connect to database: %w", err)
+		return nil, fmt.Errorf("unable to create connection pool: %w", err)
+	}
+
+	log.Printf("connecting to database '%s' as user '%s' on server: %s",
+		pgConfig.DatabaseName, pgConfig.User, pgConfig.Host)
+	if err := db.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("unable to connect with database: %w", err)
 	}
 
 	return &Postgres{
 		db,
-		postgresConfig.QueryTimeout.Duration,
+		pgConfig.QueryTimeout.Duration,
 	}, nil
 }
 
-func (Postgres) Close() {
-	// noop
+func (pg Postgres) Close() {
+	pg.db.Close()
 }
 
 func (pg Postgres) GetFeatureIDs(_ context.Context, _ string, _ datasources.FeaturesCriteria) ([]int64, domain.Cursors, error) {

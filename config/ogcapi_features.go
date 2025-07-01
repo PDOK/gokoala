@@ -37,11 +37,11 @@ type OgcAPIFeatures struct {
 	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
-func (oaf *OgcAPIFeatures) ProjectionsForCollections() []string {
-	return oaf.ProjectionsForCollection("")
+func (oaf *OgcAPIFeatures) CollectionsSRS() []string {
+	return oaf.CollectionSRS("")
 }
 
-func (oaf *OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string {
+func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 	uniqueSRSs := make(map[string]struct{})
 	if oaf.Datasources != nil {
 		for _, d := range oaf.Datasources.OnTheFly {
