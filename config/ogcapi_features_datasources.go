@@ -130,8 +130,9 @@ type Postgres struct {
 }
 
 func (p *Postgres) ConnectionString() string {
+	port := strconv.FormatUint(uint64(p.Port), 10)
 	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&application_name=%s",
-		p.User, p.Pass, net.JoinHostPort(p.Host, strconv.Itoa(int(p.Port))), p.DatabaseName, p.SSLMode, AppName)
+		p.User, p.Pass, net.JoinHostPort(p.Host, port), p.DatabaseName, p.SSLMode, AppName)
 }
 
 // +kubebuilder:object:generate=true
@@ -224,7 +225,7 @@ type GeoPackageCloud struct {
 	GeoPackageCommon `yaml:",inline" json:",inline"`
 
 	// Reference to the cloud storage (either azure or google at the moment).
-	// For example 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'.
+	// For example, 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'.
 	// Optionally, this setting may be omitted and set directly via environment variable "GPKG_CLOUD_CONNECTION"
 	Connection string `yaml:"connection" json:"connection" validate:"required" env:"GPKG_CLOUD_CONNECTION"`
 
