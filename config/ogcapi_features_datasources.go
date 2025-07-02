@@ -105,12 +105,12 @@ type Postgres struct {
 	// Port number of the PostgreSQL server.
 	// Optionally, this setting may be omitted and set directly via environment variable "DB_PORT"
 	// +kubebuilder:default="5432"
-	Port int `yaml:"port" json:"port" validate:"required,hostname_port" default:"5432" env:"DB_PORT"`
+	Port uint `yaml:"port" json:"port" validate:"required,port" default:"5432" env:"DB_PORT"`
 
 	// Name of the PostgreSQL database containing the data.
 	// Optionally, this setting may be omitted and set directly via environment variable "DB_NAME"
 	// +kubebuilder:default="postgres"
-	DatabaseName string `yaml:"connection" json:"connection" validate:"required" default:"postgres" env:"DB_NAME"`
+	DatabaseName string `yaml:"databaseName" json:"databaseName" validate:"required" default:"postgres" env:"DB_NAME"`
 
 	// The SSL mode to use, e.g. 'disable', 'allow', 'prefer', 'require', 'verify-ca' or 'verify-full'.
 	// Optionally, this setting may be omitted and set directly via environment variable "DB_SSL_MODE"
@@ -131,7 +131,7 @@ type Postgres struct {
 
 func (p *Postgres) ConnectionString() string {
 	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&application_name=%s",
-		p.User, p.Pass, net.JoinHostPort(p.Host, strconv.Itoa(p.Port)), p.DatabaseName, p.SSLMode, AppName)
+		p.User, p.Pass, net.JoinHostPort(p.Host, strconv.Itoa(int(p.Port))), p.DatabaseName, p.SSLMode, AppName)
 }
 
 // +kubebuilder:object:generate=true
