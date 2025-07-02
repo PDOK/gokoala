@@ -5,6 +5,7 @@ go 1.24.2
 require (
 	dario.cat/mergo v1.0.1
 	github.com/PDOK/go-cloud-sqlite-vfs v0.3.0
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/go-units v0.5.0
 	github.com/elnormous/contenttype v1.0.4
@@ -18,12 +19,14 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/jackc/pgx/v5 v5.7.5
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.28
 	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.10.0
 	github.com/twpayne/go-geom v1.6.1
+	github.com/twpayne/pgx-geom v0.0.2
 	github.com/urfave/cli/v2 v2.27.6
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
@@ -48,6 +51,9 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
@@ -56,6 +62,7 @@ require (
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
