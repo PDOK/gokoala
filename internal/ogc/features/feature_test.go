@@ -23,6 +23,8 @@ func init() {
 }
 
 func TestFeature(t *testing.T) {
+	// TODO start postgres in docker compose
+
 	type fields struct {
 		configFile   string
 		url          string
@@ -42,7 +44,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request GeoJSON for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -56,7 +58,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request JSON-FG for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -70,7 +72,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request non existing feature",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "9999999999",
@@ -84,7 +86,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request non existing collection",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "does-not-exist",
 				featureID:    "9999999999",
@@ -98,7 +100,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request with unknown query params",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?foo=bar",
 				collectionID: "foo",
 				featureID:    "19058835",
@@ -112,7 +114,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request with invalid FID",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "thisisnotaUUIDorINTEGER",
@@ -126,7 +128,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request unsupported format (DOCX) for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -140,7 +142,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request HTML for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -154,7 +156,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in WGS84 explicitly",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -168,7 +170,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in WGS84 explicitly - with validation disabled",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_validation_disabled.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_validation_disabled.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -182,7 +184,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in RD",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -196,7 +198,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in unsupported CRS explicitly",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/EPSG:3812131313131314141",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -210,7 +212,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request non existing feature",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "dutch-addresses",
 				featureID:    "999999",
@@ -224,7 +226,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request slow response, hitting query timeout",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_short_query_timeout.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "dutch-addresses",
 				featureID:    "4030",
@@ -238,7 +240,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request feature with specific web/viewer configuration, and make sure this is reflected in the HTML output",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_webconfig.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=html",
 				collectionID: "ligplaatsen",
 				featureID:    "4030",
@@ -252,7 +254,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request feature with specific web configuration, and make sure URLs are rendered as hyperlinks in HTML output",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_webconfig.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=html",
 				collectionID: "ligplaatsen",
 				featureID:    "4030",
@@ -266,7 +268,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request GeoJSON for feature with null geom",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "6436",
@@ -280,7 +282,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request JSON-FG for feature with null geom",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
 				collectionID: "foo",
 				featureID:    "6436",
@@ -294,7 +296,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request GeoJSON for feature with empty point",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "3542",
@@ -308,7 +310,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request JSON-FG for feature with empty point",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
 				collectionID: "foo",
 				featureID:    "3542",
