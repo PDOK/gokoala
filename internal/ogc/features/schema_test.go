@@ -41,7 +41,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in HTML format",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "foo",
 				format:       "html",
@@ -54,7 +54,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in JSON format",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "foo",
 				format:       "json",
@@ -67,7 +67,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in HTML format with temporal fields",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag_temporal.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_temporal.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "standplaatsen",
 				format:       "html",
@@ -80,7 +80,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in JSON format with temporal fields",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag_temporal.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_temporal.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "standplaatsen",
 				format:       "json",
@@ -93,7 +93,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in HTML format with external FID",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "ligplaatsen",
 				format:       "html",
@@ -106,7 +106,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in JSON format with external FID",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "ligplaatsen",
 				format:       "json",
@@ -119,7 +119,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in JSON format with external FID for collection with x-ogc-role=reference",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_external_fid.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "standplaatsen",
 				format:       "json",
@@ -132,7 +132,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in JSON format with 3D geoms",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_3d_geoms.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_3d_geoms.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "foo",
 				format:       "json",
@@ -145,7 +145,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in HTML format with descriptions from gpkg_data_columns table",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag_schema_extension.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_schema_extension.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "foo",
 				format:       "html",
@@ -158,7 +158,7 @@ func TestSchema(t *testing.T) {
 		{
 			name: "Request schema in JSON format with descriptions from gpkg_data_columns table",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag_schema_extension.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_schema_extension.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "foo",
 				format:       "json",
