@@ -13,6 +13,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/PDOK/gokoala/internal/ogc/features/proj"
 )
 
 const (
@@ -129,7 +130,7 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 			go func() {
 				defer wg.Done()
 
-				axisOrder, err := GetAxisOrder(domain.SRID(key.srid))
+				axisOrder, err := proj.GetAxisOrder(domain.SRID(key.srid))
 				if err != nil {
 					log.Printf("Warning: failed to determine whether EPSG:%d needs "+
 						"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
