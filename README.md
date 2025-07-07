@@ -231,10 +231,20 @@ go build -o gokoala cmd/main.go
 To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also happens there.
 Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn't found.
 
+### Testing
+
+To run all unit tests:
+
+```
+go test -v -race -shuffle=on ./...
+```
+
+Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn't found.
+Some tests make use of [Testcontainers](https://golang.testcontainers.org/) so you'll need to have Docker installed.
+
 ### Linting
 
-Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
-from the root.
+Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run ./...` from the root.
 
 ### Viewer
 
