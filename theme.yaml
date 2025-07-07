@@ -1,0 +1,10 @@
+---
+# Default PDOK theme
+logo:
+  header: "/img/logo-header.svg"
+  footer: "/img/logo-footer.png"
+  opengraph: "/img/logo-opengraph.png"
+color:
+  primary: "#1a1e4f"
+  secondary: "#add8e6"
+  link: '#fff'

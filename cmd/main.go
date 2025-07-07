@@ -69,6 +69,13 @@ var (
 			Required: false,
 			EnvVars:  []string{"ENABLE_CORS"},
 		},
+		&cli.StringFlag{
+			Name:     "theme-file",
+			Usage:    "reference to a (customized) YAML configuration file for the theme",
+			Value:    "theme.yaml",
+			Required: false,
+			EnvVars:  []string{"THEME_CONFIG"},
+		},
 	}
 )
 
@@ -84,12 +91,13 @@ func main() {
 		debugPort := c.Int("debug-port")
 		shutdownDelay := c.Int("shutdown-delay")
 		configFile := c.String("config-file")
+		themeFile := c.String("theme-file")
 		openAPIFile := c.String("openapi-file")
 		trailingSlash := c.Bool("enable-trailing-slash")
 		cors := c.Bool("enable-cors")
 
 		// Engine encapsulates shared non-OGC API specific logic
-		engine, err := eng.NewEngine(configFile, openAPIFile, trailingSlash, cors)
+		engine, err := eng.NewEngine(configFile, themeFile, openAPIFile, trailingSlash, cors)
 		if err != nil {
 			return err
 		}
