@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/caarlos0/env/v11"
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/text/language"
@@ -32,11 +31,6 @@ func NewConfig(configFile string) (*Config, error) {
 	err = yaml.Unmarshal(yamlData, &config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
-	}
-
-	err = env.Parse(config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to resolve environment variables to fields in the config: %w", err)
 	}
 
 	err = validateLocalPaths(config)

@@ -31,6 +31,7 @@ type Datasources struct {
 
 	// Datasource containing features which will be transformed/reprojected on-the-fly to the specified
 	// coordinate reference systems. No need to transform/reproject ahead of time.
+	//
 	// Note: On-the-fly transformation/reprojection may impact performance when using (very) large geometries.
 	// +optional
 	OnTheFly []OnTheFlyDatasource `yaml:"transformOnTheFly" json:"transformOnTheFly" validate:"dive"`
@@ -70,7 +71,8 @@ type OnTheFlyDatasource struct {
 
 // +kubebuilder:object:generate=true
 type OnTheFlySupportedSrs struct {
-	// SRS/CRS supported for on-the-fly reprojection/transformation
+	// Supported coordinated reference systems (CRS/SRS) for on-the-fly reprojection/transformation.
+	// Note: no need to add 'OGC:CRS84', since that one is required and included by default.
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
 }
@@ -98,35 +100,33 @@ type Postgres struct {
 	DatasourceCommon `yaml:",inline" json:",inline"`
 
 	// Hostname of the PostgreSQL server.
-	// Optionally, this setting may be omitted and set directly via environment variable "DB_HOST"
 	// +kubebuilder:default="localhost"
-	Host string `yaml:"host" json:"host" validate:"required,hostname_rfc1123" default:"localhost" env:"DB_HOST"`
+	Host string `yaml:"host" json:"host" validate:"required,hostname_rfc1123" default:"localhost"`
 
 	// Port number of the PostgreSQL server.
-	// Optionally, this setting may be omitted and set directly via environment variable "DB_PORT"
 	// +kubebuilder:default="5432"
-	Port uint `yaml:"port" json:"port" validate:"required,port" default:"5432" env:"DB_PORT"`
+	Port uint `yaml:"port" json:"port" validate:"required,port" default:"5432"`
 
 	// Name of the PostgreSQL database containing the data.
-	// Optionally, this setting may be omitted and set directly via environment variable "DB_NAME"
 	// +kubebuilder:default="postgres"
-	DatabaseName string `yaml:"databaseName" json:"databaseName" validate:"required" default:"postgres" env:"DB_NAME"`
+	DatabaseName string `yaml:"databaseName" json:"databaseName" validate:"required" default:"postgres"`
+
+	// Name of the PostgreSQL schema containing the data.
+	// +kubebuilder:default="public"
+	Schema string `yaml:"schema" json:"schema" validate:"required" default:"public"`
 
 	// The SSL mode to use, e.g. 'disable', 'allow', 'prefer', 'require', 'verify-ca' or 'verify-full'.
-	// Optionally, this setting may be omitted and set directly via environment variable "DB_SSL_MODE"
 	// +kubebuilder:validation:Enum=disable;allow;prefer;require;verify-ca;verify-full
 	// +kubebuilder:default="disable"
-	SSLMode string `yaml:"sslMode" json:"sslMode" validate:"required" default:"disable" env:"DB_SSL_MODE"`
+	SSLMode string `yaml:"sslMode" json:"sslMode" validate:"required" default:"disable"`
 
 	// Username when connecting to the PostgreSQL server.
-	// Optionally, this setting may be omitted and set directly via environment variable "DB_USERNAME"
 	// +kubebuilder:default="postgres"
-	User string `yaml:"user" json:"user" validate:"required" default:"postgres" env:"DB_USERNAME"`
+	User string `yaml:"user" json:"user" validate:"required" default:"postgres"`
 
 	// Password when connecting to the PostgreSQL server.
-	// Optionally, this setting may be omitted and set directly via environment variable "DB_PASSWORD"
 	// +kubebuilder:default="postgres"
-	Pass string `yaml:"pass" json:"pass" validate:"required" default:"postgres" env:"DB_PASSWORD"`
+	Pass string `yaml:"pass" json:"pass" validate:"required" default:"postgres"`
 }
 
 func (p *Postgres) ConnectionString() string {
@@ -226,17 +226,14 @@ type GeoPackageCloud struct {
 
 	// Reference to the cloud storage (either azure or google at the moment).
 	// For example, 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'.
-	// Optionally, this setting may be omitted and set directly via environment variable "GPKG_CLOUD_CONNECTION"
-	Connection string `yaml:"connection" json:"connection" validate:"required" env:"GPKG_CLOUD_CONNECTION"`
+	Connection string `yaml:"connection" json:"connection" validate:"required"`
 
 	// Username of the storage account, like devstoreaccount1 when using Azurite.
-	// Optionally, this setting may be omitted and set directly via environment variable "GPKG_CLOUD_USER"
-	User string `yaml:"user" json:"user" validate:"required" env:"GPKG_CLOUD_USER"`
+	User string `yaml:"user" json:"user" validate:"required"`
 
 	// Some kind of credential like a password or key to authenticate with the storage backend, e.g:
 	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite.
-	// Optionally, this setting may be omitted and set directly via environment variable "GPKG_CLOUD_AUTH"
-	Auth string `yaml:"auth" json:"auth" validate:"required" env:"GPKG_CLOUD_AUTH"`
+	Auth string `yaml:"auth" json:"auth" validate:"required"`
 
 	// Container/bucket on the storage account
 	Container string `yaml:"container" json:"container" validate:"required"`

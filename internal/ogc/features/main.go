@@ -182,6 +182,8 @@ func configurePropertyFiltersWithAllowedValues(datasources map[datasourceKey]ds.
 
 // configureTopLevelDatasources configures top-level datasources - in one or multiple CRS's - which can be
 // used by one or multiple collections (e.g., one GPKG that holds an entire dataset)
+//
+//nolint:cyclop
 func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*datasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	if cfg.Datasources == nil {
@@ -218,12 +220,18 @@ func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*da
 	// On-the-fly SRSs -- add these as last since we prefer ahead-of-time projections
 	for _, otf := range cfg.Datasources.OnTheFly {
 		for _, coll := range cfg.Collections {
+			// WGS84
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+			}
+			// All other configured SRSs
 			for _, srs := range otf.SupportedSrs {
 				srid, err := domain.EpsgToSrid(srs.Srs)
 				if err != nil {
 					log.Fatal(err)
 				}
-				key := datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
+				key = datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
 				if result[key] == nil {
 					result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
 				}
@@ -258,6 +266,12 @@ func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*
 
 		// On-the-fly SRSs -- add these as last since we prefer ahead-of-time projections
 		for _, otf := range coll.Features.Datasources.OnTheFly {
+			// WGS84
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+			}
+			// All other configured SRSs
 			for _, srs := range otf.SupportedSrs {
 				srid, err := domain.EpsgToSrid(srs.Srs)
 				if err != nil {

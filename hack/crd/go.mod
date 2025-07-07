@@ -11,7 +11,6 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
-	github.com/caarlos0/env/v11 v11.3.1 // indirect
 	github.com/creasty/defaults v1.8.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/elnormous/contenttype v1.0.4 // indirect

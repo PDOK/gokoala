@@ -667,7 +667,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request 3D geoms (LINESTRING Z) as features",
+			name: "GEOPACKAGE: Request 3D geoms (LINESTRING Z) as features",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_3d_geoms.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=5",
@@ -680,8 +680,22 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		//{
+		//	name: "POSTGRES: Request 3D geoms (LINESTRING Z) as features",
+		//	fields: fields{
+		//		configFile:   "internal/ogc/features/testdata/postgresql/config_features_3d_geoms.yaml",
+		//		url:          "http://localhost:8080/collections/:collectionId/items?limit=5",
+		//		collectionID: "foo",
+		//		contentCrs:   "<" + domain.WGS84CrsURI + ">",
+		//		format:       "json",
+		//	},
+		//	want: want{
+		//		body:       "internal/ogc/features/testdata/expected_features_3d_geoms.json",
+		//		statusCode: http.StatusOK,
+		//	},
+		//},
 		{
-			name: "Request 3D geoms (LINESTRING Z) as features as JSON-FG",
+			name: "GEOPACKAGE: Request 3D geoms (LINESTRING Z) as features as JSON-FG",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_3d_geoms.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=5&f=jsonfg",
@@ -694,6 +708,20 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		//{
+		//	name: "POSTGRES: Request 3D geoms (LINESTRING Z) as features as JSON-FG",
+		//	fields: fields{
+		//		configFile:   "internal/ogc/features/testdata/postgresql/config_features_3d_geoms.yaml",
+		//		url:          "http://localhost:8080/collections/:collectionId/items?limit=5&f=jsonfg",
+		//		collectionID: "foo",
+		//		contentCrs:   "<" + domain.WGS84CrsURI + ">",
+		//		format:       "json",
+		//	},
+		//	want: want{
+		//		body:       "internal/ogc/features/testdata/expected_features_3d_geoms_jsonfg.json",
+		//		statusCode: http.StatusOK,
+		//	},
+		//},
 		{
 			name: "Request 3D geoms (MULTIPOINT Z) as features",
 			fields: fields{
@@ -768,7 +796,7 @@ func TestFeatures(t *testing.T) {
 			handler := features.Features()
 			handler.ServeHTTP(rr, req)
 
-			assert.Equal(t, tt.fields.contentCrs, rr.Header().Get("Content-Crs"))
+			assert.Equal(t, tt.fields.contentCrs, rr.Header().Get(engine.HeaderContentCrs))
 			assert.Equal(t, tt.want.statusCode, rr.Code)
 			if tt.want.body != "" {
 				expectedBody, err := os.ReadFile(tt.want.body)
