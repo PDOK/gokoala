@@ -1,0 +1,76 @@
+---
+services:
+  postgres:
+    image: docker.io/postgis/postgis:16-3.5  # use debian, not alpine
+    container_name: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+    command: ["postgres", "-c", "log_statement=all"]
+    volumes:
+      - ./create-schemas.sql:/docker-entrypoint-initdb.d/0-create-schemas.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      retries: 30
+
+  postgres-init-data:
+    image: ghcr.io/osgeo/gdal:ubuntu-small-3.8.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+
+        echo "START import GeoPackages in Postgres"
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=addresses \
+          -lco FID=fid \
+          /examples/resources/addresses-rd.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=threedimensionalgeoms \
+          -lco FID=fid \
+          /testdata/3d-geoms.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=bag \
+          -lco FID=feature_id \
+          /testdata/bag.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=bag_temporal \
+          -lco FID=feature_id \
+          /testdata/bag-temporal.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=bag_schema_extension \
+          -lco FID=feature_id \
+          /testdata/bag_schema_extension.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=external_fid \
+          -lco FID=feature_id \
+          /testdata/external-fid.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=nullemptygeoms \
+          -lco FID=fid \
+          /testdata/null-empty-geoms.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -lco SCHEMA=roads \
+          -lco FID=fid \
+          /testdata/roads.gpkg
+
+        echo "DONE import GeoPackages in Postgres"
+    volumes:
+      - ../../geopackage/testdata:/testdata
+      - ../../../../../../examples:/examples
