@@ -1,24 +1,11 @@
 package features
 
 import (
-	"os"
-	"path"
-	"runtime"
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
 )
-
-func init() {
-	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../../")
-	err := os.Chdir(dir)
-	if err != nil {
-		panic(err)
-	}
-}
 
 // Run the benchmark with the following command:
 //

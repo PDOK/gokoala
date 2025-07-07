@@ -3,8 +3,6 @@ package features
 import (
 	"net/http"
 	"os"
-	"path"
-	"runtime"
 	"testing"
 	"time"
 
@@ -12,19 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../../")
-	err := os.Chdir(dir)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func TestFeature(t *testing.T) {
-	// TODO start postgres in docker compose
-
 	type fields struct {
 		configFile   string
 		url          string
