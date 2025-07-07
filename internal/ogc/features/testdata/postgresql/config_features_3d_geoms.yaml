@@ -10,10 +10,16 @@ license:
 ogcApi:
   features:
     datasources:
-      defaultWGS84:
-        geopackage:
-          local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/3d-geoms.gpkg
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+            - srs: EPSG:4258
+            - srs: EPSG:3857
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: threedimensionalgeoms
+            # Rely on defaults for databaseName, user/pass., sslmode, etc
     collections:
       - id: foo
         metadata:

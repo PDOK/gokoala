@@ -21,14 +21,16 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-const dbPortEnv = "DB_PORT"
+const (
+	postgresPortEnv = "DB_PORT"
+	postgresCompose = "internal/ogc/features/datasources/postgres/testdata/docker-compose.yaml"
+)
 
 func init() {
 	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../../../")
-	err := os.Chdir(dir)
-	if err != nil {
+	if err := os.Chdir(dir); err != nil {
 		panic(err)
 	}
 }
@@ -44,18 +46,22 @@ func TestMain(m *testing.M) {
 }
 
 func setup(ctx context.Context) *compose.DockerCompose {
-	dbPort, stack, err := setupPostgres(ctx)
+	port, stack, err := setupPostgres(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.Setenv(dbPortEnv, string(dbPort))
+	if err = os.Setenv(postgresPortEnv, port.Port()); err != nil {
+		log.Fatal(err)
+	}
 	return stack
 }
 
 func teardown(ctx context.Context, stack *compose.DockerCompose) {
-	// We would rather use t.Setenv but this isn't possible in TestMain.
+	// We would rather use t.Setenv() but this isn't possible in TestMain.
 	// Therefore, it's important to unset the env variable ourselves since this isn't done automatically
-	os.Unsetenv(dbPortEnv)
+	if err := os.Unsetenv(postgresPortEnv); err != nil {
+		log.Fatal(err)
+	}
 	if err := terminateStack(ctx, stack); err != nil {
 		log.Fatal(err)
 	}
@@ -64,7 +70,7 @@ func teardown(ctx context.Context, stack *compose.DockerCompose) {
 // setupPostgres start PostgreSQL and fill with testdata derived from GeoPackages.
 func setupPostgres(ctx context.Context) (nat.Port, *compose.DockerCompose, error) {
 	log.Println("Setting up postgres")
-	stack, err := compose.NewDockerComposeWith(compose.WithStackFiles("internal/ogc/features/datasources/postgres/testdata/docker-compose.yaml"))
+	stack, err := compose.NewDockerComposeWith(compose.WithStackFiles(postgresCompose))
 	if err != nil {
 		return "", nil, err
 	}
@@ -147,7 +153,7 @@ func normalize(s string) string {
 func printActual(rr *httptest.ResponseRecorder) {
 	log.Print("\n===========================\n")
 	log.Print("\n==> ACTUAL RESPONSE BELOW. Copy/paste and compare with response in file. " +
-		"Note that In the case of HTML output we only compare a relevant snippet instead of the whole file.")
+		"Note that in the case of HTML output we only compare relevant snippets instead of the whole file.")
 	log.Print("\n===========================\n")
 	log.Print(rr.Body.String()) // to ease debugging & updating expected results
 	log.Print("\n===========================\n")

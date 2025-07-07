@@ -5,7 +5,6 @@ go 1.24.2
 require (
 	dario.cat/mergo v1.0.1
 	github.com/PDOK/go-cloud-sqlite-vfs v0.3.0
-	github.com/caarlos0/env/v11 v11.3.1
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/compose/v2 v2.35.0
 	github.com/docker/go-connections v0.5.0

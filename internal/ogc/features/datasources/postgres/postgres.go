@@ -16,6 +16,7 @@ import (
 
 type Postgres struct {
 	db           *pgxpool.Pool
+	schemaName   string
 	queryTimeout time.Duration
 }
 
@@ -45,8 +46,9 @@ func NewPostgres(_ config.GeoSpatialCollections, pgConfig config.Postgres, trans
 	}
 
 	return &Postgres{
-		db,
-		pgConfig.QueryTimeout.Duration,
+		db:           db,
+		schemaName:   pgConfig.Schema,
+		queryTimeout: pgConfig.QueryTimeout.Duration,
 	}, nil
 }
 

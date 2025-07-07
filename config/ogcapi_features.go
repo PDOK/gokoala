@@ -20,7 +20,7 @@ type OgcAPIFeatures struct {
 	// Collections to be served as features through this API
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections" validate:"required,dive"`
 
-	// Limits the amount of features to retrieve with a single call
+	// Limits the number of features to retrieve with a single call
 	// +optional
 	Limit Limit `yaml:"limit,omitempty" json:"limit,omitempty"`
 
@@ -30,7 +30,7 @@ type OgcAPIFeatures struct {
 	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
 
 	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
-	// since it has significant performance impact when dealing with large JSON payloads.
+	// since it has a significant performance impact when dealing with large JSON payloads.
 	//
 	// +kubebuilder:default=true
 	// +optional
@@ -127,9 +127,9 @@ type FeatureProperties struct {
 	// Properties/fields of features in this collection. This setting controls two things:
 	//
 	// A) allows one to exclude certain properties, when propertiesExcludeUnknown=true
-	// B) allows one sort the properties in the given order, when propertiesInSpecificOrder=true
+	// B) allows one to sort the properties in the given order, when propertiesInSpecificOrder=true
 	//
-	// When not set all available properties are returned in API responses, in alphabetical order.
+	// When not set, all available properties are returned in API responses, in alphabetical order.
 	// +optional
 	Properties []string `yaml:"properties,omitempty" json:"properties,omitempty"`
 
@@ -232,7 +232,7 @@ type PropertyFilter struct {
 	// +optional
 	AllowedValues []string `yaml:"allowedValues,omitempty" json:"allowedValues,omitempty"`
 
-	// Derive list of allowed values for this property filter from the corresponding column in the datastore.
+	// Derive a list of allowed values for this property filter from the corresponding column in the datastore.
 	// Use with caution since it can increase startup time when used on large tables. Make sure an index in present.
 	//
 	// +kubebuilder:default=false
