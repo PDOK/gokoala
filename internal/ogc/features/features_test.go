@@ -679,7 +679,7 @@ func TestFeatures(t *testing.T) {
 		//		body:       "internal/ogc/features/testdata/expected_features_3d_geoms.json",
 		//		statusCode: http.StatusOK,
 		//	},
-		//},
+		// },
 		{
 			name: "GEOPACKAGE: Request 3D geoms (LINESTRING Z) as features as JSON-FG",
 			fields: fields{
@@ -707,7 +707,7 @@ func TestFeatures(t *testing.T) {
 		//		body:       "internal/ogc/features/testdata/expected_features_3d_geoms_jsonfg.json",
 		//		statusCode: http.StatusOK,
 		//	},
-		//},
+		// },
 		{
 			name: "Request 3D geoms (MULTIPOINT Z) as features",
 			fields: fields{
