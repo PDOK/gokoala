@@ -15,10 +15,11 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
@@ -34,11 +35,11 @@ func init() {
 
 func TestFeatures(t *testing.T) {
 	// given availables postgres
-	dbPort, postgisContainer, err := setupPostgis(t.Context(), t)
+	dbPort, stack, err := setupPostgis(t.Context(), t)
 	if err != nil {
 		t.Error(err)
 	}
-	defer terminateContainer(t.Context(), t, postgisContainer)
+	defer terminateStack(t.Context(), t, stack)
 	t.Setenv("DB_PORT", string(dbPort))
 
 	type fields struct {
@@ -867,41 +868,34 @@ func printActual(rr *httptest.ResponseRecorder) {
 	log.Print("\n===========================\n")
 }
 
-func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
-	req := testcontainers.ContainerRequest{
-		Image: "docker.io/postgis/postgis:16-3.5", // use debian, not alpine (proj issues between environments)
-		Name:  "postgis",
-		Env: map[string]string{
-			"POSTGRES_USER":     "postgres",
-			"POSTGRES_PASSWORD": "postgres",
-			"POSTGRES_DB":       "postgres",
-		},
-		ExposedPorts: []string{"5432/tcp"},
-		Cmd:          []string{"postgres", "-c", "fsync=off"},
-		WaitingFor:   wait.ForLog("PostgreSQL init process complete; ready for start up."),
-	}
+func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, *compose.DockerCompose, error) {
+	stack, err := compose.NewDockerComposeWith(compose.WithStackFiles("internal/ogc/features/datasources/postgres/testdata/docker-compose.yaml"))
+	assert.NoError(t, err)
 
-	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	err = stack.
+		WaitForService("postgres", wait.ForListeningPort("5432/tcp")).
+		WaitForService("postgres-init-data", wait.ForExit()).
+		Up(ctx, compose.WithRecreate(api.RecreateForce), compose.Wait(true))
+	assert.NoError(t, err)
+
+	container, err := stack.ServiceContainer(ctx, "postgres")
+	assert.NoError(t, err)
 	port, err := container.MappedPort(ctx, "5432/tcp")
-	if err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, err)
 
 	log.Println("Giving postgres a few extra seconds to fully start")
 	time.Sleep(2 * time.Second)
 	log.Printf("Postgres running at port %s", port.Port())
 
-	return port, container, err
+	return port, stack, err
 }
 
-func terminateContainer(ctx context.Context, t *testing.T, container testcontainers.Container) {
-	if err := container.Terminate(ctx); err != nil {
-		t.Fatalf("Failed to terminate container: %s", err.Error())
-	}
+func terminateStack(ctx context.Context, t *testing.T, stack *compose.DockerCompose) {
+	err := stack.Down(
+		ctx,
+		compose.RemoveOrphans(true),
+		compose.RemoveVolumes(true),
+		compose.RemoveImagesLocal,
+	)
+	assert.NoError(t, err, "Failed to terminate Docker Compose stack")
 }
