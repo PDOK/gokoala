@@ -47,6 +47,7 @@ linters-settings:
   gomoddirectives:
     replace-allow-list:
       - github.com/wk8/go-ordered-map/v2
+      - github.com/PDOK/gokoala
 
 linters:
   disable-all: true
