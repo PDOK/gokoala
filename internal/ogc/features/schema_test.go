@@ -178,7 +178,7 @@ func TestSchema(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "", "", false, true)
 			assert.NoError(t, err)
 			features := NewFeatures(newEngine)
 			handler := features.Schema()

@@ -1,11 +1,12 @@
 package engine
 
 import (
-	"fmt"
-	"github.com/PDOK/gokoala/config"
 	htmltemplate "html/template"
+	"log"
 	"net/http"
 	"path/filepath"
+
+	"github.com/PDOK/gokoala/config"
 )
 
 const (
@@ -15,7 +16,6 @@ const (
 func initializeTheme(theme *config.Theme, e *Engine) {
 	newCSSEndpoint(e)
 	newThemeEndpointsAndCreateLogosWithServerPaths(e, theme)
-	return
 }
 
 func newCSSEndpoint(e *Engine) {
@@ -33,7 +33,7 @@ func newCSSEndpoint(e *Engine) {
 		w.Header().Set("Content-Type", "text/css")
 
 		if err := template.Execute(w, data); err != nil {
-			http.Error(w, "Failed to render theme CSS", http.StatusInternalServerError)
+			log.Fatal("Failed to render theme CSS")
 		}
 	})
 }
@@ -52,10 +52,10 @@ func newStaticEndppoint(e *Engine, file string) string {
 	dir := filepath.Dir(file)
 
 	// Prefix so http#StripPrefix knows what to remove from URL
-	prefix := fmt.Sprintf("/%s", dir)
+	prefix := "/" + dir
 
 	// Actual route for chi
-	route := fmt.Sprintf("%s/*", prefix)
+	route := prefix + "/*"
 
 	// Serve the route
 	fs := http.StripPrefix(prefix, http.FileServer(http.Dir(dir)))
@@ -64,5 +64,5 @@ func newStaticEndppoint(e *Engine, file string) string {
 	})
 
 	// Return the absolute path
-	return fmt.Sprintf("/%s", filepath.Clean(file))
+	return "/" + filepath.Clean(file)
 }

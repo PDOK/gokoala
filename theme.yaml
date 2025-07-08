@@ -2,7 +2,7 @@
 # Default PDOK theme
 logo:
   header: "./img/logoipsum.webp"
-  footer: "./assets/img/logo-footer.png"
+  footer: "./examples/logoipsum.webp"
   opengraph: "./assets/img/logo-opengraph.png"
 color:
   primary: "#1a1e4f"

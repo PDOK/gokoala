@@ -56,6 +56,9 @@ type Engine struct {
 // NewEngine builds a new Engine
 func NewEngine(configFile string, themeFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
 	cfg, err := config.NewConfig(configFile)
+	if err != nil {
+		return nil, err
+	}
 	theme, err := config.NewTheme(themeFile)
 	if err != nil {
 		return nil, err
