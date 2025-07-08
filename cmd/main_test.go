@@ -108,7 +108,7 @@ func TestBuildingBlocks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			eng, err := gokoalaEngine.NewEngine(tt.configFile, "", "", false, true)
+			eng, err := gokoalaEngine.NewEngine(tt.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			assert.NoError(t, err)
 			ogc.SetupBuildingBlocks(eng)
 

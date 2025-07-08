@@ -332,7 +332,7 @@ func TestFeature(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", "", false, true)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			assert.NoError(t, err)
 			features := NewFeatures(newEngine)
 			handler := features.Feature()

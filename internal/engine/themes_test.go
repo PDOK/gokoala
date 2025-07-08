@@ -8,7 +8,7 @@ import (
 
 func TestNewStaticEndpoint(t *testing.T) {
 	// given
-	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "", "", false, true)
+	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "internal/engine/testdata/test_theme.yaml", "", false, true)
 	assert.NoError(t, err)
 
 	tests := []struct {
