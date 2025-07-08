@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -105,25 +106,42 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 }
 
 func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]domain.AxisOrder {
-	// TODO: disable swapping x/y axis until https://github.com/PDOK/gokoala/pull/312 is resolved.
-	if true {
-		return map[int]domain.AxisOrder{}
-	}
 	log.Println("start determining axis order for all configured CRS's")
 	order := map[int]domain.AxisOrder{
 		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
+
+	var mu sync.Mutex
+	var wg sync.WaitGroup
 	for key := range datasources {
-		if _, ok := order[key.srid]; !ok {
-			axisOrder, err := GetAxisOrder(domain.SRID(key.srid))
-			if err != nil {
-				log.Printf("Warning: failed to determine whether EPSG:%d needs "+
-					"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
-			}
-			order[key.srid] = axisOrder
+		mu.Lock()
+		_, exists := order[key.srid]
+		mu.Unlock()
+
+		if !exists {
+			wg.Add(1)
+
+			// use goroutine to avoid blocking on GetAxisOrder(). The mutex is necessary
+			// to avoid race conditions on the map.
+			go func() {
+				defer wg.Done()
+
+				axisOrder, err := GetAxisOrder(domain.SRID(key.srid))
+				if err != nil {
+					log.Printf("Warning: failed to determine whether EPSG:%d needs "+
+						"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
+					axisOrder = domain.AxisOrderXY
+				}
+
+				mu.Lock()
+				order[key.srid] = axisOrder
+				mu.Unlock()
+			}()
 		}
 	}
-	log.Println("done determining axis order for all configured CRS's")
+	wg.Wait()
+
+	log.Println("done determining axis order for all configured CRSs")
 	return order
 }
 
