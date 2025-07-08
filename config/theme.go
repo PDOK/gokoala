@@ -29,7 +29,6 @@ type ThemeColors struct {
 
 func NewTheme(cfg string) (theme *Theme, err error) {
 	yamlData, err := os.ReadFile(cfg)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to read theme file %w", err)
 	}
