@@ -44,6 +44,9 @@ func newThemeEndpointsAndCreateLogosWithServerPaths(e *Engine, theme *config.The
 		Header:    newStaticEndppoint(e, theme.Logo.Header),
 		Footer:    newStaticEndppoint(e, theme.Logo.Footer),
 		Opengraph: newStaticEndppoint(e, theme.Logo.Header),
+		Favicon:   newStaticEndppoint(e, theme.Logo.Favicon),
+		Favicon16: newStaticEndppoint(e, theme.Logo.Favicon16),
+		Favicon32: newStaticEndppoint(e, theme.Logo.Favicon32),
 	}
 }
 

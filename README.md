@@ -228,6 +228,11 @@ build the viewer and add it to the GoKoala assets.
 Note this is only required for local development. When running GoKoala as a container this is
 already being taken care of when building the Docker container image.
 
+### Custom theming
+GoKoala offers some minimal theming options. When running GoKoala, pass an argument of `-theme-file` to pass a custom
+theming file. The `theme.yaml` in the root directory contains the configurable options for the theme. You can either 
+replace the images in this repository or supply your own and define them in the `theme.yaml`.
+
 ### IntelliJ / GoLand
 
 - Install the [Go Template](https://plugins.jetbrains.com/plugin/10581-go-template) plugin

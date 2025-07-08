@@ -20,9 +20,9 @@
     <meta property="og:image:alt" content="{{ i18n "Logo" }}">
 
     <!-- favicons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-    <link rel="icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ .Config.BaseURL }}{{ .Theme.Logo.Favicon32 }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ .Config.BaseURL }}{{ .Theme.Logo.Favicon16 }}">
+    <link rel="icon" href="{{ .Config.BaseURL }}{{ .Theme.Logo.Favicon }}">
 
     <!-- canonical -->
     <link rel="canonical" href="{{ .Config.BaseURL }}">

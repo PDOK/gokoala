@@ -2,9 +2,8 @@ package config
 
 import (
 	"fmt"
-	"os"
-
 	"gopkg.in/yaml.v3"
+	"os"
 )
 
 type Theme struct {
@@ -16,6 +15,9 @@ type ThemeLogo struct {
 	Header    string `yaml:"header,omitempty" json:"header,omitempty" validate:"omitempty"`
 	Footer    string `yaml:"footer,omitempty" json:"footer,omitempty" validate:"omitempty"`
 	Opengraph string `yaml:"opengraph,omitempty" json:"opengraph,omitempty" validate:"omitempty"`
+	Favicon   string `yaml:"favicon,omitempty" json:"favicon,omitempty" validate:"omitempty"`
+	Favicon16 string `yaml:"favicon16,omitempty" json:"favicon16,omitempty" validate:"omitempty"`
+	Favicon32 string `yaml:"favicon32,omitempty" json:"favicon32,omitempty" validate:"omitempty"`
 }
 
 type ThemeColors struct {
