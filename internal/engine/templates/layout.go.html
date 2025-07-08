@@ -14,8 +14,8 @@
     <meta property="og:url" content="{{ .Config.BaseURL }}">
     <meta property="og:title" content="{{ .Config.Title }} (OGC API)">
     <meta property="og:description" content="{{ unmarkdown .Config.Abstract }}">
-    <meta property="og:logo" content="{{ .Theme.Logo.Opengraph }}">
-    <meta property="og:image" content="{{ .Theme.Logo.Opengraph }}">
+    <meta property="og:logo" content="{{ .Config.BaseURL }}{{ .Theme.Logo.Opengraph }}">
+    <meta property="og:image" content="{{ .Config.BaseURL }}{{ .Theme.Logo.Opengraph }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:alt" content="{{ i18n "Logo" }}">
 
@@ -60,7 +60,7 @@
             <!-- logo -->
             <div class="container">
                 <a class="navbar-brand py-3 w-44" href="{{ .Config.BaseURL }}" aria-label="{{ i18n "Logo" }}">
-                    <img src="{{ .Theme.Logo.Header }}" alt="{{ i18n "Logo" }}" class="logo">
+                    <img src="{{ .Config.BaseURL }}{{ .Theme.Logo.Header }}" alt="{{ i18n "Logo" }}" class="logo">
                 </a>
             </div>
 
@@ -151,7 +151,7 @@
                     &nbsp; <!-- place additional footer links here -->
                 </div>
                 <div class="col-11 text-end">
-                    <img src="{{ .Theme.Logo.Footer }}" alt="{{ i18n "FooterLogo" }}" class="logo">
+                    <img src="{{ .Config.BaseURL }}{{ .Theme.Logo.Footer }}" alt="{{ i18n "FooterLogo" }}" class="logo">
                 </div>
             </div>
         </div>
