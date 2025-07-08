@@ -82,7 +82,7 @@ func NewEngineWithConfig(config *config.Config, theme *config.Theme, openAPIFile
 	newSitemap(engine)
 	newHealthEndpoint(engine)
 	newResourcesEndpoint(engine)
-	newCSSEndpoint(engine)
+	initializeTheme(theme, engine)
 	return engine
 }
 
