@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/PDOK/gokoala/config"
 )
@@ -50,7 +51,7 @@ func newThemeEndpointsAndCreateLogosWithServerPaths(e *Engine, theme *config.The
 	}
 }
 
-func newStaticEndppoint(e *Engine, file string) string {
+func newStaticEndppoint(e *Engine, file string) (absolutePath string) {
 	// Get the clean dir from config (remove any "./" prefixes if added)
 	dir := filepath.Dir(file)
 
@@ -66,6 +67,10 @@ func newStaticEndppoint(e *Engine, file string) string {
 		fs.ServeHTTP(w, r)
 	})
 
-	// Return the absolute path
-	return "/" + filepath.Clean(file)
+	if !strings.HasPrefix(file, "/") {
+		absolutePath = "/"
+	}
+
+	// Return the new (absolute) path
+	return absolutePath + filepath.Clean(file)
 }

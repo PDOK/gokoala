@@ -28,6 +28,9 @@ type ThemeColors struct {
 }
 
 func NewTheme(cfg string) (theme *Theme, err error) {
+	if cfg == "" {
+		cfg = "theme.yaml"
+	}
 	yamlData, err := os.ReadFile(cfg)
 
 	if err != nil {
