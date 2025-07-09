@@ -64,7 +64,7 @@ COPY --from=build-env /gokoala /
 # include assets/templates/etc (be specific here to only include required dirs)
 COPY --from=build-env /go/src/service/assets/ /assets/
 COPY --from=build-env /go/src/service/internal/ /internal/
-COPY --from=build-env /go/src/service/themes/pdok/
+COPY --from=build-env /go/src/service/themes/ /themes
 
 # include viewer as asset
 COPY --from=build-component /usr/src/app/dist/view-component/browser/*.js  /assets/view-component/
