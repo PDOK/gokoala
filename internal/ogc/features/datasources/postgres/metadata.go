@@ -1,42 +1,33 @@
-package geopackage
+package postgres
 
 import (
-	"database/sql"
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"regexp"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 )
 
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
-// featureTable according to spec https://www.geopackage.org/spec121/index.html#_contents
+// featureTable Postgres table holding features
 type featureTable struct {
-	TableName          string          `db:"table_name"`
-	DataType           string          `db:"data_type"` // always 'features'
-	Identifier         string          `db:"identifier"`
-	Description        string          `db:"description"`
-	GeometryColumnName string          `db:"column_name"`
-	GeometryType       string          `db:"geometry_type_name"`
-	LastChange         time.Time       `db:"last_change"`
-	MinX               sql.NullFloat64 `db:"min_x"` // bbox
-	MinY               sql.NullFloat64 `db:"min_y"` // bbox
-	MaxX               sql.NullFloat64 `db:"max_x"` // bbox
-	MaxY               sql.NullFloat64 `db:"max_y"` // bbox
-	SRS                sql.NullInt64   `db:"srs_id"`
+	TableName          string
+	GeometryColumnName string
+	GeometryType       string
 
 	Schema *d.Schema // required
 }
 
 // readMetadata reads metadata such as available feature tables, the schema of each table,
-// available filters, etc. from the GeoPackage. Terminates on failure.
-func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColumn, externalFidColumn string) (
+// available filters, etc. from the Postgres database. Terminates on failure.
+func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fidColumn, externalFidColumn, schemaName string) (
 	featureTableByCollectionID map[string]*featureTable,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
@@ -46,66 +37,48 @@ func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColu
 	}
 	log.Println(metadata)
 
-	featureTableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn)
+	featureTableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	return
 }
 
-// Read metadata about gpkg and sqlite driver
-func readDriverMetadata(db *sqlx.DB) (string, error) {
-	type pragma struct {
-		UserVersion string `db:"user_version"`
-	}
-	type metadata struct {
-		Sqlite     string `db:"sqlite"`
-		Spatialite string `db:"spatialite"`
-		Arch       string `db:"arch"`
-	}
+// Read metadata about PostgreSQL and PostGIS
+func readDriverMetadata(db *pgxpool.Pool) (string, error) {
+	var pgVersion string
+	var postGISVersion string
 
-	var m metadata
-	err := db.QueryRowx(`
-select sqlite_version() as sqlite,
-spatialite_version() as spatialite,
-spatialite_target_cpu() as arch`).StructScan(&m)
-	if err != nil {
-		return "", fmt.Errorf("failed to connect with GeoPackage: %w", err)
-	}
+	err := db.QueryRow(context.Background(), `
+		select (select version()) AS pg_version, (select PostGIS_full_version()) AS postgis_version;
+	`).Scan(&pgVersion, &postGISVersion)
 
-	var gpkgVersion pragma
-	_ = db.QueryRowx(`pragma user_version`).StructScan(&gpkgVersion)
-	if gpkgVersion.UserVersion == "" {
-		gpkgVersion.UserVersion = "unknown"
-	}
-
-	return fmt.Sprintf("geopackage version: %s, sqlite version: %s, spatialite version: %s on %s",
-		gpkgVersion.UserVersion, m.Sqlite, m.Spatialite, m.Arch), nil
+	return fmt.Sprintf("postgresql version: '%s', postgis version: '%s', on %s",
+		pgVersion, postGISVersion, db.Config().ConnConfig.Host), err
 }
 
-// Read "gpkg_contents" table. This table contains metadata about feature tables. The result is a mapping from
+// Read "geometry_columns" view. This table contains metadata about PostGIS tables. The result is a mapping from
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
-// 'table_name' column. Also, in case there's no exact match between 'collection ID' and 'table_name' we use
+// 'f_table_name' column. Also, in case there's no exact match between 'collection ID' and 'f_table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readFeatureTables(collections config.GeoSpatialCollections, db *sqlx.DB,
-	fidColumn, externalFidColumn string) (map[string]*featureTable, error) {
+func readFeatureTables(collections config.GeoSpatialCollections, db *pgxpool.Pool,
+	fidColumn, externalFidColumn, schemaName string) (map[string]*featureTable, error) {
 
 	query := `
 select
-	c.table_name, c.data_type, c.identifier, c.description, c.last_change,
-	c.min_x, c.min_y, c.max_x, c.max_y, c.srs_id, gc.column_name, gc.geometry_type_name
+	f_table_name, f_geometry_column, f_geometry_type
 from
-	gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
+	geometry_columns
 where
-	c.data_type = 'features'`
+	f_table_schema = $1`
 
-	rows, err := db.Queryx(query)
+	rows, err := db.Query(context.Background(), query, schemaName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", query, err)
+		return nil, fmt.Errorf("failed to retrieve geometry_columns using query: %v\n, error: %w", query, err)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -115,8 +88,8 @@ where
 	result := make(map[string]*featureTable, 10)
 	for rows.Next() {
 		table := featureTable{}
-		if err = rows.StructScan(&table); err != nil {
-			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
+		if err = rows.Scan(table.TableName, table.GeometryColumnName, table.GeometryType); err != nil {
+			return nil, fmt.Errorf("failed to read geometry_columns record, error: %w", err)
 		}
 		if table.TableName == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
@@ -132,15 +105,15 @@ where
 			}
 		}
 		if !hasCollection {
-			log.Printf("Warning: table %s is present in GeoPackage but not configured as a collection", table.TableName)
+			log.Printf("Warning: table %s is present in PostgreSQL but not configured as a collection", table.TableName)
 		}
 	}
 	if len(result) == 0 {
-		return nil, errors.New("no records for 'features' found in gpkg_contents and/or gpkg_geometry_columns")
+		return nil, errors.New("no records found in PostgreSQL geometry_columns view")
 	}
 
 	for _, table := range result {
-		table.Schema, err = readSchema(db, *table, fidColumn, externalFidColumn, collections)
+		table.Schema, err = readSchema(db, *table, fidColumn, externalFidColumn, schemaName, collections)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.TableName, err)
 		}
@@ -196,7 +169,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string,
+func readSchema(db *pgxpool.Pool, table featureTable, fidColumn, externalFidColumn, schemaName string,
 	collections config.GeoSpatialCollections) (*d.Schema, error) {
 
 	collectionNames := make([]string, 0, len(collections))
@@ -204,22 +177,30 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 		collectionNames = append(collectionNames, collection.ID)
 	}
 
-	// if table "gpkg_data_columns" is included in geopackage, use its description field to supplement the schema.
-	schemaExtension, err := hasSchemaExtension(db)
-	if err != nil {
-		return nil, err
-	}
+	query := `
+select
+    a.attname as column_name,
+    pg_catalog.format_type(a.atttypid, a.atttypmod) as data_type,
+    a.attnotnull as is_required,
+    d.description as column_description
+from
+    pg_catalog.pg_attribute a
+join
+    pg_catalog.pg_class c on a.attrelid = c.oid
+join
+    pg_catalog.pg_namespace n on c.relnamespace = n.oid
+left join
+    pg_catalog.pg_description d on d.objoid = a.attrelid and d.objsubid = a.attnum
+where
+    n.nspname = $1 
+    and c.relname = $2
+    and a.attnum > 0 -- Excludes system columns
+    and not a.attisdropped -- Excludes columns that have been dropped
+order by
+    a.attnum;
+`
 
-	var query string
-	if schemaExtension {
-		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", ifnull(b.description, '') "+
-			"from pragma_table_info('%[1]s') a "+
-			"left join gpkg_data_columns b on b.column_name = a.name and b.table_name='%[1]s'", table.TableName)
-	} else {
-		query = fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName)
-	}
-
-	rows, err := db.Queryx(query)
+	rows, err := db.Query(context.Background(), query, schemaName, table.TableName)
 	if err != nil {
 		return nil, err
 	}
@@ -228,15 +209,9 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 	fields := make([]d.Field, 0)
 	for rows.Next() {
 		var colName, colType, colNotNull, colDescription string
-		if schemaExtension {
-			err = rows.Scan(&colName, &colType, &colNotNull, &colDescription)
-		} else {
-			err = rows.Scan(&colName, &colType, &colNotNull)
-		}
-		if err != nil {
+		if err = rows.Scan(&colName, &colType, &colNotNull, &colDescription); err != nil {
 			return nil, err
 		}
-
 		fields = append(fields, d.Field{
 			Name:              colName,
 			Type:              colType,
@@ -256,15 +231,6 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
 	return collection.Features != nil && collection.Features.TableName != nil &&
 		row.TableName == *collection.Features.TableName
-}
-
-func hasSchemaExtension(db *sqlx.DB) (bool, error) {
-	var hasExtension bool
-	err := db.Get(&hasExtension, "select exists (select 1 from sqlite_master where type='table' and name='gpkg_data_columns')")
-	if err != nil {
-		return false, err
-	}
-	return hasExtension, nil
 }
 
 func validateUniqueness(result map[string]*featureTable) {

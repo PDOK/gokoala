@@ -58,13 +58,14 @@ type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
 
-	fidColumn                     string
-	externalFidColumn             string
+	fidColumn                 string
+	externalFidColumn         string
+	queryTimeout              time.Duration
+	maxBBoxSizeToUseWithRTree int
+
 	featureTableByCollectionID    map[string]*featureTable
 	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	propertiesByCollectionID      map[string]*config.FeatureProperties
-	queryTimeout                  time.Duration
-	maxBBoxSizeToUseWithRTree     int
 }
 
 func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage, transformOnTheFly bool) (*GeoPackage, error) {
@@ -74,11 +75,12 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		return nil, errors.New("on the fly reprojection/transformation is currently not supported for GeoPackages")
 	}
 
-	g := &GeoPackage{}
-	g.preparedStmtCache = NewCache()
-	g.propertiesByCollectionID = cacheFeatureProperties(collections)
-	warmUp := false
+	g := &GeoPackage{
+		preparedStmtCache:        NewCache(),
+		propertiesByCollectionID: collections.FeaturePropertiesByID(),
+	}
 
+	warmUp := false
 	switch {
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
@@ -511,17 +513,6 @@ func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria) (sql s
 		sql = fmt.Sprintf(" and \"%[1]s\" <= :referenceDate and (\"%[2]s\" >= :referenceDate or \"%[2]s\" is null)", startDate, endDate)
 	}
 	return sql, namedParams
-}
-
-func cacheFeatureProperties(collections config.GeoSpatialCollections) map[string]*config.FeatureProperties {
-	result := make(map[string]*config.FeatureProperties)
-	for _, collection := range collections {
-		if collection.Features == nil {
-			continue
-		}
-		result[collection.ID] = collection.Features.FeatureProperties
-	}
-	return result
 }
 
 func columnsToSQL(columns []string) string {
