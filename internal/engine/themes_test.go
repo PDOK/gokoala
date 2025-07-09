@@ -23,7 +23,7 @@ func TestNewThemeAssetEndpoint(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			assert.Equal(t, tt.expected, newThemeAssetEndpoint(engine, tt.input))
+			assert.Equal(t, tt.expected, newThemeAssetEndpoint(engine, "", tt.input))
 		})
 	}
 }

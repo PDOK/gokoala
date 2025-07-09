@@ -19,12 +19,12 @@ func newThemeEndpoints(theme *config.Theme, e *Engine) {
 
 	// Replace the theme Logo properties with the absolute paths for the template
 	theme.Logo = &config.ThemeLogo{
-		Header:    newThemeAssetEndpoint(e, theme.Logo.Header),
-		Footer:    newThemeAssetEndpoint(e, theme.Logo.Footer),
-		Opengraph: newThemeAssetEndpoint(e, theme.Logo.Opengraph),
-		Favicon:   newThemeAssetEndpoint(e, theme.Logo.Favicon),
-		Favicon16: newThemeAssetEndpoint(e, theme.Logo.Favicon16),
-		Favicon32: newThemeAssetEndpoint(e, theme.Logo.Favicon32),
+		Header:    newThemeAssetEndpoint(e, theme.Path, theme.Logo.Header),
+		Footer:    newThemeAssetEndpoint(e, theme.Path, theme.Logo.Footer),
+		Opengraph: newThemeAssetEndpoint(e, theme.Path, theme.Logo.Opengraph),
+		Favicon:   newThemeAssetEndpoint(e, theme.Path, theme.Logo.Favicon),
+		Favicon16: newThemeAssetEndpoint(e, theme.Path, theme.Logo.Favicon16),
+		Favicon32: newThemeAssetEndpoint(e, theme.Path, theme.Logo.Favicon32),
 	}
 }
 
@@ -48,12 +48,14 @@ func newCSSEndpoint(e *Engine) {
 	})
 }
 
-func newThemeAssetEndpoint(e *Engine, file string) string {
-	// Get the clean dir from config (remove any "./" prefixes if added)
-	dir := filepath.Dir(file)
+func newThemeAssetEndpoint(e *Engine, themePath string, file string) string {
+	// Get the (full) clean dir from config, relative to theme.yaml (remove any "./" prefixes if added)
+	cleanPath := filepath.Dir(file)
+
+	dir := filepath.Join(themePath, cleanPath)
 
 	// Prefix so http#StripPrefix knows what to remove from URL
-	prefix := "/theme/" + dir
+	prefix := "/theme/" + cleanPath
 
 	// Actual route for chi
 	route := prefix + "/*"

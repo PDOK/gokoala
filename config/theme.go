@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
@@ -11,6 +12,7 @@ import (
 type Theme struct {
 	Logo  *ThemeLogo   `yaml:"logo,omitempty" json:"logo,omitempty" validate:"omitempty"`
 	Color *ThemeColors `yaml:"color,omitempty" json:"color,omitempty" validate:"omitempty"`
+	Path string
 }
 
 type ThemeLogo struct {
@@ -45,5 +47,7 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 	if err != nil {
 		return nil, formatValidationErr(err)
 	}
+	// if valid, set theme location
+	theme.Path = filepath.Dir(cfg)
 	return theme, nil
 }
