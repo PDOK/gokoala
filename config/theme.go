@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,9 +23,9 @@ type ThemeLogo struct {
 }
 
 type ThemeColors struct {
-	Primary   string `yaml:"primary,omitempty" json:"primary,omitempty" validate:"omitempty"`
-	Secondary string `yaml:"secondary,omitempty" json:"secondary,omitempty" validate:"omitempty"`
-	Link      string `yaml:"link,omitempty" json:"link,omitempty" validate:"omitempty"`
+	Primary   string `yaml:"primary,omitempty" json:"primary,omitempty" validate:"hexcolor,omitempty"`
+	Secondary string `yaml:"secondary,omitempty" json:"secondary,omitempty" validate:"hexcolor,omitempty"`
+	Link      string `yaml:"link,omitempty" json:"link,omitempty" validate:"hexcolor,omitempty"`
 }
 
 func NewTheme(cfg string) (theme *Theme, err error) {
@@ -38,5 +39,11 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		return nil, fmt.Errorf("failed to unmarshal theme file, error: %w", err)
 	}
 
+	// check 'validate' tags
+	v := validator.New()
+	err = v.Struct(theme)
+	if err != nil {
+		return nil, formatValidationErr(err)
+	}
 	return theme, nil
 }
