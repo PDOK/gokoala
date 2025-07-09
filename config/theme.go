@@ -12,7 +12,7 @@ import (
 type Theme struct {
 	Logo  *ThemeLogo   `yaml:"logo,omitempty" json:"logo,omitempty" validate:"omitempty"`
 	Color *ThemeColors `yaml:"color,omitempty" json:"color,omitempty" validate:"omitempty"`
-	Path string
+	Path  string
 }
 
 type ThemeLogo struct {
