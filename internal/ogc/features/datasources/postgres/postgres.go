@@ -15,12 +15,19 @@ import (
 )
 
 type Postgres struct {
-	db           *pgxpool.Pool
-	schemaName   string
-	queryTimeout time.Duration
+	db *pgxpool.Pool
+
+	schemaName        string
+	fidColumn         string
+	externalFidColumn string
+	queryTimeout      time.Duration
+
+	featureTableByCollectionID    map[string]*featureTable
+	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
+	propertiesByCollectionID      map[string]*config.FeatureProperties
 }
 
-func NewPostgres(_ config.GeoSpatialCollections, pgConfig config.Postgres, transformOnTheFly bool) (*Postgres, error) {
+func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postgres, transformOnTheFly bool) (*Postgres, error) {
 	if !transformOnTheFly {
 		return nil, errors.New("ahead-of-time transformed features are currently not " +
 			"supported for PostgreSQL, reprojection/transformation is always applied")
@@ -30,6 +37,8 @@ func NewPostgres(_ config.GeoSpatialCollections, pgConfig config.Postgres, trans
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
 	}
+	// set connection to read-only for security/safety since we (should) never write to Postgres.
+	pgxConfig.ConnConfig.RuntimeParams["default_transaction_read_only"] = "on"
 	// add support for Go <-> PostGIS conversions
 	pgxConfig.AfterConnect = pgxgeom.Register
 
@@ -46,9 +55,12 @@ func NewPostgres(_ config.GeoSpatialCollections, pgConfig config.Postgres, trans
 	}
 
 	return &Postgres{
-		db:           db,
-		schemaName:   pgConfig.Schema,
-		queryTimeout: pgConfig.QueryTimeout.Duration,
+		db:                       db,
+		schemaName:               pgConfig.Schema,
+		fidColumn:                pgConfig.Fid,
+		externalFidColumn:        pgConfig.ExternalFid,
+		queryTimeout:             pgConfig.QueryTimeout.Duration,
+		propertiesByCollectionID: collections.FeaturePropertiesByID(),
 	}, nil
 }
 
