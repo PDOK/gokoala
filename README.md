@@ -102,12 +102,12 @@ ogcApi:
 ### Custom theming
 
 GoKoala offers some minimal theming options. When running GoKoala, pass an argument of `-theme-file` to load a custom
-theming file. The [theme.yaml](./theme.yaml) in the root directory contains the configurable options for the theme.
+theming file. The [theme.yaml](./themes/pdok/theme.yaml) in the themes directory contains the configurable options for the theme.
 
 For example:
 
 - Create a directory e.g. `mytheme` and place a customized copy of `theme.yaml` and additional assets/images in this directory.
-- Mount `mytheme`'` as a volume and start GoKoala with the custom theme:
+- Mount `mytheme` as a volume and start GoKoala with the custom theme:
 
 ```bash
 docker run -v `pwd`/examples:/examples -v `pwd`/mytheme:/mytheme -p 8080:8080 -it pdok/gokoala \
