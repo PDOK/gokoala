@@ -6,9 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewStaticEndpoint(t *testing.T) {
+func TestNewThemeAssetEndpoint(t *testing.T) {
 	// given
-	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "internal/engine/testdata/test_theme.yaml", "", false, true)
+	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml",
+		"internal/engine/testdata/test_theme.yaml", "", false, true)
 	assert.NoError(t, err)
 
 	tests := []struct {
@@ -22,7 +23,7 @@ func TestNewStaticEndpoint(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			assert.Equal(t, tt.expected, newStaticEndppoint(engine, tt.input))
+			assert.Equal(t, tt.expected, newThemeAssetEndpoint(engine, tt.input))
 		})
 	}
 }

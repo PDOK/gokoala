@@ -14,9 +14,18 @@ const (
 	styleTemplate = "theme.go.css"
 )
 
-func initializeTheme(theme *config.Theme, e *Engine) {
+func newThemeEndpoints(theme *config.Theme, e *Engine) {
 	newCSSEndpoint(e)
-	newThemeEndpointsAndCreateLogosWithServerPaths(e, theme)
+
+	// Replace the theme Logo properties with the absolute paths for the template
+	theme.Logo = &config.ThemeLogo{
+		Header:    newThemeAssetEndpoint(e, theme.Logo.Header),
+		Footer:    newThemeAssetEndpoint(e, theme.Logo.Footer),
+		Opengraph: newThemeAssetEndpoint(e, theme.Logo.Opengraph),
+		Favicon:   newThemeAssetEndpoint(e, theme.Logo.Favicon),
+		Favicon16: newThemeAssetEndpoint(e, theme.Logo.Favicon16),
+		Favicon32: newThemeAssetEndpoint(e, theme.Logo.Favicon32),
+	}
 }
 
 func newCSSEndpoint(e *Engine) {
@@ -31,7 +40,7 @@ func newCSSEndpoint(e *Engine) {
 
 	// Parse CSS with variables from the config file
 	e.Router.Get("/css/theme.css", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/css")
+		w.Header().Set(HeaderContentType, "text/css")
 
 		if err := template.Execute(w, data); err != nil {
 			log.Fatal("Failed to render theme CSS")
@@ -39,24 +48,12 @@ func newCSSEndpoint(e *Engine) {
 	})
 }
 
-func newThemeEndpointsAndCreateLogosWithServerPaths(e *Engine, theme *config.Theme) {
-	// Replace the theme Logo properties with the absolute paths for the template
-	theme.Logo = &config.ThemeLogo{
-		Header:    newStaticEndppoint(e, theme.Logo.Header),
-		Footer:    newStaticEndppoint(e, theme.Logo.Footer),
-		Opengraph: newStaticEndppoint(e, theme.Logo.Header),
-		Favicon:   newStaticEndppoint(e, theme.Logo.Favicon),
-		Favicon16: newStaticEndppoint(e, theme.Logo.Favicon16),
-		Favicon32: newStaticEndppoint(e, theme.Logo.Favicon32),
-	}
-}
-
-func newStaticEndppoint(e *Engine, file string) (absolutePath string) {
+func newThemeAssetEndpoint(e *Engine, file string) string {
 	// Get the clean dir from config (remove any "./" prefixes if added)
 	dir := filepath.Dir(file)
 
 	// Prefix so http#StripPrefix knows what to remove from URL
-	prefix := "/" + dir
+	prefix := "/theme/" + dir
 
 	// Actual route for chi
 	route := prefix + "/*"
@@ -67,6 +64,7 @@ func newStaticEndppoint(e *Engine, file string) (absolutePath string) {
 		fs.ServeHTTP(w, r)
 	})
 
+	var absolutePath string
 	if !strings.HasPrefix(file, "/") {
 		absolutePath = "/"
 	}
