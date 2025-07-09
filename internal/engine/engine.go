@@ -54,18 +54,22 @@ type Engine struct {
 }
 
 // NewEngine builds a new Engine
-func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
+func NewEngine(configFile string, themeFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
 	cfg, err := config.NewConfig(configFile)
 	if err != nil {
 		return nil, err
 	}
-	return NewEngineWithConfig(cfg, openAPIFile, enableTrailingSlash, enableCORS), nil
+	theme, err := config.NewTheme(themeFile)
+	if err != nil {
+		return nil, err
+	}
+	return NewEngineWithConfig(cfg, theme, openAPIFile, enableTrailingSlash, enableCORS), nil
 }
 
 // NewEngineWithConfig builds a new Engine
-func NewEngineWithConfig(config *config.Config, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
+func NewEngineWithConfig(config *config.Config, theme *config.Theme, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
 	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
-	templates := newTemplates(config)
+	templates := newTemplates(config, theme)
 	openAPI := newOpenAPI(config, []string{openAPIFile}, nil)
 	router := newRouter(config.Version, enableTrailingSlash, enableCORS)
 
@@ -81,6 +85,7 @@ func NewEngineWithConfig(config *config.Config, openAPIFile string, enableTraili
 	newSitemap(engine)
 	newHealthEndpoint(engine)
 	newResourcesEndpoint(engine)
+	newThemeEndpoints(theme, engine)
 	return engine
 }
 

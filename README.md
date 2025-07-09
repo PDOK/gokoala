@@ -70,6 +70,7 @@ GLOBAL OPTIONS:
    --debug-port value      bind port for debug server (disabled by default), do not expose this port publicly (default: -1) [$DEBUG_PORT]
    --shutdown-delay value  delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
    --config-file value     reference to YAML configuration file [$CONFIG_FILE]
+   --theme-file value      reference to a (customized) YAML configuration file for the theme [$THEME_FILE]
    --openapi-file value    reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
    --enable-trailing-slash allow API calls to URLs with a trailing slash. (default: false) [$ALLOW_TRAILING_SLASH]
    --enable-cors           enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere. (default: false) [$ENABLE_CORS]
@@ -96,6 +97,21 @@ ogcApi:
   tiles:
     title: My Dataset
     tileServer: https://${MY_SERVER}/foo/bar
+```
+
+### Custom theming
+
+GoKoala offers some minimal theming options. When running GoKoala, pass an argument of `-theme-file` to load a custom
+theming file. The [theme.yaml](./theme.yaml) in the root directory contains the configurable options for the theme.
+
+For example:
+
+- Create a directory e.g. `mytheme` and place a customized copy of `theme.yaml` and additional assets/images in this directory.
+- Mount `mytheme`'` as a volume and start GoKoala with the custom theme:
+
+```bash
+docker run -v `pwd`/examples:/examples -v `pwd`/mytheme:/mytheme -p 8080:8080 -it pdok/gokoala \
+ --config-file /examples/config_vectortiles.yaml --theme-file /mytheme/theme.yaml
 ```
 
 ### GeoPackage requirements
