@@ -91,7 +91,7 @@ func (pg Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ dom
 }
 
 func (pg Postgres) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria,
-	axisOrder domain.AxisOrder, _ domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
+	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
 
 	table, err := pg.getFeatureTable(collection)
 	if err != nil {
@@ -115,8 +115,8 @@ func (pg Postgres) GetFeatures(ctx context.Context, collection string, criteria 
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	//fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, rows, pg.fidColumn, pg.externalFidColumn, table.GeometryColumnName,
-	//	propConfig, table.Schema, mapPostgisGeometry, profile.MapRelationUsingProfile)
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, FromPgxRows(rows), pg.fidColumn, pg.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapPostgisGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -163,6 +163,9 @@ func (pg Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.Featu
 		//	return
 		//}
 	} else {
+		// TODO use pgx named params instead of sqlx
+		// TODO check cursor gaps
+		// TODO write cursor query
 		query, queryArgs = pg.makeDefaultQuery(table, selectClause, criteria)
 	}
 	return
