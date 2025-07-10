@@ -142,7 +142,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	}
 	defer rows.Close()
 
-	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(queryCtx, rows)
+	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(queryCtx, FromSqlxRows(rows))
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -183,7 +183,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer rows.Close()
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows), g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
@@ -217,7 +217,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows), g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, domain.Cursors{}, err
@@ -268,7 +268,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, _, err := domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+	features, _, err := domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows), g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
 	if err != nil {
 		return nil, err
