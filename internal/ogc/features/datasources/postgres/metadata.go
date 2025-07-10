@@ -11,7 +11,6 @@ import (
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jmoiron/sqlx"
 )
 
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)
@@ -41,10 +40,10 @@ func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fi
 	if err != nil {
 		log.Fatal(err)
 	}
-	//propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return
 }
 
@@ -123,7 +122,7 @@ where
 }
 
 func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*featureTable,
-	collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+	collections config.GeoSpatialCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
 	for _, collection := range collections {
@@ -149,9 +148,12 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 				// select distinct values from given column
 				query := fmt.Sprintf("select distinct ft.%s from %s ft", pf.Name, featTable.TableName)
 				var values []string
-				err := db.Select(&values, query)
+				rows, err := db.Query(context.Background(), query, nil)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
+				}
+				if err = rows.Scan(&values); err != nil {
+					return nil, fmt.Errorf("failed to read result: %w", err)
 				}
 				// make sure values are valid
 				for _, v := range values {
