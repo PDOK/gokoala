@@ -54,14 +54,19 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 		return nil, fmt.Errorf("unable to connect with database: %w", err)
 	}
 
-	return &Postgres{
+	pg := &Postgres{
 		db:                       db,
 		schemaName:               pgConfig.Schema,
 		fidColumn:                pgConfig.Fid,
 		externalFidColumn:        pgConfig.ExternalFid,
 		queryTimeout:             pgConfig.QueryTimeout.Duration,
 		propertiesByCollectionID: collections.FeaturePropertiesByID(),
-	}, nil
+	}
+
+	pg.featureTableByCollectionID, pg.propertyFiltersByCollectionID = readMetadata(
+		db, collections, pg.fidColumn, pg.externalFidColumn, pg.schemaName)
+
+	return pg, nil
 }
 
 func (pg Postgres) Close() {

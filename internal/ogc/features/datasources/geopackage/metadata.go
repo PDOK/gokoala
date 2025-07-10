@@ -212,7 +212,7 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 
 	var query string
 	if schemaExtension {
-		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", ifnull(b.description, '') "+
+		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", coalesce(b.description, '') "+
 			"from pragma_table_info('%[1]s') a "+
 			"left join gpkg_data_columns b on b.column_name = a.name and b.table_name='%[1]s'", table.TableName)
 	} else {

@@ -680,20 +680,20 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
-		//{
-		//	name: "POSTGRES: Request 3D geoms (LINESTRING Z) as features",
-		//	fields: fields{
-		//		configFile:   "internal/ogc/features/testdata/postgresql/config_features_3d_geoms.yaml",
-		//		url:          "http://localhost:8080/collections/:collectionId/items?limit=5",
-		//		collectionID: "foo",
-		//		contentCrs:   "<" + domain.WGS84CrsURI + ">",
-		//		format:       "json",
-		//	},
-		//	want: want{
-		//		body:       "internal/ogc/features/testdata/expected_features_3d_geoms.json",
-		//		statusCode: http.StatusOK,
-		//	},
-		// },
+		{
+			name: "POSTGRES: Request 3D geoms (LINESTRING Z) as features",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_3d_geoms.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=5",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_3d_geoms.json",
+				statusCode: http.StatusOK,
+			},
+		},
 		{
 			name: "GEOPACKAGE: Request 3D geoms (LINESTRING Z) as features as JSON-FG",
 			fields: fields{
