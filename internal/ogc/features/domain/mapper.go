@@ -16,8 +16,9 @@ import (
 // MapRelation abstract function type to map feature relations
 type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any)
 
-// MapGeom abstract function type to map geometry from bytes to Geometry
-type MapGeom func([]byte) (geom.T, error)
+// MapGeom abstract function type to map datasource-specific geometry
+// (in GeoPackage, PostGIS, WKB, etc. format) to general-purpose geometry
+type MapGeom func(columnValue any) (geom.T, error)
 
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
 func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
@@ -101,11 +102,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
-			rawGeom, ok := columnValue.([]byte)
-			if !ok {
-				return nil, fmt.Errorf("failed to read geometry from %s column in datasource", geomColumn)
-			}
-			mappedGeom, err := mapGeom(rawGeom)
+			mappedGeom, err := mapGeom(columnValue)
 			if err != nil {
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}

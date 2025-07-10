@@ -477,7 +477,11 @@ func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrd
 }
 
 // mapGpkgGeometry GeoPackage specific way to read geometries
-func mapGpkgGeometry(rawGeom []byte) (geom.T, error) {
+func mapGpkgGeometry(columnValue any) (geom.T, error) {
+	rawGeom, ok := columnValue.([]byte)
+	if !ok {
+		return nil, errors.New("failed to cast GeoPackage geom to bytes")
+	}
 	geomWithMetadata, err := encoding.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err

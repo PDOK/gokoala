@@ -53,7 +53,7 @@ func readDriverMetadata(db *pgxpool.Pool) (string, error) {
 	var postGISVersion string
 
 	err := db.QueryRow(context.Background(), `
-		select (select version()) AS pg_version, (select PostGIS_Version()) AS postgis_version;
+		select (select version()) as pg_version, (select PostGIS_Version()) as postgis_version;
 	`).Scan(&pgVersion, &postGISVersion)
 
 	return fmt.Sprintf("postgresql version: '%s', postgis version: '%s'", pgVersion, postGISVersion), err
