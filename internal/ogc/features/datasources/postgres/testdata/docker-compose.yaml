@@ -51,11 +51,6 @@ services:
           /testdata/bag-temporal.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
-          -lco SCHEMA=bag_schema_extension \
-          -lco FID=feature_id \
-          /testdata/bag_schema_extension.gpkg
-
-        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
           -lco SCHEMA=external_fid \
           -lco FID=feature_id \
           /testdata/external-fid.gpkg
@@ -74,17 +69,3 @@ services:
     volumes:
       - ../../geopackage/testdata:/testdata
       - ../../../../../../examples:/examples
-
-  postgres-init-column-comments:
-    image: docker.io/postgis/postgis:16-3.5  # use debian, not alpine
-    depends_on:
-      postgres-init-data:
-        condition: service_completed_successfully
-    command: >
-      psql
-      -h postgres
-      -U postgres
-      -d postgres
-      -c "COMMENT ON COLUMN bag.ligplaatsen.huisnummer IS 'This is a placeholder that describes the huisletter field.';"
-      -c "COMMENT ON COLUMN bag.ligplaatsen.straatnaam IS 'This is a placeholder that describes the straatnaam field';"
-      -c "COMMENT ON COLUMN bag.ligplaatsen.document IS 'This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.';"

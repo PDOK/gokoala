@@ -54,11 +54,10 @@ func readDriverMetadata(db *pgxpool.Pool) (string, error) {
 	var postGISVersion string
 
 	err := db.QueryRow(context.Background(), `
-		select (select version()) AS pg_version, (select PostGIS_full_version()) AS postgis_version;
+		select (select version()) AS pg_version, (select PostGIS_Version()) AS postgis_version;
 	`).Scan(&pgVersion, &postGISVersion)
 
-	return fmt.Sprintf("postgresql version: '%s', postgis version: '%s', on %s",
-		pgVersion, postGISVersion, db.Config().ConnConfig.Host), err
+	return fmt.Sprintf("postgresql version: '%s', postgis version: '%s'", pgVersion, postGISVersion), err
 }
 
 // Read "geometry_columns" view. This table contains metadata about PostGIS tables. The result is a mapping from
@@ -70,7 +69,7 @@ func readFeatureTables(collections config.GeoSpatialCollections, db *pgxpool.Poo
 
 	query := `
 select
-	f_table_name, f_geometry_column, f_geometry_type
+	f_table_name::text, f_geometry_column::text, type::text
 from
 	geometry_columns
 where
@@ -88,7 +87,7 @@ where
 	result := make(map[string]*featureTable, 10)
 	for rows.Next() {
 		table := featureTable{}
-		if err = rows.Scan(table.TableName, table.GeometryColumnName, table.GeometryType); err != nil {
+		if err = rows.Scan(&table.TableName, &table.GeometryColumnName, &table.GeometryType); err != nil {
 			return nil, fmt.Errorf("failed to read geometry_columns record, error: %w", err)
 		}
 		if table.TableName == "" {
@@ -182,7 +181,7 @@ select
     a.attname as column_name,
     pg_catalog.format_type(a.atttypid, a.atttypmod) as data_type,
     a.attnotnull as is_required,
-    d.description as column_description
+    coalesce(d.description, '') as column_description
 from
     pg_catalog.pg_attribute a
 join
@@ -208,7 +207,8 @@ order by
 
 	fields := make([]d.Field, 0)
 	for rows.Next() {
-		var colName, colType, colNotNull, colDescription string
+		var colName, colType, colDescription string
+		var colNotNull bool
 		if err = rows.Scan(&colName, &colType, &colNotNull, &colDescription); err != nil {
 			return nil, err
 		}
@@ -216,7 +216,7 @@ order by
 			Name:              colName,
 			Type:              colType,
 			Description:       colDescription,
-			IsRequired:        colNotNull == "1",
+			IsRequired:        colNotNull,
 			IsPrimaryGeometry: colName == table.GeometryColumnName,
 			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn, collectionNames),
 		})

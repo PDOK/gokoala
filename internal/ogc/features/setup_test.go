@@ -78,7 +78,6 @@ func setupPostgres(ctx context.Context) (nat.Port, *compose.DockerCompose, error
 	err = stack.
 		WaitForService("postgres", wait.ForListeningPort("5432/tcp")).
 		WaitForService("postgres-init-data", wait.ForExit()).
-		WaitForService("postgres-init-column-comments", wait.ForExit()).
 		Up(ctx, compose.WithRecreate(api.RecreateForce), compose.Wait(true))
 	if err != nil {
 		return "", nil, err
