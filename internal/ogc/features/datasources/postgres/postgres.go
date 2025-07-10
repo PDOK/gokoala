@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -30,7 +31,7 @@ type Postgres struct {
 func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postgres, transformOnTheFly bool) (*Postgres, error) {
 	if !transformOnTheFly {
 		return nil, errors.New("ahead-of-time transformed features are currently not " +
-			"supported for PostgreSQL, reprojection/transformation is always applied")
+			"supported for postgresql, reprojection/transformation is always applied")
 	}
 
 	pgxConfig, err := pgxpool.ParseConfig(pgConfig.ConnectionString())
@@ -101,4 +102,13 @@ func (pg Postgres) GetSchema(_ string) (*domain.Schema, error) {
 func (pg Postgres) GetPropertyFiltersWithAllowedValues(_ string) datasources.PropertyFiltersWithAllowedValues {
 	log.Println("Postgres support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return nil
+}
+
+func (pg Postgres) getFeatureTable(collection string) (*featureTable, error) {
+	table, ok := pg.featureTableByCollectionID[collection]
+	if !ok {
+		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+			"postgresql, available in postgresql: %v", collection, util.Keys(pg.featureTableByCollectionID))
+	}
+	return table, nil
 }
