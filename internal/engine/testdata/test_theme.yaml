@@ -1,0 +1,13 @@
+---
+# Default PDOK theme
+logo:
+  header: "./assets/img/logo-header.svg"
+  footer: "./assets/img/logo-footer.png"
+  opengraph: "./assets/img/logo-opengraph.png"
+  favicon: "./assets/favicon.ico"
+  favicon16: "./assets/img/favicon-16x16.png"
+  favicon32: "./assets/img/favicon-32x32.png"
+color:
+  primary: "#1a1e4f"
+  secondary: "#add8e6"
+  link: "#fff"
