@@ -55,6 +55,5 @@ tests.forEach(i => {
           expect(firstCallArgs[1]).to.match(/^52.37/)
         })
     })
-
   })
 })

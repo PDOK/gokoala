@@ -6,7 +6,7 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [52.373056, 4.892778 ]
+        "coordinates": [52.373056, 4.892778]
       },
       "properties": {
         "name": "Dam Amsterdam",
@@ -19,7 +19,7 @@
       "geometry": {
         "type": "Point",
 
-        "coordinates": [52.378889,4.900556 ]
+        "coordinates": [52.378889, 4.900556]
       },
       "properties": {
         "name": "Amsterdam Central station",

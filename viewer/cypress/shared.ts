@@ -5,7 +5,6 @@ import { FeatureViewComponent } from 'src/app/feature-view/feature-view.componen
 import 'cypress-network-idle'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 
-
 export type ProjectionTest = { code: string; projection: string; geofix: string }
 
 export const tests: ProjectionTest[] = [
@@ -57,7 +56,7 @@ export function mountFeatureComponent(
     imports: [
       HttpClientModule,
       LoggerModule.forRoot({
-        level: NgxLoggerLevel.DEBUG
+        level: NgxLoggerLevel.DEBUG,
       }),
     ],
     componentProperties: allprop,
