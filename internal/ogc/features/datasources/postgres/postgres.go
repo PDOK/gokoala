@@ -13,12 +13,18 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twpayne/go-geom"
 	pgxgeom "github.com/twpayne/pgx-geom"
 )
 
-const selectAll = "*"
+const (
+	selectAll = "*"
+
+	// https://github.com/jackc/pgx/issues/387#issuecomment-1107666716
+	pgxNamedParamSymbol = '@'
+)
 
 type Postgres struct {
 	db *pgxpool.Pool
@@ -146,7 +152,7 @@ func (pg Postgres) GetPropertyFiltersWithAllowedValues(collection string) dataso
 
 // Build specific features queries based on the given options.
 func (pg Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *featureTable,
-	onlyFIDs bool, axisOrder domain.AxisOrder, criteria datasources.FeaturesCriteria) (query string, queryArgs map[string]any, err error) {
+	onlyFIDs bool, axisOrder domain.AxisOrder, criteria datasources.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
 	if onlyFIDs {
@@ -163,25 +169,22 @@ func (pg Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.Featu
 		//	return
 		//}
 	} else {
-		// TODO use pgx named params instead of sqlx
-		// TODO check cursor gaps
-		// TODO write cursor query
 		query, queryArgs = pg.makeDefaultQuery(table, selectClause, criteria)
 	}
 	return
 }
 
 func (pg Postgres) makeDefaultQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
-	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters)
-	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria)
+	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
+	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
 	defaultQuery := fmt.Sprintf(`
 with
-    next as (select * from "%[1]s" where "%[2]s" >= :fid %[3]s %[4]s order by %[2]s asc limit :limit + 1),
-    prev as (select * from "%[1]s" where "%[2]s" < :fid %[3]s %[4]s order by %[2]s desc limit :limit),
+    next as (select * from "%[1]s" where "%[2]s" >= @fid %[3]s %[4]s order by %[2]s asc limit @limit + 1),
+    prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s order by %[2]s desc limit @limit),
     nextprev as (select * from next union all select * from prev),
-    nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as %[6]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[7]s from nextprev)
-select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
+    nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
+select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 `, table.TableName, pg.fidColumn, temporalClause, pfClause, selectClause, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
@@ -230,7 +233,7 @@ func (pg Postgres) selectColumns(table *featureTable, axisOrder domain.AxisOrder
 	// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing
 	// the swap and then casting back to a GeoPackage geometry.
 	if axisOrder == domain.AxisOrderYX {
-		result += fmt.Sprintf(", asgpb(swapcoords(castautomagic(\"%[1]s\"))) as \"%[1]s\"", table.GeometryColumnName)
+		result += fmt.Sprintf(", st_flipcoordinates(\"%[1]s\") as \"%[1]s\"", table.GeometryColumnName)
 	} else {
 		result += fmt.Sprintf(", \"%s\"", table.GeometryColumnName)
 	}
@@ -251,7 +254,7 @@ func (pg Postgres) getFeatureTable(collection string) (*featureTable, error) {
 }
 
 // mapPostgisGeometry Postgres/PostGIS specific way to read geometries.
-// since we use github.com/twpayne/pgx-geom it's just a simple cast since conversion happens automatically.
+// since we use 'pgx-geom' it's just a simple cast since conversion happens automatically.
 func mapPostgisGeometry(columnValue any) (geom.T, error) {
 	geometry, ok := columnValue.(geom.T)
 	if !ok {
@@ -260,7 +263,7 @@ func mapPostgisGeometry(columnValue any) (geom.T, error) {
 	return geometry, nil
 }
 
-func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[string]any) {
+func propertyFiltersToSQL(pf map[string]string, symbol byte) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	if len(pf) > 0 {
 		position := 0
@@ -269,20 +272,21 @@ func propertyFiltersToSQL(pf map[string]string) (sql string, namedParams map[str
 			namedParam := fmt.Sprintf("pf%d", position)
 			// column name in double quotes in case it is a reserved keyword
 			// also: we don't currently support LIKE since wildcard searches don't use the index
-			sql += fmt.Sprintf(" and \"%s\" = :%s", k, namedParam)
+			sql += fmt.Sprintf(" and \"%s\" = %b%s", k, symbol, namedParam)
 			namedParams[namedParam] = v
 		}
 	}
 	return sql, namedParams
 }
 
-func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria) (sql string, namedParams map[string]any) {
+func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol byte) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	if !temporalCriteria.ReferenceDate.IsZero() {
 		namedParams["referenceDate"] = temporalCriteria.ReferenceDate
 		startDate := temporalCriteria.StartDateProperty
 		endDate := temporalCriteria.EndDateProperty
-		sql = fmt.Sprintf(" and \"%[1]s\" <= :referenceDate and (\"%[2]s\" >= :referenceDate or \"%[2]s\" is null)", startDate, endDate)
+		sql = fmt.Sprintf(" and \"%[1]s\" <= %[3]breferenceDate and (\"%[2]s\" >= %[3]breferenceDate or \"%[2]s\" is null)",
+			startDate, endDate, symbol)
 	}
 	return sql, namedParams
 }

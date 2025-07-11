@@ -131,8 +131,11 @@ type Postgres struct {
 
 func (p *Postgres) ConnectionString() string {
 	port := strconv.FormatUint(uint64(p.Port), 10)
-	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&application_name=%s",
-		p.User, p.Pass, net.JoinHostPort(p.Host, port), p.DatabaseName, p.SSLMode, AppName)
+	defaultSearchPath := "public, postgis, topology" // otherwise postgis extension isn't found
+
+	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s&search_path=%s,%s&application_name=%s",
+		p.User, p.Pass, net.JoinHostPort(p.Host, port), p.DatabaseName, p.SSLMode,
+		p.Schema, defaultSearchPath, AppName)
 }
 
 // +kubebuilder:object:generate=true
