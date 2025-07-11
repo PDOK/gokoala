@@ -51,6 +51,9 @@ type TemplateData struct {
 	// Config set during startup based on the given config file
 	Config *config.Config
 
+	// Theme set during startup
+	Theme *config.Theme
+
 	// Params optional parameters not part of GoKoala's config file. You can use
 	// this to provide extra data to a template at rendering time.
 	Params any
@@ -147,16 +150,18 @@ type Templates struct {
 	// RenderedTemplates templates parsed + rendered to their actual output format like JSON, HTMl, etc.
 	// We prefer pre-rendered templates whenever possible. These are stored in this map.
 	RenderedTemplates map[TemplateKey][]byte
+	Theme             *config.Theme
 
 	config     *config.Config
 	localizers map[language.Tag]i18n.Localizer
 }
 
-func newTemplates(config *config.Config) *Templates {
+func newTemplates(config *config.Config, theme *config.Theme) *Templates {
 	templates := &Templates{
 		ParsedTemplates:   make(map[TemplateKey]any),
 		RenderedTemplates: make(map[TemplateKey][]byte),
 		config:            config,
+		Theme:             theme,
 		localizers:        newLocalizers(config.AvailableLanguages),
 	}
 	return templates
@@ -213,13 +218,13 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 		Funcs(templateFuncs).ParseFiles(templatesDir+layoutFile, file))
 	return file, parsed
 }
-
 func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
 	params any, breadcrumbs []Breadcrumb, file string) []byte {
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{
 		Config:      t.config,
+		Theme:       t.Theme,
 		Params:      params,
 		Breadcrumbs: breadcrumbs,
 		url:         url,

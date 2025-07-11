@@ -240,18 +240,7 @@ func validate(config *Config) error {
 	}
 	err = v.Struct(config)
 	if err != nil {
-		var ive *validator.InvalidValidationError
-		if ok := errors.Is(err, ive); ok {
-			return fmt.Errorf("failed to validate config: %w", err)
-		}
-		var errMessages []string
-		var valErrs validator.ValidationErrors
-		if errors.As(err, &valErrs) {
-			for _, valErr := range valErrs {
-				errMessages = append(errMessages, valErr.Error()+"\n")
-			}
-		}
-		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+		return formatValidationErr(err)
 	}
 
 	// custom validations
@@ -316,4 +305,19 @@ func validateConfiguredResources(config *Config) error {
 func isExistingLocalDir(path string) bool {
 	fileInfo, err := os.Stat(path)
 	return err == nil && fileInfo.IsDir()
+}
+
+func formatValidationErr(err error) error {
+	var ive *validator.InvalidValidationError
+	if ok := errors.Is(err, ive); ok {
+		return fmt.Errorf("failed to validate config: %w", err)
+	}
+	var errMessages []string
+	var valErrs validator.ValidationErrors
+	if errors.As(err, &valErrs) {
+		for _, valErr := range valErrs {
+			errMessages = append(errMessages, valErr.Error()+"\n")
+		}
+	}
+	return fmt.Errorf("invalid config provided:\n%v", errMessages)
 }

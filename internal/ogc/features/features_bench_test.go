@@ -85,7 +85,7 @@ func BenchmarkFeatures(b *testing.B) {
 		}
 		rr, ts := createMockServer()
 
-		newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
+		newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 		assert.NoError(b, err)
 		features := NewFeatures(newEngine)
 		handler := features.Features()
