@@ -1,0 +1,21 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Test to verify support for more complex geoms like polygons
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./internal/ogc/features/datasources/geopackage/testdata/roads.gpkg
+    collections:
+      - id: road
+        metadata:
+          title: Roads
+          description: A few road parts in the Netherlands

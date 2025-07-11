@@ -7,8 +7,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
-	"github.com/jmoiron/sqlx"
-
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 )
@@ -16,11 +14,31 @@ import (
 // MapRelation abstract function type to map feature relations
 type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any)
 
-// MapGeom abstract function type to map geometry from bytes to Geometry
-type MapGeom func([]byte) (geom.T, error)
+// MapGeom abstract function type to map datasource-specific geometry
+// (in GeoPackage, PostGIS, WKB, etc. format) to general-purpose geometry
+type MapGeom func(columnValue any) (geom.T, error)
+
+// DatasourceRows defines an abstraction over rows/records retrieved from a datasource.
+// Can be implemented using libraries such as jackc/pgx, jmoiron/sqlx, database/sql, etc.
+type DatasourceRows interface {
+	// Columns provided the column names
+	Columns() ([]string, error)
+
+	// SliceScan scans the current row into a slice of any
+	SliceScan() ([]any, error)
+
+	// Next advances the row pointer to the next row
+	Next() bool
+
+	// Err any error that occurred during iteration
+	Err() error
+
+	// Close closes the row set, releasing any resources
+	Close()
+}
 
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
-func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
+func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
 	firstRow := true
 	for rows.Next() {
 		var values []any
@@ -53,7 +71,7 @@ func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int
 }
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
-func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, externalFidColumn string, geomColumn string,
+func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn string, externalFidColumn string, geomColumn string,
 	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
@@ -101,11 +119,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
-			rawGeom, ok := columnValue.([]byte)
-			if !ok {
-				return nil, fmt.Errorf("failed to read geometry from %s column in datasource", geomColumn)
-			}
-			mappedGeom, err := mapGeom(rawGeom)
+			mappedGeom, err := mapGeom(columnValue)
 			if err != nil {
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
