@@ -23,9 +23,7 @@ func (p *PgxRowsAdapter) Columns() ([]string, error) {
 }
 
 func (p *PgxRowsAdapter) SliceScan() ([]any, error) {
-	values := make([]any, 0)
-	err := p.rows.Scan(&values)
-	return values, err
+	return p.rows.Values()
 }
 
 func (p *PgxRowsAdapter) Next() bool {
