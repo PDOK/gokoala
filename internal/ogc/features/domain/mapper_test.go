@@ -103,7 +103,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 			feature:       &Feature{Properties: NewFeatureProperties(false)},
 			columns:       []string{"str_col", "unexpected_col"},
 			values:        []any{"str", []complex128{complex(1, 2)}},
-			expectedError: errors.New("unexpected type for sqlite column data: unexpected_col: []complex128"),
+			expectedError: errors.New("unexpected type: unexpected_col: []complex128"),
 		},
 		{
 			name:             "Test conversion of float64 with non floating point value to int64",

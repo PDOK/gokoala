@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/testcontainers/testcontainers-go/modules/compose"
@@ -78,7 +77,7 @@ func setupPostgres(ctx context.Context) (nat.Port, *compose.DockerCompose, error
 	err = stack.
 		WaitForService("postgres", wait.ForListeningPort("5432/tcp")).
 		WaitForService("postgres-init-data", wait.ForExit()).
-		Up(ctx, compose.WithRecreate(api.RecreateForce), compose.Wait(true))
+		Up(ctx, compose.Wait(true))
 	if err != nil {
 		return "", nil, err
 	}

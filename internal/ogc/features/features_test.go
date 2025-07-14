@@ -627,7 +627,7 @@ func TestFeatures(t *testing.T) {
 		{
 			name: "Request features where properties are in a specific order as HTML (to valide strict ordering)",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_properties_order.yaml",
+				configFile:   "internal/ogc/features/testdata/geopackage/config_features_properties_order.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
 				collectionID: "dutch-addresses",
 				contentCrs:   "<" + domain.WGS84CrsURI + ">",

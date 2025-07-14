@@ -6,7 +6,6 @@ require (
 	dario.cat/mergo v1.0.1
 	github.com/PDOK/go-cloud-sqlite-vfs v0.3.0
 	github.com/creasty/defaults v1.8.0
-	github.com/docker/compose/v2 v2.35.0
 	github.com/docker/go-connections v0.5.0
 	github.com/docker/go-units v0.5.0
 	github.com/elnormous/contenttype v1.0.4
@@ -89,6 +88,7 @@ require (
 	github.com/docker/buildx v0.22.0 // indirect
 	github.com/docker/cli v28.0.4+incompatible // indirect
 	github.com/docker/cli-docs-tool v0.9.0 // indirect
+	github.com/docker/compose/v2 v2.35.0 // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v28.0.4+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.2 // indirect

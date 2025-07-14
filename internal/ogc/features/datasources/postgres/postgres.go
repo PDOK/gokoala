@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"maps"
+	"slices"
 	"strings"
 	"time"
 
@@ -16,7 +17,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twpayne/go-geom"
+	"github.com/twpayne/go-geom/encoding/wkt"
 	pgxgeom "github.com/twpayne/pgx-geom"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 const (
@@ -82,21 +85,21 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 	return pg, nil
 }
 
-func (pg Postgres) Close() {
+func (pg *Postgres) Close() {
 	pg.db.Close()
 }
 
-func (pg Postgres) GetFeatureIDs(_ context.Context, _ string, _ datasources.FeaturesCriteria) ([]int64, domain.Cursors, error) {
+func (pg *Postgres) GetFeatureIDs(_ context.Context, _ string, _ datasources.FeaturesCriteria) ([]int64, domain.Cursors, error) {
 	log.Println("Postgres support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return []int64{}, domain.Cursors{}, nil
 }
 
-func (pg Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ domain.AxisOrder, _ domain.Profile) (*domain.FeatureCollection, error) {
+func (pg *Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ domain.AxisOrder, _ domain.Profile) (*domain.FeatureCollection, error) {
 	log.Println("Postgres support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return &domain.FeatureCollection{}, nil
 }
 
-func (pg Postgres) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria,
+func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria,
 	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
 
 	table, err := pg.getFeatureTable(collection)
@@ -133,12 +136,12 @@ func (pg Postgres) GetFeatures(ctx context.Context, collection string, criteria 
 	return &fc, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
-func (pg Postgres) GetFeature(_ context.Context, _ string, _ any, _ domain.AxisOrder, _ domain.Profile) (*domain.Feature, error) {
+func (pg *Postgres) GetFeature(_ context.Context, _ string, _ any, _ domain.AxisOrder, _ domain.Profile) (*domain.Feature, error) {
 	log.Println("Postgres support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
 	return nil, nil
 }
 
-func (pg Postgres) GetSchema(collection string) (*domain.Schema, error) {
+func (pg *Postgres) GetSchema(collection string) (*domain.Schema, error) {
 	table, err := pg.getFeatureTable(collection)
 	if err != nil {
 		return nil, err
@@ -146,12 +149,12 @@ func (pg Postgres) GetSchema(collection string) (*domain.Schema, error) {
 	return table.Schema, nil
 }
 
-func (pg Postgres) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
+func (pg *Postgres) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
 	return pg.propertyFiltersByCollectionID[collection]
 }
 
 // Build specific features queries based on the given options.
-func (pg Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *featureTable,
+func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *featureTable,
 	onlyFIDs bool, axisOrder domain.AxisOrder, criteria datasources.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
@@ -161,20 +164,23 @@ func (pg Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.Featu
 		selectClause = pg.selectColumns(table, axisOrder, propConfig, true)
 	}
 
+	if criteria.OutputSRID == domain.UndefinedSRID {
+		criteria.OutputSRID = domain.WGS84SRIDPostgis
+	}
+
 	// make query
 	if criteria.Bbox != nil {
-		// TODO
-		//query, queryArgs, err = pg.makeBboxQuery(table, selectClause, criteria)
-		//if err != nil {
-		//	return
-		//}
+		query, queryArgs, err = pg.makeBboxQuery(table, selectClause, criteria)
+		if err != nil {
+			return
+		}
 	} else {
 		query, queryArgs = pg.makeDefaultQuery(table, selectClause, criteria)
 	}
 	return
 }
 
-func (pg Postgres) makeDefaultQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
+func (pg *Postgres) makeDefaultQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
@@ -188,32 +194,101 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 `, table.TableName, pg.fidColumn, temporalClause, pfClause, selectClause, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
-		"fid":   criteria.Cursor.FID,
-		"limit": criteria.Limit,
+		"fid":        criteria.Cursor.FID,
+		"limit":      criteria.Limit,
+		"outputSrid": criteria.OutputSRID,
 	}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
 	return defaultQuery, namedParams
 }
 
+func (pg *Postgres) makeBboxQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
+	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
+	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, criteria.OutputSRID)
+	if err != nil {
+		return "", nil, err
+	}
+
+	bboxQuery := fmt.Sprintf(`
+with
+    next as (select * from "%[1]s" where "%[2]s" >= @fid %[3]s %[4]s %[8]s order by %[2]s asc limit @limit + 1),
+    prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s %[8]s order by %[2]s desc limit @limit),
+    nextprev as (select * from next union all select * from prev),
+    nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
+select %[6]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
+`, table.TableName, pg.fidColumn, temporalClause, pfClause, selectClause, domain.PrevFid, domain.NextFid, bboxClause) // don't add user input here, use named params for user input!
+
+	namedParams := map[string]any{
+		"fid":        criteria.Cursor.FID,
+		"limit":      criteria.Limit,
+		"outputSrid": criteria.OutputSRID,
+	}
+	maps.Copy(namedParams, bboxNamedParams)
+	maps.Copy(namedParams, pfNamedParams)
+	maps.Copy(namedParams, temporalNamedParams)
+	return bboxQuery, namedParams, nil
+}
+
+func bboxToSQL(bbox *geom.Bounds, bboxSRID domain.SRID, outputSRID domain.SRID) (string, map[string]any, error) {
+	var bboxFilter, bboxWkt string
+	var bboxNamedParams map[string]any
+	var err error
+	if bbox != nil {
+		bboxFilter = fmt.Sprintf(`AND
+			st_intersects(r.geometry, st_transform(st_geomfromtext(@bboxWkt::text, @bboxSrid::int), %[1]d))
+		`, outputSRID)
+		bboxWkt, err = wkt.Marshal(bbox.Polygon())
+		if err != nil {
+			return "", nil, err
+		}
+		bboxNamedParams = map[string]any{
+			"bboxWkt":  bboxWkt,
+			"bboxSrid": bboxSRID,
+		}
+	}
+	return bboxFilter, bboxNamedParams, err
+}
+
+func (pg *Postgres) getFeatureTable(collection string) (*featureTable, error) {
+	table, ok := pg.featureTableByCollectionID[collection]
+	if !ok {
+		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
+			"postgresql, available in postgresql: %v", collection, util.Keys(pg.featureTableByCollectionID))
+	}
+	return table, nil
+}
+
 // selectColumns build select clause
-func (pg Postgres) selectColumns(table *featureTable, axisOrder domain.AxisOrder,
+func (pg *Postgres) selectColumns(table *featureTable, axisOrder domain.AxisOrder,
 	propConfig *config.FeatureProperties, includePrevNext bool) string {
 
-	columns := make(map[string]struct{}) // map (actually a set) to prevent accidental duplicate columns
+	columns := orderedmap.New[string, struct{}]() // map (actually a set) to prevent accidental duplicate columns
 	switch {
 	case propConfig != nil:
-		// select columns in a specific order
+		// select columns in a specific order (we need an ordered map for this purpose!)
 		for _, prop := range propConfig.Properties {
 			if prop != table.GeometryColumnName {
-				columns[prop] = struct{}{}
+				columns.Set(prop, struct{}{})
+			}
+		}
+		if !propConfig.PropertiesExcludeUnknown {
+			// select missing columns according to the table schema
+			for _, field := range table.Schema.Fields {
+				if field.Name != table.GeometryColumnName {
+					_, ok := columns.Get(field.Name)
+					if !ok {
+						columns.Set(field.Name, struct{}{})
+					}
+				}
 			}
 		}
 	case table.Schema != nil:
 		// select all columns according to the table schema
 		for _, field := range table.Schema.Fields {
 			if field.Name != table.GeometryColumnName {
-				columns[field.Name] = struct{}{}
+				columns.Set(field.Name, struct{}{})
 			}
 		}
 	default:
@@ -221,36 +296,24 @@ func (pg Postgres) selectColumns(table *featureTable, axisOrder domain.AxisOrder
 		return selectAll
 	}
 
-	columns[pg.fidColumn] = struct{}{}
+	columns.Set(pg.fidColumn, struct{}{})
 	if includePrevNext {
-		columns[domain.PrevFid] = struct{}{}
-		columns[domain.NextFid] = struct{}{}
+		columns.Set(domain.PrevFid, struct{}{})
+		columns.Set(domain.NextFid, struct{}{})
 	}
 
-	result := columnsToSQL(util.Keys(columns))
+	result := columnsToSQL(slices.Collect(columns.KeysFromOldest()))
 
 	// Add the geometry column. GeoPackage geometries are stored in WKB format and WKB is always XY.
 	// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing
 	// the swap and then casting back to a GeoPackage geometry.
 	if axisOrder == domain.AxisOrderYX {
-		result += fmt.Sprintf(", st_flipcoordinates(\"%[1]s\") as \"%[1]s\"", table.GeometryColumnName)
+		result += fmt.Sprintf(", st_flipcoordinates(st_transform(\"%[1]s\", @outputSrid::int)) as \"%[1]s\"", table.GeometryColumnName)
 	} else {
-		result += fmt.Sprintf(", \"%s\"", table.GeometryColumnName)
+		result += fmt.Sprintf(", st_transform(\"%[1]s\", @outputSrid::int) as \"%[1]s\"", table.GeometryColumnName)
 	}
 
-	if propConfig != nil && !propConfig.PropertiesExcludeUnknown {
-		result += ", " + selectAll
-	}
 	return result
-}
-
-func (pg Postgres) getFeatureTable(collection string) (*featureTable, error) {
-	table, ok := pg.featureTableByCollectionID[collection]
-	if !ok {
-		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"postgresql, available in postgresql: %v", collection, util.Keys(pg.featureTableByCollectionID))
-	}
-	return table, nil
 }
 
 // mapPostgisGeometry Postgres/PostGIS specific way to read geometries.

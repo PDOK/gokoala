@@ -179,7 +179,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			case bool:
 				feature.Properties.Set(columnName, v)
 			default:
-				return nil, fmt.Errorf("unexpected type for sqlite column data: %v: %T", columns[i], v)
+				return nil, fmt.Errorf("unexpected type: %v: %T", columns[i], v)
 			}
 		}
 	}

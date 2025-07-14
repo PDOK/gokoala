@@ -86,7 +86,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	// now we have a mapping from collection+projection => desired datasource (the 'configured' map).
 	// but the actual datasource connection still needs to be CREATED and associated with these collections.
 	// this is what we're going to do now, but in the process we need to make sure no duplicate datasources
-	// are instantiated: since multiple collections can point to the same datasource and we only what to have a single
+	// are instantiated: since multiple collections can point to the same datasource, and we only want to have a single
 	// datasource/connection-pool serving those collections.
 	createdDatasources := make(map[config.Datasource]ds.Datasource)
 

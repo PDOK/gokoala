@@ -28,5 +28,5 @@ func (s *SqlxRowsAdapter) Err() error {
 }
 
 func (s *SqlxRowsAdapter) Close() {
-	s.rows.Close()
+	_ = s.rows.Close()
 }

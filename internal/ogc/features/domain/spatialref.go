@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	UndefinedSRID = 0
-	WGS84SRID     = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
+	UndefinedSRID    = 0
+	WGS84SRID        = 100000 // We use the SRID for CRS84 (WGS84) as defined in the GeoPackage, instead of EPSG:4326 (due to axis order). In time, we may need to read this value dynamically from the GeoPackage.
+	WGS84SRIDPostgis = 4326
 
 	CrsURIPrefix = "http://www.opengis.net/def/crs/"
 	WGS84CodeOGC = "CRS84"
