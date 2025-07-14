@@ -629,7 +629,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features where properties are in a specific order",
+			name: "Request features where properties are in a specific order (note: JSON allows out-of-order properties)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/config_features_properties_order.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json",
@@ -639,6 +639,20 @@ func TestFeatures(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_features_properties_order.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features where properties are in a specific order as HTML (to valide strict ordering)",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/config_features_properties_order.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_properties_order.html",
 				statusCode: http.StatusOK,
 			},
 		},

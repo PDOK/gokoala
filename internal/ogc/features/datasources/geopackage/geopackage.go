@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +20,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/wkt"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -415,20 +417,31 @@ func (g *GeoPackage) getFeatureTable(collection string) (*featureTable, error) {
 func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrder,
 	propConfig *config.FeatureProperties, includePrevNext bool) string {
 
-	columns := make(map[string]struct{}) // map (actually a set) to prevent accidental duplicate columns
+	columns := orderedmap.New[string, struct{}]() // map (actually a set) to prevent accidental duplicate columns
 	switch {
 	case propConfig != nil:
-		// select columns in a specific order
+		// select columns in a specific order (we need an ordered map for this purpose!)
 		for _, prop := range propConfig.Properties {
 			if prop != table.GeometryColumnName {
-				columns[prop] = struct{}{}
+				columns.Set(prop, struct{}{})
+			}
+		}
+		if !propConfig.PropertiesExcludeUnknown {
+			// select missing columns according to the table schema
+			for _, field := range table.Schema.Fields {
+				if field.Name != table.GeometryColumnName {
+					_, ok := columns.Get(field.Name)
+					if !ok {
+						columns.Set(field.Name, struct{}{})
+					}
+				}
 			}
 		}
 	case table.Schema != nil:
 		// select all columns according to the table schema
 		for _, field := range table.Schema.Fields {
 			if field.Name != table.GeometryColumnName {
-				columns[field.Name] = struct{}{}
+				columns.Set(field.Name, struct{}{})
 			}
 		}
 	default:
@@ -436,13 +449,13 @@ func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrd
 		return selectAll
 	}
 
-	columns[g.fidColumn] = struct{}{}
+	columns.Set(g.fidColumn, struct{}{})
 	if includePrevNext {
-		columns[domain.PrevFid] = struct{}{}
-		columns[domain.NextFid] = struct{}{}
+		columns.Set(domain.PrevFid, struct{}{})
+		columns.Set(domain.NextFid, struct{}{})
 	}
 
-	result := columnsToSQL(util.Keys(columns))
+	result := columnsToSQL(slices.Collect(columns.KeysFromOldest()))
 
 	// Add the geometry column. GeoPackage geometries are stored in WKB format and WKB is always XY.
 	// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing
@@ -453,9 +466,6 @@ func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrd
 		result += fmt.Sprintf(", \"%s\"", table.GeometryColumnName)
 	}
 
-	if propConfig != nil && !propConfig.PropertiesExcludeUnknown {
-		result += ", " + selectAll
-	}
 	return result
 }
 
