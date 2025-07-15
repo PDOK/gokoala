@@ -137,13 +137,21 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 		case PrevFid:
 			// Only the first row in the result set contains the previous feature id
 			if firstRow && columnValue != nil {
-				prevNextID.Prev = columnValue.(int64)
+				val, err := types.ToInt64(columnValue)
+				if err != nil {
+					return nil, err
+				}
+				prevNextID.Prev = val
 			}
 
 		case NextFid:
 			// Only the first row in the result set contains the next feature id
 			if firstRow && columnValue != nil {
-				prevNextID.Next = columnValue.(int64)
+				val, err := types.ToInt64(columnValue)
+				if err != nil {
+					return nil, err
+				}
+				prevNextID.Next = val
 			}
 
 		default:

@@ -31,36 +31,43 @@ services:
         echo "START import GeoPackages in Postgres"
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=addresses \
           -lco FID=fid \
           /examples/resources/addresses-rd.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=threedimensionalgeoms \
           -lco FID=fid \
           /testdata/3d-geoms.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=bag \
           -lco FID=feature_id \
           /testdata/bag.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=bag_temporal \
           -lco FID=feature_id \
           /testdata/bag-temporal.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=external_fid \
           -lco FID=feature_id \
           /testdata/external-fid.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=nullemptygeoms \
           -lco FID=fid \
           /testdata/null-empty-geoms.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=roads \
           -lco FID=fid \
           /testdata/roads.gpkg

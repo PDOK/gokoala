@@ -63,7 +63,7 @@ type AdditionalDatasource struct {
 // +kubebuilder:object:generate=true
 type OnTheFlyDatasource struct {
 	// List of supported SRS/CRS
-	SupportedSrs []OnTheFlySupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,dive"`
+	SupportedSrs []OnTheFlySupportedSrs `yaml:"supportedSrs,omitempty" json:"supportedSrs,omitempty" validate:"dive,omitempty"`
 
 	// The datasource capable of on-the-fly reprojection/transformation
 	Datasource `yaml:",inline" json:",inline"`
