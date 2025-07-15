@@ -35,6 +35,11 @@ type OgcAPIFeatures struct {
 	// +kubebuilder:default=true
 	// +optional
 	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+
+	// Maximum number of decimals allowed in geometry coordinates. When not specified (default value of 0) no limit is enforced.
+	// +optional
+	// +kubebuilder:validation:Minimum=0
+	MaxDecimals int `yaml:"maxDecimals,omitempty" json:"maxDecimals,omitempty" default:"0"`
 }
 
 func (oaf *OgcAPIFeatures) CollectionsSRS() []string {

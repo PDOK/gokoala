@@ -29,7 +29,7 @@ func TestFeatures(t *testing.T) {
 		want   want
 	}{
 		{
-			name: "Request GeoJSON for 'foo' collection using default limit",
+			name: "GEOPACKAGE: Request GeoJSON for 'foo' collection using default limit",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
@@ -43,7 +43,21 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request GeoJSON for 'foo' collection using limit of 2",
+			name: "POSTGRES: Request GeoJSON for 'foo' collection using default limit",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_foo_collection.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "GEOPACKAGE: Request GeoJSON for 'foo' collection using limit of 2",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
@@ -57,9 +71,37 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
+			name: "POSTGRES: Request GeoJSON for 'foo' collection using limit of 2",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_foo_collection_with_limit.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "GEOPACKAGE: Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/tunneldelen/items?cursor=Dv4%7CNwyr1Q&limit=2",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_foo_collection_with_cursor.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "POSTGRES: Request GeoJSON for 'foo' collection using limit of 2 and cursor to next page",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/tunneldelen/items?cursor=Dv4%7CNwyr1Q&limit=2",
 				collectionID: "foo",
 				contentCrs:   "<" + domain.WGS84CrsURI + ">",
@@ -136,7 +178,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request HTML for 'foo' collection using limit of 1",
+			name: "GEOPACKAGE: Request HTML for 'foo' collection using limit of 1",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
@@ -150,7 +192,21 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output with property filter 'straatnaam' set to 'Silodam'",
+			name: "POSTGRES: Request HTML for 'foo' collection using limit of 1",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_foo_collection_snippet.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "GEOPACKAGE: Request output with property filter 'straatnaam' set to 'Silodam'",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
@@ -164,7 +220,21 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request HTML output with property filter (validate 2 form fields present, with only straatnaam filled)",
+			name: "POSTGRES: Request output with property filter 'straatnaam' set to 'Silodam'",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_straatnaam_silodam.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "GEOPACKAGE: Request HTML output with property filter (validate 2 form fields present, with only straatnaam filled)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
@@ -178,7 +248,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output with two property filters set (straatnaam and postcode)'",
+			name: "GEOPACKAGE: Request output with two property filters set (straatnaam and postcode)'",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Zandhoek&postcode=1104MM",
@@ -192,7 +262,21 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request empty feature collection (zero results)'",
+			name: "POSTGRES: Request output with two property filters set (straatnaam and postcode)'",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Zandhoek&postcode=1104MM",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_straatnaam_and_postcode.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "GEOPACKAGE: Request empty feature collection (zero results)'",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=doesnotexist",
@@ -206,7 +290,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output with property filters with allowed values restriction, using allowed 'straatname' value",
+			name: "GEOPACKAGE: Request output with property filters with allowed values restriction, using allowed 'straatname' value",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_allowed_values.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
@@ -220,7 +304,21 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output with property filters with allowed values restriction, using not allowed 'straatnaam' value",
+			name: "POSTGRES: Request output with property filters with allowed values restriction, using allowed 'straatname' value",
+			fields: fields{
+				configFile:   "internal/ogc/features/testdata/postgresql/config_features_bag_allowed_values.yaml",
+				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_straatnaam_silodam.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "GEOPACKAGE: Request output with property filters with allowed values restriction, using not allowed 'straatnaam' value",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_allowed_values.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?straatnaam=StreetNotInAllowedValues",
@@ -233,7 +331,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output with property filters with allowed values restriction, using allowed 'type' value",
+			name: "GEOPACKAGE: Request output with property filters with allowed values restriction, using allowed 'type' value",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_allowed_values.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?type=Ligplaats&straatnaam=Westerdok&limit=3",
@@ -247,7 +345,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in WGS84 explicitly",
+			name: "GEOPACKAGE: Request output in WGS84 explicitly",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&limit=2",
@@ -261,7 +359,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in RD explicitly",
+			name: "GEOPACKAGE: Request output in RD explicitly",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&limit=2",
@@ -275,7 +373,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in default (WGS84)",
+			name: "GEOPACKAGE: Request output in default (WGS84) and bbox in default (WGS84)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%7C9YRHSw&f=json&limit=10",
@@ -289,7 +387,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in default (WGS84) in JSON-FG",
+			name: "GEOPACKAGE: Request output in default (WGS84) and bbox in default (WGS84) in JSON-FG",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%7C9YRHSw&f=jsonfg&limit=10",
@@ -303,7 +401,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in RD and bbox in default (WGS84)",
+			name: "GEOPACKAGE: Request output in RD and bbox in default (WGS84)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
@@ -317,7 +415,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in RD",
+			name: "GEOPACKAGE: Request output in default (WGS84) and bbox in RD",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
@@ -331,7 +429,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in RD, with GeoPackages configured on different levels (top-level and collection-level)",
+			name: "GEOPACKAGE: Request output in default (WGS84) and bbox in RD, with GeoPackages configured on different levels (top-level and collection-level)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs_multiple_levels.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
@@ -345,7 +443,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in RD, with format JSON-FG",
+			name: "GEOPACKAGE: Request output in default (WGS84) and bbox in RD, with format JSON-FG",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10",
@@ -359,7 +457,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in RD and bbox in RD",
+			name: "GEOPACKAGE: Request output in RD and bbox in RD",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=10",
@@ -373,7 +471,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in RD and bbox in RD, with format JSON-FG",
+			name: "GEOPACKAGE: Request output in RD and bbox in RD, with format JSON-FG",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&limit=10",
@@ -387,7 +485,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox explicitly in WGS84",
+			name: "GEOPACKAGE: Request output in default (WGS84) and bbox explicitly in WGS84",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
@@ -401,7 +499,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox explicitly in WGS84 - with JSON response validation disabled",
+			name: "GEOPACKAGE: Request output in default (WGS84) and bbox explicitly in WGS84 - with JSON response validation disabled",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_validation_disabled.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
@@ -415,7 +513,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request WGS84 for collections with same backing feature table",
+			name: "GEOPACKAGE: Request WGS84 for collections with same backing feature table",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_multiple_collection_single_table.yaml",
 				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&f=json&limit=10",
@@ -429,7 +527,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request temporal collection",
+			name: "GEOPACKAGE: Request temporal collection",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_temporal.yaml",
 				url:          "http://localhost:8080/collections/standplaatsen/items?datetime=2020-05-20T00:00:00Z&limit=10",
@@ -443,7 +541,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request mapsheets as JSON",
+			name: "GEOPACKAGE: Request mapsheets as JSON",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_mapsheets.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
@@ -457,7 +555,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request mapsheets as JSON-FG",
+			name: "GEOPACKAGE: Request mapsheets as JSON-FG",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_mapsheets.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=2&f=jsonfg",
@@ -471,7 +569,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request mapsheets as HTML",
+			name: "GEOPACKAGE: Request mapsheets as HTML",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_mapsheets.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=2",
@@ -485,7 +583,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request slow response, hitting query timeout",
+			name: "GEOPACKAGE: Request slow response, hitting query timeout",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_short_query_timeout.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
@@ -499,7 +597,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request slow response, hitting query timeout with different. With bbox in WGS84 and output in RD",
+			name: "GEOPACKAGE: Request slow response, hitting query timeout with different. With bbox in WGS84 and output in RD",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_short_query_timeout.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&limit=2",
@@ -513,7 +611,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features with relation to other feature (href based on external FID)",
+			name: "GEOPACKAGE: Request features with relation to other feature (href based on external FID)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
@@ -527,7 +625,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features with relation to other feature (href based on external FID) as HTML hyperlink",
+			name: "GEOPACKAGE: Request features with relation to other feature (href based on external FID) as HTML hyperlink",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items",
@@ -541,7 +639,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features with relation to other feature (URL based on external FID)",
+			name: "GEOPACKAGE: Request features with relation to other feature (URL based on external FID)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?profile=rel-as-uri",
@@ -555,7 +653,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features with relation to other feature (ID/key based on external FID)",
+			name: "GEOPACKAGE: Request features with relation to other feature (ID/key based on external FID)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?profile=rel-as-key",
@@ -569,7 +667,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features for collection with specific viewer configuration, to make sure this is reflected in the HTML output",
+			name: "GEOPACKAGE: Request features for collection with specific viewer configuration, to make sure this is reflected in the HTML output",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_webconfig.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
@@ -583,7 +681,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features for collection with specific web configuration, and make sure URLs are rendered as hyperlinks in HTML output",
+			name: "GEOPACKAGE: Request features for collection with specific web configuration, and make sure URLs are rendered as hyperlinks in HTML output",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_webconfig.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
@@ -597,7 +695,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features where certain properties are excluded",
+			name: "GEOPACKAGE: Request features where certain properties are excluded",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_properties_exclude.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json",
@@ -611,7 +709,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features where properties are in a specific order (note: JSON allows out-of-order properties)",
+			name: "GEOPACKAGE: Request features where properties are in a specific order (note: JSON allows out-of-order properties)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_properties_order.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json",
@@ -625,7 +723,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features where properties are in a specific order as HTML (to valide strict ordering)",
+			name: "GEOPACKAGE: Request features where properties are in a specific order as HTML (to valide strict ordering)",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_properties_order.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=html",
@@ -639,7 +737,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features where properties are in a specific order and certain properties are excluded",
+			name: "GEOPACKAGE: Request features where properties are in a specific order and certain properties are excluded",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_properties_order_exclude.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json",
@@ -653,7 +751,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features of collection with a long description",
+			name: "GEOPACKAGE: Request features of collection with a long description",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_bag_long_description.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
@@ -723,7 +821,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request 3D geoms (MULTIPOINT Z) as features",
+			name: "GEOPACKAGE: Request 3D geoms (MULTIPOINT Z) as features",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_3d_geoms.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=5",
@@ -737,7 +835,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request 3D geoms (MULTIPOINT Z) as features as JSON-FG",
+			name: "GEOPACKAGE: Request 3D geoms (MULTIPOINT Z) as features as JSON-FG",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_3d_geoms.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=5&f=jsonfg",
@@ -751,7 +849,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request road polygons as features",
+			name: "GEOPACKAGE: Request road polygons as features",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_roads.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=10",
@@ -765,7 +863,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request road polygons as features in JSON-FG",
+			name: "GEOPACKAGE: Request road polygons as features in JSON-FG",
 			fields: fields{
 				configFile:   "internal/ogc/features/testdata/geopackage/config_features_roads.yaml",
 				url:          "http://localhost:8080/collections/:collectionId/items?limit=10&f=jsonfg",
@@ -792,6 +890,11 @@ func TestFeatures(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			assert.NoError(t, err)
+
+			// Use fixed decimal limit across all tests for stable output between
+			// different data sources (postgres, geopackage, etc)
+			newEngine.Config.OgcAPI.Features.MaxDecimals = 10
+
 			features := NewFeatures(newEngine)
 			handler := features.Features()
 			handler.ServeHTTP(rr, req)

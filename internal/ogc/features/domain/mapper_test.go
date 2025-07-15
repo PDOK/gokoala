@@ -158,7 +158,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 			if tt.schemaFields != nil {
 				schema.Fields = tt.schemaFields
 			}
-			prevNextID, err := mapColumnsToFeature(t.Context(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, schema, tt.mapGeom, nil)
+			prevNextID, err := mapColumnsToFeature(t.Context(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, schema, tt.mapGeom, nil, 0)
 
 			if tt.expectedError != nil {
 				assert.Nil(t, prevNextID)

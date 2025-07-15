@@ -72,7 +72,7 @@ func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs [
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
 func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn string, externalFidColumn string, geomColumn string,
-	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
+	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation, maxDecimals int) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -90,7 +90,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn strin
 		}
 		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
 		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn,
-			externalFidColumn, geomColumn, schema, mapGeom, mapRel)
+			externalFidColumn, geomColumn, schema, mapGeom, mapRel, maxDecimals)
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
@@ -103,8 +103,9 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn strin
 }
 
 //nolint:cyclop,funlen
-func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any, fidColumn string,
-	externalFidColumn string, geomColumn string, schema *Schema, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
+func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any,
+	fidColumn string, externalFidColumn string, geomColumn string, schema *Schema, mapGeom MapGeom, mapRel MapRelation,
+	maxDecimals int) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
@@ -124,7 +125,11 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
 			if mappedGeom != nil {
-				feature.Geometry, err = geojson.Encode(mappedGeom)
+				var opts []geojson.EncodeGeometryOption
+				if maxDecimals > 0 {
+					opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}
+				}
+				feature.Geometry, err = geojson.Encode(mappedGeom, opts...)
 				if err != nil {
 					return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
 				}

@@ -26,7 +26,7 @@ const (
 	selectAll = "*"
 
 	// https://github.com/jackc/pgx/issues/387#issuecomment-1107666716
-	pgxNamedParamSymbol = '@'
+	pgxNamedParamSymbol = "@"
 )
 
 type Postgres struct {
@@ -36,13 +36,16 @@ type Postgres struct {
 	fidColumn         string
 	externalFidColumn string
 	queryTimeout      time.Duration
+	maxDecimals       int
 
 	featureTableByCollectionID    map[string]*featureTable
 	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	propertiesByCollectionID      map[string]*config.FeatureProperties
 }
 
-func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postgres, transformOnTheFly bool) (*Postgres, error) {
+func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postgres,
+	transformOnTheFly bool, maxDecimals int) (*Postgres, error) {
+
 	if !transformOnTheFly {
 		return nil, errors.New("ahead-of-time transformed features are currently not " +
 			"supported for postgresql, reprojection/transformation is always applied")
@@ -76,6 +79,7 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 		fidColumn:                pgConfig.Fid,
 		externalFidColumn:        pgConfig.ExternalFid,
 		queryTimeout:             pgConfig.QueryTimeout.Duration,
+		maxDecimals:              maxDecimals,
 		propertiesByCollectionID: collections.FeaturePropertiesByID(),
 	}
 
@@ -125,7 +129,7 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
 	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, FromPgxRows(rows), pg.fidColumn, pg.externalFidColumn, table.GeometryColumnName,
-		propConfig, table.Schema, mapPostgisGeometry, profile.MapRelationUsingProfile)
+		propConfig, table.Schema, mapPostgisGeometry, profile.MapRelationUsingProfile, pg.maxDecimals)
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -326,7 +330,7 @@ func mapPostgisGeometry(columnValue any) (geom.T, error) {
 	return geometry, nil
 }
 
-func propertyFiltersToSQL(pf map[string]string, symbol byte) (sql string, namedParams map[string]any) {
+func propertyFiltersToSQL(pf map[string]string, symbol string) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	if len(pf) > 0 {
 		position := 0
@@ -335,20 +339,20 @@ func propertyFiltersToSQL(pf map[string]string, symbol byte) (sql string, namedP
 			namedParam := fmt.Sprintf("pf%d", position)
 			// column name in double quotes in case it is a reserved keyword
 			// also: we don't currently support LIKE since wildcard searches don't use the index
-			sql += fmt.Sprintf(" and \"%s\" = %b%s", k, symbol, namedParam)
+			sql += fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam)
 			namedParams[namedParam] = v
 		}
 	}
 	return sql, namedParams
 }
 
-func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol byte) (sql string, namedParams map[string]any) {
+func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	if !temporalCriteria.ReferenceDate.IsZero() {
 		namedParams["referenceDate"] = temporalCriteria.ReferenceDate
 		startDate := temporalCriteria.StartDateProperty
 		endDate := temporalCriteria.EndDateProperty
-		sql = fmt.Sprintf(" and \"%[1]s\" <= %[3]breferenceDate and (\"%[2]s\" >= %[3]breferenceDate or \"%[2]s\" is null)",
+		sql = fmt.Sprintf(" and \"%[1]s\" <= %[3]sreferenceDate and (\"%[2]s\" >= %[3]sreferenceDate or \"%[2]s\" is null)",
 			startDate, endDate, symbol)
 	}
 	return sql, namedParams

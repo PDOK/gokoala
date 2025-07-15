@@ -73,7 +73,7 @@ func TestNewGeoPackage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g, err := NewGeoPackage(tt.args.collection, tt.args.config, false)
+			g, err := NewGeoPackage(tt.args.collection, tt.args.config, false, 0)
 			assert.NoError(t, err)
 			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(g.featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
 		})

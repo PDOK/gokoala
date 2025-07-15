@@ -286,13 +286,16 @@ func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*
 
 func newDatasource(e *engine.Engine, collections config.GeoSpatialCollections,
 	dsConfig config.Datasource, transformOnTheFly bool) ds.Datasource {
+
+	maxDecimals := e.Config.OgcAPI.Features.MaxDecimals
+
 	var datasource ds.Datasource
 	var err error
 	switch {
 	case dsConfig.GeoPackage != nil:
-		datasource, err = geopackage.NewGeoPackage(collections, *dsConfig.GeoPackage, transformOnTheFly)
+		datasource, err = geopackage.NewGeoPackage(collections, *dsConfig.GeoPackage, transformOnTheFly, maxDecimals)
 	case dsConfig.Postgres != nil:
-		datasource, err = postgres.NewPostgres(collections, *dsConfig.Postgres, transformOnTheFly)
+		datasource, err = postgres.NewPostgres(collections, *dsConfig.Postgres, transformOnTheFly, maxDecimals)
 	default:
 		log.Fatal("got unknown datasource type")
 	}

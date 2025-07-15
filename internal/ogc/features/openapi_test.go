@@ -19,7 +19,7 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 	assert.NoError(t, err)
 	oafWithInvalidPropertyFilter := eng2.OgcAPI.Features
 
-	gpkg, err := geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage, false)
+	gpkg, err := geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage, false, 0)
 	assert.NoError(t, err)
 
 	tests := []struct {
