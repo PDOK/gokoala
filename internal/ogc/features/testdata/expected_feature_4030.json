@@ -1,4 +1,28 @@
 {
+  "type": "Feature",
+  "properties": {
+    "datum_doc": "1900-01-01",
+    "datum_eind": null,
+    "datum_strt": "1900-01-01",
+    "document": "GV00000402",
+    "huisletter": null,
+    "huisnummer": 285,
+    "nummer_id": "0363200000428648",
+    "postcode": "1013LH",
+    "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000428648",
+    "status": "Naamgeving uitgegeven",
+    "straatnaam": "Bickersgracht",
+    "toevoeging": null,
+    "type": "Ligplaats",
+    "woonplaats": "Amsterdam"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      4.8892539374238675,
+      52.386917016546725
+    ]
+  },
   "id": "4030",
   "links": [
     {
@@ -25,29 +49,5 @@
       "type": "application/json",
       "href": "http://localhost:8080/collections/foo?f=json"
     }
-  ],
-  "type": "Feature",
-  "geometry": {
-    "type": "Point",
-    "coordinates": [
-      121100.455,
-      488900.976
-    ]
-  },
-  "properties": {
-    "datum_doc": "1900-01-01",
-    "datum_strt": "1900-01-01",
-    "document": "GV00000402",
-    "datum_eind": null,
-    "huisnummer": 285,
-    "huisletter": null,
-    "toevoeging": null,
-    "nummer_id": "0363200000428648",
-    "postcode": "1013LH",
-    "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000428648",
-    "status": "Naamgeving uitgegeven",
-    "straatnaam": "Bickersgracht",
-    "type": "Ligplaats",
-    "woonplaats": "Amsterdam"
-  }
+  ]
 }

@@ -10,10 +10,15 @@ license:
 ogcApi:
   features:
     datasources:
-      defaultWGS84:
-        geopackage:
-          local:
-            file: ./examples/resources/addresses-crs84.gpkg
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+            - srs: EPSG:4258
+            - srs: EPSG:3857
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: addresses
             externalFid: external_fid
     collections:
       - id: dutch-addresses-first

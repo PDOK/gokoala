@@ -1,4 +1,6 @@
 {
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
   "links": [
     {
       "rel": "self",
@@ -19,20 +21,9 @@
       "href": "http://localhost:8080/collections/foo/items?f=html&postcode=1104MM&straatnaam=Zandhoek"
     }
   ],
-  "numberReturned": 1,
-  "timeStamp": "2000-01-01T00:00:00Z",
-  "type": "FeatureCollection",
   "features": [
     {
-      "id": "6313",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          121191.236,
-          489036.72
-        ]
-      },
       "properties": {
         "datum_doc": "2021-09-29",
         "datum_eind": null,
@@ -48,7 +39,16 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.890573706518371,
+          52.388142582198334
+        ]
+      },
+      "id": "6313"
     }
-  ]
+  ],
+  "numberReturned": 1
 }

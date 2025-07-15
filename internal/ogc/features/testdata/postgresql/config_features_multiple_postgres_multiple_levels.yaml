@@ -10,31 +10,26 @@ license:
 ogcApi:
   features:
     datasources:
-      defaultWGS84:
-        geopackage:
-          local:
-            file: ./examples/resources/addresses-crs84.gpkg
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: addresses
             externalFid: external_fid
-      additional:
-        - srs: EPSG:28992
-          geopackage:
-            local:
-              file: ./examples/resources/addresses-rd.gpkg
-              externalFid: external_fid
     collections:
       - id: dutch-addresses
         datasources:
-          defaultWGS84:
-            geopackage:
-              local:
-                file: ./examples/resources/addresses-crs84.gpkg
+          transformOnTheFly:
+            - supportedSrs:
+                - srs: EPSG:4258
+                - srs: EPSG:3857
+              postgres:
+                host: localhost
+                port: ${DB_PORT}
+                schema: addresses
                 externalFid: external_fid
-          additional:
-            - srs: EPSG:3035
-              geopackage:
-                local:
-                  file: ./examples/resources/addresses-etrs89.gpkg
-                  externalFid: external_fid
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           description: addresses

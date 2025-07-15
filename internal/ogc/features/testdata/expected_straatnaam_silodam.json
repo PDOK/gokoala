@@ -1,4 +1,6 @@
 {
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
   "links": [
     {
       "rel": "self",
@@ -19,20 +21,9 @@
       "href": "http://localhost:8080/collections/foo/items?f=html&straatnaam=Silodam"
     }
   ],
-  "numberReturned": 4,
-  "timeStamp": "2000-01-01T00:00:00Z",
-  "type": "FeatureCollection",
   "features": [
     {
-      "id": "5716",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          121209.137,
-          489301.29
-        ]
-      },
       "properties": {
         "datum_doc": "2006-07-17",
         "datum_eind": null,
@@ -48,18 +39,18 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
-      }
-    },
-    {
-      "id": "5717",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          121205.566,
-          489313.36
+          4.8908100302077715,
+          52.390521443324296
         ]
       },
+      "id": "5716"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "datum_doc": "2006-07-17",
         "datum_eind": null,
@@ -75,18 +66,18 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
-      }
-    },
-    {
-      "id": "5718",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          121194.463,
-          489355.933
+          4.890756358680562,
+          52.390629699634744
         ]
       },
+      "id": "5717"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "datum_doc": "2006-07-17",
         "datum_eind": null,
@@ -102,18 +93,18 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
-      }
-    },
-    {
-      "id": "5719",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          121191.258,
-          489367.231
+          4.89058897289617,
+          52.391011630283145
         ]
       },
+      "id": "5718"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "datum_doc": "2006-07-17",
         "datum_eind": null,
@@ -129,7 +120,16 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.89054075445135,
+          52.3911129708663
+        ]
+      },
+      "id": "5719"
     }
-  ]
+  ],
+  "numberReturned": 4
 }

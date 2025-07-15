@@ -12,13 +12,11 @@ ogcApi:
     datasources:
       transformOnTheFly:
         - supportedSrs:
-            - srs: EPSG:28992
-            - srs: EPSG:4258
-            - srs: EPSG:3857
           postgres:
             host: localhost
             port: ${DB_PORT}
             schema: bag
+            fid: feature_id
             # Rely on defaults for databaseName, user/pass., sslmode, etc
     collections:
       - id: foo

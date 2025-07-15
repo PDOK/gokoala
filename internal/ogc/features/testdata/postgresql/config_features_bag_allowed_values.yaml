@@ -10,10 +10,15 @@ license:
 ogcApi:
   features:
     datasources:
-      defaultWGS84:
-        geopackage:
-          local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/bag.gpkg
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+            - srs: EPSG:4258
+            - srs: EPSG:3857
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: bag
             fid: feature_id
     collections:
       - id: foo

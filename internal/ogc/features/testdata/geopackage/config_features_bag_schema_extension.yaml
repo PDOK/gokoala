@@ -13,7 +13,7 @@ ogcApi:
       defaultWGS84:
         geopackage:
           local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/bag_schema_extension.gpkg
+            file: ./internal/ogc/features/datasources/geopackage/testdata/bag-schema-extension-wgs84.gpkg
             fid: feature_id
             queryTimeout: 15m # pretty high to allow debugging
     collections:

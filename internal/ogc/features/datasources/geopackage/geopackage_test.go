@@ -195,7 +195,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		{
 			name: "get first page of features with reference date",
 			fields: fields{
-				backend:          newTestGeoPackage("/testdata/bag-temporal.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag-temporal-wgs84.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
