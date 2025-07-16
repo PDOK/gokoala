@@ -32,6 +32,7 @@ const (
 type Postgres struct {
 	db *pgxpool.Pool
 
+	transformOnTheFly bool
 	schemaName        string
 	fidColumn         string
 	externalFidColumn string
@@ -75,6 +76,7 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 
 	pg := &Postgres{
 		db:                       db,
+		transformOnTheFly:        transformOnTheFly,
 		schemaName:               pgConfig.Schema,
 		fidColumn:                pgConfig.Fid,
 		externalFidColumn:        pgConfig.ExternalFid,
@@ -157,6 +159,10 @@ func (pg *Postgres) GetPropertyFiltersWithAllowedValues(collection string) datas
 	return pg.propertyFiltersByCollectionID[collection]
 }
 
+func (pg *Postgres) SupportsOnTheFlyTransformation() bool {
+	return pg.transformOnTheFly
+}
+
 // Build specific features queries based on the given options.
 func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *featureTable,
 	onlyFIDs bool, axisOrder domain.AxisOrder, criteria datasources.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
@@ -210,7 +216,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 func (pg *Postgres) makeBboxQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
-	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, criteria.OutputSRID)
+	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, criteria.OutputSRID, table.GeometryColumnName)
 	if err != nil {
 		return "", nil, err
 	}
@@ -235,14 +241,14 @@ select %[6]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 	return bboxQuery, namedParams, nil
 }
 
-func bboxToSQL(bbox *geom.Bounds, bboxSRID domain.SRID, outputSRID domain.SRID) (string, map[string]any, error) {
+func bboxToSQL(bbox *geom.Bounds, bboxSRID domain.SRID, outputSRID domain.SRID, geomColumn string) (string, map[string]any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxNamedParams map[string]any
 	var err error
 	if bbox != nil {
-		bboxFilter = fmt.Sprintf(`AND
-			st_intersects(r.geometry, st_transform(st_geomfromtext(@bboxWkt::text, @bboxSrid::int), %[1]d))
-		`, outputSRID)
+		bboxFilter = fmt.Sprintf(`and
+			st_intersects(%[1]s, st_transform(st_geomfromtext(@bboxWkt::text, @bboxSrid::int), %[2]d))
+		`, geomColumn, outputSRID)
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
 			return "", nil, err

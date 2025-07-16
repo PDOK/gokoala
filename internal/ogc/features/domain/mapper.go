@@ -8,7 +8,6 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/twpayne/go-geom"
-	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
 // MapRelation abstract function type to map feature relations
@@ -125,12 +124,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
 			if mappedGeom != nil {
-				var opts []geojson.EncodeGeometryOption
-				if maxDecimals > 0 {
-					opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}
-				}
-				feature.Geometry, err = geojson.Encode(mappedGeom, opts...)
-				if err != nil {
+				if err = feature.SetGeom(mappedGeom, maxDecimals); err != nil {
 					return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
 				}
 			}
@@ -164,12 +158,14 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
-			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a feature property
+			// Grab any non-nil, non-id, non-bounding box & non-geometry column as a feature property
 			switch v := columnValue.(type) {
 			case []uint8:
 				asBytes := make([]byte, len(v))
 				copy(asBytes, v)
 				feature.Properties.Set(columnName, string(asBytes))
+			case int32:
+				feature.Properties.Set(columnName, v)
 			case int64:
 				feature.Properties.Set(columnName, v)
 			case float64:

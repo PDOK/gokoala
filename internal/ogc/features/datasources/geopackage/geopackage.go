@@ -58,6 +58,7 @@ type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
 
+	transformOnTheFly         bool
 	fidColumn                 string
 	externalFidColumn         string
 	queryTimeout              time.Duration
@@ -78,6 +79,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	}
 
 	g := &GeoPackage{
+		transformOnTheFly:        transformOnTheFly,
 		preparedStmtCache:        NewCache(),
 		propertiesByCollectionID: collections.FeaturePropertiesByID(),
 	}
@@ -293,6 +295,10 @@ func (g *GeoPackage) GetSchema(collection string) (*domain.Schema, error) {
 
 func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
 	return g.propertyFiltersByCollectionID[collection]
+}
+
+func (g *GeoPackage) SupportsOnTheFlyTransformation() bool {
+	return g.transformOnTheFly
 }
 
 // Build specific features queries based on the given options.

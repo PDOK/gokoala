@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
@@ -43,6 +44,17 @@ type Feature struct {
 // Keys of the Feature properties.
 func (f *Feature) Keys() []string {
 	return f.Properties.Keys()
+}
+
+// SetGeom sets the geometry of the Feature by encoding the provided geom.T with
+// optional maximum decimal precision to GeoJSON.
+func (f *Feature) SetGeom(geometry geom.T, maxDecimals int) (err error) {
+	var opts []geojson.EncodeGeometryOption
+	if maxDecimals > 0 {
+		opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}
+	}
+	f.Geometry, err = geojson.Encode(geometry, opts...)
+	return
 }
 
 // Link according to RFC 8288, https://datatracker.ietf.org/doc/html/rfc8288
