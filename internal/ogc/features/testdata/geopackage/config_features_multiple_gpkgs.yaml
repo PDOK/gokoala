@@ -1,7 +1,7 @@
 ---
 version: 1.0.2
 title: OGC API Features
-abstract: Contains a multiple geopackages in different projections
+abstract: Contains multiple geopackages in different projections
 baseUrl: http://localhost:8080
 serviceIdentifier: Feats
 license:

@@ -1,7 +1,7 @@
 ---
 version: 1.0.2
 title: OGC API Features
-abstract: Contains multiple postgres configs in different projections
+abstract: Supports different projections
 baseUrl: http://localhost:8080
 serviceIdentifier: Feats
 license:
@@ -13,6 +13,7 @@ ogcApi:
       transformOnTheFly:
         - supportedSrs:
             - srs: EPSG:28992
+            - srs: EPSG:3035
           postgres:
             host: localhost
             port: ${DB_PORT}
@@ -20,16 +21,6 @@ ogcApi:
             externalFid: external_fid
     collections:
       - id: dutch-addresses
-        datasources:
-          transformOnTheFly:
-            - supportedSrs:
-                - srs: EPSG:4258
-                - srs: EPSG:3857
-              postgres:
-                host: localhost
-                port: ${DB_PORT}
-                schema: addresses
-                externalFid: external_fid
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           description: addresses
