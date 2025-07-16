@@ -40,6 +40,7 @@ services:
           -preserve_fid \
           -lco SCHEMA=threedimensionalgeoms \
           -lco FID=fid \
+          -lco DIM=3 \
           /testdata/3d-geoms.gpkg
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
