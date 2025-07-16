@@ -146,14 +146,20 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 						"from may take a long time. Index on this column is recommended", pf.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct ft.%s from %s ft", pf.Name, featTable.TableName)
-				var values []string
-				rows, err := db.Query(context.Background(), query, nil)
+				query := fmt.Sprintf("select distinct \"%s\" from \"%s\"", pf.Name, featTable.TableName)
+				rows, err := db.Query(context.Background(), query)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
 				}
-				if err = rows.Scan(&values); err != nil {
-					return nil, fmt.Errorf("failed to read result: %w", err)
+				var values []string
+				for rows.Next() {
+					rowValues, err := rows.Values()
+					if err != nil {
+						return nil, fmt.Errorf("failed to read: %w", err)
+					}
+					for _, v := range rowValues {
+						values = append(values, fmt.Sprintf("%v", v))
+					}
 				}
 				// make sure values are valid
 				for _, v := range values {
