@@ -206,15 +206,16 @@ Design principles:
 
 - Performance and scalability are key!
 - Be opinionated when you can, only make stuff configurable when you must.
+- Fail fast, fail hard: do as much pre-processing/validation on startup instead
+  of during request handling.
 - The `ogc` [package](internal/ogc/README.md) contains logic per specific OGC API
   building block.
 - The `engine` package should contain general logic. `ogc` may reference
   `engine`.
   > :warning: The other way around is not allowed!
+- Document public APIs with [godoc](https://go.dev/blog/godoc)
 - Geospatial related configuration is done through the config file, technical
   configuration (host/port/etc) is done through CLI flags/env variables.
-- Fail fast, fail hard: do as much pre-processing/validation on startup instead
-  of during request handling.
 - Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
 
