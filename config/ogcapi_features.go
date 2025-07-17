@@ -40,6 +40,12 @@ type OgcAPIFeatures struct {
 	// +optional
 	// +kubebuilder:validation:Minimum=0
 	MaxDecimals int `yaml:"maxDecimals,omitempty" json:"maxDecimals,omitempty" default:"0"`
+
+	// Force timestamps in features to the UTC timezone.
+	//
+	// +kubebuilder:default=false
+	// +optional
+	ForceUTC bool `yaml:"forceUtc,omitempty" json:"forceUtc,omitempty"`
 }
 
 func (oaf *OgcAPIFeatures) CollectionsSRS() []string {

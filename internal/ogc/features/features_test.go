@@ -890,9 +890,10 @@ func TestFeatures(t *testing.T) {
 					newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 					assert.NoError(t, err)
 
-					// use fixed decimal limit across all tests for stable output between
-					// different data sources (postgres, geopackage, etc)
-					newEngine.Config.OgcAPI.Features.MaxDecimals = 10
+					// use fixed decimal limit in coordinates and UTC timezone across all tests for
+					// stable output between different data sources (postgres, geopackage, etc)
+					newEngine.Config.OgcAPI.Features.MaxDecimals = 7
+					newEngine.Config.OgcAPI.Features.ForceUTC = true
 
 					features := NewFeatures(newEngine)
 					handler := features.Features()

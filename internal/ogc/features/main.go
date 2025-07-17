@@ -288,14 +288,15 @@ func newDatasource(e *engine.Engine, collections config.GeoSpatialCollections,
 	dsConfig config.Datasource, transformOnTheFly bool) ds.Datasource {
 
 	maxDecimals := e.Config.OgcAPI.Features.MaxDecimals
+	forceUTC := e.Config.OgcAPI.Features.ForceUTC
 
 	var datasource ds.Datasource
 	var err error
 	switch {
 	case dsConfig.GeoPackage != nil:
-		datasource, err = geopackage.NewGeoPackage(collections, *dsConfig.GeoPackage, transformOnTheFly, maxDecimals)
+		datasource, err = geopackage.NewGeoPackage(collections, *dsConfig.GeoPackage, transformOnTheFly, maxDecimals, forceUTC)
 	case dsConfig.Postgres != nil:
-		datasource, err = postgres.NewPostgres(collections, *dsConfig.Postgres, transformOnTheFly, maxDecimals)
+		datasource, err = postgres.NewPostgres(collections, *dsConfig.Postgres, transformOnTheFly, maxDecimals, forceUTC)
 	default:
 		log.Fatal("got unknown datasource type")
 	}

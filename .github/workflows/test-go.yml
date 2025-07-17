@@ -31,12 +31,7 @@ jobs:
         run: go build -v ./...
 
       - name: Unit Test
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 5
-          max_attempts: 2
-          retry_on: error
-          command: |
+        run: |
             go test -v -race -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
             # remove generate code from coverage results
             grep -v "zz_generated" cover.out.tmp > cover.out

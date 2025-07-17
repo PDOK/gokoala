@@ -49,6 +49,10 @@ func (f *Feature) Keys() []string {
 // SetGeom sets the geometry of the Feature by encoding the provided geom.T with
 // optional maximum decimal precision to GeoJSON.
 func (f *Feature) SetGeom(geometry geom.T, maxDecimals int) (err error) {
+	if geometry == nil {
+		f.Geometry = nil
+		return
+	}
 	var opts []geojson.EncodeGeometryOption
 	if maxDecimals > 0 {
 		opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}

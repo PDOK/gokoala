@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Feature endpoint serves a single Feature
+// Feature endpoint serves a single Feature by ID
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
@@ -82,7 +82,7 @@ func parseFeatureID(r *http.Request) (any, error) {
 	return featureID, nil
 }
 
-// log error, but sent generic message to client to prevent possible information leakage from datasource
+// log error but send a generic message to the client to prevent possible information leakage from datasource
 func handleFeatureQueryError(w http.ResponseWriter, collectionID string, featureID any, err error) {
 	msg := fmt.Sprintf("failed to retrieve feature %v in collection %s", featureID, collectionID)
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

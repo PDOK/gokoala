@@ -64,6 +64,7 @@ type GeoPackage struct {
 	queryTimeout              time.Duration
 	maxDecimals               int
 	maxBBoxSizeToUseWithRTree int
+	forceUTC                  bool
 
 	featureTableByCollectionID    map[string]*featureTable
 	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
@@ -71,7 +72,7 @@ type GeoPackage struct {
 }
 
 func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage,
-	transformOnTheFly bool, maxDecimals int) (*GeoPackage, error) {
+	transformOnTheFly bool, maxDecimals int, forceUTC bool) (*GeoPackage, error) {
 
 	loadDriver()
 	if transformOnTheFly {
@@ -92,6 +93,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		g.externalFidColumn = gpkgConfig.Local.ExternalFid
 		g.queryTimeout = gpkgConfig.Local.QueryTimeout.Duration
 		g.maxDecimals = maxDecimals
+		g.forceUTC = forceUTC
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
@@ -99,6 +101,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		g.externalFidColumn = gpkgConfig.Cloud.ExternalFid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout.Duration
 		g.maxDecimals = maxDecimals
+		g.forceUTC = forceUTC
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 		warmUp = gpkgConfig.Cloud.Cache.WarmUp
 	default:
@@ -189,8 +192,10 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer rows.Close()
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows), g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile, g.maxDecimals)
+	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+		g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
+		domain.FormatOpts{MaxDecimals: g.maxDecimals, ForceUTC: g.forceUTC})
 	if err != nil {
 		return nil, err
 	}
@@ -223,8 +228,10 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows), g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile, g.maxDecimals)
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+		g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
+		domain.FormatOpts{MaxDecimals: g.maxDecimals, ForceUTC: g.forceUTC})
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -274,8 +281,10 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, _, err := domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows), g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile, g.maxDecimals)
+	features, _, err := domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+		g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
+		domain.FormatOpts{MaxDecimals: g.maxDecimals, ForceUTC: g.forceUTC})
 	if err != nil {
 		return nil, err
 	}

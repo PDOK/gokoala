@@ -116,8 +116,10 @@ func (f *Features) Features() http.HandlerFunc {
 
 func querySingleDatasource(datasource ds.Datasource, input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {
 	if datasource != nil && datasource.SupportsOnTheFlyTransformation() {
-		return true
+		return true // for on-the-fly we can always use just one datasource
 	}
+	// in the case of ahead-of-time transformed data sources, use a
+	// single datasource only when input and output SRID are compatible.
 	return bbox == nil ||
 		int(input) == int(output) ||
 		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||
@@ -135,7 +137,7 @@ func createTemporalCriteria(collection config.GeoSpatialCollection, referenceDat
 	return temporalCriteria
 }
 
-// log error, but send generic message to client to prevent possible information leakage from datasource
+// log error but send a generic message to the client to prevent possible information leakage from datasource
 func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err error) {
 	msg := "failed to retrieve feature collection " + collectionID
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

@@ -69,9 +69,14 @@ func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs [
 	return
 }
 
+type FormatOpts struct {
+	MaxDecimals int
+	ForceUTC    bool
+}
+
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
 func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn string, externalFidColumn string, geomColumn string,
-	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation, maxDecimals int) ([]*Feature, *PrevNextFID, error) {
+	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation, formatOpts FormatOpts) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -89,7 +94,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn strin
 		}
 		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
 		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn,
-			externalFidColumn, geomColumn, schema, mapGeom, mapRel, maxDecimals)
+			externalFidColumn, geomColumn, schema, mapGeom, mapRel, formatOpts)
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
@@ -104,7 +109,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn strin
 //nolint:cyclop,funlen
 func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any,
 	fidColumn string, externalFidColumn string, geomColumn string, schema *Schema, mapGeom MapGeom, mapRel MapRelation,
-	maxDecimals int) (*PrevNextFID, error) {
+	formatOpts FormatOpts) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
@@ -123,10 +128,8 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			if err != nil {
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
-			if mappedGeom != nil {
-				if err = feature.SetGeom(mappedGeom, maxDecimals); err != nil {
-					return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
-				}
+			if err = feature.SetGeom(mappedGeom, formatOpts.MaxDecimals); err != nil {
+				return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
 			}
 
 		case MinxField, MinyField, MaxxField, MaxyField:
@@ -160,13 +163,11 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 			}
 			// Grab any non-nil, non-id, non-bounding box & non-geometry column as a feature property
 			switch v := columnValue.(type) {
-			case []uint8:
+			case []byte:
 				asBytes := make([]byte, len(v))
 				copy(asBytes, v)
 				feature.Properties.Set(columnName, string(asBytes))
-			case int32:
-				feature.Properties.Set(columnName, v)
-			case int64:
+			case int32, int64:
 				feature.Properties.Set(columnName, v)
 			case float64:
 				// Check to determine whether the content of the columnValue is truly a floating point value.
@@ -177,11 +178,15 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 					feature.Properties.Set(columnName, v)
 				}
 			case time.Time:
+				timeVal := v
+				if formatOpts.ForceUTC {
+					timeVal = timeVal.UTC()
+				}
 				// Map as date (= without time) only when defined as such in the schema AND when no time component is present
-				if types.IsDate(v) && schema.IsDate(columnName) {
-					feature.Properties.Set(columnName, types.NewDate(v))
+				if types.IsDate(timeVal) && schema.IsDate(columnName) {
+					feature.Properties.Set(columnName, types.NewDate(timeVal))
 				} else {
-					feature.Properties.Set(columnName, v)
+					feature.Properties.Set(columnName, timeVal)
 				}
 			case string:
 				feature.Properties.Set(columnName, v)
