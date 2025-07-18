@@ -51,6 +51,7 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
+		// validation completed, now get the features
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]

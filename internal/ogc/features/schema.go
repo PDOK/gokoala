@@ -42,7 +42,7 @@ func (f *Features) Schema() http.HandlerFunc {
 			key = engine.NewTemplateKey(schemaJSON,
 				engine.WithInstanceName(collection.ID),
 				f.engine.WithNegotiatedLanguage(w, r),
-				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema))
+				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema)) // JSON format, but specific mediatype.
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, "format is not supported")
 			return

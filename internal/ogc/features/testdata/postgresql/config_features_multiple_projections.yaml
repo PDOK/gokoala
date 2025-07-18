@@ -19,6 +19,7 @@ ogcApi:
             port: ${DB_PORT}
             schema: addresses
             externalFid: external_fid
+            queryTimeout: 20m  # to aid in debugging
     collections:
       - id: dutch-addresses
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.

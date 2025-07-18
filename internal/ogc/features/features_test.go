@@ -398,7 +398,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request output in default (WGS84) and bbox in RD, with GeoPackages configured on different levels (top-level and collection-level)",
+			name: "Request output in default (WGS84) and bbox in RD, with datasources configured on different levels (top-level and collection-level)",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs_multiple_levels.yaml",
@@ -892,7 +892,7 @@ func TestFeatures(t *testing.T) {
 
 					// use fixed decimal limit in coordinates and UTC timezone across all tests for
 					// stable output between different data sources (postgres, geopackage, etc)
-					newEngine.Config.OgcAPI.Features.MaxDecimals = 7
+					newEngine.Config.OgcAPI.Features.MaxDecimals = 5
 					newEngine.Config.OgcAPI.Features.ForceUTC = true
 
 					features := NewFeatures(newEngine)

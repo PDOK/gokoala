@@ -221,7 +221,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 func (pg *Postgres) makeBboxQuery(table *featureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	pfClause, pfNamedParams := propertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := temporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
-	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, criteria.OutputSRID, table.GeometryColumnName)
+	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)
 	if err != nil {
 		return "", nil, err
 	}
@@ -246,14 +246,14 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 	return bboxQuery, namedParams, nil
 }
 
-func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, outputSRID d.SRID, geomColumn string) (string, map[string]any, error) {
+func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, map[string]any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxNamedParams map[string]any
 	var err error
 	if bbox != nil {
 		bboxFilter = fmt.Sprintf(`and
-			st_intersects(%[1]s, st_transform(st_geomfromtext(@bboxWkt::text, @bboxSrid::int), %[2]d))
-		`, geomColumn, outputSRID)
+			st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int))
+		`, geomColumn)
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
 			return "", nil, err
