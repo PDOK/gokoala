@@ -41,7 +41,7 @@ RUN find . -type f -name "*.go" -delete && find . -type d -name "testdata" -prun
 ####### Final image (use debian tag since we rely on C-libs)
 FROM docker.io/debian:bookworm-slim
 
-# install sqlite-related runtime dependencies
+# install sqlite-related runtime dependencies (also make sure to add these to GH actions workflows)
 RUN set -eux && \
     apt-get update && \
     apt-get install --no-install-recommends -y  \
