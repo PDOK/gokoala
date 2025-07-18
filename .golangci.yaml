@@ -48,6 +48,7 @@ linters-settings:
     replace-allow-list:
       - github.com/wk8/go-ordered-map/v2
       - github.com/PDOK/gokoala
+      - github.com/docker/compose/v2
 
 linters:
   disable-all: true

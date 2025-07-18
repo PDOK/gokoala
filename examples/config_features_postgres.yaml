@@ -46,6 +46,7 @@ ogcApi:
         - supportedSrs:
             - srs: EPSG:3857
             - srs: EPSG:4258
+            - srs: EPSG:28992
           postgres:
             host: postgres
             port: 5432
