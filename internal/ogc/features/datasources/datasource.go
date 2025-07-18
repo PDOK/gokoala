@@ -33,6 +33,9 @@ type Datasource interface {
 	// When enrichments don't apply, the returned result should still contain all property filters as specified in the (YAML) config.
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
 
+	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
+	SupportsOnTheFlyTransformation() bool
+
 	// Close closes (connections to) the datasource gracefully
 	Close()
 }

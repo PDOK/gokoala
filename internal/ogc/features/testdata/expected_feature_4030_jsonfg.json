@@ -1,27 +1,28 @@
 {
+  "id": "4030",
   "type": "Feature",
   "time": null,
   "place": null,
   "geometry": {
     "type": "Point",
     "coordinates": [
-      121100.455,
-      488900.976
+      4.8892539374238675,
+      52.386917016546725
     ]
   },
   "properties": {
     "datum_doc": "1900-01-01",
-    "datum_strt": "1900-01-01",
     "datum_eind": null,
+    "datum_strt": "1900-01-01",
     "document": "GV00000402",
-    "huisnummer": 285,
     "huisletter": null,
-    "toevoeging": null,
+    "huisnummer": 285,
     "nummer_id": "0363200000428648",
     "postcode": "1013LH",
     "rdf_seealso": "http://bag.basisregistraties.overheid.nl/bag/id/nummeraanduiding/0363200000428648",
     "status": "Naamgeving uitgegeven",
     "straatnaam": "Bickersgracht",
+    "toevoeging": null,
     "type": "Ligplaats",
     "woonplaats": "Amsterdam"
   },
@@ -54,6 +55,5 @@
   ],
   "conformsTo": [
     "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
-  ],
-  "id": "4030"
+  ]
 }

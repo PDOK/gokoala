@@ -3,6 +3,7 @@ package geopackage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"maps"
@@ -57,46 +58,61 @@ type GeoPackage struct {
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
 
-	fidColumn                     string
-	externalFidColumn             string
+	transformOnTheFly         bool
+	fidColumn                 string
+	externalFidColumn         string
+	queryTimeout              time.Duration
+	maxDecimals               int
+	maxBBoxSizeToUseWithRTree int
+	forceUTC                  bool
+
 	featureTableByCollectionID    map[string]*featureTable
 	propertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	propertiesByCollectionID      map[string]*config.FeatureProperties
-	queryTimeout                  time.Duration
-	maxBBoxSizeToUseWithRTree     int
 }
 
-func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage) *GeoPackage {
+func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage,
+	transformOnTheFly bool, maxDecimals int, forceUTC bool) (*GeoPackage, error) {
+
 	loadDriver()
+	if transformOnTheFly {
+		return nil, errors.New("on the fly reprojection/transformation is currently not supported for GeoPackages")
+	}
 
-	g := &GeoPackage{}
-	g.preparedStmtCache = NewCache()
-	g.propertiesByCollectionID = cacheFeatureProperties(collections)
+	g := &GeoPackage{
+		transformOnTheFly:        transformOnTheFly,
+		preparedStmtCache:        NewCache(),
+		propertiesByCollectionID: collections.FeaturePropertiesByID(),
+	}
+
 	warmUp := false
-
 	switch {
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
 		g.fidColumn = gpkgConfig.Local.Fid
 		g.externalFidColumn = gpkgConfig.Local.ExternalFid
 		g.queryTimeout = gpkgConfig.Local.QueryTimeout.Duration
+		g.maxDecimals = maxDecimals
+		g.forceUTC = forceUTC
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
 		g.fidColumn = gpkgConfig.Cloud.Fid
 		g.externalFidColumn = gpkgConfig.Cloud.ExternalFid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout.Duration
+		g.maxDecimals = maxDecimals
+		g.forceUTC = forceUTC
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 		warmUp = gpkgConfig.Cloud.Cache.WarmUp
 	default:
-		log.Fatal("unknown GeoPackage config encountered")
+		return nil, errors.New("unknown GeoPackage config encountered")
 	}
 
 	g.featureTableByCollectionID, g.propertyFiltersByCollectionID = readMetadata(
 		g.backend.getDB(), collections, g.fidColumn, g.externalFidColumn)
 
 	if err := assertIndexesExist(collections, g.featureTableByCollectionID, g.backend.getDB(), g.fidColumn); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	if warmUp {
 		// perform warmup async since it can take a long time
@@ -106,7 +122,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 			}
 		}()
 	}
-	return g
+	return g, nil
 }
 
 func (g *GeoPackage) Close() {
@@ -135,7 +151,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	}
 	defer rows.Close()
 
-	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(queryCtx, rows)
+	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(queryCtx, FromSqlxRows(rows))
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -176,8 +192,10 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer rows.Close()
 
 	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
+	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+		g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
+		domain.FormatOpts{MaxDecimals: g.maxDecimals, ForceUTC: g.forceUTC})
 	if err != nil {
 		return nil, err
 	}
@@ -210,8 +228,10 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 
 	var prevNext *domain.PrevNextFID
 	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
+	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+		g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
+		domain.FormatOpts{MaxDecimals: g.maxDecimals, ForceUTC: g.forceUTC})
 	if err != nil {
 		return nil, domain.Cursors{}, err
 	}
@@ -261,8 +281,10 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, _, err := domain.MapRowsToFeatures(queryCtx, rows, g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
-		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile)
+	features, _, err := domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+		g.fidColumn, g.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
+		domain.FormatOpts{MaxDecimals: g.maxDecimals, ForceUTC: g.forceUTC})
 	if err != nil {
 		return nil, err
 	}
@@ -282,6 +304,10 @@ func (g *GeoPackage) GetSchema(collection string) (*domain.Schema, error) {
 
 func (g *GeoPackage) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
 	return g.propertyFiltersByCollectionID[collection]
+}
+
+func (g *GeoPackage) SupportsOnTheFlyTransformation() bool {
+	return g.transformOnTheFly
 }
 
 // Build specific features queries based on the given options.
@@ -470,7 +496,11 @@ func (g *GeoPackage) selectColumns(table *featureTable, axisOrder domain.AxisOrd
 }
 
 // mapGpkgGeometry GeoPackage specific way to read geometries
-func mapGpkgGeometry(rawGeom []byte) (geom.T, error) {
+func mapGpkgGeometry(columnValue any) (geom.T, error) {
+	rawGeom, ok := columnValue.([]byte)
+	if !ok {
+		return nil, errors.New("failed to cast GeoPackage geom to bytes")
+	}
 	geomWithMetadata, err := encoding.DecodeGeometry(rawGeom)
 	if err != nil {
 		return nil, err
@@ -506,17 +536,6 @@ func temporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria) (sql s
 		sql = fmt.Sprintf(" and \"%[1]s\" <= :referenceDate and (\"%[2]s\" >= :referenceDate or \"%[2]s\" is null)", startDate, endDate)
 	}
 	return sql, namedParams
-}
-
-func cacheFeatureProperties(collections config.GeoSpatialCollections) map[string]*config.FeatureProperties {
-	result := make(map[string]*config.FeatureProperties)
-	for _, collection := range collections {
-		if collection.Features == nil {
-			continue
-		}
-		result[collection.ID] = collection.Features.FeatureProperties
-	}
-	return result
 }
 
 func columnsToSQL(columns []string) string {

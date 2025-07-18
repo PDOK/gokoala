@@ -1,4 +1,4 @@
-package features
+package proj
 
 import (
 	"encoding/json"
@@ -16,8 +16,8 @@ var (
 	execLookPath = exec.LookPath // Allow mocking
 )
 
-// ProjInfo output in PROJJSON format. Note: only relevant fields are mapped in this struct.
-type ProjInfo struct {
+// Info output in PROJJSON format. Note: only relevant fields are mapped in this struct.
+type Info struct {
 	CoordinateSystem struct {
 		Axis []struct {
 			Name         string `json:"name"`
@@ -42,7 +42,7 @@ func GetAxisOrder(srid domain.SRID) (domain.AxisOrder, error) {
 	return domain.AxisOrderXY, nil
 }
 
-func execProjInfo(epsgCode string) (*ProjInfo, error) {
+func execProjInfo(epsgCode string) (*Info, error) {
 	_, err := execLookPath(projInfoTool)
 	if err != nil {
 		return nil, fmt.Errorf("%s command not found in PATH: %w", projInfoTool, err)
@@ -55,7 +55,7 @@ func execProjInfo(epsgCode string) (*ProjInfo, error) {
 		return nil, fmt.Errorf("failed to execute %s command: %w", projInfoTool, err)
 	}
 
-	var projInfo ProjInfo
+	var projInfo Info
 	if err := json.Unmarshal([]byte(strings.TrimSpace(string(output))), &projInfo); err != nil {
 		return nil, fmt.Errorf("failed to parse %s output: %w", projInfoTool, err)
 	}

@@ -1,0 +1,32 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Example dataset with external FIDs and relations between features
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+            - srs: EPSG:4258
+            - srs: EPSG:3857
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: external_fid
+            fid: feature_id
+            externalFid: external_fid
+    collections:
+      - id: ligplaatsen
+        metadata:
+          title: Ligplaatsen
+          description: Ligplaatsen example data
+      - id: standplaatsen
+        metadata:
+          title: Standplaatsen
+          description: Standplaatsen example data

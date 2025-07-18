@@ -1,0 +1,31 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Test to verify support for XYZ geoms
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+            - srs: EPSG:4258
+            - srs: EPSG:3857
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: threedimensionalgeoms
+            # Rely on defaults for databaseName, user/pass., sslmode, etc
+    collections:
+      - id: foo
+        metadata:
+          title: Foo
+          description: Contains 3D linestrings
+      - id: bar
+        metadata:
+          title: Bar
+          description: Contains 3D multipoints

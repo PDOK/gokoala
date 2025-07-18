@@ -11,13 +11,16 @@ import (
 )
 
 func TestCreatePropertyFiltersByCollection(t *testing.T) {
-	eng, err := config.NewConfig("internal/ogc/features/testdata/config_features_bag.yaml")
+	eng, err := config.NewConfig("internal/ogc/features/testdata/geopackage/config_features_bag.yaml")
 	assert.NoError(t, err)
 	oaf := eng.OgcAPI.Features
 
-	eng2, err := config.NewConfig("internal/ogc/features/testdata/config_features_bag_invalid_filters.yaml")
+	eng2, err := config.NewConfig("internal/ogc/features/testdata/geopackage/config_features_bag_invalid_filters.yaml")
 	assert.NoError(t, err)
 	oafWithInvalidPropertyFilter := eng2.OgcAPI.Features
+
+	gpkg, err := geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage, false, 0, false)
+	assert.NoError(t, err)
 
 	tests := []struct {
 		name        string
@@ -39,9 +42,9 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 			name:   "Valid property filters",
 			config: oaf,
 			datasources: map[datasourceKey]ds.Datasource{
-				{collectionID: "foo"}: geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage),
+				{collectionID: "foo"}: gpkg,
 			},
-			// keep this in line with the filters in "internal/ogc/features/testdata/config_features_bag.yaml"
+			// keep this in line with the filters in "internal/ogc/features/testdata/geopackage/config_features_bag.yaml"
 			pf: map[string]ds.PropertyFiltersWithAllowedValues{
 				"foo": map[string]ds.PropertyFilterWithAllowedValues{
 					"straatnaam": {
@@ -64,9 +67,9 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 			name:   "Invalid property filter defined in config",
 			config: oafWithInvalidPropertyFilter,
 			datasources: map[datasourceKey]ds.Datasource{
-				{collectionID: "foo"}: geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage),
+				{collectionID: "foo"}: gpkg,
 			},
-			// keep this in line with the filters in "internal/ogc/features/testdata/config_features_bag_invalid_filters.yaml"
+			// keep this in line with the filters in "internal/ogc/features/testdata/geopackage/config_features_bag_invalid_filters.yaml"
 			pf: map[string]ds.PropertyFiltersWithAllowedValues{
 				"foo": map[string]ds.PropertyFilterWithAllowedValues{
 					"straatnaam": {

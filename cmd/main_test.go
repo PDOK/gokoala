@@ -64,7 +64,7 @@ func TestBuildingBlocks(t *testing.T) {
 		},
 		{
 			name:       "Serve multiple Feature Tables from single GeoPackage",
-			configFile: "internal/ogc/features/testdata/config_features_bag_multiple_feature_tables.yaml",
+			configFile: "internal/ogc/features/testdata/geopackage/config_features_bag_multiple_feature_tables.yaml",
 			apiCall:    "http://localhost:8180/collections?f=json",
 			wantBody:   "internal/ogc/features/testdata/expected_multiple_feature_tables_single_geopackage.json",
 		},

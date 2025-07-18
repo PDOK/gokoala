@@ -13,13 +13,23 @@ ogcApi:
       defaultWGS84:
         geopackage:
           local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/bag.gpkg
+            file: ./internal/ogc/features/datasources/geopackage/testdata/bag-wgs84.gpkg
             fid: feature_id
             queryTimeout: 15m # pretty high to allow debugging
     collections:
-      - id: ligplaatsen
+      - id: foo
+        tableName: ligplaatsen
         filters:
           properties:
             - name: straatnaam
             - name: postcode
-      - id: standplaatsen
+        metadata:
+          title: Foooo
+          description: Foooo
+      - id: bar
+        tableName: ligplaatsen
+        metadata:
+          title: Barrr
+          description: Barrr
+          tableName: ligplaatsen
+      - id: baz

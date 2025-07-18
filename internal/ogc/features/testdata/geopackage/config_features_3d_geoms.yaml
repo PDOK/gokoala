@@ -13,7 +13,13 @@ ogcApi:
       defaultWGS84:
         geopackage:
           local:
+            # fake, coordinates are actually in RD
             file: ./internal/ogc/features/datasources/geopackage/testdata/3d-geoms.gpkg
+      additional:
+        - srs: EPSG:28992
+          geopackage:
+            local:
+              file: ./internal/ogc/features/datasources/geopackage/testdata/3d-geoms.gpkg
     collections:
       - id: foo
         metadata:

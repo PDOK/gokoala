@@ -1,0 +1,29 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Testdata
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+            - srs: EPSG:4258
+            - srs: EPSG:3857
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: addresses
+            externalFid: external_fid
+    collections:
+      - id: dutch-addresses-first
+        tableName: addresses  # both use the same table, odd but allowed (with warning)
+      - id: dutch-addresses
+        tableName: addresses  # both use the same table, odd but allowed (with warning)
+      - id: dutch-addresses-third
+        tableName: addresses  # both use the same table, odd but allowed (with warning)

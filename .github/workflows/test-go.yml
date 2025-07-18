@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup cgo dependencies
-        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite
+        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite proj-bin
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -31,15 +31,10 @@ jobs:
         run: go build -v ./...
 
       - name: Unit Test
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 5
-          max_attempts: 2
-          retry_on: error
-          command: |
-            go test -v -race -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
-            # remove generate code from coverage results
-            grep -v "zz_generated" cover.out.tmp > cover.out
+        run: |
+          go test -v -race -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
+          echo "remove generate code from coverage results"
+          grep -v "zz_generated" cover.out.tmp > cover.out
 
       - name: Test generating example CRD
         run: hack/generate-crd.sh

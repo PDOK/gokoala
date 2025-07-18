@@ -16,9 +16,13 @@ var (
 	mockPointGeoJSON, _ = geojson.Encode(mockPoint)
 )
 
-func mockMapGeom(data []byte) (geom.T, error) {
-	if string(data) == "mock error" {
-		return nil, errors.New(string(data))
+func mockMapGeom(data any) (geom.T, error) {
+	dataBytes, ok := data.([]byte)
+	if !ok {
+		assert.Fail(nil, "expected data to be []byte")
+	}
+	if string(dataBytes) == "mock error" {
+		return nil, errors.New(string(dataBytes))
 	}
 	return mockPoint, nil
 }
@@ -99,7 +103,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 			feature:       &Feature{Properties: NewFeatureProperties(false)},
 			columns:       []string{"str_col", "unexpected_col"},
 			values:        []any{"str", []complex128{complex(1, 2)}},
-			expectedError: errors.New("unexpected type for sqlite column data: unexpected_col: []complex128"),
+			expectedError: errors.New("unexpected type: unexpected_col: []complex128"),
 		},
 		{
 			name:             "Test conversion of float64 with non floating point value to int64",
@@ -154,7 +158,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 			if tt.schemaFields != nil {
 				schema.Fields = tt.schemaFields
 			}
-			prevNextID, err := mapColumnsToFeature(t.Context(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, schema, tt.mapGeom, nil)
+			prevNextID, err := mapColumnsToFeature(t.Context(), tt.firstRow, tt.feature, tt.columns, tt.values, tt.fidColumn, tt.externalFidCol, tt.geomColumn, schema, tt.mapGeom, nil, FormatOpts{0, false})
 
 			if tt.expectedError != nil {
 				assert.Nil(t, prevNextID)
