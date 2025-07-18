@@ -44,7 +44,7 @@ ogcApi:
     datasources:
       transformOnTheFly:
         - supportedSrs:
-            - srs: EPSG:3035
+            - srs: EPSG:3857
             - srs: EPSG:4258
           postgres:
             host: postgres

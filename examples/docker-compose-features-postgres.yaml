@@ -27,6 +27,8 @@ services:
         set -e
         echo "START import GeoPackage in Postgres"
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco FID=fid \
           /examples/resources/addresses-rd.gpkg
         echo "DONE import GeoPackage in Postgres"
     volumes:
@@ -37,8 +39,8 @@ services:
       context: ../
       dockerfile: Dockerfile
     depends_on:
-      postgres:
-        condition: service_healthy
+      postgres-init-data:
+        condition: service_completed_successfully
     command: "--config-file ./examples/config_features_postgres.yaml"
     volumes:
       - ./:/examples
