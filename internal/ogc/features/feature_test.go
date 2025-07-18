@@ -314,9 +314,7 @@ func TestFeature(t *testing.T) {
 			engine.Now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
 
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
-			if err != nil {
-				assert.Fail(t, err.Error())
-			}
+			assert.NoError(t, err)
 			rr, ts := createMockServer()
 			defer ts.Close()
 

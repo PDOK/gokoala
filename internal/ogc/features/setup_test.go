@@ -47,10 +47,10 @@ func TestMain(m *testing.M) {
 func setup(ctx context.Context) *compose.DockerCompose {
 	port, stack, err := setupPostgres(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to start docker compose", err)
 	}
 	if err = os.Setenv(postgresPortEnv, port.Port()); err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to set env var", err)
 	}
 	return stack
 }
@@ -59,10 +59,10 @@ func teardown(ctx context.Context, stack *compose.DockerCompose) {
 	// We would rather use t.Setenv() but this isn't possible in TestMain.
 	// Therefore, it's important to unset the env variable ourselves since this isn't done automatically
 	if err := os.Unsetenv(postgresPortEnv); err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to unset env var", err)
 	}
 	if err := terminateStack(ctx, stack); err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to terminate docker compose", err)
 	}
 }
 
@@ -110,16 +110,15 @@ func terminateStack(ctx context.Context, stack *compose.DockerCompose) error {
 
 func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	rr := httptest.NewRecorder()
-	l, err := net.Listen("tcp", "localhost:9095")
+	l, err := net.Listen("tcp", "localhost:") // random port
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to start mocks erver", err)
 	}
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		engine.SafeWrite(w.Write, []byte(r.URL.String()))
 	}))
-	err = ts.Listener.Close()
-	if err != nil {
-		log.Fatal(err)
+	if err = ts.Listener.Close(); err != nil {
+		log.Fatal("failed to close mocks erver", err)
 	}
 	ts.Listener = l
 	ts.Start()

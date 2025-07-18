@@ -160,9 +160,7 @@ func TestSchema(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
-			if err != nil {
-				log.Fatal(err)
-			}
+			assert.NoError(t, err)
 			rr, ts := createMockServer()
 			defer ts.Close()
 
