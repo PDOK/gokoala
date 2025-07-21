@@ -187,7 +187,14 @@ func readSchema(db *pgxpool.Pool, table featureTable, fidColumn, externalFidColu
 	query := `
 select
     a.attname as column_name,
-    pg_catalog.format_type(a.atttypid, a.atttypmod) as data_type,
+    case
+        -- If the data type is a geometry, extract the specific type (Point, Polygon, etc)
+        when pg_catalog.format_type(a.atttypid, a.atttypmod) like 'geometry(%' then
+            substring(pg_catalog.format_type(a.atttypid, a.atttypmod) from 'geometry\(([^,)]+)')
+        -- Otherwise, return the standard data type
+        else
+            pg_catalog.format_type(a.atttypid, a.atttypmod)
+    end as data_type,
     a.attnotnull as is_required,
     coalesce(d.description, '') as column_description
 from
