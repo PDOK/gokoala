@@ -67,6 +67,8 @@ func teardown(ctx context.Context, stack *compose.DockerCompose) {
 }
 
 // setupPostgres start PostgreSQL and fill with testdata derived from GeoPackages.
+//
+// Tip: when troubleshooting, try starting the docker-compose stack manually in your terminal (without Testcontainers).
 func setupPostgres(ctx context.Context) (nat.Port, *compose.DockerCompose, error) {
 	log.Println("Setting up postgres")
 	stack, err := compose.NewDockerComposeWith(compose.WithStackFiles(postgresCompose))

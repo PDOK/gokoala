@@ -1,7 +1,9 @@
 ---
 services:
   postgres:
-    image: docker.io/postgis/postgis:16-3.5  # use debian, not alpine
+    # We use a multi-arch image (x86/arm64). There's currently no official release of this image yet on docker.io/postgis.
+    # In the meantime we'll use this image from the same maintainer. See https://github.com/postgis/docker-postgis/issues/216
+    image: docker.io/imresamu/postgis:16-3.5-bookworm  # use debian, not alpine.
     container_name: "postgres"
     ports:
       - "5432:5432"
@@ -9,16 +11,19 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "postgres"
-    command: ["postgres", "-c", "log_statement=all"]
+    command: [ "postgres", "-c", "log_statement=all" ]
     volumes:
       - ./create-schemas.sql:/docker-entrypoint-initdb.d/0-create-schemas.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 5s
       retries: 30
 
+  # import geopackages into postgres, and execute extra SQL (note: we do this in one 'init' container
+  # since testcontainers currently doesn't handle multiple short-lived containers well).
   postgres-init-data:
-    image: ghcr.io/osgeo/gdal:ubuntu-small-3.11.3
+    build:
+      dockerfile: Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -26,7 +31,7 @@ services:
       - sh
       - -c
       - |
-        set -e
+        set -ex
 
         echo "START import GeoPackages in Postgres"
 
@@ -75,6 +80,22 @@ services:
           /testdata/roads.gpkg
 
         echo "DONE import GeoPackages in Postgres"
+        echo "START creating indexes"
+
+        export PGPASSWORD=postgres
+        psql \
+        -h postgres \
+        -U postgres \
+        -d postgres \
+        -c "create index straatnaam_idx on bag.ligplaatsen(straatnaam);" \
+        -c "create index postcode_idx on bag.ligplaatsen(postcode);" \
+        -c "create index ligplaatsen_temporal_idx on bag_temporal.ligplaatsen(datum_strt, datum_eind);" \
+        -c "create index standplaatsen_temporal_idx on bag_temporal.standplaatsen(datum_strt, datum_eind);" \
+        -c "create index verblijfsobjecten_temporal_idx on bag_temporal.verblijfsobjecten(datum_strt, datum_eind);" \
+        -c "create index addresses_temporal_idx on addresses.addresses(validfrom, validto);"
+
+        echo "DONE creating indexes"
+
     volumes:
       - ../../geopackage/testdata:/testdata
       - ../../../../../../examples:/examples
