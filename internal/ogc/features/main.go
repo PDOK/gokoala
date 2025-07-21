@@ -21,7 +21,8 @@ const (
 )
 
 type Features struct {
-	engine                    *engine.Engine
+	engine *engine.Engine
+
 	datasources               map[datasourceKey]ds.Datasource
 	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredCollections     map[string]config.GeoSpatialCollection
@@ -110,7 +111,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 }
 
 func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]domain.AxisOrder {
-	log.Println("start determining axis order for all configured CRS's")
+	log.Println("start determining axis order for all configured CRSs")
 	order := map[int]domain.AxisOrder{
 		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
