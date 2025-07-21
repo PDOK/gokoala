@@ -1,6 +1,7 @@
 package config
 
 import (
+	"dario.cat/mergo"
 	"fmt"
 	"html/template"
 	"log"
@@ -9,6 +10,10 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
+)
+
+const (
+	defaultThemeConfig = "themes/pdok/theme.yaml"
 )
 
 type Theme struct {
@@ -39,14 +44,22 @@ type ThemeIncludes struct {
 }
 
 func NewTheme(cfg string) (theme *Theme, err error) {
-	yamlData, err := os.ReadFile(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read theme file %w", err)
-	}
+	theme, err = getThemeFromFile(defaultThemeConfig)
+	var customTheme *Theme
 
-	err = yaml.Unmarshal(yamlData, &theme)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal theme file, error: %w", err)
+	if cfg != "" {
+		// If a custom theme is present, also fetch it
+		customTheme, err = getThemeFromFile(cfg)
+		if err != nil {
+			return nil, err
+		}
+
+		// Overwrite the basetheme
+		err = mergo.Merge(theme, customTheme, mergo.WithOverride)
+		if err != nil {
+			log.Fatalf("ERROR: %v", err)
+			return nil, err
+		}
 	}
 
 	// check 'validate' tags
@@ -75,4 +88,18 @@ func (t *Theme) ParseHTML() {
 
 	// #nosec G203 - trusted html so no threat
 	t.Includes.ParsedHTML = template.HTML(content)
+}
+
+func getThemeFromFile(path string) (theme *Theme, err error) {
+	yamlData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read theme file %w", err)
+	}
+
+	err = yaml.Unmarshal(yamlData, &theme)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal theme file, error: %w", err)
+	}
+
+	return
 }

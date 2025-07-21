@@ -72,7 +72,6 @@ var (
 		&cli.StringFlag{
 			Name:     "theme-file",
 			Usage:    "reference to a (customized) YAML configuration file for the theme",
-			Value:    "themes/pdok/theme.yaml",
 			Required: false,
 			EnvVars:  []string{"THEME_CONFIG"},
 		},
