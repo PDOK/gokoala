@@ -27,6 +27,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    # language=bash
     entrypoint:
       - sh
       - -c
@@ -54,6 +55,9 @@ services:
           -lco FID=feature_id \
           /testdata/bag.gpkg
 
+        # GeoPackage field descriptions are stored in 'gpkg_data_columns' table. This is part of the GeoPackage
+        # schema extension. When imported in Postgres these field descriptions are converted to comments on columns.
+        # GoKoala is able to read these column comments. So both GeoPackage and Postgres support field description.
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
           -preserve_fid \
           -lco SCHEMA=bag_schema_extension \
