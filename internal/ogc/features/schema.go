@@ -100,10 +100,13 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 			}
 		}
 
-		// stable field order
-		slices.SortFunc(schema.Fields, func(a, b domain.Field) int {
-			return strings.Compare(a.Name, b.Name)
-		})
+		if collection.Features != nil && collection.Features.FeatureProperties != nil &&
+			!collection.Features.PropertiesInSpecificOrder {
+			// stable field order
+			slices.SortFunc(schema.Fields, func(a, b domain.Field) int {
+				return strings.Compare(a.Name, b.Name)
+			})
+		}
 
 		// pre-render the schema, catches issues early on during start-up.
 		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,
