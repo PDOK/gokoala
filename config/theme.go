@@ -57,11 +57,11 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 	}
 	// if valid, set theme location
 	theme.Path = filepath.Dir(cfg)
-	theme.parseHTML()
+	theme.ParseHTML()
 	return theme, nil
 }
 
-func (t *Theme) parseHTML() {
+func (t *Theme) ParseHTML() {
 	if t.Includes == nil {
 		t.Includes = &ThemeIncludes{}
 	}
