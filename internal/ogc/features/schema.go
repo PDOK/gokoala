@@ -100,8 +100,7 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 			}
 		}
 
-		if collection.Features != nil && collection.Features.FeatureProperties != nil &&
-			!collection.Features.PropertiesInSpecificOrder {
+		if !requiresSpecificOrder(collection) {
 			// stable field order
 			slices.SortFunc(schema.Fields, func(a, b domain.Field) int {
 				return strings.Compare(a.Name, b.Name)
@@ -129,6 +128,13 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 		schemasByCollection[collection.ID] = *schema
 	}
 	return schemasByCollection
+}
+
+func requiresSpecificOrder(collection config.GeoSpatialCollection) bool {
+	if collection.Features != nil && collection.Features.FeatureProperties != nil {
+		return collection.Features.PropertiesInSpecificOrder
+	}
+	return false
 }
 
 func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, *string) {
