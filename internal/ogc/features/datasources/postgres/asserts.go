@@ -30,7 +30,12 @@ func assertIndexesExist(
 					}
 				}
 
-				// assert the column for each property filter is indexed.
+				// assert geometry column has GIST (rtree) index
+				if err := assertSpatialIndex(table.TableName, db, table.GeometryColumnName); err != nil {
+					return err
+				}
+
+				// assert the column for each property filter is indexed
 				for _, propertyFilter := range coll.Features.Filters.Properties {
 					if err := assertIndexExists(table.TableName, db, propertyFilter.Name, false, true); err != nil && *propertyFilter.IndexRequired {
 						return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
@@ -39,6 +44,32 @@ func assertIndexesExist(
 				break
 			}
 		}
+	}
+	return nil
+}
+
+func assertSpatialIndex(tableName string, db *pgxpool.Pool, geometryColumn string) error {
+	query := `
+select count(*)
+from pg_index idx
+join pg_class tbl on tbl.oid = idx.indrelid
+join pg_class idx_class on idx_class.oid = idx.indexrelid
+join pg_am am on idx_class.relam = am.oid
+join pg_attribute attr on attr.attrelid = tbl.oid
+where tbl.relname = $1
+  and am.amname = 'gist'
+  and attr.attnum = any(idx.indkey)
+  and attr.attname = $2;`
+
+	var count int
+	err := db.QueryRow(context.Background(), query, tableName, geometryColumn).Scan(&count)
+	if err != nil {
+		return fmt.Errorf("failed to check spatial index on table '%s', column '%s': %w",
+			tableName, geometryColumn, err)
+	}
+	if count == 0 {
+		return fmt.Errorf("missing required spatial index (GIST): no index exists on geometry column '%s' in table '%s'",
+			geometryColumn, tableName)
 	}
 	return nil
 }
