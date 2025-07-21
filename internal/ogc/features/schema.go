@@ -3,6 +3,8 @@ package features
 import (
 	"log"
 	"net/http"
+	"slices"
+	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -97,6 +99,11 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 				}
 			}
 		}
+
+		// stable field order
+		slices.SortFunc(schema.Fields, func(a, b domain.Field) int {
+			return strings.Compare(a.Name, b.Name)
+		})
 
 		// pre-render the schema, catches issues early on during start-up.
 		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,

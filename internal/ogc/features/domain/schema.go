@@ -193,7 +193,7 @@ func (f Field) ToTypeFormat() TypeFormat {
 		// OAF part 5 only supports simple 2D types, so advertise the 2D variant.
 		for _, geomType := range geometryTypes {
 			if strings.HasPrefix(normalizedType, geomType) {
-				return TypeFormat{Type: normalizedType, Format: "geometry-" + normalizedType}
+				return TypeFormat{Type: normalizedType, Format: "geometry-" + geomType}
 			}
 		}
 		log.Printf("Warning: unknown data type '%s' for field '%s', falling back to string", f.Type, f.Name)
