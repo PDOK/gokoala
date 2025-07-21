@@ -1,12 +1,13 @@
 package config
 
 import (
-	"dario.cat/mergo"
 	"fmt"
 	"html/template"
 	"log"
 	"os"
 	"path/filepath"
+
+	"dario.cat/mergo"
 
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
@@ -45,8 +46,11 @@ type ThemeIncludes struct {
 
 func NewTheme(cfg string) (theme *Theme, err error) {
 	theme, err = getThemeFromFile(defaultThemeConfig)
-	var customTheme *Theme
+	if err != nil {
+		return nil, err
+	}
 
+	var customTheme *Theme
 	if cfg != "" {
 		// If a custom theme is present, also fetch it
 		customTheme, err = getThemeFromFile(cfg)
