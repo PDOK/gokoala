@@ -875,7 +875,7 @@ func TestFeatures(t *testing.T) {
 				dir := filepath.Dir(configFile)
 				datasourceName := filepath.Base(dir)
 
-				// nested subtest for each configfile/datasource
+				// nested subtest for each config-file/datasource
 				// tip: in JetBrains IDEs you can still jump to failed tests by explicitly selecting "jump to source"
 				t.Run(datasourceName, func(t *testing.T) {
 					// mock time

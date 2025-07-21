@@ -14,11 +14,13 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/wkt"
 	pgxgeom "github.com/twpayne/pgx-geom"
+	pgxuuid "github.com/vgarvardt/pgx-google-uuid/v5"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
@@ -60,8 +62,13 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 
 	// set connection to read-only for safety since we (should) never write to Postgres.
 	pgxConfig.ConnConfig.RuntimeParams["default_transaction_read_only"] = "on"
-	// add support for Go <-> PostGIS conversions
-	pgxConfig.AfterConnect = pgxgeom.Register
+
+	pgxConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		// add support for github.com/google/uuid <-> PostGIS conversions
+		pgxuuid.Register(conn.TypeMap())
+		// add support for Go <-> PostGIS conversions
+		return pgxgeom.Register(ctx, conn)
+	}
 
 	ctx := context.Background()
 	db, err := pgxpool.NewWithConfig(ctx, pgxConfig)
@@ -98,11 +105,13 @@ func (pg *Postgres) Close() {
 }
 
 func (pg *Postgres) GetFeatureIDs(_ context.Context, _ string, _ datasources.FeaturesCriteria) ([]int64, d.Cursors, error) {
-	return []int64{}, d.Cursors{}, errors.New("not implemented, use GetFeatures()")
+	return []int64{}, d.Cursors{}, errors.New("not implemented since the postgres datasource currently " +
+		"only support on-the-fly transformation/reprojection, use GetFeatures() to get features in every supported CRS")
 }
 
 func (pg *Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ d.AxisOrder, _ d.Profile) (*d.FeatureCollection, error) {
-	return &d.FeatureCollection{}, errors.New("not implemented, use GetFeatures()")
+	return &d.FeatureCollection{}, errors.New("not implemented since the postgres datasource currently " +
+		"only support on-the-fly transformation/reprojection, use GetFeatures() to get features in every supported CRS")
 }
 
 func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria,
@@ -144,9 +153,69 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 	return &fc, d.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
-func (pg *Postgres) GetFeature(_ context.Context, _ string, _ any, _ d.AxisOrder, _ d.Profile) (*d.Feature, error) {
-	log.Println("Postgres support is not implemented yet, this just serves to demonstrate that we can support multiple types of datasources")
-	return nil, nil
+func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID any,
+	outputSRID d.SRID, axisOrder d.AxisOrder, profile d.Profile) (*d.Feature, error) {
+
+	table, err := pg.getFeatureTable(collection)
+	if err != nil {
+		return nil, err
+	}
+
+	queryCtx, cancel := context.WithTimeout(ctx, pg.queryTimeout) // https://go.dev/doc/database/cancel-operations
+	defer cancel()
+
+	var fidTypeCast string
+	var fidColumn string
+	switch featureID.(type) {
+	case int64:
+		if pg.externalFidColumn != "" {
+			// Features should be retrieved by UUID
+			log.Println("feature requested by int while external fid column is defined")
+			return nil, nil
+		}
+		fidColumn = pg.fidColumn
+		fidTypeCast = "::bigint" // always compare as 64-bits integer, regardless of numeric type in schema
+	case uuid.UUID:
+		if pg.externalFidColumn == "" {
+			// Features should be retrieved by int64
+			log.Println("feature requested by UUID while external fid column is not defined")
+			return nil, nil
+		}
+		fidColumn = pg.externalFidColumn
+	}
+
+	propConfig := pg.propertiesByCollectionID[collection]
+	selectClause := pg.selectColumns(table, axisOrder, propConfig, false)
+
+	// TODO: find better place for this srid logic
+	srid := outputSRID.GetOrDefault()
+	if srid == d.UndefinedSRID || srid == d.WGS84SRID {
+		srid = d.WGS84SRIDPostgis
+	}
+
+	query := fmt.Sprintf(`select %[1]s from "%[2]s" where "%[3]s"%[4]s = @fid%[4]s limit 1`,
+		selectClause, table.TableName, fidColumn, fidTypeCast)
+	rows, err := pg.db.Query(queryCtx, query, pgx.NamedArgs{"fid": featureID, "outputSrid": srid})
+	if err != nil {
+		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
+	}
+	defer rows.Close()
+	if err != nil {
+		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
+	}
+	defer rows.Close()
+
+	features, _, err := d.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
+		pg.fidColumn, pg.externalFidColumn, table.GeometryColumnName,
+		propConfig, table.Schema, mapPostgisGeometry, profile.MapRelationUsingProfile,
+		d.FormatOpts{MaxDecimals: pg.maxDecimals, ForceUTC: pg.forceUTC})
+	if err != nil {
+		return nil, err
+	}
+	if len(features) != 1 {
+		return nil, nil
+	}
+	return features[0], queryCtx.Err()
 }
 
 func (pg *Postgres) GetSchema(collection string) (*d.Schema, error) {
@@ -176,6 +245,7 @@ func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.Feat
 		selectClause = pg.selectColumns(table, axisOrder, propConfig, true)
 	}
 
+	// TODO: find better place for this srid logic
 	if criteria.InputSRID == d.UndefinedSRID || criteria.InputSRID == d.WGS84SRID {
 		criteria.InputSRID = d.WGS84SRIDPostgis
 	}

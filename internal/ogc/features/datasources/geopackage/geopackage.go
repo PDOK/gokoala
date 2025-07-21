@@ -81,6 +81,8 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 
 	g := &GeoPackage{
 		transformOnTheFly:        transformOnTheFly,
+		maxDecimals:              maxDecimals,
+		forceUTC:                 forceUTC,
 		preparedStmtCache:        NewCache(),
 		propertiesByCollectionID: collections.FeaturePropertiesByID(),
 	}
@@ -92,16 +94,12 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		g.fidColumn = gpkgConfig.Local.Fid
 		g.externalFidColumn = gpkgConfig.Local.ExternalFid
 		g.queryTimeout = gpkgConfig.Local.QueryTimeout.Duration
-		g.maxDecimals = maxDecimals
-		g.forceUTC = forceUTC
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
 		g.fidColumn = gpkgConfig.Cloud.Fid
 		g.externalFidColumn = gpkgConfig.Cloud.ExternalFid
 		g.queryTimeout = gpkgConfig.Cloud.QueryTimeout.Duration
-		g.maxDecimals = maxDecimals
-		g.forceUTC = forceUTC
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 		warmUp = gpkgConfig.Cloud.Cache.WarmUp
 	default:
@@ -176,7 +174,8 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	selectClause := g.selectColumns(table, axisOrder, propConfig, false)
 	fids := map[string]any{"fids": featureIDs}
 
-	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select %s from %s where %s in (:fids)", selectClause, table.TableName, g.fidColumn), fids)
+	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select %s from %s where %s in (:fids)",
+		selectClause, table.TableName, g.fidColumn), fids)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make features query, error: %w", err)
 	}
@@ -243,7 +242,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any,
-	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error) {
+	_ domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error) {
 
 	table, err := g.getFeatureTable(collection)
 	if err != nil {
@@ -274,7 +273,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	propConfig := g.propertiesByCollectionID[collection]
 	selectClause := g.selectColumns(table, axisOrder, propConfig, false)
 
-	query := fmt.Sprintf("select %s from %s f where f.%s = :fid limit 1", selectClause, table.TableName, fidColumn)
+	query := fmt.Sprintf(`select %s from "%s" where "%s" = :fid limit 1`, selectClause, table.TableName, fidColumn)
 	rows, err := g.backend.getDB().NamedQueryContext(queryCtx, query, map[string]any{"fid": featureID})
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)

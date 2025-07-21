@@ -30,6 +30,7 @@ require (
 	github.com/twpayne/go-geom v1.6.1
 	github.com/twpayne/pgx-geom v0.0.2
 	github.com/urfave/cli/v2 v2.27.6
+	github.com/vgarvardt/pgx-google-uuid/v5 v5.6.0
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
 	go.uber.org/automaxprocs v1.6.0

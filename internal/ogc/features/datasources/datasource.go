@@ -24,7 +24,7 @@ type Datasource interface {
 	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
 
 	// GetFeature returns a specific Feature, based on its feature id
-	GetFeature(ctx context.Context, collection string, featureID any, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
+	GetFeature(ctx context.Context, collection string, featureID any, outputSRID domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
