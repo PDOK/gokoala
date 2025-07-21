@@ -21,12 +21,14 @@
     "datum_eind": {
       "description": "Betreft einddatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z. ",
       "x-ogc-role": "primary-interval-end",
-      "type": "string"
+      "type": "string",
+      "format": "date"
     },
     "datum_strt": {
       "description": "Betreft startdatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z. ",
       "x-ogc-role": "primary-interval-start",
-      "type": "string"
+      "type": "string",
+      "format": "date"
     },
     "document": {
       "type": "string"

@@ -60,11 +60,10 @@ func TestSchema(t *testing.T) {
 			},
 		},
 		{
-			name: "Request schema in HTML format with temporal fields",
+			name: "Request schema in HTML format with temporal fields for GeoPackage",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_bag_temporal.yaml",
-					"internal/ogc/features/testdata/postgresql/config_features_bag_temporal.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "standplaatsen",
@@ -76,11 +75,25 @@ func TestSchema(t *testing.T) {
 			},
 		},
 		{
-			name: "Request schema in JSON format with temporal fields",
+			name: "Request schema in HTML format with temporal fields for Postgres",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/postgresql/config_features_bag_temporal.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/schema",
+				collectionID: "standplaatsen",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_schema_temporal_snippet_postgres.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request schema in JSON format with temporal fields for GeoPackage",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_bag_temporal.yaml",
-					"internal/ogc/features/testdata/postgresql/config_features_bag_temporal.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/schema",
 				collectionID: "standplaatsen",
@@ -88,6 +101,21 @@ func TestSchema(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_schema_temporal.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request schema in JSON format with temporal fields for Postgres",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/postgresql/config_features_bag_temporal.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/schema",
+				collectionID: "standplaatsen",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_schema_temporal_postgres.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -156,7 +184,7 @@ func TestSchema(t *testing.T) {
 			},
 		},
 		{
-			name: "Request schema in HTML format with descriptions from gpkg_data_columns table",
+			name: "Request schema in HTML format with descriptions (when geopackage from gpkg_data_columns table, when postgres from table comments)",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_bag_schema_extension.yaml",
@@ -172,7 +200,7 @@ func TestSchema(t *testing.T) {
 			},
 		},
 		{
-			name: "Request schema in JSON format with descriptions from gpkg_data_columns table",
+			name: "Request schema in JSON format with descriptions (when geopackage from gpkg_data_columns table, when postgres from table comments)",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_bag_schema_extension.yaml",
