@@ -12,29 +12,29 @@ import (
 )
 
 type Theme struct {
-	Logo     *ThemeLogo     `yaml:"logo,omitempty" json:"logo,omitempty" validate:"omitempty"`
-	Color    *ThemeColors   `yaml:"color,omitempty" json:"color,omitempty" validate:"omitempty"`
-	Includes *ThemeIncludes `yaml:"includes,omitempty" json:"includes,omitempty" validate:"omitempty"`
+	Logo     *ThemeLogo     `yaml:"logo" json:"logo" validate:"required"`
+	Color    *ThemeColors   `yaml:"color" json:"color" validate:"required"`
+	Includes *ThemeIncludes `yaml:"includes" json:"includes"`
 	Path     string
 }
 
 type ThemeLogo struct {
-	Header    string `yaml:"header,omitempty" json:"header,omitempty" validate:"omitempty"`
-	Footer    string `yaml:"footer,omitempty" json:"footer,omitempty" validate:"omitempty"`
-	Opengraph string `yaml:"opengraph,omitempty" json:"opengraph,omitempty" validate:"omitempty"`
-	Favicon   string `yaml:"favicon,omitempty" json:"favicon,omitempty" validate:"omitempty"`
-	Favicon16 string `yaml:"favicon16,omitempty" json:"favicon16,omitempty" validate:"omitempty"`
-	Favicon32 string `yaml:"favicon32,omitempty" json:"favicon32,omitempty" validate:"omitempty"`
+	Header    string `yaml:"header" json:"header" validate:"required"`
+	Footer    string `yaml:"footer" json:"footer" validate:"required"`
+	Opengraph string `yaml:"opengraph" json:"opengraph" validate:"required"`
+	Favicon   string `yaml:"favicon" json:"favicon" validate:"required"`
+	Favicon16 string `yaml:"favicon16" json:"favicon16" validate:"required"`
+	Favicon32 string `yaml:"favicon32" json:"favicon32" validate:"required"`
 }
 
 type ThemeColors struct {
-	Primary   string `yaml:"primary,omitempty" json:"primary,omitempty" validate:"hexcolor,omitempty"`
-	Secondary string `yaml:"secondary,omitempty" json:"secondary,omitempty" validate:"hexcolor,omitempty"`
-	Link      string `yaml:"link,omitempty" json:"link,omitempty" validate:"hexcolor,omitempty"`
+	Primary   string `yaml:"primary" json:"primary" validate:"required,hexcolor"`
+	Secondary string `yaml:"secondary" json:"secondary" validate:"required,hexcolor"`
+	Link      string `yaml:"link" json:"link" validate:"required,hexcolor"`
 }
 
 type ThemeIncludes struct {
-	HTMLFile   string `yaml:"html,omitempty" validate:"omitempty"`
+	HTMLFile   string `yaml:"html"`
 	ParsedHTML template.HTML
 }
 
