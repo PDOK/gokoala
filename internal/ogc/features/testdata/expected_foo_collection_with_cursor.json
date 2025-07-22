@@ -1,4 +1,6 @@
 {
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
   "links": [
     {
       "rel": "self",
@@ -31,20 +33,9 @@
       "href": "http://localhost:8080/collections/foo/items?cursor=DdY%7CNwyr1Q&f=json&limit=2"
     }
   ],
-  "numberReturned": 2,
-  "timeStamp": "2000-01-01T00:00:00Z",
-  "type": "FeatureCollection",
   "features": [
     {
-      "id": "3838",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          121083.154,
-          488930.565
-        ]
-      },
       "properties": {
         "datum_doc": "1900-01-01",
         "datum_eind": null,
@@ -60,18 +51,18 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
-      }
-    },
-    {
-      "id": "3839",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          121083.452,
-          488925.652
+          4.889,
+          52.38718
         ]
       },
+      "id": "3838"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "datum_doc": "1900-01-01",
         "datum_eind": null,
@@ -87,7 +78,16 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.889,
+          52.38714
+        ]
+      },
+      "id": "3839"
     }
-  ]
+  ],
+  "numberReturned": 2
 }

@@ -30,13 +30,6 @@
   "features": [
     {
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          121248.254,
-          488873.556
-        ]
-      },
       "properties": {
         "datum_doc": "2005-09-30",
         "datum_eind": null,
@@ -53,17 +46,17 @@
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.89143,
+          52.38668
+        ]
+      },
       "id": "5291"
     },
     {
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          121248.06,
-          488882.412
-        ]
-      },
       "properties": {
         "datum_doc": "2005-09-30",
         "datum_eind": null,
@@ -80,17 +73,17 @@
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
       },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.89142,
+          52.38676
+        ]
+      },
       "id": "5292"
     },
     {
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          121246.948,
-          488891.247
-        ]
-      },
       "properties": {
         "datum_doc": "2005-09-30",
         "datum_eind": null,
@@ -106,6 +99,13 @@
         "toevoeging": null,
         "type": "Ligplaats",
         "woonplaats": "Amsterdam"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.89141,
+          52.38684
+        ]
       },
       "id": "5293"
     }

@@ -1,4 +1,6 @@
 {
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
   "links": [
     {
       "rel": "self",
@@ -25,20 +27,9 @@
       "href": "http://localhost:8080/collections/dutch-addresses/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=Aw%7CPqXbRw&f=json&limit=2"
     }
   ],
-  "numberReturned": 2,
-  "timeStamp": "2000-01-01T00:00:00Z",
-  "type": "FeatureCollection",
   "features": [
     {
-      "id": "4285720b-1a60-50ce-b5fd-fc1c381bda0b",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120563.35819148984,
-          566417.4511707001
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -80,18 +71,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "930503e2-500a-5e34-ba05-03473039873a",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          120563.35819,
+          566417.45117
         ]
       },
+      "id": "4285720b-1a60-50ce-b5fd-fc1c381bda0b"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -133,7 +124,16 @@
         "status_href": "",
         "validfrom": "2011-12-15T00:00:00.05Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120563.35819,
+          566417.45117
+        ]
+      },
+      "id": "930503e2-500a-5e34-ba05-03473039873a"
     }
-  ]
+  ],
+  "numberReturned": 2
 }

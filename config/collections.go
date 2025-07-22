@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// GeoSpatialCollections All collections configured for this OGC API. Can contain a mix of tiles/features/etc.
 type GeoSpatialCollections []GeoSpatialCollection
 
 // +kubebuilder:object:generate=true
@@ -189,8 +190,21 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	return result
 }
 
+// FeaturePropertiesByID returns a map of collection IDs to their corresponding FeatureProperties.
+// Skips collections that do not have features defined.
+func (g GeoSpatialCollections) FeaturePropertiesByID() map[string]*FeatureProperties {
+	result := make(map[string]*FeatureProperties)
+	for _, collection := range g {
+		if collection.Features == nil {
+			continue
+		}
+		result[collection.ID] = collection.Features.FeatureProperties
+	}
+	return result
+}
+
 // Unique lists all unique GeoSpatialCollections (no duplicate IDs).
-// Don't use in hot path (creates a map on every invocation).
+// Don't use in the hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 	collectionsByID := g.toMap()
 	result := make([]GeoSpatialCollection, 0, collectionsByID.Len())
@@ -201,7 +215,7 @@ func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 }
 
 // ContainsID check if given collection - by ID - exists.
-// Don't use in hot path (creates a map on every invocation).
+// Don't use in the hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) ContainsID(id string) bool {
 	collectionsByID := g.toMap()
 	_, ok := collectionsByID.Get(id)

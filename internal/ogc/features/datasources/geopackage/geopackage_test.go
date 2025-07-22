@@ -27,9 +27,9 @@ func newTestGeoPackage(file string) geoPackageBackend {
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
 			DatasourceCommon: config.DatasourceCommon{
-				Fid: "feature_id",
+				Fid:          "feature_id",
+				QueryTimeout: config.Duration{Duration: 15 * time.Second},
 			},
-			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
 			MaxBBoxSizeToUseWithRTree: 30000,
 			InMemoryCacheSize:         -2000,
 		},
@@ -73,7 +73,9 @@ func TestNewGeoPackage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(tt.args.collection, tt.args.config).featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
+			g, err := NewGeoPackage(tt.args.collection, tt.args.config, false, 0, false)
+			assert.NoError(t, err)
+			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(g.featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
 		})
 	}
 }
@@ -193,7 +195,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		{
 			name: "get first page of features with reference date",
 			fields: fields{
-				backend:          newTestGeoPackage("/testdata/bag-temporal.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag-temporal-wgs84.gpkg"),
 				fidColumn:        "feature_id",
 				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
@@ -446,7 +448,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 			s, err := domain.NewSchema([]domain.Field{}, tt.fields.fidColumn, "")
 			assert.NoError(t, err)
 			p := domain.NewProfile(domain.RelAsLink, *url, *s)
-			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, domain.AxisOrderXY, p)
+			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, 0, domain.AxisOrderXY, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeature, error %v, wantErr %v", err, tt.wantErr)

@@ -227,10 +227,10 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	}
 }
 
-func TestProjectionsForCollections(t *testing.T) {
+func TestCollectionsSRS(t *testing.T) {
 	oaf := OgcAPIFeatures{
 		Datasources: &Datasources{
-			DefaultWGS84: Datasource{},
+			DefaultWGS84: &Datasource{},
 			Additional: []AdditionalDatasource{
 				{Srs: "EPSG:4355"},
 			},
@@ -240,7 +240,7 @@ func TestProjectionsForCollections(t *testing.T) {
 				ID: "coll1",
 				Features: &CollectionEntryFeatures{
 					Datasources: &Datasources{
-						DefaultWGS84: Datasource{},
+						DefaultWGS84: &Datasource{},
 						Additional: []AdditionalDatasource{
 							{Srs: "EPSG:4326"},
 							{Srs: "EPSG:3857"},
@@ -253,7 +253,7 @@ func TestProjectionsForCollections(t *testing.T) {
 	}
 
 	expected := []string{"EPSG:3857", "EPSG:4326", "EPSG:4355"}
-	assert.Equal(t, expected, oaf.ProjectionsForCollections())
+	assert.Equal(t, expected, oaf.CollectionsSRS())
 }
 
 func TestCacheDir(t *testing.T) {

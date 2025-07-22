@@ -25,18 +25,25 @@ to object storage, raster map hosting to a WMS server, etc.
 This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
 datasets? Spin up a separate instance/container.
 
+## Demo
+
+See OGC APIs listed on https://api.pdok.nl. These are powered by GoKoala.
+
 ## Features
 
 - [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
-  - Serves features as HTML, GeoJSON and JSON-FG
-  - Support one or more GeoPackages as backing datastores. This can be local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages.
-  - No on-the-fly reprojections are applied, separate GeoPackages should be configured ahead-of-time in each projection.
-  - Supports property (`/items?property=<value>`) and temporal filtering (`/items?datetime=<timestamp>`.
-  - Implements cursor-based pagination in order to support browsing large datasets.
+  - Serves features as HTML, GeoJSON and JSON-FG.
+  - Supported datastores:
+    - [GeoPackage](https://www.geopackage.org/). These can be regular/local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. No on-the-fly 
+      reprojection/transformation is applied, separate GeoPackages should be configured ahead-of-time in each CRS.
+    - [PostgreSQL](https://postgis.net/) (PostGIS). Supports on-the-fly reprojection/transformation of features.
+  - Supports property filtering (`/items?<property>=<value>`) and temporal filtering (`/items?datetime=<timestamp>`).
+  - Implements _cursor_-based pagination (also known as _keyset_ pagination) to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
+  - Validates required indexes on startup.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
   of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing.
   Currently, three projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
@@ -119,6 +126,9 @@ docker run -v `pwd`/examples:/examples -v `pwd`/mytheme:/mytheme -p 8080:8080 -i
 
 GoKoala has a few requirements regarding GeoPackages backing an OGC API Features:
 
+- Feature IDs (fid) in the GeoPackage should be auto-incrementing.
+- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the
+  config.
 - Each feature table must contain a [RTree](https://www.geopackage.org/guidance/extensions/rtree_spatial_indexes.html) index.
 - Each feature table must contain a BTree spatial index:
 
@@ -139,13 +149,42 @@ create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy, sta
 create index "<table>_temporal_idx" on "<table>"(start_date, end_date);
 ```
 
-- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the config.
-- Feature IDs (fid) in the GeoPackage should be contiguous and auto-incrementing.
-
 This is in addition to some of the requirements set forth by the PDOK [GeoPackage validator](https://github.com/PDOK/geopackage-validator).
 Some of the requirements stated above can be automatically applied with help of the PDOK [GeoPackage optimizer](https://github.com/PDOK/geopackage-optimizer-go).
 
-When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend a local cache that is able to hold the spatial index, see `maxSize` in the config.
+When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend
+a local cache that is able to hold the spatial index, see `maxSize` in the config.
+
+### PostgreSQL requirements
+
+Likewise, GoKoala has a few requirements regarding PostgreSQL backing an OGC API Features:
+
+- Feature IDs (fid) in the table should be auto-incrementing.
+- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the
+  config.
+- PostGIS extension needs to be installed and enabled.
+- The geometry field in the table must contain a [GIST index](https://postgis.net/documentation/faq/spatial-indexes/).
+- When enabling temporal filtering (using `datetime` query param) the temporal fields should be indexed:
+
+```sql
+create index "<table>_temporal_idx" on "<table>" (start_date, end_date);
+```
+
+### Feature schema
+
+GoKoala supports OGC API Features part 5 (schemas). The schema for each collection is automatically derived from the
+underlying - Geopackage or PostgreSQL - table. Optionally, one can enrich the schema with field/property descriptions.
+
+When using GeoPackages you'll need to add
+the [GeoPackage schema extension](http://www.geopackage.org/guidance/extensions/schema.html).
+This includes adding a `gpkg_data_columns` table and inserting a `description` for each field.
+
+When using PostgreSQL you can add a comment on each column. This comment will be used as the field description.
+For example:
+
+```sql
+comment on column <table>.<field> is 'Some description about this field for the end-user;
+```
 
 ### OpenAPI spec
 
@@ -183,15 +222,15 @@ binds to localhost and a different port which you must specify using the
 through a tunnel/port-forward. The debug server exposes `/debug` for use by
 [pprof](https://go.dev/blog/pprof). For example with `--debug-port 9001`:
 
-- Create a tunnel to the debug server e.g. in k8s: `kubectl port-forward
+- Create a tunnel to the debug server e.g., in k8s: `kubectl port-forward
 gokoala-75f59d57f4-4nd6q 9001:9001`
-- Create CPU profile: `go tool pprof
+- Capture CPU profile: `go tool pprof
 http://localhost:9001/debug/pprof/profile?seconds=20`
+- Capture Memory profile: `go tool pprof
+http://localhost:9001/debug/pprof/heap?seconds=20`
 - Start pprof visualization `go tool pprof -http=":8000" pprofbin <path to pb.gz
 file>`
-- Open <http://localhost:8000> to explore CPU flamegraphs and such.
-
-A similar flow can be used to profile memory issues.
+- Open <http://localhost:8000> to explore CPU flamegraphs or Heap details.
 
 #### SQL query logging
 
@@ -205,15 +244,16 @@ Design principles:
 
 - Performance and scalability are key!
 - Be opinionated when you can, only make stuff configurable when you must.
+- Fail fast, fail hard: do as much pre-processing/validation on startup instead
+  of during request handling.
 - The `ogc` [package](internal/ogc/README.md) contains logic per specific OGC API
   building block.
 - The `engine` package should contain general logic. `ogc` may reference
   `engine`.
   > :warning: The other way around is not allowed!
+- Document public APIs with [godoc](https://go.dev/blog/godoc)
 - Geospatial related configuration is done through the config file, technical
   configuration (host/port/etc) is done through CLI flags/env variables.
-- Fail fast, fail hard: do as much pre-processing/validation on startup instead
-  of during request handling.
 - Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
 
@@ -230,19 +270,29 @@ go build -o gokoala cmd/main.go
 To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also happens there.
 Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn't found.
 
+### Testing
+
+To run all unit tests:
+
+```
+go test -v -race -shuffle=on ./...
+```
+
+Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn't found.
+Some tests make use of [Testcontainers](https://golang.testcontainers.org/) so you'll need to have Docker installed.
+
 ### Linting
 
-Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run`
-from the root.
+Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golangci-lint run ./...` from the root.
 
 ### Viewer
 
 GoKoala includes a [viewer](viewer) which is available
-as a [Web Component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for embedding in HTML pages. 
+as a set of [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for embedding in HTML pages. 
 To use the viewer locally when running GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will 
 build the viewer and add it to the GoKoala assets.
 
-Note this is only required for local development. When running GoKoala as a container this is
+Note this is only required for local development. When running GoKoala in a container this is
 already being taken care of when building the Docker container image.
 
 ### IntelliJ / GoLand

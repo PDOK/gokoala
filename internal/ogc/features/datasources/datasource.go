@@ -24,7 +24,7 @@ type Datasource interface {
 	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
 
 	// GetFeature returns a specific Feature, based on its feature id
-	GetFeature(ctx context.Context, collection string, featureID any, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
+	GetFeature(ctx context.Context, collection string, featureID any, outputSRID domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
@@ -32,6 +32,9 @@ type Datasource interface {
 	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values.
 	// When enrichments don't apply, the returned result should still contain all property filters as specified in the (YAML) config.
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
+
+	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
+	SupportsOnTheFlyTransformation() bool
 
 	// Close closes (connections to) the datasource gracefully
 	Close()

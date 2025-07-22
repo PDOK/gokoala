@@ -1,4 +1,6 @@
 {
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
   "links": [
     {
       "rel": "self",
@@ -25,20 +27,9 @@
       "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=4.86%2C53.07%2C4.88%2C53.09&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=cw%7CHfgksg&f=json&limit=10"
     }
   ],
-  "numberReturned": 10,
-  "timeStamp": "2000-01-01T00:00:00Z",
-  "type": "FeatureCollection",
   "features": [
     {
-      "id": "4285720b-1a60-50ce-b5fd-fc1c381bda0b",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120563.35819148984,
-          566417.4511707001
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -80,18 +71,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "930503e2-500a-5e34-ba05-03473039873a",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          120563.35819,
+          566417.45117
         ]
       },
+      "id": "4285720b-1a60-50ce-b5fd-fc1c381bda0b"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -133,18 +124,18 @@
         "status_href": "",
         "validfrom": "2011-12-15T00:00:00.05Z",
         "validto": null
-      }
-    },
-    {
-      "id": "d7ec9799-7573-5fe2-ae50-6c50a7946d08",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          120563.35819,
+          566417.45117
         ]
       },
+      "id": "930503e2-500a-5e34-ba05-03473039873a"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -186,18 +177,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "ce2072f0-0e29-5014-8484-3a2aec88ef87",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120563.35819148984,
-          566417.4511707001
+          120563.35819,
+          566417.45117
         ]
       },
+      "id": "d7ec9799-7573-5fe2-ae50-6c50a7946d08"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -239,18 +230,18 @@
         "status_href": "",
         "validfrom": "2011-12-15T00:00:00.05Z",
         "validto": null
-      }
-    },
-    {
-      "id": "57245809-a402-533c-a48a-7ae32e9b91a3",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120667.70819241501,
-          566390.1111711524
+          120563.35819,
+          566417.45117
         ]
       },
+      "id": "ce2072f0-0e29-5014-8484-3a2aec88ef87"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -292,18 +283,18 @@
         "status_href": "",
         "validfrom": "2001-03-22T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "145c6a02-261b-5796-946a-7aaafe1ced5b",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120663.9691923563,
-          566395.2931711634
+          120667.70819,
+          566390.11117
         ]
       },
+      "id": "57245809-a402-533c-a48a-7ae32e9b91a3"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -345,18 +336,18 @@
         "status_href": "",
         "validfrom": "2001-03-22T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "944afe9e-0eb1-55be-b04b-fbd63b5c4697",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120663.9691923563,
-          566395.2931711634
+          120663.96919,
+          566395.29317
         ]
       },
+      "id": "145c6a02-261b-5796-946a-7aaafe1ced5b"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -398,18 +389,18 @@
         "status_href": "",
         "validfrom": "2001-03-22T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "fd8eee46-fb26-5088-8404-450f5c469ff7",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120575.39619156896,
-          566418.8441707834
+          120663.96919,
+          566395.29317
         ]
       },
+      "id": "944afe9e-0eb1-55be-b04b-fbd63b5c4697"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -451,18 +442,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "dc4a33bd-a90e-5f9a-91ef-8c185505f7e7",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120586.81619161018,
-          566425.7631709053
+          120575.39619,
+          566418.84417
         ]
       },
+      "id": "fd8eee46-fb26-5088-8404-450f5c469ff7"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -504,18 +495,18 @@
         "status_href": "",
         "validfrom": "2002-04-22T00:00:00Z",
         "validto": null
-      }
-    },
-    {
-      "id": "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
-      "type": "Feature",
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120632.16219196285,
-          566422.0191711548
+          120586.81619,
+          566425.76317
         ]
       },
+      "id": "dc4a33bd-a90e-5f9a-91ef-8c185505f7e7"
+    },
+    {
+      "type": "Feature",
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -557,7 +548,16 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120632.16219,
+          566422.01917
+        ]
+      },
+      "id": "b29c12b1-21a9-5e63-83b4-0ff9122ef80f"
     }
-  ]
+  ],
+  "numberReturned": 10
 }

@@ -46,7 +46,7 @@ func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColu
 	}
 	log.Println(metadata)
 
-	featureTableByCollectionID, err = readGpkgContents(collections, db, fidColumn, externalFidColumn)
+	featureTableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -91,7 +91,7 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'table_name' column. Also, in case there's no exact match between 'collection ID' and 'table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readGpkgContents(collections config.GeoSpatialCollections, db *sqlx.DB,
+func readFeatureTables(collections config.GeoSpatialCollections, db *sqlx.DB,
 	fidColumn, externalFidColumn string) (map[string]*featureTable, error) {
 
 	query := `
@@ -212,7 +212,7 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 
 	var query string
 	if schemaExtension {
-		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", ifnull(b.description, '') "+
+		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", coalesce(b.description, '') "+
 			"from pragma_table_info('%[1]s') a "+
 			"left join gpkg_data_columns b on b.column_name = a.name and b.table_name='%[1]s'", table.TableName)
 	} else {

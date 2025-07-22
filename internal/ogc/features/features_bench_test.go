@@ -1,24 +1,11 @@
 package features
 
 import (
-	"os"
-	"path"
-	"runtime"
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
 )
-
-func init() {
-	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../../")
-	err := os.Chdir(dir)
-	if err != nil {
-		panic(err)
-	}
-}
 
 // Run the benchmark with the following command:
 //
@@ -52,28 +39,28 @@ func BenchmarkFeatures(b *testing.B) {
 		{
 			name: "1", // output is WGS84 json, input is WGS84 bbox
 			fields: fields{
-				configFile: "internal/ogc/features/testdata/config_benchmark.yaml",
+				configFile: "internal/ogc/features/testdata/geopackage/config_benchmark.yaml",
 				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.651476%2C52.962408%2C4.979398%2C53.074282&f=json&limit=1000",
 			},
 		},
 		{
 			name: "2", // same as benchmark 1 above, but now the next page
 			fields: fields{
-				configFile: "internal/ogc/features/testdata/config_benchmark.yaml",
+				configFile: "internal/ogc/features/testdata/geopackage/config_benchmark.yaml",
 				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=4.651476%2C52.962408%2C4.979398%2C53.074282&cursor=Cpc%7CwXkQbQ&f=json&limit=1000",
 			},
 		},
 		{
 			name: "3", // output is WGS84 json, input is RD bbox
 			fields: fields{
-				configFile: "internal/ogc/features/testdata/config_benchmark.yaml",
+				configFile: "internal/ogc/features/testdata/geopackage/config_benchmark.yaml",
 				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=105564.79055389616405591%2C553072.85584054281935096%2C127668.63754775881534442%2C565347.87356295716017485&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&limit=1000",
 			},
 		},
 		{
 			name: "4", // same as benchmark 3 above, but now the next page
 			fields: fields{
-				configFile: "internal/ogc/features/testdata/config_benchmark.yaml",
+				configFile: "internal/ogc/features/testdata/geopackage/config_benchmark.yaml",
 				url:        "http://localhost:8080/collections/dutch-addresses/items?bbox=105564.79055389616405591%2C553072.85584054281935096%2C127668.63754775881534442%2C565347.87356295716017485&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&cursor=Cyo%7CiLD6Iw&f=json&limit=1000",
 			},
 		},

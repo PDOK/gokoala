@@ -7,20 +7,37 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
-	"github.com/jmoiron/sqlx"
-
 	"github.com/twpayne/go-geom"
-	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
 // MapRelation abstract function type to map feature relations
 type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any)
 
-// MapGeom abstract function type to map geometry from bytes to Geometry
-type MapGeom func([]byte) (geom.T, error)
+// MapGeom abstract function type to map datasource-specific geometry
+// (in GeoPackage, PostGIS, WKB, etc. format) to general-purpose geometry
+type MapGeom func(columnValue any) (geom.T, error)
+
+// DatasourceRows defines an abstraction over rows/records retrieved from a datasource.
+// Can be implemented using libraries such as jackc/pgx, jmoiron/sqlx, database/sql, etc.
+type DatasourceRows interface {
+	// Columns provided the column names
+	Columns() ([]string, error)
+
+	// SliceScan scans the current row into a slice of any
+	SliceScan() ([]any, error)
+
+	// Next advances the row pointer to the next row
+	Next() bool
+
+	// Err any error that occurred during iteration
+	Err() error
+
+	// Close closes the row set, releasing any resources
+	Close()
+}
 
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
-func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
+func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
 	firstRow := true
 	for rows.Next() {
 		var values []any
@@ -52,9 +69,14 @@ func MapRowsToFeatureIDs(ctx context.Context, rows *sqlx.Rows) (featureIDs []int
 	return
 }
 
+type FormatOpts struct {
+	MaxDecimals int
+	ForceUTC    bool
+}
+
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
-func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, externalFidColumn string, geomColumn string,
-	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation) ([]*Feature, *PrevNextFID, error) {
+func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn string, externalFidColumn string, geomColumn string,
+	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation, formatOpts FormatOpts) ([]*Feature, *PrevNextFID, error) {
 
 	result := make([]*Feature, 0)
 	columns, err := rows.Columns()
@@ -72,7 +94,7 @@ func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, e
 		}
 		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
 		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn,
-			externalFidColumn, geomColumn, schema, mapGeom, mapRel)
+			externalFidColumn, geomColumn, schema, mapGeom, mapRel, formatOpts)
 		if err != nil {
 			return result, nil, err
 		} else if firstRow {
@@ -85,8 +107,9 @@ func MapRowsToFeatures(ctx context.Context, rows *sqlx.Rows, fidColumn string, e
 }
 
 //nolint:cyclop,funlen
-func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any, fidColumn string,
-	externalFidColumn string, geomColumn string, schema *Schema, mapGeom MapGeom, mapRel MapRelation) (*PrevNextFID, error) {
+func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any,
+	fidColumn string, externalFidColumn string, geomColumn string, schema *Schema, mapGeom MapGeom, mapRel MapRelation,
+	formatOpts FormatOpts) (*PrevNextFID, error) {
 
 	prevNextID := PrevNextFID{}
 	for i, columnName := range columns {
@@ -101,19 +124,12 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
-			rawGeom, ok := columnValue.([]byte)
-			if !ok {
-				return nil, fmt.Errorf("failed to read geometry from %s column in datasource", geomColumn)
-			}
-			mappedGeom, err := mapGeom(rawGeom)
+			mappedGeom, err := mapGeom(columnValue)
 			if err != nil {
 				return nil, fmt.Errorf("failed to map/decode geometry from datasource, error: %w", err)
 			}
-			if mappedGeom != nil {
-				feature.Geometry, err = geojson.Encode(mappedGeom)
-				if err != nil {
-					return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
-				}
+			if err = feature.SetGeom(mappedGeom, formatOpts.MaxDecimals); err != nil {
+				return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
 			}
 
 		case MinxField, MinyField, MaxxField, MaxyField:
@@ -123,13 +139,21 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 		case PrevFid:
 			// Only the first row in the result set contains the previous feature id
 			if firstRow && columnValue != nil {
-				prevNextID.Prev = columnValue.(int64)
+				val, err := types.ToInt64(columnValue)
+				if err != nil {
+					return nil, err
+				}
+				prevNextID.Prev = val
 			}
 
 		case NextFid:
 			// Only the first row in the result set contains the next feature id
 			if firstRow && columnValue != nil {
-				prevNextID.Next = columnValue.(int64)
+				val, err := types.ToInt64(columnValue)
+				if err != nil {
+					return nil, err
+				}
+				prevNextID.Next = val
 			}
 
 		default:
@@ -137,13 +161,13 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
-			// Grab any non-nil, non-id, non-bounding box, & non-geometry column as a feature property
+			// Grab any non-nil, non-id, non-bounding box & non-geometry column as a feature property
 			switch v := columnValue.(type) {
-			case []uint8:
+			case []byte:
 				asBytes := make([]byte, len(v))
 				copy(asBytes, v)
 				feature.Properties.Set(columnName, string(asBytes))
-			case int64:
+			case int32, int64:
 				feature.Properties.Set(columnName, v)
 			case float64:
 				// Check to determine whether the content of the columnValue is truly a floating point value.
@@ -154,18 +178,22 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 					feature.Properties.Set(columnName, v)
 				}
 			case time.Time:
+				timeVal := v
+				if formatOpts.ForceUTC {
+					timeVal = timeVal.UTC()
+				}
 				// Map as date (= without time) only when defined as such in the schema AND when no time component is present
-				if types.IsDate(v) && schema.IsDate(columnName) {
-					feature.Properties.Set(columnName, types.NewDate(v))
+				if types.IsDate(timeVal) && schema.IsDate(columnName) {
+					feature.Properties.Set(columnName, types.NewDate(timeVal))
 				} else {
-					feature.Properties.Set(columnName, v)
+					feature.Properties.Set(columnName, timeVal)
 				}
 			case string:
 				feature.Properties.Set(columnName, v)
 			case bool:
 				feature.Properties.Set(columnName, v)
 			default:
-				return nil, fmt.Errorf("unexpected type for sqlite column data: %v: %T", columns[i], v)
+				return nil, fmt.Errorf("unexpected type: %v: %T", columns[i], v)
 			}
 		}
 	}

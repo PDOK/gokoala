@@ -10,10 +10,15 @@ license:
 ogcApi:
   features:
     datasources:
-      defaultWGS84:
-        geopackage:
-          local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/bag_schema_extension.gpkg
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:28992
+            - srs: EPSG:4258
+            - srs: EPSG:3857
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: bag
             fid: feature_id
             queryTimeout: 15m # pretty high to allow debugging
     collections:
@@ -22,14 +27,8 @@ ogcApi:
         filters:
           properties:
             - name: straatnaam
+            - name: invalid_this_does_not_exist_in_gpkg
             - name: postcode
         metadata:
           title: Foooo
           description: Foooo
-      - id: bar
-        tableName: ligplaatsen
-        metadata:
-          title: Barrr
-          description: Barrr
-          tableName: ligplaatsen
-      - id: baz

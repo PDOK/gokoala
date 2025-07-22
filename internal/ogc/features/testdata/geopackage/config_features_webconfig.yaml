@@ -13,7 +13,7 @@ ogcApi:
       defaultWGS84:
         geopackage:
           local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/bag.gpkg
+            file: ./internal/ogc/features/datasources/geopackage/testdata/bag-wgs84.gpkg
             fid: feature_id
     collections:
       - id: ligplaatsen

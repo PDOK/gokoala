@@ -1,0 +1,65 @@
+---
+services:
+  postgres:
+    image: docker.io/postgis/postgis:16-3.5  # use debian, not alpine
+    container_name: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+    command: ["postgres", "-c", "log_statement=all"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      retries: 30
+
+  postgres-init-data:
+    image: ghcr.io/osgeo/gdal:ubuntu-small-3.8.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        echo "START import GeoPackage in Postgres"
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco FID=fid \
+          /examples/resources/addresses-rd.gpkg
+        echo "DONE import GeoPackage in Postgres"
+    volumes:
+      - ./:/examples
+
+  gokoala:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    depends_on:
+      postgres-init-data:
+        condition: service_completed_successfully
+    command: "--config-file ./examples/config_features_postgres.yaml"
+    volumes:
+      - ./:/examples
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: /bin/curl --fail http://127.0.0.1:8080 || exit 1
+      interval: 1s
+      retries: 30
+
+  smoketest:
+    image: ghcr.io/osgeo/gdal:ubuntu-small-3.8.3
+    depends_on:
+      gokoala:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        echo "test OGC API"
+        ogrinfo -so OAPIF:http://gokoala:8080 dutch-addresses
