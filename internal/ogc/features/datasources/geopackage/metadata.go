@@ -1,12 +1,10 @@
 package geopackage
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"regexp"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
@@ -18,18 +16,9 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // featureTable according to spec https://www.geopackage.org/spec121/index.html#_contents
 type featureTable struct {
-	TableName          string          `db:"table_name"`
-	DataType           string          `db:"data_type"` // always 'features'
-	Identifier         string          `db:"identifier"`
-	Description        string          `db:"description"`
-	GeometryColumnName string          `db:"column_name"`
-	GeometryType       string          `db:"geometry_type_name"`
-	LastChange         time.Time       `db:"last_change"`
-	MinX               sql.NullFloat64 `db:"min_x"` // bbox
-	MinY               sql.NullFloat64 `db:"min_y"` // bbox
-	MaxX               sql.NullFloat64 `db:"max_x"` // bbox
-	MaxY               sql.NullFloat64 `db:"max_y"` // bbox
-	SRS                sql.NullInt64   `db:"srs_id"`
+	TableName          string
+	GeometryColumnName string
+	GeometryType       string
 
 	Schema *d.Schema // required
 }
@@ -96,8 +85,7 @@ func readFeatureTables(collections config.GeoSpatialCollections, db *sqlx.DB,
 
 	query := `
 select
-	c.table_name, c.data_type, c.identifier, c.description, c.last_change,
-	c.min_x, c.min_y, c.max_x, c.max_y, c.srs_id, gc.column_name, gc.geometry_type_name
+	c.table_name, gc.column_name, gc.geometry_type_name
 from
 	gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
 where
@@ -115,7 +103,7 @@ where
 	result := make(map[string]*featureTable, 10)
 	for rows.Next() {
 		table := featureTable{}
-		if err = rows.StructScan(&table); err != nil {
+		if err = rows.Scan(&table.TableName, &table.GeometryColumnName, &table.GeometryType); err != nil {
 			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 		}
 		if table.TableName == "" {
