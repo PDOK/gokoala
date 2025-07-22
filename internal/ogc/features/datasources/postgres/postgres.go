@@ -121,7 +121,7 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 	defer cancel()
 
 	propConfig := pg.PropertiesByCollectionID[collection]
-	query, queryArgs, err := pg.makeFeaturesQuery(queryCtx, propConfig, table, false, axisOrder, criteria)
+	query, queryArgs, err := pg.makeFeaturesQuery(propConfig, table, false, axisOrder, criteria)
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -214,7 +214,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 }
 
 // Build specific features queries based on the given options.
-func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *common.FeatureTable,
+func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, table *common.FeatureTable,
 	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
@@ -232,67 +232,44 @@ func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.Feat
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	// make query
+	return pg.makeQuery(table, selectClause, criteria)
+}
+
+func (pg *Postgres) makeQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
+
+	var bboxClause string
+	var bboxNamedParams map[string]any
 	if criteria.Bbox != nil {
-		query, queryArgs, err = pg.makeBboxQuery(table, selectClause, criteria)
+		var err error
+		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)
 		if err != nil {
-			return
+			return "", nil, err
 		}
-	} else {
-		query, queryArgs = pg.makeDefaultQuery(table, selectClause, criteria)
-	}
-	return
-}
-
-func (pg *Postgres) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
-
-	defaultQuery := fmt.Sprintf(`
-with
-    next as (select * from "%[1]s" where "%[2]s" >= @fid %[3]s %[4]s order by %[2]s asc limit @limit + 1),
-    prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s order by %[2]s desc limit @limit),
-    nextprev as (select * from next union all select * from prev),
-    nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
-select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
-`, table.TableName, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid) // don't add user input here, use named params for user input!
-
-	namedParams := map[string]any{
-		"fid":        criteria.Cursor.FID,
-		"limit":      criteria.Limit,
-		"outputSrid": criteria.OutputSRID,
-	}
-	maps.Copy(namedParams, pfNamedParams)
-	maps.Copy(namedParams, temporalNamedParams)
-	return defaultQuery, namedParams
-}
-
-func (pg *Postgres) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
-	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)
-	if err != nil {
-		return "", nil, err
 	}
 
-	bboxQuery := fmt.Sprintf(`
+	query := fmt.Sprintf(`
 with
     next as (select * from "%[1]s" where "%[2]s" >= @fid %[3]s %[4]s %[8]s order by %[2]s asc limit @limit + 1),
     prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s %[8]s order by %[2]s desc limit @limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
-`, table.TableName, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause) // don't add user input here, use named params for user input!
+`, table.TableName, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
 
 	namedParams := map[string]any{
 		"fid":        criteria.Cursor.FID,
 		"limit":      criteria.Limit,
 		"outputSrid": criteria.OutputSRID,
 	}
-	maps.Copy(namedParams, bboxNamedParams)
+	if criteria.Bbox != nil {
+		maps.Copy(namedParams, bboxNamedParams)
+	}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
-	return bboxQuery, namedParams, nil
+
+	return query, namedParams, nil
 }
 
 func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, map[string]any, error) {
