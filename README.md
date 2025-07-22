@@ -109,7 +109,8 @@ ogcApi:
 ### Custom theming
 
 GoKoala offers some minimal theming options. When running GoKoala, pass an argument of `-theme-file` to load a custom
-theming file. The [theme.yaml](./themes/pdok/theme.yaml) in the themes directory contains the configurable options for the theme.
+theming file. The [theme.yaml](./themes/pdok/theme.yaml) in the themes directory contains the configurable options for the theme. This 
+directory also allows you to insert HTML at the beginning of the `<body>` tag.
 
 For example:
 
