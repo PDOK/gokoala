@@ -139,7 +139,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	}
 	defer rows.Close()
 
-	featureIDs, prevNext, err := d.MapRowsToFeatureIDs(queryCtx, FromSqlxRows(rows))
+	featureIDs, prevNext, err := common.MapRowsToFeatureIDs(queryCtx, FromSqlxRows(rows))
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
@@ -181,10 +181,10 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer rows.Close()
 
 	fc := d.FeatureCollection{}
-	fc.Features, _, err = d.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+	fc.Features, _, err = common.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
 		g.FidColumn, g.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
-		d.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
+		common.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
 	if err != nil {
 		return nil, err
 	}
@@ -217,10 +217,10 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 
 	var prevNext *d.PrevNextFID
 	fc := d.FeatureCollection{}
-	fc.Features, prevNext, err = d.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+	fc.Features, prevNext, err = common.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
 		g.FidColumn, g.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
-		d.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
+		common.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
@@ -270,10 +270,10 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, _, err := d.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+	features, _, err := common.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
 		g.FidColumn, g.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
-		d.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
+		common.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
 	if err != nil {
 		return nil, err
 	}

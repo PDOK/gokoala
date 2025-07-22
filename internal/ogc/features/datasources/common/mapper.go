@@ -1,4 +1,4 @@
-package domain
+package common
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
 )
 
@@ -17,27 +18,8 @@ type MapRelation func(columnName string, columnValue any, externalFidColumn stri
 // (in GeoPackage, PostGIS, WKB, etc. format) to general-purpose geometry
 type MapGeom func(columnValue any) (geom.T, error)
 
-// DatasourceRows defines an abstraction over rows/records retrieved from a datasource.
-// Can be implemented using libraries such as jackc/pgx, jmoiron/sqlx, database/sql, etc.
-type DatasourceRows interface {
-	// Columns provided the column names
-	Columns() ([]string, error)
-
-	// SliceScan scans the current row into a slice of any
-	SliceScan() ([]any, error)
-
-	// Next advances the row pointer to the next row
-	Next() bool
-
-	// Err any error that occurred during iteration
-	Err() error
-
-	// Close closes the row set, releasing any resources
-	Close()
-}
-
 // MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
-func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs []int64, prevNextID *PrevNextFID, err error) {
+func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs []int64, prevNextID *domain.PrevNextFID, err error) {
 	firstRow := true
 	for rows.Next() {
 		var values []any
@@ -59,7 +41,7 @@ func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs [
 			if values[2] != nil {
 				next = values[2].(int64)
 			}
-			prevNextID = &PrevNextFID{Prev: prev, Next: next}
+			prevNextID = &domain.PrevNextFID{Prev: prev, Next: next}
 			firstRow = false
 		}
 	}
@@ -75,10 +57,12 @@ type FormatOpts struct {
 }
 
 // MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
-func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn string, externalFidColumn string, geomColumn string,
-	propConfig *config.FeatureProperties, schema *Schema, mapGeom MapGeom, mapRel MapRelation, formatOpts FormatOpts) ([]*Feature, *PrevNextFID, error) {
+func MapRowsToFeatures(ctx context.Context, rows DatasourceRows,
+	fidColumn string, externalFidColumn string, geomColumn string,
+	propConfig *config.FeatureProperties, schema *domain.Schema,
+	mapGeom MapGeom, mapRel MapRelation, formatOpts FormatOpts) ([]*domain.Feature, *domain.PrevNextFID, error) {
 
-	result := make([]*Feature, 0)
+	result := make([]*domain.Feature, 0)
 	columns, err := rows.Columns()
 	if err != nil {
 		return result, nil, err
@@ -86,13 +70,13 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn strin
 
 	propertiesOrder := propConfig != nil && propConfig.PropertiesInSpecificOrder
 	firstRow := true
-	var prevNextID *PrevNextFID
+	var prevNextID *domain.PrevNextFID
 	for rows.Next() {
 		var values []any
 		if values, err = rows.SliceScan(); err != nil {
 			return result, nil, err
 		}
-		feature := &Feature{Properties: NewFeatureProperties(propertiesOrder)}
+		feature := &domain.Feature{Properties: domain.NewFeatureProperties(propertiesOrder)}
 		np, err := mapColumnsToFeature(ctx, firstRow, feature, columns, values, fidColumn,
 			externalFidColumn, geomColumn, schema, mapGeom, mapRel, formatOpts)
 		if err != nil {
@@ -107,11 +91,11 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows, fidColumn strin
 }
 
 //nolint:cyclop,funlen
-func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, columns []string, values []any,
-	fidColumn string, externalFidColumn string, geomColumn string, schema *Schema, mapGeom MapGeom, mapRel MapRelation,
-	formatOpts FormatOpts) (*PrevNextFID, error) {
+func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Feature, columns []string, values []any,
+	fidColumn string, externalFidColumn string, geomColumn string, schema *domain.Schema, mapGeom MapGeom, mapRel MapRelation,
+	formatOpts FormatOpts) (*domain.PrevNextFID, error) {
 
-	prevNextID := PrevNextFID{}
+	prevNextID := domain.PrevNextFID{}
 	for i, columnName := range columns {
 		columnValue := values[i]
 
@@ -132,11 +116,11 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
 			}
 
-		case MinxField, MinyField, MaxxField, MaxyField:
+		case domain.MinxField, domain.MinyField, domain.MaxxField, domain.MaxyField:
 			// Skip these columns used for bounding box handling
 			continue
 
-		case PrevFid:
+		case domain.PrevFid:
 			// Only the first row in the result set contains the previous feature id
 			if firstRow && columnValue != nil {
 				val, err := types.ToInt64(columnValue)
@@ -146,7 +130,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 				prevNextID.Prev = val
 			}
 
-		case NextFid:
+		case domain.NextFid:
 			// Only the first row in the result set contains the next feature id
 			if firstRow && columnValue != nil {
 				val, err := types.ToInt64(columnValue)
@@ -203,7 +187,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *Feature, c
 }
 
 // mapExternalFid run a second pass over columns to map external feature ID, including relations to other features
-func mapExternalFid(columns []string, values []any, externalFidColumn string, feature *Feature, mapRel MapRelation) {
+func mapExternalFid(columns []string, values []any, externalFidColumn string, feature *domain.Feature, mapRel MapRelation) {
 	for i, columnName := range columns {
 		columnValue := values[i]
 
@@ -216,7 +200,7 @@ func mapExternalFid(columns []string, values []any, externalFidColumn string, fe
 			// feature ID irrespective of the order of columns in the table
 			feature.ID = fmt.Sprint(columnValue)
 			feature.Properties.Delete(columnName)
-		case isFeatureRelation(columnName, externalFidColumn):
+		case domain.IsFeatureRelation(columnName, externalFidColumn):
 			// When externalFidColumn is part of the column name (e.g. 'foobar_external_fid') we treat
 			// it as a relation to another feature.
 			newColumnName, newColumnNameWithoutProfile, newColumnValue := mapRel(columnName, columnValue, externalFidColumn)

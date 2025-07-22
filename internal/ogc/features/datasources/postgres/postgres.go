@@ -129,10 +129,10 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 
 	var prevNext *d.PrevNextFID
 	fc := d.FeatureCollection{}
-	fc.Features, prevNext, err = d.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
+	fc.Features, prevNext, err = common.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
 		pg.FidColumn, pg.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapPostGISGeometry, profile.MapRelationUsingProfile,
-		d.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
+		common.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
@@ -195,10 +195,10 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	}
 	defer rows.Close()
 
-	features, _, err := d.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
+	features, _, err := common.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
 		pg.FidColumn, pg.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapPostGISGeometry, profile.MapRelationUsingProfile,
-		d.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
+		common.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
 	if err != nil {
 		return nil, err
 	}
