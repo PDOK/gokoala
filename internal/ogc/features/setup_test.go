@@ -45,6 +45,10 @@ func TestMain(m *testing.M) {
 }
 
 func setup(ctx context.Context) *compose.DockerCompose {
+	// mock time
+	now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+	engine.Now = now
+
 	port, stack, err := setupPostgres(ctx)
 	if err != nil {
 		log.Fatal("failed to start docker compose", err)

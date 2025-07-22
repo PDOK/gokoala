@@ -47,8 +47,40 @@ type OpenAPI struct {
 	extraOpenAPIFiles []string
 }
 
+// init once
+func init() {
+	htmlRegex := regexp.MustCompile(HTMLRegex)
+
+	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
+		func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+			_ openapi3filter.EncodingFn) (any, error) {
+
+			data, err := io.ReadAll(body)
+			if err != nil {
+				return nil, errors.New("failed to read response body")
+			}
+			if !htmlRegex.Match(data) {
+				return nil, errors.New("response doesn't contain HTML")
+			}
+			return string(data), nil
+		})
+
+	for _, mediaType := range MediaTypeJSONFamily {
+		openapi3filter.RegisterBodyDecoder(mediaType,
+			func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+				_ openapi3filter.EncodingFn) (any, error) {
+				var value any
+				dec := json.NewDecoder(body)
+				dec.UseNumber()
+				if err := dec.Decode(&value); err != nil {
+					return nil, errors.New("response doesn't contain valid JSON")
+				}
+				return value, nil
+			})
+	}
+}
+
 func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAPIParams any) *OpenAPI {
-	setupRequestResponseValidation()
 	ctx := context.Background()
 
 	// order matters, see mergeSpecs for details.
@@ -88,38 +120,6 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 		SpecJSON:          util.PrettyPrintJSON(resultSpecJSON, ""),
 		router:            newOpenAPIRouter(resultSpec),
 		extraOpenAPIFiles: extraOpenAPIFiles,
-	}
-}
-
-func setupRequestResponseValidation() {
-	htmlRegex := regexp.MustCompile(HTMLRegex)
-
-	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
-		func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
-			_ openapi3filter.EncodingFn) (any, error) {
-
-			data, err := io.ReadAll(body)
-			if err != nil {
-				return nil, errors.New("failed to read response body")
-			}
-			if !htmlRegex.Match(data) {
-				return nil, errors.New("response doesn't contain HTML")
-			}
-			return string(data), nil
-		})
-
-	for _, mediaType := range MediaTypeJSONFamily {
-		openapi3filter.RegisterBodyDecoder(mediaType,
-			func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
-				_ openapi3filter.EncodingFn) (any, error) {
-				var value any
-				dec := json.NewDecoder(body)
-				dec.UseNumber()
-				if err := dec.Decode(&value); err != nil {
-					return nil, errors.New("response doesn't contain valid JSON")
-				}
-				return value, nil
-			})
 	}
 }
 

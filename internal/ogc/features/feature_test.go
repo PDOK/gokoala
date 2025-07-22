@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
@@ -347,6 +346,8 @@ func TestFeature(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			for _, configFile := range tt.fields.configFiles {
 				dir := filepath.Dir(configFile)
 				datasourceName := filepath.Base(dir)
@@ -354,9 +355,7 @@ func TestFeature(t *testing.T) {
 				// nested subtest for each config-file/datasource
 				// tip: in JetBrains IDEs you can still jump to failed tests by explicitly selecting "jump to source"
 				t.Run(datasourceName, func(t *testing.T) {
-					// mock time
-					now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
-					engine.Now = now
+					t.Parallel()
 
 					req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
 					assert.NoError(t, err)
