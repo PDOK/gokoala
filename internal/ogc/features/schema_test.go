@@ -12,6 +12,8 @@ import (
 )
 
 func TestSchema(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
 		configFiles  []string
 		url          string
