@@ -13,6 +13,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage/encoding"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/google/uuid"
@@ -50,7 +51,7 @@ type geoPackageBackend interface {
 }
 
 type GeoPackage struct {
-	datasources.DatasourceCommon
+	common.DatasourceCommon
 
 	backend           geoPackageBackend
 	preparedStmtCache *PreparedStatementCache
@@ -67,7 +68,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	}
 
 	g := &GeoPackage{
-		DatasourceCommon: datasources.DatasourceCommon{
+		DatasourceCommon: common.DatasourceCommon{
 			TransformOnTheFly:        transformOnTheFly,
 			MaxDecimals:              maxDecimals,
 			ForceUTC:                 forceUTC,
@@ -284,12 +285,12 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
-func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *datasources.FeatureTable,
+func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *common.FeatureTable,
 	onlyFIDs bool, axisOrder domain.AxisOrder, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
 	var selectClause string
 	if onlyFIDs {
-		selectClause = datasources.ColumnsToSQL([]string{g.FidColumn, domain.PrevFid, domain.NextFid})
+		selectClause = common.ColumnsToSQL([]string{g.FidColumn, domain.PrevFid, domain.NextFid})
 	} else {
 		selectClause = g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, true)
 	}
@@ -308,9 +309,9 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	return
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *datasources.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
-	pfClause, pfNamedParams := datasources.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
-	temporalClause, temporalNamedParams := datasources.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlNamedParamSymbol)
+func (g *GeoPackage) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlNamedParamSymbol)
 
 	defaultQuery := fmt.Sprintf(`
 with
@@ -330,16 +331,16 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
 	return defaultQuery, namedParams
 }
 
-func (g *GeoPackage) makeBboxQuery(table *datasources.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+func (g *GeoPackage) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.TableName)
 
-	pfClause, pfNamedParams := datasources.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
 	if pfClause != "" {
 		// don't force btree index when using property filter, let SQLite decide
 		// whether to use the BTree index or the property filter index
 		btreeIndexHint = ""
 	}
-	temporalClause, temporalNamedParams := datasources.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlNamedParamSymbol)
 
 	bboxQuery := fmt.Sprintf(`
 with
@@ -420,7 +421,7 @@ func mapGpkgGeometry(columnValue any) (geom.T, error) {
 
 // selectGpkgGeometry GeoPackage specific way to select geometry
 // and take domain.AxisOrder into account.
-func selectGpkgGeometry(axisOrder domain.AxisOrder, table *datasources.FeatureTable) string {
+func selectGpkgGeometry(axisOrder domain.AxisOrder, table *common.FeatureTable) string {
 	if axisOrder == domain.AxisOrderYX {
 		// Add the geometry column. GeoPackage geometries are stored in WKB format and WKB is always XY.
 		// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing

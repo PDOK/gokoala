@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 
 	"github.com/jmoiron/sqlx"
@@ -15,7 +15,7 @@ import (
 // assertIndexesExist asserts required indexes in the GeoPackage exists
 func assertIndexesExist(
 	configuredCollections config.GeoSpatialCollections,
-	featureTableByCollectionID map[string]*datasources.FeatureTable,
+	featureTableByCollectionID map[string]*common.FeatureTable,
 	db *sqlx.DB, fidColumn string) error {
 
 	// index needs to contain these columns in the given order

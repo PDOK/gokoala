@@ -9,6 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -25,7 +26,7 @@ const (
 )
 
 type Postgres struct {
-	datasources.DatasourceCommon
+	common.DatasourceCommon
 
 	db         *pgxpool.Pool
 	schemaName string
@@ -67,7 +68,7 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 	}
 
 	pg := &Postgres{
-		DatasourceCommon: datasources.DatasourceCommon{
+		DatasourceCommon: common.DatasourceCommon{
 			TransformOnTheFly:        transformOnTheFly,
 			FidColumn:                pgConfig.Fid,
 			ExternalFidColumn:        pgConfig.ExternalFid,
@@ -208,12 +209,12 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 }
 
 // Build specific features queries based on the given options.
-func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *datasources.FeatureTable,
+func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *common.FeatureTable,
 	onlyFIDs bool, axisOrder d.AxisOrder, criteria datasources.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
 	if onlyFIDs {
-		selectClause = datasources.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid})
+		selectClause = common.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid})
 	} else {
 		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, propConfig, true)
 	}
@@ -238,9 +239,9 @@ func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.Feat
 	return
 }
 
-func (pg *Postgres) makeDefaultQuery(table *datasources.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
-	pfClause, pfNamedParams := datasources.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
-	temporalClause, temporalNamedParams := datasources.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
+func (pg *Postgres) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
 	defaultQuery := fmt.Sprintf(`
 with
@@ -261,9 +262,9 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 	return defaultQuery, namedParams
 }
 
-func (pg *Postgres) makeBboxQuery(table *datasources.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
-	pfClause, pfNamedParams := datasources.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
-	temporalClause, temporalNamedParams := datasources.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
+func (pg *Postgres) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)
 	if err != nil {
 		return "", nil, err
@@ -321,7 +322,7 @@ func mapPostGISGeometry(columnValue any) (geom.T, error) {
 
 // selectPostGISGeometry Postgres/PostGIS specific way to select geometry
 // and take domain.AxisOrder into account.
-func selectPostGISGeometry(axisOrder d.AxisOrder, table *datasources.FeatureTable) string {
+func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.FeatureTable) string {
 	if axisOrder == d.AxisOrderYX {
 		return fmt.Sprintf(", st_flipcoordinates(st_transform(\"%[1]s\", @outputSrid::int)) as \"%[1]s\"", table.GeometryColumnName)
 	}

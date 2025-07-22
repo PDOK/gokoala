@@ -1,4 +1,4 @@
-package datasources
+package common
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
@@ -27,7 +28,7 @@ type DatasourceCommon struct {
 	ForceUTC          bool
 
 	FeatureTableByCollectionID    map[string]*FeatureTable
-	PropertyFiltersByCollectionID map[string]PropertyFiltersWithAllowedValues
+	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
 }
 
@@ -52,7 +53,7 @@ func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error)
 	return table.Schema, nil
 }
 
-func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues {
+func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
 	return dc.PropertyFiltersByCollectionID[collection]
 }
 
@@ -132,7 +133,7 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 	return sql, namedParams
 }
 
-func TemporalCriteriaToSQL(temporalCriteria TemporalCriteria, symbol string) (sql string, namedParams map[string]any) {
+func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	if !temporalCriteria.ReferenceDate.IsZero() {
 		namedParams["referenceDate"] = temporalCriteria.ReferenceDate
