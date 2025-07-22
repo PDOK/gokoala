@@ -89,7 +89,7 @@ where
 			if table.TableName == collection.ID {
 				result[collection.ID] = &table
 				hasCollection = true
-			} else if hasMatchingTableName(collection, table) {
+			} else if collection.HasTableName(table.TableName) {
 				result[collection.ID] = &table
 				hasCollection = true
 			}
@@ -109,7 +109,7 @@ where
 		}
 	}
 
-	validateUniqueness(result)
+	common.ValidateUniqueness(result)
 	return result, nil
 }
 
@@ -233,20 +233,4 @@ order by
 		return nil, err
 	}
 	return schema, nil
-}
-
-func hasMatchingTableName(collection config.GeoSpatialCollection, row common.FeatureTable) bool {
-	return collection.Features != nil && collection.Features.TableName != nil &&
-		row.TableName == *collection.Features.TableName
-}
-
-func validateUniqueness(result map[string]*common.FeatureTable) {
-	uniqueTables := make(map[string]struct{})
-	for _, table := range result {
-		uniqueTables[table.TableName] = struct{}{}
-	}
-	if len(uniqueTables) != len(result) {
-		log.Printf("Warning: found %d unique table names for %d collections, "+
-			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
-	}
 }

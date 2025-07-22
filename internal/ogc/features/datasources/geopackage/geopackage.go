@@ -25,8 +25,10 @@ import (
 )
 
 const (
-	sqliteDriverName    = "sqlite3_with_extensions"
-	sqlNamedParamSymbol = ":"
+	sqliteDriverName = "sqlite3_with_extensions"
+
+	// https://jmoiron.github.io/sqlx/#namedParams
+	sqlxNamedParamSymbol = ":"
 )
 
 var once sync.Once
@@ -309,8 +311,8 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 }
 
 func (g *GeoPackage) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlNamedParamSymbol)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlxNamedParamSymbol)
 
 	defaultQuery := fmt.Sprintf(`
 with
@@ -333,13 +335,13 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
 func (g *GeoPackage) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.TableName)
 
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)
 	if pfClause != "" {
 		// don't force btree index when using property filter, let SQLite decide
 		// whether to use the BTree index or the property filter index
 		btreeIndexHint = ""
 	}
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlxNamedParamSymbol)
 
 	bboxQuery := fmt.Sprintf(`
 with
@@ -418,11 +420,10 @@ func mapGpkgGeometry(columnValue any) (geom.T, error) {
 	return geomWithMetadata.Geometry, nil
 }
 
-// selectGpkgGeometry GeoPackage specific way to select geometry
-// and take d.AxisOrder into account.
+// selectGpkgGeometry GeoPackage specific way to select geometry and take axis order into account.
 func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.FeatureTable) string {
 	if axisOrder == d.AxisOrderYX {
-		// Add the geometry column. GeoPackage geometries are stored in WKB format and WKB is always XY.
+		// GeoPackage geometries are stored in WKB format and WKB is always XY.
 		// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing
 		// the swap and then casting back to a GeoPackage geometry.
 		return fmt.Sprintf(", asgpb(swapcoords(castautomagic(\"%[1]s\"))) as \"%[1]s\"", table.GeometryColumnName)

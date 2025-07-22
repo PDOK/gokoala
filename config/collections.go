@@ -73,6 +73,12 @@ func (c *GeoSpatialCollection) HasDateTime() bool {
 	return c.Metadata != nil && c.Metadata.TemporalProperties != nil
 }
 
+// HasTableName true when collection uses the given table, false otherwise
+func (c *GeoSpatialCollection) HasTableName(table string) bool {
+	return c.Features != nil && c.Features.TableName != nil &&
+		table == *c.Features.TableName
+}
+
 // +kubebuilder:object:generate=true
 type GeoSpatialCollectionMetadata struct {
 	// Human friendly title of this collection. When no title is specified the collection ID is used.

@@ -150,3 +150,14 @@ func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol
 func ColumnsToSQL(columns []string) string {
 	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
 }
+
+func ValidateUniqueness(result map[string]*FeatureTable) {
+	uniqueTables := make(map[string]struct{})
+	for _, table := range result {
+		uniqueTables[table.TableName] = struct{}{}
+	}
+	if len(uniqueTables) != len(result) {
+		log.Printf("Warning: found %d unique table names for %d collections, "+
+			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
+	}
+}
