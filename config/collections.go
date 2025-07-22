@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// GeoSpatialCollections All collections configured for this OGC AP. Can contain a mix of tiles/features/etc.
+// GeoSpatialCollections All collections configured for this OGC API. Can contain a mix of tiles/features/etc.
 type GeoSpatialCollections []GeoSpatialCollection
 
 // +kubebuilder:object:generate=true

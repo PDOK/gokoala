@@ -25,12 +25,16 @@ to object storage, raster map hosting to a WMS server, etc.
 This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
 datasets? Spin up a separate instance/container.
 
+## Demo
+
+See OGC APIs listed on https://api.pdok.nl. These are powered by GoKoala.
+
 ## Features
 
 - [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
-  - Serves features as HTML, GeoJSON and JSON-FG
+  - Serves features as HTML, GeoJSON and JSON-FG.
   - Supported datastores:
     - [GeoPackage](https://www.geopackage.org/). These can be regular/local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. No on-the-fly 
       reprojection/transformation is applied, separate GeoPackages should be configured ahead-of-time in each CRS.
@@ -39,6 +43,7 @@ datasets? Spin up a separate instance/container.
   - Implements _cursor_-based pagination (also known as _keyset_ pagination) to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
+  - Validates required indexes on startup.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
   of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing.
   Currently, three projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
@@ -120,6 +125,9 @@ docker run -v `pwd`/examples:/examples -v `pwd`/mytheme:/mytheme -p 8080:8080 -i
 
 GoKoala has a few requirements regarding GeoPackages backing an OGC API Features:
 
+- Feature IDs (fid) in the GeoPackage should be auto-incrementing.
+- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the
+  config.
 - Each feature table must contain a [RTree](https://www.geopackage.org/guidance/extensions/rtree_spatial_indexes.html) index.
 - Each feature table must contain a BTree spatial index:
 
@@ -140,13 +148,42 @@ create index "<table>_spatial_idx" on "<table>"(fid, minx, maxx, miny, maxy, sta
 create index "<table>_temporal_idx" on "<table>"(start_date, end_date);
 ```
 
-- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the config.
-- Feature IDs (fid) in the GeoPackage should be contiguous and auto-incrementing.
-
 This is in addition to some of the requirements set forth by the PDOK [GeoPackage validator](https://github.com/PDOK/geopackage-validator).
 Some of the requirements stated above can be automatically applied with help of the PDOK [GeoPackage optimizer](https://github.com/PDOK/geopackage-optimizer-go).
 
-When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend a local cache that is able to hold the spatial index, see `maxSize` in the config.
+When using [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages we recommend
+a local cache that is able to hold the spatial index, see `maxSize` in the config.
+
+### PostgreSQL requirements
+
+Likewise, GoKoala has a few requirements regarding PostgreSQL backing an OGC API Features:
+
+- Feature IDs (fid) in the table should be auto-incrementing.
+- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the
+  config.
+- PostGIS extension needs to be installed and enabled.
+- The geometry field in the table must contain a [GIST index](https://postgis.net/documentation/faq/spatial-indexes/).
+- When enabling temporal filtering (using `datetime` query param) the temporal fields should be indexed:
+
+```sql
+create index "<table>_temporal_idx" on "<table>" (start_date, end_date);
+```
+
+### Feature schema
+
+GoKoala supports OGC API Features part 5 (schemas). The schema for each collection is automatically derived from the
+underlying - Geopackage or PostgreSQL - table. Optionally, one can enrich the schema with field/property descriptions.
+
+When using GeoPackages you'll need to add
+the [GeoPackage schema extension](http://www.geopackage.org/guidance/extensions/schema.html).
+This includes adding a `gpkg_data_columns` table and inserting a `description` for each field.
+
+When using PostgreSQL you can add a comment on each column. This comment will be used as the field description.
+For example:
+
+```sql
+comment on column <table>.<field> is 'Some description about this field for the end-user;
+```
 
 ### OpenAPI spec
 
