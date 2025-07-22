@@ -8,7 +8,7 @@ import (
 	"maps"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/google/uuid"
@@ -94,7 +94,7 @@ func (pg *Postgres) Close() {
 	pg.db.Close()
 }
 
-func (pg *Postgres) GetFeatureIDs(_ context.Context, _ string, _ datasources.FeaturesCriteria) ([]int64, d.Cursors, error) {
+func (pg *Postgres) GetFeatureIDs(_ context.Context, _ string, _ ds.FeaturesCriteria) ([]int64, d.Cursors, error) {
 	return []int64{}, d.Cursors{}, errors.New("not implemented since the postgres datasource currently " +
 		"only support on-the-fly transformation/reprojection, use GetFeatures() to get features in every supported CRS")
 }
@@ -104,7 +104,7 @@ func (pg *Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ d.
 		"only support on-the-fly transformation/reprojection, use GetFeatures() to get features in every supported CRS")
 }
 
-func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria,
+func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria ds.FeaturesCriteria,
 	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
 
 	table, err := pg.GetFeatureTable(collection)
@@ -210,7 +210,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 
 // Build specific features queries based on the given options.
 func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.FeatureProperties, table *common.FeatureTable,
-	onlyFIDs bool, axisOrder d.AxisOrder, criteria datasources.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
+	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
 	if onlyFIDs {
@@ -239,7 +239,7 @@ func (pg *Postgres) makeFeaturesQuery(_ context.Context, propConfig *config.Feat
 	return
 }
 
-func (pg *Postgres) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
+func (pg *Postgres) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
@@ -262,7 +262,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 	return defaultQuery, namedParams
 }
 
-func (pg *Postgres) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+func (pg *Postgres) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 	bboxClause, bboxNamedParams, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)

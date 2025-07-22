@@ -12,10 +12,10 @@ import (
 	"sync"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage/encoding"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
@@ -40,7 +40,7 @@ func loadDriver() {
 	once.Do(func() {
 		spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
 		driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
-		sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, datasources.NewSQLLogFromEnv()))
+		sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, ds.NewSQLLogFromEnv()))
 	})
 }
 
@@ -118,10 +118,10 @@ func (g *GeoPackage) Close() {
 	g.backend.close()
 }
 
-func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, criteria datasources.FeaturesCriteria) ([]int64, domain.Cursors, error) {
+func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, criteria ds.FeaturesCriteria) ([]int64, d.Cursors, error) {
 	table, err := g.GetFeatureTable(collection)
 	if err != nil {
-		return nil, domain.Cursors{}, err
+		return nil, d.Cursors{}, err
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.QueryTimeout) // https://go.dev/doc/database/cancel-operations
@@ -130,27 +130,27 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	propConfig := g.PropertiesByCollectionID[collection]
 	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, true, -1, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
+		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
 
 	rows, err := stmt.QueryxContext(queryCtx, queryArgs)
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
+		return nil, d.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
 
-	featureIDs, prevNext, err := domain.MapRowsToFeatureIDs(queryCtx, FromSqlxRows(rows))
+	featureIDs, prevNext, err := d.MapRowsToFeatureIDs(queryCtx, FromSqlxRows(rows))
 	if err != nil {
-		return nil, domain.Cursors{}, err
+		return nil, d.Cursors{}, err
 	}
 	if prevNext == nil {
-		return nil, domain.Cursors{}, nil
+		return nil, d.Cursors{}, nil
 	}
-	return featureIDs, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
+	return featureIDs, d.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
 func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64,
-	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, error) {
+	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, error) {
 
 	table, err := g.GetFeatureTable(collection)
 	if err != nil {
@@ -180,11 +180,11 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	}
 	defer rows.Close()
 
-	fc := domain.FeatureCollection{}
-	fc.Features, _, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+	fc := d.FeatureCollection{}
+	fc.Features, _, err = d.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
 		g.FidColumn, g.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
-		domain.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
+		d.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
 	if err != nil {
 		return nil, err
 	}
@@ -192,12 +192,12 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	return &fc, queryCtx.Err()
 }
 
-func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria datasources.FeaturesCriteria,
-	axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error) {
+func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria ds.FeaturesCriteria,
+	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
 
 	table, err := g.GetFeatureTable(collection)
 	if err != nil {
-		return nil, domain.Cursors{}, err
+		return nil, d.Cursors{}, err
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, g.QueryTimeout) // https://go.dev/doc/database/cancel-operations
@@ -206,33 +206,33 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	propConfig := g.PropertiesByCollectionID[collection]
 	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, false, axisOrder, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
+		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
 
 	rows, err := stmt.QueryxContext(queryCtx, queryArgs)
 	if err != nil {
-		return nil, domain.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
+		return nil, d.Cursors{}, fmt.Errorf("failed to execute query '%s' error: %w", query, err)
 	}
 	defer rows.Close()
 
-	var prevNext *domain.PrevNextFID
-	fc := domain.FeatureCollection{}
-	fc.Features, prevNext, err = domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+	var prevNext *d.PrevNextFID
+	fc := d.FeatureCollection{}
+	fc.Features, prevNext, err = d.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
 		g.FidColumn, g.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
-		domain.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
+		d.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
 	if err != nil {
-		return nil, domain.Cursors{}, err
+		return nil, d.Cursors{}, err
 	}
 	if prevNext == nil {
-		return nil, domain.Cursors{}, nil
+		return nil, d.Cursors{}, nil
 	}
 	fc.NumberReturned = len(fc.Features)
-	return &fc, domain.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
+	return &fc, d.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any,
-	_ domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error) {
+	_ d.SRID, axisOrder d.AxisOrder, profile d.Profile) (*d.Feature, error) {
 
 	table, err := g.GetFeatureTable(collection)
 	if err != nil {
@@ -270,10 +270,10 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 	defer rows.Close()
 
-	features, _, err := domain.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
+	features, _, err := d.MapRowsToFeatures(queryCtx, FromSqlxRows(rows),
 		g.FidColumn, g.ExternalFidColumn, table.GeometryColumnName,
 		propConfig, table.Schema, mapGpkgGeometry, profile.MapRelationUsingProfile,
-		domain.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
+		d.FormatOpts{MaxDecimals: g.MaxDecimals, ForceUTC: g.ForceUTC})
 	if err != nil {
 		return nil, err
 	}
@@ -286,11 +286,11 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
 func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *common.FeatureTable,
-	onlyFIDs bool, axisOrder domain.AxisOrder, criteria datasources.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
+	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
 	var selectClause string
 	if onlyFIDs {
-		selectClause = common.ColumnsToSQL([]string{g.FidColumn, domain.PrevFid, domain.NextFid})
+		selectClause = common.ColumnsToSQL([]string{g.FidColumn, d.PrevFid, d.NextFid})
 	} else {
 		selectClause = g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, true)
 	}
@@ -309,7 +309,7 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	return
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any) {
+func (g *GeoPackage) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlNamedParamSymbol)
 
@@ -320,7 +320,7 @@ with
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as %[6]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[7]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
-`, table.TableName, g.FidColumn, temporalClause, pfClause, selectClause, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
+`, table.TableName, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
@@ -331,7 +331,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
 	return defaultQuery, namedParams
 }
 
-func (g *GeoPackage) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria datasources.FeaturesCriteria) (string, map[string]any, error) {
+func (g *GeoPackage) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.TableName)
 
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlNamedParamSymbol)
@@ -383,21 +383,21 @@ with
      nextprevfeat as (select *, lag("%[2]s", :limit) over (order by "%[2]s") as %[9]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[10]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
 `, table.TableName, g.FidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
-		selectClause, temporalClause, pfClause, btreeIndexHint, domain.PrevFid, domain.NextFid) // don't add user input here, use named params for user input!
+		selectClause, temporalClause, pfClause, btreeIndexHint, d.PrevFid, d.NextFid) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.Marshal(criteria.Bbox.Polygon())
 	if err != nil {
 		return "", nil, err
 	}
 	namedParams := map[string]any{
-		"fid":            criteria.Cursor.FID,
-		"limit":          criteria.Limit,
-		"bboxWkt":        bboxAsWKT,
-		domain.MaxxField: criteria.Bbox.Max(0),
-		domain.MinxField: criteria.Bbox.Min(0),
-		domain.MaxyField: criteria.Bbox.Max(1),
-		domain.MinyField: criteria.Bbox.Min(1),
-		"bboxSrid":       criteria.InputSRID}
+		"fid":       criteria.Cursor.FID,
+		"limit":     criteria.Limit,
+		"bboxWkt":   bboxAsWKT,
+		d.MaxxField: criteria.Bbox.Max(0),
+		d.MinxField: criteria.Bbox.Min(0),
+		d.MaxyField: criteria.Bbox.Max(1),
+		d.MinyField: criteria.Bbox.Min(1),
+		"bboxSrid":  criteria.InputSRID}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
 	return bboxQuery, namedParams, nil
@@ -420,9 +420,9 @@ func mapGpkgGeometry(columnValue any) (geom.T, error) {
 }
 
 // selectGpkgGeometry GeoPackage specific way to select geometry
-// and take domain.AxisOrder into account.
-func selectGpkgGeometry(axisOrder domain.AxisOrder, table *common.FeatureTable) string {
-	if axisOrder == domain.AxisOrderYX {
+// and take d.AxisOrder into account.
+func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.FeatureTable) string {
+	if axisOrder == d.AxisOrderYX {
 		// Add the geometry column. GeoPackage geometries are stored in WKB format and WKB is always XY.
 		// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing
 		// the swap and then casting back to a GeoPackage geometry.
