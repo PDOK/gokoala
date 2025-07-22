@@ -1,4 +1,4 @@
-package datasources
+package geopackage
 
 import (
 	"context"
@@ -22,7 +22,7 @@ type SQLLog struct {
 	LogSQL bool
 }
 
-// NewSQLLogFromEnv build a SQLLog from environment variables listed in this file
+// NewSQLLogFromEnv build a SQLLog based on the `LOG_SQL` environment variable
 func NewSQLLogFromEnv() *SQLLog {
 	var err error
 	logSQL := false

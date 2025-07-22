@@ -41,10 +41,6 @@ type FeatureTable struct {
 	Schema *domain.Schema // required
 }
 
-// SelectGeom abstract function type to select geometry from table
-// while taking axis order into account
-type SelectGeom func(order domain.AxisOrder, table *FeatureTable) string
-
 func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error) {
 	table, err := dc.GetFeatureTable(collection)
 	if err != nil {
@@ -69,6 +65,10 @@ func (dc *DatasourceCommon) GetFeatureTable(collection string) (*FeatureTable, e
 	}
 	return table, nil
 }
+
+// SelectGeom abstract function type to select geometry from table
+// while taking axis order into account
+type SelectGeom func(order domain.AxisOrder, table *FeatureTable) string
 
 // SelectColumns build select clause
 func (dc *DatasourceCommon) SelectColumns(table *FeatureTable, axisOrder domain.AxisOrder,
