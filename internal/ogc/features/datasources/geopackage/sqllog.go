@@ -8,12 +8,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 )
 
 type contextKey int
 
 const (
-	envLogSQL                = "LOG_SQL"
 	sqlContextKey contextKey = iota
 )
 
@@ -26,10 +27,10 @@ type SQLLog struct {
 func NewSQLLogFromEnv() *SQLLog {
 	var err error
 	logSQL := false
-	if os.Getenv(envLogSQL) != "" {
-		logSQL, err = strconv.ParseBool(os.Getenv(envLogSQL))
+	if os.Getenv(common.EnvLogSQL) != "" {
+		logSQL, err = strconv.ParseBool(os.Getenv(common.EnvLogSQL))
 		if err != nil {
-			log.Fatalf("invalid %s value provided, must be a boolean", envLogSQL)
+			log.Fatalf("invalid %s value provided, must be a boolean", common.EnvLogSQL)
 		}
 	}
 	return &SQLLog{LogSQL: logSQL}

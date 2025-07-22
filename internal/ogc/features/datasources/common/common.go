@@ -15,6 +15,8 @@ import (
 )
 
 const (
+	EnvLogSQL = "LOG_SQL"
+
 	selectAll = "*"
 )
 
@@ -61,7 +63,7 @@ func (dc *DatasourceCommon) GetFeatureTable(collection string) (*FeatureTable, e
 	table, ok := dc.FeatureTableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"geopackage, available in geopackage: %v", collection, util.Keys(dc.FeatureTableByCollectionID))
+			"datasource, available in datasource: %v", collection, util.Keys(dc.FeatureTableByCollectionID))
 	}
 	return table, nil
 }

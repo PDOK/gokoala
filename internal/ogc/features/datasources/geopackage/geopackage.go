@@ -25,8 +25,7 @@ import (
 )
 
 const (
-	sqliteDriverName = "sqlite3_with_extensions"
-
+	sqliteDriverName    = "sqlite3_with_extensions"
 	sqlNamedParamSymbol = ":"
 )
 
@@ -40,7 +39,7 @@ func loadDriver() {
 	once.Do(func() {
 		spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
 		driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
-		sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, NewSQLLogFromEnv()))
+		sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, NewSQLLogFromEnv())) // adda support for SQL logging
 	})
 }
 

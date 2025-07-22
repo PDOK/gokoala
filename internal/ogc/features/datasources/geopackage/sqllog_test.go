@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,9 +23,9 @@ func TestNewSQLLogFromEnv(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.logSQL != "" {
-				t.Setenv(envLogSQL, tt.logSQL)
+				t.Setenv(common.EnvLogSQL, tt.logSQL)
 			} else {
-				t.Setenv(envLogSQL, "")
+				t.Setenv(common.EnvLogSQL, "")
 			}
 			got := NewSQLLogFromEnv()
 			assert.Equal(t, tt.wantLogSQL, got.LogSQL)

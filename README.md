@@ -235,7 +235,8 @@ file>`
 #### SQL query logging
 
 Set `LOG_SQL=true` environment variable to enable logging of all SQL queries to
-stdout for debug purposes. Only applies to OGC API Features.
+stdout for debug purposes. Only applies to OGC API Features with
+GeoPackage and/or PostgreSQL data source.
 
 ## Develop
 

@@ -45,6 +45,11 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 		return nil, fmt.Errorf("unable to parse database config: %w", err)
 	}
 
+	// enable SQL logging when appropriate environment variable (LOG_SQL=true) is set
+	if sl := NewSQLLogFromEnv(); sl.LogSQL {
+		pgxConfig.ConnConfig.Tracer = sl.Tracer
+	}
+
 	// set connection to read-only for safety since we (should) never write to Postgres.
 	pgxConfig.ConnConfig.RuntimeParams["default_transaction_read_only"] = "on"
 
