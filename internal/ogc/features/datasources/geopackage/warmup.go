@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -14,7 +15,7 @@ import (
 // This encompasses traversing index(es) to fill the local cache.
 func warmUpFeatureTables(
 	configuredCollections config.GeoSpatialCollections,
-	featureTableByCollectionID map[string]*featureTable,
+	featureTableByCollectionID map[string]*common.FeatureTable,
 	db *sqlx.DB) error {
 
 	for collID, table := range featureTableByCollectionID {

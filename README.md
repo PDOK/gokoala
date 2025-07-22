@@ -109,8 +109,8 @@ ogcApi:
 ### Custom theming
 
 GoKoala offers some minimal theming options. When running GoKoala, pass an argument of `-theme-file` to load a custom
-theming file. The [theme.yaml](./themes/pdok/theme.yaml) in the themes directory contains the configurable options for the theme. This 
-directory also allows you to insert HTML at the beginning of the `<body>` tag.
+theming file. The [theme.yaml](./themes/pdok/theme.yaml) contains the configurable options (colors, images, extra HTML)
+for the theme.
 
 For example:
 
@@ -183,7 +183,7 @@ When using PostgreSQL you can add a comment on each column. This comment will be
 For example:
 
 ```sql
-comment on column <table>.<field> is 'Some description about this field for the end-user;
+comment on column <table>.<field> is "Some description about this field for the end-use";
 ```
 
 ### OpenAPI spec
@@ -234,9 +234,9 @@ file>`
 
 #### SQL query logging
 
-Set `LOG_SQL=true` environment variable to enable logging of all SQL queries to stdout for debug purposes. 
-Only applies to OGC API Features. Set e.g. `SLOW_QUERY_TIME=10s` to change the definition of a
-slow query. Slow queries are always logged, unless they exceed the request timeout (which is currently 15s).
+Set `LOG_SQL=true` environment variable to enable logging of all SQL queries to
+stdout for debug purposes. Only applies to OGC API Features with
+GeoPackage and/or PostgreSQL data source.
 
 ## Develop
 

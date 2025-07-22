@@ -2,7 +2,7 @@ package postgres
 
 import "github.com/jackc/pgx/v5"
 
-// PgxRowsAdapter implements domain.DatasourceRows
+// PgxRowsAdapter implements common.DatasourceRows
 type PgxRowsAdapter struct {
 	rows pgx.Rows
 }

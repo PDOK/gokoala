@@ -9,25 +9,17 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
-// featureTable Postgres table holding features
-type featureTable struct {
-	TableName          string
-	GeometryColumnName string
-	GeometryType       string
-
-	Schema *d.Schema // required
-}
-
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the Postgres database. Terminates on failure.
 func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fidColumn, externalFidColumn, schemaName string) (
-	featureTableByCollectionID map[string]*featureTable,
+	featureTableByCollectionID map[string]*common.FeatureTable,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
 	metadata, err := readDriverMetadata(db)
@@ -64,7 +56,7 @@ func readDriverMetadata(db *pgxpool.Pool) (string, error) {
 // 'f_table_name' column. Also, in case there's no exact match between 'collection ID' and 'f_table_name' we use
 // the explicitly configured table name (from the YAML config).
 func readFeatureTables(collections config.GeoSpatialCollections, db *pgxpool.Pool,
-	fidColumn, externalFidColumn, schemaName string) (map[string]*featureTable, error) {
+	fidColumn, externalFidColumn, schemaName string) (map[string]*common.FeatureTable, error) {
 
 	query := `
 select
@@ -83,9 +75,9 @@ where
 	}
 	defer rows.Close()
 
-	result := make(map[string]*featureTable, 10)
+	result := make(map[string]*common.FeatureTable, 10)
 	for rows.Next() {
-		table := featureTable{}
+		table := common.FeatureTable{}
 		if err = rows.Scan(&table.TableName, &table.GeometryColumnName, &table.GeometryType); err != nil {
 			return nil, fmt.Errorf("failed to read geometry_columns record, error: %w", err)
 		}
@@ -97,7 +89,7 @@ where
 			if table.TableName == collection.ID {
 				result[collection.ID] = &table
 				hasCollection = true
-			} else if hasMatchingTableName(collection, table) {
+			} else if collection.HasTableName(table.TableName) {
 				result[collection.ID] = &table
 				hasCollection = true
 			}
@@ -117,11 +109,11 @@ where
 		}
 	}
 
-	validateUniqueness(result)
+	common.ValidateUniqueness(result)
 	return result, nil
 }
 
-func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*featureTable,
+func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.FeatureTable,
 	collections config.GeoSpatialCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
@@ -176,7 +168,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readSchema(db *pgxpool.Pool, table featureTable, fidColumn, externalFidColumn, schemaName string,
+func readSchema(db *pgxpool.Pool, table common.FeatureTable, fidColumn, externalFidColumn, schemaName string,
 	collections config.GeoSpatialCollections) (*d.Schema, error) {
 
 	collectionNames := make([]string, 0, len(collections))
@@ -241,20 +233,4 @@ order by
 		return nil, err
 	}
 	return schema, nil
-}
-
-func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
-	return collection.Features != nil && collection.Features.TableName != nil &&
-		row.TableName == *collection.Features.TableName
-}
-
-func validateUniqueness(result map[string]*featureTable) {
-	uniqueTables := make(map[string]struct{})
-	for _, table := range result {
-		uniqueTables[table.TableName] = struct{}{}
-	}
-	if len(uniqueTables) != len(result) {
-		log.Printf("Warning: found %d unique table names for %d collections, "+
-			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
-	}
 }
