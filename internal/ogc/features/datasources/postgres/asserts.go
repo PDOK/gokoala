@@ -7,13 +7,14 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // assertIndexesExist asserts required indexes in Postgres exists
 func assertIndexesExist(
 	configuredCollections config.GeoSpatialCollections,
-	featureTableByCollectionID map[string]*featureTable,
+	featureTableByCollectionID map[string]*datasources.FeatureTable,
 	db *pgxpool.Pool) error {
 
 	for collID, table := range featureTableByCollectionID {
