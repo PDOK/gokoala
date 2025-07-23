@@ -91,4 +91,6 @@ describe('OGC API Common tests', () => {
     cy.visit('/collections/addresses')
     cy.checkForBrokenLinks()
   })
+
+  it('header and footer should not have broken images')
 })
