@@ -104,7 +104,7 @@ type Postgres struct {
 	Host string `yaml:"host" json:"host" validate:"required,hostname_rfc1123" default:"localhost"`
 
 	// Port number of the PostgreSQL server.
-	// +kubebuilder:default="5432"
+	// +kubebuilder:default=5432
 	Port uint `yaml:"port" json:"port" validate:"required,port" default:"5432"`
 
 	// Name of the PostgreSQL database containing the data.
