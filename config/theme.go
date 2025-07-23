@@ -49,6 +49,7 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 	if err != nil {
 		return nil, err
 	}
+	theme.ParseHTML()
 
 	var customTheme *Theme
 	if cfg != "" {
@@ -57,6 +58,7 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		if err != nil {
 			return nil, err
 		}
+		theme.ParseHTML()
 
 		// Overwrite the basetheme
 		err = mergo.Merge(theme, customTheme, mergo.WithOverride)
@@ -73,8 +75,6 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		return nil, formatValidationErr(err)
 	}
 	// if valid, set theme location
-	theme.Path = filepath.Dir(cfg)
-	theme.ParseHTML()
 	return theme, nil
 }
 
@@ -100,10 +100,11 @@ func getThemeFromFile(path string) (theme *Theme, err error) {
 		return nil, fmt.Errorf("failed to read theme file %w", err)
 	}
 
-	err = yaml.Unmarshal(yamlData, &theme)
-	if err != nil {
+	if err = yaml.Unmarshal(yamlData, &theme); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal theme file, error: %w", err)
 	}
+
+	theme.Path = filepath.Dir(path)
 
 	return
 }

@@ -42,6 +42,7 @@ declare global {
   namespace Cypress {
     interface Chainable {
       checkForBrokenLinks(): Chainable<void>
+      checkForBrokenImages(): Chainable<void>
     }
   }
 }
@@ -57,4 +58,29 @@ Cypress.Commands.add('checkForBrokenLinks', () =>{
       cy.request(href)
     }
   })
+})
+
+Cypress.Commands.add('checkForBrokenImages', () => {
+  const brokenImages = [];
+  const c = cy.get('img')
+      .each(($el, k) => {
+        if ($el.prop('naturalWidth') === 0) {
+          const id = $el.attr('id')
+          const alt = $el.attr('alt')
+          const info = `${id ? '#' + id : ''} ${alt ? alt : ''}`
+          brokenImages.push(info)
+          cy.log(`Broken image ${k + 1}: ${info}`)
+        }
+      })
+  c.then(() => {
+    // report all broken images at once
+    if (brokenImages.length) {
+      throw new Error(
+          `Found ${
+              brokenImages.length
+          } broken images\n${brokenImages.join(', ')}`,
+      )
+    }
+  })
+
 })
