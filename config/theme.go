@@ -18,12 +18,12 @@ const (
 )
 
 type Theme struct {
-	Logo     *ThemeLogo     `yaml:"logo" json:"logo" validate:"required"`
-	Color    *ThemeColors   `yaml:"color" json:"color" validate:"required"`
-	Includes *ThemeIncludes `yaml:"includes" json:"includes"`
-	Path     string
+	Logo        *ThemeLogo     `yaml:"logo" json:"logo" validate:"required"`
+	Color       *ThemeColors   `yaml:"color" json:"color" validate:"required"`
+	Includes    *ThemeIncludes `yaml:"includes" json:"includes"`
+	Path        string
+	defaultPath string
 }
-
 type ThemeLogo struct {
 	Header    string `yaml:"header" json:"header" validate:"required"`
 	Footer    string `yaml:"footer" json:"footer" validate:"required"`
@@ -73,7 +73,6 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		return nil, formatValidationErr(err)
 	}
 	// if valid, set theme location
-	theme.Path = filepath.Dir(cfg)
 	theme.ParseHTML()
 	return theme, nil
 }
@@ -100,10 +99,11 @@ func getThemeFromFile(path string) (theme *Theme, err error) {
 		return nil, fmt.Errorf("failed to read theme file %w", err)
 	}
 
-	err = yaml.Unmarshal(yamlData, &theme)
-	if err != nil {
+	if err = yaml.Unmarshal(yamlData, &theme); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal theme file, error: %w", err)
 	}
+
+	theme.Path = filepath.Dir(path)
 
 	return
 }

@@ -49,13 +49,16 @@ func newCSSEndpoint(e *Engine) {
 }
 
 func newThemeAssetEndpoint(e *Engine, themePath string, file string) string {
-	// Get the (full) clean dir from config, relative to theme.yaml (remove any "./" prefixes if added)
 	cleanPath := filepath.Dir(file)
 
-	dir := filepath.Join(themePath, cleanPath)
+	var prefix string
+	if cleanPath == "." {
+		prefix = "/theme"
+	} else {
+		prefix = "/theme/" + filepath.ToSlash(cleanPath)
+	}
 
-	// Prefix so http#StripPrefix knows what to remove from URL
-	prefix := "/theme/" + cleanPath
+	dir := filepath.Join(themePath, cleanPath)
 
 	// Actual route for chi
 	route := prefix + "/*"
