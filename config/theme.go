@@ -18,12 +18,12 @@ const (
 )
 
 type Theme struct {
-	Logo        *ThemeLogo     `yaml:"logo" json:"logo" validate:"required"`
-	Color       *ThemeColors   `yaml:"color" json:"color" validate:"required"`
-	Includes    *ThemeIncludes `yaml:"includes" json:"includes"`
-	Path        string
-	defaultPath string
+	Logo     *ThemeLogo     `yaml:"logo" json:"logo" validate:"required"`
+	Color    *ThemeColors   `yaml:"color" json:"color" validate:"required"`
+	Includes *ThemeIncludes `yaml:"includes" json:"includes"`
+	Path     string
 }
+
 type ThemeLogo struct {
 	Header    string `yaml:"header" json:"header" validate:"required"`
 	Footer    string `yaml:"footer" json:"footer" validate:"required"`
