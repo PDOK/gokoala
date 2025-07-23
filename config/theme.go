@@ -49,6 +49,7 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 	if err != nil {
 		return nil, err
 	}
+	theme.ParseHTML()
 
 	var customTheme *Theme
 	if cfg != "" {
@@ -57,6 +58,7 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		if err != nil {
 			return nil, err
 		}
+		theme.ParseHTML()
 
 		// Overwrite the basetheme
 		err = mergo.Merge(theme, customTheme, mergo.WithOverride)
@@ -73,7 +75,6 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		return nil, formatValidationErr(err)
 	}
 	// if valid, set theme location
-	theme.ParseHTML()
 	return theme, nil
 }
 
