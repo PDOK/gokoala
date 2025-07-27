@@ -145,6 +145,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
+			// map any non-nil, non-id, non-bounding box and non-geometry column as a feature property
 			if err := mapColumnValueToFeature(columnValue, feature, columnName, formatOpts, schema); err != nil {
 				return nil, err
 			}
@@ -155,7 +156,6 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 	return &prevNextID, ctx.Err()
 }
 
-// mapColumnValueToFeature any non-nil, non-id, non-bounding box and non-geometry column as a feature property
 func mapColumnValueToFeature(columnValue any, feature *domain.Feature, columnName string,
 	formatOpts FormatOpts, schema *domain.Schema) error {
 

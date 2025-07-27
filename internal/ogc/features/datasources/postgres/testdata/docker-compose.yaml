@@ -42,6 +42,7 @@ services:
           -lco FID=fid \
           /examples/resources/addresses-rd.gpkg
 
+        # 3D data (XYZ)
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
           -preserve_fid \
           -lco SCHEMA=threedimensionalgeoms \
