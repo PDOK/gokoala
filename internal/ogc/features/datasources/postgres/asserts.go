@@ -12,10 +12,9 @@ import (
 )
 
 // assertIndexesExist asserts required indexes in Postgres exists
-func assertIndexesExist(
-	configuredCollections config.GeoSpatialCollections,
-	featureTableByCollectionID map[string]*common.FeatureTable,
-	db *pgxpool.Pool) error {
+//
+//nolint:nestif
+func assertIndexesExist(configuredCollections config.GeoSpatialCollections, featureTableByCollectionID map[string]*common.FeatureTable, db *pgxpool.Pool, spatialIndexRequired bool) error {
 
 	for collID, table := range featureTableByCollectionID {
 		if table == nil {
@@ -32,8 +31,10 @@ func assertIndexesExist(
 				}
 
 				// assert geometry column has GIST (rtree) index
-				if err := assertSpatialIndex(table.TableName, db, table.GeometryColumnName); err != nil {
-					return err
+				if spatialIndexRequired {
+					if err := assertSpatialIndex(table.TableName, db, table.GeometryColumnName); err != nil {
+						return err
+					}
 				}
 
 				// assert the column for each property filter is indexed

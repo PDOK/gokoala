@@ -89,7 +89,7 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 	pg.FeatureTableByCollectionID, pg.PropertyFiltersByCollectionID = readMetadata(
 		db, collections, pg.FidColumn, pg.ExternalFidColumn, pg.schemaName)
 
-	if err = assertIndexesExist(collections, pg.FeatureTableByCollectionID, db); err != nil {
+	if err = assertIndexesExist(collections, pg.FeatureTableByCollectionID, db, *pgConfig.SpatialIndexRequired); err != nil {
 		return nil, err
 	}
 	return pg, nil
