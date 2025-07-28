@@ -8,6 +8,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/google/uuid"
 	"github.com/twpayne/go-geom"
 )
 
@@ -189,6 +190,8 @@ func mapColumnValueToFeature(columnValue any, feature *domain.Feature, columnNam
 		feature.Properties.Set(columnName, v)
 	case bool:
 		feature.Properties.Set(columnName, v)
+	case uuid.UUID:
+		feature.Properties.Set(columnName, v.String())
 	default:
 		return fmt.Errorf("column %s has unexpected type: %T for value %v", columnName, v, columnValue)
 	}

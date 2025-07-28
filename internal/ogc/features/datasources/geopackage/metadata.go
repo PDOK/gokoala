@@ -155,7 +155,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 						"from may take a long time. Index on this column is recommended", pf.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct ft.%s from %s ft", pf.Name, featTable.TableName)
+				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", pf.Name, featTable.TableName)
 				var values []string
 				err := db.Select(&values, query)
 				if err != nil {
