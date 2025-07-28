@@ -11,10 +11,10 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
-// MapRelation abstract function type to map feature relations
+// MapRelation function signature to map feature relations
 type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any)
 
-// MapGeom abstract function type to map datasource-specific geometry
+// MapGeom function signature to map datasource-specific geometry
 // (in GeoPackage, PostGIS, WKB, etc. format) to general-purpose geometry
 type MapGeom func(columnValue any) (geom.T, error)
 
@@ -90,7 +90,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows,
 	return result, prevNextID, ctx.Err()
 }
 
-//nolint:cyclop,funlen
+//nolint:cyclop
 func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Feature, columns []string, values []any,
 	fidColumn string, externalFidColumn string, geomColumn string, schema *domain.Schema, mapGeom MapGeom, mapRel MapRelation,
 	formatOpts FormatOpts) (*domain.PrevNextFID, error) {
@@ -145,45 +145,54 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 				feature.Properties.Set(columnName, nil)
 				continue
 			}
-			// Grab any non-nil, non-id, non-bounding box & non-geometry column as a feature property
-			switch v := columnValue.(type) {
-			case []byte:
-				asBytes := make([]byte, len(v))
-				copy(asBytes, v)
-				feature.Properties.Set(columnName, string(asBytes))
-			case int32, int64:
-				feature.Properties.Set(columnName, v)
-			case float64:
-				// Check to determine whether the content of the columnValue is truly a floating point value.
-				// (Because of non-strict tables in SQLite)
-				if !types.IsFloat(v) {
-					feature.Properties.Set(columnName, int64(v))
-				} else {
-					feature.Properties.Set(columnName, v)
-				}
-			case time.Time:
-				timeVal := v
-				if formatOpts.ForceUTC {
-					timeVal = timeVal.UTC()
-				}
-				// Map as date (= without time) only when defined as such in the schema AND when no time component is present
-				if types.IsDate(timeVal) && schema.IsDate(columnName) {
-					feature.Properties.Set(columnName, types.NewDate(timeVal))
-				} else {
-					feature.Properties.Set(columnName, timeVal)
-				}
-			case string:
-				feature.Properties.Set(columnName, v)
-			case bool:
-				feature.Properties.Set(columnName, v)
-			default:
-				return nil, fmt.Errorf("unexpected type: %v: %T", columns[i], v)
+			// map any non-nil, non-id, non-bounding box and non-geometry column as a feature property
+			if err := mapColumnValueToFeature(columnValue, feature, columnName, formatOpts, schema); err != nil {
+				return nil, err
 			}
 		}
 	}
 
 	mapExternalFid(columns, values, externalFidColumn, feature, mapRel)
 	return &prevNextID, ctx.Err()
+}
+
+func mapColumnValueToFeature(columnValue any, feature *domain.Feature, columnName string,
+	formatOpts FormatOpts, schema *domain.Schema) error {
+
+	switch v := columnValue.(type) {
+	case []byte:
+		asBytes := make([]byte, len(v))
+		copy(asBytes, v)
+		feature.Properties.Set(columnName, string(asBytes))
+	case int32, int64:
+		feature.Properties.Set(columnName, v)
+	case float64:
+		// Check to determine whether the content of the columnValue is truly a floating point value.
+		// (Because of non-strict tables in SQLite)
+		if !types.IsFloat(v) {
+			feature.Properties.Set(columnName, int64(v))
+		} else {
+			feature.Properties.Set(columnName, v)
+		}
+	case time.Time:
+		timeVal := v
+		if formatOpts.ForceUTC {
+			timeVal = timeVal.UTC()
+		}
+		// Map as date (= without time) only when defined as such in the schema AND when no time component is present
+		if types.IsDate(timeVal) && schema.IsDate(columnName) {
+			feature.Properties.Set(columnName, types.NewDate(timeVal))
+		} else {
+			feature.Properties.Set(columnName, timeVal)
+		}
+	case string:
+		feature.Properties.Set(columnName, v)
+	case bool:
+		feature.Properties.Set(columnName, v)
+	default:
+		return fmt.Errorf("column %s has unexpected type: %T for value %v", columnName, v, columnValue)
+	}
+	return nil
 }
 
 // mapExternalFid run a second pass over columns to map external feature ID, including relations to other features

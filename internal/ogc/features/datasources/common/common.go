@@ -68,7 +68,7 @@ func (dc *DatasourceCommon) GetFeatureTable(collection string) (*FeatureTable, e
 	return table, nil
 }
 
-// SelectGeom abstract function type to select geometry from table
+// SelectGeom function signature to select geometry from a table
 // while taking axis order into account
 type SelectGeom func(order domain.AxisOrder, table *FeatureTable) string
 

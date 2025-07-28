@@ -102,9 +102,9 @@ func TestMapColumnsToFeature(t *testing.T) {
 		{
 			name:          "Test unexpected type",
 			feature:       &domain.Feature{Properties: domain.NewFeatureProperties(false)},
-			columns:       []string{"str_col", "unexpected_col"},
+			columns:       []string{"str_col", "some_col"},
 			values:        []any{"str", []complex128{complex(1, 2)}},
-			expectedError: errors.New("unexpected type: unexpected_col: []complex128"),
+			expectedError: errors.New("column some_col has unexpected type: []complex128 for value [(1+2i)]"),
 		},
 		{
 			name:             "Test conversion of float64 with non floating point value to int64",

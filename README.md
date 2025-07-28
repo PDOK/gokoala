@@ -183,7 +183,7 @@ When using PostgreSQL you can add a comment on each column. This comment will be
 For example:
 
 ```sql
-comment on column <table>.<field> is "Some description about this field for the end-use";
+comment on column <table>.<field> is "Some description about this field for the end-user";
 ```
 
 ### OpenAPI spec
