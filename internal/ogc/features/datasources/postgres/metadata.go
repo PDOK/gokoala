@@ -138,7 +138,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 						"from may take a long time. Index on this column is recommended", pf.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct \"%s\" from \"%s\"", pf.Name, featTable.TableName)
+				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", pf.Name, featTable.TableName)
 				rows, err := db.Query(context.Background(), query)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
