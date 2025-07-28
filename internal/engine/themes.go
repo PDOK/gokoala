@@ -19,12 +19,12 @@ func newThemeEndpoints(theme *config.Theme, e *Engine) {
 
 	// Replace the theme Logo properties with the absolute paths for the template
 	theme.Logo = &config.ThemeLogo{
-		Header:    newThemeAssetEndpoint(e, theme.Path, theme.Logo.Header),
-		Footer:    newThemeAssetEndpoint(e, theme.Path, theme.Logo.Footer),
-		Opengraph: newThemeAssetEndpoint(e, theme.Path, theme.Logo.Opengraph),
-		Favicon:   newThemeAssetEndpoint(e, theme.Path, theme.Logo.Favicon),
-		Favicon16: newThemeAssetEndpoint(e, theme.Path, theme.Logo.Favicon16),
-		Favicon32: newThemeAssetEndpoint(e, theme.Path, theme.Logo.Favicon32),
+		Header:    newThemeAssetEndpoint(e, theme.Logo.Header),
+		Footer:    newThemeAssetEndpoint(e, theme.Logo.Footer),
+		Opengraph: newThemeAssetEndpoint(e, theme.Logo.Opengraph),
+		Favicon:   newThemeAssetEndpoint(e, theme.Logo.Favicon),
+		Favicon16: newThemeAssetEndpoint(e, theme.Logo.Favicon16),
+		Favicon32: newThemeAssetEndpoint(e, theme.Logo.Favicon32),
 	}
 }
 
@@ -48,25 +48,12 @@ func newCSSEndpoint(e *Engine) {
 	})
 }
 
-func newThemeAssetEndpoint(e *Engine, themePath string, file string) string {
-	cleanPath := filepath.Dir(file)
+func newThemeAssetEndpoint(e *Engine, file string) string {
 
-	var prefix string
-	if cleanPath == "." {
-		prefix = "/theme"
-	} else {
-		prefix = "/theme/" + filepath.ToSlash(cleanPath)
-	}
+	route := "/theme/" + filepath.Base(file)
 
-	dir := filepath.Join(themePath, cleanPath)
-
-	// Actual route for chi
-	route := prefix + "/*"
-
-	// Serve the route
-	fs := http.StripPrefix(prefix, http.FileServer(http.Dir(dir)))
 	e.Router.Get(route, func(w http.ResponseWriter, r *http.Request) {
-		fs.ServeHTTP(w, r)
+		http.ServeFile(w, r, file)
 	})
 
 	var absolutePath string

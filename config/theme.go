@@ -21,7 +21,6 @@ type Theme struct {
 	Logo     *ThemeLogo     `yaml:"logo" json:"logo" validate:"required"`
 	Color    *ThemeColors   `yaml:"color" json:"color" validate:"required"`
 	Includes *ThemeIncludes `yaml:"includes" json:"includes"`
-	Path     string
 }
 
 type ThemeLogo struct {
@@ -49,7 +48,6 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 	if err != nil {
 		return nil, err
 	}
-	theme.ParseHTML()
 
 	var customTheme *Theme
 	if cfg != "" {
@@ -58,8 +56,6 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		if err != nil {
 			return nil, err
 		}
-		theme.ParseHTML()
-
 		// Overwrite the basetheme
 		err = mergo.Merge(theme, customTheme, mergo.WithOverride)
 		if err != nil {
@@ -67,6 +63,8 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 			return nil, err
 		}
 	}
+
+	theme.ParseHTML()
 
 	// check 'validate' tags
 	v := validator.New()
@@ -82,8 +80,7 @@ func (t *Theme) ParseHTML() {
 	if t.Includes == nil {
 		t.Includes = &ThemeIncludes{}
 	}
-	path := filepath.Join(t.Path, t.Includes.HTMLFile)
-	content, err := os.ReadFile(path)
+	content, err := os.ReadFile(t.Includes.HTMLFile)
 	if err != nil {
 		log.Printf("failed to read html file %v", err)
 		t.Includes.ParsedHTML = ""
@@ -99,12 +96,29 @@ func getThemeFromFile(path string) (theme *Theme, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read theme file %w", err)
 	}
+	absolutePath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get absolute path for theme file %w", err)
+	}
+	dir := filepath.Dir(absolutePath)
 
 	if err = yaml.Unmarshal(yamlData, &theme); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal theme file, error: %w", err)
 	}
 
-	theme.Path = filepath.Dir(path)
+	if theme.Logo != nil {
+		theme.Logo = &ThemeLogo{
+			Header:    filepath.Join(dir, theme.Logo.Header),
+			Footer:    filepath.Join(dir, theme.Logo.Footer),
+			Opengraph: filepath.Join(dir, theme.Logo.Opengraph),
+			Favicon:   filepath.Join(dir, theme.Logo.Favicon),
+			Favicon16: filepath.Join(dir, theme.Logo.Favicon16),
+			Favicon32: filepath.Join(dir, theme.Logo.Favicon32),
+		}
+	}
 
+	if theme.Includes != nil {
+		theme.Includes.HTMLFile = filepath.Join(dir, theme.Includes.HTMLFile)
+	}
 	return
 }

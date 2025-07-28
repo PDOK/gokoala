@@ -73,7 +73,7 @@ var (
 			Name:     "theme-file",
 			Usage:    "reference to a (customized) YAML configuration file for the theme",
 			Required: false,
-			EnvVars:  []string{"THEME_CONFIG"},
+			EnvVars:  []string{"THEME_FILE"},
 		},
 	}
 )
