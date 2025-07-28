@@ -127,6 +127,13 @@ type Postgres struct {
 	// Password when connecting to the PostgreSQL server.
 	// +kubebuilder:default="postgres"
 	Pass string `yaml:"pass" json:"pass" validate:"required" default:"postgres"`
+
+	// When true the geometry column in the feature table needs to be indexed. Initialization will fail
+	// when no index is present, when false the index check is skipped. For large tables an index is recommended!
+	//
+	// +kubebuilder:default=true
+	// +optional
+	SpatialIndexRequired *bool `yaml:"spatialIndexRequired,omitempty" json:"spatialIndexRequired,omitempty" default:"true"`
 }
 
 func (p *Postgres) ConnectionString() string {
