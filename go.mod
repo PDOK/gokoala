@@ -11,8 +11,8 @@ require (
 	github.com/elnormous/contenttype v1.0.4
 	github.com/failsafe-go/failsafe-go v0.6.9
 	github.com/getkin/kin-openapi v0.131.0
-	github.com/go-chi/chi/v5 v5.2.1
-	github.com/go-chi/cors v1.2.1
+	github.com/go-chi/chi/v5 v5.2.2
+	github.com/go-chi/cors v1.2.2
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 	github.com/goccy/go-json v0.10.5
