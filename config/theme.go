@@ -108,17 +108,24 @@ func getThemeFromFile(path string) (theme *Theme, err error) {
 
 	if theme.Logo != nil {
 		theme.Logo = &ThemeLogo{
-			Header:    filepath.Join(dir, theme.Logo.Header),
-			Footer:    filepath.Join(dir, theme.Logo.Footer),
-			Opengraph: filepath.Join(dir, theme.Logo.Opengraph),
-			Favicon:   filepath.Join(dir, theme.Logo.Favicon),
-			Favicon16: filepath.Join(dir, theme.Logo.Favicon16),
-			Favicon32: filepath.Join(dir, theme.Logo.Favicon32),
+			Header:    pathJoinIfPresent(dir, theme.Logo.Header),
+			Footer:    pathJoinIfPresent(dir, theme.Logo.Footer),
+			Opengraph: pathJoinIfPresent(dir, theme.Logo.Opengraph),
+			Favicon:   pathJoinIfPresent(dir, theme.Logo.Favicon),
+			Favicon16: pathJoinIfPresent(dir, theme.Logo.Favicon16),
+			Favicon32: pathJoinIfPresent(dir, theme.Logo.Favicon32),
 		}
 	}
 
 	if theme.Includes != nil {
 		theme.Includes.HTMLFile = filepath.Join(dir, theme.Includes.HTMLFile)
+	}
+	return
+}
+
+func pathJoinIfPresent(base string, file string) (result string) {
+	if file != "" {
+		result = filepath.Join(base, file)
 	}
 	return
 }
