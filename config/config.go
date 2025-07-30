@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	AppName      = "GoKoala"
 	CookieMaxAge = 60 * 60 * 24
 )
 
@@ -31,6 +32,7 @@ func NewConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
+
 	err = validateLocalPaths(config)
 	if err != nil {
 		return nil, fmt.Errorf("validation error in config file, error: %w", err)

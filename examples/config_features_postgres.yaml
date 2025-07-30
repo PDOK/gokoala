@@ -1,0 +1,71 @@
+---
+version: 1.0.0
+title: Addresses
+# shortened title, used in breadcrumb path
+serviceIdentifier: ADR
+abstract: >-
+  This is a description about the example dataset in Markdown. See [PDOK](https://www.pdok.nl/) for details.
+# just a dummy picture, but you can put an actual thumbnail here
+thumbnail: old.png
+resources:
+  directory: ./examples/resources
+keywords:
+  - keyword1
+  - keyword2
+lastUpdated: "2023-09-08T12:00:00Z"
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+support:
+  name: Example Support
+  email: support@example.com
+  url: https://support.example.com
+# further details of the dataset to be shown on the landing page; supports markdown
+datasetDetails:
+  - name: Owner
+    value: Kadaster (LV-BGT)
+  - name: Costs
+    value: None
+  - name: Metadata OGC API Features
+    value: >-
+      [OGC API Features metadata in Example Register](https://example.com/my-features/metadata)
+  - name: Metadata dataset
+    value: >-
+      [Dataset metadata in Example Register](https://example.com/my-dataset/metadata)
+datasetCatalogUrl: https://www.pdok.nl/datasets
+baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
+ogcApi:
+  # which OGC apis to enable. Possible values: tiles, styles, features, 3dgeovolumes
+  features:
+    basemap: OSM  # or BRT
+    datasources:
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:3857
+            - srs: EPSG:4258
+            - srs: EPSG:28992
+          postgres:
+            host: postgres
+            port: 5432
+            user: postgres
+            databaseName: postgres
+            externalFid: external_fid
+            queryTimeout: 20s
+    collections:
+      - id: dutch-addresses
+        tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
+        metadata:
+          title: Dutch Addresses
+          description: These are example addresses
+          keywords:
+            - Building
+            - Address
+          thumbnail: old.png
+          lastUpdated: "2030-01-02T12:00:00Z"
+          extent:
+            srs: EPSG:4326
+            bbox: ["50.2129", "2.52713", "55.7212", "7.37403"]
+            interval: ["\"1970-01-01T00:00:00Z\"", "null"]

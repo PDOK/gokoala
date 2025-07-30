@@ -28,10 +28,10 @@ RUN set -eux && \
 # install controller-gen (used by go generate)
 RUN hack/build-controller-gen.sh
 
-# build & test the binary with debug information removed.
+# build the binary with debug information removed.
+# no tests are run since some tests rely on Testcontainers which doesn't work in multi-stage builds (dind).
 RUN go mod download all && \
     go generate -v ./... && \
-    go test -short ./... && \
     go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala/cmd
 
 # delete all go files (and testdata dirs) so only assets/templates/etc remain, since in a later
@@ -41,7 +41,7 @@ RUN find . -type f -name "*.go" -delete && find . -type d -name "testdata" -prun
 ####### Final image (use debian tag since we rely on C-libs)
 FROM docker.io/debian:bookworm-slim
 
-# install sqlite-related runtime dependencies
+# install sqlite-related runtime dependencies (also make sure to add these to GH actions workflows)
 RUN set -eux && \
     apt-get update && \
     apt-get install --no-install-recommends -y  \

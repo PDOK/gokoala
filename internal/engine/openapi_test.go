@@ -180,7 +180,7 @@ func Test_newOpenAPI(t *testing.T) {
 									ID: "foobar",
 									Features: &gokoalaconfig.CollectionEntryFeatures{
 										Datasources: &gokoalaconfig.Datasources{
-											DefaultWGS84: gokoalaconfig.Datasource{
+											DefaultWGS84: &gokoalaconfig.Datasource{
 												GeoPackage: &gokoalaconfig.GeoPackage{
 													Local: &gokoalaconfig.GeoPackageLocal{
 														File: "./examples/resources/addresses-crs84.gpkg",

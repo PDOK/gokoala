@@ -1,4 +1,6 @@
 {
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
   "links": [
     {
       "rel": "self",
@@ -19,20 +21,9 @@
       "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=html&limit=10"
     }
   ],
-  "numberReturned": 6,
-  "timeStamp": "2000-01-01T00:00:00Z",
-  "type": "FeatureCollection",
   "features": [
     {
-      "id": "5c03c8bd-f70a-5d0a-8523-405ef8ca4985",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120386.98918833474,
-          566726.0621717612
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -74,18 +65,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120386.98919,
+          566726.06217
+        ]
+      },
+      "id": "5c03c8bd-f70a-5d0a-8523-405ef8ca4985"
     },
     {
-      "id": "4a8b091f-b1d5-55f1-9d6f-3d18b226c478",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120386.98918833474,
-          566726.0621717612
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -127,18 +118,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120386.98919,
+          566726.06217
+        ]
+      },
+      "id": "4a8b091f-b1d5-55f1-9d6f-3d18b226c478"
     },
     {
-      "id": "c4945202-351b-5d7f-86df-d65ef5866131",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120386.98918833474,
-          566726.0621717612
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -180,18 +171,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120386.98919,
+          566726.06217
+        ]
+      },
+      "id": "c4945202-351b-5d7f-86df-d65ef5866131"
     },
     {
-      "id": "f8e06781-9a47-556a-aabb-2d2b70d04dd4",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120386.98918833474,
-          566726.0621717612
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -233,18 +224,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120386.98919,
+          566726.06217
+        ]
+      },
+      "id": "f8e06781-9a47-556a-aabb-2d2b70d04dd4"
     },
     {
-      "id": "258be953-ef5e-53a0-a317-9582532d5460",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120387.6551883251,
-          566728.4681717822
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -286,18 +277,18 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120387.65519,
+          566728.46817
+        ]
+      },
+      "id": "258be953-ef5e-53a0-a317-9582532d5460"
     },
     {
-      "id": "625ea319-5b23-526f-9884-df4f07d09078",
       "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120387.6551883251,
-          566728.4681717822
-        ]
-      },
       "properties": {
         "alternativeidentifier": "",
         "beginlifespanversion": null,
@@ -339,7 +330,16 @@
         "status_href": "",
         "validfrom": "2009-12-21T00:00:00Z",
         "validto": null
-      }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120387.65519,
+          566728.46817
+        ]
+      },
+      "id": "625ea319-5b23-526f-9884-df4f07d09078"
     }
-  ]
+  ],
+  "numberReturned": 6
 }

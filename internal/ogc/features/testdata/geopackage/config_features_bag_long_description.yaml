@@ -1,0 +1,39 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Contains a slimmed-down/example version of the BAG-dataset
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./internal/ogc/features/datasources/geopackage/testdata/bag-wgs84.gpkg
+            fid: feature_id
+            queryTimeout: 15m # pretty high to allow debugging
+    collections:
+      - id: foo
+        tableName: ligplaatsen
+        filters:
+          properties:
+            - name: straatnaam
+            - name: postcode
+        metadata:
+          title: Foooo
+          description: >-
+            This description of collection Foooo is short.
+      - id: bar
+        tableName: ligplaatsen
+        metadata:
+          title: Barrr
+          description: >-
+            This description of collection Barrr is quite long, and as such would distract the user from the rest of the content on overview pages.
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec accumsan lectus id ipsum condimentum pretium. Aenean cursus et diam aliquam
+            vestibulum. Cras at est risus. Suspendisse venenatis dignissim aliquet. Maecenas rhoncus mi vulputate mi ullamcorper tincidunt.
+            Aliquam aliquet risus ut convallis finibus. Curabitur ut ultrices erat. Suspendisse et vehicula arcu, a lacinia ligula. Orci posuere.
+          tableName: ligplaatsen

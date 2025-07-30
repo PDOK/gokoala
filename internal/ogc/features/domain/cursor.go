@@ -16,8 +16,11 @@ const (
 	separator = '|'
 )
 
-// Cursors holds next and previous cursor. Note that we use
-// 'cursor-based pagination' as opposed to 'offset-based pagination'
+// Cursors hold the next and previous cursor. Note that we use
+// 'cursor-based pagination' as opposed to 'offset-based pagination'.
+//
+// The cursor is based on the fid (feature id) of the underlying feature table. This fid is required to be a unique
+// and (auto)incrementing integer. The fid is not required to be contagious, gaps in the fid sequence are allowed.
 type Cursors struct {
 	Prev EncodedCursor
 	Next EncodedCursor
@@ -57,7 +60,9 @@ func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 	fidAsBytes := big.NewInt(fid).Bytes()
 
 	// format of the cursor: <encoded fid><separator><encoded checksum>
-	return EncodedCursor(base64.RawURLEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.RawURLEncoding.EncodeToString(filtersChecksum))
+	return EncodedCursor(base64.RawURLEncoding.EncodeToString(fidAsBytes) +
+		string(separator) +
+		base64.RawURLEncoding.EncodeToString(filtersChecksum))
 }
 
 // Decode turns encoded cursor into DecodedCursor and verifies that

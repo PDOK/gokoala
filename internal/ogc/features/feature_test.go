@@ -3,28 +3,18 @@ package features
 import (
 	"net/http"
 	"os"
-	"path"
-	"runtime"
+	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../../")
-	err := os.Chdir(dir)
-	if err != nil {
-		panic(err)
-	}
-}
-
 func TestFeature(t *testing.T) {
+	t.Parallel()
+
 	type fields struct {
-		configFile   string
+		configFiles  []string
 		url          string
 		collectionID string
 		featureID    string
@@ -42,7 +32,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request GeoJSON for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -56,7 +49,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request JSON-FG for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -70,7 +66,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request non existing feature",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "9999999999",
@@ -84,7 +83,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request non existing collection",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "does-not-exist",
 				featureID:    "9999999999",
@@ -98,7 +100,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request with unknown query params",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?foo=bar",
 				collectionID: "foo",
 				featureID:    "19058835",
@@ -112,7 +117,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request with invalid FID",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "thisisnotaUUIDorINTEGER",
@@ -126,7 +134,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request unsupported format (DOCX) for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -140,7 +151,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request HTML for feature 4030",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_bag.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "4030",
@@ -154,7 +168,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in WGS84 explicitly",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_multiple_projections.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -168,7 +185,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in WGS84 explicitly - with validation disabled",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_validation_disabled.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_validation_disabled.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -182,7 +199,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in RD",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_multiple_projections.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -196,7 +216,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request output in unsupported CRS explicitly",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_multiple_projections.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?crs=http://www.opengis.net/def/crs/OGC/EPSG:3812131313131314141",
 				collectionID: "dutch-addresses",
 				featureID:    "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
@@ -210,7 +233,10 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request non existing feature",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_multiple_gpkgs.yaml",
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_multiple_projections.yaml",
+				},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "dutch-addresses",
 				featureID:    "999999",
@@ -224,7 +250,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request slow response, hitting query timeout",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_short_query_timeout.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_short_query_timeout.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "dutch-addresses",
 				featureID:    "4030",
@@ -238,7 +264,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request feature with specific web/viewer configuration, and make sure this is reflected in the HTML output",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_webconfig.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=html",
 				collectionID: "ligplaatsen",
 				featureID:    "4030",
@@ -252,7 +278,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request feature with specific web configuration, and make sure URLs are rendered as hyperlinks in HTML output",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_webconfig.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_webconfig.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=html",
 				collectionID: "ligplaatsen",
 				featureID:    "4030",
@@ -266,7 +292,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request GeoJSON for feature with null geom",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "6436",
@@ -280,7 +306,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request JSON-FG for feature with null geom",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
 				collectionID: "foo",
 				featureID:    "6436",
@@ -294,7 +320,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request GeoJSON for feature with empty point",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
 				collectionID: "foo",
 				featureID:    "3542",
@@ -308,7 +334,7 @@ func TestFeature(t *testing.T) {
 		{
 			name: "Request JSON-FG for feature with empty point",
 			fields: fields{
-				configFile:   "internal/ogc/features/testdata/config_features_geom_null_empty.yaml",
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_features_geom_null_empty.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
 				collectionID: "foo",
 				featureID:    "3542",
@@ -322,36 +348,50 @@ func TestFeature(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// mock time
-			engine.Now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
+			t.Parallel()
 
-			req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
-			if err != nil {
-				assert.Fail(t, err.Error())
-			}
-			rr, ts := createMockServer()
-			defer ts.Close()
+			for _, configFile := range tt.fields.configFiles {
+				dir := filepath.Dir(configFile)
+				datasourceName := filepath.Base(dir)
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
-			features := NewFeatures(newEngine)
-			handler := features.Feature()
-			handler.ServeHTTP(rr, req)
+				// nested subtest for each config-file/datasource
+				// tip: in JetBrains IDEs you can still jump to failed tests by explicitly selecting "jump to source"
+				t.Run(datasourceName, func(t *testing.T) {
+					t.Parallel()
 
-			assert.Equal(t, tt.want.statusCode, rr.Code)
-			if tt.want.body != "" {
-				expectedBody, err := os.ReadFile(tt.want.body)
-				assert.NoError(t, err)
+					req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
+					assert.NoError(t, err)
+					rr, ts := createMockServer()
+					defer ts.Close()
 
-				printActual(rr)
-				switch {
-				case tt.fields.format == engine.FormatJSON:
-					assert.JSONEq(t, string(expectedBody), rr.Body.String())
-				case tt.fields.format == engine.FormatHTML:
-					assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
-				default:
-					assert.Fail(t, "implement support to test format: %s", tt.fields.format)
-				}
+					newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+					assert.NoError(t, err)
+
+					// use fixed decimal limit in coordinates and UTC timezone across all tests for
+					// stable output between different data sources (postgres, geopackage, etc)
+					newEngine.Config.OgcAPI.Features.MaxDecimals = 5
+					newEngine.Config.OgcAPI.Features.ForceUTC = true
+
+					features := NewFeatures(newEngine)
+					handler := features.Feature()
+					handler.ServeHTTP(rr, req)
+
+					assert.Equal(t, tt.want.statusCode, rr.Code)
+					if tt.want.body != "" {
+						expectedBody, err := os.ReadFile(tt.want.body)
+						assert.NoError(t, err)
+
+						printActual(rr)
+						switch {
+						case tt.fields.format == engine.FormatJSON:
+							assert.JSONEq(t, string(expectedBody), rr.Body.String())
+						case tt.fields.format == engine.FormatHTML:
+							assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
+						default:
+							assert.Fail(t, "implement support to test format: %s", tt.fields.format)
+						}
+					}
+				})
 			}
 		})
 	}

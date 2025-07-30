@@ -9,7 +9,7 @@ type OgcAPI3dGeoVolumes struct {
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
 
 	// Whether JSON responses will be validated against the OpenAPI spec
-	// since it has significant performance impact when dealing with large JSON payloads.
+	// since it has a significant performance impact when dealing with large JSON payloads.
 	//
 	// +kubebuilder:default=true
 	// +optional

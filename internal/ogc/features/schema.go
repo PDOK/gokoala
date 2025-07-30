@@ -3,6 +3,8 @@ package features
 import (
 	"log"
 	"net/http"
+	"slices"
+	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -42,7 +44,7 @@ func (f *Features) Schema() http.HandlerFunc {
 			key = engine.NewTemplateKey(schemaJSON,
 				engine.WithInstanceName(collection.ID),
 				f.engine.WithNegotiatedLanguage(w, r),
-				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema))
+				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema)) // JSON format, but specific mediatype.
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, "format is not supported")
 			return
@@ -98,6 +100,13 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 			}
 		}
 
+		if !requiresSpecificOrder(collection) {
+			// stable field order
+			slices.SortFunc(schema.Fields, func(a, b domain.Field) int {
+				return strings.Compare(a.Name, b.Name)
+			})
+		}
+
 		// pre-render the schema, catches issues early on during start-up.
 		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,
 			schemaTemplateData{
@@ -119,6 +128,13 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 		schemasByCollection[collection.ID] = *schema
 	}
 	return schemasByCollection
+}
+
+func requiresSpecificOrder(collection config.GeoSpatialCollection) bool {
+	if collection.Features != nil && collection.Features.FeatureProperties != nil {
+		return collection.Features.PropertiesInSpecificOrder
+	}
+	return false
 }
 
 func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, *string) {

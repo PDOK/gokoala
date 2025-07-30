@@ -1,43 +1,24 @@
 package geopackage
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"regexp"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jmoiron/sqlx"
 )
 
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
-// featureTable according to spec https://www.geopackage.org/spec121/index.html#_contents
-type featureTable struct {
-	TableName          string          `db:"table_name"`
-	DataType           string          `db:"data_type"` // always 'features'
-	Identifier         string          `db:"identifier"`
-	Description        string          `db:"description"`
-	GeometryColumnName string          `db:"column_name"`
-	GeometryType       string          `db:"geometry_type_name"`
-	LastChange         time.Time       `db:"last_change"`
-	MinX               sql.NullFloat64 `db:"min_x"` // bbox
-	MinY               sql.NullFloat64 `db:"min_y"` // bbox
-	MaxX               sql.NullFloat64 `db:"max_x"` // bbox
-	MaxY               sql.NullFloat64 `db:"max_y"` // bbox
-	SRS                sql.NullInt64   `db:"srs_id"`
-
-	Schema *d.Schema // required
-}
-
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the GeoPackage. Terminates on failure.
 func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColumn, externalFidColumn string) (
-	featureTableByCollectionID map[string]*featureTable,
+	featureTableByCollectionID map[string]*common.FeatureTable,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
 	metadata, err := readDriverMetadata(db)
@@ -46,7 +27,7 @@ func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColu
 	}
 	log.Println(metadata)
 
-	featureTableByCollectionID, err = readGpkgContents(collections, db, fidColumn, externalFidColumn)
+	featureTableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -91,13 +72,12 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'table_name' column. Also, in case there's no exact match between 'collection ID' and 'table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readGpkgContents(collections config.GeoSpatialCollections, db *sqlx.DB,
-	fidColumn, externalFidColumn string) (map[string]*featureTable, error) {
+func readFeatureTables(collections config.GeoSpatialCollections, db *sqlx.DB,
+	fidColumn, externalFidColumn string) (map[string]*common.FeatureTable, error) {
 
 	query := `
 select
-	c.table_name, c.data_type, c.identifier, c.description, c.last_change,
-	c.min_x, c.min_y, c.max_x, c.max_y, c.srs_id, gc.column_name, gc.geometry_type_name
+	c.table_name, gc.column_name, gc.geometry_type_name
 from
 	gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
 where
@@ -112,10 +92,10 @@ where
 	}
 	defer rows.Close()
 
-	result := make(map[string]*featureTable, 10)
+	result := make(map[string]*common.FeatureTable, 10)
 	for rows.Next() {
-		table := featureTable{}
-		if err = rows.StructScan(&table); err != nil {
+		table := common.FeatureTable{}
+		if err = rows.Scan(&table.TableName, &table.GeometryColumnName, &table.GeometryType); err != nil {
 			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 		}
 		if table.TableName == "" {
@@ -126,7 +106,7 @@ where
 			if table.TableName == collection.ID {
 				result[collection.ID] = &table
 				hasCollection = true
-			} else if hasMatchingTableName(collection, table) {
+			} else if collection.HasTableName(table.TableName) {
 				result[collection.ID] = &table
 				hasCollection = true
 			}
@@ -146,11 +126,11 @@ where
 		}
 	}
 
-	validateUniqueness(result)
+	common.ValidateUniqueness(result)
 	return result, nil
 }
 
-func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*featureTable,
+func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.FeatureTable,
 	collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
@@ -175,7 +155,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 						"from may take a long time. Index on this column is recommended", pf.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct ft.%s from %s ft", pf.Name, featTable.TableName)
+				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", pf.Name, featTable.TableName)
 				var values []string
 				err := db.Select(&values, query)
 				if err != nil {
@@ -196,7 +176,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*feat
 	return result, nil
 }
 
-func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn string,
+func readSchema(db *sqlx.DB, table common.FeatureTable, fidColumn, externalFidColumn string,
 	collections config.GeoSpatialCollections) (*d.Schema, error) {
 
 	collectionNames := make([]string, 0, len(collections))
@@ -212,7 +192,7 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 
 	var query string
 	if schemaExtension {
-		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", ifnull(b.description, '') "+
+		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", coalesce(b.description, '') "+
 			"from pragma_table_info('%[1]s') a "+
 			"left join gpkg_data_columns b on b.column_name = a.name and b.table_name='%[1]s'", table.TableName)
 	} else {
@@ -253,11 +233,6 @@ func readSchema(db *sqlx.DB, table featureTable, fidColumn, externalFidColumn st
 	return schema, nil
 }
 
-func hasMatchingTableName(collection config.GeoSpatialCollection, row featureTable) bool {
-	return collection.Features != nil && collection.Features.TableName != nil &&
-		row.TableName == *collection.Features.TableName
-}
-
 func hasSchemaExtension(db *sqlx.DB) (bool, error) {
 	var hasExtension bool
 	err := db.Get(&hasExtension, "select exists (select 1 from sqlite_master where type='table' and name='gpkg_data_columns')")
@@ -265,15 +240,4 @@ func hasSchemaExtension(db *sqlx.DB) (bool, error) {
 		return false, err
 	}
 	return hasExtension, nil
-}
-
-func validateUniqueness(result map[string]*featureTable) {
-	uniqueTables := make(map[string]struct{})
-	for _, table := range result {
-		uniqueTables[table.TableName] = struct{}{}
-	}
-	if len(uniqueTables) != len(result) {
-		log.Printf("Warning: found %d unique table names for %d collections, "+
-			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
-	}
 }

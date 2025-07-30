@@ -1,0 +1,112 @@
+---
+services:
+  postgres:
+    # We use a multi-arch image (x86/arm64). There's currently no official release of this image yet on docker.io/postgis.
+    # In the meantime we'll use this image from the same maintainer. See https://github.com/postgis/docker-postgis/issues/216
+    image: docker.io/imresamu/postgis:16-3.5-bookworm  # use debian, not alpine.
+    container_name: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+    command: [ "postgres", "-c", "log_statement=all" ]
+    volumes:
+      - ./create-schemas.sql:/docker-entrypoint-initdb.d/0-create-schemas.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5s
+      retries: 30
+
+  # import geopackages into postgres, and execute extra SQL (note: we do this in one 'init' container
+  # since testcontainers currently doesn't handle multiple short-lived containers well).
+  postgres-init-data:
+    build:
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # language=bash
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -ex
+
+        echo "START import GeoPackages in Postgres"
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=addresses \
+          -lco FID=fid \
+          /examples/resources/addresses-rd.gpkg
+
+        # 3D data (XYZ)
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=threedimensionalgeoms \
+          -lco FID=fid \
+          -lco DIM=3 \
+          /testdata/3d-geoms.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=bag \
+          -lco FID=feature_id \
+          /testdata/bag.gpkg
+
+        # GeoPackage field descriptions are stored in 'gpkg_data_columns' table. This is part of the GeoPackage
+        # schema extension. When imported in Postgres these field descriptions are converted to comments on columns.
+        # GoKoala is able to read these column comments. So both GeoPackage and Postgres support field description.
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=bag_schema_extension \
+          -lco FID=feature_id \
+          /testdata/bag-schema-extension-wgs84.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=bag_temporal \
+          -lco FID=feature_id \
+          -lco COLUMN_TYPES=datum_strt=date,datum_eind=date \
+          /testdata/bag-temporal.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=external_fid \
+          -lco FID=feature_id \
+          /testdata/external-fid.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=nullemptygeoms \
+          -lco FID=fid \
+          /testdata/null-empty-geoms.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=roads \
+          -lco FID=fid \
+          /testdata/roads.gpkg
+
+        echo "DONE import GeoPackages in Postgres"
+        echo "START creating indexes"
+
+        export PGPASSWORD=postgres
+        psql \
+        -h postgres \
+        -U postgres \
+        -d postgres \
+        -c "create index straatnaam_idx on bag.ligplaatsen(straatnaam);" \
+        -c "create index postcode_idx on bag.ligplaatsen(postcode);" \
+        -c "create index ligplaatsen_temporal_idx on bag_temporal.ligplaatsen(datum_strt, datum_eind);" \
+        -c "create index standplaatsen_temporal_idx on bag_temporal.standplaatsen(datum_strt, datum_eind);" \
+        -c "create index verblijfsobjecten_temporal_idx on bag_temporal.verblijfsobjecten(datum_strt, datum_eind);" \
+        -c "create index addresses_temporal_idx on addresses.addresses(validfrom, validto);"
+
+        echo "DONE creating indexes"
+
+    volumes:
+      - ../../geopackage/testdata:/testdata
+      - ../../../../../../examples:/examples

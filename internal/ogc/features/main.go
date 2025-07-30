@@ -11,8 +11,9 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgis"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/PDOK/gokoala/internal/ogc/features/proj"
 )
 
 const (
@@ -20,7 +21,8 @@ const (
 )
 
 type Features struct {
-	engine                    *engine.Engine
+	engine *engine.Engine
+
 	datasources               map[datasourceKey]ds.Datasource
 	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredCollections     map[string]config.GeoSpatialCollection
@@ -64,8 +66,9 @@ type datasourceKey struct {
 }
 
 type datasourceConfig struct {
-	collections config.GeoSpatialCollections
-	ds          config.Datasource
+	collections       config.GeoSpatialCollections
+	ds                config.Datasource
+	transformOnTheFly bool
 }
 
 func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
@@ -74,7 +77,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 	// configure collection specific datasources first
 	configureCollectionDatasources(e, configured)
 	// now configure top-level datasources, for the whole dataset. But only when
-	// there's no collection specific datasource already configured
+	// there's no collection-specific datasource already configured
 	configureTopLevelDatasources(e, configured)
 
 	if len(configured) == 0 {
@@ -83,10 +86,11 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 
 	// now we have a mapping from collection+projection => desired datasource (the 'configured' map).
 	// but the actual datasource connection still needs to be CREATED and associated with these collections.
-	// this is what we'll going to do now, but in the process we need to make sure no duplicate datasources
-	// are instantiated: since multiple collections can point to the same datasource and we only what to have a single
+	// this is what we're going to do now, but in the process we need to make sure no duplicate datasources
+	// are instantiated: since multiple collections can point to the same datasource, and we only want to have a single
 	// datasource/connection-pool serving those collections.
 	createdDatasources := make(map[config.Datasource]ds.Datasource)
+
 	result := make(map[datasourceKey]ds.Datasource, len(configured))
 	for k, cfg := range configured {
 		if cfg == nil {
@@ -94,8 +98,9 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 		}
 		existing, ok := createdDatasources[cfg.ds]
 		if !ok {
-			// make sure to only create a new datasource when it hasn't already been done before (for another collection)
-			created := newDatasource(e, cfg.collections, cfg.ds)
+			// make sure to only create a new datasource when it hasn't already been done before
+			// since we only want a single connection-pool per (geopackage/postgresql) database.
+			created := newDatasource(e, cfg.collections, cfg.ds, cfg.transformOnTheFly)
 			createdDatasources[cfg.ds] = created
 			result[k] = created
 		} else {
@@ -106,7 +111,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 }
 
 func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]domain.AxisOrder {
-	log.Println("start determining axis order for all configured CRS's")
+	log.Println("start determining axis order for all configured CRSs")
 	order := map[int]domain.AxisOrder{
 		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
 	}
@@ -126,7 +131,7 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 			go func() {
 				defer wg.Done()
 
-				axisOrder, err := GetAxisOrder(domain.SRID(key.srid))
+				axisOrder, err := proj.GetAxisOrder(domain.SRID(key.srid))
 				if err != nil {
 					log.Printf("Warning: failed to determine whether EPSG:%d needs "+
 						"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
@@ -177,23 +182,29 @@ func configurePropertyFiltersWithAllowedValues(datasources map[datasourceKey]ds.
 }
 
 // configureTopLevelDatasources configures top-level datasources - in one or multiple CRS's - which can be
-// used by one or multiple collections (e.g., one GPKG that covers holds an entire dataset)
+// used by one or multiple collections (e.g., one GPKG that holds an entire dataset)
+//
+//nolint:cyclop
 func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*datasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	if cfg.Datasources == nil {
 		return
 	}
-	var defaultDS *datasourceConfig
-	for _, coll := range cfg.Collections {
-		key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
-		if result[key] == nil {
-			if defaultDS == nil {
-				defaultDS = &datasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84}
+	// Ahead-of-time WGS84
+	if cfg.Datasources.DefaultWGS84 != nil {
+		var defaultDS *datasourceConfig
+		for _, coll := range cfg.Collections {
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				if defaultDS == nil {
+					defaultDS = &datasourceConfig{cfg.Collections, *cfg.Datasources.DefaultWGS84, false}
+				}
+				result[key] = defaultDS
 			}
-			result[key] = defaultDS
 		}
 	}
 
+	// Ahead-of-time additional SRSs
 	for _, additional := range cfg.Datasources.Additional {
 		for _, coll := range cfg.Collections {
 			srid, err := domain.EpsgToSrid(additional.Srs)
@@ -202,7 +213,29 @@ func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*da
 			}
 			key := datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
 			if result[key] == nil {
-				result[key] = &datasourceConfig{cfg.Collections, additional.Datasource}
+				result[key] = &datasourceConfig{cfg.Collections, additional.Datasource, false}
+			}
+		}
+	}
+
+	// On-the-fly SRSs -- add these as last since we prefer ahead-of-time projections
+	for _, otf := range cfg.Datasources.OnTheFly {
+		for _, coll := range cfg.Collections {
+			// WGS84
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+			}
+			// All other configured SRSs
+			for _, srs := range otf.SupportedSrs {
+				srid, err := domain.EpsgToSrid(srs.Srs)
+				if err != nil {
+					log.Fatal(err)
+				}
+				key = datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
+				if result[key] == nil {
+					result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+				}
 			}
 		}
 	}
@@ -216,26 +249,60 @@ func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*
 		if coll.Features == nil || coll.Features.Datasources == nil {
 			continue
 		}
-		defaultDS := &datasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84}
-		result[datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
+		// Ahead-of-time WGS84
+		if coll.Features.Datasources.DefaultWGS84 != nil {
+			defaultDS := &datasourceConfig{cfg.Collections, *coll.Features.Datasources.DefaultWGS84, false}
+			result[datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
+		}
 
+		// Ahead-of-time additional SRSs
 		for _, additional := range coll.Features.Datasources.Additional {
 			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
-			additionalDS := &datasourceConfig{cfg.Collections, additional.Datasource}
+			additionalDS := &datasourceConfig{cfg.Collections, additional.Datasource, false}
 			result[datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
+		}
+
+		// On-the-fly SRSs -- add these as last since we prefer ahead-of-time projections
+		for _, otf := range coll.Features.Datasources.OnTheFly {
+			// WGS84
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+			}
+			// All other configured SRSs
+			for _, srs := range otf.SupportedSrs {
+				srid, err := domain.EpsgToSrid(srs.Srs)
+				if err != nil {
+					log.Fatal(err)
+				}
+				additionalDS := &datasourceConfig{cfg.Collections, otf.Datasource, true}
+				result[datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
+			}
 		}
 	}
 }
 
-func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig config.Datasource) ds.Datasource {
+func newDatasource(e *engine.Engine, collections config.GeoSpatialCollections,
+	dsConfig config.Datasource, transformOnTheFly bool) ds.Datasource {
+
+	maxDecimals := e.Config.OgcAPI.Features.MaxDecimals
+	forceUTC := e.Config.OgcAPI.Features.ForceUTC
+
 	var datasource ds.Datasource
-	if dsConfig.GeoPackage != nil {
-		datasource = geopackage.NewGeoPackage(coll, *dsConfig.GeoPackage)
-	} else if dsConfig.PostGIS != nil {
-		datasource = postgis.NewPostGIS()
+	var err error
+	switch {
+	case dsConfig.GeoPackage != nil:
+		datasource, err = geopackage.NewGeoPackage(collections, *dsConfig.GeoPackage, transformOnTheFly, maxDecimals, forceUTC)
+	case dsConfig.Postgres != nil:
+		datasource, err = postgres.NewPostgres(collections, *dsConfig.Postgres, transformOnTheFly, maxDecimals, forceUTC)
+	default:
+		log.Fatal("got unknown datasource type")
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 	e.RegisterShutdownHook(datasource.Close)
 	return datasource

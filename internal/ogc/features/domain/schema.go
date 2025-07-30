@@ -153,13 +153,16 @@ type TypeFormat struct {
 func (f Field) ToTypeFormat() TypeFormat {
 	// lowercase, no spaces
 	normalizedType := strings.ReplaceAll(strings.ToLower(f.Type), " ", "")
+	// sometimes data sources mention the length of fields within parenthesis, this is irrelevant.
+	// also, SQLite accepts for example TEXT(5) but ignores the length: https://sqlite.org/datatype3.html#affinity_name_examples
+	normalizedType = prefixBeforeParenthesis(normalizedType)
 
 	switch normalizedType {
 	case "boolean", "bool":
 		return TypeFormat{Type: "boolean"}
 	case "text", "char", "character", "charactervarying", "varchar", "nvarchar", "clob":
 		return TypeFormat{Type: "string"}
-	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "int2", "int8":
+	case "int", "integer", "tinyint", "smallint", "mediumint", "bigint", "int2", "int4", "int8":
 		return TypeFormat{Type: "integer"}
 	case "real", "float", "double", "doubleprecision", "numeric", "decimal":
 		return TypeFormat{Type: "number", Format: "double"}
@@ -174,7 +177,7 @@ func (f Field) ToTypeFormat() TypeFormat {
 		// From OAF Part 5: Each temporal property SHALL be a "string" literal with the appropriate format
 		// (e.g., "date-time" or "date" for instances, depending on the temporal granularity).
 		return TypeFormat{Type: "string", Format: formatTimeOnly}
-	case "datetime", "timestamp":
+	case "datetime", "timestamp", "timestampwithtimezone", "timestampwithouttimezone":
 		// From OAF Part 5: Each temporal property SHALL be a "string" literal with the appropriate format
 		// (e.g., "date-time" or "date" for instances, depending on the temporal granularity).
 		return TypeFormat{Type: "string", Format: formatDateTime}
@@ -186,12 +189,22 @@ func (f Field) ToTypeFormat() TypeFormat {
 		// followed by a hyphen, followed by the name of the geometry type in lower case
 		return TypeFormat{Type: normalizedType, Format: "geometry-" + normalizedType}
 	default:
-		if strings.Contains(normalizedType, "text(") || strings.Contains(normalizedType, "varchar(") {
-			// Sometimes datasources mention the length of fields, this is irrelevant.
-			// Also, SQLite accepts for example TEXT(5) but ignores the length: https://sqlite.org/datatype3.html#affinity_name_examples
-			return TypeFormat{Type: "string"}
+		// handle geometry types with additional Z and/or M dimensions e.g., LineStringZ, or PointZM.
+		// OAF part 5 only supports simple 2D types, so advertise the 2D variant.
+		for _, geomType := range geometryTypes {
+			if strings.HasPrefix(normalizedType, geomType) {
+				return TypeFormat{Type: normalizedType, Format: "geometry-" + geomType}
+			}
 		}
 		log.Printf("Warning: unknown data type '%s' for field '%s', falling back to string", f.Type, f.Name)
 		return TypeFormat{Type: "string"}
 	}
+}
+
+func prefixBeforeParenthesis(s string) string {
+	idx := strings.Index(s, "(")
+	if idx != -1 {
+		return s[:idx]
+	}
+	return s
 }

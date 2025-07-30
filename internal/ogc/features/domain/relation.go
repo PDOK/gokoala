@@ -17,7 +17,7 @@ type FeatureRelation struct {
 }
 
 func NewFeatureRelation(name, externalFidColumn string, collectionNames []string) *FeatureRelation {
-	if !isFeatureRelation(name, externalFidColumn) {
+	if !IsFeatureRelation(name, externalFidColumn) {
 		return nil
 	}
 	relationName := newFeatureRelationName(name, externalFidColumn)
@@ -37,14 +37,14 @@ func newFeatureRelationName(name string, externalFidColumn string) string {
 	return regex.ReplaceAllString(name, "")
 }
 
-// isFeatureRelation "Algorithm" to determine feature reference:
+// IsFeatureRelation "Algorithm" to determine feature reference:
 //
 // When externalFidColumn (e.g. 'external_fid') is part of the column name (e.g. 'foobar_external_fid' or
 // 'foobar_sometext_external_fid') we treat the field as a reference to another feature in the 'foobar' collection.
 //
 // Meaning data sources should be pre-populated with a 'foobar_external_fid' field containing UUIDs of other features.
 // Creating these fields in the data source is beyond the scope of this application.
-func isFeatureRelation(columnName string, externalFidColumn string) bool {
+func IsFeatureRelation(columnName string, externalFidColumn string) bool {
 	if externalFidColumn == "" || columnName == externalFidColumn {
 		return false
 	}
