@@ -101,31 +101,38 @@ type Postgres struct {
 
 	// Hostname of the PostgreSQL server.
 	// +kubebuilder:default="localhost"
-	Host string `yaml:"host" json:"host" validate:"required,hostname_rfc1123" default:"localhost"`
+	// +optional
+	Host string `yaml:"host" json:"host" validate:"required" default:"localhost"`
 
 	// Port number of the PostgreSQL server.
 	// +kubebuilder:default=5432
+	// +optional
 	Port uint `yaml:"port" json:"port" validate:"required,port" default:"5432"`
 
 	// Name of the PostgreSQL database containing the data.
 	// +kubebuilder:default="postgres"
+	// +optional
 	DatabaseName string `yaml:"databaseName" json:"databaseName" validate:"required" default:"postgres"`
 
 	// Name of the PostgreSQL schema containing the data.
 	// +kubebuilder:default="public"
+	// +optional
 	Schema string `yaml:"schema" json:"schema" validate:"required" default:"public"`
 
 	// The SSL mode to use, e.g. 'disable', 'allow', 'prefer', 'require', 'verify-ca' or 'verify-full'.
 	// +kubebuilder:validation:Enum=disable;allow;prefer;require;verify-ca;verify-full
 	// +kubebuilder:default="disable"
+	// +optional
 	SSLMode string `yaml:"sslMode" json:"sslMode" validate:"required" default:"disable"`
 
 	// Username when connecting to the PostgreSQL server.
 	// +kubebuilder:default="postgres"
+	// +optional
 	User string `yaml:"user" json:"user" validate:"required" default:"postgres"`
 
 	// Password when connecting to the PostgreSQL server.
 	// +kubebuilder:default="postgres"
+	// +optional
 	Pass string `yaml:"pass" json:"pass" validate:"required" default:"postgres"`
 
 	// When true the geometry column in the feature table needs to be indexed. Initialization will fail

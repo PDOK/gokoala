@@ -318,7 +318,8 @@ func formatValidationErr(err error) error {
 	var valErrs validator.ValidationErrors
 	if errors.As(err, &valErrs) {
 		for _, valErr := range valErrs {
-			errMessages = append(errMessages, valErr.Error()+"\n")
+			errMsg := fmt.Sprintf("field: '%s', value: '%v', error: %v\n", valErr.Field(), valErr.Value(), valErr.Error())
+			errMessages = append(errMessages, errMsg)
 		}
 	}
 	return fmt.Errorf("invalid config provided:\n%v", errMessages)
