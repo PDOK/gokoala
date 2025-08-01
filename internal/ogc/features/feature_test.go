@@ -166,6 +166,23 @@ func TestFeature(t *testing.T) {
 			},
 		},
 		{
+			name: "Request HTML for address feature 25",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_multiple_projections.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "dutch-addresses",
+				featureID:    "122d22de-fe71-5f55-b0a4-df4534f43ff1",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_25.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output in WGS84 explicitly",
 			fields: fields{
 				configFiles: []string{
