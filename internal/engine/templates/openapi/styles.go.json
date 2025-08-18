@@ -783,7 +783,7 @@
             "number": "queryable-number",
             "integer": "queryable-number",
             "date": "queryable-date",
-            "dateTime": "queryable-dateTie",
+            "dateTime": "queryable-dateTime",
             "boolean": "queryable-boolean"
           }
         }
