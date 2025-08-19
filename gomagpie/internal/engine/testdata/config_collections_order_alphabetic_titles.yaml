@@ -1,0 +1,31 @@
+---
+version: 1.0.0
+title: FooBarBaz
+serviceIdentifier: Foo
+abstract: >-
+  Contains collections in non-alphabetical order
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+baseUrl: http://localhost:8181
+collections:
+  - id: B
+    metadata:
+      title: Bear
+      description: abc
+  - id: Z
+    metadata:
+      title: Chicken
+      description: abc
+  - id: C
+    metadata:
+      title: Bird
+      description: abc
+  - id: Z
+    metadata:
+      title: Chicken
+      description: abc
+  - id: A
+    metadata:
+      title: Horse
+      description: abc
