@@ -1,0 +1,38 @@
+---
+version: 1.0.0
+lastUpdated: "2024-10-22T12:00:00Z"
+baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
+collections:
+  - id: addresses
+    metadata:
+      title: Addresses
+      description: These are example addresses
+      extent:
+        bbox:
+          - 50.2129
+          - 2.52713
+          - 55.7212
+          - 7.37403
+    search:
+      fields:
+        - component_thoroughfarename
+        - component_postaldescriptor
+        - component_addressareaname
+      displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
+      etl:
+        suggestTemplates:
+          - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+          - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+          - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+        externalFid:
+          uuidNamespace: 098c4e26-6e36-5693-bae9-df35db0bee49
+          fields:
+            - fid
+      ogcCollections:
+        - api: https://example.com/ogc/v1
+          collection: addresses
+          geometryType: point
+  - id: buildings

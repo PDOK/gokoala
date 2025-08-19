@@ -1,0 +1,6 @@
+{
+  "detail": "provided search terms contain one ore more boolean operators such as \u0026 (AND), | (OR), ! (NOT) which aren't allowed",
+  "status": 400,
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "title": "Bad Request"
+}
