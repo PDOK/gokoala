@@ -30,6 +30,21 @@ export interface Search$Html$Params {
   }
 
   /**
+   * When provided the gemeentegebied collection is included in the search. This parameter should be provided as a [deep object](https://swagger.io/docs/specification/v3_0/serialization/#query-parameters) containing the version and relevance of the gemeentegebied collection, for example `q=foo&gemeentegebied[version]=1&gemeentegebied[relevance]=0.5`
+   */
+  gemeentegebied?: {
+    /**
+     * The relevance score of the gemeentegebied collection.
+     */
+    relevance?: number
+
+    /**
+     * The version of the gemeentegebied collection.
+     */
+    version: number
+  }
+
+  /**
    * When provided the geografisch_gebied collection is included in the search. This parameter should be provided as a [deep object](https://swagger.io/docs/specification/v3_0/serialization/#query-parameters) containing the version and relevance of the geografisch_gebied collection, for example `q=foo&geografisch_gebied[version]=1&geografisch_gebied[relevance]=0.5`
    */
   geografisch_gebied?: {
@@ -55,6 +70,36 @@ export interface Search$Html$Params {
 
     /**
      * The version of the ligplaats collection.
+     */
+    version: number
+  }
+
+  /**
+   * When provided the perceel collection is included in the search. This parameter should be provided as a [deep object](https://swagger.io/docs/specification/v3_0/serialization/#query-parameters) containing the version and relevance of the perceel collection, for example `q=foo&perceel[version]=1&perceel[relevance]=0.5`
+   */
+  perceel?: {
+    /**
+     * The relevance score of the perceel collection.
+     */
+    relevance?: number
+
+    /**
+     * The version of the perceel collection.
+     */
+    version: number
+  }
+
+  /**
+   * When provided the provinciegebied collection is included in the search. This parameter should be provided as a [deep object](https://swagger.io/docs/specification/v3_0/serialization/#query-parameters) containing the version and relevance of the provinciegebied collection, for example `q=foo&provinciegebied[version]=1&provinciegebied[relevance]=0.5`
+   */
+  provinciegebied?: {
+    /**
+     * The relevance score of the provinciegebied collection.
+     */
+    relevance?: number
+
+    /**
+     * The version of the provinciegebied collection.
      */
     version: number
   }
@@ -115,6 +160,38 @@ export interface Search$Html$Params {
   limit?: number
 
   /**
+   * Only features that have a geometry that intersects the bounding box are selected.
+   * The bounding box is provided as four numbers
+   * * Lower left corner, coordinate axis 1
+   * * Lower left corner, coordinate axis 2
+   * * Upper right corner, coordinate axis 1
+   * * Upper right corner, coordinate axis 2
+   *
+   * The coordinate reference system is
+   * WGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84)
+   * unless a different coordinate reference system is specified in the parameter `bbox-crs`.
+   *
+   * The query parameter `bbox-crs` is specified in OGC API - Features - Part 2: Coordinate
+   * Reference Systems by Reference.
+   *
+   * For WGS 84 longitude/latitude the values are in most cases the sequence of
+   * minimum longitude, minimum latitude, maximum longitude and maximum latitude.
+   * However, in cases where the box spans the antimeridian the first value
+   * (west-most box edge) is larger than the third value (east-most box edge).
+   *
+   * If a feature has multiple spatial geometry properties, it is the decision of the
+   * server whether only a single spatial geometry property is used to determine
+   * the extent or all relevant geometries.
+   * The given coordinates should be separated by commas.
+   */
+  bbox?: Array<number>
+
+  /**
+   * The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude.
+   */
+  'bbox-crs'?: 'http://www.opengis.net/def/crs/OGC/1.3/CRS84' | 'http://www.opengis.net/def/crs/EPSG/0/28992'
+
+  /**
    * The coordinate reference system of the geometries in the response. Default is WGS84 longitude/latitude
    */
   crs?: 'http://www.opengis.net/def/crs/OGC/1.3/CRS84' | 'http://www.opengis.net/def/crs/EPSG/0/28992'
@@ -130,12 +207,17 @@ export function search$Html(
   if (params) {
     rb.query('q', params.q, { style: 'form', explode: false })
     rb.query('functioneel_gebied', params.functioneel_gebied, { style: 'deepObject', explode: true })
+    rb.query('gemeentegebied', params.gemeentegebied, { style: 'deepObject', explode: true })
     rb.query('geografisch_gebied', params.geografisch_gebied, { style: 'deepObject', explode: true })
     rb.query('ligplaats', params.ligplaats, { style: 'deepObject', explode: true })
+    rb.query('perceel', params.perceel, { style: 'deepObject', explode: true })
+    rb.query('provinciegebied', params.provinciegebied, { style: 'deepObject', explode: true })
     rb.query('standplaats', params.standplaats, { style: 'deepObject', explode: true })
     rb.query('verblijfsobject', params.verblijfsobject, { style: 'deepObject', explode: true })
     rb.query('woonplaats', params.woonplaats, { style: 'deepObject', explode: true })
     rb.query('limit', params.limit, { style: 'form', explode: false })
+    rb.query('bbox', params.bbox, { style: 'form', explode: false })
+    rb.query('bbox-crs', params['bbox-crs'], { style: 'form', explode: false })
     rb.query('crs', params.crs, { style: 'form', explode: false })
   }
 

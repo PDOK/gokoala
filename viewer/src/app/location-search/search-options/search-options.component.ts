@@ -132,6 +132,16 @@ export class SearchOptionsComponent implements OnInit {
       if (x.name === 'woonplaats' && x.enabled) {
         newSearchParams.woonplaats = { relevance: x.relevance, version: x.version }
       }
+
+      if (x.name === 'gemeentegebied' && x.enabled) {
+        newSearchParams.gemeentegebied = { relevance: x.relevance, version: x.version }
+      }
+      if (x.name === 'provinciegebied' && x.enabled) {
+        newSearchParams.provinciegebied = { relevance: x.relevance, version: x.version }
+      }
+      if (x.name === 'perceel' && x.enabled) {
+        newSearchParams.perceel = { relevance: x.relevance, version: x.version }
+      }
     })
 
     this.logger.log(JSON.stringify(newSearchParams))

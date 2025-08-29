@@ -5,6 +5,7 @@
 import { GeometryGeoJson } from '../models/geometry-geo-json'
 import { Link } from '../models/link'
 export interface FeatureJsonfg {
+  bbox: Array<number> | null
   conformsTo?: Array<string>
   coordRefSys?: string
   geometry: GeometryGeoJson | null

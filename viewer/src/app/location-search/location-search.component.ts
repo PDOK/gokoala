@@ -26,6 +26,7 @@ import { Observable } from 'rxjs'
   imports: [CommonModule, SafeHtmlPipe, SearchOptionsComponent],
   templateUrl: './location-search.component.html',
   styleUrl: './location-search.component.css',
+  standalone: true,
 })
 export class LocationSearchComponent implements OnInit {
   selectedResultUrl: string | undefined = undefined
@@ -48,7 +49,13 @@ export class LocationSearchComponent implements OnInit {
     standplaats: this.defaultColparams,
     verblijfsobject: this.defaultColparams,
     woonplaats: this.defaultColparams,
-  }
+    perceel: this.defaultColparams,
+    gemeentegebied: this.defaultColparams,
+    provinciegebied: this.defaultColparams,
+    limit: 100,
+    'bbox-crs': 'http://www.opengis.net/def/crs/OGC/1.3/CRS84',
+    crs: 'http://www.opengis.net/def/crs/OGC/1.3/CRS84',
+  } as Required<Search$Json$Params>
 
   searchLocation: string = ''
 

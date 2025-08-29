@@ -23,19 +23,12 @@
         <button
           class="result-button"
           part="rbutton"
-          title="{{ getDisplayname(r) }}"
+          title="{{ getProperty(r, 'collectionId') }}: {{ getDisplayname(r) }}"
           (mouseover)="selectResultHover(r)"
           (focus)="selectResultHover(r)"
           (click)="selectResultClick(r)">
           <div [innerHTML]="getHighLight(r) | safeHtml"></div>
-          <div hidden="hidden">
-            {{ getProperty(r, 'collectionGeometryType:') }}
-            {{ getProperty(r, 'collectionId') }}
-            {{ getProperty(r, 'collectionVersion') }}
-            {{ getProperty(r, 'displayName') }}
-            {{ getProperty(r, 'href') }}
-            {{ getProperty(r, 'score') }}
-          </div>
+          <div></div>
         </button>
       </div>
     </div>
