@@ -52,7 +52,7 @@ export class LocationSearchComponent implements OnInit {
     perceel: this.defaultColparams,
     gemeentegebied: this.defaultColparams,
     provinciegebied: this.defaultColparams,
-    limit: 100,
+    limit: 10,
     'bbox-crs': 'http://www.opengis.net/def/crs/OGC/1.3/CRS84',
     crs: 'http://www.opengis.net/def/crs/OGC/1.3/CRS84',
   } as Required<Search$Json$Params>
