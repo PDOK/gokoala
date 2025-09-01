@@ -67,7 +67,7 @@ export class LocationSearchComponent implements OnInit {
     private logger: NGXLogger,
     private featuresService: FeaturesService,
     private elementRef: ElementRef
-  ) { }
+  ) {}
   ngOnInit(): void {
     this.logger.debug('LocationSearchComponent initialized with URL:', this.url)
     this.activeSearchUrl.emit(currentHttp)
