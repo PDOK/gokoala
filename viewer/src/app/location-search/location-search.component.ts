@@ -67,7 +67,7 @@ export class LocationSearchComponent implements OnInit {
     private logger: NGXLogger,
     private featuresService: FeaturesService,
     private elementRef: ElementRef
-  ) {}
+  ) { }
   ngOnInit(): void {
     this.logger.debug('LocationSearchComponent initialized with URL:', this.url)
     this.activeSearchUrl.emit(currentHttp)
@@ -75,12 +75,15 @@ export class LocationSearchComponent implements OnInit {
 
   updateSearchField(event: KeyboardEvent) {
     const inputValue = (event.target as HTMLInputElement).value
-    this.searchParams.q = inputValue
-    this.logger.debug(inputValue)
-    this.activeSearchText.emit(inputValue)
-    this.deSelectResult()
-
-    this.lookup()
+    if (inputValue.length > 1) {
+      this.searchParams.q = inputValue
+      this.logger.debug(inputValue)
+      this.activeSearchText.emit(inputValue)
+      this.deSelectResult()
+      this.lookup()
+    } else {
+      this.results = undefined
+    }
   }
 
   private emitCurrentUrl() {

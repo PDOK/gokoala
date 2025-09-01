@@ -62,10 +62,14 @@
         console.log(JSON.stringify(e.detail))
         const featureHovered = e.detail
         objectinfooutside.feature = featureHovered
-        console.log('href hovered ' + featureHovered.getProperties().href)
-        featureview.setAttribute('items-url', featureHovered.getProperties().href)
-        featureview.drawFeature = undefined
-        featureview.style.visibility = 'visible'
+        const hoveredProps = featureHovered.getProperties && featureHovered.getProperties();
+        const hoveredHref = hoveredProps && hoveredProps.href ? hoveredProps.href : '';
+        if (hoveredHref) {
+            console.log('href hovered ' + hoveredHref)
+          featureview.setAttribute('items-url', hoveredHref);
+        }
+        featureview.drawFeature = undefined;
+        featureview.style.visibility = 'visible';
       })
 
       featureview.style.visibility = 'hidden'
