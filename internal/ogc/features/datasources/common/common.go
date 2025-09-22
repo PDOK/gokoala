@@ -43,7 +43,7 @@ const (
 
 // Table metadata about a table containing features or attributes in a data source
 type Table struct {
-	TableName          string
+	Name               string
 	DataType           DataType
 	GeometryColumnName string
 	GeometryType       string
@@ -170,7 +170,7 @@ func ColumnsToSQL(columns []string) string {
 func ValidateUniqueness(result map[string]*Table) {
 	uniqueTables := make(map[string]struct{})
 	for _, table := range result {
-		uniqueTables[table.TableName] = struct{}{}
+		uniqueTables[table.Name] = struct{}{}
 	}
 	if len(uniqueTables) != len(result) {
 		log.Printf("Warning: found %d unique table names for %d collections, "+

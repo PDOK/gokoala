@@ -16,6 +16,9 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
+var errNoGeospatialItems = errors.New("bbox is not supported for this collection since it does not " +
+	"contain geospatial items (features), only non-geospatial items (attributes)")
+
 var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 
 // Features endpoint serves a FeatureCollection with the given collectionId
@@ -51,10 +54,15 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
+		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
+		supportsGeom := datasource.SupportsGeospatialQueries(collectionID)
+		if isSpatialQueryOnNonSpatialData(bbox, supportsGeom) {
+			engine.RenderProblem(engine.ProblemBadRequest, w, errNoGeospatialItems.Error())
+			return
+		}
 		// validation completed, now get the features
 		var newCursor domain.Cursors
 		var fc *domain.FeatureCollection
-		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
 		if querySingleDatasource(datasource, inputSRID, outputSRID, bbox) {
 			// fast path
 			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
@@ -113,6 +121,10 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func isSpatialQueryOnNonSpatialData(bbox *geom.Bounds, supportsGeom bool) bool {
+	return bbox != nil && !supportsGeom
 }
 
 func querySingleDatasource(datasource ds.Datasource, input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {

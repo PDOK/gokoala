@@ -126,16 +126,16 @@ func TestValidateUniqueness(t *testing.T) {
 		{
 			name: "Unique tables",
 			input: map[string]*Table{
-				"key1": {TableName: "table1"},
-				"key2": {TableName: "table2"},
+				"key1": {Name: "table1"},
+				"key2": {Name: "table2"},
 			},
 			expected: 0, // No warnings expected
 		},
 		{
 			name: "Duplicate tables",
 			input: map[string]*Table{
-				"key1": {TableName: "table1"},
-				"key2": {TableName: "table1"},
+				"key1": {Name: "table1"},
+				"key2": {Name: "table1"},
 			},
 			expected: 1, // One warning expected
 		},

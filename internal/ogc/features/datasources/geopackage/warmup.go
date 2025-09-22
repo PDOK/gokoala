@@ -24,7 +24,7 @@ func warmUpFeatureTables(
 		}
 		for _, coll := range configuredCollections {
 			if coll.ID == collID && coll.Features != nil {
-				if err := warmUpFeatureTable(table.TableName, db); err != nil {
+				if err := warmUpFeatureTable(table.Name, db); err != nil {
 					return err
 				}
 				break

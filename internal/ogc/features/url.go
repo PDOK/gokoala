@@ -256,6 +256,10 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 }
 
 func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
+	if params.Get(bboxParam) == "" && params.Get(bboxCrsParam) != "" {
+		return nil, d.UndefinedSRID, errors.New("bbox-crs can't be used without bbox parameter")
+	}
+
 	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err

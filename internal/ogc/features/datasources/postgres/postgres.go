@@ -189,7 +189,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	}
 
 	query := fmt.Sprintf(`select %[1]s from "%[2]s" where "%[3]s"%[4]s = @fid%[4]s limit 1`,
-		selectClause, table.TableName, fidColumn, fidTypeCast)
+		selectClause, table.Name, fidColumn, fidTypeCast)
 	rows, err := pg.db.Query(queryCtx, query, pgx.NamedArgs{"fid": featureID, "outputSrid": srid})
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
@@ -256,7 +256,7 @@ with
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
-`, table.TableName, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
+`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
 
 	namedParams := map[string]any{
 		"fid":        criteria.Cursor.FID,

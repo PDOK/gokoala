@@ -25,21 +25,21 @@ func assertIndexesExist(configuredCollections config.GeoSpatialCollections, feat
 				// assert temporal columns are indexed if configured
 				if coll.Metadata != nil && coll.Metadata.TemporalProperties != nil {
 					temporalColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
-					if err := assertIndexExists(table.TableName, db, temporalColumns, true, false); err != nil {
+					if err := assertIndexExists(table.Name, db, temporalColumns, true, false); err != nil {
 						return err
 					}
 				}
 
 				// assert geometry column has GIST (rtree) index
 				if spatialIndexRequired {
-					if err := assertSpatialIndex(table.TableName, db, table.GeometryColumnName); err != nil {
+					if err := assertSpatialIndex(table.Name, db, table.GeometryColumnName); err != nil {
 						return err
 					}
 				}
 
 				// assert the column for each property filter is indexed
 				for _, propertyFilter := range coll.Features.Filters.Properties {
-					if err := assertIndexExists(table.TableName, db, propertyFilter.Name, false, true); err != nil && *propertyFilter.IndexRequired {
+					if err := assertIndexExists(table.Name, db, propertyFilter.Name, false, true); err != nil && *propertyFilter.IndexRequired {
 						return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
 					}
 				}

@@ -60,7 +60,7 @@ func readFeatureTables(collections config.GeoSpatialCollections, db *pgxpool.Poo
 
 	query := `
 select
-	f_table_name::text, f_geometry_column::text, type::text
+	f_table_name::text, 'features', f_geometry_column::text, type::text
 from
 	geometry_columns
 where
@@ -78,24 +78,24 @@ where
 	result := make(map[string]*common.Table, 10)
 	for rows.Next() {
 		table := common.Table{}
-		if err = rows.Scan(&table.TableName, &table.GeometryColumnName, &table.GeometryType); err != nil {
+		if err = rows.Scan(&table.Name, &table.DataType, &table.GeometryColumnName, &table.GeometryType); err != nil {
 			return nil, fmt.Errorf("failed to read geometry_columns record, error: %w", err)
 		}
-		if table.TableName == "" {
+		if table.Name == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
 		hasCollection := false
 		for _, collection := range collections {
-			if table.TableName == collection.ID {
+			if table.Name == collection.ID {
 				result[collection.ID] = &table
 				hasCollection = true
-			} else if collection.HasTableName(table.TableName) {
+			} else if collection.HasTableName(table.Name) {
 				result[collection.ID] = &table
 				hasCollection = true
 			}
 		}
 		if !hasCollection {
-			log.Printf("Warning: table %s is present in PostgreSQL but not configured as a collection", table.TableName)
+			log.Printf("Warning: table %s is present in PostgreSQL but not configured as a collection", table.Name)
 		}
 	}
 	if len(result) == 0 {
@@ -105,7 +105,7 @@ where
 	for _, table := range result {
 		table.Schema, err = readSchema(db, *table, fidColumn, externalFidColumn, schemaName, collections)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.TableName, err)
+			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.Name, err)
 		}
 	}
 
@@ -138,7 +138,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 						"from may take a long time. Index on this column is recommended", pf.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", pf.Name, featTable.TableName)
+				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", pf.Name, featTable.Name)
 				rows, err := db.Query(context.Background(), query)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
@@ -206,7 +206,7 @@ order by
     a.attnum;
 `
 
-	rows, err := db.Query(context.Background(), query, schemaName, table.TableName)
+	rows, err := db.Query(context.Background(), query, schemaName, table.Name)
 	if err != nil {
 		return nil, err
 	}
