@@ -29,14 +29,22 @@ type DatasourceCommon struct {
 	MaxDecimals       int
 	ForceUTC          bool
 
-	FeatureTableByCollectionID    map[string]*FeatureTable
+	FeatureTableByCollectionID    map[string]*Table
 	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
 }
 
-// FeatureTable metadata about a table containing features in a data source
-type FeatureTable struct {
+type DataType string
+
+const (
+	Features   DataType = "features"
+	Attributes DataType = "attributes"
+)
+
+// Table metadata about a table containing features or attributes in a data source
+type Table struct {
 	TableName          string
+	DataType           DataType
 	GeometryColumnName string
 	GeometryType       string
 
@@ -44,7 +52,7 @@ type FeatureTable struct {
 }
 
 func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error) {
-	table, err := dc.GetFeatureTable(collection)
+	table, err := dc.CollectionToTable(collection)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +67,15 @@ func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
 	return dc.TransformOnTheFly
 }
 
-func (dc *DatasourceCommon) GetFeatureTable(collection string) (*FeatureTable, error) {
+func (dc *DatasourceCommon) SupportsGeospatialQueries(collection string) bool {
+	table, err := dc.CollectionToTable(collection)
+	if err != nil {
+		return false
+	}
+	return table.DataType == Features
+}
+
+func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error) {
 	table, ok := dc.FeatureTableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
@@ -70,10 +86,10 @@ func (dc *DatasourceCommon) GetFeatureTable(collection string) (*FeatureTable, e
 
 // SelectGeom function signature to select geometry from a table
 // while taking axis order into account
-type SelectGeom func(order domain.AxisOrder, table *FeatureTable) string
+type SelectGeom func(order domain.AxisOrder, table *Table) string
 
 // SelectColumns build select clause
-func (dc *DatasourceCommon) SelectColumns(table *FeatureTable, axisOrder domain.AxisOrder,
+func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder,
 	selectGeom SelectGeom, propConfig *config.FeatureProperties, includePrevNext bool) string {
 
 	columns := orderedmap.New[string, struct{}]() // map (actually a set) to prevent accidental duplicate columns
@@ -151,7 +167,7 @@ func ColumnsToSQL(columns []string) string {
 	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
 }
 
-func ValidateUniqueness(result map[string]*FeatureTable) {
+func ValidateUniqueness(result map[string]*Table) {
 	uniqueTables := make(map[string]struct{})
 	for _, table := range result {
 		uniqueTables[table.TableName] = struct{}{}

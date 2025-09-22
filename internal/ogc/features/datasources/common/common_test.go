@@ -120,12 +120,12 @@ func TestColumnsToSQL(t *testing.T) {
 func TestValidateUniqueness(t *testing.T) {
 	testCases := []struct {
 		name     string
-		input    map[string]*FeatureTable
+		input    map[string]*Table
 		expected int
 	}{
 		{
 			name: "Unique tables",
-			input: map[string]*FeatureTable{
+			input: map[string]*Table{
 				"key1": {TableName: "table1"},
 				"key2": {TableName: "table2"},
 			},
@@ -133,7 +133,7 @@ func TestValidateUniqueness(t *testing.T) {
 		},
 		{
 			name: "Duplicate tables",
-			input: map[string]*FeatureTable{
+			input: map[string]*Table{
 				"key1": {TableName: "table1"},
 				"key2": {TableName: "table1"},
 			},

@@ -36,6 +36,8 @@ type Datasource interface {
 	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
 	SupportsOnTheFlyTransformation() bool
 
+	SupportsGeospatialQueries(collection string) bool
+
 	// Close closes (connections to) the datasource gracefully
 	Close()
 }

@@ -112,7 +112,7 @@ func (pg *Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ d.
 func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria ds.FeaturesCriteria,
 	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
 
-	table, err := pg.GetFeatureTable(collection)
+	table, err := pg.CollectionToTable(collection)
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
@@ -151,7 +151,7 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID any,
 	outputSRID d.SRID, axisOrder d.AxisOrder, profile d.Profile) (*d.Feature, error) {
 
-	table, err := pg.GetFeatureTable(collection)
+	table, err := pg.CollectionToTable(collection)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 }
 
 // Build specific features queries based on the given options.
-func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, table *common.FeatureTable,
+func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, table *common.Table,
 	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
@@ -235,7 +235,7 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, tabl
 	return pg.makeQuery(table, selectClause, criteria)
 }
 
-func (pg *Postgres) makeQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
+func (pg *Postgres) makeQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
@@ -304,7 +304,7 @@ func mapPostGISGeometry(columnValue any) (geom.T, error) {
 
 // selectPostGISGeometry Postgres/PostGIS specific way to select geometry
 // and take domain.AxisOrder into account.
-func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.FeatureTable) string {
+func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	if axisOrder == d.AxisOrderYX {
 		return fmt.Sprintf(", st_flipcoordinates(st_transform(\"%[1]s\", @outputSrid::int)) as \"%[1]s\"", table.GeometryColumnName)
 	}

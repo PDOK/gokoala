@@ -15,7 +15,7 @@ import (
 // assertIndexesExist asserts required indexes in the GeoPackage exists
 func assertIndexesExist(
 	configuredCollections config.GeoSpatialCollections,
-	featureTableByCollectionID map[string]*common.FeatureTable,
+	featureTableByCollectionID map[string]*common.Table,
 	db *sqlx.DB, fidColumn string) error {
 
 	// index needs to contain these columns in the given order
