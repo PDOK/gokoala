@@ -34,17 +34,10 @@ type DatasourceCommon struct {
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
 }
 
-type DataType string
-
-const (
-	Features   DataType = "features"
-	Attributes DataType = "attributes"
-)
-
 // Table metadata about a table containing features or attributes in a data source
 type Table struct {
 	Name               string
-	DataType           DataType
+	Type               domain.CollectionType
 	GeometryColumnName string
 	GeometryType       string
 
@@ -67,12 +60,9 @@ func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
 	return dc.TransformOnTheFly
 }
 
-func (dc *DatasourceCommon) SupportsGeospatialQueries(collection string) bool {
-	table, err := dc.CollectionToTable(collection)
-	if err != nil {
-		return false
-	}
-	return table.DataType == Features
+func (dc *DatasourceCommon) GetCollectionType(collection string) domain.CollectionType {
+	table, _ := dc.CollectionToTable(collection)
+	return table.Type
 }
 
 func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error) {

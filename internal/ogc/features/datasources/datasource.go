@@ -36,7 +36,8 @@ type Datasource interface {
 	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
 	SupportsOnTheFlyTransformation() bool
 
-	SupportsGeospatialQueries(collection string) bool
+	// GetCollectionType returns the type of the collection, e.g. 'features' or 'attributes'.
+	GetCollectionType(collection string) domain.CollectionType
 
 	// Close closes (connections to) the datasource gracefully
 	Close()

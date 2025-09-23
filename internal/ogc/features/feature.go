@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -44,6 +45,8 @@ func (f *Features) Feature() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
+		collectionType := datasource.GetCollectionType(collectionID)
+
 		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID,
 			outputSRID, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 		if err != nil {
@@ -60,7 +63,11 @@ func (f *Features) Feature() http.HandlerFunc {
 		case engine.FormatHTML:
 			f.html.feature(w, r, collection, feat)
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
+			if collectionType == domain.Attributes {
+				f.json.featureAsAttributeJSON(w, r, collectionID, feat, url)
+			} else {
+				f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
+			}
 		case engine.FormatJSONFG:
 			f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
 		default:

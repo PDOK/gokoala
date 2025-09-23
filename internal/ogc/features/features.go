@@ -16,7 +16,7 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
-var errNoGeospatialItems = errors.New("bbox is not supported for this collection since it does not " +
+var errBboxRequestDisallowed = errors.New("bbox is not supported for this collection since it does not " +
 	"contain geospatial items (features), only non-geospatial items (attributes)")
 
 var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
@@ -55,9 +55,9 @@ func (f *Features) Features() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		supportsGeom := datasource.SupportsGeospatialQueries(collectionID)
-		if isSpatialQueryOnNonSpatialData(bbox, supportsGeom) {
-			engine.RenderProblem(engine.ProblemBadRequest, w, errNoGeospatialItems.Error())
+		collectionType := datasource.GetCollectionType(collectionID)
+		if !collectionType.IsSpatialRequestAllowed(bbox) {
+			engine.RenderProblem(engine.ProblemBadRequest, w, errBboxRequestDisallowed.Error())
 			return
 		}
 		// validation completed, now get the features
@@ -113,7 +113,11 @@ func (f *Features) Features() http.HandlerFunc {
 			f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
 				propertyFilters, f.configuredPropertyFilters[collectionID], fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
+			if collectionType == domain.Attributes {
+				f.json.featuresAsAttributeJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
+			} else {
+				f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
+			}
 		case engine.FormatJSONFG:
 			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, collection.Features, fc, contentCrs)
 		default:
@@ -121,10 +125,6 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 	}
-}
-
-func isSpatialQueryOnNonSpatialData(bbox *geom.Bounds, supportsGeom bool) bool {
-	return bbox != nil && !supportsGeom
 }
 
 func querySingleDatasource(datasource ds.Datasource, input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {

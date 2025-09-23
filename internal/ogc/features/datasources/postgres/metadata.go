@@ -60,13 +60,13 @@ func readFeatureTables(collections config.GeoSpatialCollections, db *pgxpool.Poo
 
 	query := `
 select
-	f_table_name::text, 'features', f_geometry_column::text, type::text
+	f_table_name::text, '%s', f_geometry_column::text, type::text
 from
 	geometry_columns
 where
 	f_table_schema = $1`
 
-	rows, err := db.Query(context.Background(), query, schemaName)
+	rows, err := db.Query(context.Background(), fmt.Sprintf(query, d.Features), schemaName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve geometry_columns using query: %v\n, error: %w", query, err)
 	}
@@ -78,7 +78,7 @@ where
 	result := make(map[string]*common.Table, 10)
 	for rows.Next() {
 		table := common.Table{}
-		if err = rows.Scan(&table.Name, &table.DataType, &table.GeometryColumnName, &table.GeometryType); err != nil {
+		if err = rows.Scan(&table.Name, &table.Type, &table.GeometryColumnName, &table.GeometryType); err != nil {
 			return nil, fmt.Errorf("failed to read geometry_columns record, error: %w", err)
 		}
 		if table.Name == "" {

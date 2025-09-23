@@ -83,7 +83,7 @@ from
 where
 	c.data_type = '%s' or c.data_type = '%s'`
 
-	rows, err := db.Queryx(fmt.Sprintf(query, common.Features, common.Attributes))
+	rows, err := db.Queryx(fmt.Sprintf(query, d.Features, d.Attributes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", query, err)
 	}
@@ -129,13 +129,13 @@ where
 
 func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
 	table := common.Table{}
-	if err := rows.Scan(&table.Name, &table.DataType, &table.GeometryColumnName, &table.GeometryType); err != nil {
+	if err := rows.Scan(&table.Name, &table.Type, &table.GeometryColumnName, &table.GeometryType); err != nil {
 		return table, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
 	}
 	if table.Name == "" {
 		return table, errors.New("table name is blank")
 	}
-	if table.DataType == common.Features && (table.GeometryColumnName == "" || table.GeometryType == "") {
+	if table.Type == d.Features && (table.GeometryColumnName == "" || table.GeometryType == "") {
 		return table, errors.New("data type of table is 'features' but table has no geometry column")
 	}
 	return table, nil
