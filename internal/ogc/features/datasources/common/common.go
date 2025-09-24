@@ -29,7 +29,7 @@ type DatasourceCommon struct {
 	MaxDecimals       int
 	ForceUTC          bool
 
-	FeatureTableByCollectionID    map[string]*Table
+	TableByCollectionID           map[string]*Table
 	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
 }
@@ -37,7 +37,7 @@ type DatasourceCommon struct {
 // Table metadata about a table containing features or attributes in a data source
 type Table struct {
 	Name               string
-	Type               domain.CollectionType
+	Type               domain.DataType
 	GeometryColumnName string
 	GeometryType       string
 
@@ -60,16 +60,16 @@ func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
 	return dc.TransformOnTheFly
 }
 
-func (dc *DatasourceCommon) GetCollectionType(collection string) domain.CollectionType {
+func (dc *DatasourceCommon) GetType(collection string) domain.DataType {
 	table, _ := dc.CollectionToTable(collection)
 	return table.Type
 }
 
 func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error) {
-	table, ok := dc.FeatureTableByCollectionID[collection]
+	table, ok := dc.TableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"datasource, available in datasource: %v", collection, util.Keys(dc.FeatureTableByCollectionID))
+			"datasource, available in datasource: %v", collection, util.Keys(dc.TableByCollectionID))
 	}
 	return table, nil
 }

@@ -97,16 +97,16 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		return nil, errors.New("unknown GeoPackage config encountered")
 	}
 
-	g.FeatureTableByCollectionID, g.PropertyFiltersByCollectionID = readMetadata(
+	g.TableByCollectionID, g.PropertyFiltersByCollectionID = readMetadata(
 		g.backend.getDB(), collections, g.FidColumn, g.ExternalFidColumn)
 
-	if err := assertIndexesExist(collections, g.FeatureTableByCollectionID, g.backend.getDB(), g.FidColumn); err != nil {
+	if err := assertIndexesExist(collections, g.TableByCollectionID, g.backend.getDB(), g.FidColumn); err != nil {
 		return nil, err
 	}
 	if warmUp {
 		// perform warmup async since it can take a long time
 		go func() {
-			if err := warmUpFeatureTables(collections, g.FeatureTableByCollectionID, g.backend.getDB()); err != nil {
+			if err := warmUpFeatureTables(collections, g.TableByCollectionID, g.backend.getDB()); err != nil {
 				log.Fatal(err)
 			}
 		}()

@@ -18,7 +18,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the GeoPackage. Terminates on failure.
 func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColumn, externalFidColumn string) (
-	featureTableByCollectionID map[string]*common.Table,
+	tableByCollectionID map[string]*common.Table,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
 	metadata, err := readDriverMetadata(db)
@@ -27,11 +27,11 @@ func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColu
 	}
 	log.Println(metadata)
 
-	featureTableByCollectionID, err = readGeoPackageTables(collections, db, fidColumn, externalFidColumn)
+	tableByCollectionID, err = readGeoPackageTables(collections, db, fidColumn, externalFidColumn)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,12 +77,13 @@ func readGeoPackageTables(collections config.GeoSpatialCollections, db *sqlx.DB,
 
 	query := `
 select
-	c.table_name, c.data_type, gc.column_name, gc.geometry_type_name
+	c.table_name, c.data_type, coalesce(gc.column_name, ''), coalesce(gc.geometry_type_name, '')
 from
 	gpkg_contents c left join gpkg_geometry_columns gc on c.table_name == gc.table_name
 where
 	c.data_type = '%s' or c.data_type = '%s'`
 
+	// see https://docs.ogc.org/is/12-128r19/12-128r19.html#r14 for supported data types in GeoPackages.
 	rows, err := db.Queryx(fmt.Sprintf(query, d.Features, d.Attributes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", query, err)
@@ -136,7 +137,7 @@ func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
 		return table, errors.New("table name is blank")
 	}
 	if table.Type == d.Features && (table.GeometryColumnName == "" || table.GeometryType == "") {
-		return table, errors.New("data type of table is 'features' but table has no geometry column")
+		return table, errors.New("data type of table is 'features' but table has no geometry defined")
 	}
 	return table, nil
 }

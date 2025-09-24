@@ -45,7 +45,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		collectionType := datasource.GetCollectionType(collectionID)
+		collectionType := datasource.GetType(collectionID)
 
 		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID,
 			outputSRID, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)

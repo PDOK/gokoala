@@ -14,9 +14,9 @@ import (
 // assertIndexesExist asserts required indexes in Postgres exists
 //
 //nolint:nestif
-func assertIndexesExist(configuredCollections config.GeoSpatialCollections, featureTableByCollectionID map[string]*common.Table, db *pgxpool.Pool, spatialIndexRequired bool) error {
+func assertIndexesExist(configuredCollections config.GeoSpatialCollections, tableByCollectionID map[string]*common.Table, db *pgxpool.Pool, spatialIndexRequired bool) error {
 
-	for collID, table := range featureTableByCollectionID {
+	for collID, table := range tableByCollectionID {
 		if table == nil {
 			return errors.New("given table can't be nil")
 		}

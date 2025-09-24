@@ -19,7 +19,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the Postgres database. Terminates on failure.
 func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fidColumn, externalFidColumn, schemaName string) (
-	featureTableByCollectionID map[string]*common.Table,
+	tableByCollectionID map[string]*common.Table,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
 	metadata, err := readDriverMetadata(db)
@@ -28,11 +28,11 @@ func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fi
 	}
 	log.Println(metadata)
 
-	featureTableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
+	tableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
