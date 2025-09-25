@@ -18,7 +18,7 @@ describe('OGC API Features tests', () => {
     })
   })
 
-  it('collection page should have no broken links', () => {
+  it('features page should have no broken links', () => {
     cy.visit('/collections/addresses/items')
     cy.checkForBrokenLinks()
   })
@@ -38,6 +38,21 @@ describe('OGC API Features tests', () => {
 
   it('feature page should have no broken links', () => {
     cy.visit('/collections/addresses/items/4285720b-1a60-50ce-b5fd-fc1c381bda0b')
+    cy.checkForBrokenLinks()
+  })
+
+  it('schema page should have no a11y violations', () => {
+    cy.visit('/collections/addresses/schema')
+    cy.injectAxe()
+    cy.checkA11y()
+  })
+
+  it('schema page should have valid HTML', () => {
+    cy.visit('/collections/addresses/schema')
+  })
+
+  it('schema page should have no broken links', () => {
+    cy.visit('/collections/addresses/schema')
     cy.checkForBrokenLinks()
   })
 })
