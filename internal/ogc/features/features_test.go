@@ -875,7 +875,7 @@ func TestFeatures(t *testing.T) {
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_attributes.yaml",
 				},
-				url:          "http://localhost:8080/collections/road_extras/items",
+				url:          "http://localhost:8080/collections/:collectionId/items",
 				collectionID: "road_extras",
 				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
@@ -883,6 +883,38 @@ func TestFeatures(t *testing.T) {
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_attributes.json",
 				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Fail on request for non-spatial data (Attribute JSON) with bbox spatial filter",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?bbox=4.86958187578342017%2C53.07965667574639212%2C4.88167082216529113%2C53.09197323827352477&cursor=Wl8%7C9YRHSw&f=json&limit=10",
+				collectionID: "road_extras",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Fail on request for non-spatial data (Attribute JSON) in geo format (e.g JSON-FG)",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=jsonfg",
+				collectionID: "road_extras",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotAcceptable,
 			},
 		},
 	}
