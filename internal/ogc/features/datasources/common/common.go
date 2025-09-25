@@ -60,7 +60,7 @@ func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
 	return dc.TransformOnTheFly
 }
 
-func (dc *DatasourceCommon) GetType(collection string) domain.DataType {
+func (dc *DatasourceCommon) GetCollectionType(collection string) domain.DataType {
 	table, _ := dc.CollectionToTable(collection)
 	return table.Type
 }

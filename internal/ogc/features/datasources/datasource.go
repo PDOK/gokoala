@@ -33,11 +33,11 @@ type Datasource interface {
 	// When enrichments don't apply, the returned result should still contain all property filters as specified in the (YAML) config.
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
 
+	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
+	GetCollectionType(collection string) domain.DataType
+
 	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
 	SupportsOnTheFlyTransformation() bool
-
-	// GetType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
-	GetType(collection string) domain.DataType
 
 	// Close closes (connections to) the datasource gracefully
 	Close()

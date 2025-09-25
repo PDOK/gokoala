@@ -16,7 +16,7 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
-var errBboxRequestDisallowed = errors.New("bbox is not supported for this collection since it does not " +
+var errBBoxRequestDisallowed = errors.New("bbox is not supported for this collection since it does not " +
 	"contain geospatial items (features), only non-geospatial items (attributes)")
 
 var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
@@ -56,9 +56,9 @@ func (f *Features) Features() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
-		collectionType := datasource.GetType(collection.ID)
+		collectionType := datasource.GetCollectionType(collection.ID)
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
-			engine.RenderProblem(engine.ProblemBadRequest, w, errBboxRequestDisallowed.Error())
+			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
 			return
 		}
 
@@ -70,22 +70,33 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 
+		// render output
 		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
-		case engine.FormatHTML:
-			f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.configuredPropertyFilters[collection.ID], fc)
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			if collectionType == domain.Attributes {
-				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, fc)
-			} else {
+		switch collectionType {
+		case domain.Features:
+			switch format {
+			case engine.FormatHTML:
+				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
+					propertyFilters, f.configuredPropertyFilters[collection.ID], fc)
+			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, collection.Features, fc)
+			case engine.FormatJSONFG:
+				f.json.featuresAsJSONFG(w, r, collection.ID, newCursor, url, collection.Features, fc, contentCrs)
+			default:
+				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
+				return
 			}
-		case engine.FormatJSONFG:
-			f.json.featuresAsJSONFG(w, r, collection.ID, newCursor, url, collection.Features, fc, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-			return
+		case domain.Attributes:
+			switch format {
+			case engine.FormatHTML:
+				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
+					propertyFilters, f.configuredPropertyFilters[collection.ID], fc)
+			case engine.FormatJSON:
+				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, fc)
+			default:
+				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
+				return
+			}
 		}
 	}
 }
