@@ -77,7 +77,7 @@ func (f *Features) Features() http.HandlerFunc {
 				propertyFilters, f.configuredPropertyFilters[collection.ID], fc)
 		case engine.FormatGeoJSON, engine.FormatJSON:
 			if collectionType == domain.Attributes {
-				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, collection.Features, fc)
+				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, fc)
 			} else {
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, collection.Features, fc)
 			}

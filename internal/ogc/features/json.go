@@ -77,30 +77,47 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 
 // GeoJSON for non-spatial data ("attribute JSON").
 func (jf *jsonFeatures) featuresAsAttributeJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection) {
+	featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
 
-	fc.Timestamp = now().Format(time.RFC3339)
-	fc.Links = jf.createFeatureCollectionLinks(engine.FormatJSON, collectionID, cursor, featuresURL)
-
-	jf.createFeatureDownloadLinks(configuredFC, fc)
+	fgFC := domain.AttributeCollection{}
+	if len(fc.Features) == 0 {
+		fgFC.Features = make([]*domain.Attribute, 0)
+	} else {
+		for _, f := range fc.Features {
+			fgF := domain.Attribute{
+				ID:         f.ID,
+				Links:      f.Links,
+				Properties: f.Properties,
+			}
+			fgFC.Features = append(fgFC.Features, &fgF)
+		}
+	}
+	fgFC.NumberReturned = fc.NumberReturned
+	fgFC.Timestamp = now().Format(time.RFC3339)
+	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSON, collectionID, cursor, featuresURL)
 
 	if jf.validateResponse {
-		jf.serveAndValidateJSON(&fc, engine.MediaTypeJSON, r, w)
+		jf.serveAndValidateJSON(&fgFC, engine.MediaTypeJSON, r, w)
 	} else {
-		serveJSON(&fc, engine.MediaTypeJSON, w)
+		serveJSON(&fgFC, engine.MediaTypeJSON, w)
 	}
 }
 
 // GeoJSON for non-spatial data ("attribute JSON").
 func (jf *jsonFeatures) featureAsAttributeJSON(w http.ResponseWriter, r *http.Request, collectionID string,
-	feat *domain.Feature, url featureURL) {
+	f *domain.Feature, url featureURL) {
 
-	feat.Links = jf.createFeatureLinks(engine.FormatJSON, url, collectionID, feat.ID)
+	fgF := domain.Attribute{
+		ID:         f.ID,
+		Links:      f.Links,
+		Properties: f.Properties,
+	}
+	fgF.Links = jf.createFeatureLinks(engine.FormatJSON, url, collectionID, fgF.ID)
 
 	if jf.validateResponse {
-		jf.serveAndValidateJSON(&feat, engine.MediaTypeJSON, r, w)
+		jf.serveAndValidateJSON(&fgF, engine.MediaTypeJSON, r, w)
 	} else {
-		serveJSON(&feat, engine.MediaTypeJSON, w)
+		serveJSON(&fgF, engine.MediaTypeJSON, w)
 	}
 }
 
@@ -200,7 +217,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 	case engine.FormatJSON:
 		links = append(links, domain.Link{
 			Rel:   "self",
-			Title: "This document as JSON-FG",
+			Title: "This document as JSON",
 			Type:  engine.MediaTypeJSON,
 			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
 		})

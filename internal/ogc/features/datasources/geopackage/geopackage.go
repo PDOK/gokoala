@@ -422,6 +422,9 @@ func mapGpkgGeometry(columnValue any) (geom.T, error) {
 
 // selectGpkgGeometry GeoPackage specific way to select geometry and take axis order into account.
 func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.Table) string {
+	if table.GeometryColumnName == "" {
+		return ""
+	}
 	if axisOrder == d.AxisOrderYX {
 		// GeoPackage geometries are stored in WKB format and WKB is always XY.
 		// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing

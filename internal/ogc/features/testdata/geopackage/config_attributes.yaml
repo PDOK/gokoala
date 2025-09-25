@@ -1,31 +1,13 @@
 ---
 version: 1.0.0
-title: Attributes example
-# shortened title, used in breadcrumb path
-serviceIdentifier: ATT
-abstract: >-
-  This example demonstrates serving features (geospatial data) AND attributes (non-spatial data) from a single geopackage.
-# just a dummy picture, but you can put an actual thumbnail here
-thumbnail: old.png
-resources:
-  directory: ./examples/resources
-keywords:
-  - keyword1
-  - keyword2
-lastUpdated: "2023-09-08T12:00:00Z"
-license:
-  name: CC0 1.0
-  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
-support:
-  name: Example Support
-  email: support@example.com
-  url: https://support.example.com
+title: OGC API Features
+abstract: This example demonstrates serving features (geospatial data) AND attributes (non-spatial data) from a single geopackage.
 baseUrl: http://localhost:8080
-availableLanguages:
-  - nl
-  - en
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
 ogcApi:
-  # which OGC apis to enable. Possible values: tiles, styles, features, 3dgeovolumes
   features:
     validateResponses: false
     basemap: OSM
