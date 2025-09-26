@@ -10,6 +10,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
@@ -56,7 +57,7 @@ func (f *Features) Features() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
-		collectionType := datasource.GetCollectionType(collection.ID)
+		collectionType := f.collectionTypes[collection.ID]
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
 			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
 			return
@@ -73,11 +74,12 @@ func (f *Features) Features() http.HandlerFunc {
 		// render output
 		format := f.engine.CN.NegotiateFormat(r)
 		switch collectionType {
-		case domain.Features:
+		case geospatial.Features:
 			switch format {
 			case engine.FormatHTML:
 				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredPropertyFilters[collection.ID], fc)
+					propertyFilters, f.configuredPropertyFilters[collection.ID],
+					fc, collectionType.AvailableOutputFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, collection.Features, fc)
 			case engine.FormatJSONFG:
@@ -86,11 +88,12 @@ func (f *Features) Features() http.HandlerFunc {
 				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 				return
 			}
-		case domain.Attributes:
+		case geospatial.Attributes:
 			switch format {
 			case engine.FormatHTML:
 				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredPropertyFilters[collection.ID], fc)
+					propertyFilters, f.configuredPropertyFilters[collection.ID], fc,
+					collectionType.AvailableOutputFormats())
 			case engine.FormatJSON:
 				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, fc)
 			default:

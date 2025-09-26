@@ -77,22 +77,20 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
 	propertyFilters map[string]string,
 	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
-	fc *domain.FeatureCollection) {
+	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
 		featuresURL, limit, propertyFilters, configuredPropertyFilters)
 
 	hf.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
-		pageContent, breadcrumbs, engine.OutputFormatsFeatures)
+		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request,
-	collection config.GeoSpatialCollection, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string,
-	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
-	fc *domain.FeatureCollection) {
+func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.GeoSpatialCollection,
+	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
+	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
 		featuresURL, limit, propertyFilters, configuredPropertyFilters)
@@ -100,7 +98,7 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request,
 
 	hf.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
-		pageContent, breadcrumbs, engine.OutputFormatsDefault)
+		pageContent, breadcrumbs, outputFormats)
 }
 
 func (hf *htmlFeatures) toItemsPage(collection config.GeoSpatialCollection, referenceDate *time.Time,
@@ -150,24 +148,24 @@ func (hf *htmlFeatures) toItemsPage(collection config.GeoSpatialCollection, refe
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
-	collection config.GeoSpatialCollection, feat *domain.Feature) {
+	collection config.GeoSpatialCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 
 	hf.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(featureKey, hf.engine.CN.NegotiateLanguage(w, r)),
-		pageContent, breadcrumbs, engine.OutputFormatsFeatures)
+		pageContent, breadcrumbs, outputFormats)
 }
 
 func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request,
-	collection config.GeoSpatialCollection, feat *domain.Feature) {
+	collection config.GeoSpatialCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 	pageContent.ShowViewer = false // since items have no geometry
 
 	hf.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(featureKey, hf.engine.CN.NegotiateLanguage(w, r)),
-		pageContent, breadcrumbs, engine.OutputFormatsDefault)
+		pageContent, breadcrumbs, outputFormats)
 }
 
 func (hf *htmlFeatures) toItemPage(collection config.GeoSpatialCollection, feat *domain.Feature) ([]engine.Breadcrumb, *featurePage) {

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 
@@ -52,7 +53,7 @@ func assertIndexesExistsForTable(defaultSpatialBtreeColumns string, collection c
 
 	// assert spatial b-tree index exists, this index substitutes the r-tree when querying large bounding boxes
 	// if temporal columns are configured, they must be included in this index as well
-	if table.Type == d.Features {
+	if table.Type == geospatial.Features {
 		if err := assertIndexExists(table.Name, db, spatialBtreeColumns, true, false); err != nil {
 			return err
 		}

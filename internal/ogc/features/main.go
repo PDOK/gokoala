@@ -28,9 +28,14 @@ type Features struct {
 	configuredCollections     map[string]config.GeoSpatialCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 	schemas                   map[string]domain.Schema
+	collectionTypes           map[string]geospatial.CollectionType
 
 	html *htmlFeatures
 	json *jsonFeatures
+}
+
+func (f *Features) GetCollectionTypes() map[string]geospatial.CollectionType {
+	return f.collectionTypes
 }
 
 // NewFeatures Bootstraps OGC API Features logic
@@ -50,6 +55,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		configuredCollections:     configuredCollections,
 		configuredPropertyFilters: configuredPropertyFilters,
 		schemas:                   schemas,
+		collectionTypes:           determineCollectionTypes(datasources),
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}
@@ -148,6 +154,18 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 
 	log.Println("done determining axis order for all configured CRSs")
 	return order
+}
+
+func determineCollectionTypes(datasources map[datasourceKey]ds.Datasource) map[string]geospatial.CollectionType {
+	result := make(map[string]geospatial.CollectionType)
+	for key, datasource := range datasources {
+		collectionType, err := datasource.GetCollectionType(key.collectionID)
+		if err != nil {
+			continue
+		}
+		result[key.collectionID] = collectionType
+	}
+	return result
 }
 
 func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {

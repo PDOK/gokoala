@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -61,11 +61,12 @@ func (f *Features) Feature() http.HandlerFunc {
 
 		// render output
 		format := f.engine.CN.NegotiateFormat(r)
-		switch datasource.GetCollectionType(collection.ID) {
-		case domain.Features:
+		collectionType := f.collectionTypes[collection.ID]
+		switch collectionType {
+		case geospatial.Features:
 			switch format {
 			case engine.FormatHTML:
-				f.html.feature(w, r, collection, feat)
+				f.html.feature(w, r, collection, feat, collectionType.AvailableOutputFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
 			case engine.FormatJSONFG:
@@ -74,10 +75,10 @@ func (f *Features) Feature() http.HandlerFunc {
 				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 				return
 			}
-		case domain.Attributes:
+		case geospatial.Attributes:
 			switch format {
 			case engine.FormatHTML:
-				f.html.attribute(w, r, collection, feat)
+				f.html.attribute(w, r, collection, feat, collectionType.AvailableOutputFormats())
 			case engine.FormatJSON:
 				f.json.featureAsAttributeJSON(w, r, collectionID, feat, url)
 			default:

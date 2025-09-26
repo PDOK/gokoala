@@ -71,15 +71,7 @@ type OutputFormat struct {
 	Value string
 }
 
-var (
-	OutputFormatsDefault = []OutputFormat{
-		{Key: FormatJSON, Value: "JSON"},
-	}
-	OutputFormatsFeatures = []OutputFormat{
-		{Key: FormatJSON, Value: "GeoJSON"},
-		{Key: FormatJSONFG, Value: "JSON-FG"},
-	}
-)
+var OutputFormatDefault = []OutputFormat{{Key: FormatJSON, Value: "JSON"}}
 
 var StyleFormatExtension = map[string]string{
 	FormatMapboxStyle: ".json",

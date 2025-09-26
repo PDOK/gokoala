@@ -68,11 +68,6 @@ type TemplateData struct {
 	url *url.URL
 }
 
-// AvailableFormatsFeatures convenience function
-func (td *TemplateData) AvailableFormatsFeatures() []OutputFormat {
-	return OutputFormatsFeatures
-}
-
 // QueryString returns ?=foo=a&bar=b style query string of the current page
 func (td *TemplateData) QueryString(format string) string {
 	if td.url != nil {
@@ -194,7 +189,7 @@ func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcr
 		var result []byte
 		if key.Format == FormatHTML {
 			file, parsed := t.parseHTMLTemplate(key, lang)
-			result = t.renderHTMLTemplate(parsed, nil, params, breadcrumbs, file, OutputFormatsDefault)
+			result = t.renderHTMLTemplate(parsed, nil, params, breadcrumbs, file, OutputFormatDefault)
 		} else {
 			file, parsed := t.parseNonHTMLTemplate(key, lang)
 			result = t.renderNonHTMLTemplate(parsed, params, key, file)

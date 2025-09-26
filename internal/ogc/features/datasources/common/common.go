@@ -9,6 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
@@ -37,7 +38,7 @@ type DatasourceCommon struct {
 // Table metadata about a table containing features or attributes in a data source
 type Table struct {
 	Name               string
-	Type               domain.DataType
+	Type               geospatial.CollectionType
 	GeometryColumnName string
 	GeometryType       string
 
@@ -60,9 +61,12 @@ func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
 	return dc.TransformOnTheFly
 }
 
-func (dc *DatasourceCommon) GetCollectionType(collection string) domain.DataType {
-	table, _ := dc.CollectionToTable(collection)
-	return table.Type
+func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.CollectionType, error) {
+	table, err := dc.CollectionToTable(collection)
+	if err != nil {
+		return "", err
+	}
+	return table.Type, nil
 }
 
 func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error) {

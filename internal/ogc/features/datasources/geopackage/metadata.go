@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -84,7 +85,7 @@ where
 	c.data_type = '%s' or c.data_type = '%s'`
 
 	// see https://docs.ogc.org/is/12-128r19/12-128r19.html#r14 for supported data types in GeoPackages.
-	rows, err := db.Queryx(fmt.Sprintf(query, d.Features, d.Attributes))
+	rows, err := db.Queryx(fmt.Sprintf(query, geospatial.Features, geospatial.Attributes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", query, err)
 	}
@@ -136,7 +137,7 @@ func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
 	if table.Name == "" {
 		return table, errors.New("table name is blank")
 	}
-	if table.Type == d.Features && (table.GeometryColumnName == "" || table.GeometryType == "") {
+	if table.Type == geospatial.Features && (table.GeometryColumnName == "" || table.GeometryType == "") {
 		return table, errors.New("data type of table is 'features' but table has no geometry defined")
 	}
 	return table, nil

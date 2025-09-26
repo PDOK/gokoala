@@ -3,6 +3,7 @@ package geospatial
 import (
 	"net/http"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/go-chi/chi/v5"
 )
@@ -16,9 +17,14 @@ type Collections struct {
 	engine *engine.Engine
 }
 
+type CollectionWithType struct {
+	Collection config.GeoSpatialCollection
+	Type       CollectionType
+}
+
 // NewCollections enables support for OGC APIs that organize data in the concept of collections.
 // A collection, also known as a geospatial data resource, is a common way to organize data in various OGC APIs.
-func NewCollections(e *engine.Engine) *Collections {
+func NewCollections(e *engine.Engine, collectionTypes map[string]CollectionType) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
 			{
@@ -43,9 +49,10 @@ func NewCollections(e *engine.Engine) *Collections {
 					Path: "collections/" + coll.ID,
 				},
 			}...)
-			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, coll, nil,
+			collWithType := CollectionWithType{coll, collectionTypes[coll.ID]}
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.ID)))
-			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, coll, collectionBreadcrumbs,
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, collectionBreadcrumbs,
 				engine.NewTemplateKey(templatesDir+"collection.go.html", engine.WithInstanceName(coll.ID)))
 		}
 	}

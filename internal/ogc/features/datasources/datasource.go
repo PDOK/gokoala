@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
 )
@@ -34,7 +35,7 @@ type Datasource interface {
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
 
 	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
-	GetCollectionType(collection string) domain.DataType
+	GetCollectionType(collection string) (geospatial.CollectionType, error)
 
 	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
 	SupportsOnTheFlyTransformation() bool

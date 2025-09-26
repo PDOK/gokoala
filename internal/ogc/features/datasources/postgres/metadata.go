@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -66,7 +67,7 @@ from
 where
 	f_table_schema = $1`
 
-	rows, err := db.Query(context.Background(), fmt.Sprintf(query, d.Features), schemaName)
+	rows, err := db.Query(context.Background(), fmt.Sprintf(query, geospatial.Features), schemaName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve geometry_columns using query: %v\n, error: %w", query, err)
 	}
