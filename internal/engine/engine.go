@@ -207,7 +207,7 @@ func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Bread
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a datastore),
 // otherwise use ServePage for pre-rendered pages.
 func (e *Engine) RenderAndServe(w http.ResponseWriter, r *http.Request, key TemplateKey,
-	params any, breadcrumbs []Breadcrumb) {
+	params any, breadcrumbs []Breadcrumb, availableOutputFormats []OutputFormat) {
 
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
@@ -227,7 +227,7 @@ func (e *Engine) RenderAndServe(w http.ResponseWriter, r *http.Request, key Temp
 	var output []byte
 	if key.Format == FormatHTML {
 		htmlTmpl := parsedTemplate.(*htmltemplate.Template)
-		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "")
+		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "", availableOutputFormats)
 	} else {
 		jsonTmpl := parsedTemplate.(*texttemplate.Template)
 		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")

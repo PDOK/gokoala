@@ -156,6 +156,7 @@
     </div>
 
     <!-- map viewer -->
+    {{ if .Params.ShowViewer }}
     <div class="col-md-6 col-sm-12">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="module" src="view-component/main.js"></script>
@@ -238,6 +239,8 @@
         </script>
         <noscript>Enable Javascript to view features on a map</noscript>
     </div>
+    {{ end }}
+
 </section>
 
 <section class="row">

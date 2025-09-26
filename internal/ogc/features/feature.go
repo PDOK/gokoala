@@ -77,7 +77,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		case domain.Attributes:
 			switch format {
 			case engine.FormatHTML:
-				f.html.feature(w, r, collection, feat)
+				f.html.attribute(w, r, collection, feat)
 			case engine.FormatJSON:
 				f.json.featureAsAttributeJSON(w, r, collectionID, feat, url)
 			default:

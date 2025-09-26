@@ -48,8 +48,6 @@ var (
 		MediaTypeJSONFG,
 		MediaTypeJSONSchema,
 	}
-	OutputFormatDefault    = map[string]string{FormatJSON: "JSON"}
-	OutputFormatFeatures   = map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
 	CompressibleMediaTypes = []string{
 		MediaTypeJSON,
 		MediaTypeGeoJSON,
@@ -66,11 +64,27 @@ var (
 		"application/javascript",
 		"image/svg+xml",
 	}
-	StyleFormatExtension = map[string]string{
-		FormatMapboxStyle: ".json",
-		FormatSLD:         ".sld",
+)
+
+type OutputFormat struct {
+	Key   string
+	Value string
+}
+
+var (
+	OutputFormatsDefault = []OutputFormat{
+		{Key: FormatJSON, Value: "JSON"},
+	}
+	OutputFormatsFeatures = []OutputFormat{
+		{Key: FormatJSON, Value: "GeoJSON"},
+		{Key: FormatJSONFG, Value: "JSON-FG"},
 	}
 )
+
+var StyleFormatExtension = map[string]string{
+	FormatMapboxStyle: ".json",
+	FormatSLD:         ".sld",
+}
 
 type ContentNegotiation struct {
 	availableMediaTypes []contenttype.MediaType
