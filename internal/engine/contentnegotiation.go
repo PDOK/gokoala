@@ -64,20 +64,25 @@ var (
 		"application/javascript",
 		"image/svg+xml",
 	}
+
+	OutputFormatDefault = []OutputFormat{
+		{Key: FormatJSON, Name: "JSON"},
+	}
+
+	StyleFormatExtension = map[string]string{
+		FormatMapboxStyle: ".json",
+		FormatSLD:         ".sld",
+	}
 )
 
+// OutputFormat formats that can be returned by the API.
 type OutputFormat struct {
-	Key   string
-	Value string
+	Key  string
+	Name string
 }
 
-var OutputFormatDefault = []OutputFormat{{Key: FormatJSON, Value: "JSON"}}
-
-var StyleFormatExtension = map[string]string{
-	FormatMapboxStyle: ".json",
-	FormatSLD:         ".sld",
-}
-
+// ContentNegotiation handles HTTP content negotiation.
+// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Content_negotiation
 type ContentNegotiation struct {
 	availableMediaTypes []contenttype.MediaType
 	availableLanguages  []language.Tag

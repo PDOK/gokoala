@@ -35,7 +35,8 @@ func (f *Features) Schema() http.HandlerFunc {
 		}
 
 		var key engine.TemplateKey
-		switch f.engine.CN.NegotiateFormat(r) {
+		format := f.engine.CN.NegotiateFormat(r)
+		switch format {
 		case engine.FormatHTML:
 			key = engine.NewTemplateKey(schemaHTML,
 				engine.WithInstanceName(collection.ID),
@@ -46,7 +47,7 @@ func (f *Features) Schema() http.HandlerFunc {
 				f.engine.WithNegotiatedLanguage(w, r),
 				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema)) // JSON format, but specific mediatype.
 		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, "format is not supported")
+			handleFormatNotSupported(w, format)
 			return
 		}
 		f.engine.Serve(w, r, engine.ServeTemplate(key))

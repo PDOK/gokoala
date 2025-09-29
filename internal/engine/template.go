@@ -209,7 +209,7 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 	return file, parsed
 }
 func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
-	params any, breadcrumbs []Breadcrumb, file string, availableOutputFormats []OutputFormat) []byte {
+	params any, breadcrumbs []Breadcrumb, file string, availableFormats []OutputFormat) []byte {
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{
@@ -217,7 +217,7 @@ func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.U
 		Theme:            t.Theme,
 		Params:           params,
 		Breadcrumbs:      breadcrumbs,
-		AvailableFormats: availableOutputFormats,
+		AvailableFormats: availableFormats,
 		url:              url,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)

@@ -127,7 +127,7 @@
                         {{ end }}
                         {{ range $availableFormat := .AvailableFormats }}
                             <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}{{ $.QueryString $availableFormat.Key }}" target="_blank"
-                                                           aria-label="{{ i18n "SwitchFormat" }} {{ $availableFormat.Value }}" id="format-{{ $availableFormat.Key }}">{{ $availableFormat.Value }}</a></li>
+                                                           aria-label="{{ i18n "SwitchFormat" }} {{ $availableFormat.Name }}" id="format-{{ $availableFormat.Key }}">{{ $availableFormat.Name }}</a></li>
                         {{ end }}
                     </ol>
                 </nav>

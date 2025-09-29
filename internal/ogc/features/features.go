@@ -3,7 +3,6 @@ package features
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -22,10 +21,10 @@ var errBBoxRequestDisallowed = errors.New("bbox is not supported for this collec
 
 var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 
-// Features endpoint serves a FeatureCollection with the given collectionId
+// Features this endpoint serves a FeatureCollection with the given collectionId
 //
-// Beware: this is one of the most performance-sensitive pieces of code in the system.
-// Try to do as much initialization work outside the hot path, and only do essential
+// BEWARE: this is one of the most performance-sensitive pieces of code in the system.
+// Try to do as much initialization work outside the hot path, only do essential
 // operations inside this method.
 func (f *Features) Features() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -79,26 +78,24 @@ func (f *Features) Features() http.HandlerFunc {
 			case engine.FormatHTML:
 				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
 					propertyFilters, f.configuredPropertyFilters[collection.ID],
-					fc, collectionType.AvailableOutputFormats())
+					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, collection.Features, fc)
 			case engine.FormatJSONFG:
 				f.json.featuresAsJSONFG(w, r, collection.ID, newCursor, url, collection.Features, fc, contentCrs)
 			default:
-				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-				return
+				handleFormatNotSupported(w, format)
 			}
 		case geospatial.Attributes:
 			switch format {
 			case engine.FormatHTML:
 				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredPropertyFilters[collection.ID], fc,
-					collectionType.AvailableOutputFormats())
+					propertyFilters, f.configuredPropertyFilters[collection.ID],
+					fc, collectionType.AvailableFormats())
 			case engine.FormatJSON:
 				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, fc)
 			default:
-				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-				return
+				handleFormatNotSupported(w, format)
 			}
 		}
 	}

@@ -66,24 +66,22 @@ func (f *Features) Feature() http.HandlerFunc {
 		case geospatial.Features:
 			switch format {
 			case engine.FormatHTML:
-				f.html.feature(w, r, collection, feat, collectionType.AvailableOutputFormats())
+				f.html.feature(w, r, collection, feat, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
 			case engine.FormatJSONFG:
 				f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
 			default:
-				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-				return
+				handleFormatNotSupported(w, format)
 			}
 		case geospatial.Attributes:
 			switch format {
 			case engine.FormatHTML:
-				f.html.attribute(w, r, collection, feat, collectionType.AvailableOutputFormats())
+				f.html.attribute(w, r, collection, feat, collectionType.AvailableFormats())
 			case engine.FormatJSON:
 				f.json.featureAsAttributeJSON(w, r, collectionID, feat, url)
 			default:
-				engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-				return
+				handleFormatNotSupported(w, format)
 			}
 		}
 	}

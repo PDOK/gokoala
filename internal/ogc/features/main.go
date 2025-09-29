@@ -27,8 +27,8 @@ type Features struct {
 	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredCollections     map[string]config.GeoSpatialCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
-	schemas                   map[string]domain.Schema
 	collectionTypes           map[string]geospatial.CollectionType
+	schemas                   map[string]domain.Schema
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -54,8 +54,8 @@ func NewFeatures(e *engine.Engine) *Features {
 		axisOrderBySRID:           axisOrderBySRID,
 		configuredCollections:     configuredCollections,
 		configuredPropertyFilters: configuredPropertyFilters,
-		schemas:                   schemas,
 		collectionTypes:           determineCollectionTypes(datasources),
+		schemas:                   schemas,
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}
@@ -330,4 +330,10 @@ func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
 	log.Println(msg)
 	engine.RenderProblem(engine.ProblemNotFound, w, msg)
+}
+
+func handleFormatNotSupported(w http.ResponseWriter, format string) {
+	msg := fmt.Sprintf("format %s is not supported", format)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotAcceptable, w, msg)
 }

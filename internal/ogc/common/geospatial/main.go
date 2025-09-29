@@ -24,7 +24,7 @@ type CollectionWithType struct {
 
 // NewCollections enables support for OGC APIs that organize data in the concept of collections.
 // A collection, also known as a geospatial data resource, is a common way to organize data in various OGC APIs.
-func NewCollections(e *engine.Engine, collectionTypes map[string]CollectionType) *Collections {
+func NewCollections(e *engine.Engine, types map[string]CollectionType) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
 			{
@@ -49,7 +49,7 @@ func NewCollections(e *engine.Engine, collectionTypes map[string]CollectionType)
 					Path: "collections/" + coll.ID,
 				},
 			}...)
-			collWithType := CollectionWithType{coll, collectionTypes[coll.ID]}
+			collWithType := CollectionWithType{coll, types[coll.ID]}
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.ID)))
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, collectionBreadcrumbs,
@@ -78,7 +78,7 @@ func (c *Collections) Collections() http.HandlerFunc {
 // Collection provides METADATA about a specific collection. To get the CONTENTS of a collection each OGC API
 // building block must provide a separate/specific endpoint.
 //
-// For example in:
+// For example, in:
 // - OGC API Features you would have: /collections/{collectionId}/items
 // - OGC API Tiles could have: /collections/{collectionId}/tiles
 // - OGC API Maps could have: /collections/{collectionId}/map
