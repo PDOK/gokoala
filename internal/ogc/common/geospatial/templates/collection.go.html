@@ -167,6 +167,7 @@
 
     {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
         {{ if .Config.OgcAPI.Features.Collections.ContainsID .Params.Collection.ID }}
+            {{ if eq $.Params.Type "features" }}
             <div class="col-md-4 col-sm-12">
                 <div class="card h-100">
                     <h2 class="card-header h5">
@@ -174,7 +175,7 @@
                     </h2>
                     <div class="card-body">
                         <p>
-                            {{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items" aria-label="{{ i18n "Browse" }} Features">Features</a> {{ i18n "BrowseSuffix" }}:
+                            {{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items" aria-label="{{ i18n "Browse" }} Features">Features</a> {{ i18n "BrowseFeaturesSuffix" }}:
                         </p>
                         <p>
                             <ul>
@@ -194,16 +195,33 @@
                             </ul>
                         </p>
                         <p>
-                            {{ i18n "BrowseSchema" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.Collection.ID }}/schema">Schema</a> {{ i18n "BrowseSchemaSuffix" }}.
+                            {{ i18n "BrowseSchema" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.Collection.ID }}/schema">Schema</a> {{ i18n "BrowseSchemaFeaturesSuffix" }}.
                         </p>
-                        {{ if eq $.Params.Type "features" }}
                         <div class="alert alert-primary" role="alert">
                             <small>{{ i18n "FeaturesExplanation" }}</small>
                         </div>
-                        {{ end }}
                     </div>
                 </div>
             </div>
+            {{ end }}
+
+            {{ if eq $.Params.Type "attributes" }}
+            <div class="col-md-4 col-sm-12">
+                <div class="card h-100">
+                    <h2 class="card-header h5">
+                        <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items" aria-label="{{ i18n "Browse" }} Attributes">Attributes</a>
+                    </h2>
+                    <div class="card-body">
+                        <p>
+                            {{ i18n "Browse" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items" aria-label="{{ i18n "Browse" }} Attributes">Attributes</a>. {{ i18n "BrowseAttributesSuffix" }}.
+                        </p>
+                        <p>
+                            {{ i18n "BrowseSchema" }} <a href="{{ $.Config.BaseURL }}/collections/{{ $.Params.Collection.ID }}/schema">Schema</a> {{ i18n "BrowseSchemaAttributesSuffix" }}.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {{ end }}
         {{ end }}
     {{ end }}
 
