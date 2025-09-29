@@ -17,7 +17,17 @@ type Collections struct {
 	engine *engine.Engine
 }
 
-type CollectionWithType struct {
+// Wrapper around map[k]v to make it easier to access in the "collectionS" template
+type collectionTypes struct {
+	types map[string]CollectionType
+}
+
+func (cts collectionTypes) ForCollection(collection string) CollectionType {
+	return cts.types[collection]
+}
+
+// Wrapper around collection+type to make it easier to access in the "collection" template
+type collectionWithType struct {
 	Collection config.GeoSpatialCollection
 	Type       CollectionType
 }
@@ -32,7 +42,8 @@ func NewCollections(e *engine.Engine, types map[string]CollectionType) *Collecti
 				Path: "collections",
 			},
 		}
-		e.RenderTemplates(CollectionsPath,
+		e.RenderTemplatesWithParams(CollectionsPath,
+			collectionTypes{types},
 			collectionsBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
@@ -49,7 +60,7 @@ func NewCollections(e *engine.Engine, types map[string]CollectionType) *Collecti
 					Path: "collections/" + coll.ID,
 				},
 			}...)
-			collWithType := CollectionWithType{coll, types[coll.ID]}
+			collWithType := collectionWithType{coll, types[coll.ID]}
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.ID)))
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, collectionBreadcrumbs,
