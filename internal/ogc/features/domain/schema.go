@@ -90,22 +90,25 @@ func NewSchema(fields []Field, fidColumn, externalFidColumn string) (*Schema, er
 	if externalFidColumn != "" && !schema.HasExternalFid() {
 		return nil, fmt.Errorf("external feature ID column '%s' configured but not found in schema", externalFidColumn)
 	}
+
 	return schema, nil
 }
 
-// IsDate convenience function to check if the given field is a Date
+// IsDate convenience function to check if the given field is a Date.
 func (s Schema) IsDate(field string) bool {
 	f := s.findField(field)
+
 	return f.ToTypeFormat().Format == formatDateOnly
 }
 
-// HasExternalFid convenience function to check if this schema defines an external feature ID
+// HasExternalFid convenience function to check if this schema defines an external feature ID.
 func (s Schema) HasExternalFid() bool {
 	for _, field := range s.Fields {
 		if field.IsExternalFid {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -115,6 +118,7 @@ func (s Schema) findField(name string) Field {
 			return f
 		}
 	}
+
 	return Field{}
 }
 
@@ -124,6 +128,7 @@ func (s Schema) findFeatureRelation(name string) *FeatureRelation {
 			return field.FeatureRelation
 		}
 	}
+
 	return nil
 }
 
@@ -197,6 +202,7 @@ func (f Field) ToTypeFormat() TypeFormat {
 			}
 		}
 		log.Printf("Warning: unknown data type '%s' for field '%s', falling back to string", f.Type, f.Name)
+
 		return TypeFormat{Type: "string"}
 	}
 }
@@ -206,5 +212,6 @@ func prefixBeforeParenthesis(s string) string {
 	if idx != -1 {
 		return s[:idx]
 	}
+
 	return s
 }

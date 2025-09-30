@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -96,7 +97,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			core := NewCommonCore(newEngine, ExtraConformanceClasses{false})
 			handler := core.LandingPage()
 			handler.ServeHTTP(rr, req)
@@ -181,7 +182,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			core := NewCommonCore(newEngine, ExtraConformanceClasses{tt.fields.supportsAttributes})
 			handler := core.Conformance()
 			handler.ServeHTTP(rr, req)
@@ -239,7 +240,7 @@ func TestCommonCore_API(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			core := NewCommonCore(newEngine, ExtraConformanceClasses{false})
 			handler := core.API()
 			handler.ServeHTTP(rr, req)
@@ -262,6 +263,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	defer ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 
@@ -270,5 +272,6 @@ func createRequest(url string) (*http.Request, error) {
 	rctx := chi.NewRouteContext()
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }

@@ -17,7 +17,7 @@ const (
 	EPSGPrefix   = "EPSG:"
 )
 
-// AxisOrder the order of axis for a certain CRS
+// AxisOrder the order of axis for a certain CRS.
 type AxisOrder int
 
 const (
@@ -34,6 +34,7 @@ func (s SRID) GetOrDefault() int {
 	if val <= 0 {
 		return WGS84SRID
 	}
+
 	return val
 }
 
@@ -46,13 +47,14 @@ func EpsgToSrid(srs string) (SRID, error) {
 	if err != nil {
 		return -1, fmt.Errorf("expected EPSG code to have numeric value, got %s", srsCode)
 	}
+
 	return SRID(srid), nil
 }
 
 // ContentCrs the coordinate reference system (represented as a URI) of the content/output to return.
 type ContentCrs string
 
-// ToLink returns link target conforming to RFC 8288
+// ToLink returns link target conforming to RFC 8288.
 func (c ContentCrs) ToLink() string {
 	return fmt.Sprintf("<%s>", c)
 }

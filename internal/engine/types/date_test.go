@@ -1,3 +1,4 @@
+// Package types package contains generic types
 package types
 
 import (
@@ -6,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewDate(t *testing.T) {
@@ -72,10 +74,11 @@ func TestDate_MarshalJSON(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
+
 				return
 			}
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.JSONEq(t, tt.expected, string(result))
 		})
 	}
@@ -145,10 +148,11 @@ func TestDate_UnmarshalJSON(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
+
 				return
 			}
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -208,10 +212,10 @@ func TestDate_JSONRoundTrip(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			jsonData, err := json.Marshal(tt.date)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			var result Date
 			err = json.Unmarshal(jsonData, &result)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			// For zero dates, both should be zero
 			if tt.date.time.IsZero() {
@@ -257,7 +261,7 @@ func TestDate_StructMarshaling(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := json.Marshal(tt.input)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.JSONEq(t, tt.expected, string(result))
 		})
 	}

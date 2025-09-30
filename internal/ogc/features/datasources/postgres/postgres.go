@@ -92,6 +92,7 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 	if err = assertIndexesExist(collections, pg.TableByCollectionID, db, *pgConfig.SpatialIndexRequired); err != nil {
 		return nil, err
 	}
+
 	return pg, nil
 }
 
@@ -145,6 +146,7 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 		return nil, d.Cursors{}, nil
 	}
 	fc.NumberReturned = len(fc.Features)
+
 	return &fc, d.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
@@ -166,6 +168,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 		if pg.ExternalFidColumn != "" {
 			// Features should be retrieved by UUID
 			log.Println("feature requested by int while external fid column is defined")
+
 			return nil, nil
 		}
 		fidColumn = pg.FidColumn
@@ -174,6 +177,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 		if pg.ExternalFidColumn == "" {
 			// Features should be retrieved by int64
 			log.Println("feature requested by UUID while external fid column is not defined")
+
 			return nil, nil
 		}
 		fidColumn = pg.ExternalFidColumn
@@ -210,6 +214,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	if len(features) != 1 {
 		return nil, nil
 	}
+
 	return features[0], queryCtx.Err()
 }
 
@@ -289,6 +294,7 @@ func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, m
 			"bboxSrid": bboxSRID,
 		}
 	}
+
 	return bboxFilter, bboxNamedParams, err
 }
 
@@ -299,6 +305,7 @@ func mapPostGISGeometry(columnValue any) (geom.T, error) {
 	if !ok {
 		return nil, errors.New("failed to convert column value to geometry")
 	}
+
 	return geometry, nil
 }
 
@@ -308,5 +315,6 @@ func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	if axisOrder == d.AxisOrderYX {
 		return fmt.Sprintf(", st_flipcoordinates(st_transform(\"%[1]s\", @outputSrid::int)) as \"%[1]s\"", table.GeometryColumnName)
 	}
+
 	return fmt.Sprintf(", st_transform(\"%[1]s\", @outputSrid::int) as \"%[1]s\"", table.GeometryColumnName)
 }

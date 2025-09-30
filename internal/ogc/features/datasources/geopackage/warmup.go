@@ -27,10 +27,12 @@ func warmUpFeatureTables(
 				if err := warmUpFeatureTable(table.Name, db); err != nil {
 					return err
 				}
+
 				break
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -45,5 +47,6 @@ select minx,maxx,miny,maxy from %[1]s where minx <= 0 and maxx >= 0 and miny <= 
 		return fmt.Errorf("failed to warm-up feature table '%s': %w", tableName, err)
 	}
 	log.Printf("end warm-up of feature table '%s'", tableName)
+
 	return nil
 }

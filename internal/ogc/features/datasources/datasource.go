@@ -44,7 +44,7 @@ type Datasource interface {
 	Close()
 }
 
-// FeaturesCriteria to select a certain set of Features
+// FeaturesCriteria to select a certain set of Features.
 type FeaturesCriteria struct {
 	// pagination (OAF part 1)
 	Cursor domain.DecodedCursor
@@ -68,7 +68,7 @@ type FeaturesCriteria struct {
 	FilterLang string
 }
 
-// TemporalCriteria criteria to filter based on date/time
+// TemporalCriteria criteria to filter based on date/time.
 type TemporalCriteria struct {
 	// reference date
 	ReferenceDate time.Time
@@ -78,7 +78,7 @@ type TemporalCriteria struct {
 	EndDateProperty   string
 }
 
-// PropertyFilterWithAllowedValues property filter as configured in the (YAML) config, but enriched with allowed values
+// PropertyFilterWithAllowedValues property filter as configured in the (YAML) config, but enriched with allowed values.
 type PropertyFilterWithAllowedValues struct {
 	config.PropertyFilter
 
@@ -86,5 +86,5 @@ type PropertyFilterWithAllowedValues struct {
 	AllowedValues []string
 }
 
-// PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name
+// PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name.
 type PropertyFiltersWithAllowedValues map[string]PropertyFilterWithAllowedValues

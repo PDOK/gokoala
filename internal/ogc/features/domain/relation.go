@@ -21,6 +21,7 @@ func NewFeatureRelation(name, externalFidColumn string, collectionNames []string
 		return nil
 	}
 	relationName := newFeatureRelationName(name, externalFidColumn)
+
 	return &FeatureRelation{
 		Name:         relationName,
 		CollectionID: findReferencedCollection(collectionNames, relationName),
@@ -34,6 +35,7 @@ func NewFeatureRelation(name, externalFidColumn string, collectionNames []string
 // This name will appear in the feature data (GeoJSON) and the schema (JSON-Schema) to represent the feature relation.
 func newFeatureRelationName(name string, externalFidColumn string) string {
 	regex, _ := regexp.Compile(regexRemoveSeparators + externalFidColumn + regexRemoveSeparators)
+
 	return regex.ReplaceAllString(name, "")
 }
 
@@ -48,6 +50,7 @@ func IsFeatureRelation(columnName string, externalFidColumn string) bool {
 	if externalFidColumn == "" || columnName == externalFidColumn {
 		return false
 	}
+
 	return strings.Contains(columnName, externalFidColumn)
 }
 
@@ -71,5 +74,6 @@ func findReferencedCollection(collectionNames []string, name string) string {
 		}
 	}
 	log.Printf("Warning: could not find collection for feature reference '%s'", name)
+
 	return ""
 }

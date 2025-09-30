@@ -24,5 +24,6 @@ func LowercaseID(fl validator.FieldLevel) bool {
 	if !valid {
 		log.Printf("Invalid ID %s", valAsString)
 	}
+
 	return valid
 }

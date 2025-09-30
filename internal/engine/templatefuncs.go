@@ -23,7 +23,7 @@ var (
 	linkRegex           = regexp.MustCompile(`^https?://\S+$`)
 )
 
-// Initialize functions to be used in html/json/etc templates
+// Initialize functions to be used in html/json/etc templates.
 func init() {
 	customFuncs := texttemplate.FuncMap{
 		// custom template functions (keep lowercase)
@@ -39,7 +39,7 @@ func init() {
 	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
 }
 
-// combine given FuncMaps
+// combine given FuncMaps.
 func combineFuncMaps(funcMaps ...map[string]any) map[string]any {
 	result := make(map[string]any)
 	for _, funcMap := range funcMaps {
@@ -47,10 +47,11 @@ func combineFuncMaps(funcMaps ...map[string]any) map[string]any {
 			result[k] = v
 		}
 	}
+
 	return result
 }
 
-// markdown turn Markdown into HTML
+// markdown turn Markdown into HTML.
 func markdown(s *string) htmltemplate.HTML {
 	if s == nil {
 		return ""
@@ -72,17 +73,18 @@ func markdown(s *string) htmltemplate.HTML {
 	return htmltemplate.HTML(gomarkdown.Render(doc, renderer)) //nolint:gosec
 }
 
-// unmarkdown remove Markdown, so we can use the given string in non-HTML (JSON) output
+// unmarkdown remove Markdown, so we can use the given string in non-HTML (JSON) output.
 func unmarkdown(s *string) string {
 	if s == nil {
 		return ""
 	}
 	withoutMarkdown := stripmd.Strip(*s)
 	withoutLinebreaks := strings.ReplaceAll(withoutMarkdown, "\n", " ")
+
 	return withoutLinebreaks
 }
 
-// truncateText truncate text to avoid overly long text on overview pages
+// truncateText truncate text to avoid overly long text on overview pages.
 func truncateText(s *string, limit int) *string {
 	if s == nil {
 		return s
@@ -91,12 +93,14 @@ func truncateText(s *string, limit int) *string {
 		// truncate at last space or newline before given character limit
 		cutoff := strings.LastIndexAny((*s)[:limit], " \n")
 		t := (*s)[:cutoff] + "..."
+
 		return &t
 	}
+
 	return s
 }
 
-// humanSize converts size in bytes to a human-readable size
+// humanSize converts size in bytes to a human-readable size.
 func humanSize(a any) string {
 	if i, ok := a.(int64); ok {
 		return units.HumanSize(float64(i))
@@ -109,31 +113,36 @@ func humanSize(a any) string {
 		}
 	}
 	log.Printf("cannot convert '%v' to float", a)
+
 	return "0"
 }
 
-// bytesSize converts human-readable size to size in bytes (base-10, not base-2)
+// bytesSize converts human-readable size to size in bytes (base-10, not base-2).
 func bytesSize(s string) int64 {
 	i, err := units.FromHumanSize(s)
 	if err != nil {
 		log.Printf("cannot convert '%s' to bytes", s)
+
 		return 0
 	}
+
 	return i
 }
 
-// isDate true when given input is a date, false otherwise
+// isDate true when given input is a date, false otherwise.
 func isDate(v any) bool {
 	if _, ok := v.(time.Time); ok {
 		return true
 	}
+
 	return false
 }
 
-// isLink true when given input is an HTTP(s) URL (without any additional text), false otherwise
+// isLink true when given input is an HTTP(s) URL (without any additional text), false otherwise.
 func isLink(v any) bool {
 	if text, ok := v.(string); ok {
 		return linkRegex.MatchString(text)
 	}
+
 	return false
 }

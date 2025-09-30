@@ -13,6 +13,7 @@ import (
 	gokoalaEngine "github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -133,7 +134,7 @@ func TestBuildingBlocks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
 			eng, err := gokoalaEngine.NewEngine(tt.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			ogc.SetupBuildingBlocks(eng)
 
 			recorder := httptest.NewRecorder()

@@ -16,7 +16,7 @@ import (
 
 const bufferSize = 1 * 1024 * 1024 // 1MiB
 
-// Part piece of the file to download when HTTP Range Requests are supported
+// Part piece of the file to download when HTTP Range Requests are supported.
 type Part struct {
 	Start int64
 	End   int64
@@ -58,6 +58,7 @@ func Download(url url.URL, outputFilepath string, parallelism int, tlsSkipVerify
 	}
 
 	timeSpent := time.Since(start)
+
 	return &timeSpent, err
 }
 
@@ -70,6 +71,7 @@ func checkRemoteFile(url url.URL, client *http.Client) (supportRanges bool, cont
 
 	contentLength = res.ContentLength
 	supportRanges = res.Header.Get(HeaderAcceptRanges) == "bytes" && contentLength != 0
+
 	return
 }
 
@@ -82,6 +84,7 @@ func downloadWithSingleConnection(url url.URL, outputFile *os.File, client *http
 
 	buf := make([]byte, bufferSize)
 	_, err = io.CopyBuffer(outputFile, res.Body, buf)
+
 	return err
 }
 
@@ -102,6 +105,7 @@ func downloadWithMultipleConnections(url url.URL, outputFile *os.File, contentLe
 			return downloadPart(client, url, outputFile.Name(), part)
 		})
 	}
+
 	return wg.Wait()
 }
 
@@ -133,6 +137,7 @@ func downloadPart(client *http.Client, url url.URL, outputFilepath string, part 
 
 	buf := make([]byte, bufferSize)
 	_, err = io.CopyBuffer(outputFile, res.Body, buf)
+
 	return err
 }
 
@@ -144,6 +149,7 @@ func assertFileValid(outputFile *os.File, contentLength int64) error {
 	if fi.Size() != contentLength {
 		return fmt.Errorf("invalid file, content-length %d and file size %d mismatch", contentLength, fi.Size())
 	}
+
 	return nil
 }
 
@@ -160,6 +166,7 @@ func createHTTPClient(tlsSkipVerify bool, timeout time.Duration, retryDelay time
 		WithBackoff(retryDelay, retryMaxDelay). //nolint:bodyclose // false positive
 		WithMaxRetries(maxRetries).             //nolint:bodyclose // false positive
 		Build()                                 //nolint:bodyclose // false positive
+
 	return &http.Client{
 		Timeout:   timeout,
 		Transport: failsafehttp.NewRoundTripper(transport, retryPolicy),

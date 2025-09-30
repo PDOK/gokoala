@@ -82,15 +82,15 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 	switch {
 	case gpkgConfig.Local != nil:
 		g.backend = newLocalGeoPackage(gpkgConfig.Local)
-		g.DatasourceCommon.FidColumn = gpkgConfig.Local.Fid
-		g.DatasourceCommon.ExternalFidColumn = gpkgConfig.Local.ExternalFid
-		g.DatasourceCommon.QueryTimeout = gpkgConfig.Local.QueryTimeout.Duration
+		g.FidColumn = gpkgConfig.Local.Fid
+		g.ExternalFidColumn = gpkgConfig.Local.ExternalFid
+		g.QueryTimeout = gpkgConfig.Local.QueryTimeout.Duration
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Local.MaxBBoxSizeToUseWithRTree
 	case gpkgConfig.Cloud != nil:
 		g.backend = newCloudBackedGeoPackage(gpkgConfig.Cloud)
-		g.DatasourceCommon.FidColumn = gpkgConfig.Cloud.Fid
-		g.DatasourceCommon.ExternalFidColumn = gpkgConfig.Cloud.ExternalFid
-		g.DatasourceCommon.QueryTimeout = gpkgConfig.Cloud.QueryTimeout.Duration
+		g.FidColumn = gpkgConfig.Cloud.Fid
+		g.ExternalFidColumn = gpkgConfig.Cloud.ExternalFid
+		g.QueryTimeout = gpkgConfig.Cloud.QueryTimeout.Duration
 		g.maxBBoxSizeToUseWithRTree = gpkgConfig.Cloud.MaxBBoxSizeToUseWithRTree
 		warmUp = gpkgConfig.Cloud.Cache.WarmUp
 	default:
@@ -111,6 +111,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 			}
 		}()
 	}
+
 	return g, nil
 }
 
@@ -147,6 +148,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	if prevNext == nil {
 		return nil, d.Cursors{}, nil
 	}
+
 	return featureIDs, d.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
@@ -190,6 +192,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 		return nil, err
 	}
 	fc.NumberReturned = len(fc.Features)
+
 	return &fc, queryCtx.Err()
 }
 
@@ -229,6 +232,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 		return nil, d.Cursors{}, nil
 	}
 	fc.NumberReturned = len(fc.Features)
+
 	return &fc, d.NewCursors(*prevNext, criteria.Cursor.FiltersChecksum), queryCtx.Err()
 }
 
@@ -249,6 +253,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		if g.ExternalFidColumn != "" {
 			// Features should be retrieved by UUID
 			log.Println("feature requested by int while external fid column is defined")
+
 			return nil, nil
 		}
 		fidColumn = g.FidColumn
@@ -256,6 +261,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 		if g.ExternalFidColumn == "" {
 			// Features should be retrieved by int64
 			log.Println("feature requested by UUID while external fid column is not defined")
+
 			return nil, nil
 		}
 		fidColumn = g.ExternalFidColumn
@@ -281,6 +287,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	if len(features) != 1 {
 		return nil, nil
 	}
+
 	return features[0], queryCtx.Err()
 }
 
@@ -307,6 +314,7 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	}
 	// lookup prepared statement for given query, or create new one
 	stmt, err = g.preparedStmtCache.Lookup(ctx, g.backend.getDB(), query)
+
 	return
 }
 
@@ -329,6 +337,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
 	}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
+
 	return defaultQuery, namedParams
 }
 
@@ -401,10 +410,11 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
 		"bboxSrid":  criteria.InputSRID}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
+
 	return bboxQuery, namedParams, nil
 }
 
-// mapGpkgGeometry GeoPackage specific way to read geometries into a geom.T
+// mapGpkgGeometry GeoPackage specific way to read geometries into a geom.T.
 func mapGpkgGeometry(columnValue any) (geom.T, error) {
 	rawGeom, ok := columnValue.([]byte)
 	if !ok {
@@ -417,6 +427,7 @@ func mapGpkgGeometry(columnValue any) (geom.T, error) {
 	if geomWithMetadata == nil || geomWithMetadata.Geometry.Empty() {
 		return nil, nil
 	}
+
 	return geomWithMetadata.Geometry, nil
 }
 
@@ -431,5 +442,6 @@ func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 		// the swap and then casting back to a GeoPackage geometry.
 		return fmt.Sprintf(", asgpb(swapcoords(castautomagic(\"%[1]s\"))) as \"%[1]s\"", table.GeometryColumnName)
 	}
+
 	return fmt.Sprintf(", \"%s\"", table.GeometryColumnName)
 }

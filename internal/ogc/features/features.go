@@ -30,6 +30,7 @@ func (f *Features) Features() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+
 			return
 		}
 
@@ -37,6 +38,7 @@ func (f *Features) Features() http.HandlerFunc {
 		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
+
 			return
 		}
 		url := featureCollectionURL{
@@ -51,6 +53,7 @@ func (f *Features) Features() http.HandlerFunc {
 			referenceDate, propertyFilters, profile, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -59,6 +62,7 @@ func (f *Features) Features() http.HandlerFunc {
 		collectionType := f.collectionTypes.Get(collection.ID)
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
 			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
+
 			return
 		}
 
@@ -67,6 +71,7 @@ func (f *Features) Features() http.HandlerFunc {
 			encodedCursor.Decode(url.checksum()), limit, collection, referenceDate, propertyFilters, profile)
 		if err != nil {
 			handleFeaturesQueryError(w, collection.ID, err)
+
 			return
 		}
 
@@ -143,6 +148,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, 
 	if fc == nil {
 		fc = emptyFeatureCollection
 	}
+
 	return newCursor, fc, err
 }
 
@@ -166,10 +172,11 @@ func createTemporalCriteria(collection config.GeoSpatialCollection, referenceDat
 			StartDateProperty: collection.Metadata.TemporalProperties.StartDate,
 			EndDateProperty:   collection.Metadata.TemporalProperties.EndDate}
 	}
+
 	return temporalCriteria
 }
 
-// log error but send a generic message to the client to prevent possible information leakage from datasource
+// log error but send a generic message to the client to prevent possible information leakage from datasource.
 func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err error) {
 	msg := "failed to retrieve feature collection " + collectionID
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

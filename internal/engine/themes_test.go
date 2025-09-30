@@ -4,13 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewThemeAssetEndpoint(t *testing.T) {
 	// given
 	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml",
 		"internal/engine/testdata/test_theme.yaml", "", false, true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tests := []struct {
 		input    string

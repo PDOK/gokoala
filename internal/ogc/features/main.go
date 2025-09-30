@@ -34,11 +34,7 @@ type Features struct {
 	json *jsonFeatures
 }
 
-func (f *Features) GetCollectionTypes() geospatial.CollectionTypes {
-	return f.collectionTypes
-}
-
-// NewFeatures Bootstraps OGC API Features logic
+// NewFeatures Bootstraps OGC API Features logic.
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
 	axisOrderBySRID := determineAxisOrder(datasources)
@@ -64,7 +60,12 @@ func NewFeatures(e *engine.Engine) *Features {
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
+
 	return f
+}
+
+func (f *Features) GetCollectionTypes() geospatial.CollectionTypes {
+	return f.collectionTypes
 }
 
 type datasourceKey struct {
@@ -114,6 +115,7 @@ func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
 			result[k] = existing
 		}
 	}
+
 	return result
 }
 
@@ -154,6 +156,7 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 	wg.Wait()
 
 	log.Println("done determining axis order for all configured CRSs")
+
 	return order
 }
 
@@ -166,6 +169,7 @@ func determineCollectionTypes(datasources map[datasourceKey]ds.Datasource) geosp
 		}
 		result[key.collectionID] = collectionType
 	}
+
 	return geospatial.NewCollectionTypes(result)
 }
 
@@ -174,6 +178,7 @@ func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSp
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		result[collection.ID] = collection
 	}
+
 	return result
 }
 
@@ -197,6 +202,7 @@ func configurePropertyFiltersWithAllowedValues(datasources map[datasourceKey]ds.
 			}
 		}
 	}
+
 	return result
 }
 
@@ -261,7 +267,7 @@ func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*da
 }
 
 // configureCollectionDatasources configures datasources - in one or multiple CRS's - which are specific
-// to a certain collection (e.g., a separate GPKG per collection)
+// to a certain collection (e.g., a separate GPKG per collection).
 func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*datasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	for _, coll := range cfg.Collections {
@@ -324,6 +330,7 @@ func newDatasource(e *engine.Engine, collections config.GeoSpatialCollections,
 		log.Fatal(err)
 	}
 	e.RegisterShutdownHook(datasource.Close)
+
 	return datasource
 }
 

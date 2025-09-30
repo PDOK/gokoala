@@ -20,7 +20,7 @@ var SupportedProfiles = []ProfileName{
 	RelAsKey, RelAsURI, RelAsLink,
 }
 
-// Profile from OAF Part 5, used to express relations between features
+// Profile from OAF Part 5, used to express relations between features.
 type Profile struct {
 	profileName ProfileName
 	baseURL     string
@@ -57,5 +57,6 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
 		}
 	}
+
 	return
 }

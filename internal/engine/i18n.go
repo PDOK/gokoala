@@ -16,5 +16,6 @@ func newLocalizers(availableLanguages []config.Language) map[language.Tag]i18n.L
 		bundle.MustLoadMessageFile("assets/i18n/" + lang.String() + ".yaml")
 		localizers[lang.Tag] = *i18n.NewLocalizer(bundle, lang.String())
 	}
+
 	return localizers
 }

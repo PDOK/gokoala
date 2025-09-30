@@ -10,6 +10,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
+	"github.com/stretchr/testify/require"
 
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -25,6 +26,7 @@ func init() {
 
 func newTestGeoPackage(file string) geoPackageBackend {
 	loadDriver()
+
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
 			DatasourceCommon: config.DatasourceCommon{
@@ -75,8 +77,8 @@ func TestNewGeoPackage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g, err := NewGeoPackage(tt.args.collection, tt.args.config, false, 0, false)
-			assert.NoError(t, err)
-			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(g.TableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
+			require.NoError(t, err)
+			assert.Lenf(t, g.TableByCollectionID, tt.wantNrOfFeatureTablesInGpkg, "NewGeoPackage(%v)", tt.args.config)
 		})
 	}
 }
@@ -340,13 +342,14 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			g.preparedStmtCache = NewCache()
 			url, _ := neturl.Parse("http://example.com")
 			s, err := domain.NewSchema([]domain.Field{}, tt.fields.fidColumn, "")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			p := domain.NewProfile(domain.RelAsLink, *url, *s)
 			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, domain.AxisOrderXY, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeatures, error %v, wantErr %v", err, tt.wantErr)
 				}
+
 				return
 			}
 			assert.Equal(t, tt.wantFC.NumberReturned, fc.NumberReturned)
@@ -451,13 +454,14 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 			}
 			url, _ := neturl.Parse("http://example.com")
 			s, err := domain.NewSchema([]domain.Field{}, tt.fields.fidColumn, "")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			p := domain.NewProfile(domain.RelAsLink, *url, *s)
 			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, 0, domain.AxisOrderXY, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeature, error %v, wantErr %v", err, tt.wantErr)
 				}
+
 				return
 			}
 			if tt.want != nil {
@@ -486,6 +490,6 @@ func TestGeoPackage_Warmup(t *testing.T) {
 				},
 			}
 		err := warmUpFeatureTables(collections, g.TableByCollectionID, g.backend.getDB())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }

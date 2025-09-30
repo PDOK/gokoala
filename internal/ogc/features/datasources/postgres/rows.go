@@ -2,7 +2,7 @@ package postgres
 
 import "github.com/jackc/pgx/v5"
 
-// PgxRowsAdapter implements common.DatasourceRows
+// PgxRowsAdapter implements common.DatasourceRows.
 type PgxRowsAdapter struct {
 	rows pgx.Rows
 }
@@ -19,6 +19,7 @@ func (p *PgxRowsAdapter) Columns() ([]string, error) {
 	for i, fd := range fields {
 		cols[i] = fd.Name
 	}
+
 	return cols, nil
 }
 

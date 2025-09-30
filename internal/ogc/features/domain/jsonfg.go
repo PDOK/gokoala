@@ -9,7 +9,7 @@ const (
 )
 
 // JSONFGFeatureCollection a FeatureCollection according to the JSON-FG standard
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type JSONFGFeatureCollection struct {
 	Type           featureCollectionType `json:"type"`
 	Timestamp      string                `json:"timeStamp,omitempty"`
@@ -21,7 +21,7 @@ type JSONFGFeatureCollection struct {
 }
 
 // JSONFGFeature a Feature according to the JSON-FG standard
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type JSONFGFeature struct {
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.

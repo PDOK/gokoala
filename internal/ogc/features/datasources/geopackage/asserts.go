@@ -13,7 +13,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// assertIndexesExist asserts required indexes in the GeoPackage exists
+// assertIndexesExist asserts required indexes in the GeoPackage exists.
 func assertIndexesExist(
 	configuredCollections config.GeoSpatialCollections,
 	tableByCollectionID map[string]*common.Table,
@@ -32,10 +32,12 @@ func assertIndexesExist(
 				if err != nil {
 					return err
 				}
+
 				break
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -65,6 +67,7 @@ func assertIndexesExistsForTable(defaultSpatialBtreeColumns string, collection c
 			return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
 		}
 	}
+
 	return nil
 }
 
@@ -97,5 +100,6 @@ group by list.name`, tableName)
 		return fmt.Errorf("missing required index: no index exists on column(s) '%s' in table '%s'",
 			columns, tableName)
 	}
+
 	return nil
 }

@@ -57,6 +57,7 @@ func (t *ThreeDimensionalGeoVolumes) Tileset(fileName string) http.HandlerFunc {
 	if !strings.HasSuffix(fileName, ".json") {
 		log.Fatalf("manifest should be a JSON file")
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		t.tileSet(w, r, fileName)
 	}
@@ -69,6 +70,7 @@ func (t *ThreeDimensionalGeoVolumes) ExplicitTileset() http.HandlerFunc {
 		tileSetName := chi.URLParam(r, "explicitTileSet")
 		if tileSetName == "" {
 			engine.RenderProblem(engine.ProblemNotFound, w)
+
 			return
 		}
 		t.tileSet(w, r, tileSetName+".json")
@@ -76,13 +78,14 @@ func (t *ThreeDimensionalGeoVolumes) ExplicitTileset() http.HandlerFunc {
 }
 
 // Tile reverse proxy to tileserver for actual 3D tiles (from OGC 3D Tiles, separate spec
-// from OGC 3D GeoVolumes) or DTM Quantized Mesh tiles
+// from OGC 3D GeoVolumes) or DTM Quantized Mesh tiles.
 func (t *ThreeDimensionalGeoVolumes) Tile() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "3dContainerId")
 		collection, err := t.idToCollection(collectionID)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
+
 			return
 		}
 
@@ -111,6 +114,7 @@ func (t *ThreeDimensionalGeoVolumes) tileSet(w http.ResponseWriter, r *http.Requ
 	collection, err := t.idToCollection(collectionID)
 	if err != nil {
 		engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
+
 		return
 	}
 
@@ -130,6 +134,7 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 	if err != nil {
 		log.Printf("invalid target url, can't proxy tiles: %v", err)
 		engine.RenderProblem(engine.ProblemServerError, w)
+
 		return
 	}
 	t.engine.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, t.validateResponse)
@@ -141,5 +146,6 @@ func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*config.GeoSpat
 			return &collection, nil
 		}
 	}
+
 	return nil, errors.New("no matching collection found")
 }

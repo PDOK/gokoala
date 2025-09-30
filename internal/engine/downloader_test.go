@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -67,22 +68,22 @@ func TestDownload(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			outputFile, err := os.CreateTemp(t.TempDir(), "gpkg")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer os.Remove(outputFile.Name())
 
 			ts := createMockServer()
 			defer ts.Close()
 
 			parsedURL, err := url.Parse(tt.args.url)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			downloadTime, err := Download(*parsedURL, outputFile.Name(), tt.args.parallelism, tt.args.tlsSkipVerify,
 				tt.args.timeout, tt.args.retryDelay, tt.args.retryMaxDelay, tt.args.maxRetries)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Greater(t, *downloadTime, 100*time.Nanosecond)
 			assert.FileExists(t, outputFile.Name())
 			stat, err := outputFile.Stat()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Greater(t, stat.Size(), int64(1*1024))
 		})
 	}
@@ -101,5 +102,6 @@ func createMockServer() *httptest.Server {
 	}
 	ts.Listener = l
 	ts.Start()
+
 	return ts
 }

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"net"
 	"os"
 	"path/filepath"
@@ -271,13 +271,15 @@ type GeoPackageCloud struct {
 func (gc *GeoPackageCloud) CacheDir() (string, error) {
 	fileNameWithoutExt := strings.TrimSuffix(gc.File, filepath.Ext(gc.File))
 	if gc.Cache.Path != nil {
-		randomSuffix := strconv.Itoa(rand.Intn(99999)) //nolint:gosec // random isn't used for security purposes
+		randomSuffix := strconv.Itoa(rand.IntN(99999)) //nolint:gosec // random isn't used for security purposes
+
 		return filepath.Join(*gc.Cache.Path, fileNameWithoutExt+"-"+randomSuffix), nil
 	}
 	cacheDir, err := os.MkdirTemp("", fileNameWithoutExt)
 	if err != nil {
 		return "", fmt.Errorf("failed to create tempdir to cache %s, error %w", fileNameWithoutExt, err)
 	}
+
 	return cacheDir, nil
 }
 

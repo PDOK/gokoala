@@ -17,7 +17,7 @@ import (
 
 type EnvelopeType uint8
 
-// Magic is the magic number encode in the header. It should be 0x4750
+// Magic is the magic number encode in the header. It should be 0x4750.
 var Magic = [2]byte{0x47, 0x50}
 
 // Decipher empty points with NaN as coordinates, in line with Requirement 152 of the spec (http://www.geopackage.org/spec/).
@@ -70,7 +70,7 @@ func (et EnvelopeType) String() string {
 
 // HEADER FLAG LAYOUT
 // 7 6 5 4 3 2 1 0
-// R R X Y E E E B
+// R X Y E
 // R Reserved for future use. (should be set to 0)
 // X GeoPackageBinary type // Normal or extented
 // Y empty geometry
@@ -88,11 +88,12 @@ type headerFlags byte
 
 func (hf headerFlags) String() string { return fmt.Sprintf("0x%02x", uint8(hf)) }
 
-// Endian will return the encoded Endianess
+// Endian will return the encoded Endianess.
 func (hf headerFlags) Endian() binary.ByteOrder {
 	if hf&maskByteOrder == 0 {
 		return binary.BigEndian
 	}
+
 	return binary.LittleEndian
 }
 
@@ -102,6 +103,7 @@ func (hf headerFlags) Envelope() EnvelopeType {
 	if et >= uint8(EnvelopeTypeInvalid) {
 		return EnvelopeTypeInvalid
 	}
+
 	return EnvelopeType(et)
 }
 
@@ -121,7 +123,7 @@ type BinaryHeader struct {
 	envelope []float64
 }
 
-// decodeBinaryHeader decodes the data into the BinaryHeader
+// decodeBinaryHeader decodes the data into the BinaryHeader.
 func decodeBinaryHeader(data []byte) (*BinaryHeader, error) {
 	if len(data) < 8 {
 		return nil, errors.New("not enough bytes")
@@ -150,22 +152,24 @@ func decodeBinaryHeader(data []byte) (*BinaryHeader, error) {
 	}
 
 	bh.envelope = make([]float64, 0, num)
-	for i := 0; i < num; i++ {
+	for i := range num {
 		bits := en.Uint64(bytes[i*8 : (i*8)+8])
 		bh.envelope = append(bh.envelope, math.Float64frombits(bits))
 	}
 	if bh.magic[0] != Magic[0] || bh.magic[1] != Magic[1] {
 		return &bh, errors.New("invalid magic number")
 	}
+
 	return &bh, nil
 
 }
 
-// Magic is the magic number encode in the header. It should be 0x4750
+// Magic is the magic number encode in the header. It should be 0x4750.
 func (h *BinaryHeader) Magic() [2]byte {
 	if h == nil {
 		return Magic
 	}
+
 	return h.magic
 }
 
@@ -174,6 +178,7 @@ func (h *BinaryHeader) Version() uint8 {
 	if h == nil {
 		return 0
 	}
+
 	return h.version
 }
 
@@ -182,6 +187,7 @@ func (h *BinaryHeader) EnvelopeType() EnvelopeType {
 	if h == nil {
 		return EnvelopeTypeInvalid
 	}
+
 	return h.flags.Envelope()
 }
 
@@ -190,6 +196,7 @@ func (h *BinaryHeader) SRSID() int32 {
 	if h == nil {
 		return 0
 	}
+
 	return h.srsid
 }
 
@@ -199,6 +206,7 @@ func (h *BinaryHeader) Envelope() []float64 {
 	if h == nil {
 		return nil
 	}
+
 	return h.envelope
 }
 
@@ -207,6 +215,7 @@ func (h *BinaryHeader) IsGeometryEmpty() bool {
 	if h == nil {
 		return true
 	}
+
 	return h.flags.IsEmpty()
 }
 
@@ -215,6 +224,7 @@ func (h *BinaryHeader) IsStandardGeometry() bool {
 	if h == nil {
 		return true
 	}
+
 	return h.flags.IsStandard()
 }
 
@@ -223,11 +233,12 @@ func (h *BinaryHeader) Size() int {
 	if h == nil {
 		return 0
 	}
+
 	return (len(h.envelope) * 8) + 8
 }
 
 // StandardBinary is the binary encoding plus some metadata
-// should be stored as a blob
+// should be stored as a blob.
 type StandardBinary struct {
 	Header   *BinaryHeader
 	SRSID    int32
@@ -243,6 +254,7 @@ func DecodeGeometry(bytes []byte) (*StandardBinary, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &StandardBinary{
 		Header:   h,
 		SRSID:    h.SRSID(),

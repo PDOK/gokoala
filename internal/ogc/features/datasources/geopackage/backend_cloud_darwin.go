@@ -15,5 +15,6 @@ import (
 // duplicate symbols (aka multiple definitions).
 func newCloudBackedGeoPackage(_ *config.GeoPackageCloud) geoPackageBackend {
 	log.Fatalf("Cloud backed GeoPackage isn't supported on darwin/macos")
+
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFeature(t *testing.T) {
@@ -405,12 +406,12 @@ func TestFeature(t *testing.T) {
 					t.Parallel()
 
 					req, err := createRequest(tt.fields.url, tt.fields.collectionID, tt.fields.featureID, tt.fields.format)
-					assert.NoError(t, err)
+					require.NoError(t, err)
 					rr, ts := createMockServer()
 					defer ts.Close()
 
 					newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-					assert.NoError(t, err)
+					require.NoError(t, err)
 
 					// use fixed decimal limit in coordinates and UTC timezone across all tests for
 					// stable output between different data sources (postgres, geopackage, etc)
@@ -424,16 +425,16 @@ func TestFeature(t *testing.T) {
 					assert.Equal(t, tt.want.statusCode, rr.Code)
 					if tt.want.body != "" {
 						expectedBody, err := os.ReadFile(tt.want.body)
-						assert.NoError(t, err)
+						require.NoError(t, err)
 
 						printActual(rr)
-						switch {
-						case tt.fields.format == engine.FormatJSON:
+						switch tt.fields.format {
+						case engine.FormatJSON:
 							assert.JSONEq(t, string(expectedBody), rr.Body.String())
-						case tt.fields.format == engine.FormatHTML:
+						case engine.FormatHTML:
 							assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 						default:
-							assert.Fail(t, "implement support to test format: %s", tt.fields.format)
+							assert.Fail(t, "implement support to test format: "+tt.fields.format)
 						}
 					}
 				})

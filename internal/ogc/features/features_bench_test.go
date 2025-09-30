@@ -5,6 +5,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Run the benchmark with the following command:
@@ -26,7 +27,7 @@ import (
 //	go tool pprof -web cpu.pprof
 //	go tool pprof -web mem.pprof
 //
-// ----
+// ----.
 func BenchmarkFeatures(b *testing.B) {
 	type fields struct {
 		configFile string
@@ -73,13 +74,13 @@ func BenchmarkFeatures(b *testing.B) {
 		rr, ts := createMockServer()
 
 		newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-		assert.NoError(b, err)
+		require.NoError(b, err)
 		features := NewFeatures(newEngine)
 		handler := features.Features()
 
 		// Start benchmark
 		b.Run(tt.name, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				handler.ServeHTTP(rr, req)
 
 				assert.Equal(b, 200, rr.Code)

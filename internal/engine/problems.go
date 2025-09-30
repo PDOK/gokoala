@@ -18,7 +18,7 @@ type ProblemKind int
 
 var Now = time.Now // allow mocking
 
-// The following problems should be added to openapi/problems.go.json
+// The following problems should be added to openapi/problems.go.json.
 var (
 	ProblemBadRequest    = ProblemKind(http.StatusBadRequest)
 	ProblemNotFound      = ProblemKind(http.StatusNotFound)

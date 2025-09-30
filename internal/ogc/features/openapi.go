@@ -25,7 +25,7 @@ type OpenAPIPropertyFilter struct {
 	AllowedValues []string
 }
 
-// rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters
+// rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
 func rebuildOpenAPI(e *engine.Engine,
 	datasources map[datasourceKey]ds.Datasource,
 	filters map[string]ds.PropertyFiltersWithAllowedValues,
@@ -69,6 +69,7 @@ func createPropertyFiltersByCollection(datasources map[datasourceKey]ds.Datasour
 						AllowedValues: fc.AllowedValues,
 					})
 					match = true
+
 					break
 				}
 			}
@@ -82,5 +83,6 @@ func createPropertyFiltersByCollection(datasources map[datasourceKey]ds.Datasour
 		})
 		result[k.collectionID] = propertyFilters
 	}
+
 	return result, nil
 }

@@ -70,14 +70,26 @@ func (c *CommonCore) LandingPage() http.HandlerFunc {
 	}
 }
 
+func (c *CommonCore) Conformance() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		key := engine.NewTemplateKey(
+			templatesDir+"conformance.go."+c.engine.CN.NegotiateFormat(r),
+			c.engine.WithNegotiatedLanguage(w, r))
+		c.engine.Serve(w, r, engine.ServeTemplate(key))
+	}
+}
+
 func (c *CommonCore) API() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		format := c.engine.CN.NegotiateFormat(r)
-		if format == engine.FormatHTML {
+		switch format {
+		case engine.FormatHTML:
 			c.apiAsHTML(w, r)
+
 			return
-		} else if format == engine.FormatJSON {
+		case engine.FormatJSON:
 			c.apiAsJSON(w, r)
+
 			return
 		}
 		engine.RenderProblem(engine.ProblemNotFound, w)
@@ -91,13 +103,4 @@ func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 
 func (c *CommonCore) apiAsJSON(w http.ResponseWriter, r *http.Request) {
 	c.engine.Serve(w, r, engine.ServeContentType(engine.MediaTypeOpenAPI), engine.ServeOutput(c.engine.OpenAPI.SpecJSON))
-}
-
-func (c *CommonCore) Conformance() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKey(
-			templatesDir+"conformance.go."+c.engine.CN.NegotiateFormat(r),
-			c.engine.WithNegotiatedLanguage(w, r))
-		c.engine.Serve(w, r, engine.ServeTemplate(key))
-	}
 }

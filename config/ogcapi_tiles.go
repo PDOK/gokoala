@@ -37,7 +37,7 @@ func (o OgcAPITiles) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON parses a string to OgcAPITiles
+// UnmarshalJSON parses a string to OgcAPITiles.
 func (o *OgcAPITiles) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, o)
 }
@@ -76,7 +76,7 @@ func (c CollectionEntryTiles) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON parses a string to CollectionEntryTiles
+// UnmarshalJSON parses a string to CollectionEntryTiles.
 func (c *CollectionEntryTiles) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }
@@ -98,6 +98,7 @@ func (o *OgcAPITiles) HasType(t TilesType) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -109,17 +110,18 @@ var AllTileProjections = map[string]string{
 	"EPSG:3857":  "WebMercatorQuad",
 }
 
-// HasProjection true when the given projection is supported for this dataset
+// HasProjection true when the given projection is supported for this dataset.
 func (o *OgcAPITiles) HasProjection(srs string) bool {
 	for _, projection := range o.GetProjections() {
 		if projection.Srs == srs {
 			return true
 		}
 	}
+
 	return false
 }
 
-// GetProjections projections supported for this dataset
+// GetProjections projections supported for this dataset.
 func (o *OgcAPITiles) GetProjections() []SupportedSrs {
 	supportedSrsSet := map[SupportedSrs]struct{}{}
 	if o.DatasetTiles != nil {
@@ -139,6 +141,7 @@ func (o *OgcAPITiles) GetProjections() []SupportedSrs {
 	sort.Slice(result, func(i, j int) bool {
 		return len(result[i].Srs) > len(result[j].Srs)
 	})
+
 	return result
 }
 
@@ -206,7 +209,7 @@ type TileCoordinates struct {
 	y int
 }
 
-// default tiles for EPSG:28992 - location centered just outside a village in the province of Friesland
+// default tiles for EPSG:28992 - location centered just outside a village in the province of Friesland.
 var HealthCheckDefaultTiles = map[int]TileCoordinates{
 	0:  {x: 0, y: 0},
 	1:  {x: 1, y: 0},
@@ -266,5 +269,6 @@ func validateTileProjections(tiles *OgcAPITiles) error {
 	if len(errMessages) > 0 {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
+
 	return nil
 }
