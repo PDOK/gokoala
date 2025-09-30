@@ -50,8 +50,7 @@ This example demonstrates multiple OGC APIs (tiles, styles, features, geovolumes
 
 This example demonstrates serving features (spatial data) AND attributes (non-spatial data) from a single GeoPackage
 using a single OGC API Features. This is useful, for example, when you want to serve a feature collection with
-additional
-attributes (e.g. population density) that are not part of the feature collection itself.
+additional attributes (e.g. population density) that are not part of the feature collection itself.
 
 - Start GoKoala as specified in the root [README](../README.md#run)
   and provide `config_attributes.yaml` as the config file.

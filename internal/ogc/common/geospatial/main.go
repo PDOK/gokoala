@@ -17,15 +17,6 @@ type Collections struct {
 	engine *engine.Engine
 }
 
-// Wrapper around map[k]v to make it easier to access in the "collectionS" template
-type collectionTypes struct {
-	types map[string]CollectionType
-}
-
-func (cts collectionTypes) ForCollection(collection string) CollectionType {
-	return cts.types[collection]
-}
-
 // Wrapper around collection+type to make it easier to access in the "collection" template
 type collectionWithType struct {
 	Collection config.GeoSpatialCollection
@@ -34,7 +25,7 @@ type collectionWithType struct {
 
 // NewCollections enables support for OGC APIs that organize data in the concept of collections.
 // A collection, also known as a geospatial data resource, is a common way to organize data in various OGC APIs.
-func NewCollections(e *engine.Engine, types map[string]CollectionType) *Collections {
+func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
 			{
@@ -43,7 +34,7 @@ func NewCollections(e *engine.Engine, types map[string]CollectionType) *Collecti
 			},
 		}
 		e.RenderTemplatesWithParams(CollectionsPath,
-			collectionTypes{types},
+			types,
 			collectionsBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
@@ -60,7 +51,7 @@ func NewCollections(e *engine.Engine, types map[string]CollectionType) *Collecti
 					Path: "collections/" + coll.ID,
 				},
 			}...)
-			collWithType := collectionWithType{coll, types[coll.ID]}
+			collWithType := collectionWithType{coll, types.Get(coll.ID)}
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.ID)))
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, collectionBreadcrumbs,

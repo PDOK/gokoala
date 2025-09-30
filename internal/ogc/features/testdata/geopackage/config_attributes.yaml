@@ -9,7 +9,6 @@ license:
   url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
 ogcApi:
   features:
-    validateResponses: false
     basemap: OSM
     datasources:
       defaultWGS84:

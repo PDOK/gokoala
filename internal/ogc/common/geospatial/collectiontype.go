@@ -47,3 +47,16 @@ func (ct CollectionType) AvailableFormats() []engine.OutputFormat {
 func (ct CollectionType) IsSpatialRequestAllowed(bbox *geom.Bounds) bool {
 	return !(ct == Attributes && bbox != nil)
 }
+
+// CollectionTypes one or more CollectionType.
+type CollectionTypes struct {
+	types map[string]CollectionType
+}
+
+func NewCollectionTypes(types map[string]CollectionType) CollectionTypes {
+	return CollectionTypes{types}
+}
+
+func (cts CollectionTypes) Get(collection string) CollectionType {
+	return cts.types[collection]
+}

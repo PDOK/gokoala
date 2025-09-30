@@ -200,13 +200,13 @@
               "$ref": "#/components/schemas/keyword"
             }
           },
-          "attribution": {
-            "description": "The provider of the source data for the collection.",
-            "type": "string",
-            "example": "United Nations"
-          },
           "extent": {
             "$ref": "#/components/schemas/extent"
+          },
+          "itemType": {
+            "description": "indicator about the type of the items in a collection. Example values: 'feature', 'record', 'attribute'. The default value is 'feature'",
+            "type": "string",
+            "default": "feature"
           },
           "crs": {
             "description": "The list of coordinate reference systems supported by the service. The first item is the default coordinate reference system.",

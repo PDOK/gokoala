@@ -27,7 +27,6 @@ availableLanguages:
 ogcApi:
   # which OGC apis to enable. Possible values: tiles, styles, features, 3dgeovolumes
   features:
-    validateResponses: false
     basemap: OSM
     datasources:
       defaultWGS84:

@@ -7,12 +7,14 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 type openAPIParams struct {
 	PropertyFiltersByCollection map[string][]OpenAPIPropertyFilter
+	CollectionTypes             geospatial.CollectionTypes
 	SchemasByCollection         map[string]domain.Schema
 }
 
@@ -27,6 +29,7 @@ type OpenAPIPropertyFilter struct {
 func rebuildOpenAPI(e *engine.Engine,
 	datasources map[datasourceKey]ds.Datasource,
 	filters map[string]ds.PropertyFiltersWithAllowedValues,
+	collectionTypes geospatial.CollectionTypes,
 	schemas map[string]domain.Schema) {
 
 	propertyFiltersByCollection, err := createPropertyFiltersByCollection(datasources, filters)
@@ -35,6 +38,7 @@ func rebuildOpenAPI(e *engine.Engine,
 	}
 	e.RebuildOpenAPI(openAPIParams{
 		PropertyFiltersByCollection: propertyFiltersByCollection,
+		CollectionTypes:             collectionTypes,
 		SchemasByCollection:         schemas,
 	})
 }

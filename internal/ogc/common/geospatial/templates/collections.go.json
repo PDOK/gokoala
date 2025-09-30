@@ -28,7 +28,7 @@
     {{/* TIP: temporarily disable the line below to fix intellij/goland highlighting */}}
     {{ if $index }},{{ end }}
     {
-      {{ $collType := $collTypes.ForCollection $coll.ID }}
+      {{ $collType := $collTypes.Get $coll.ID }}
       "id" : "{{ $coll.ID }}",
       {{ if and $coll.Metadata $coll.Metadata.Title }}
       "title" : "{{ $coll.Metadata.Title }}"

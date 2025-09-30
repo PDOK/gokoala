@@ -53,20 +53,20 @@ func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error)
 	return table.Schema, nil
 }
 
-func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
-	return dc.PropertyFiltersByCollectionID[collection]
-}
-
-func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
-	return dc.TransformOnTheFly
-}
-
 func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.CollectionType, error) {
 	table, err := dc.CollectionToTable(collection)
 	if err != nil {
 		return "", err
 	}
 	return table.Type, nil
+}
+
+func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
+	return dc.PropertyFiltersByCollectionID[collection]
+}
+
+func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
+	return dc.TransformOnTheFly
 }
 
 func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error) {

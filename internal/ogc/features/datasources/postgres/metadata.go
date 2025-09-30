@@ -67,7 +67,8 @@ from
 where
 	f_table_schema = $1`
 
-	rows, err := db.Query(context.Background(), fmt.Sprintf(query, geospatial.Features), schemaName)
+	params := fmt.Sprintf(query, geospatial.Features) // Currently only features are supported, not 'attributes'.
+	rows, err := db.Query(context.Background(), params, schemaName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve geometry_columns using query: %v\n, error: %w", query, err)
 	}

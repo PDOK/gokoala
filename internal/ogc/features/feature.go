@@ -61,7 +61,7 @@ func (f *Features) Feature() http.HandlerFunc {
 
 		// render output
 		format := f.engine.CN.NegotiateFormat(r)
-		collectionType := f.collectionTypes[collection.ID]
+		collectionType := f.collectionTypes.Get(collection.ID)
 		switch collectionType {
 		case geospatial.Features:
 			switch format {

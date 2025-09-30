@@ -56,7 +56,7 @@ func (f *Features) Features() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
-		collectionType := f.collectionTypes[collection.ID]
+		collectionType := f.collectionTypes.Get(collection.ID)
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
 			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
 			return
