@@ -69,8 +69,10 @@ func (et EnvelopeType) String() string {
 }
 
 // HEADER FLAG LAYOUT
-// 7 6 5 4 3 2 1 0
-// R X Y E
+//
+//	7-6-5-4-3-2-1-0
+//	R-R-X-Y-E-E-E-B
+//
 // R Reserved for future use. (should be set to 0)
 // X GeoPackageBinary type // Normal or extented
 // Y empty geometry
