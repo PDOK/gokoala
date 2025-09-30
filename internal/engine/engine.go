@@ -27,19 +27,6 @@ import (
 const (
 	templatesDir    = "internal/engine/templates/"
 	shutdownTimeout = 5 * time.Second
-
-	HeaderLink            = "Link"
-	HeaderAccept          = "Accept"
-	HeaderAcceptLanguage  = "Accept-Language"
-	HeaderAcceptRanges    = "Accept-Ranges"
-	HeaderRange           = "Range"
-	HeaderContentType     = "Content-Type"
-	HeaderContentLength   = "Content-Length"
-	HeaderContentCrs      = "Content-Crs"
-	HeaderContentEncoding = "Content-Encoding"
-	HeaderBaseURL         = "X-BaseUrl"
-	HeaderRequestedWith   = "X-Requested-With"
-	HeaderAPIVersion      = "API-Version"
 )
 
 // Engine encapsulates shared non-OGC API specific logic
@@ -202,12 +189,12 @@ func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Bread
 }
 
 // RenderAndServe renders an already parsed HTML or non-HTML template on-the-fly depending
-// on the format in the given TemplateKey. The result isn't store in engine, it's served directly to the client.
+// on the format in the given TemplateKey. The result isn't stored in engine, it's served directly to the client.
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a datastore),
 // otherwise use ServePage for pre-rendered pages.
 func (e *Engine) RenderAndServe(w http.ResponseWriter, r *http.Request, key TemplateKey,
-	params any, breadcrumbs []Breadcrumb) {
+	params any, breadcrumbs []Breadcrumb, availableFormats []OutputFormat) {
 
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
@@ -227,7 +214,7 @@ func (e *Engine) RenderAndServe(w http.ResponseWriter, r *http.Request, key Temp
 	var output []byte
 	if key.Format == FormatHTML {
 		htmlTmpl := parsedTemplate.(*htmltemplate.Template)
-		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "")
+		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "", availableFormats)
 	} else {
 		jsonTmpl := parsedTemplate.(*texttemplate.Template)
 		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")

@@ -3,6 +3,7 @@ package geospatial
 import (
 	"net/http"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/go-chi/chi/v5"
 )
@@ -16,9 +17,15 @@ type Collections struct {
 	engine *engine.Engine
 }
 
+// Wrapper around collection+type to make it easier to access in the "collection" template
+type collectionWithType struct {
+	Collection config.GeoSpatialCollection
+	Type       CollectionType
+}
+
 // NewCollections enables support for OGC APIs that organize data in the concept of collections.
 // A collection, also known as a geospatial data resource, is a common way to organize data in various OGC APIs.
-func NewCollections(e *engine.Engine) *Collections {
+func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 	if e.Config.HasCollections() {
 		collectionsBreadcrumbs := []engine.Breadcrumb{
 			{
@@ -26,7 +33,8 @@ func NewCollections(e *engine.Engine) *Collections {
 				Path: "collections",
 			},
 		}
-		e.RenderTemplates(CollectionsPath,
+		e.RenderTemplatesWithParams(CollectionsPath,
+			types,
 			collectionsBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
@@ -43,9 +51,10 @@ func NewCollections(e *engine.Engine) *Collections {
 					Path: "collections/" + coll.ID,
 				},
 			}...)
-			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, coll, nil,
+			collWithType := collectionWithType{coll, types.Get(coll.ID)}
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.ID)))
-			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, coll, collectionBreadcrumbs,
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, collectionBreadcrumbs,
 				engine.NewTemplateKey(templatesDir+"collection.go.html", engine.WithInstanceName(coll.ID)))
 		}
 	}
@@ -71,7 +80,7 @@ func (c *Collections) Collections() http.HandlerFunc {
 // Collection provides METADATA about a specific collection. To get the CONTENTS of a collection each OGC API
 // building block must provide a separate/specific endpoint.
 //
-// For example in:
+// For example, in:
 // - OGC API Features you would have: /collections/{collectionId}/items
 // - OGC API Tiles could have: /collections/{collectionId}/tiles
 // - OGC API Maps could have: /collections/{collectionId}/map

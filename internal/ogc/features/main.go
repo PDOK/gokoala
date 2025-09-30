@@ -27,10 +27,15 @@ type Features struct {
 	axisOrderBySRID           map[int]domain.AxisOrder
 	configuredCollections     map[string]config.GeoSpatialCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
+	collectionTypes           geospatial.CollectionTypes
 	schemas                   map[string]domain.Schema
 
 	html *htmlFeatures
 	json *jsonFeatures
+}
+
+func (f *Features) GetCollectionTypes() geospatial.CollectionTypes {
+	return f.collectionTypes
 }
 
 // NewFeatures Bootstraps OGC API Features logic
@@ -39,9 +44,10 @@ func NewFeatures(e *engine.Engine) *Features {
 	axisOrderBySRID := determineAxisOrder(datasources)
 	configuredCollections := cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
+	collectionTypes := determineCollectionTypes(datasources)
 
 	schemas := renderSchemas(e, datasources)
-	rebuildOpenAPI(e, datasources, configuredPropertyFilters, schemas)
+	rebuildOpenAPI(e, datasources, configuredPropertyFilters, collectionTypes, schemas)
 
 	f := &Features{
 		engine:                    e,
@@ -49,6 +55,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		axisOrderBySRID:           axisOrderBySRID,
 		configuredCollections:     configuredCollections,
 		configuredPropertyFilters: configuredPropertyFilters,
+		collectionTypes:           collectionTypes,
 		schemas:                   schemas,
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
@@ -148,6 +155,18 @@ func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]dom
 
 	log.Println("done determining axis order for all configured CRSs")
 	return order
+}
+
+func determineCollectionTypes(datasources map[datasourceKey]ds.Datasource) geospatial.CollectionTypes {
+	result := make(map[string]geospatial.CollectionType)
+	for key, datasource := range datasources {
+		collectionType, err := datasource.GetCollectionType(key.collectionID)
+		if err != nil {
+			continue
+		}
+		result[key.collectionID] = collectionType
+	}
+	return geospatial.NewCollectionTypes(result)
 }
 
 func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {
@@ -312,4 +331,10 @@ func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
 	log.Println(msg)
 	engine.RenderProblem(engine.ProblemNotFound, w, msg)
+}
+
+func handleFormatNotSupported(w http.ResponseWriter, format string) {
+	msg := fmt.Sprintf("format %s is not supported", format)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotAcceptable, w, msg)
 }

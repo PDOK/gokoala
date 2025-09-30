@@ -15,16 +15,16 @@ import (
 // This encompasses traversing index(es) to fill the local cache.
 func warmUpFeatureTables(
 	configuredCollections config.GeoSpatialCollections,
-	featureTableByCollectionID map[string]*common.FeatureTable,
+	tableByCollectionID map[string]*common.Table,
 	db *sqlx.DB) error {
 
-	for collID, table := range featureTableByCollectionID {
+	for collID, table := range tableByCollectionID {
 		if table == nil {
 			return errors.New("given table can't be nil")
 		}
 		for _, coll := range configuredCollections {
 			if coll.ID == collID && coll.Features != nil {
-				if err := warmUpFeatureTable(table.TableName, db); err != nil {
+				if err := warmUpFeatureTable(table.Name, db); err != nil {
 					return err
 				}
 				break

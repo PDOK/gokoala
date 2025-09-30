@@ -9,6 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
@@ -29,14 +30,15 @@ type DatasourceCommon struct {
 	MaxDecimals       int
 	ForceUTC          bool
 
-	FeatureTableByCollectionID    map[string]*FeatureTable
+	TableByCollectionID           map[string]*Table
 	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
 }
 
-// FeatureTable metadata about a table containing features in a data source
-type FeatureTable struct {
-	TableName          string
+// Table metadata about a table containing features or attributes in a data source
+type Table struct {
+	Name               string
+	Type               geospatial.CollectionType
 	GeometryColumnName string
 	GeometryType       string
 
@@ -44,11 +46,19 @@ type FeatureTable struct {
 }
 
 func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error) {
-	table, err := dc.GetFeatureTable(collection)
+	table, err := dc.CollectionToTable(collection)
 	if err != nil {
 		return nil, err
 	}
 	return table.Schema, nil
+}
+
+func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.CollectionType, error) {
+	table, err := dc.CollectionToTable(collection)
+	if err != nil {
+		return "", err
+	}
+	return table.Type, nil
 }
 
 func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
@@ -59,21 +69,21 @@ func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
 	return dc.TransformOnTheFly
 }
 
-func (dc *DatasourceCommon) GetFeatureTable(collection string) (*FeatureTable, error) {
-	table, ok := dc.FeatureTableByCollectionID[collection]
+func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error) {
+	table, ok := dc.TableByCollectionID[collection]
 	if !ok {
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
-			"datasource, available in datasource: %v", collection, util.Keys(dc.FeatureTableByCollectionID))
+			"datasource, available in datasource: %v", collection, util.Keys(dc.TableByCollectionID))
 	}
 	return table, nil
 }
 
 // SelectGeom function signature to select geometry from a table
 // while taking axis order into account
-type SelectGeom func(order domain.AxisOrder, table *FeatureTable) string
+type SelectGeom func(order domain.AxisOrder, table *Table) string
 
 // SelectColumns build select clause
-func (dc *DatasourceCommon) SelectColumns(table *FeatureTable, axisOrder domain.AxisOrder,
+func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder,
 	selectGeom SelectGeom, propConfig *config.FeatureProperties, includePrevNext bool) string {
 
 	columns := orderedmap.New[string, struct{}]() // map (actually a set) to prevent accidental duplicate columns
@@ -151,10 +161,10 @@ func ColumnsToSQL(columns []string) string {
 	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
 }
 
-func ValidateUniqueness(result map[string]*FeatureTable) {
+func ValidateUniqueness(result map[string]*Table) {
 	uniqueTables := make(map[string]struct{})
 	for _, table := range result {
-		uniqueTables[table.TableName] = struct{}{}
+		uniqueTables[table.Name] = struct{}{}
 	}
 	if len(uniqueTables) != len(result) {
 		log.Printf("Warning: found %d unique table names for %d collections, "+

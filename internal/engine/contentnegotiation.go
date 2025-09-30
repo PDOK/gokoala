@@ -48,8 +48,6 @@ var (
 		MediaTypeJSONFG,
 		MediaTypeJSONSchema,
 	}
-	OutputFormatDefault    = map[string]string{FormatJSON: "JSON"}
-	OutputFormatFeatures   = map[string]string{FormatJSON: "GeoJSON", FormatJSONFG: "JSON-FG"}
 	CompressibleMediaTypes = []string{
 		MediaTypeJSON,
 		MediaTypeGeoJSON,
@@ -66,12 +64,25 @@ var (
 		"application/javascript",
 		"image/svg+xml",
 	}
+
+	OutputFormatDefault = []OutputFormat{
+		{Key: FormatJSON, Name: "JSON"},
+	}
+
 	StyleFormatExtension = map[string]string{
 		FormatMapboxStyle: ".json",
 		FormatSLD:         ".sld",
 	}
 )
 
+// OutputFormat formats that can be returned by the API.
+type OutputFormat struct {
+	Key  string
+	Name string
+}
+
+// ContentNegotiation handles HTTP content negotiation.
+// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Content_negotiation
 type ContentNegotiation struct {
 	availableMediaTypes []contenttype.MediaType
 	availableLanguages  []language.Tag

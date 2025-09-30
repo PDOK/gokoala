@@ -3,25 +3,28 @@ package features
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 	"github.com/twpayne/go-geom"
 )
 
+var errBBoxRequestDisallowed = errors.New("bbox is not supported for this collection since it does not " +
+	"contain geospatial items (features), only non-geospatial items (attributes)")
+
 var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
 
-// Features endpoint serves a FeatureCollection with the given collectionId
+// Features this endpoint serves a FeatureCollection with the given collectionId
 //
-// Beware: this is one of the most performance-sensitive pieces of code in the system.
-// Try to do as much initialization work outside the hot path, and only do essential
+// BEWARE: this is one of the most performance-sensitive pieces of code in the system.
+// Try to do as much initialization work outside the hot path, only do essential
 // operations inside this method.
 func (f *Features) Features() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -41,81 +44,109 @@ func (f *Features) Features() http.HandlerFunc {
 			r.URL.Query(),
 			f.engine.Config.OgcAPI.Features.Limit,
 			f.configuredPropertyFilters[collection.ID],
-			f.schemas[collectionID],
+			f.schemas[collection.ID],
 			collection.HasDateTime(),
 		}
-		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, profile, err := url.parse()
+		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
+			referenceDate, propertyFilters, profile, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
-		// validation completed, now get the features
-		var newCursor domain.Cursors
-		var fc *domain.FeatureCollection
-		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		if querySingleDatasource(datasource, inputSRID, outputSRID, bbox) {
-			// fast path
-			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:           encodedCursor.Decode(url.checksum()),
-				Limit:            limit,
-				InputSRID:        inputSRID,
-				OutputSRID:       outputSRID,
-				Bbox:             bbox,
-				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
-				PropertyFilters:  propertyFilters,
-				// Add filter, filter-lang
-			}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
-			if err != nil {
-				handleFeaturesQueryError(w, collectionID, err)
-				return
-			}
-		} else {
-			// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
-			var fids []int64
-			datasource = f.datasources[datasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
-			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:           encodedCursor.Decode(url.checksum()),
-				Limit:            limit,
-				InputSRID:        inputSRID,
-				OutputSRID:       outputSRID,
-				Bbox:             bbox,
-				TemporalCriteria: createTemporalCriteria(collection, referenceDate),
-				PropertyFilters:  propertyFilters,
-				// Add filter, filter-lang
-			})
-			if err == nil && fids != nil {
-				// this is step 2: get the actual features in output CRS by feature ID
-				datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
-			}
-			if err != nil {
-				handleFeaturesQueryError(w, collectionID, err)
-				return
-			}
-		}
-		if fc == nil {
-			fc = emptyFeatureCollection
+		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
+		collectionType := f.collectionTypes.Get(collection.ID)
+		if !collectionType.IsSpatialRequestAllowed(bbox) {
+			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
+			return
 		}
 
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
-		case engine.FormatHTML:
-			f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.configuredPropertyFilters[collectionID], fc)
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
-		case engine.FormatJSONFG:
-			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, collection.Features, fc, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
+		// validation completed, now get the features
+		newCursor, fc, err := f.queryFeatures(r.Context(), datasource, inputSRID, outputSRID, bbox,
+			encodedCursor.Decode(url.checksum()), limit, collection, referenceDate, propertyFilters, profile)
+		if err != nil {
+			handleFeaturesQueryError(w, collection.ID, err)
 			return
+		}
+
+		// render output
+		format := f.engine.CN.NegotiateFormat(r)
+		switch collectionType {
+		case geospatial.Features:
+			switch format {
+			case engine.FormatHTML:
+				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
+					propertyFilters, f.configuredPropertyFilters[collection.ID],
+					fc, collectionType.AvailableFormats())
+			case engine.FormatGeoJSON, engine.FormatJSON:
+				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, collection.Features, fc)
+			case engine.FormatJSONFG:
+				f.json.featuresAsJSONFG(w, r, collection.ID, newCursor, url, collection.Features, fc, contentCrs)
+			default:
+				handleFormatNotSupported(w, format)
+			}
+		case geospatial.Attributes:
+			switch format {
+			case engine.FormatHTML:
+				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
+					propertyFilters, f.configuredPropertyFilters[collection.ID],
+					fc, collectionType.AvailableFormats())
+			case engine.FormatJSON:
+				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, fc)
+			default:
+				handleFormatNotSupported(w, format)
+			}
 		}
 	}
 }
 
-func querySingleDatasource(datasource ds.Datasource, input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {
+func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, inputSRID, outputSRID domain.SRID,
+	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.GeoSpatialCollection,
+	referenceDate time.Time, propertyFilters map[string]string, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
+
+	var newCursor domain.Cursors
+	var fc *domain.FeatureCollection
+	var err error
+	if shouldQuerySingleDatasource(datasource, inputSRID, outputSRID, bbox) {
+		// fast path
+		fc, newCursor, err = datasource.GetFeatures(ctx, collection.ID, ds.FeaturesCriteria{
+			Cursor:           currentCursor,
+			Limit:            limit,
+			InputSRID:        inputSRID,
+			OutputSRID:       outputSRID,
+			Bbox:             bbox,
+			TemporalCriteria: createTemporalCriteria(collection, referenceDate),
+			PropertyFilters:  propertyFilters,
+			// Add filter, filter-lang
+		}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
+	} else {
+		// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
+		var fids []int64
+		datasource = f.datasources[datasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collection.ID}]
+		fids, newCursor, err = datasource.GetFeatureIDs(ctx, collection.ID, ds.FeaturesCriteria{
+			Cursor:           currentCursor,
+			Limit:            limit,
+			InputSRID:        inputSRID,
+			OutputSRID:       outputSRID,
+			Bbox:             bbox,
+			TemporalCriteria: createTemporalCriteria(collection, referenceDate),
+			PropertyFilters:  propertyFilters,
+			// Add filter, filter-lang
+		})
+		if err == nil && fids != nil {
+			// this is step 2: get the actual features in output CRS by feature ID
+			datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
+			fc, err = datasource.GetFeaturesByID(ctx, collection.ID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
+		}
+	}
+	if fc == nil {
+		fc = emptyFeatureCollection
+	}
+	return newCursor, fc, err
+}
+
+func shouldQuerySingleDatasource(datasource ds.Datasource, input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {
 	if datasource != nil && datasource.SupportsOnTheFlyTransformation() {
 		return true // for on-the-fly we can always use just one datasource
 	}

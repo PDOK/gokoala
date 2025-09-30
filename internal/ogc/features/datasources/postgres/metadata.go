@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -19,7 +20,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the Postgres database. Terminates on failure.
 func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fidColumn, externalFidColumn, schemaName string) (
-	featureTableByCollectionID map[string]*common.FeatureTable,
+	tableByCollectionID map[string]*common.Table,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
 	metadata, err := readDriverMetadata(db)
@@ -28,11 +29,11 @@ func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fi
 	}
 	log.Println(metadata)
 
-	featureTableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
+	tableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,17 +57,18 @@ func readDriverMetadata(db *pgxpool.Pool) (string, error) {
 // 'f_table_name' column. Also, in case there's no exact match between 'collection ID' and 'f_table_name' we use
 // the explicitly configured table name (from the YAML config).
 func readFeatureTables(collections config.GeoSpatialCollections, db *pgxpool.Pool,
-	fidColumn, externalFidColumn, schemaName string) (map[string]*common.FeatureTable, error) {
+	fidColumn, externalFidColumn, schemaName string) (map[string]*common.Table, error) {
 
 	query := `
 select
-	f_table_name::text, f_geometry_column::text, type::text
+	f_table_name::text, '%s', f_geometry_column::text, type::text
 from
 	geometry_columns
 where
 	f_table_schema = $1`
 
-	rows, err := db.Query(context.Background(), query, schemaName)
+	params := fmt.Sprintf(query, geospatial.Features) // Currently only features are supported, not 'attributes'.
+	rows, err := db.Query(context.Background(), params, schemaName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve geometry_columns using query: %v\n, error: %w", query, err)
 	}
@@ -75,27 +77,27 @@ where
 	}
 	defer rows.Close()
 
-	result := make(map[string]*common.FeatureTable, 10)
+	result := make(map[string]*common.Table, 10)
 	for rows.Next() {
-		table := common.FeatureTable{}
-		if err = rows.Scan(&table.TableName, &table.GeometryColumnName, &table.GeometryType); err != nil {
+		table := common.Table{}
+		if err = rows.Scan(&table.Name, &table.Type, &table.GeometryColumnName, &table.GeometryType); err != nil {
 			return nil, fmt.Errorf("failed to read geometry_columns record, error: %w", err)
 		}
-		if table.TableName == "" {
+		if table.Name == "" {
 			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
 		}
 		hasCollection := false
 		for _, collection := range collections {
-			if table.TableName == collection.ID {
+			if table.Name == collection.ID {
 				result[collection.ID] = &table
 				hasCollection = true
-			} else if collection.HasTableName(table.TableName) {
+			} else if collection.HasTableName(table.Name) {
 				result[collection.ID] = &table
 				hasCollection = true
 			}
 		}
 		if !hasCollection {
-			log.Printf("Warning: table %s is present in PostgreSQL but not configured as a collection", table.TableName)
+			log.Printf("Warning: table %s is present in PostgreSQL but not configured as a collection", table.Name)
 		}
 	}
 	if len(result) == 0 {
@@ -105,7 +107,7 @@ where
 	for _, table := range result {
 		table.Schema, err = readSchema(db, *table, fidColumn, externalFidColumn, schemaName, collections)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.TableName, err)
+			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.Name, err)
 		}
 	}
 
@@ -113,7 +115,7 @@ where
 	return result, nil
 }
 
-func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.FeatureTable,
+func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
 	collections config.GeoSpatialCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
@@ -138,7 +140,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 						"from may take a long time. Index on this column is recommended", pf.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", pf.Name, featTable.TableName)
+				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", pf.Name, featTable.Name)
 				rows, err := db.Query(context.Background(), query)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
@@ -168,7 +170,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 	return result, nil
 }
 
-func readSchema(db *pgxpool.Pool, table common.FeatureTable, fidColumn, externalFidColumn, schemaName string,
+func readSchema(db *pgxpool.Pool, table common.Table, fidColumn, externalFidColumn, schemaName string,
 	collections config.GeoSpatialCollections) (*d.Schema, error) {
 
 	collectionNames := make([]string, 0, len(collections))
@@ -206,7 +208,7 @@ order by
     a.attnum;
 `
 
-	rows, err := db.Query(context.Background(), query, schemaName, table.TableName)
+	rows, err := db.Query(context.Background(), query, schemaName, table.Name)
 	if err != nil {
 		return nil, err
 	}

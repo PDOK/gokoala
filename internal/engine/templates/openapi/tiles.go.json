@@ -253,7 +253,6 @@
         }
       },
       "crs": {
-        "title": "CRS",
         "oneOf": [
           {
             "description": "Simplification of the object into a url if the other properties are not present",
@@ -453,7 +452,6 @@
         }
       },
       "tileSet": {
-        "title": "Tile Set Metadata",
         "description": "A resource describing a tileset based on the OGC TileSet Metadata Standard. At least one of the 'TileMatrixSet',  or a link with 'rel' http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
         "type": "object",
         "required": [
@@ -957,7 +955,6 @@
         }
       },
       "tileSet-item": {
-        "title": "Tile Set Metadata item",
         "description": "A minimal tileset element for use within a list of tilesets linking to full description of those tilesets.",
         "type": "object",
         "required": [
@@ -1005,7 +1002,6 @@
         }
       },
       "tileMatrixSet": {
-        "title": "Tile Matrix Set Definition",
         "description": "A definition of a tile matrix set following the Tile Matrix Set standard. For tileset metadata, such a description (in `tileMatrixSet` property) is only required for offline use, as an alternative to a link with a `http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme` relation type.",
         "type": "object",
         "required": [
@@ -1202,7 +1198,6 @@
         }
       },
       "tileMatrixSet-item": {
-        "title": "Tile Matrix Set Item",
         "description": "A minimal tile matrix set element for use within a list of tile matrix sets linking to a full definition.",
         "type": "object",
         "required": [
@@ -1242,7 +1237,6 @@
         }
       },
       "tileMatrixLimits": {
-        "title": "TileMatrixLimits",
         "description": "The limits for an individual tile matrix of a TileSet's TileMatrixSet, as defined in the OGC 2D TileMatrixSet and TileSet Metadata Standard",
         "type": "object",
         "required": [

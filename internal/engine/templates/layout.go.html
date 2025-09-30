@@ -125,9 +125,9 @@
                             <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}" onclick="setLanguage('{{ $languageSwitchCode }}');"
                                                            aria-label="{{ i18n "SwitchLanguage" }} {{ i18n "LanguageSwitchLabel" }}">{{ i18n "LanguageSwitchLabel" }}</a></li>
                         {{ end }}
-                        {{ range $formatKey, $formatName := .AvailableFormats }}
-                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}{{ $.QueryString $formatKey }}" target="_blank"
-                                                           aria-label="{{ i18n "SwitchFormat" }} {{ $formatName }}" id="format-{{ $formatKey }}">{{ $formatName }}</a></li>
+                        {{ range $availableFormat := .AvailableFormats }}
+                            <li class="breadcrumb-item"><a href="{{ empty $.Breadcrumbs | ternary "" $lastcrumb.Path }}{{ $.QueryString $availableFormat.Key }}" target="_blank"
+                                                           aria-label="{{ i18n "SwitchFormat" }} {{ $availableFormat.Name }}" id="format-{{ $availableFormat.Key }}">{{ $availableFormat.Name }}</a></li>
                         {{ end }}
                     </ol>
                 </nav>

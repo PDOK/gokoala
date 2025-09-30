@@ -97,16 +97,16 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 		return nil, errors.New("unknown GeoPackage config encountered")
 	}
 
-	g.FeatureTableByCollectionID, g.PropertyFiltersByCollectionID = readMetadata(
+	g.TableByCollectionID, g.PropertyFiltersByCollectionID = readMetadata(
 		g.backend.getDB(), collections, g.FidColumn, g.ExternalFidColumn)
 
-	if err := assertIndexesExist(collections, g.FeatureTableByCollectionID, g.backend.getDB(), g.FidColumn); err != nil {
+	if err := assertIndexesExist(collections, g.TableByCollectionID, g.backend.getDB(), g.FidColumn); err != nil {
 		return nil, err
 	}
 	if warmUp {
 		// perform warmup async since it can take a long time
 		go func() {
-			if err := warmUpFeatureTables(collections, g.FeatureTableByCollectionID, g.backend.getDB()); err != nil {
+			if err := warmUpFeatureTables(collections, g.TableByCollectionID, g.backend.getDB()); err != nil {
 				log.Fatal(err)
 			}
 		}()
@@ -120,7 +120,7 @@ func (g *GeoPackage) Close() {
 }
 
 func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, criteria ds.FeaturesCriteria) ([]int64, d.Cursors, error) {
-	table, err := g.GetFeatureTable(collection)
+	table, err := g.CollectionToTable(collection)
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
@@ -153,7 +153,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64,
 	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, error) {
 
-	table, err := g.GetFeatureTable(collection)
+	table, err := g.CollectionToTable(collection)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	fids := map[string]any{"fids": featureIDs}
 
 	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select %s from %s where %s in (:fids)",
-		selectClause, table.TableName, g.FidColumn), fids)
+		selectClause, table.Name, g.FidColumn), fids)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make features query, error: %w", err)
 	}
@@ -196,7 +196,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria ds.FeaturesCriteria,
 	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
 
-	table, err := g.GetFeatureTable(collection)
+	table, err := g.CollectionToTable(collection)
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
@@ -235,7 +235,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureID any,
 	_ d.SRID, axisOrder d.AxisOrder, profile d.Profile) (*d.Feature, error) {
 
-	table, err := g.GetFeatureTable(collection)
+	table, err := g.CollectionToTable(collection)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +264,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	propConfig := g.PropertiesByCollectionID[collection]
 	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, false)
 
-	query := fmt.Sprintf(`select %s from "%s" where "%s" = :fid limit 1`, selectClause, table.TableName, fidColumn)
+	query := fmt.Sprintf(`select %s from "%s" where "%s" = :fid limit 1`, selectClause, table.Name, fidColumn)
 	rows, err := g.backend.getDB().NamedQueryContext(queryCtx, query, map[string]any{"fid": featureID})
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
@@ -286,7 +286,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
-func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *common.FeatureTable,
+func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *common.Table,
 	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
 	var selectClause string
@@ -310,7 +310,7 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	return
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
+func (g *GeoPackage) makeDefaultQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlxNamedParamSymbol)
 
@@ -321,7 +321,7 @@ with
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as %[6]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[7]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
-`, table.TableName, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid) // don't add user input here, use named params for user input!
+`, table.Name, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
@@ -332,8 +332,8 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
 	return defaultQuery, namedParams
 }
 
-func (g *GeoPackage) makeBboxQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
-	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.TableName)
+func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
+	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.Name)
 
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)
 	if pfClause != "" {
@@ -383,7 +383,7 @@ with
      nextprev as (select * from next union all select * from prev),
      nextprevfeat as (select *, lag("%[2]s", :limit) over (order by "%[2]s") as %[9]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[10]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s limit :limit
-`, table.TableName, g.FidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
+`, table.Name, g.FidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
 		selectClause, temporalClause, pfClause, btreeIndexHint, d.PrevFid, d.NextFid) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.Marshal(criteria.Bbox.Polygon())
@@ -421,7 +421,10 @@ func mapGpkgGeometry(columnValue any) (geom.T, error) {
 }
 
 // selectGpkgGeometry GeoPackage specific way to select geometry and take axis order into account.
-func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.FeatureTable) string {
+func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.Table) string {
+	if table.GeometryColumnName == "" {
+		return ""
+	}
 	if axisOrder == d.AxisOrderYX {
 		// GeoPackage geometries are stored in WKB format and WKB is always XY.
 		// So swap coordinates when needed. This requires casting to a SpatiaLite geometry first, executing

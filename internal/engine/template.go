@@ -61,21 +61,11 @@ type TemplateData struct {
 	// Breadcrumb path to the page, in key-value pairs of name->path
 	Breadcrumbs []Breadcrumb
 
+	// AvailableFormats returns the output formats available for the current page
+	AvailableFormats []OutputFormat
+
 	// Request URL
 	url *url.URL
-}
-
-// AvailableFormats returns the output formats available for the current page
-func (td *TemplateData) AvailableFormats() map[string]string {
-	if td.url != nil && strings.Contains(td.url.Path, "/items") {
-		return td.AvailableFormatsFeatures()
-	}
-	return OutputFormatDefault
-}
-
-// AvailableFormatsFeatures convenience function
-func (td *TemplateData) AvailableFormatsFeatures() map[string]string {
-	return OutputFormatFeatures
 }
 
 // QueryString returns ?=foo=a&bar=b style query string of the current page
@@ -199,7 +189,7 @@ func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcr
 		var result []byte
 		if key.Format == FormatHTML {
 			file, parsed := t.parseHTMLTemplate(key, lang)
-			result = t.renderHTMLTemplate(parsed, nil, params, breadcrumbs, file)
+			result = t.renderHTMLTemplate(parsed, nil, params, breadcrumbs, file, OutputFormatDefault)
 		} else {
 			file, parsed := t.parseNonHTMLTemplate(key, lang)
 			result = t.renderNonHTMLTemplate(parsed, params, key, file)
@@ -219,15 +209,16 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 	return file, parsed
 }
 func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
-	params any, breadcrumbs []Breadcrumb, file string) []byte {
+	params any, breadcrumbs []Breadcrumb, file string, availableFormats []OutputFormat) []byte {
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{
-		Config:      t.config,
-		Theme:       t.Theme,
-		Params:      params,
-		Breadcrumbs: breadcrumbs,
-		url:         url,
+		Config:           t.config,
+		Theme:            t.Theme,
+		Params:           params,
+		Breadcrumbs:      breadcrumbs,
+		AvailableFormats: availableFormats,
+		url:              url,
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}

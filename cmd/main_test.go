@@ -69,6 +69,30 @@ func TestBuildingBlocks(t *testing.T) {
 			wantBody:   "internal/ogc/features/testdata/expected_multiple_feature_tables_single_geopackage.json",
 		},
 		{
+			name:       "Serve collections with feature and attributes",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections?f=json",
+			wantBody:   "internal/ogc/features/testdata/expected_collections_features_and_attributes.json",
+		},
+		{
+			name:       "Serve features collection",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections/roads?f=json",
+			wantBody:   "internal/ogc/features/testdata/expected_collection_features.json",
+		},
+		{
+			name:       "Serve attributes collection",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections/road_extras?f=json",
+			wantBody:   "internal/ogc/features/testdata/expected_collection_attributes.json",
+		},
+		{
+			name:       "Serve attributes collection as HTML",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections/road_extras?f=html",
+			wantBody:   "internal/ogc/features/testdata/expected_collection_attributes_snippet.html",
+		},
+		{
 			name:       "Serve top-level OGC API Tiles",
 			configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel_and_collectionlevel.yaml",
 			apiCall:    "http://localhost:8180/tiles?f=json",

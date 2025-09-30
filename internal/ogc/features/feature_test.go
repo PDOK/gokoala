@@ -362,6 +362,34 @@ func TestFeature(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request non-spatial feature (Attribute JSON)",
+			fields: fields{
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_attributes.yaml"},
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "road_extras",
+				featureID:    "2",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_attribute.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Fail on request for non-spatial feature (Attribute JSON) in geo format (e.g JSON-FG)",
+			fields: fields{
+				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_attributes.yaml"},
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
+				collectionID: "road_extras",
+				featureID:    "2",
+				format:       "json",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusNotAcceptable,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

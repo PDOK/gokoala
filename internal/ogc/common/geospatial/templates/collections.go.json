@@ -2,6 +2,7 @@
 {
   {{ $cfg := .Config }}
   {{ $baseUrl := $cfg.BaseURL }}
+  {{ $collTypes := .Params }}
   "links" : [
     {
       "rel" : "self",
@@ -27,6 +28,7 @@
     {{/* TIP: temporarily disable the line below to fix intellij/goland highlighting */}}
     {{ if $index }},{{ end }}
     {
+      {{ $collType := $collTypes.Get $coll.ID }}
       "id" : "{{ $coll.ID }}",
       {{ if and $coll.Metadata $coll.Metadata.Title }}
       "title" : "{{ $coll.Metadata.Title }}"
@@ -68,6 +70,7 @@
       }
       {{ end }}
       {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
+      ,"itemType": "{{ $collType.ItemType }}"
       ,"crs" : [
         "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
         {{ range $index, $srs := $cfg.OgcAPI.Features.CollectionSRS $coll.ID }}
@@ -145,6 +148,7 @@
         {{end}}
         {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
           {{ if $cfg.OgcAPI.Features.Collections.ContainsID $coll.ID }}
+            {{ if eq $collType "features" }}
             ,{
               "rel" : "items",
               "type" : "application/geo+json",
@@ -163,6 +167,21 @@
               "title" : "The HTML representation of the {{ $coll.ID }} features served from this endpoint",
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
             },
+            {{ end }}
+            {{ if eq $collType "attributes" }}
+            ,{
+              "rel" : "items",
+              "type" : "application/json",
+              "title" : "The JSON representation of the {{ $coll.ID }} attributes served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=json"
+            },
+            {
+              "rel" : "items",
+              "type" : "text/html",
+              "title" : "The HTML representation of the {{ $coll.ID }} attributes served from this endpoint",
+              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
+            },
+            {{ end }}
             {
               "rel" : "http://www.opengis.net/def/rel/ogc/1.0/schema",
               "type" : "application/schema+json",

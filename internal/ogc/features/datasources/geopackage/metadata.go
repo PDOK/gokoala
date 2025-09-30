@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -18,7 +19,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the GeoPackage. Terminates on failure.
 func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColumn, externalFidColumn string) (
-	featureTableByCollectionID map[string]*common.FeatureTable,
+	tableByCollectionID map[string]*common.Table,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
 	metadata, err := readDriverMetadata(db)
@@ -27,11 +28,11 @@ func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColu
 	}
 	log.Println(metadata)
 
-	featureTableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn)
+	tableByCollectionID, err = readGeoPackageTables(collections, db, fidColumn, externalFidColumn)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(featureTableByCollectionID, collections, db)
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,18 +73,19 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'table_name' column. Also, in case there's no exact match between 'collection ID' and 'table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readFeatureTables(collections config.GeoSpatialCollections, db *sqlx.DB,
-	fidColumn, externalFidColumn string) (map[string]*common.FeatureTable, error) {
+func readGeoPackageTables(collections config.GeoSpatialCollections, db *sqlx.DB,
+	fidColumn, externalFidColumn string) (map[string]*common.Table, error) {
 
 	query := `
 select
-	c.table_name, gc.column_name, gc.geometry_type_name
+	c.table_name, c.data_type, coalesce(gc.column_name, ''), coalesce(gc.geometry_type_name, '')
 from
-	gpkg_contents c join gpkg_geometry_columns gc on c.table_name == gc.table_name
+	gpkg_contents c left join gpkg_geometry_columns gc on c.table_name == gc.table_name
 where
-	c.data_type = 'features'`
+	c.data_type = '%s' or c.data_type = '%s'`
 
-	rows, err := db.Queryx(query)
+	// see https://docs.ogc.org/is/12-128r19/12-128r19.html#r14 for supported data types in GeoPackages.
+	rows, err := db.Queryx(fmt.Sprintf(query, geospatial.Features, geospatial.Attributes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve gpkg_contents using query: %v\n, error: %w", query, err)
 	}
@@ -92,37 +94,34 @@ where
 	}
 	defer rows.Close()
 
-	result := make(map[string]*common.FeatureTable, 10)
+	result := make(map[string]*common.Table, 10)
 	for rows.Next() {
-		table := common.FeatureTable{}
-		if err = rows.Scan(&table.TableName, &table.GeometryColumnName, &table.GeometryType); err != nil {
-			return nil, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
-		}
-		if table.TableName == "" {
-			return nil, fmt.Errorf("feature table name is blank, error: %w", err)
+		table, err := readGeoPackageTable(rows)
+		if err != nil {
+			return nil, err
 		}
 		hasCollection := false
 		for _, collection := range collections {
-			if table.TableName == collection.ID {
+			if table.Name == collection.ID {
 				result[collection.ID] = &table
 				hasCollection = true
-			} else if collection.HasTableName(table.TableName) {
+			} else if collection.HasTableName(table.Name) {
 				result[collection.ID] = &table
 				hasCollection = true
 			}
 		}
 		if !hasCollection {
-			log.Printf("Warning: table %s is present in GeoPackage but not configured as a collection", table.TableName)
+			log.Printf("Warning: table %s is present in GeoPackage but not configured as a collection", table.Name)
 		}
 	}
 	if len(result) == 0 {
-		return nil, errors.New("no records for 'features' found in gpkg_contents and/or gpkg_geometry_columns")
+		return nil, errors.New("no records found in gpkg_contents and/or gpkg_geometry_columns")
 	}
 
 	for _, table := range result {
 		table.Schema, err = readSchema(db, *table, fidColumn, externalFidColumn, collections)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.TableName, err)
+			return nil, fmt.Errorf("failed to read schema for table %s, error: %w", table.Name, err)
 		}
 	}
 
@@ -130,7 +129,21 @@ where
 	return result, nil
 }
 
-func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.FeatureTable,
+func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
+	table := common.Table{}
+	if err := rows.Scan(&table.Name, &table.Type, &table.GeometryColumnName, &table.GeometryType); err != nil {
+		return table, fmt.Errorf("failed to read gpkg_contents record, error: %w", err)
+	}
+	if table.Name == "" {
+		return table, errors.New("table name is blank")
+	}
+	if table.Type == geospatial.Features && (table.GeometryColumnName == "" || table.GeometryType == "") {
+		return table, errors.New("data type of table is 'features' but table has no geometry defined")
+	}
+	return table, nil
+}
+
+func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
 	collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
@@ -155,7 +168,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 						"from may take a long time. Index on this column is recommended", pf.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", pf.Name, featTable.TableName)
+				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", pf.Name, featTable.Name)
 				var values []string
 				err := db.Select(&values, query)
 				if err != nil {
@@ -176,7 +189,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 	return result, nil
 }
 
-func readSchema(db *sqlx.DB, table common.FeatureTable, fidColumn, externalFidColumn string,
+func readSchema(db *sqlx.DB, table common.Table, fidColumn, externalFidColumn string,
 	collections config.GeoSpatialCollections) (*d.Schema, error) {
 
 	collectionNames := make([]string, 0, len(collections))
@@ -194,9 +207,9 @@ func readSchema(db *sqlx.DB, table common.FeatureTable, fidColumn, externalFidCo
 	if schemaExtension {
 		query = fmt.Sprintf("select a.name, a.type, a.\"notnull\", coalesce(b.description, '') "+
 			"from pragma_table_info('%[1]s') a "+
-			"left join gpkg_data_columns b on b.column_name = a.name and b.table_name='%[1]s'", table.TableName)
+			"left join gpkg_data_columns b on b.column_name = a.name and b.table_name='%[1]s'", table.Name)
 	} else {
-		query = fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.TableName)
+		query = fmt.Sprintf("select name, type, \"notnull\" from pragma_table_info('%s')", table.Name)
 	}
 
 	rows, err := db.Queryx(query)

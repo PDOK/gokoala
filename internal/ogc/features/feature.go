@@ -9,11 +9,14 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 // Feature endpoint serves a single Feature by ID
+//
+//nolint:cyclop
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
@@ -24,7 +27,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		collectionID := chi.URLParam(r, "collectionId")
 		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
-			handleCollectionNotFound(w, collectionID)
+			handleCollectionNotFound(w, collection.ID)
 			return
 		}
 		featureID, err := parseFeatureID(r)
@@ -34,7 +37,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
-			f.schemas[collectionID],
+			f.schemas[collection.ID],
 		}
 		outputSRID, contentCrs, profile, err := url.parse()
 		if err != nil {
@@ -43,29 +46,43 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
-		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID,
+		// validation completed, now get the feature
+		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
+		feat, err := datasource.GetFeature(r.Context(), collection.ID, featureID,
 			outputSRID, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 		if err != nil {
-			handleFeatureQueryError(w, collectionID, featureID, err)
+			handleFeatureQueryError(w, collection.ID, featureID, err)
 			return
 		}
 		if feat == nil {
-			handleFeatureNotFound(w, collectionID, featureID)
+			handleFeatureNotFound(w, collection.ID, featureID)
 			return
 		}
 
+		// render output
 		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
-		case engine.FormatHTML:
-			f.html.feature(w, r, collection, feat)
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
-		case engine.FormatJSONFG:
-			f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-			return
+		collectionType := f.collectionTypes.Get(collection.ID)
+		switch collectionType {
+		case geospatial.Features:
+			switch format {
+			case engine.FormatHTML:
+				f.html.feature(w, r, collection, feat, collectionType.AvailableFormats())
+			case engine.FormatGeoJSON, engine.FormatJSON:
+				f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
+			case engine.FormatJSONFG:
+				f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
+			default:
+				handleFormatNotSupported(w, format)
+			}
+		case geospatial.Attributes:
+			switch format {
+			case engine.FormatHTML:
+				f.html.attribute(w, r, collection, feat, collectionType.AvailableFormats())
+			case engine.FormatJSON:
+				f.json.featureAsAttributeJSON(w, r, collectionID, feat, url)
+			default:
+				handleFormatNotSupported(w, format)
+			}
 		}
 	}
 }

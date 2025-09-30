@@ -380,8 +380,7 @@ func TestParseFeatures(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"crs":      []string{"EPSG:28992"},
-					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+					"crs": []string{"EPSG:28992"},
 				},
 				limit: config.Limit{
 					Default: 10,
@@ -390,6 +389,23 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "crs param should start with http://www.opengis.net/def/crs/, got: EPSG:28992", "parse()")
+				return false
+			},
+		},
+		{
+			name: "Fail on bbox-crs without bbox",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+				},
+				limit: config.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
+				assert.EqualError(t, err, "bbox-crs can't be used without bbox parameter", "parse()")
 				return false
 			},
 		},

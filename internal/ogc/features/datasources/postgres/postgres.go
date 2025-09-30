@@ -86,10 +86,10 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 		schemaName: pgConfig.Schema,
 	}
 
-	pg.FeatureTableByCollectionID, pg.PropertyFiltersByCollectionID = readMetadata(
+	pg.TableByCollectionID, pg.PropertyFiltersByCollectionID = readMetadata(
 		db, collections, pg.FidColumn, pg.ExternalFidColumn, pg.schemaName)
 
-	if err = assertIndexesExist(collections, pg.FeatureTableByCollectionID, db, *pgConfig.SpatialIndexRequired); err != nil {
+	if err = assertIndexesExist(collections, pg.TableByCollectionID, db, *pgConfig.SpatialIndexRequired); err != nil {
 		return nil, err
 	}
 	return pg, nil
@@ -112,7 +112,7 @@ func (pg *Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ d.
 func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria ds.FeaturesCriteria,
 	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
 
-	table, err := pg.GetFeatureTable(collection)
+	table, err := pg.CollectionToTable(collection)
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
@@ -151,7 +151,7 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID any,
 	outputSRID d.SRID, axisOrder d.AxisOrder, profile d.Profile) (*d.Feature, error) {
 
-	table, err := pg.GetFeatureTable(collection)
+	table, err := pg.CollectionToTable(collection)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	}
 
 	query := fmt.Sprintf(`select %[1]s from "%[2]s" where "%[3]s"%[4]s = @fid%[4]s limit 1`,
-		selectClause, table.TableName, fidColumn, fidTypeCast)
+		selectClause, table.Name, fidColumn, fidTypeCast)
 	rows, err := pg.db.Query(queryCtx, query, pgx.NamedArgs{"fid": featureID, "outputSrid": srid})
 	if err != nil {
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
@@ -214,7 +214,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 }
 
 // Build specific features queries based on the given options.
-func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, table *common.FeatureTable,
+func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, table *common.Table,
 	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
@@ -235,7 +235,7 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, tabl
 	return pg.makeQuery(table, selectClause, criteria)
 }
 
-func (pg *Postgres) makeQuery(table *common.FeatureTable, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
+func (pg *Postgres) makeQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
@@ -256,7 +256,7 @@ with
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
-`, table.TableName, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
+`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
 
 	namedParams := map[string]any{
 		"fid":        criteria.Cursor.FID,
@@ -304,7 +304,7 @@ func mapPostGISGeometry(columnValue any) (geom.T, error) {
 
 // selectPostGISGeometry Postgres/PostGIS specific way to select geometry
 // and take domain.AxisOrder into account.
-func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.FeatureTable) string {
+func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	if axisOrder == d.AxisOrderYX {
 		return fmt.Sprintf(", st_flipcoordinates(st_transform(\"%[1]s\", @outputSrid::int)) as \"%[1]s\"", table.GeometryColumnName)
 	}

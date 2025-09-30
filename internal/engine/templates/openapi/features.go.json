@@ -81,6 +81,10 @@
           {{ end }}
         ],
         "responses": {
+          {{- $collType := "undefined" -}}
+          {{- if and $.Params $.Params.CollectionTypes -}}
+            {{- $collType = $.Params.CollectionTypes.Get $coll.ID -}}
+          {{- end -}}
           "200": {
             "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include links to support paging (link relation `next`).",
             "headers": {
@@ -93,6 +97,7 @@
               }
             },
             "content": {
+              {{- if eq $collType "features" -}}
               "application/geo+json": {
                 "schema": {
                   "$ref": "#/components/schemas/featureCollectionGeoJSON_{{ $coll.ID }}"
@@ -103,6 +108,14 @@
                   "$ref": "#/components/schemas/featureCollectionJSONFG_{{ $coll.ID }}"
                 }
               },
+              {{- end -}}
+              {{ if eq $collType "attributes" }}
+              "application/json": {
+                "schema": {
+                    "$ref": "#/components/schemas/featureCollectionJSON_{{ $coll.ID }}"
+                }
+              },
+              {{- end -}}
               "text/html": {
                 "schema": {
                   "type": "string"
@@ -155,6 +168,7 @@
               }
             },
             "content": {
+              {{- if eq $collType "features" -}}
               "application/geo+json": {
                 "schema": {
                   "$ref": "#/components/schemas/featureGeoJSON_{{ $coll.ID }}"
@@ -165,6 +179,14 @@
                   "$ref": "#/components/schemas/featureJSONFG_{{ $coll.ID }}"
                 }
               },
+              {{- end -}}
+              {{ if eq $collType "attributes" }}
+              "application/json": {
+                "schema": {
+                   "$ref": "#/components/schemas/featureJSON_{{ $coll.ID }}"
+                 }
+              },
+              {{- end -}}
               "text/html": {
                 "schema": {
                   "type": "string"
@@ -311,6 +333,46 @@
       ,
       {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
       {{- if $index -}},{{- end -}}
+      "featureCollectionJSON_{{ $coll.ID }}": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/featureJSON_{{ $coll.ID }}"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "timeStamp": {
+            "$ref": "#/components/schemas/timeStamp"
+          },
+{{/*          "numberMatched": {*/}}
+{{/*            "$ref": "#/components/schemas/numberMatched"*/}}
+{{/*          },*/}}
+          "numberReturned": {
+            "$ref": "#/components/schemas/numberReturned"
+          }
+        }
+      }
+      {{ end }}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
       "featureJSONFG_{{ $coll.ID }}": {
         "required": [
             "time",
@@ -406,6 +468,44 @@
               {
                 "$ref": "#/components/schemas/geometryGeoJSON"
               }
+            ]
+          },
+          "properties": {
+            "$ref": "#/components/schemas/propertiesGeoJSON_{{ $coll.ID }}"
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      }
+      {{ end }}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureJSON_{{ $coll.ID }}": {
+        "required": [
+          "properties",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
             ]
           },
           "properties": {

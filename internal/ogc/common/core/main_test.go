@@ -97,7 +97,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			assert.NoError(t, err)
-			core := NewCommonCore(newEngine)
+			core := NewCommonCore(newEngine, ExtraConformanceClasses{false})
 			handler := core.LandingPage()
 			handler.ServeHTTP(rr, req)
 
@@ -109,8 +109,9 @@ func TestCommonCore_LandingPage(t *testing.T) {
 
 func TestCommonCore_Conformance(t *testing.T) {
 	type fields struct {
-		configFile string
-		url        string
+		configFile         string
+		url                string
+		supportsAttributes bool
 	}
 	type want struct {
 		body       string
@@ -124,8 +125,9 @@ func TestCommonCore_Conformance(t *testing.T) {
 		{
 			name: "conformance as JSON",
 			fields: fields{
-				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
-				url:        "http://localhost:8080/conformance?f=json",
+				configFile:         "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:                "http://localhost:8080/conformance?f=json",
+				supportsAttributes: false,
 			},
 			want: want{
 				body:       "conformsTo",
@@ -133,13 +135,38 @@ func TestCommonCore_Conformance(t *testing.T) {
 			},
 		},
 		{
+			name: "conformance as JSON with non-OGC conformance class for 'attributes'",
+			fields: fields{
+				configFile:         "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+				url:                "http://localhost:8080/conformance?f=json",
+				supportsAttributes: true,
+			},
+			want: want{
+				body:       "http://www.pdok.nl/spec/attribute-json/0.1",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "conformance as HTML",
 			fields: fields{
-				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
-				url:        "http://localhost:8080/conformance?f=html",
+				configFile:         "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:                "http://localhost:8080/conformance?f=html",
+				supportsAttributes: false,
 			},
 			want: want{
 				body:       "conformiteitsklassen",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "conformance as HTML with non-OGC conformance class for 'attributes'",
+			fields: fields{
+				configFile:         "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+				url:                "http://localhost:8080/conformance?f=html",
+				supportsAttributes: true,
+			},
+			want: want{
+				body:       "<td class=\"small\">http://www.pdok.nl/spec/attribute-json/0.1",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -155,7 +182,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			assert.NoError(t, err)
-			core := NewCommonCore(newEngine)
+			core := NewCommonCore(newEngine, ExtraConformanceClasses{tt.fields.supportsAttributes})
 			handler := core.Conformance()
 			handler.ServeHTTP(rr, req)
 
@@ -213,7 +240,7 @@ func TestCommonCore_API(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			assert.NoError(t, err)
-			core := NewCommonCore(newEngine)
+			core := NewCommonCore(newEngine, ExtraConformanceClasses{false})
 			handler := core.API()
 			handler.ServeHTTP(rr, req)
 
