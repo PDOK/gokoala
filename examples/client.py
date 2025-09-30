@@ -19,8 +19,8 @@ try:
 
     print(f"Found {len(retrieved_features['features'])} features:")
     for feature in retrieved_features['features']:
-        feature_name = feature.get('properties', {}).get('component_addressareaname', 'N/A')
-        print(f"  - Feature ID: {feature['id']}, Name: {feature_name}")
+        feature_name = feature.get('properties', {}).get('component_postaldescriptor', 'N/A')
+        print(f"  - Feature ID: {feature['id']}, Postal code: {feature_name}")
 
     print("\n Done.")
 
