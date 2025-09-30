@@ -156,7 +156,7 @@ func createHTTPClient(tlsSkipVerify bool, timeout time.Duration, retryDelay time
 		},
 	}
 	//nolint:bodyclose // false positive
-	retryPolicy := failsafehttp.RetryPolicyBuilder().
+	retryPolicy := failsafehttp.NewRetryPolicyBuilder().
 		WithBackoff(retryDelay, retryMaxDelay). //nolint:bodyclose // false positive
 		WithMaxRetries(maxRetries).             //nolint:bodyclose // false positive
 		Build()                                 //nolint:bodyclose // false positive

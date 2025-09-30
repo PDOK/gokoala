@@ -10,8 +10,6 @@ import (
 	eng "github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc"
 	"github.com/urfave/cli/v2"
-
-	_ "go.uber.org/automaxprocs"
 )
 
 var (
