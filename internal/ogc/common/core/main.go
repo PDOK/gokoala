@@ -14,11 +14,15 @@ const (
 	conformancePath    = "/conformance"
 )
 
+type ExtraConformanceClasses struct {
+	AttributesConformance bool
+}
+
 type CommonCore struct {
 	engine *engine.Engine
 }
 
-func NewCommonCore(e *engine.Engine) *CommonCore {
+func NewCommonCore(e *engine.Engine, extraConformanceClasses ExtraConformanceClasses) *CommonCore {
 	conformanceBreadcrumbs := []engine.Breadcrumb{
 		{
 			Name: "Conformance",
@@ -39,10 +43,12 @@ func NewCommonCore(e *engine.Engine) *CommonCore {
 	e.RenderTemplates(rootPath,
 		apiBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"api.go.html"))
-	e.RenderTemplates(conformancePath,
+	e.RenderTemplatesWithParams(conformancePath,
+		extraConformanceClasses,
 		conformanceBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"conformance.go.json"),
 		engine.NewTemplateKey(templatesDir+"conformance.go.html"))
+
 	core := &CommonCore{
 		engine: e,
 	}

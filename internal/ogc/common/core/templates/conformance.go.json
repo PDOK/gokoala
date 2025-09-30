@@ -88,5 +88,9 @@
         ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/callback"
       {{end}}
     {{end}}
+
+    {{ if and .Params .Params.AttributesConformance }}
+      ,"http://www.pdok.nl/spec/attribute-json/0.1"
+    {{ end }}
   ]
 }

@@ -60,3 +60,12 @@ func NewCollectionTypes(types map[string]CollectionType) CollectionTypes {
 func (cts CollectionTypes) Get(collection string) CollectionType {
 	return cts.types[collection]
 }
+
+func (cts CollectionTypes) HasAttributes() bool {
+	for _, ct := range cts.types {
+		if ct == Attributes {
+			return true
+		}
+	}
+	return false
+}

@@ -304,5 +304,32 @@
         </div>
     </div>
     {{ end }}
+
+    {{ if and .Params .Params.AttributesConformance }}
+    <div class="col-md-6 col-sm-12">
+        <div class="card">
+            <h2 class="card-header h5">Non-OGC</h2>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">Conformance</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{ if and .Params .Params.AttributesConformance }}
+                    <tr>
+                        <td class="small">http://www.pdok.nl/spec/attribute-json/0.1</td>
+                        <td class="small text-nowrap">{{ i18n "Draft" }}</td>
+                    </tr>
+                    {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+
 </section>
 {{end}}

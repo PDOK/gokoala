@@ -12,9 +12,6 @@ import (
 )
 
 func SetupBuildingBlocks(engine *engine.Engine) {
-	// OGC Common Part 1, will always be started
-	core.NewCommonCore(engine)
-
 	// OGC 3D GeoVolumes API
 	if engine.Config.OgcAPI.GeoVolumes != nil {
 		geovolumes.NewThreeDimensionalGeoVolumes(engine)
@@ -37,6 +34,9 @@ func SetupBuildingBlocks(engine *engine.Engine) {
 	if engine.Config.OgcAPI.Processes != nil {
 		processes.NewProcesses(engine)
 	}
+
+	// OGC Common Part 1, this will always be started
+	core.NewCommonCore(engine, core.ExtraConformanceClasses{AttributesConformance: collectionTypes.HasAttributes()})
 	// OGC Common part 2
 	if engine.Config.HasCollections() {
 		geospatial.NewCollections(engine, collectionTypes)
