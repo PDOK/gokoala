@@ -34,6 +34,22 @@ jobs:
             --name gokoala \
             gokoala:local --config-file /examples/config_all.yaml
 
+      # E2E Test (OWSLib)
+      - name: E2E Test => Retrieve OGC API Features using Python (OWSLib)
+        run: |
+          docker run --net=host -t \
+            -v `pwd`/examples:/examples \
+            docker.io/python:3.13-slim \
+            sh -c "pip install --no-cache-dir OWSLib && python /examples/client.py"
+
+      # E2E Test (GDAL)
+      - name: E2E Test => Retrieve OGC API Features using GDAL
+        run: |
+          docker run --net=host -t \
+            -v `pwd`/examples:/examples \
+            ghcr.io/osgeo/gdal:ubuntu-small-3.8.3 \
+            sh -c "ogrinfo -so OAPIF:http://localhost:8080 addresses"
+
       # E2E Test (Cypress)
       - name: E2E Test => Cypress
         uses: cypress-io/github-action@v6
