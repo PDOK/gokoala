@@ -67,7 +67,6 @@ linters:
     - gochecksumtype            # Run exhaustiveness checks on Go "sum types".
     - goconst                   # Finds repeated strings that could be replaced by a constant.
     - gocritic                  # Provides diagnostics that check for bugs, performance and style issues.
-    - godot                     # Check if comments end in a period.
     - goheader                  # Check if file header matches to pattern.
     - gomoddirectives           # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod.
     - gomodguard                # Allow and blocklist linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations.
