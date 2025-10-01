@@ -186,11 +186,13 @@ func (t *Tiles) Tile(tilesConfig config.Tiles) http.HandlerFunc {
 		tileCol, err := getTileColumn(r, t.engine.CN.NegotiateFormat(r))
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+
 			return
 		}
 		tm, tr, tc, err := parseTileParams(tileMatrix, tileRow, tileCol)
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, strings.ReplaceAll(err.Error(), "strconv.Atoi: ", ""))
+
 			return
 		}
 
@@ -198,17 +200,20 @@ func (t *Tiles) Tile(tilesConfig config.Tiles) http.HandlerFunc {
 			// unknown tileMatrixSet
 			err = fmt.Errorf("unknown tileMatrixSet '%s'", tileMatrixSetID)
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+
 			return
 		}
 		err = checkTileMatrixSetLimits(t.tileMatrixSetLimits, tileMatrixSetID, tm, tr, tc)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
+
 			return
 		}
 
 		target, err := createTilesURL(tileMatrixSetID, tileMatrix, tileCol, tileRow, tilesConfig)
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemServerError, w, err)
+
 			return
 		}
 		t.engine.ReverseProxy(w, r, target, true, engine.MediaTypeMVT)
@@ -226,11 +231,13 @@ func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tile
 		tileCol, err := getTileColumn(r, t.engine.CN.NegotiateFormat(r))
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+
 			return
 		}
 		tm, tr, tc, err := parseTileParams(tileMatrix, tileRow, tileCol)
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, strings.ReplaceAll(err.Error(), "strconv.Atoi: ", ""))
+
 			return
 		}
 
@@ -238,11 +245,13 @@ func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tile
 			// unknown tileMatrixSet
 			err = fmt.Errorf("unknown tileMatrixSet '%s'", tileMatrixSetID)
 			engine.RenderProblemAndLog(engine.ProblemBadRequest, w, err, err.Error())
+
 			return
 		}
 		err = checkTileMatrixSetLimits(t.tileMatrixSetLimits, tileMatrixSetID, tm, tr, tc)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemNotFound, w, err.Error())
+
 			return
 		}
 
@@ -250,11 +259,13 @@ func (t *Tiles) TileForCollection(tilesConfigByCollection map[string]config.Tile
 		if !ok {
 			err = fmt.Errorf("no tiles available for collection: %s", collectionID)
 			engine.RenderProblemAndLog(engine.ProblemNotFound, w, err, err.Error())
+
 			return
 		}
 		target, err := createTilesURL(tileMatrixSetID, tileMatrix, tileCol, tileRow, tilesConfig)
 		if err != nil {
 			engine.RenderProblemAndLog(engine.ProblemServerError, w, err)
+
 			return
 		}
 		t.engine.ReverseProxy(w, r, target, true, engine.MediaTypeMVT)
@@ -274,6 +285,7 @@ func getTileColumn(r *http.Request, format string) (string, error) {
 	} else {
 		tileCol = tileCol[:len(tileCol)-4] // remove .pbf extension
 	}
+
 	return tileCol, nil
 }
 
@@ -292,6 +304,7 @@ func createTilesURL(tileMatrixSetID string, tileMatrix string, tileCol string,
 	if err != nil {
 		return nil, fmt.Errorf("invalid target url, can't proxy tiles: %w", err)
 	}
+
 	return target, nil
 }
 
@@ -383,6 +396,7 @@ func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollecti
 	if metadata != nil && metadata.Title != nil {
 		return *metadata.Title
 	}
+
 	return collectionID
 }
 
@@ -407,6 +421,7 @@ func readTileMatrixSetLimits(supportedProjections []config.SupportedSrs) map[str
 		}
 		tileMatrixSetLimits[tileMatrixSetID] = tmsLimits
 	}
+
 	return tileMatrixSetLimits
 }
 
@@ -414,6 +429,7 @@ func parseTileParams(tileMatrix, tileRow, tileCol string) (int, int, int, error)
 	tm, tmErr := strconv.Atoi(tileMatrix)
 	tr, trErr := strconv.Atoi(tileRow)
 	tc, tcErr := strconv.Atoi(tileCol)
+
 	return tm, tr, tc, errors.Join(tmErr, trErr, tcErr)
 }
 
@@ -427,5 +443,6 @@ func checkTileMatrixSetLimits(tileMatrixSetLimits map[string]map[int]TileMatrixS
 		// tileRow and/or tileCol out of supported range
 		return fmt.Errorf("tileRow/tileCol %d/%d is out of range", tileRow, tileCol)
 	}
+
 	return nil
 }

@@ -113,8 +113,10 @@ func TestAxisOrder(t *testing.T) {
 					if tt.mockLookPathErr != nil {
 						return "", tt.mockLookPathErr
 					}
+
 					return "/test/projinfo", nil
 				}
+
 				return originalLookPathFunc(file)
 			}
 
@@ -129,8 +131,10 @@ func TestAxisOrder(t *testing.T) {
 						"STDOUT=" + tt.mockCmdOutput,
 						"EXIT_CODE=" + strconv.Itoa(tt.mockCmdExitCode),
 					}
+
 					return cmd
 				}
+
 				return originalCmdFunc(name, arg...)
 			}
 

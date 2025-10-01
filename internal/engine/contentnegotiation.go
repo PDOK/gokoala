@@ -141,10 +141,11 @@ func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
 	if extension, exists := StyleFormatExtension[format]; exists {
 		return extension
 	}
+
 	return ""
 }
 
-// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param)
+// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param).
 func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
 	requestedFormat := cn.getFormatFromQueryParam(req)
 	if requestedFormat == "" {
@@ -153,10 +154,11 @@ func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
 	if requestedFormat == "" {
 		requestedFormat = FormatJSON // default
 	}
+
 	return requestedFormat
 }
 
-// NegotiateLanguage performs language negotiation, not idempotent (since it removes the ?lang= param)
+// NegotiateLanguage performs language negotiation, not idempotent (since it removes the ?lang= param).
 func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http.Request) language.Tag {
 	requestedLanguage := cn.getLanguageFromQueryParam(w, req)
 	if requestedLanguage == language.Und {
@@ -168,6 +170,7 @@ func (cn *ContentNegotiation) NegotiateLanguage(w http.ResponseWriter, req *http
 	if requestedLanguage == language.Und {
 		requestedLanguage = language.Dutch // default
 	}
+
 	return requestedLanguage
 }
 
@@ -175,6 +178,7 @@ func (cn *ContentNegotiation) formatToMediaType(key TemplateKey) string {
 	if key.MediaTypeOverwrite != "" {
 		return key.MediaTypeOverwrite
 	}
+
 	return cn.mediaTypesByFormat[key.Format]
 }
 
@@ -188,6 +192,7 @@ func (cn *ContentNegotiation) getFormatFromQueryParam(req *http.Request) string 
 		queryParams.Del(FormatParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}
+
 	return requestedFormat
 }
 
@@ -195,8 +200,10 @@ func (cn *ContentNegotiation) getFormatFromAcceptHeader(req *http.Request) strin
 	accepted, _, err := contenttype.GetAcceptableMediaType(req, cn.availableMediaTypes)
 	if err != nil {
 		log.Printf("Failed to parse Accept header: %v. Continuing\n", err)
+
 		return ""
 	}
+
 	return cn.formatsByMediaType[accepted.String()]
 }
 
@@ -222,6 +229,7 @@ func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, r
 		queryParams.Del(languageParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}
+
 	return requestedLanguage
 }
 
@@ -251,6 +259,7 @@ func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.
 	m := language.NewMatcher(cn.availableLanguages)
 	_, langIndex, _ := m.Match(accepted...)
 	requestedLanguage = cn.availableLanguages[langIndex]
+
 	return requestedLanguage
 }
 
@@ -260,11 +269,13 @@ func (cn *ContentNegotiation) getLanguageFromHeader(req *http.Request) language.
 		accepted, _, err := language.ParseAcceptLanguage(req.Header.Get(HeaderAcceptLanguage))
 		if err != nil {
 			log.Printf("Failed to parse Accept-Language header: %v. Continuing\n", err)
+
 			return requestedLanguage
 		}
 		m := language.NewMatcher(cn.availableLanguages)
 		_, langIndex, _ := m.Match(accepted...)
 		requestedLanguage = cn.availableLanguages[langIndex]
 	}
+
 	return requestedLanguage
 }

@@ -15,13 +15,13 @@ type stdoutLogger struct {
 	logger *log.Logger
 }
 
-// SQLLog query logging for debugging purposes
+// SQLLog query logging for debugging purposes.
 type SQLLog struct {
 	LogSQL bool
 	Tracer *tracelog.TraceLog
 }
 
-// NewSQLLogFromEnv build a SQLLog based on the `LOG_SQL` environment variable
+// NewSQLLogFromEnv build a SQLLog based on the `LOG_SQL` environment variable.
 func NewSQLLogFromEnv() *SQLLog {
 	var err error
 	logSQL := false
@@ -38,6 +38,7 @@ func NewSQLLogFromEnv() *SQLLog {
 			LogLevel: tracelog.LogLevelTrace, // Set to Trace to see all query details
 		}
 	}
+
 	return &SQLLog{LogSQL: logSQL, Tracer: tracer}
 }
 

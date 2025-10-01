@@ -28,7 +28,7 @@ func (ct CollectionType) ItemType() string {
 	}
 }
 
-// AvailableFormats returns the output formats available for the current page
+// AvailableFormats returns the output formats available for the current page.
 func (ct CollectionType) AvailableFormats() []engine.OutputFormat {
 	switch ct {
 	case Attributes:
@@ -45,7 +45,7 @@ func (ct CollectionType) AvailableFormats() []engine.OutputFormat {
 
 // IsSpatialRequestAllowed returns true if the collection supports spatial requests such as bbox or other spatial filters.
 func (ct CollectionType) IsSpatialRequestAllowed(bbox *geom.Bounds) bool {
-	return !(ct == Attributes && bbox != nil)
+	return ct != Attributes || bbox == nil
 }
 
 // CollectionTypes one or more CollectionType.
@@ -67,5 +67,6 @@ func (cts CollectionTypes) HasAttributes() bool {
 			return true
 		}
 	}
+
 	return false
 }

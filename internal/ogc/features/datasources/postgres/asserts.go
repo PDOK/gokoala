@@ -43,10 +43,12 @@ func assertIndexesExist(configuredCollections config.GeoSpatialCollections, tabl
 						return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
 					}
 				}
+
 				break
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -73,6 +75,7 @@ where tbl.relname = $1
 		return fmt.Errorf("missing required spatial index (GIST): no index exists on geometry column '%s' in table '%s'",
 			geometryColumn, tableName)
 	}
+
 	return nil
 }
 
@@ -107,5 +110,6 @@ group by idx.indexrelid;`
 		return fmt.Errorf("missing required index: no index exists on column(s) '%s' in table '%s'",
 			columns, tableName)
 	}
+
 	return nil
 }

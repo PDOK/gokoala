@@ -17,7 +17,7 @@ type Collections struct {
 	engine *engine.Engine
 }
 
-// Wrapper around collection+type to make it easier to access in the "collection" template
+// Wrapper around collection+type to make it easier to access in the "collection" template.
 type collectionWithType struct {
 	Collection config.GeoSpatialCollection
 	Type       CollectionType
@@ -69,7 +69,7 @@ func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 	return instance
 }
 
-// Collections returns list of collections
+// Collections returns list of collections.
 func (c *Collections) Collections() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := engine.NewTemplateKey(templatesDir+"collections.go."+c.engine.CN.NegotiateFormat(r), c.engine.WithNegotiatedLanguage(w, r))
@@ -84,7 +84,7 @@ func (c *Collections) Collections() http.HandlerFunc {
 // - OGC API Features you would have: /collections/{collectionId}/items
 // - OGC API Tiles could have: /collections/{collectionId}/tiles
 // - OGC API Maps could have: /collections/{collectionId}/map
-// - OGC API 3d GeoVolumes would have: /collections/{collectionId}/3dtiles
+// - OGC API 3d GeoVolumes would have: /collections/{collectionId}/3dtiles.
 func (c *Collections) Collection() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		collectionID := chi.URLParam(r, "collectionId")

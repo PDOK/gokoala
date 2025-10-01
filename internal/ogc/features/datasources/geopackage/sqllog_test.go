@@ -8,6 +8,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewSQLLogFromEnv(t *testing.T) {
@@ -41,10 +42,10 @@ func TestSQLLog_CheckLogMessageWhenExplicitEnabled(t *testing.T) {
 	s := &SQLLog{LogSQL: true}
 
 	ctx, err := s.Before(t.Context(), "SELECT * FROM test WHERE id = ?", 123)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, err = s.After(ctx, "SELECT * FROM test WHERE id = ?", 123)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Contains(t, capturedLogOutput.String(), "SQL:\nSELECT * FROM test WHERE id = 123\n--- SQL query took")
 }

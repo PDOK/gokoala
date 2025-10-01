@@ -2,7 +2,7 @@ package geopackage
 
 import "github.com/jmoiron/sqlx"
 
-// SqlxRowsAdapter implements common.DatasourceRows
+// SqlxRowsAdapter implements common.DatasourceRows.
 type SqlxRowsAdapter struct {
 	rows *sqlx.Rows
 }

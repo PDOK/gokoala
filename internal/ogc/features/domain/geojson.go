@@ -5,14 +5,14 @@ import (
 	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
-// featureCollectionType allows the GeoJSON type to be automatically set during json marshalling
+// featureCollectionType allows the GeoJSON type to be automatically set during json marshalling.
 type featureCollectionType struct{}
 
 func (fc *featureCollectionType) MarshalJSON() ([]byte, error) {
 	return []byte(`"FeatureCollection"`), nil
 }
 
-// featureType allows the type for Feature to be automatically set during json Marshalling
+// featureType allows the type for Feature to be automatically set during json Marshalling.
 type featureType struct{}
 
 func (ft *featureType) MarshalJSON() ([]byte, error) {
@@ -20,7 +20,7 @@ func (ft *featureType) MarshalJSON() ([]byte, error) {
 }
 
 // FeatureCollection is a GeoJSON FeatureCollection with extras such as links
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type FeatureCollection struct {
 	Type           featureCollectionType `json:"type"`
 	Timestamp      string                `json:"timeStamp,omitempty"`
@@ -30,7 +30,7 @@ type FeatureCollection struct {
 }
 
 // Feature is a GeoJSON Feature with extras such as links
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type Feature struct {
 	Type       featureType       `json:"type"`
 	Properties FeatureProperties `json:"properties"`
@@ -52,6 +52,7 @@ func (f *Feature) Keys() []string {
 func (f *Feature) SetGeom(geometry geom.T, maxDecimals int) (err error) {
 	if geometry == nil {
 		f.Geometry = nil
+
 		return
 	}
 	var opts []geojson.EncodeGeometryOption
@@ -59,11 +60,12 @@ func (f *Feature) SetGeom(geometry geom.T, maxDecimals int) (err error) {
 		opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}
 	}
 	f.Geometry, err = geojson.Encode(geometry, opts...)
+
 	return
 }
 
 // Link according to RFC 8288, https://datatracker.ietf.org/doc/html/rfc8288
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type Link struct {
 	Rel       string `json:"rel"`
 	Title     string `json:"title,omitempty"`

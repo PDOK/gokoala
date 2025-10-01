@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type MockReverseProxy struct {
@@ -47,7 +48,7 @@ func TestDir(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
 			engine, err := NewEngine("internal/engine/testdata/config_resources_dir.yaml", "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			r := httptest.NewRequest(http.MethodGet, "/resources/"+tt.urlParam, nil)
 			w := httptest.NewRecorder()
 			var logOutput strings.Builder

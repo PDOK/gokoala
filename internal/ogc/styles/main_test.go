@@ -14,6 +14,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/require"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"golang.org/x/text/language"
@@ -36,7 +37,7 @@ func init() {
 func TestNewStyles(t *testing.T) {
 	// given
 	theme, err := config.NewTheme("internal/engine/testdata/test_theme.yaml")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	type args struct {
 		e *engine.Engine
 	}
@@ -158,7 +159,7 @@ func TestStyles_Style(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			styles := NewStyles(newEngine)
 			handler := styles.Style()
 			handler.ServeHTTP(rr, req)
@@ -233,7 +234,7 @@ func TestStyles_Metadata(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			styles := NewStyles(newEngine)
 			handler := styles.Metadata()
 			handler.ServeHTTP(rr, req)
@@ -295,7 +296,7 @@ func TestStyles_Legend(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			styles := NewStyles(newEngine)
 			handler := styles.Legend()
 			handler.ServeHTTP(rr, req)
@@ -355,7 +356,7 @@ func TestTile_Styles(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			styles := NewStyles(newEngine)
 			handler := styles.Styles()
 			handler.ServeHTTP(rr, req)
@@ -378,6 +379,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 
@@ -387,6 +389,7 @@ func createStyleRequest(url string, style string) (*http.Request, error) {
 	rctx.URLParams.Add("style", style)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 
@@ -395,6 +398,7 @@ func createStylesRequest(url string) (*http.Request, error) {
 	rctx := chi.NewRouteContext()
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 

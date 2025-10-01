@@ -36,10 +36,11 @@ func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColu
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return
 }
 
-// Read metadata about gpkg and sqlite driver
+// Read metadata about gpkg and sqlite driver.
 func readDriverMetadata(db *sqlx.DB) (string, error) {
 	type pragma struct {
 		UserVersion string `db:"user_version"`
@@ -126,6 +127,7 @@ where
 	}
 
 	common.ValidateUniqueness(result)
+
 	return result, nil
 }
 
@@ -140,6 +142,7 @@ func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
 	if table.Type == geospatial.Features && (table.GeometryColumnName == "" || table.GeometryType == "") {
 		return table, errors.New("data type of table is 'features' but table has no geometry defined")
 	}
+
 	return table, nil
 }
 
@@ -160,6 +163,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 			result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
 			if pf.AllowedValues != nil {
 				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
+
 				continue
 			}
 			if *pf.DeriveAllowedValuesFromDatasource {
@@ -182,10 +186,12 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 					}
 				}
 				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
+
 				continue
 			}
 		}
 	}
+
 	return result, nil
 }
 
@@ -243,6 +249,7 @@ func readSchema(db *sqlx.DB, table common.Table, fidColumn, externalFidColumn st
 	if err != nil {
 		return nil, err
 	}
+
 	return schema, nil
 }
 
@@ -252,5 +259,6 @@ func hasSchemaExtension(db *sqlx.DB) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	return hasExtension, nil
 }

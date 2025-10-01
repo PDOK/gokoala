@@ -17,29 +17,6 @@ const (
 	CookieMaxAge = 60 * 60 * 24
 )
 
-// NewConfig read YAML config file, required to start GoKoala
-func NewConfig(configFile string) (*Config, error) {
-	yamlData, err := os.ReadFile(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file %w", err)
-	}
-
-	// expand environment variables
-	yamlData = []byte(os.ExpandEnv(string(yamlData)))
-
-	var config *Config
-	err = yaml.Unmarshal(yamlData, &config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
-	}
-
-	err = validateLocalPaths(config)
-	if err != nil {
-		return nil, fmt.Errorf("validation error in config file, error: %w", err)
-	}
-	return config, nil
-}
-
 // +kubebuilder:object:generate=true
 type Config struct {
 	// Version of the API. When releasing a new version which contains backwards-incompatible changes, a new major version must be released.
@@ -112,7 +89,31 @@ type Config struct {
 	Resources *Resources `yaml:"resources,omitempty" json:"resources,omitempty"`
 }
 
-// UnmarshalYAML hooks into unmarshalling to set defaults and validate config
+// NewConfig read YAML config file, required to start GoKoala.
+func NewConfig(configFile string) (*Config, error) {
+	yamlData, err := os.ReadFile(configFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file %w", err)
+	}
+
+	// expand environment variables
+	yamlData = []byte(os.ExpandEnv(string(yamlData)))
+
+	var config *Config
+	err = yaml.Unmarshal(yamlData, &config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
+	}
+
+	err = validateLocalPaths(config)
+	if err != nil {
+		return nil, fmt.Errorf("validation error in config file, error: %w", err)
+	}
+
+	return config, nil
+}
+
+// UnmarshalYAML hooks into unmarshalling to set defaults and validate config.
 func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	type cfg Config
 	if err := unmarshal((*cfg)(c)); err != nil {
@@ -126,6 +127,7 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err := validate(c); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -230,6 +232,7 @@ func setDefaults(config *Config) error {
 	if config.OgcAPI.Tiles != nil {
 		config.OgcAPI.Tiles.Defaults()
 	}
+
 	return nil
 }
 
@@ -257,6 +260,7 @@ func validate(config *Config) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -278,6 +282,7 @@ func validateLocalPaths(config *Config) error {
 	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.StylesDir) {
 		return errors.New("stylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
 	}
+
 	return nil
 }
 
@@ -301,11 +306,13 @@ func validateConfiguredResources(config *Config) error {
 			}
 		}
 	}
+
 	return nil
 }
 
 func isExistingLocalDir(path string) bool {
 	fileInfo, err := os.Stat(path)
+
 	return err == nil && fileInfo.IsDir()
 }
 
@@ -322,5 +329,6 @@ func formatValidationErr(err error) error {
 			errMessages = append(errMessages, errMsg)
 		}
 	}
+
 	return fmt.Errorf("invalid config provided:\n%v", errMessages)
 }

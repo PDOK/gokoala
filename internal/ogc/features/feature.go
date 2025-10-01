@@ -21,6 +21,7 @@ func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+
 			return
 		}
 
@@ -28,11 +29,13 @@ func (f *Features) Feature() http.HandlerFunc {
 		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collection.ID)
+
 			return
 		}
 		featureID, err := parseFeatureID(r)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+
 			return
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL,
@@ -42,6 +45,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		outputSRID, contentCrs, profile, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -52,10 +56,12 @@ func (f *Features) Feature() http.HandlerFunc {
 			outputSRID, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 		if err != nil {
 			handleFeatureQueryError(w, collection.ID, featureID, err)
+
 			return
 		}
 		if feat == nil {
 			handleFeatureNotFound(w, collection.ID, featureID)
+
 			return
 		}
 
@@ -97,10 +103,11 @@ func parseFeatureID(r *http.Request) (any, error) {
 			return nil, errors.New("feature ID must be a UUID or number")
 		}
 	}
+
 	return featureID, nil
 }
 
-// log error but send a generic message to the client to prevent possible information leakage from datasource
+// log error but send a generic message to the client to prevent possible information leakage from datasource.
 func handleFeatureQueryError(w http.ResponseWriter, collectionID string, featureID any, err error) {
 	msg := fmt.Sprintf("failed to retrieve feature %v in collection %s", featureID, collectionID)
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetOrDefault(t *testing.T) {
@@ -41,7 +42,7 @@ func TestEpsgToSrid(t *testing.T) {
 			if tt.expectError {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tt.expected, result)
 			}
 		})

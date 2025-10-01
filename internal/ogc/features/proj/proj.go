@@ -28,7 +28,7 @@ type Info struct {
 	} `json:"coordinate_system"` //nolint:tagliatelle
 }
 
-// GetAxisOrder return XY or YX axis order for the given SRID
+// GetAxisOrder return XY or YX axis order for the given SRID.
 func GetAxisOrder(srid domain.SRID) (domain.AxisOrder, error) {
 	epsgCode := fmt.Sprintf("%s%d", domain.EPSGPrefix, srid)
 	info, err := execProjInfo(epsgCode)
@@ -39,6 +39,7 @@ func GetAxisOrder(srid domain.SRID) (domain.AxisOrder, error) {
 	if info.CoordinateSystem.Axis[0].Direction == "north" {
 		return domain.AxisOrderYX, nil
 	}
+
 	return domain.AxisOrderXY, nil
 }
 
@@ -62,5 +63,6 @@ func execProjInfo(epsgCode string) (*Info, error) {
 	if len(projInfo.CoordinateSystem.Axis) < 1 {
 		return nil, fmt.Errorf("invalid %s output: axis not found", projInfoTool)
 	}
+
 	return &projInfo, nil
 }

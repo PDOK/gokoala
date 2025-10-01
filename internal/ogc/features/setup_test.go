@@ -34,7 +34,7 @@ func init() {
 	}
 }
 
-// TestMain package-wide setup/teardown and test utils
+// TestMain package-wide setup/teardown and test utils.
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
@@ -56,6 +56,7 @@ func setup(ctx context.Context) *compose.DockerCompose {
 	if err = os.Setenv(postgresPortEnv, port.Port()); err != nil {
 		log.Fatal("failed to set env var", err)
 	}
+
 	return stack
 }
 
@@ -106,6 +107,7 @@ func setupPostgres(ctx context.Context) (nat.Port, *compose.DockerCompose, error
 
 func terminateStack(ctx context.Context, stack *compose.DockerCompose) error {
 	log.Println("Terminate postgres stack")
+
 	return stack.Down(
 		ctx,
 		compose.RemoveOrphans(true),
@@ -128,6 +130,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	}
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 
@@ -147,6 +150,7 @@ func createRequest(url string, collectionID string, featureID string, format str
 	req.URL.RawQuery = queryString.Encode()
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 

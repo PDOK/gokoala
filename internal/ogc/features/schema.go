@@ -24,6 +24,7 @@ func (f *Features) Schema() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+
 			return
 		}
 
@@ -31,6 +32,7 @@ func (f *Features) Schema() http.HandlerFunc {
 		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
+
 			return
 		}
 
@@ -48,6 +50,7 @@ func (f *Features) Schema() http.HandlerFunc {
 				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema)) // JSON format, but specific mediatype.
 		default:
 			handleFormatNotSupported(w, format)
+
 			return
 		}
 		f.engine.Serve(w, r, engine.ServeTemplate(key))
@@ -85,6 +88,7 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 		schema, err := datasource.GetSchema(collection.ID)
 		if err != nil {
 			log.Printf("Failed to render OGC API Features part 5 Schema for collection %s: %v", collection.ID, err)
+
 			continue
 		}
 
@@ -128,6 +132,7 @@ func renderSchemas(e *engine.Engine, datasources map[datasourceKey]ds.Datasource
 
 		schemasByCollection[collection.ID] = *schema
 	}
+
 	return schemasByCollection
 }
 
@@ -135,6 +140,7 @@ func requiresSpecificOrder(collection config.GeoSpatialCollection) bool {
 	if collection.Features != nil && collection.Features.FeatureProperties != nil {
 		return collection.Features.PropertiesInSpecificOrder
 	}
+
 	return false
 }
 
@@ -143,5 +149,6 @@ func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, 
 	if collection.Metadata != nil {
 		description = collection.Metadata.Description
 	}
+
 	return getCollectionTitle(collection.ID, collection.Metadata), description
 }

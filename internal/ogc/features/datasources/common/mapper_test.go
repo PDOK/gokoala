@@ -8,6 +8,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 )
@@ -25,6 +26,7 @@ func mockMapGeom(data any) (geom.T, error) {
 	if string(dataBytes) == "mock error" {
 		return nil, errors.New(string(dataBytes))
 	}
+
 	return mockPoint, nil
 }
 
@@ -155,7 +157,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			schema, err := domain.NewSchema([]domain.Field{}, tt.fidColumn, tt.externalFidCol)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			if tt.schemaFields != nil {
 				schema.Fields = tt.schemaFields
 			}
@@ -165,7 +167,7 @@ func TestMapColumnsToFeature(t *testing.T) {
 				assert.Nil(t, prevNextID)
 				assert.EqualError(t, err, tt.expectedError.Error())
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tt.expectedPrevNext, prevNextID)
 				assert.Equal(t, tt.expectedFeature, tt.feature)
 			}

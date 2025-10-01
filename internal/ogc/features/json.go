@@ -32,13 +32,14 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 		log.Println("JSON response validation is enabled (by default). When serving large feature collections " +
 			"set 'validateResponses' to 'false' to improve performance")
 	}
+
 	return &jsonFeatures{
 		engine:           e,
 		validateResponse: *e.Config.OgcAPI.Features.ValidateResponses,
 	}
 }
 
-// GeoJSON
+// GeoJSON.
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
 	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection) {
 
@@ -54,7 +55,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// GeoJSON
+// GeoJSON.
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	configuredFC *config.CollectionEntryFeatures, feat *domain.Feature, url featureURL) {
 
@@ -121,7 +122,7 @@ func (jf *jsonFeatures) featureAsAttributeJSON(w http.ResponseWriter, r *http.Re
 	}
 }
 
-// JSON-FG
+// JSON-FG.
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
 	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
@@ -154,7 +155,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	}
 }
 
-// JSON-FG
+// JSON-FG.
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
 	configuredFC *config.CollectionEntryFeatures, f *domain.Feature, url featureURL, crs domain.ContentCrs) {
 
@@ -267,6 +268,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 			})
 		}
 	}
+
 	return links
 }
 
@@ -321,6 +323,7 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 		Type:  engine.MediaTypeJSON,
 		Href:  url.toCollectionURL(collectionID, engine.FormatJSON),
 	})
+
 	return links
 }
 
@@ -359,6 +362,7 @@ func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *h
 	json := &bytes.Buffer{}
 	if err := getEncoder(json).Encode(input); err != nil {
 		handleJSONEncodingFailure(err, w)
+
 		return
 	}
 	jf.engine.Serve(w, r,
@@ -368,12 +372,13 @@ func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *h
 	)
 }
 
-// serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream
+// serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream.
 func serveJSON(input any, contentType string, w http.ResponseWriter) {
 	w.Header().Set(engine.HeaderContentType, contentType)
 
 	if err := getEncoder(w).Encode(input); err != nil {
 		handleJSONEncodingFailure(err, w)
+
 		return
 	}
 }
@@ -389,11 +394,13 @@ func getEncoder(w io.Writer) jsonEncoder {
 		// use Go stdlib JSON encoder
 		encoder := stdjson.NewEncoder(w)
 		encoder.SetEscapeHTML(false)
+
 		return encoder
 	}
 	// use ~7% overall faster 3rd party JSON encoder (in case of issues switch back to stdlib using env variable)
 	encoder := perfjson.NewEncoder(w)
 	encoder.SetEscapeHTML(false)
+
 	return encoder
 }
 
@@ -414,5 +421,6 @@ func getMapSheetProperties(configuredFC *config.CollectionEntryFeatures) *config
 	if configuredFC != nil && configuredFC.MapSheetDownloads != nil {
 		return &configuredFC.MapSheetDownloads.Properties
 	}
+
 	return nil
 }

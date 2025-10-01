@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMapRelationUsingProfile(t *testing.T) {
@@ -103,14 +104,14 @@ func TestMapRelationUsingProfile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			url, err := neturl.Parse("http://example.com")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			schema, err := NewSchema([]Field{
 				{
 					Name:            tt.columnName,
 					Type:            "string",
 					FeatureRelation: NewFeatureRelation(tt.columnName, tt.externalFidCol, []string{"some_collection", "another_collection", "foo", "bar", "baz_bazoo", "baz_bazoo_boo", "baz_bazoo_boo_foo"}),
 				}}, "fid", "")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			profile := NewProfile(tt.profile, *url, *schema)
 			newColName, newColNameUnformatted, newColVal := profile.MapRelationUsingProfile(tt.columnName, tt.columnValue, tt.externalFidCol)
 			assert.Equal(t, tt.expectedColName, newColName)

@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-// ReadFile read a plain or gzipped file and return contents as string
+// ReadFile read a plain or gzipped file and return contents as string.
 func ReadFile(filePath string) string {
 	gzipFile := filePath + ".gz"
 	var fileContents string
@@ -25,10 +25,11 @@ func ReadFile(filePath string) string {
 			log.Fatalf("unable to read file %s", filePath)
 		}
 	}
+
 	return fileContents
 }
 
-// decompress gzip files, return contents as string
+// decompress gzip files, return contents as string.
 func readGzipContents(filePath string) (string, error) {
 	gzipFile, err := os.Open(filePath)
 	if err != nil {
@@ -55,10 +56,11 @@ func readGzipContents(filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return buffer.String(), nil
 }
 
-// read file, return contents as string
+// read file, return contents as string.
 func readPlainContents(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -75,5 +77,6 @@ func readPlainContents(filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return buffer.String(), nil
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewFeatureProperties(t *testing.T) {
@@ -73,7 +74,7 @@ func TestMarshalJSON(t *testing.T) {
 			if tt.expectErr {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.JSONEq(t, tt.expected, string(bytes))
 			}
 		})

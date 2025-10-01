@@ -9,6 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSchema(t *testing.T) {
@@ -232,12 +233,12 @@ func TestSchema(t *testing.T) {
 					t.Parallel()
 
 					req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
-					assert.NoError(t, err)
+					require.NoError(t, err)
 					rr, ts := createMockServer()
 					defer ts.Close()
 
 					newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-					assert.NoError(t, err)
+					require.NoError(t, err)
 					features := NewFeatures(newEngine)
 					handler := features.Schema()
 					handler.ServeHTTP(rr, req)
@@ -246,14 +247,14 @@ func TestSchema(t *testing.T) {
 					if tt.want.body != "" {
 						expectedBody, err := os.ReadFile(tt.want.body)
 						if err != nil {
-							assert.Fail(t, "failed to read expected body", err)
+							assert.Fail(t, "failed to read expected body", "%+v", err)
 						}
 
 						printActual(rr)
-						switch {
-						case tt.fields.format == engine.FormatJSON:
+						switch tt.fields.format {
+						case engine.FormatJSON:
 							assert.JSONEq(t, string(expectedBody), rr.Body.String())
-						case tt.fields.format == engine.FormatHTML:
+						case engine.FormatHTML:
 							assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 						default:
 							log.Fatalf("implement support to test format: %s", tt.fields.format)

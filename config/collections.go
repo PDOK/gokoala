@@ -63,17 +63,17 @@ func (c GeoSpatialCollection) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON parses a string to GeoSpatialCollection
+// UnmarshalJSON parses a string to GeoSpatialCollection.
 func (c *GeoSpatialCollection) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }
 
-// HasDateTime true when collection has temporal support, false otherwise
+// HasDateTime true when collection has temporal support, false otherwise.
 func (c *GeoSpatialCollection) HasDateTime() bool {
 	return c.Metadata != nil && c.Metadata.TemporalProperties != nil
 }
 
-// HasTableName true when collection uses the given table, false otherwise
+// HasTableName true when collection uses the given table, false otherwise.
 func (c *GeoSpatialCollection) HasTableName(table string) bool {
 	return c.Features != nil && c.Features.TableName != nil &&
 		table == *c.Features.TableName
@@ -168,7 +168,7 @@ type DownloadLink struct {
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 }
 
-// HasCollections does this API offer collections with for example features, tiles, 3d tiles, etc
+// HasCollections does this API offer collections with for example features, tiles, 3d tiles, etc.
 func (c *Config) HasCollections() bool {
 	return c.AllCollections() != nil
 }
@@ -193,6 +193,7 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	} else {
 		sortByAlphabet(result)
 	}
+
 	return result
 }
 
@@ -206,6 +207,7 @@ func (g GeoSpatialCollections) FeaturePropertiesByID() map[string]*FeatureProper
 		}
 		result[collection.ID] = collection.Features.FeatureProperties
 	}
+
 	return result
 }
 
@@ -217,6 +219,7 @@ func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 	for pair := collectionsByID.Oldest(); pair != nil; pair = pair.Next() {
 		result = append(result, pair.Value)
 	}
+
 	return result
 }
 
@@ -225,6 +228,7 @@ func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 func (g GeoSpatialCollections) ContainsID(id string) bool {
 	collectionsByID := g.toMap()
 	_, ok := collectionsByID.Get(id)
+
 	return ok
 }
 
@@ -242,6 +246,7 @@ func (g GeoSpatialCollections) toMap() orderedmap.OrderedMap[string, GeoSpatialC
 			collectionsByID.Set(current.ID, current)
 		}
 	}
+
 	return *collectionsByID
 }
 
@@ -256,6 +261,7 @@ func sortByAlphabet(collection []GeoSpatialCollection) {
 		if collection[j].Metadata != nil && collection[j].Metadata.Title != nil {
 			jName = *collection[j].Metadata.Title
 		}
+
 		return iName < jName
 	})
 }

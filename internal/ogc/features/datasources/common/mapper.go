@@ -12,14 +12,16 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
-// MapRelation function signature to map feature relations
+// MapRelation function signature to map feature relations.
 type MapRelation func(columnName string, columnValue any, externalFidColumn string) (newColumnName, newColumnNameWithoutProfile string, newColumnValue any)
 
 // MapGeom function signature to map datasource-specific geometry
-// (in GeoPackage, PostGIS, WKB, etc. format) to general-purpose geometry
+// (in GeoPackage, PostGIS, WKB, etc. format) to general-purpose geometry.
 type MapGeom func(columnValue any) (geom.T, error)
 
-// MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID
+// MapRowsToFeatureIDs datasource agnostic mapper from SQL rows set feature IDs, including prev/next feature ID.
+//
+//nolint:nakedret
 func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs []int64, prevNextID *domain.PrevNextFID, err error) {
 	firstRow := true
 	for rows.Next() {
@@ -49,6 +51,7 @@ func MapRowsToFeatureIDs(ctx context.Context, rows DatasourceRows) (featureIDs [
 	if ctx.Err() != nil {
 		err = ctx.Err()
 	}
+
 	return
 }
 
@@ -57,7 +60,7 @@ type FormatOpts struct {
 	ForceUTC    bool
 }
 
-// MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model
+// MapRowsToFeatures datasource agnostic mapper from SQL rows/result set to Features domain model.
 func MapRowsToFeatures(ctx context.Context, rows DatasourceRows,
 	fidColumn string, externalFidColumn string, geomColumn string,
 	propConfig *config.FeatureProperties, schema *domain.Schema,
@@ -88,6 +91,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows,
 		}
 		result = append(result, feature)
 	}
+
 	return result, prevNextID, ctx.Err()
 }
 
@@ -107,6 +111,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 		case geomColumn:
 			if columnValue == nil {
 				feature.Properties.Set(columnName, nil)
+
 				continue
 			}
 			mappedGeom, err := mapGeom(columnValue)
@@ -144,6 +149,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 		default:
 			if columnValue == nil {
 				feature.Properties.Set(columnName, nil)
+
 				continue
 			}
 			// map any non-nil, non-id, non-bounding box and non-geometry column as a feature property
@@ -154,6 +160,7 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 	}
 
 	mapExternalFid(columns, values, externalFidColumn, feature, mapRel)
+
 	return &prevNextID, ctx.Err()
 }
 
@@ -195,10 +202,11 @@ func mapColumnValueToFeature(columnValue any, feature *domain.Feature, columnNam
 	default:
 		return fmt.Errorf("column %s has unexpected type: %T for value %v", columnName, v, columnValue)
 	}
+
 	return nil
 }
 
-// mapExternalFid run a second pass over columns to map external feature ID, including relations to other features
+// mapExternalFid run a second pass over columns to map external feature ID, including relations to other features.
 func mapExternalFid(columns []string, values []any, externalFidColumn string, feature *domain.Feature, mapRel MapRelation) {
 	for i, columnName := range columns {
 		columnValue := values[i]

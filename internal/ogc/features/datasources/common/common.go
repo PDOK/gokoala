@@ -21,7 +21,7 @@ const (
 	selectAll = "*"
 )
 
-// DatasourceCommon shared data and logic between data sources
+// DatasourceCommon shared data and logic between data sources.
 type DatasourceCommon struct {
 	TransformOnTheFly bool
 	QueryTimeout      time.Duration
@@ -35,7 +35,7 @@ type DatasourceCommon struct {
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
 }
 
-// Table metadata about a table containing features or attributes in a data source
+// Table metadata about a table containing features or attributes in a data source.
 type Table struct {
 	Name               string
 	Type               geospatial.CollectionType
@@ -50,6 +50,7 @@ func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error)
 	if err != nil {
 		return nil, err
 	}
+
 	return table.Schema, nil
 }
 
@@ -58,6 +59,7 @@ func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.Col
 	if err != nil {
 		return "", err
 	}
+
 	return table.Type, nil
 }
 
@@ -75,14 +77,15 @@ func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error)
 		return nil, fmt.Errorf("can't query collection '%s' since it doesn't exist in "+
 			"datasource, available in datasource: %v", collection, util.Keys(dc.TableByCollectionID))
 	}
+
 	return table, nil
 }
 
 // SelectGeom function signature to select geometry from a table
-// while taking axis order into account
+// while taking axis order into account.
 type SelectGeom func(order domain.AxisOrder, table *Table) string
 
-// SelectColumns build select clause
+// SelectColumns build select clause.
 func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder,
 	selectGeom SelectGeom, propConfig *config.FeatureProperties, includePrevNext bool) string {
 
@@ -115,6 +118,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 		}
 	default:
 		log.Println("Warning: table doesn't have a schema. Can't select columns by name, selecting all")
+
 		return selectAll
 	}
 
@@ -126,6 +130,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 
 	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()))
 	result += selectGeom(axisOrder, table)
+
 	return result
 }
 
@@ -142,6 +147,7 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 			namedParams[namedParam] = v
 		}
 	}
+
 	return sql, namedParams
 }
 
@@ -154,6 +160,7 @@ func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol
 		sql = fmt.Sprintf(" and \"%[1]s\" <= %[3]sreferenceDate and (\"%[2]s\" >= %[3]sreferenceDate or \"%[2]s\" is null)",
 			startDate, endDate, symbol)
 	}
+
 	return sql, namedParams
 }
 

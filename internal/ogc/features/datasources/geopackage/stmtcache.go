@@ -10,7 +10,7 @@ import (
 
 var preparedStmtCacheSize = 25
 
-// PreparedStatementCache is thread safe
+// PreparedStatementCache is thread safe.
 type PreparedStatementCache struct {
 	cache *lru.Cache[string, *sqlx.NamedStmt]
 }
@@ -27,7 +27,7 @@ func NewCache() *PreparedStatementCache {
 	return &PreparedStatementCache{cache: cache}
 }
 
-// Lookup gets a prepared statement from the cache for the given query, or creates a new one and adds it to the cache
+// Lookup gets a prepared statement from the cache for the given query, or creates a new one and adds it to the cache.
 func (c *PreparedStatementCache) Lookup(ctx context.Context, db *sqlx.DB, query string) (*sqlx.NamedStmt, error) {
 	cachedStmt, ok := c.cache.Get(query)
 	if !ok {
@@ -36,12 +36,14 @@ func (c *PreparedStatementCache) Lookup(ctx context.Context, db *sqlx.DB, query 
 			return nil, err
 		}
 		c.cache.Add(query, stmt)
+
 		return stmt, nil
 	}
+
 	return cachedStmt, nil
 }
 
-// Close purges the cache, and closes remaining prepared statements
+// Close purges the cache, and closes remaining prepared statements.
 func (c *PreparedStatementCache) Close() {
 	log.Printf("closing %d prepared statements", c.cache.Len())
 	c.cache.Purge()

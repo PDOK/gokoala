@@ -21,7 +21,7 @@ const (
 	layoutFile = "layout.go.html"
 )
 
-// TemplateKey unique key to register and lookup Go templates
+// TemplateKey unique key to register and lookup Go templates.
 type TemplateKey struct {
 	// Name of the template, the filename including extension
 	Name string
@@ -68,15 +68,17 @@ type TemplateData struct {
 	url *url.URL
 }
 
-// QueryString returns ?=foo=a&bar=b style query string of the current page
+// QueryString returns ?=foo=a&bar=b style query string of the current page.
 func (td *TemplateData) QueryString(format string) string {
 	if td.url != nil {
 		q := td.url.Query()
 		if format != "" {
 			q.Set(FormatParam, format)
 		}
+
 		return "?" + q.Encode()
 	}
+
 	return fmt.Sprintf("?%s=%s", FormatParam, format)
 }
 
@@ -85,7 +87,7 @@ type Breadcrumb struct {
 	Path string
 }
 
-// WithLanguage sets the language of a TemplateKey
+// WithLanguage sets the language of a TemplateKey.
 func WithLanguage(language language.Tag) TemplateKeyOption {
 	return func(tk *TemplateKey) {
 		tk.Language = language
@@ -97,21 +99,21 @@ func (e *Engine) WithNegotiatedLanguage(w http.ResponseWriter, r *http.Request) 
 	return WithLanguage(e.CN.NegotiateLanguage(w, r))
 }
 
-// WithInstanceName sets the instance name of a TemplateKey
+// WithInstanceName sets the instance name of a TemplateKey.
 func WithInstanceName(instanceName string) TemplateKeyOption {
 	return func(tk *TemplateKey) {
 		tk.InstanceName = instanceName
 	}
 }
 
-// WithMediaTypeOverwrite overwrites the mediatype of the Format in a TemplateKey
+// WithMediaTypeOverwrite overwrites the mediatype of the Format in a TemplateKey.
 func WithMediaTypeOverwrite(mediaType string) TemplateKeyOption {
 	return func(tk *TemplateKey) {
 		tk.MediaTypeOverwrite = mediaType
 	}
 }
 
-// NewTemplateKey builds a TemplateKey with the given path and options
+// NewTemplateKey builds a TemplateKey with the given path and options.
 func NewTemplateKey(path string, opts ...TemplateKeyOption) TemplateKey {
 	cleanPath := filepath.Clean(path)
 	tk := TemplateKey{
@@ -124,12 +126,14 @@ func NewTemplateKey(path string, opts ...TemplateKeyOption) TemplateKey {
 	for _, opt := range opts {
 		opt(&tk)
 	}
+
 	return tk
 }
 
 func ExpandTemplateKey(key TemplateKey, language language.Tag) TemplateKey {
 	copyKey := key
 	copyKey.Language = language
+
 	return copyKey
 }
 
@@ -154,6 +158,7 @@ func newTemplates(config *config.Config, theme *config.Theme) *Templates {
 		Theme:             theme,
 		localizers:        newLocalizers(config.AvailableLanguages),
 	}
+
 	return templates
 }
 
@@ -161,6 +166,7 @@ func (t *Templates) getParsedTemplate(key TemplateKey) (any, error) {
 	if parsedTemplate, ok := t.ParsedTemplates[key]; ok {
 		return parsedTemplate, nil
 	}
+
 	return nil, fmt.Errorf("no parsed template with name %s", key.Name)
 }
 
@@ -168,6 +174,7 @@ func (t *Templates) getRenderedTemplate(key TemplateKey) ([]byte, error) {
 	if RenderedTemplate, ok := t.RenderedTemplates[key]; ok {
 		return RenderedTemplate, nil
 	}
+
 	return nil, fmt.Errorf("no rendered template with name %s", key.Name)
 }
 
@@ -206,6 +213,7 @@ func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (strin
 	templateFuncs := t.createTemplateFuncs(lang)
 	parsed := htmltemplate.Must(htmltemplate.New(layoutFile).
 		Funcs(templateFuncs).ParseFiles(templatesDir+layoutFile, file))
+
 	return file, parsed
 }
 func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
@@ -222,6 +230,7 @@ func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.U
 	}); err != nil {
 		log.Fatalf("failed to execute HTML template %s, error: %v", file, err)
 	}
+
 	return rendered.Bytes()
 }
 
@@ -230,6 +239,7 @@ func (t *Templates) parseNonHTMLTemplate(key TemplateKey, lang language.Tag) (st
 	templateFuncs := t.createTemplateFuncs(lang)
 	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).
 		Funcs(templateFuncs).Parse(util.ReadFile(file)))
+
 	return file, parsed
 }
 
@@ -247,6 +257,7 @@ func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params 
 		// pretty print all JSON (or derivatives like TileJSON)
 		result = util.PrettyPrintJSON(result, key.Name)
 	}
+
 	return result
 }
 
@@ -256,6 +267,7 @@ func (t *Templates) createTemplateFuncs(lang language.Tag) map[string]any {
 		"i18n": func(messageID string) htmltemplate.HTML {
 			localizer := t.localizers[lang]
 			translated := localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID})
+
 			return htmltemplate.HTML(translated) //nolint:gosec // since we trust our language files
 		},
 	})

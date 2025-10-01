@@ -37,10 +37,11 @@ func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fi
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return
 }
 
-// Read metadata about PostgreSQL and PostGIS
+// Read metadata about PostgreSQL and PostGIS.
 func readDriverMetadata(db *pgxpool.Pool) (string, error) {
 	var pgVersion string
 	var postGISVersion string
@@ -112,6 +113,7 @@ where
 	}
 
 	common.ValidateUniqueness(result)
+
 	return result, nil
 }
 
@@ -132,6 +134,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 			result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
 			if pf.AllowedValues != nil {
 				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
+
 				continue
 			}
 			if *pf.DeriveAllowedValuesFromDatasource {
@@ -163,10 +166,12 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 					}
 				}
 				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
+
 				continue
 			}
 		}
 	}
+
 	return result, nil
 }
 
@@ -234,5 +239,6 @@ order by
 	if err != nil {
 		return nil, err
 	}
+
 	return schema, nil
 }

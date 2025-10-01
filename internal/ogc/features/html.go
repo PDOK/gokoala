@@ -144,6 +144,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.GeoSpatialCollection, refe
 		propertyFilters,
 		configuredPropertyFilters,
 	}
+
 	return breadcrumbs, pageContent
 }
 
@@ -203,6 +204,7 @@ func (hf *htmlFeatures) toItemPage(collection config.GeoSpatialCollection, feat 
 		wc,
 		true,
 	}
+
 	return breadcrumbs, pageContent
 }
 
@@ -210,5 +212,6 @@ func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollecti
 	if metadata != nil && metadata.Title != nil {
 		return *metadata.Title
 	}
+
 	return collectionID
 }

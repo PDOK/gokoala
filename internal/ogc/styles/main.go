@@ -91,6 +91,7 @@ func NewStyles(e *engine.Engine) *Styles {
 			styles.localResourcesHandler = http.FileServer(http.Dir(resourcesPath))
 		}
 	}
+
 	return styles
 }
 
@@ -150,15 +151,18 @@ func (s *Styles) Legend() http.HandlerFunc {
 		for _, supportedStyle := range s.engine.Config.OgcAPI.Styles.SupportedStyles {
 			if supportedStyle.ID == styleID && supportedStyle.Legend != nil {
 				legend = *supportedStyle.Legend
+
 				break
 			}
 		}
 		if s.engine.Config.Resources == nil {
 			engine.RenderProblem(engine.ProblemNotFound, w, "no legends configured")
+
 			return
 		}
 		if legend == "" {
 			engine.RenderProblem(engine.ProblemNotFound, w, "no legend configured for style "+styleID)
+
 			return
 		}
 
@@ -188,6 +192,7 @@ func parseStyleParam(r *http.Request) (style string, styleID string) {
 	if style == styleID {
 		style += projectionDelimiter + defaultProjection
 	}
+
 	return style, styleID
 }
 

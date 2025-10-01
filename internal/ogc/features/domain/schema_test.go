@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewSchema(t *testing.T) {
@@ -123,10 +124,10 @@ func TestNewSchema(t *testing.T) {
 			schema, err := NewSchema(tt.fields, tt.fidColumn, tt.externalFid)
 
 			if tt.expectedError {
-				assert.Error(t, err)
+				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.expectedErrMsg)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, tt.expectedSchema, schema)
 			}
 		})

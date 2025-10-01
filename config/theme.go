@@ -60,6 +60,7 @@ func NewTheme(cfg string) (theme *Theme, err error) {
 		err = mergo.Merge(theme, customTheme, mergo.WithOverride)
 		if err != nil {
 			log.Fatalf("ERROR: %v", err)
+
 			return nil, err
 		}
 	}
@@ -84,6 +85,7 @@ func (t *Theme) ParseHTML() {
 	if err != nil {
 		log.Printf("failed to read html file %v", err)
 		t.Includes.ParsedHTML = ""
+
 		return
 	}
 
@@ -91,7 +93,7 @@ func (t *Theme) ParseHTML() {
 	t.Includes.ParsedHTML = template.HTML(content)
 }
 
-func getThemeFromFile(path string) (theme *Theme, err error) {
+func getThemeFromFile(path string) (*Theme, error) {
 	yamlData, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read theme file %w", err)
@@ -102,6 +104,7 @@ func getThemeFromFile(path string) (theme *Theme, err error) {
 	}
 	dir := filepath.Dir(absolutePath)
 
+	var theme Theme
 	if err = yaml.Unmarshal(yamlData, &theme); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal theme file, error: %w", err)
 	}
@@ -120,12 +123,14 @@ func getThemeFromFile(path string) (theme *Theme, err error) {
 	if theme.Includes != nil {
 		theme.Includes.HTMLFile = filepath.Join(dir, theme.Includes.HTMLFile)
 	}
-	return
+
+	return &theme, nil
 }
 
 func pathJoinIfPresent(base string, file string) (result string) {
 	if file != "" {
 		result = filepath.Join(base, file)
 	}
+
 	return
 }

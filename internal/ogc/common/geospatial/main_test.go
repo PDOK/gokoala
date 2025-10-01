@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/text/language"
 
 	"github.com/PDOK/gokoala/internal/engine"
@@ -33,7 +34,7 @@ func init() {
 func TestNewCollections(t *testing.T) {
 	// given
 	theme, err := config.NewTheme("internal/engine/testdata/test_theme.yaml")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	type args struct {
 		e *engine.Engine
 	}
@@ -121,7 +122,7 @@ func TestNewCollections_Collections(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			collections := NewCollections(newEngine, NewCollectionTypes(nil))
 			handler := collections.Collections()
 			handler.ServeHTTP(rr, req)
@@ -194,7 +195,7 @@ func TestNewCollections_Collection(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			collections := NewCollections(newEngine, NewCollectionTypes(nil))
 			handler := collections.Collection()
 			handler.ServeHTTP(rr, req)
@@ -217,6 +218,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 
@@ -225,6 +227,7 @@ func createCollectionsRequest(url string) (*http.Request, error) {
 	rctx := chi.NewRouteContext()
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 
@@ -235,5 +238,6 @@ func createCollectionRequest(url string, containerID string) (*http.Request, err
 	rctx.URLParams.Add("collectionId", containerID)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }

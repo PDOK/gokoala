@@ -1,13 +1,14 @@
 package features
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"net/url"
 	"testing"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/stretchr/testify/require"
 	"github.com/twpayne/go-geom"
 
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -23,7 +24,7 @@ func TestParseFeatures(t *testing.T) {
 	}
 	host, _ := url.Parse("http://ogc.example")
 	s, err := domain.NewSchema(nil, "fid", "")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defaultProfile := domain.NewProfile(domain.RelAsLink, *host, *s)
 	tests := []struct {
 		name              string
@@ -300,6 +301,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "profile non-existent is not supported, only supporting [rel-as-key rel-as-uri rel-as-link]", "parse()")
+
 				return false
 			},
 		},
@@ -317,6 +319,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "unknown query parameter(s) found: non_existent", "parse()")
+
 				return false
 			},
 		},
@@ -334,6 +337,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "property filter foo contains a wildcard (*), wildcard filtering is not allowed", "parse()")
+
 				return false
 			},
 		},
@@ -351,6 +355,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "property filter foo is too large, value is limited to 512 characters", "parse()")
+
 				return false
 			},
 		},
@@ -372,6 +377,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "bbox-crs and filter-crs need to be equal. Can't use more than one CRS as input, but input and output CRS may differ", "parse()")
+
 				return false
 			},
 		},
@@ -389,6 +395,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "crs param should start with http://www.opengis.net/def/crs/, got: EPSG:28992", "parse()")
+
 				return false
 			},
 		},
@@ -406,6 +413,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "bbox-crs can't be used without bbox parameter", "parse()")
+
 				return false
 			},
 		},
@@ -423,6 +431,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "bbox should contain exactly 4 values separated by commas: minx,miny,maxx,maxy", "parse()")
+
 				return false
 			},
 		},
@@ -441,6 +450,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "bbox has no surface area", "parse()")
+
 				return false
 			},
 		},
@@ -459,6 +469,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "bbox has no surface area", "parse()")
+
 				return false
 			},
 		},
@@ -477,6 +488,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "bbox has no surface area", "parse()")
+
 				return false
 			},
 		},
@@ -494,6 +506,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "limit can't be negative", "parse()")
+
 				return false
 			},
 		},
@@ -512,6 +525,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "datetime param '2023-11-10T23:00:00Z/2023-11-15T23:00:00Z' represents an interval, intervals are currently not supported", "parse()")
+
 				return false
 			},
 		},
@@ -530,6 +544,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "datetime param is currently not supported for this collection", "parse()")
+
 				return false
 			},
 		},
@@ -547,6 +562,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "CQL filter param is currently not supported", "parse()")
+
 				return false
 			},
 		},
@@ -564,6 +580,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "unknown query parameter(s) found: this_param_does_not_exist_in_openapi_spec", "parse()")
+
 				return false
 			},
 		},
@@ -612,12 +629,13 @@ func success() func(t assert.TestingT, err error, i ...any) bool {
 
 func generateRandomString(length int) string {
 	const charset = "abc"
-	seed := rand.NewSource(time.Now().UnixNano())
-	random := rand.New(seed) //nolint:gosec  // good enough for testing
+	seed := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64())) //nolint:gosec  // good enough for testing
+	random := rand.New(seed)                                    //nolint:gosec  // good enough for testing
 
 	result := make([]byte, length)
 	for i := range result {
-		result[i] = charset[random.Intn(len(charset))]
+		result[i] = charset[random.IntN(len(charset))]
 	}
+
 	return string(result)
 }

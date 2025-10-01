@@ -74,11 +74,13 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 			for _, d := range coll.Features.Datasources.Additional {
 				uniqueSRSs[d.Srs] = struct{}{}
 			}
+
 			break
 		}
 	}
 	result := util.Keys(uniqueSRSs)
 	slices.Sort(result)
+
 	return result
 }
 
@@ -116,7 +118,7 @@ func (c CollectionEntryFeatures) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-// UnmarshalJSON parses a string to CollectionEntryFeatures
+// UnmarshalJSON parses a string to CollectionEntryFeatures.
 func (c *CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }
@@ -280,5 +282,6 @@ func validateFeatureCollections(collections GeoSpatialCollections) error {
 	if len(errMessages) > 0 {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
+
 	return nil
 }
