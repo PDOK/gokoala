@@ -25,6 +25,8 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.11.1
+	// testcontainers is currently pinned at this version due to OTel
+	// conflicts with ogcapi-operator (https://github.com/open-telemetry/opentelemetry-go/issues/6981)
 	github.com/testcontainers/testcontainers-go v0.38.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.38.0
 	github.com/twpayne/go-geom v1.6.1
