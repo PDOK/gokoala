@@ -35,7 +35,7 @@ func (m *MediaType) UnmarshalJSON(b []byte) error {
 
 // MarshalYAML turns MediaType into YAML.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (m MediaType) MarshalYAML() (interface{}, error) {
+func (m MediaType) MarshalYAML() (any, error) {
 	return m.String(), nil
 }
 

@@ -114,7 +114,7 @@ func NewConfig(configFile string) (*Config, error) {
 }
 
 // UnmarshalYAML hooks into unmarshalling to set defaults and validate config.
-func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (c *Config) UnmarshalYAML(unmarshal func(any) error) error {
 	type cfg Config
 	if err := unmarshal((*cfg)(c)); err != nil {
 		return err

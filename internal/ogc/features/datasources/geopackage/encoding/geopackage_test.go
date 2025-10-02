@@ -215,9 +215,7 @@ func TestBinaryHeader(t *testing.T) {
 			}
 			if err != nil {
 				t.Errorf("error, expected nil got %v", err.Error())
-
 				return
-
 			}
 
 			if bh.Version() != tc.version {

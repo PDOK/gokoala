@@ -28,7 +28,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 
 // MarshalYAML turn duration tag into YAML
 // Value instead of pointer receiver because only that way it can be used for both.
-func (d Duration) MarshalYAML() (interface{}, error) {
+func (d Duration) MarshalYAML() (any, error) {
 	return d.Duration, nil
 }
 
