@@ -88,7 +88,6 @@ linters:
     - nestif                    # Reports deeply nested if statements.
     - nilerr                    # Find the code that returns nil even if it checks that the error is not nil.
     - nilnesserr                # Reports constructs that checks for err != nil, but returns a different nil value error.
-    - nlreturn                  # Checks for a new line before return and branch statements to increase code clarity.
     - nolintlint                # Reports ill-formed or insufficient nolint directives.
     - nosprintfhostport         # Checks for misuse of Sprintf to construct a host with port in a URL.
     - perfsprint                # Checks that fmt.Sprintf can be replaced with a faster alternative.
@@ -178,6 +177,31 @@ linters:
         - github.com/docker/compose/v2
     revive:
       rules:
+        # default rules
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: empty-block
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: exported
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: package-comments
+        - name: range
+        - name: receiver-naming
+        - name: redefines-builtin-id
+        - name: superfluous-else
+        - name: time-naming
+        - name: unexported-return
+        - name: unreachable-code
+        - name: unused-parameter
+        - name: var-declaration
+        # enabled or tweaked by us
+        - name: use-any
         - name: var-naming
           arguments:
             - [ "ID" ] # AllowList
