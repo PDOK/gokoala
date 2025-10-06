@@ -37,8 +37,7 @@ func (p *Postgres) Close() {
 }
 
 func (p *Postgres) Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error) {
-	partition := `create table if not exists search_index_` + collectionID +
-		` partition of search_index for values in ('` + collectionID + `');`
+	partition := fmt.Sprintf(`create table if not exists %[1]s_%[2]s partition of %[1]s for values in ('%[2]s');`, index, collectionID)
 	_, err := p.db.Exec(p.ctx, partition)
 	if err != nil {
 		return -1, fmt.Errorf("error creating partition: %s Error: %w", collectionID, err)
