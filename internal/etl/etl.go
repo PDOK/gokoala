@@ -59,7 +59,7 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 //
 //nolint:funlen
 func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, table config.FeatureTable,
-	pageSize int, optimize bool, dbConn string) error {
+	pageSize int, skipOptimize bool, dbConn string) error {
 
 	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
 	log.Printf("start import of %s", details)
@@ -114,7 +114,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	}
 	log.Printf("completed import of %s", details)
 
-	if optimize {
+	if !skipOptimize {
 		log.Println("start optimizing")
 		if err = target.Optimize(); err != nil {
 			return fmt.Errorf("failed optimizing: %w", err)
