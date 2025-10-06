@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -25,7 +26,7 @@ func init() {
 // Run with: go test -fuzz=Fuzz -fuzztime=10s -run=^$
 func FuzzExpand(f *testing.F) {
 	queryExpansion, err := NewQueryExpansion("internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
-	assert.NoError(f, err)
+	require.NoError(f, err)
 
 	testcases := []string{"Foo", "Bar", "Baz", "Den Haag", "Fryslân", "Gouverneurstraat", "West", "1e", "tweede", "Oud", "Oude"}
 	for _, tc := range testcases {
@@ -33,7 +34,7 @@ func FuzzExpand(f *testing.F) {
 	}
 	f.Fuzz(func(t *testing.T, input string) {
 		expanded, err := queryExpansion.Expand(context.Background(), input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		query := expanded.ToExactMatchQuery(true)
 
 		assert.Truef(t, utf8.ValidString(query), "valid string")

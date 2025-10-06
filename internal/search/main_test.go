@@ -21,6 +21,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"golang.org/x/text/language"
@@ -56,7 +57,7 @@ func TestSearch(t *testing.T) {
 
 	// given available engine
 	eng, err := engine.NewEngine(configFile, false, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// given search endpoint
 	searchEndpoint, err := NewSearch(eng, dbConn, testSearchIndex, domain.WGS84SRIDPostgis,
@@ -64,17 +65,17 @@ func TestSearch(t *testing.T) {
 		"internal/search/testdata/synonyms.csv",
 		1, 3.0, 1.01,
 		4000, 10, 3, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// given empty search index
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex, domain.WGS84SRIDPostgis, language.Dutch)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// given imported geopackage
 	err = importGpkg("addresses", dbConn) // in CRS84
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = importGpkg("buildings", dbConn) // in EPSG:4326
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// run test cases
 	type fields struct {
@@ -363,7 +364,7 @@ func TestSearch(t *testing.T) {
 			// when
 			handler := searchEndpoint.Search()
 			req, err := createRequest(tt.fields.url)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			handler.ServeHTTP(rr, req)
 
 			// then
@@ -372,7 +373,7 @@ func TestSearch(t *testing.T) {
 			log.Printf("============ ACTUAL:\n %s", rr.Body.String())
 			expectedBody, err := os.ReadFile(tt.want.body)
 			if err != nil {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 			assert.JSONEq(t, string(expectedBody), rr.Body.String())
 		})
@@ -386,8 +387,7 @@ func importGpkg(collectionName string, dbConn string) error {
 	}
 	collection := config.CollectionByID(conf, collectionName)
 	table := config.FeatureTable{Name: collectionName, FID: "fid", Geom: "geom"}
-	return etl.ImportFile(*collection, testSearchIndex,
-		"internal/search/testdata/fake-addresses-crs84.gpkg", table, 5000, dbConn)
+	return etl.ImportFile(*collection, testSearchIndex, "internal/search/testdata/fake-addresses-crs84.gpkg", table, 5000, false, dbConn)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {

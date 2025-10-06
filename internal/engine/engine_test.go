@@ -14,6 +14,7 @@ import (
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -31,7 +32,7 @@ func init() {
 func TestEngine_ServePage_LandingPage(t *testing.T) {
 	// given
 	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", false, true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json")
 	engine.RenderTemplates("/", nil, templateKey)
@@ -157,7 +158,7 @@ func TestEngine_Start(t *testing.T) {
 
 			// Wait for the server to shut down and check that there was no error
 			err := <-errChan
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			// Check that the shutdown hook was called
 			assert.True(t, mockHook.called)

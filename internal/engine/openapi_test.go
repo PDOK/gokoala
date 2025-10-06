@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	gomagpieconfig "github.com/PDOK/gomagpie/config"
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +39,7 @@ func Test_newOpenAPI(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			openAPI := newOpenAPI(test.args.config)
-			assert.NotNil(t, openAPI)
+			require.NotNil(t, openAPI)
 
 			// verify resulting OpenAPI spec contains expected strings (keywords, paths, etc)
 			for _, expectedStr := range test.expectedStringsInOpenAPISpec {

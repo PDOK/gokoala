@@ -14,6 +14,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"golang.org/x/text/language"
@@ -42,9 +43,9 @@ func TestCreateSearchIndex(t *testing.T) {
 
 	// when/then
 	err = CreateSearchIndex(dbConn, "search_index", 28992, language.Dutch)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = insertTestData(ctx, dbConn)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestCreateSearchIndexIdempotent(t *testing.T) {
@@ -63,9 +64,9 @@ func TestCreateSearchIndexIdempotent(t *testing.T) {
 
 	// when/then
 	err = CreateSearchIndex(dbConn, "search_index", 28992, language.English)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = CreateSearchIndex(dbConn, "search_index", 28992, language.English) // second time, should not fail
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func makeDbConnection(dbPort nat.Port) string {
@@ -106,9 +107,9 @@ func TestImportGeoPackage(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		assert.NotNil(t, cfg)
+		require.NotNil(t, cfg)
 		collection := config.CollectionByID(cfg, "addresses")
-		assert.NotNil(t, collection)
+		require.NotNil(t, collection)
 		for _, collection := range cfg.Collections {
 			if collection.Search != nil {
 				collection.Search.ETL.Filter = tt.where
@@ -117,19 +118,20 @@ func TestImportGeoPackage(t *testing.T) {
 
 		// when/then
 		err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
-		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table, 1000, dbConn)
-		assert.NoError(t, err)
+		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+			1000, true, dbConn)
+		require.NoError(t, err)
 
 		// check nr of records
 		db, err := pgx.Connect(ctx, dbConn)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		var count int
 		err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&count)
 		db.Close(ctx)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, tt.count, count)
 
 		terminateContainer(ctx, t, postgisContainer)

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gomagpie/config"
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -49,7 +50,7 @@ func TestDir(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
 			engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			engine.Config.Resources = &config.Resources{Directory: &tt.resourcesDir}
 			r := httptest.NewRequest(http.MethodGet, "/resources/"+tt.urlParam, nil)
 			w := httptest.NewRecorder()

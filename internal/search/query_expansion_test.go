@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -208,9 +209,9 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			queryExpansion, err := NewQueryExpansion("internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			actual, err := queryExpansion.Expand(context.Background(), tt.args.searchQuery)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			var query string
 			if tt.args.useWildcard {
 				query = actual.ToWildcardQuery()
