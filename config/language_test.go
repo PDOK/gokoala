@@ -11,7 +11,7 @@ import (
 )
 
 type TestEmbeddedLanguage struct {
-	L Language `json:"L" yaml:"L"`
+	L Language `json:"L" yaml:"L"` //nolint:tagliatelle
 }
 
 func TestLanguage_DeepCopy(t *testing.T) {
@@ -82,7 +82,7 @@ func TestLanguage_Marshalling_JSON(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedLanguage{L: *tt.lang}, unmarshalledEmbedded, "yaml.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedLanguage{L: *tt.lang}, unmarshalledEmbedded, "yaml.Unmarshal")
 		})
 	}
 }

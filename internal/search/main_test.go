@@ -391,6 +391,7 @@ func importGpkg(collectionName string, dbConn string) error {
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
+	t.Helper()
 	req := testcontainers.ContainerRequest{
 		Image: "docker.io/postgis/postgis:16-3.5", // use debian, not alpine (proj issues between environments)
 		Name:  "postgis",
@@ -431,6 +432,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 }
 
 func terminateContainer(ctx context.Context, t *testing.T, container testcontainers.Container) {
+	t.Helper()
 	if err := container.Terminate(ctx); err != nil {
 		t.Fatalf("Failed to terminate container: %s", err.Error())
 	}

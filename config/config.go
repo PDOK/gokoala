@@ -16,45 +16,6 @@ const (
 	CookieMaxAge = 60 * 60 * 24
 )
 
-// NewConfig read YAML config file, required to start Gomagpie
-func NewConfig(configFile string) (*Config, error) {
-	yamlData, err := os.ReadFile(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file %w", err)
-	}
-
-	// expand environment variables
-	yamlData = []byte(os.ExpandEnv(string(yamlData)))
-
-	var config *Config
-	err = yaml.Unmarshal(yamlData, &config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
-	}
-	err = validateLocalPaths(config)
-	if err != nil {
-		return nil, fmt.Errorf("validation error in config file, error: %w", err)
-	}
-	return config, nil
-}
-
-// UnmarshalYAML hooks into unmarshalling to set defaults and validate config
-func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	type cfg Config
-	if err := unmarshal((*cfg)(c)); err != nil {
-		return err
-	}
-
-	// init config
-	if err := setDefaults(c); err != nil {
-		return err
-	}
-	if err := validate(c); err != nil {
-		return err
-	}
-	return nil
-}
-
 type Config struct {
 	// Version of the API. When releasing a new version which contains backwards-incompatible changes, a new major version must be released.
 	Version string `yaml:"version" json:"version" validate:"required,semver" default:"1.0.0"`
@@ -100,6 +61,45 @@ type Config struct {
 
 	// Collections offered through this API
 	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty" validate:"required,dive"`
+}
+
+// NewConfig read YAML config file, required to start Gomagpie
+func NewConfig(configFile string) (*Config, error) {
+	yamlData, err := os.ReadFile(configFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file %w", err)
+	}
+
+	// expand environment variables
+	yamlData = []byte(os.ExpandEnv(string(yamlData)))
+
+	var config *Config
+	err = yaml.Unmarshal(yamlData, &config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
+	}
+	err = validateLocalPaths(config)
+	if err != nil {
+		return nil, fmt.Errorf("validation error in config file, error: %w", err)
+	}
+	return config, nil
+}
+
+// UnmarshalYAML hooks into unmarshalling to set defaults and validate config
+func (c *Config) UnmarshalYAML(unmarshal func(any) error) error {
+	type cfg Config
+	if err := unmarshal((*cfg)(c)); err != nil {
+		return err
+	}
+
+	// init config
+	if err := setDefaults(c); err != nil {
+		return err
+	}
+	if err := validate(c); err != nil {
+		return err
+	}
+	return nil
 }
 
 type License struct {

@@ -27,7 +27,7 @@ func TestSurfaceArea(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := SurfaceArea(tt.bbox)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got) //nolint:testifylint
 		})
 	}
 }

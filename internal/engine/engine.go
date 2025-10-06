@@ -102,50 +102,6 @@ func (e *Engine) Start(address string, debugPort int, shutdownDelay int) error {
 	return e.startServer("main server", address, shutdownDelay, e.Router)
 }
 
-// startServer creates and starts an HTTP server, also takes care of graceful shutdown
-func (e *Engine) startServer(name string, address string, shutdownDelay int, router *chi.Mux) error {
-	// create HTTP server
-	server := http.Server{
-		Addr:    address,
-		Handler: router,
-
-		ReadTimeout:       15 * time.Second,
-		ReadHeaderTimeout: 15 * time.Second,
-	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-	defer stop()
-
-	go func() {
-		log.Printf("%s listening on http://%2s", name, address)
-		// ListenAndServe always returns a non-nil error. After Shutdown or
-		// Close, the returned error is ErrServerClosed
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("failed to shutdown %s: %v", name, err)
-		}
-	}()
-
-	// listen for interrupt signal and then perform shutdown
-	<-ctx.Done()
-	stop()
-
-	// execute shutdown hooks
-	for _, shutdownHook := range e.shutdownHooks {
-		shutdownHook()
-	}
-
-	if shutdownDelay > 0 {
-		log.Printf("stop signal received, initiating shutdown of %s after %d seconds delay", name, shutdownDelay)
-		time.Sleep(time.Duration(shutdownDelay) * time.Second)
-	}
-	log.Printf("shutting down %s gracefully", name)
-
-	// shutdown with a max timeout.
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
-	return server.Shutdown(timeoutCtx)
-}
-
 // RegisterShutdownHook register a func to execute during graceful shutdown, e.g. to clean up resources.
 func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
@@ -167,24 +123,6 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 // RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
 func (e *Engine) RenderTemplatesWithParams(urlPath string, params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	e.renderTemplates(urlPath, params, breadcrumbs, true, keys...)
-}
-
-func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Breadcrumb, validate bool, keys ...TemplateKey) {
-	for _, key := range keys {
-		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
-
-		if validate {
-			// we already perform OpenAPI validation here during startup to catch
-			// issues early on, in addition to runtime OpenAPI response validation
-			// all templates are created in all available languages, hence all are checked
-			for lang := range e.Templates.localizers {
-				key.Language = lang
-				if err := e.validateStaticResponse(key, urlPath); err != nil {
-					log.Fatal(err)
-				}
-			}
-		}
-	}
 }
 
 // RenderAndServePage renders an already parsed HTML or non-HTML template on-the-fly depending
@@ -238,39 +176,6 @@ func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey T
 func (e *Engine) Serve(w http.ResponseWriter, r *http.Request,
 	validateRequest bool, validateResponse bool, contentType string, output []byte) {
 	e.serve(w, r, nil, validateRequest, validateResponse, contentType, output)
-}
-
-func (e *Engine) serve(w http.ResponseWriter, r *http.Request, templateKey *TemplateKey,
-	validateRequest bool, validateResponse bool, contentType string, output []byte) {
-
-	if validateRequest {
-		if err := e.OpenAPI.ValidateRequest(r); err != nil {
-			log.Printf("%v", err.Error())
-			RenderProblem(ProblemBadRequest, w, err.Error())
-			return
-		}
-	}
-
-	if templateKey != nil {
-		// render output
-		var err error
-		output, err = e.Templates.getRenderedTemplate(*templateKey)
-		if err != nil {
-			log.Printf("%v", err.Error())
-			RenderProblem(ProblemNotFound, w)
-			return
-		}
-		contentType = e.CN.formatToMediaType(templateKey.Format)
-	}
-
-	if validateResponse {
-		if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
-			log.Printf("%v", err.Error())
-			RenderProblem(ProblemServerError, w, err.Error())
-			return
-		}
-	}
-	writeResponse(w, contentType, output)
 }
 
 // ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
@@ -336,6 +241,109 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 	reverseProxy.ServeHTTP(w, r)
 }
 
+// SafeWrite executes the given http.ResponseWriter.Write while logging errors
+func SafeWrite(write func([]byte) (int, error), body []byte) {
+	_, err := write(body)
+	if err != nil {
+		log.Printf("failed to write response: %v", err)
+	}
+}
+
+// startServer creates and starts an HTTP server, also takes care of graceful shutdown
+func (e *Engine) startServer(name string, address string, shutdownDelay int, router *chi.Mux) error {
+	// create HTTP server
+	server := http.Server{
+		Addr:    address,
+		Handler: router,
+
+		ReadTimeout:       15 * time.Second,
+		ReadHeaderTimeout: 15 * time.Second,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	defer stop()
+
+	go func() {
+		log.Printf("%s listening on http://%2s", name, address)
+		// ListenAndServe always returns a non-nil error. After Shutdown or
+		// Close, the returned error is ErrServerClosed
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("failed to shutdown %s: %v", name, err)
+		}
+	}()
+
+	// listen for interrupt signal and then perform shutdown
+	<-ctx.Done()
+	stop()
+
+	// execute shutdown hooks
+	for _, shutdownHook := range e.shutdownHooks {
+		shutdownHook()
+	}
+
+	if shutdownDelay > 0 {
+		log.Printf("stop signal received, initiating shutdown of %s after %d seconds delay", name, shutdownDelay)
+		time.Sleep(time.Duration(shutdownDelay) * time.Second)
+	}
+	log.Printf("shutting down %s gracefully", name)
+
+	// shutdown with a max timeout.
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+	return server.Shutdown(timeoutCtx)
+}
+
+func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Breadcrumb, validate bool, keys ...TemplateKey) {
+	for _, key := range keys {
+		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
+
+		if validate {
+			// we already perform OpenAPI validation here during startup to catch
+			// issues early on, in addition to runtime OpenAPI response validation
+			// all templates are created in all available languages, hence all are checked
+			for lang := range e.Templates.localizers {
+				key.Language = lang
+				if err := e.validateStaticResponse(key, urlPath); err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+	}
+}
+
+func (e *Engine) serve(w http.ResponseWriter, r *http.Request, templateKey *TemplateKey,
+	validateRequest bool, validateResponse bool, contentType string, output []byte) {
+
+	if validateRequest {
+		if err := e.OpenAPI.ValidateRequest(r); err != nil {
+			log.Printf("%v", err.Error())
+			RenderProblem(ProblemBadRequest, w, err.Error())
+			return
+		}
+	}
+
+	if templateKey != nil {
+		// render output
+		var err error
+		output, err = e.Templates.getRenderedTemplate(*templateKey)
+		if err != nil {
+			log.Printf("%v", err.Error())
+			RenderProblem(ProblemNotFound, w)
+			return
+		}
+		contentType = e.CN.formatToMediaType(templateKey.Format)
+	}
+
+	if validateResponse {
+		if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
+			log.Printf("%v", err.Error())
+			RenderProblem(ProblemServerError, w, err.Error())
+			return
+		}
+	}
+	writeResponse(w, contentType, output)
+}
+
 func removeBody(proxyRes *http.Response) {
 	buf := bytes.NewBuffer(make([]byte, 0))
 	proxyRes.Body = io.NopCloser(buf)
@@ -364,12 +372,4 @@ func writeResponse(w http.ResponseWriter, contentType string, output []byte) {
 		w.Header().Set(HeaderContentType, contentType)
 	}
 	SafeWrite(w.Write, output)
-}
-
-// SafeWrite executes the given http.ResponseWriter.Write while logging errors
-func SafeWrite(write func([]byte) (int, error), body []byte) {
-	_, err := write(body)
-	if err != nil {
-		log.Printf("failed to write response: %v", err)
-	}
 }

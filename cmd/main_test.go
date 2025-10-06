@@ -89,7 +89,7 @@ func Test_newRouter(t *testing.T) {
 			log.Print(recorder.Body.String()) // to ease debugging
 			switch {
 			case strings.HasSuffix(tt.apiCall, "json"):
-				assert.JSONEq(t, recorder.Body.String(), string(expectedBody))
+				assert.JSONEq(t, string(expectedBody), recorder.Body.String())
 			case strings.HasSuffix(tt.apiCall, "html") || strings.HasSuffix(tt.apiCall, "xml"):
 				assert.Contains(t, normalize(recorder.Body.String()), normalize(string(expectedBody)))
 			default:

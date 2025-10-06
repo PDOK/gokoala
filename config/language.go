@@ -15,7 +15,7 @@ type Language struct {
 // MarshalJSON turn language tag into JSON
 // Value instead of pointer receiver because only that way it can be used for both.
 func (l Language) MarshalJSON() ([]byte, error) {
-	return json.Marshal(l.Tag.String())
+	return json.Marshal(l.String())
 }
 
 // UnmarshalJSON turn JSON into Language

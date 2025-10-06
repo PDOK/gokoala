@@ -163,7 +163,7 @@ var (
 	}
 )
 
-//nolint:funlen
+//nolint:funlen,maintidx
 func main() {
 	app := cli.NewApp()
 	app.Name = appName

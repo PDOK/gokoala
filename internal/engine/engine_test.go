@@ -75,7 +75,7 @@ func TestEngine_ReverseProxy(t *testing.T) {
 
 	// then
 	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, rec.Body.String(), "Mock response, received header https://api.foobar.example/")
+	assert.Equal(t, "Mock response, received header https://api.foobar.example/", rec.Body.String())
 }
 
 func TestEngine_ReverseProxyAndValidate(t *testing.T) {
@@ -180,6 +180,7 @@ func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
 }
 
 func makeAPICall(t *testing.T, mockTargetServer string) (*httptest.ResponseRecorder, *http.Request) {
+	t.Helper()
 	rec := httptest.NewRecorder()
 	req, err := http.NewRequest(http.MethodGet, mockTargetServer+"/some/path", nil)
 	if err != nil {
