@@ -44,6 +44,7 @@ const (
 	featureTableFidFlag      = "fid"
 	featureTableGeomFlag     = "geom"
 	pageSizeFlag             = "page-size"
+	skipOptimizeFlag         = "skip-optimize"
 	rewritesFileFlag         = "rewrites-file"
 	synonymsFileFlag         = "synonyms-file"
 	languageFlag             = "lang"
@@ -162,7 +163,7 @@ var (
 	}
 )
 
-//nolint:funlen
+//nolint:funlen,maintidx
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
@@ -385,6 +386,13 @@ func main() {
 					Required: false,
 					Value:    10000,
 				},
+				&cli.BoolFlag{
+					Name:     skipOptimizeFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(skipOptimizeFlag)},
+					Usage:    "Skip running VACUUM ANALYZE on the search index after import",
+					Required: false,
+					Value:    false,
+				},
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
@@ -403,7 +411,7 @@ func main() {
 					return fmt.Errorf("no configured collection found with id: %s", collectionID)
 				}
 				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), featureTable,
-					c.Int(pageSizeFlag), dbConn)
+					c.Int(pageSizeFlag), c.Bool(skipOptimizeFlag), dbConn)
 			},
 		},
 	}

@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -74,7 +75,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			core := NewCommonCore(newEngine)
 			handler := core.LandingPage()
 			handler.ServeHTTP(rr, req)
@@ -132,7 +133,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			core := NewCommonCore(newEngine)
 			handler := core.Conformance()
 			handler.ServeHTTP(rr, req)
@@ -190,7 +191,7 @@ func TestCommonCore_API(t *testing.T) {
 			defer ts.Close()
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, false, true)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			core := NewCommonCore(newEngine)
 			handler := core.API()
 			handler.ServeHTTP(rr, req)

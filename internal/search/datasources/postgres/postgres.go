@@ -17,8 +17,7 @@ import (
 )
 
 type Postgres struct {
-	db  *pgxpool.Pool
-	ctx context.Context
+	db *pgxpool.Pool
 
 	queryTimeout    time.Duration
 	searchIndex     string
@@ -53,7 +52,6 @@ func NewPostgres(dbConn string, queryTimeout time.Duration, searchIndex string, 
 
 	return &Postgres{
 		db,
-		ctx,
 		queryTimeout,
 		searchIndex,
 		searchIndexSrid,

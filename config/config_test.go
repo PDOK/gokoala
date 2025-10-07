@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -51,7 +52,7 @@ func TestNewConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := NewConfig(tt.args.configFile)
 			if tt.wantErr {
-				assert.Error(t, err)
+				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.wantErrMsg)
 			} else {
 				assert.NoError(t, err)
@@ -88,7 +89,7 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config, err := NewConfig(tt.args.configFile)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			var actual []string
 			if tt.args.expectedTitles {
 				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return *item.Metadata.Title })
@@ -148,7 +149,7 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 }
 
 type TestEmbeddedGeoSpatialCollection struct {
-	C GeoSpatialCollection `json:"C"`
+	C GeoSpatialCollection `json:"C"` //nolint:tagliatelle
 }
 
 func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
@@ -184,7 +185,7 @@ func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedGeoSpatialCollection{C: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedGeoSpatialCollection{C: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
 		})
 	}
 }

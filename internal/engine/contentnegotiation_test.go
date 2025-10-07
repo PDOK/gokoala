@@ -35,6 +35,7 @@ func TestContentNegotiation_NegotiateFormat(t *testing.T) {
 }
 
 func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, givenURL string, expectedFormat string) {
+	t.Helper()
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
 	req.Header.Set(HeaderAccept, acceptHeader)
 	if err != nil {
@@ -47,6 +48,7 @@ func testFormat(t *testing.T, cn *ContentNegotiation, acceptHeader string, given
 }
 
 func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader string, givenURL string, expectedLanguage language.Tag) {
+	t.Helper()
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
 	req.Header.Set(HeaderAcceptLanguage, acceptLanguageHeader)
 	if err != nil {
@@ -59,6 +61,7 @@ func testLanguage(t *testing.T, cn *ContentNegotiation, acceptLanguageHeader str
 }
 
 func testLanguageWithCookie(t *testing.T, cn *ContentNegotiation, cookieLanguage string, givenURL string, expectedLanguage language.Tag) {
+	t.Helper()
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, givenURL, nil)
 	req.AddCookie(&http.Cookie{
 		Name:     languageParam,

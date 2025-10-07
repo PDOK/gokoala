@@ -11,7 +11,7 @@ import (
 )
 
 type TestEmbeddedURL struct {
-	U URL `json:"U" yaml:"U"`
+	U URL `json:"U" yaml:"U"` //nolint:tagliatelle
 }
 
 func TestURL_DeepCopy(t *testing.T) {
@@ -111,7 +111,7 @@ func TestURL_Unmarshalling_JSON(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedURL{U: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedURL{U: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
 		})
 	}
 }
@@ -178,7 +178,7 @@ func TestURL_Unmarshalling_YAML(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedURL{U: *tt.want}, unmarshalledEmbedded, "yaml.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedURL{U: *tt.want}, unmarshalledEmbedded, "yaml.Unmarshal")
 		})
 	}
 }

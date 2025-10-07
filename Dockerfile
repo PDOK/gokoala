@@ -1,5 +1,5 @@
 ####### Go build
-FROM docker.io/golang:1.23-bookworm AS build-env
+FROM docker.io/golang:1.25-bookworm AS build-env
 WORKDIR /go/src/service
 ADD . /go/src/service
 
