@@ -154,8 +154,8 @@ func generateExternalFid(collectionID string, externalFid *config.ExternalFid, e
 		for _, value := range externalFidValues {
 			uuidInput += fmt.Sprint(value)
 		}
-		externalFid := uuid.NewSHA1(externalFid.UUIDNamespace, []byte(uuidInput)).String()
-		return &externalFid, nil
+		result := uuid.NewSHA1(externalFid.UUIDNamespace, []byte(uuidInput)).String()
+		return &result, nil
 	}
 	return nil, nil
 }
