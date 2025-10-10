@@ -61,14 +61,14 @@ type ExcludeFunctionPropertyNames<T extends object> = MarkFunctionPropertyNames<
 type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T>>
 
 @Component({
-    selector: 'app-vectortile-view',
-    templateUrl: './vectortile-view.component.html',
-    styleUrls: ['./vectortile-view.component.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule],
-    schemas: [
-        CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
-    ]
+  selector: 'app-vectortile-view',
+  templateUrl: './vectortile-view.component.html',
+  styleUrls: ['./vectortile-view.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule],
+  schemas: [
+    CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
+  ],
 })
 export class VectortileViewComponent implements OnChanges {
   title = 'view-component'
