@@ -7,12 +7,11 @@ import { LegendItem, MapboxStyle, MapboxStyleService } from '../mapbox-style.ser
 import { NGXLogger } from 'ngx-logger'
 
 @Component({
-  selector: 'app-legend-view',
-  templateUrl: './legend-view.component.html',
-  styleUrls: ['./legend-view.component.css'],
-  imports: [CommonModule, LegendItemComponent],
-  standalone: true,
-  encapsulation: ViewEncapsulation.Emulated,
+    selector: 'app-legend-view',
+    templateUrl: './legend-view.component.html',
+    styleUrls: ['./legend-view.component.css'],
+    imports: [CommonModule, LegendItemComponent],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class LegendViewComponent implements OnInit, OnChanges {
   mapboxStyle!: MapboxStyle
