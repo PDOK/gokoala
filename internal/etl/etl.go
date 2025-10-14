@@ -35,11 +35,16 @@ type Load interface {
 	// Init the target database by creating an empty search index
 	Init(index string, srid int, lang language.Tag) error
 
+	// PreLoad hook to execute logic before loading records into the search index.
+	// For example, by creating tables or partitions
 	PreLoad(collectionID string, index string) error
 
-	// Load records into search index
+	// Load records into the search index. Returns the number of records loaded.
+	// Assumes the index is already initialized.
 	Load(records []t.SearchIndexRecord) (int64, error)
 
+	// PostLoad hook to execute logic after loading records into the search index.
+	// For example, by creating switching partitions or rebuilding indexes.
 	PostLoad(collectionID string, index string) error
 
 	// Optimize once ETL is completed (optionally)
