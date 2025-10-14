@@ -35,8 +35,12 @@ type Load interface {
 	// Init the target database by creating an empty search index
 	Init(index string, srid int, lang language.Tag) error
 
+	PreLoad(collectionID string, index string) error
+
 	// Load records into search index
-	Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error)
+	Load(records []t.SearchIndexRecord) (int64, error)
+
+	PostLoad(collectionID string, index string) error
 
 	// Optimize once ETL is completed (optionally)
 	Optimize() error
@@ -82,6 +86,11 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 
 	transformer := t.NewTransformer()
 
+	// pre-load
+	if err = target.PreLoad(collection.ID, searchIndex); err != nil {
+		return err
+	}
+
 	// import records in batches depending on page size
 	offset := 0
 	for {
@@ -105,7 +114,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 		}
 		log.Printf("transform completed, %d source records transformed into %d target records", sourceRecordCount, len(targetRecords))
-		loaded, err := target.Load(collection.ID, targetRecords, searchIndex)
+		loaded, err := target.Load(targetRecords)
 		if err != nil {
 			return fmt.Errorf("failed loading records into target: %w", err)
 		}
@@ -114,10 +123,15 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	}
 	log.Printf("completed import of %s", details)
 
+	// post-load
+	if err = target.PostLoad(collection.ID, searchIndex); err != nil {
+		return err
+	}
+
 	if !skipOptimize {
 		log.Println("start optimizing")
 		if err = target.Optimize(); err != nil {
-			return fmt.Errorf("failed optimizing: %w", err)
+			return err
 		}
 		log.Println("completed optimizing")
 	}

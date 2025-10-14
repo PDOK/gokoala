@@ -12,6 +12,9 @@ import (
 
 type Postgres struct {
 	db *pgx.Conn
+
+	partitionToLoad   string
+	partitionToDetach string
 }
 
 func NewPostgres(dbConn string) (*Postgres, error) {
@@ -35,16 +38,64 @@ func (p *Postgres) Close() {
 	_ = p.db.Close(context.Background())
 }
 
-func (p *Postgres) Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error) {
-	partition := fmt.Sprintf(`create table if not exists %[1]s_%[2]s partition of %[1]s for values in ('%[2]s');`, index, collectionID)
-	_, err := p.db.Exec(context.Background(), partition)
-	if err != nil {
-		return -1, fmt.Errorf("error creating partition: %s Error: %w", collectionID, err)
+func (p *Postgres) PreLoad(collectionID string, index string) error {
+	for _, table := range []string{index + "_" + collectionID + "_alpha", index + "_" + collectionID + "_beta"} {
+		isPartition, err := p.isPartition(collectionID, index)
+		if err != nil {
+			return fmt.Errorf("error querying partition status for collection: %s Error: %w", collectionID, err)
+		}
+		if isPartition {
+			p.partitionToDetach = table
+		} else if p.partitionToLoad == "" {
+			p.partitionToLoad = table
+		}
 	}
 
+	if p.partitionToLoad != "" {
+		var srid int
+		if err := p.db.QueryRow(context.Background(), `select find_srid('public', $1, 'geometry')`, index).Scan(&srid); err != nil {
+			return fmt.Errorf("error finding SRID of search index: %w", err)
+		}
+
+		//nolint:dupword
+		collectionTable := fmt.Sprintf(`
+			create table if not exists %[1]s (
+				id 					serial,
+				feature_id 			text 					 not null,
+				external_fid        text                     null,
+				collection_id 		text					 not null,
+				collection_version 	int 					 not null,
+				display_name 		text					 not null,
+				suggest 			text					 not null,
+				geometry_type 		geometry_type			 not null,
+				bbox 				geometry(polygon, %[2]d) null,
+				geometry            geometry(point, %[2]d)   null,
+			    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored
+				--,primary key (id, collection_id, collection_version)
+			);`, p.partitionToLoad, srid)
+
+		_, err := p.db.Exec(context.Background(), collectionTable)
+		if err != nil {
+			return fmt.Errorf("error creating search index table: %w", err)
+		}
+
+		partitionCheck := fmt.Sprintf(`alter table %[1]s add constraint %[1]s_col_chk check (collection_id = '%[2]s');`, p.partitionToLoad, collectionID)
+		_, err = p.db.Exec(context.Background(), partitionCheck)
+		if err != nil {
+			return fmt.Errorf("error creating CHECK constraint: %w", err)
+		}
+
+		if err = p.createIndexes(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Postgres) Load(records []t.SearchIndexRecord) (int64, error) {
 	loaded, err := p.db.CopyFrom(
 		context.Background(),
-		pgx.Identifier{index},
+		pgx.Identifier{p.partitionToLoad},
 		[]string{"feature_id", "external_fid", "collection_id", "collection_version", "display_name", "suggest", "geometry_type", "bbox", "geometry"},
 		pgx.CopyFromSlice(len(records), func(i int) ([]any, error) {
 			r := records[i]
@@ -57,10 +108,51 @@ func (p *Postgres) Load(collectionID string, records []t.SearchIndexRecord, inde
 	return loaded, nil
 }
 
+func (p *Postgres) PostLoad(collectionID string, index string) error {
+	if p.partitionToDetach != "" {
+		detach := fmt.Sprintf(`alter table %[1]s detach partition %[2]s concurrently;`, index, p.partitionToDetach)
+		_, err := p.db.Exec(context.Background(), detach)
+		if err != nil {
+			return fmt.Errorf("error detaching partition %s from index %s. Error: %w", p.partitionToLoad, index, err)
+		}
+	}
+
+	attach := fmt.Sprintf(`alter table %[1]s attach partition %[2]s for values in ('%[3]s');`, index, p.partitionToLoad, collectionID)
+	_, err := p.db.Exec(context.Background(), attach)
+	if err != nil {
+		return fmt.Errorf("error attaching table %s as partition of index %s. Error: %w", p.partitionToLoad, index, err)
+	}
+
+	attachTsIndex := fmt.Sprintf(`alter index ts_idx attach partition %[1]s_ts_idx;`, p.partitionToLoad)
+	_, err = p.db.Exec(context.Background(), attachTsIndex)
+	if err != nil {
+		return fmt.Errorf("error attaching index: %w", err)
+	}
+
+	attachGeomIndex := fmt.Sprintf(`alter index geometry_idx attach partition %[1]s_geometry_idx;`, p.partitionToLoad)
+	_, err = p.db.Exec(context.Background(), attachGeomIndex)
+	if err != nil {
+		return fmt.Errorf("error attaching index: %w", err)
+	}
+
+	attachBBoxIndex := fmt.Sprintf(`alter index bbox_idx attach partition %[1]s_bbox_idx;`, p.partitionToLoad)
+	_, err = p.db.Exec(context.Background(), attachBBoxIndex)
+	if err != nil {
+		return fmt.Errorf("error attaching index: %w", err)
+	}
+
+	attachPreRankIndex := fmt.Sprintf(`alter index pre_rank_idx attach partition %[1]s_pre_rank_idx;`, p.partitionToLoad)
+	_, err = p.db.Exec(context.Background(), attachPreRankIndex)
+	if err != nil {
+		return fmt.Errorf("error attaching index: %w", err)
+	}
+	return nil
+}
+
 func (p *Postgres) Optimize() error {
 	_, err := p.db.Exec(context.Background(), `vacuum analyze;`)
 	if err != nil {
-		return fmt.Errorf("error performing vacuum analyze: %w", err)
+		return fmt.Errorf("failed optimizing: error performing vacuum analyze: %w", err)
 	}
 	return nil
 }
@@ -129,19 +221,19 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	// GIN indexes are best for text search
-	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on %[1]s using gin(ts);`, index)
+	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on only %[1]s using gin(ts);`, index)
 	_, err = p.db.Exec(context.Background(), ginIndex)
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)
 	}
 
 	// GIST indexes for bbox and geometry columns, to support search within a bounding box
-	geometryIndex := fmt.Sprintf(`create index if not exists geometry_idx on %[1]s using gist(geometry);`, index)
+	geometryIndex := fmt.Sprintf(`create index if not exists geometry_idx on only %[1]s using gist(geometry);`, index)
 	_, err = p.db.Exec(context.Background(), geometryIndex)
 	if err != nil {
 		return fmt.Errorf("error creating GIST index: %w", err)
 	}
-	bboxIndex := fmt.Sprintf(`create index if not exists bbox_idx on %[1]s using gist(bbox);`, index)
+	bboxIndex := fmt.Sprintf(`create index if not exists bbox_idx on only %[1]s using gist(bbox);`, index)
 	_, err = p.db.Exec(context.Background(), bboxIndex)
 	if err != nil {
 		return fmt.Errorf("error creating GIST index: %w", err)
@@ -156,7 +248,7 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	// index used to pre-rank results when generic search terms are used
-	preRankIndex := fmt.Sprintf(`create index if not exists pre_rank_idx on %[1]s (array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, index)
+	preRankIndex := fmt.Sprintf(`create index if not exists pre_rank_idx on only %[1]s (array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, index)
 	_, err = p.db.Exec(context.Background(), preRankIndex)
 	if err != nil {
 		return fmt.Errorf("error creating pre-rank index: %w", err)
@@ -171,6 +263,49 @@ func createExtensions(ctx context.Context, db *pgx.Conn) error {
 		if err != nil {
 			return fmt.Errorf("error creating %s extension: %w", ext, err)
 		}
+	}
+	return nil
+}
+
+func (p *Postgres) isPartition(collectionID string, index string) (bool, error) {
+	result := false
+	err := p.db.QueryRow(context.Background(), `select exists (
+	        select 1
+	        from pg_catalog.pg_inherits as i
+	        join pg_catalog.pg_class as parent on i.inhparent = parent.oid
+	        join pg_catalog.pg_class as child on i.inhrelid = child.oid
+	        where parent.relname = $1
+	          and child.relname = $2
+	          and parent.relkind = 'p' -- p means partitioned table
+	    ) as is_partition_of_search_index;`, index, collectionID).Scan(&result)
+	return result, err
+}
+
+func (p *Postgres) createIndexes() error {
+	// GIN indexes are best for text search
+	ginIndex := fmt.Sprintf(`create index if not exists %[1]s_ts_idx on only %[1]s using gin(ts);`, p.partitionToLoad)
+	_, err := p.db.Exec(context.Background(), ginIndex)
+	if err != nil {
+		return fmt.Errorf("error creating GIN index: %w", err)
+	}
+
+	// GIST indexes for bbox and geometry columns, to support search within a bounding box
+	geometryIndex := fmt.Sprintf(`create index if not exists %[1]s_geometry_idx on only %[1]s using gist(geometry);`, p.partitionToLoad)
+	_, err = p.db.Exec(context.Background(), geometryIndex)
+	if err != nil {
+		return fmt.Errorf("error creating GIST index: %w", err)
+	}
+	bboxIndex := fmt.Sprintf(`create index if not exists %[1]s_bbox_idx on only %[1]s using gist(bbox);`, p.partitionToLoad)
+	_, err = p.db.Exec(context.Background(), bboxIndex)
+	if err != nil {
+		return fmt.Errorf("error creating GIST index: %w", err)
+	}
+
+	// index used to pre-rank results when generic search terms are used
+	preRankIndex := fmt.Sprintf(`create index if not exists %[1]s_pre_rank_idx on only %[1]s (array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, p.partitionToLoad)
+	_, err = p.db.Exec(context.Background(), preRankIndex)
+	if err != nil {
+		return fmt.Errorf("error creating pre-rank index: %w", err)
 	}
 	return nil
 }
