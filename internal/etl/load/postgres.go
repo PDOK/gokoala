@@ -10,6 +10,10 @@ import (
 	"golang.org/x/text/language"
 )
 
+var (
+	indexNames = []string{"ts_idx", "geometry_idx", "bbox_idx", "pre_rank_idx"}
+)
+
 type Postgres struct {
 	db *pgx.Conn
 
@@ -74,7 +78,6 @@ func (p *Postgres) PreLoad(collectionID string, index string) error {
 				bbox 				geometry(polygon, %[2]d) null,
 				geometry            geometry(point, %[2]d)   null,
 			    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored
-				--,primary key (id, collection_id, collection_version)
 			);`, p.partitionToLoad, srid)
 
 		_, err := p.db.Exec(context.Background(), collectionTable)
@@ -88,19 +91,9 @@ func (p *Postgres) PreLoad(collectionID string, index string) error {
 			return fmt.Errorf("error truncating table: %w", err)
 		}
 
-		dropCheck := fmt.Sprintf(`alter table %[1]s drop constraint if exists %[1]s_col_chk;`, p.partitionToLoad)
-		_, err = p.db.Exec(context.Background(), dropCheck)
-		if err != nil {
-			return fmt.Errorf("error dropping CHECK constraint: %w", err)
+		if err = p.createCheck(collectionID); err != nil {
+			return err
 		}
-
-		addCheck := fmt.Sprintf(`alter table if exists %[1]s add constraint %[1]s_col_chk check (collection_id = '%[2]s');`,
-			p.partitionToLoad, collectionID)
-		_, err = p.db.Exec(context.Background(), addCheck)
-		if err != nil {
-			return fmt.Errorf("error creating CHECK constraint: %w", err)
-		}
-
 		if err = p.createIndexes(); err != nil {
 			return err
 		}
@@ -139,28 +132,12 @@ func (p *Postgres) PostLoad(collectionID string, index string) error {
 		return fmt.Errorf("error attaching table %s as partition of index %s. Error: %w", p.partitionToLoad, index, err)
 	}
 
-	attachTsIndex := fmt.Sprintf(`alter index ts_idx attach partition %[1]s_ts_idx;`, p.partitionToLoad)
-	_, err = p.db.Exec(context.Background(), attachTsIndex)
-	if err != nil {
-		return fmt.Errorf("error attaching index: %w", err)
-	}
-
-	attachGeomIndex := fmt.Sprintf(`alter index geometry_idx attach partition %[1]s_geometry_idx;`, p.partitionToLoad)
-	_, err = p.db.Exec(context.Background(), attachGeomIndex)
-	if err != nil {
-		return fmt.Errorf("error attaching index: %w", err)
-	}
-
-	attachBBoxIndex := fmt.Sprintf(`alter index bbox_idx attach partition %[1]s_bbox_idx;`, p.partitionToLoad)
-	_, err = p.db.Exec(context.Background(), attachBBoxIndex)
-	if err != nil {
-		return fmt.Errorf("error attaching index: %w", err)
-	}
-
-	attachPreRankIndex := fmt.Sprintf(`alter index pre_rank_idx attach partition %[1]s_pre_rank_idx;`, p.partitionToLoad)
-	_, err = p.db.Exec(context.Background(), attachPreRankIndex)
-	if err != nil {
-		return fmt.Errorf("error attaching index: %w", err)
+	for _, indexName := range indexNames {
+		attachIndex := fmt.Sprintf(`alter index %[1]s attach partition %[2]s_%[1]s;`, p.partitionToLoad, indexName)
+		_, err = p.db.Exec(context.Background(), attachIndex)
+		if err != nil {
+			return fmt.Errorf("error attaching index: %w", err)
+		}
 	}
 	return nil
 }
@@ -236,7 +213,16 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		return fmt.Errorf("error creating search index table: %w", err)
 	}
 
+	// create custom collation to correctly handle "numbers in strings" when sorting results
+	// see https://www.postgresql.org/docs/12/collation.html#id-1.6.10.4.5.7.5
+	collation := fmt.Sprintf(`create collation if not exists custom_numeric (provider = icu, locale = '%s-u-kn-true');`, lang.String())
+	_, err = p.db.Exec(context.Background(), collation)
+	if err != nil {
+		return fmt.Errorf("error creating numeric collation: %w", err)
+	}
+
 	// GIN indexes are best for text search
+	// note: this index should be listed in the "indexNames" variable at the top of this file.
 	ginIndex := fmt.Sprintf(`create index if not exists ts_idx on only %[1]s using gin(ts);`, index)
 	_, err = p.db.Exec(context.Background(), ginIndex)
 	if err != nil {
@@ -244,6 +230,7 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	// GIST indexes for bbox and geometry columns, to support search within a bounding box
+	// note: these indexes should be listed in the "indexNames" variable at the top of this file.
 	geometryIndex := fmt.Sprintf(`create index if not exists geometry_idx on only %[1]s using gist(geometry);`, index)
 	_, err = p.db.Exec(context.Background(), geometryIndex)
 	if err != nil {
@@ -255,15 +242,8 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		return fmt.Errorf("error creating GIST index: %w", err)
 	}
 
-	// create custom collation to correctly handle "numbers in strings" when sorting results
-	// see https://www.postgresql.org/docs/12/collation.html#id-1.6.10.4.5.7.5
-	collation := fmt.Sprintf(`create collation if not exists custom_numeric (provider = icu, locale = '%s-u-kn-true');`, lang.String())
-	_, err = p.db.Exec(context.Background(), collation)
-	if err != nil {
-		return fmt.Errorf("error creating numeric collation: %w", err)
-	}
-
 	// index used to pre-rank results when generic search terms are used
+	// note: this index should be listed in the "indexNames" variable at the top of this file.
 	preRankIndex := fmt.Sprintf(`create index if not exists pre_rank_idx on only %[1]s (array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, index)
 	_, err = p.db.Exec(context.Background(), preRankIndex)
 	if err != nil {
@@ -322,6 +302,22 @@ func (p *Postgres) createIndexes() error {
 	_, err = p.db.Exec(context.Background(), preRankIndex)
 	if err != nil {
 		return fmt.Errorf("error creating pre-rank index: %w", err)
+	}
+	return nil
+}
+
+func (p *Postgres) createCheck(collectionID string) error {
+	dropCheck := fmt.Sprintf(`alter table %[1]s drop constraint if exists %[1]s_col_chk;`, p.partitionToLoad)
+	_, err := p.db.Exec(context.Background(), dropCheck)
+	if err != nil {
+		return fmt.Errorf("error dropping CHECK constraint: %w", err)
+	}
+
+	addCheck := fmt.Sprintf(`alter table if exists %[1]s add constraint %[1]s_col_chk check (collection_id = '%[2]s');`,
+		p.partitionToLoad, collectionID)
+	_, err = p.db.Exec(context.Background(), addCheck)
+	if err != nil {
+		return fmt.Errorf("error creating CHECK constraint: %w", err)
 	}
 	return nil
 }
