@@ -39,12 +39,15 @@ func (p *Postgres) Close() {
 }
 
 func (p *Postgres) PreLoad(collectionID string, index string) error {
-	for _, table := range []string{index + "_" + collectionID + "_alpha", index + "_" + collectionID + "_beta"} {
-		isPartition, err := p.isPartition(collectionID, index)
+	tablePrefix := index + "_" + collectionID
+	tables := []string{tablePrefix + "_alpha", tablePrefix + "_beta"}
+
+	for _, table := range tables {
+		tableIsPartition, err := p.isPartition(table, index)
 		if err != nil {
 			return fmt.Errorf("error querying partition status for collection: %s Error: %w", collectionID, err)
 		}
-		if isPartition {
+		if tableIsPartition {
 			p.partitionToDetach = table
 		} else if p.partitionToLoad == "" {
 			p.partitionToLoad = table
@@ -79,8 +82,21 @@ func (p *Postgres) PreLoad(collectionID string, index string) error {
 			return fmt.Errorf("error creating search index table: %w", err)
 		}
 
-		partitionCheck := fmt.Sprintf(`alter table %[1]s add constraint %[1]s_col_chk check (collection_id = '%[2]s');`, p.partitionToLoad, collectionID)
-		_, err = p.db.Exec(context.Background(), partitionCheck)
+		truncate := fmt.Sprintf(`truncate table %[1]s;`, p.partitionToLoad)
+		_, err = p.db.Exec(context.Background(), truncate)
+		if err != nil {
+			return fmt.Errorf("error truncating table: %w", err)
+		}
+
+		dropCheck := fmt.Sprintf(`alter table %[1]s drop constraint if exists %[1]s_col_chk;`, p.partitionToLoad)
+		_, err = p.db.Exec(context.Background(), dropCheck)
+		if err != nil {
+			return fmt.Errorf("error dropping CHECK constraint: %w", err)
+		}
+
+		addCheck := fmt.Sprintf(`alter table if exists %[1]s add constraint %[1]s_col_chk check (collection_id = '%[2]s');`,
+			p.partitionToLoad, collectionID)
+		_, err = p.db.Exec(context.Background(), addCheck)
 		if err != nil {
 			return fmt.Errorf("error creating CHECK constraint: %w", err)
 		}
