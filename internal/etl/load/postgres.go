@@ -133,10 +133,10 @@ func (p *Postgres) PostLoad(collectionID string, index string) error {
 	}
 
 	for _, indexName := range indexNames {
-		attachIndex := fmt.Sprintf(`alter index %[1]s attach partition %[2]s_%[1]s;`, p.partitionToLoad, indexName)
+		attachIndex := fmt.Sprintf(`alter index %[2]s attach partition %[1]s_%[2]s;`, p.partitionToLoad, indexName)
 		_, err = p.db.Exec(context.Background(), attachIndex)
 		if err != nil {
-			return fmt.Errorf("error attaching index: %w", err)
+			return fmt.Errorf("error attaching partition index to parent index: %s: %w", indexName, err)
 		}
 	}
 	return nil
