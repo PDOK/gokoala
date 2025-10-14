@@ -16,7 +16,8 @@ import (
 type Extract interface {
 
 	// Extract raw records from source database to be transformed and loaded into target search index
-	Extract(table config.FeatureTable, fields []string, externaFidFields []string, where string, limit int, offset int) ([]t.RawRecord, error)
+	Extract(table config.FeatureTable, fields []string, externaFidFields []string,
+		where string, limit int, offset int) ([]t.RawRecord, error)
 
 	// Close connection to source database
 	Close()
@@ -70,7 +71,8 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, table config.FeatureTable,
 	pageSize int, skipOptimize bool, dbConn string) error {
 
-	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
+	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s",
+		filePath, table.Name, collection.ID, searchIndex)
 	log.Printf("start import of %s", details)
 
 	if collection.Search == nil {
@@ -82,13 +84,11 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		return err
 	}
 	defer source.Close()
-
 	target, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return err
 	}
 	defer target.Close()
-
 	transformer := t.NewTransformer()
 
 	// pre-load
