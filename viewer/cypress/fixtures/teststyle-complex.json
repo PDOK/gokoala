@@ -2,13 +2,25 @@
   "version": 8,
   "metadata": {
     "ol:webfonts": "https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/resources/fonts/{font-family}/{fontweight}{-fontstyle}.css",
-    "gokoala:title-items": "id"
+    "gokoala:title-items": "id",
+    "layerGroups": {
+      "BEBOUWING": ["bebouwing"],
+      "WEGENINFORMATIE": ["wegeninfo"],
+      "WEGEN": ["wegen"],
+      "HYDROGRAFIE": ["hydrografie"],
+      "BODEMGEBRUIK": ["bodemgebruik"],
+      "GRENZEN": ["grenzen"],
+      "SPOORWEGEN": ["spoorwegen"],
+      "OVERIGE SYMBOLEN": ["overige symbolen"],
+      "ANNOTATIE": ["annotatie"]
+    }
   },
   "name": "",
   "id": "achtergrondkaart_standaard",
   "pitch": 0,
   "center": [5.3878, 52.1561],
   "glyphs": "https://api.pdok.nl/brt/achtergrondkaart/ogc/v1-preprod/resources/fonts/{fontstack}/{range}.pbf",
+
   "layers": [
     {
       "id": "Onderlegger Nederland",
@@ -27,7 +39,12 @@
         ]
       },
       "source": "brt",
-      "source-layer": "nederland"
+      "source-layer": "nederland",
+      "metadata": {
+        "visible_in_legend": false,
+        "group": "roads",
+        "legend_title": "Snelwegen"
+      }
     },
     {
       "id": "waterdeelvlak",
@@ -48,7 +65,11 @@
         ]
       },
       "source": "brt",
-      "source-layer": "waterdeelvlak"
+      "source-layer": "waterdeelvlak",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "hydrografie"
+      }
     },
     {
       "id": "Bodemgebruik",
@@ -83,7 +104,11 @@
         ]
       },
       "source": "brt",
-      "source-layer": "terreinvlak"
+      "source-layer": "terreinvlak",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "bodemgebruik"
+      }
     },
     {
       "id": "Gebouw",
@@ -92,13 +117,22 @@
         "fill-color": "#D1D1D1"
       },
       "source": "brt",
-      "source-layer": "gebouwvlak"
+      "source-layer": "gebouwvlak",
+
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "bebouwing",
+        "title": "gebouwen"
+      }
     },
     {
       "id": "wegdeellijn-contour",
       "type": "line",
       "source": "brt",
       "source-layer": "wegdeellijn",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "paint": {
         "line-width": ["match", ["get", "vistext"], "E-weg", 5, "autosnelweg", 4, "autosnelweg op brug", 4, 1],
         "line-color": [
@@ -155,6 +189,10 @@
       "type": "line",
       "source": "brt",
       "source-layer": "wegdeellijn",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "wegen"
+      },
       "paint": {
         "line-width": ["match", ["get", "vistext"], "E-weg", 3, "autosnelweg", 2, "autosnelweg op brug", 2, 1],
         "line-color": [
@@ -306,13 +344,20 @@
         ]
       },
       "source": "brt",
-      "source-layer": "wegdeelvlak"
+      "source-layer": "wegdeelvlak",
+      "metadata": {
+        "visible_in_legend": false
+      }
     },
     {
       "id": "registratiefgebiedlijn",
       "type": "line",
       "source": "brt",
       "source-layer": "registratiefgebiedlijn",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "grenzen"
+      },
       "paint": {
         "line-color": [
           "match",
@@ -341,6 +386,10 @@
       "type": "line",
       "source": "brt",
       "source-layer": "spoorbaandeellijn",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "spoorwegen"
+      },
       "paint": {
         "line-color": [
           "match",
@@ -368,6 +417,9 @@
       "source": "brt",
       "filter": ["in", "vistext", "treinspoor", "overig"],
       "source-layer": "spoorbaandeellijn",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "layout": {
         "line-join": "round"
       },
@@ -383,6 +435,9 @@
       "source": "brt",
       "filter": ["in", "vistext", "metro / sneltram"],
       "source-layer": "spoorbaandeellijn",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "layout": {
         "line-join": "round"
       },
@@ -397,6 +452,9 @@
       "type": "line",
       "source": "brt",
       "source-layer": "spoorbaandeellijn",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "filter": ["in", "vistext", "tram"],
       "layout": {
         "line-join": "miter"
@@ -412,6 +470,9 @@
       "type": "line",
       "source": "brt",
       "source-layer": "spoorbaandeellijn",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "filter": ["in", "vistext", "metro / sneltram in tunnel"],
       "layout": {
         "line-join": "miter"
@@ -427,6 +488,9 @@
       "type": "line",
       "source": "brt",
       "source-layer": "spoorbaandeellijn",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "filter": ["in", "vistext", "metro / sneltram in tunnel"],
       "layout": {
         "line-join": "miter"
@@ -441,6 +505,10 @@
       "type": "line",
       "source": "brt",
       "source-layer": "inrichtingselementlijn",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "overige symbolen"
+      },
       "paint": {
         "line-color": [
           "match",
@@ -483,6 +551,9 @@
       "type": "circle",
       "source": "brt",
       "source-layer": "inrichtingselementpunt",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "filter": ["==", "vistext", "hoogspanningsmast"],
       "paint": {
         "circle-color": "#828282",
@@ -494,6 +565,10 @@
       "type": "symbol",
       "source": "brt",
       "source-layer": "waterdeelvlak_label",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "annotatie"
+      },
       "layout": {
         "text-field": "{naam}",
         "text-font": ["Liberation Sans Italic"],
@@ -517,6 +592,10 @@
       "type": "symbol",
       "source": "brt",
       "source-layer": "straatnamen",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "annotatie"
+      },
       "layout": {
         "text-field": "{label}",
         "text-size": ["*", ["coalesce", ["get", "size"], 0], 1.3],
@@ -525,10 +604,36 @@
       }
     },
     {
+      "id": "wegannotatie",
+      "type": "symbol",
+      "source": "brt",
+      "source-layer": "annotaties",
+      "metadata": {
+        "visible_in_legend": true,
+        "group": "weginfo"
+      },
+      "layout": {
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-field": " {label} ",
+        "text-size": ["*", ["coalesce", ["get", "size"], 10], 1.3],
+        "text-font": ["match", ["get", "vistext"], "A-wegnummers", ["literal", ["Liberation Sans Bold"]], "N-wegnummers"]
+      },
+      "paint": {
+        "text-color": ["match", ["get", "vistext"], "A-wegnummers", "#FFFFFF", "N-wegnummers"],
+        "text-halo-color": ["match", ["get", "vistext"], "A-wegnummers", "#FF7F7F", "N-wegnummers", "#FFFFBE", "transparent"],
+        "text-halo-width": ["match", ["get", "vistext"], "A-wegnummers", 24, "N-wegnummers", 14, 0]
+      }
+    },
+
+    {
       "id": "annotatie",
       "type": "symbol",
       "source": "brt",
       "source-layer": "annotaties",
+      "metadata": {
+        "visible_in_legend": false
+      },
       "layout": {
         "text-allow-overlap": true,
         "text-ignore-placement": true,
@@ -541,10 +646,6 @@
           ["literal", ["Liberation Sans Regular"]],
           "wijknamen",
           ["literal", ["Liberation Sans Italic"]],
-          "A-wegnummers",
-          ["literal", ["Liberation Sans Bold"]],
-          "N-wegnummers",
-          ["literal", ["Liberation Sans Bold"]],
           "fingerprint",
           ["literal", ["Liberation Sans Regular"]],
           ["literal", ["Liberation Sans Regular"]]
@@ -560,16 +661,10 @@
           "#000000",
           "buurtnamen",
           "#000000",
-          "A-wegnummers",
-          "#FFFFFF",
-          "N-wegnummers",
-          "#000000",
           "fingerprint",
           "#004de3",
           "transparent"
-        ],
-        "text-halo-color": ["match", ["get", "vistext"], "A-wegnummers", "#FF7F7F", "N-wegnummers", "#FFFFBE", "transparent"],
-        "text-halo-width": ["match", ["get", "vistext"], "A-wegnummers", 24, "N-wegnummers", 14, 0]
+        ]
       }
     }
   ],
