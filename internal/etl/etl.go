@@ -15,11 +15,11 @@ import (
 // Extract - the 'E' in ETL. Datasource agnostic interface to extract source data.
 type Extract interface {
 
-	// Extract raw records from source database to be transformed and loaded into target search index
+	// Extract raw records from the source database to be transformed and loaded into the target search index
 	Extract(table config.FeatureTable, fields []string, externaFidFields []string,
 		where string, limit int, offset int) ([]t.RawRecord, error)
 
-	// Close connection to source database
+	// Close connection to the source database
 	Close()
 }
 
@@ -45,17 +45,17 @@ type Load interface {
 	Load(records []t.SearchIndexRecord) (int64, error)
 
 	// PostLoad hook to execute logic after loading records into the search index.
-	// For example, by creating switching partitions or rebuilding indexes.
+	// For example, by switching partitions or rebuilding indexes.
 	PostLoad(collectionID string, index string) error
 
-	// Optimize once ETL is completed (optionally)
+	// Optimize once ETL is completed (optional)
 	Optimize() error
 
-	// Close connection to target database
+	// Close connection to the target database
 	Close()
 }
 
-// CreateSearchIndex creates empty search index in target database
+// CreateSearchIndex creates an empty search index in the target database
 func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang language.Tag) error {
 	db, err := newTargetToLoad(dbConn)
 	if err != nil {
@@ -65,16 +65,14 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 	return db.Init(searchIndex, srid, lang)
 }
 
-// ImportFile import source data into target search index using extract-transform-load principle
+// ImportFile import source data into the target search index using extract-transform-load principle
 //
 //nolint:funlen
 func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, table config.FeatureTable,
 	pageSize int, skipOptimize bool, dbConn string) error {
 
-	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s",
-		filePath, table.Name, collection.ID, searchIndex)
+	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
 	log.Printf("start import of %s", details)
-
 	if collection.Search == nil {
 		return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
 	}

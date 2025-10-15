@@ -21,6 +21,8 @@ const (
 )
 
 var (
+	postgresExtensions = []string{"postgis", "unaccent"}
+
 	indexNames = []string{indexNameFullText, indexNameGeometry, indexNameBbox, indexNamePreRank}
 
 	//nolint:dupword
@@ -100,7 +102,7 @@ func (p *Postgres) PreLoad(collectionID string, index string) error {
 		if err = p.createCheck(collectionID); err != nil {
 			return err
 		}
-		if err = p.createIndexes(); err != nil {
+		if err = p.createIndexes(p.partitionToLoad, true); err != nil {
 			return err
 		}
 	}
@@ -232,35 +234,14 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		return fmt.Errorf("error creating numeric collation: %w", err)
 	}
 
-	// GIN indexes are best for text search
-	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gin(ts);`, index, indexNameFullText))
-	if err != nil {
-		return fmt.Errorf("error creating GIN index: %w", err)
+	if err = p.createIndexes(index, false); err != nil {
+		return err
 	}
-
-	// GIST indexes for bbox and geometry columns, to support search within a bounding box
-	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(geometry);`, index, indexNameGeometry))
-	if err != nil {
-		return fmt.Errorf("error creating GIST index: %w", err)
-	}
-	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(bbox);`, index, indexNameBbox))
-	if err != nil {
-		return fmt.Errorf("error creating GIST index: %w", err)
-	}
-
-	// index used to pre-rank results when generic search terms are used
-	preRankIndex := fmt.Sprintf(`create index if not exists %[2]s on only %[1]s 
-		(array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, index, indexNamePreRank)
-	_, err = p.db.Exec(context.Background(), preRankIndex)
-	if err != nil {
-		return fmt.Errorf("error creating pre-rank index: %w", err)
-	}
-
 	return err
 }
 
 func createExtensions(ctx context.Context, db *pgx.Conn) error {
-	for _, ext := range []string{"postgis", "unaccent"} {
+	for _, ext := range postgresExtensions {
 		_, err := db.Exec(ctx, `create extension if not exists `+ext+`;`)
 		if err != nil {
 			return fmt.Errorf("error creating %s extension: %w", ext, err)
@@ -283,28 +264,44 @@ func (p *Postgres) isPartition(collectionID string, index string) (bool, error) 
 	return result, err
 }
 
-func (p *Postgres) createIndexes() error {
+func (p *Postgres) createIndexes(table string, usePrefix bool) error {
 	// GIN indexes are best for text search
-	ginIndex := fmt.Sprintf(`create index if not exists %[1]s_ts_idx on only %[1]s using gin(ts);`, p.partitionToLoad)
-	_, err := p.db.Exec(context.Background(), ginIndex)
+	indexName := indexNameFullText
+	if usePrefix {
+		indexName = fmt.Sprintf("%s_%s", table, indexNameFullText)
+	}
+	_, err := p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gin(ts);`, table, indexName))
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)
 	}
 
-	// GIST indexes for bbox and geometry columns, to support search within a bounding box
-	geometryIndex := fmt.Sprintf(`create index if not exists %[1]s_geometry_idx on only %[1]s using gist(geometry);`, p.partitionToLoad)
-	_, err = p.db.Exec(context.Background(), geometryIndex)
-	if err != nil {
-		return fmt.Errorf("error creating GIST index: %w", err)
+	// GIST indexes for geometry column to support search within a bounding box
+	indexName = indexNameGeometry
+	if usePrefix {
+		indexName = fmt.Sprintf("%s_%s", table, indexNameGeometry)
 	}
-	bboxIndex := fmt.Sprintf(`create index if not exists %[1]s_bbox_idx on only %[1]s using gist(bbox);`, p.partitionToLoad)
-	_, err = p.db.Exec(context.Background(), bboxIndex)
+	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(geometry);`, table, indexName))
 	if err != nil {
-		return fmt.Errorf("error creating GIST index: %w", err)
+		return fmt.Errorf("error creating geometry GIST index: %w", err)
+	}
+
+	// GIST indexes for bbox column to support search within a bounding box
+	indexName = indexNameBbox
+	if usePrefix {
+		indexName = fmt.Sprintf("%s_%s", table, indexNameBbox)
+	}
+	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(bbox);`, table, indexName))
+	if err != nil {
+		return fmt.Errorf("error creating bbox GIST index: %w", err)
 	}
 
 	// index used to pre-rank results when generic search terms are used
-	preRankIndex := fmt.Sprintf(`create index if not exists %[1]s_pre_rank_idx on only %[1]s (array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, p.partitionToLoad)
+	indexName = indexNamePreRank
+	if usePrefix {
+		indexName = fmt.Sprintf("%s_%s", table, indexNamePreRank)
+	}
+	preRankIndex := fmt.Sprintf(`create index if not exists %[2]s on only %[1]s
+		(array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, table, indexName)
 	_, err = p.db.Exec(context.Background(), preRankIndex)
 	if err != nil {
 		return fmt.Errorf("error creating pre-rank index: %w", err)
@@ -312,6 +309,8 @@ func (p *Postgres) createIndexes() error {
 	return nil
 }
 
+// CHECK constraint is to avoid ACCESS EXCLUSIVE lock on partition as mentioned on
+// https://www.postgresql.org/docs/current/ddl-partitioning.html#DDL-PARTITIONING-DECLARATIVE-MAINTENANCE
 func (p *Postgres) createCheck(collectionID string) error {
 	dropCheck := fmt.Sprintf(`alter table %[1]s drop constraint if exists %[1]s_col_chk;`, p.partitionToLoad)
 	_, err := p.db.Exec(context.Background(), dropCheck)
