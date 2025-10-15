@@ -15,10 +15,11 @@ import (
 // Extract - the 'E' in ETL. Datasource agnostic interface to extract source data.
 type Extract interface {
 
-	// Extract raw records from source database to be transformed and loaded into target search index
-	Extract(table config.FeatureTable, fields []string, externaFidFields []string, where string, limit int, offset int) ([]t.RawRecord, error)
+	// Extract raw records from the source database to be transformed and loaded into the target search index
+	Extract(table config.FeatureTable, fields []string, externaFidFields []string,
+		where string, limit int, offset int) ([]t.RawRecord, error)
 
-	// Close connection to source database
+	// Close connection to the source database
 	Close()
 }
 
@@ -35,17 +36,26 @@ type Load interface {
 	// Init the target database by creating an empty search index
 	Init(index string, srid int, lang language.Tag) error
 
-	// Load records into search index
-	Load(collectionID string, records []t.SearchIndexRecord, index string) (int64, error)
+	// PreLoad hook to execute logic before loading records into the search index.
+	// For example, by creating tables or partitions
+	PreLoad(collectionID string, index string) error
 
-	// Optimize once ETL is completed (optionally)
+	// Load records into the search index. Returns the number of records loaded.
+	// Assumes the index is already initialized.
+	Load(records []t.SearchIndexRecord) (int64, error)
+
+	// PostLoad hook to execute logic after loading records into the search index.
+	// For example, by switching partitions or rebuilding indexes.
+	PostLoad(collectionID string, index string) error
+
+	// Optimize once ETL is completed (optional)
 	Optimize() error
 
-	// Close connection to target database
+	// Close connection to the target database
 	Close()
 }
 
-// CreateSearchIndex creates empty search index in target database
+// CreateSearchIndex creates an empty search index in the target database
 func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang language.Tag) error {
 	db, err := newTargetToLoad(dbConn)
 	if err != nil {
@@ -55,7 +65,7 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 	return db.Init(searchIndex, srid, lang)
 }
 
-// ImportFile import source data into target search index using extract-transform-load principle
+// ImportFile import source data into the target search index using extract-transform-load principle
 //
 //nolint:funlen
 func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, table config.FeatureTable,
@@ -63,7 +73,6 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 
 	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
 	log.Printf("start import of %s", details)
-
 	if collection.Search == nil {
 		return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
 	}
@@ -73,14 +82,17 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		return err
 	}
 	defer source.Close()
-
 	target, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return err
 	}
 	defer target.Close()
-
 	transformer := t.NewTransformer()
+
+	// pre-load
+	if err = target.PreLoad(collection.ID, searchIndex); err != nil {
+		return err
+	}
 
 	// import records in batches depending on page size
 	offset := 0
@@ -105,7 +117,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 		}
 		log.Printf("transform completed, %d source records transformed into %d target records", sourceRecordCount, len(targetRecords))
-		loaded, err := target.Load(collection.ID, targetRecords, searchIndex)
+		loaded, err := target.Load(targetRecords)
 		if err != nil {
 			return fmt.Errorf("failed loading records into target: %w", err)
 		}
@@ -114,10 +126,15 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	}
 	log.Printf("completed import of %s", details)
 
+	// post-load
+	if err = target.PostLoad(collection.ID, searchIndex); err != nil {
+		return err
+	}
+
 	if !skipOptimize {
 		log.Println("start optimizing")
 		if err = target.Optimize(); err != nil {
-			return fmt.Errorf("failed optimizing: %w", err)
+			return err
 		}
 		log.Println("completed optimizing")
 	}

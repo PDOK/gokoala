@@ -138,6 +138,132 @@ func TestImportGeoPackage(t *testing.T) {
 	}
 }
 
+func TestImportGeoPackageMultipleTimes(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	ctx := context.Background()
+
+	// given
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
+	if err != nil {
+		t.Error(err)
+	}
+	require.NotNil(t, cfg)
+	collection := config.CollectionByID(cfg, "addresses")
+	require.NotNil(t, collection)
+
+	// when: create index
+	err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
+	require.NoError(t, err)
+
+	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+
+	// when: first import (should create new table)
+	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	db, err := pgx.Connect(ctx, dbConn)
+	require.NoError(t, err)
+	defer db.Close(ctx)
+	var tableCount, indexCountFirst, indexCountSecond int
+
+	// then: check table is filled
+	err = db.QueryRow(ctx, "select count(*) from search_index_addresses_alpha").Scan(&tableCount)
+	require.NoError(t, err)
+	assert.NotZero(t, tableCount)
+
+	// then: check index is filled
+	err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&indexCountFirst)
+	require.NoError(t, err)
+	assert.NotZero(t, indexCountFirst)
+
+	// when: second import (should create a new table and switch partitions)
+	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	// then: check table is filled
+	err = db.QueryRow(ctx, "select count(*) from search_index_addresses_beta").Scan(&tableCount)
+	require.NoError(t, err)
+	assert.NotZero(t, tableCount)
+
+	// then: check index is filled, should be the same as before
+	err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&indexCountSecond)
+	require.NoError(t, err)
+	assert.NotZero(t, indexCountSecond)
+	assert.Equal(t, indexCountFirst, indexCountSecond)
+
+	// when: third import (should fill an existing table and switch partitions)
+	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	// then: check table is filled
+	err = db.QueryRow(ctx, "select count(*) from search_index_addresses_alpha").Scan(&tableCount)
+	require.NoError(t, err)
+	assert.NotZero(t, tableCount)
+}
+
+func TestImportGeoPackageNoDuplicates(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	ctx := context.Background()
+
+	// given
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
+	if err != nil {
+		t.Error(err)
+	}
+	require.NotNil(t, cfg)
+	collection := config.CollectionByID(cfg, "addresses")
+	require.NotNil(t, collection)
+
+	// when: create index
+	err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
+	require.NoError(t, err)
+
+	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+
+	// when: first import (should create new table)
+	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	// when: second import (should create a new table and switch partitions)
+	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	db, err := pgx.Connect(ctx, dbConn)
+	require.NoError(t, err)
+	defer db.Close(ctx)
+
+	// when: attach first partition again
+	_, err = db.Exec(ctx, "alter table search_index attach partition search_index_addresses_alpha for values in ('addresses')")
+
+	// then: should fail
+	require.ErrorContains(t, err, "ERROR: partition \"search_index_addresses_alpha\" would overlap partition \"search_index_addresses_beta\"")
+}
+
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
