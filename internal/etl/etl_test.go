@@ -214,6 +214,56 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	assert.NotZero(t, tableCount)
 }
 
+func TestImportGeoPackageNoDuplicates(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	ctx := context.Background()
+
+	// given
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
+	if err != nil {
+		t.Error(err)
+	}
+	require.NotNil(t, cfg)
+	collection := config.CollectionByID(cfg, "addresses")
+	require.NotNil(t, collection)
+
+	// when: create index
+	err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
+	require.NoError(t, err)
+
+	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+
+	// when: first import (should create new table)
+	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	// when: second import (should create a new table and switch partitions)
+	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	db, err := pgx.Connect(ctx, dbConn)
+	require.NoError(t, err)
+	defer db.Close(ctx)
+
+	// when: attach first partition again
+	_, err = db.Exec(ctx, "alter table search_index attach partition search_index_addresses_alpha for values in ('addresses')")
+
+	// then: should fail
+	require.ErrorContains(t, err, "ERROR: partition \"search_index_addresses_alpha\" would overlap partition \"search_index_addresses_beta\"")
+}
+
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
