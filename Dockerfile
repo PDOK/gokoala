@@ -33,7 +33,9 @@ WORKDIR /
 # install sqlite-related runtime dependencies
 RUN set -eux && \
     apt-get update && \
-    apt-get install -y libsqlite3-mod-spatialite && \
+    apt-get install -y  \
+      libsqlite3-mod-spatialite  \
+      jq && \
     rm -rf /var/lib/apt/lists/*
 
 # include executable

@@ -386,7 +386,7 @@ func importGpkg(collectionName string, dbConn string) error {
 		return err
 	}
 	collection := config.CollectionByID(conf, collectionName)
-	table := config.FeatureTable{Name: collectionName, FID: "fid", Geom: "geom"}
+	table := []config.FeatureTable{{Name: collectionName, FID: "fid", Geom: "geom"}}
 	return etl.ImportFile(*collection, testSearchIndex, "internal/search/testdata/fake-addresses-crs84.gpkg", table, 5000, false, dbConn)
 }
 

@@ -373,7 +373,7 @@ func main() {
 					Required: false,
 					Value:    "geom",
 				},
-				&cli.StringFlag{
+				&cli.StringSliceFlag{
 					Name:     featureTableFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFlag)},
 					Usage:    "Name of the table in given file to import",
@@ -400,17 +400,20 @@ func main() {
 				if err != nil {
 					return err
 				}
-				featureTable := config.FeatureTable{
-					Name: c.String(featureTableFlag),
-					FID:  c.String(featureTableFidFlag),
-					Geom: c.String(featureTableGeomFlag),
+				var featureTables []config.FeatureTable
+				for _, table := range c.StringSlice(featureTableFlag) {
+					featureTables = append(featureTables, config.FeatureTable{
+						Name: table,
+						FID:  c.String(featureTableFidFlag),
+						Geom: c.String(featureTableGeomFlag),
+					})
 				}
 				collectionID := c.String(collectionIDFlag)
 				collection := config.CollectionByID(cfg, collectionID)
 				if collection == nil {
 					return fmt.Errorf("no configured collection found with id: %s", collectionID)
 				}
-				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), featureTable,
+				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), featureTables,
 					c.Int(pageSizeFlag), c.Bool(skipOptimizeFlag), dbConn)
 			},
 		},
