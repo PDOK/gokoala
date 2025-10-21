@@ -111,7 +111,7 @@ func mapRowToRawRecord(row []any, fields []string, externalFidFields []string, t
 	bbox := row[1:5]
 
 	fid := row[0].(int64)
-	if fid <= 0 {
+	if fid < 0 {
 		return t.RawRecord{}, errors.New("encountered negative fid")
 	}
 	geomType := row[5].(string)
