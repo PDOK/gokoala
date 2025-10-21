@@ -3,6 +3,9 @@ package load
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
 
 	t "github.com/PDOK/gomagpie/internal/etl/transform"
 	"github.com/jackc/pgx/v5"
@@ -18,6 +21,8 @@ const (
 
 	alphaPartition = "_alpha"
 	betaPartition  = "_beta"
+
+	postgresDetachErr = "already pending detach in partitioned table"
 )
 
 var (
@@ -127,9 +132,16 @@ func (p *Postgres) Load(records []t.SearchIndexRecord) (int64, error) {
 
 func (p *Postgres) PostLoad(collectionID string, index string) error {
 	if p.partitionToDetach != "" {
+	RETRY:
 		detach := fmt.Sprintf(`alter table %[1]s detach partition %[2]s concurrently;`, index, p.partitionToDetach)
 		_, err := p.db.Exec(context.Background(), detach)
 		if err != nil {
+			if strings.Contains(err.Error(), postgresDetachErr) {
+				log.Printf("(another) partition is already being detached from index %s. "+
+					"Retrying detach of partition %s in 1 minute.", index, p.partitionToLoad)
+				time.Sleep(1 * time.Minute)
+				goto RETRY
+			}
 			return fmt.Errorf("error detaching partition %s from index %s. Error: %w", p.partitionToLoad, index, err)
 		}
 	}

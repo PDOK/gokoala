@@ -120,7 +120,7 @@ func TestImportGeoPackage(t *testing.T) {
 		err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
 		require.NoError(t, err)
 
-		table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+		table := []config.FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
 		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
 			1000, true, dbConn)
 		require.NoError(t, err)
@@ -165,7 +165,7 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
 	require.NoError(t, err)
 
-	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+	table := []config.FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
 
 	// when: first import (should create new table)
 	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
@@ -241,7 +241,7 @@ func TestImportGeoPackageNoDuplicates(t *testing.T) {
 	err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
 	require.NoError(t, err)
 
-	table := config.FeatureTable{Name: "addresses", FID: "fid", Geom: "geom"}
+	table := []config.FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
 
 	// when: first import (should create new table)
 	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,

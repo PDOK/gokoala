@@ -68,14 +68,8 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 // ImportFile import source data into the target search index using extract-transform-load principle
 //
 //nolint:funlen
-func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, table config.FeatureTable,
+func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, tables []config.FeatureTable,
 	pageSize int, skipOptimize bool, dbConn string) error {
-
-	details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
-	log.Printf("start import of %s", details)
-	if collection.Search == nil {
-		return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
-	}
 
 	source, err := newSourceToExtract(filePath)
 	if err != nil {
@@ -94,37 +88,46 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 		return err
 	}
 
-	// import records in batches depending on page size
-	offset := 0
-	for {
-		log.Println("---")
-		log.Printf("extracting source records from offset %d", offset)
-		externalFidFields := []string{}
-		if collection.Search.ETL.ExternalFid != nil {
-			externalFidFields = collection.Search.ETL.ExternalFid.Fields
+	// import each feature table
+	for _, table := range tables {
+		details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
+		log.Printf("start import of %s", details)
+		if collection.Search == nil {
+			return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
 		}
-		sourceRecords, err := source.Extract(table, collection.Search.Fields, externalFidFields, collection.Search.ETL.Filter, pageSize, offset)
-		if err != nil {
-			return fmt.Errorf("failed extracting source records: %w", err)
+
+		// import records in batches depending on page size
+		offset := 0
+		for {
+			log.Println("---")
+			log.Printf("extracting source records from offset %d", offset)
+			var externalFidFields []string
+			if collection.Search.ETL.ExternalFid != nil {
+				externalFidFields = collection.Search.ETL.ExternalFid.Fields
+			}
+			sourceRecords, err := source.Extract(table, collection.Search.Fields, externalFidFields, collection.Search.ETL.Filter, pageSize, offset)
+			if err != nil {
+				return fmt.Errorf("failed extracting source records: %w", err)
+			}
+			sourceRecordCount := len(sourceRecords)
+			if sourceRecordCount == 0 {
+				break // no more batches of records to extract
+			}
+			log.Printf("extracted %d source records, starting transform", sourceRecordCount)
+			targetRecords, err := transformer.Transform(sourceRecords, collection)
+			if err != nil {
+				return fmt.Errorf("failed to transform raw records to search index records: %w", err)
+			}
+			log.Printf("transform completed, %d source records transformed into %d target records", sourceRecordCount, len(targetRecords))
+			loaded, err := target.Load(targetRecords)
+			if err != nil {
+				return fmt.Errorf("failed loading records into target: %w", err)
+			}
+			log.Printf("loaded %d records into target search index: '%s'", loaded, searchIndex)
+			offset += pageSize
 		}
-		sourceRecordCount := len(sourceRecords)
-		if sourceRecordCount == 0 {
-			break // no more batches of records to extract
-		}
-		log.Printf("extracted %d source records, starting transform", sourceRecordCount)
-		targetRecords, err := transformer.Transform(sourceRecords, collection)
-		if err != nil {
-			return fmt.Errorf("failed to transform raw records to search index records: %w", err)
-		}
-		log.Printf("transform completed, %d source records transformed into %d target records", sourceRecordCount, len(targetRecords))
-		loaded, err := target.Load(targetRecords)
-		if err != nil {
-			return fmt.Errorf("failed loading records into target: %w", err)
-		}
-		log.Printf("loaded %d records into target search index: '%s'", loaded, searchIndex)
-		offset += pageSize
+		log.Printf("completed import of %s", details)
 	}
-	log.Printf("completed import of %s", details)
 
 	// post-load
 	if err = target.PostLoad(collection.ID, searchIndex); err != nil {
