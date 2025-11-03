@@ -3,6 +3,7 @@ name: e2e-test
 on:
   pull_request:
 jobs:
+  # These are all tests/validations against a live GoKoala instance
   end-to-end-test:
     runs-on: ubuntu-latest
     steps:
@@ -19,12 +20,6 @@ jobs:
           push: false
           load: true  # expose to Docker
           tags: gokoala:local
-
-      # E2E Test
-      - name: E2E Test => OGC API Features with Azure hosted GeoPackage backend
-        run: |
-          docker compose -f ./examples/docker-compose-features-azure.yaml up \
-            --exit-code-from smoketest
 
       - name: Start GoKoala test instance
         run: |
@@ -81,12 +76,18 @@ jobs:
             --exitOnFail \
             --prettyPrint
 
+      - name: Stop GoKoala test instance
+        run: |
+          docker stop gokoala
+
       # E2E Test (API Design Rules conformance)
       - name: E2E Test => API Design Rules conformance validation (linting)
         run: |
           docker compose -f ./tests/adr/docker-compose.yaml up \
             --exit-code-from adr-linter
 
-      - name: Stop GoKoala test instance
+      # E2E Test (Cloud-Backed GeoPackage)
+      - name: E2E Test => OGC API Features with Azure hosted GeoPackage backend
         run: |
-          docker stop gokoala
+          docker compose -f ./examples/docker-compose-features-azure.yaml up \
+            --exit-code-from smoketest
