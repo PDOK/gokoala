@@ -14,7 +14,7 @@ jobs:
         with:
           driver: docker
       - name: Build test image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: false
           load: true  # expose to Docker
