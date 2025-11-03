@@ -21,6 +21,7 @@ jobs:
           load: true  # expose to Docker
           tags: gokoala:local
 
+      # Now we can start the test instance
       - name: Start GoKoala test instance
         run: |
           docker run \
@@ -76,12 +77,13 @@ jobs:
             --exitOnFail \
             --prettyPrint
 
+      # Stop test instance, the tests below don't need it since they use Docker Compose
       - name: Stop GoKoala test instance
         run: |
           docker stop gokoala
 
       # E2E Test (API Design Rules conformance)
-      - name: E2E Test => API Design Rules conformance validation (linting)
+      - name: E2E Test => API Design Rules validation (linting)
         run: |
           docker compose -f ./tests/adr/docker-compose.yaml up \
             --exit-code-from adr-linter
