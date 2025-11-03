@@ -81,6 +81,12 @@ jobs:
             --exitOnFail \
             --prettyPrint
 
+      # E2E Test (API Design Rules conformance)
+      - name: E2E Test => API Design Rules conformance validation (linting)
+        run: |
+          docker compose -f ./tests/adr/docker-compose.yaml up \
+            --exit-code-from adr-linter
+
       - name: Stop GoKoala test instance
         run: |
           docker stop gokoala

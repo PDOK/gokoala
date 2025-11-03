@@ -20,7 +20,7 @@ const (
 // +kubebuilder:object:generate=true
 type Config struct {
 	// Version of the API. When releasing a new version which contains backwards-incompatible changes, a new major version must be released.
-	Version string `yaml:"version" json:"version" validate:"required,semver" default:"v1.0.0"`
+	Version string `yaml:"version" json:"version" validate:"required,semver" default:"1.0.0"`
 
 	// Human friendly title of the API. Don't include "OGC API" in the title, this is added automatically.
 	Title string `yaml:"title" json:"title"  validate:"required"`

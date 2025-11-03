@@ -216,42 +216,6 @@
           {{block "headers" . }}{{end}}
         }
       },
-      "400": {
-        "description": "General HTTP error response.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        },
-        "headers" : {
-          {{block "headers" . }}{{end}}
-        }
-      },
-      "500": {
-        "description": "A server error occurred.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        },
-        "headers" : {
-          {{block "headers" . }}{{end}}
-        }
-      },
       "LandingPage": {
         "description": "The landing page provides links to the API definition\n(link relations `service-desc` and `service-doc`),\nand the Conformance declaration (path `/conformance`,\nlink relation `conformance`).",
         "content": {
@@ -301,7 +265,8 @@
         "headers" : {
           {{block "headers" . }}{{end}}
         }
-      }
+      },
+      {{block "problems" . }}{{end}}
     }
   }
 }

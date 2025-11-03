@@ -1,0 +1,81 @@
+---
+services:
+  gokoala:
+    networks:
+      - proxy
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    image: gokoala:local
+    command: "--config-file ./config/gokoala.yaml"
+    volumes:
+      - ./:/config
+      - ../../examples/:/examples
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: /bin/curl --fail http://127.0.0.1:8080 || exit 1
+      interval: 1s
+      retries: 30
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gokoala.rule=Host(`gokoala.docker.localhost`) && PathPrefix(`/v1/`)"
+      - "traefik.http.middlewares.strip-v1.stripprefix.prefixes=/v1"
+      - "traefik.http.routers.gokoala.middlewares=strip-v1@docker"
+      - "traefik.http.routers.gokoala.entrypoints=websecure"
+      - "traefik.http.routers.gokoala.tls=true"
+
+  traefik:
+    networks:
+      proxy:
+        aliases:
+          - gokoala.docker.localhost
+    image: traefik:v3.4
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      gokoala:
+        condition: service_healthy
+    ports:
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+      - "--api.insecure=true"
+      # - "--log.level=DEBUG"
+    healthcheck:
+      test: /bin/curl --fail https://127.0.0.1:8080/ping || exit 1
+      interval: 1s
+      retries: 30
+
+  adr-linter:
+    networks:
+      - proxy
+    image: stoplight/spectral:5.9.1
+    volumes:
+      - ./ruleset:/ruleset
+    environment:
+      # This variable tells Node.js to skip TLS verification.
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        sleep 3
+        spectral lint \
+          https://gokoala.docker.localhost/v1/openapi.json \
+          --ruleset /ruleset/ruleset-adr21.yaml \
+          --fail-severity "error" \
+          --display-only-failures "error"
+
+networks:
+  proxy:
+    name: proxy
