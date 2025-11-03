@@ -19,10 +19,9 @@ jobs:
           push: false
           tags: gokoala:local
 
-      # E2E Test (Docker Compose V2 can't, unfortunately, re-use image so build it again).
+      # E2E Test
       - name: E2E Test => OGC API Features with Azure hosted GeoPackage backend
         run: |
-          docker compose -f ./examples/docker-compose-features-azure.yaml build gokoala && \
           docker compose -f ./examples/docker-compose-features-azure.yaml up \
             --exit-code-from smoketest
 
