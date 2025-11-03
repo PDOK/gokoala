@@ -211,7 +211,10 @@
     },
     "responses": {
       "200": {
-        "description": "General Success response."
+        "description": "General Success response.",
+         "headers" : {
+          {{block "headers" . }}{{end}}
+        }
       },
       "400": {
         "description": "General HTTP error response.",
@@ -226,6 +229,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "500": {
@@ -241,6 +247,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "LandingPage": {
@@ -261,6 +270,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "ConformanceDeclaration": {
@@ -285,6 +297,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       }
     }

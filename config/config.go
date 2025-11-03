@@ -20,7 +20,7 @@ const (
 // +kubebuilder:object:generate=true
 type Config struct {
 	// Version of the API. When releasing a new version which contains backwards-incompatible changes, a new major version must be released.
-	Version string `yaml:"version" json:"version" validate:"required,semver"`
+	Version string `yaml:"version" json:"version" validate:"required,semver" default:"v1.0.0"`
 
 	// Human friendly title of the API. Don't include "OGC API" in the title, this is added automatically.
 	Title string `yaml:"title" json:"title"  validate:"required"`
@@ -49,7 +49,7 @@ type Config struct {
 	OgcAPI OgcAPI `yaml:"ogcApi" json:"ogcApi" validate:"required"`
 
 	// Order in which collections (containing features, tiles, 3d tiles, etc.) should be returned.
-	// When not specified collections are returned in alphabetic order.
+	// When not specified, collections are returned in alphabetic order.
 	// +optional
 	OgcAPICollectionOrder []string `yaml:"collectionOrder,omitempty" json:"collectionOrder,omitempty"`
 

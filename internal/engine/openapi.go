@@ -29,6 +29,7 @@ const (
 	specPath          = templatesDir + "openapi/"
 	preamble          = specPath + "preamble.go.json"
 	problems          = specPath + "problems.go.json"
+	headers           = specPath + "headers.go.json"
 	commonCollections = specPath + "common-collections.go.json"
 	featuresSpec      = specPath + "features.go.json"
 	tilesSpec         = specPath + "tiles.go.json"
@@ -214,7 +215,7 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 
 func renderOpenAPITemplate(config *gokoalaconfig.Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
-	files := []string{problems, file} // add problems template too since it's an "include" template
+	files := []string{problems, headers, file} // add problems and headers template too since it's an "include" template
 	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(files...))
 
 	var rendered bytes.Buffer
