@@ -17,6 +17,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: false
+          load: true  # expose to Docker
           tags: gokoala:local
 
       # E2E Test
