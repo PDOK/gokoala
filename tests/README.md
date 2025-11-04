@@ -9,18 +9,18 @@ GoKoala currently passes all OGC API Features and OGC API Tiles compliance tests
 
 These are [validated on each PR in CI](.github/workflows/e2e-test.yml) using the
 OGC [TEAM Engine](https://github.com/opengeospatial/teamengine).
-More specifically using a CLI friendly version of this tool:
+More specifically using a CLI-friendly version of this tool:
 
 - https://github.com/PDOK/ets-ogcapi-features10-docker
 - https://github.com/PDOK/ets-ogcapi-tiles10-docker
 
-## Dutch API Design Rules Validation
+## NLGov API Design Rules Validation
 
-GoKoala passes all ADR rules
+GoKoala passes all [ADR rules](https://gitdocumentatie.logius.nl/publicatie/api/adr).
 
 These are [validated on each PR in CI](.github/workflows/e2e-test.yml) using the
 [ADR linter](https://developer.overheid.nl/kennisbank/apis/api-design-rules/api-design-rules-linter).
-For details see the [ADR README](../adr/README.md).
+For details see the dedicated [ADR README](../adr/README.md).
 
 ## Cypress end-to-end tests
 
