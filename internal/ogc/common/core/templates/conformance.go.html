@@ -305,7 +305,6 @@
     </div>
     {{ end }}
 
-    {{ if and .Params .Params.AttributesConformance }}
     <div class="col-md-6 col-sm-12">
         <div class="card">
             <h2 class="card-header h5">Non-OGC</h2>
@@ -318,6 +317,10 @@
                     </tr>
                     </thead>
                     <tbody>
+                    <tr>
+                        <td class="small">https://gitdocumentatie.logius.nl/publicatie/api/adr</td>
+                        <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                    </tr>
                     {{ if and .Params .Params.AttributesConformance }}
                     <tr>
                         <td class="small">http://www.pdok.nl/spec/attribute-json/0.1</td>
@@ -329,7 +332,6 @@
             </div>
         </div>
     </div>
-    {{ end }}
 
 </section>
 {{end}}

@@ -106,7 +106,6 @@ services:
         -c "create index addresses_temporal_idx on addresses.addresses(validfrom, validto);"
 
         echo "DONE creating indexes"
-
     volumes:
       - ../../geopackage/testdata:/testdata
       - ../../../../../../examples:/examples

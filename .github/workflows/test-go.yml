@@ -45,14 +45,18 @@ jobs:
         run: go test -v ./... -bench=. -run=^# -benchmem -count=1
 
       - name: Fail when coverage below threshold
-        uses: vladopajic/go-test-coverage@v2
+        # Pin 3rd party action to a specific version as security best-practice.
+        # Version used: https://github.com/vladopajic/go-test-coverage/releases/tag/v2.17.0
+        uses: vladopajic/go-test-coverage@cc5012c2cfa84542e02b079141958a885861d326
         with:
           profile: cover.out
           local-prefix: github.com/PDOK/gokoala
           threshold-total: 80  # 80% overall coverage is the minimum
 
       - name: Update coverage report
-        uses: ncruces/go-coverage-report@v0
+        # Pin 3rd party action to a specific version as security best-practice.
+        # Version used: https://github.com/ncruces/go-coverage-report/releases/tag/v0.3.1
+        uses: ncruces/go-coverage-report@aa507d98fb11c2b4dffa1b731e0786f50fd8ec93
         with:
           coverage-file: cover.out
           report: true

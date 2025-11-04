@@ -40,6 +40,7 @@
     "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list",
     "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets",
     "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets",
-    "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt"
+    "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt",
+    "https://gitdocumentatie.logius.nl/publicatie/api/adr"
   ]
 }

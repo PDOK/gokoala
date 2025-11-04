@@ -38,6 +38,9 @@
                   "type": "string"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           {{block "problems" . }}{{end}}
@@ -62,7 +65,10 @@
         ],
         "responses": {
           "200": {
-            "description": "The style"
+            "description": "The style",
+            "headers" : {
+              {{block "headers" . }}{{end}}
+            }
           },
           {{block "problems" . }}{{end}}
         }
@@ -98,6 +104,9 @@
                   "type": "string"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           {{block "problems" . }}{{end}}
@@ -127,6 +136,9 @@
                   "format": "binary"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           {{block "problems" . }}{{end}}

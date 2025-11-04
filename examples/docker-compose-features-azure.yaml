@@ -43,6 +43,7 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile
+    image: gokoala:local
     depends_on:
       azurite-seed:
         condition: service_healthy

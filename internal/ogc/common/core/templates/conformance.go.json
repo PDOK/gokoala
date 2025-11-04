@@ -89,6 +89,7 @@
       {{end}}
     {{end}}
 
+    ,"https://gitdocumentatie.logius.nl/publicatie/api/adr"
     {{ if and .Params .Params.AttributesConformance }}
       ,"http://www.pdok.nl/spec/attribute-json/0.1"
     {{ end }}

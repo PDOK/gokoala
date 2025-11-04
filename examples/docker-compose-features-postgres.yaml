@@ -38,6 +38,7 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile
+    image: gokoala:local
     depends_on:
       postgres-init-data:
         condition: service_completed_successfully

@@ -211,36 +211,9 @@
     },
     "responses": {
       "200": {
-        "description": "General Success response."
-      },
-      "400": {
-        "description": "General HTTP error response.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "500": {
-        "description": "A server error occurred.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/exception"
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "string"
-            }
-          }
+        "description": "General Success response.",
+         "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "LandingPage": {
@@ -261,6 +234,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "ConformanceDeclaration": {
@@ -285,8 +261,12 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
-      }
+      },
+      {{block "problems" . }}{{end}}
     }
   }
 }

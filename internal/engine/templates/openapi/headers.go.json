@@ -1,0 +1,10 @@
+{{ define "headers" }}
+  "API-Version": {
+    "description": "Semantic version (semver) of the API according to [API Design Rules](https://gitdocumentatie.logius.nl/publicatie/api/adr/2.0.2/#/core/version-header).",
+    "schema": {
+      "type": "string",
+      "example": "1.0.0",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    }
+  }
+{{ end }}
