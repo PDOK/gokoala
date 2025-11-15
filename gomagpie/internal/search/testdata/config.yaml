@@ -1,0 +1,62 @@
+---
+version: 1.0.0
+lastUpdated: "2024-10-22T12:00:00Z"
+baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
+collections:
+  - id: addresses
+    metadata:
+      title: Addresses
+      description: These are example addresses
+      extent:
+        bbox:
+          - 50.2129
+          - 2.52713
+          - 55.7212
+          - 7.37403
+    search:
+      fields:
+        - address_street
+        - address_postal
+        - address_place
+      displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
+      etl:
+        suggestTemplates:
+          - "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}" # equal to display name
+          - "{{ .address_street | firstupper  }} {{ .address_postal}}, {{ .address_place }}"
+          - "{{ .address_street }} {{ .address_postal }}"
+          - "{{ .address_postal }}, {{ .address_place }}"
+      ogcCollections:
+        - api: https://example.com/ogc/v1
+          collection: addresses
+          geometryType: point
+  - id: buildings
+    metadata:
+      title: Buildings
+      description: These are example buildings
+      extent:
+        bbox:
+          - 50.2129
+          - 2.52713
+          - 55.7212
+          - 7.37403
+    search:
+      fields:
+        - street
+        - place
+      displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
+      etl:
+        suggestTemplates:
+          - "{{ .street | firstupper  }} {{ .place }}" # equal to display name
+          - "{{ .street | firstupper  }} - {{ .place }}"
+          - "{{ .place  }} {{ .street }}"
+        externalFid:
+          uuidNamespace: "098c4e26-6e36-5693-bae9-df35db0bee49"
+          fields:
+            - "fid"
+      ogcCollections:
+        - api: https://example.com/ogc/v1
+          collection: buildings
+          geometryType: polygon

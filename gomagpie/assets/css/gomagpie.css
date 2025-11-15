@@ -1,0 +1,80 @@
+@charset "UTF-8";
+
+/* see https://getbootstrap.com/docs/5.2/customize/css-variables/#root-variables */
+:root {
+    --bs-blue: #1a1e4f;
+    --bs-blue-30: #676b9c; /* --bs-blue, 30% lighter */
+    --lightblue: #add8e6;
+    --bs-body-color: var(--bs-blue);
+}
+
+/* navbar */
+.navbar {
+    background-color: var(--bs-blue);
+}
+.navbar .navbar-outputs {
+    --bs-breadcrumb-divider: '|'
+}
+.navbar .breadcrumb .breadcrumb-item,
+.navbar .breadcrumb .breadcrumb-item a {
+    color: var(--bs-white);
+}
+.navbar .breadcrumb .breadcrumb-item a:hover {
+    color: var(--lightblue);
+}
+
+/* cards */
+.card-header {
+    color: var(--bs-white);
+    background-color: var(--bs-blue);
+}
+.card-header a {
+    color: var(--bs-white);
+}
+.card-header a:hover {
+    color: var(--lightblue);
+}
+
+hgroup {
+    margin-bottom: 0.5rem;
+}
+
+footer {
+    background-color: var(--bs-blue);
+}
+
+/* tables */
+td {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+.table-sm td p {
+    margin: 0;
+    padding: 0;
+}
+.table-sm>:not(caption)>*>*  {
+    padding: 0.10rem;
+}
+.table-striped>thead>tr>th {
+    color: var(--bs-white);
+    background-color:  var(--bs-blue);
+}
+.table-striped>thead>tr>th a {
+    color: var(--bs-white);
+}
+.table-striped>thead>tr>th a:hover {
+    color: var(--lightblue);
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--bs-blue);
+    --bs-btn-color: var(--bs-white);
+    --bs-btn-border-color: var(--bs-blue);
+    --bs-btn-hover-bg: var(--bs-blue-30);
+    --bs-btn-hover-border-color: var(--bs-blue-30);
+}
+
+.vectortile-view {
+    flex-grow: 1;
+}
