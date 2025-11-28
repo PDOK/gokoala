@@ -45,6 +45,14 @@ var (
 		geometry            geometry(point, %[2]d)   null,
 	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored
 	) %[3]s;`
+
+	//nolint:dupword
+	metadataTableDefinition = `
+	create table if not exists %[1]s_metadata (
+		collection_id      text                      not null,
+		collection_version uuid                      not null,
+		updated_date       timestamptz default now() not null
+	);`
 )
 
 type Postgres struct {
@@ -218,7 +226,7 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	// create primary key when it doesn't exist yet
-	pkey := fmt.Sprintf(`
+	primaryKey := fmt.Sprintf(`
 		do $$
 		begin
 		    if not exists (
@@ -233,9 +241,36 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		    end if;
 		end;
 		$$;`, index)
-	_, err = p.db.Exec(context.Background(), pkey)
+	_, err = p.db.Exec(context.Background(), primaryKey)
 	if err != nil {
 		return fmt.Errorf("error creating primary key: %w", err)
+	}
+
+	// create search index metadata table
+	_, err = p.db.Exec(context.Background(), fmt.Sprintf(metadataTableDefinition, index))
+	if err != nil {
+		return fmt.Errorf("error creating search index metadata table: %w", err)
+	}
+
+	// create metadata primary key when it doesn't exist yet
+	metadataPrimaryKey := fmt.Sprintf(`
+		do $$
+		begin
+		    if not exists (
+		        select 1
+		        from   pg_constraint
+		        where  conrelid = '%[1]s_metadata'::regclass
+		        and    contype = 'p'
+		    )
+		    then
+		        alter table %[1]s_metadata
+		        add constraint %[1]s_metadata_pkey primary key (collection_id);
+		    end if;
+		end;
+		$$;`, index)
+	_, err = p.db.Exec(context.Background(), metadataPrimaryKey)
+	if err != nil {
+		return fmt.Errorf("error creating metadata primary key: %w", err)
 	}
 
 	// create custom collation to correctly handle "numbers in strings" when sorting results
