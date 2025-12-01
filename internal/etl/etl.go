@@ -49,7 +49,7 @@ type Load interface {
 
 	// PostLoad hook to execute logic after loading records into the search index.
 	// For example, by switching partitions or rebuilding indexes.
-	PostLoad(collectionID string, index string) error
+	PostLoad(collectionID string, index string, collectionVersion string) error
 
 	// Optimize once ETL is completed (optional)
 	Optimize() error
@@ -81,8 +81,8 @@ func GetVersion(dbConn string, collectionID string, searchIndex string) (string,
 // ImportFile import source data into the target search index using extract-transform-load principle
 //
 //nolint:funlen
-func ImportFile(collection config.GeoSpatialCollection, searchIndex string, filePath string, tables []config.FeatureTable,
-	pageSize int, skipOptimize bool, dbConn string) error {
+func ImportFile(collection config.GeoSpatialCollection, searchIndex string, collectionVersion string, filePath string,
+	tables []config.FeatureTable, pageSize int, skipOptimize bool, dbConn string) error {
 
 	source, err := newSourceToExtract(filePath)
 	if err != nil {
@@ -143,7 +143,7 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, file
 	}
 
 	// post-load
-	if err = target.PostLoad(collection.ID, searchIndex); err != nil {
+	if err = target.PostLoad(collection.ID, searchIndex, collectionVersion); err != nil {
 		return err
 	}
 
