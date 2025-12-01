@@ -334,6 +334,33 @@ func main() {
 			},
 		},
 		{
+			Name:     "get-version",
+			Category: "etl",
+			Usage:    "Get the version of a collection in a search index",
+			Flags: []cli.Flag{
+				commonDBFlags[dbHostFlag],
+				commonDBFlags[dbPortFlag],
+				commonDBFlags[dbNameFlag],
+				commonDBFlags[dbUsernameFlag],
+				commonDBFlags[dbPasswordFlag],
+				commonDBFlags[dbSslModeFlag],
+				&cli.PathFlag{
+					Name:     searchIndexFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:    "Name of search index",
+					Required: false,
+					Value:    "search_index",
+				},
+				serviceFlags[collectionIDFlag],
+			},
+			Action: func(c *cli.Context) error {
+				dbConn := flagsToDBConnStr(c)
+				version, err := etl.GetVersion(dbConn, c.String(collectionIDFlag), c.String(searchIndexFlag))
+				fmt.Println(version)
+				return err
+			},
+		},
+		{
 			Name:     "import-file",
 			Category: "etl",
 			Usage:    "Import file into search index",
