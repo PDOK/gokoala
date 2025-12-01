@@ -36,6 +36,9 @@ type Load interface {
 	// Init the target database by creating an empty search index
 	Init(index string, srid int, lang language.Tag) error
 
+	// Get the current version of a collection loaded in the search index
+	GetVersion(collectionID string, index string) (string, error)
+
 	// PreLoad hook to execute logic before loading records into the search index.
 	// For example, by creating tables or partitions
 	PreLoad(collectionID string, index string) error
@@ -63,6 +66,16 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 	}
 	defer db.Close()
 	return db.Init(searchIndex, srid, lang)
+}
+
+// GetVersion returns the current version of a collection in the target search index
+func GetVersion(dbConn string, collectionID string, searchIndex string) (string, error) {
+	db, err := newTargetToLoad(dbConn)
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+	return db.GetVersion(collectionID, searchIndex)
 }
 
 // ImportFile import source data into the target search index using extract-transform-load principle

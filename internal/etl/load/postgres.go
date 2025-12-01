@@ -178,6 +178,19 @@ func (p *Postgres) Optimize() error {
 	return nil
 }
 
+// Get the current version of a collection in the search index
+func (p *Postgres) GetVersion(collectionID string, index string) (string, error) {
+	currentVersion := ""
+	err := p.db.QueryRow(context.Background(), fmt.Sprintf(`
+        select collection_version
+        from %[2]s_metadata
+        where collection_id = '%[1]s';`, collectionID, index)).Scan(&currentVersion)
+	if err != nil {
+		return "", fmt.Errorf("error getting version: %w", err)
+	}
+	return currentVersion, nil
+}
+
 // Init initialize search index. Should be idempotent!
 //
 // Since not all DDL in Postgres support the "if not exists" syntax we use a bit
