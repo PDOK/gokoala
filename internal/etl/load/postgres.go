@@ -46,7 +46,6 @@ var (
 	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored
 	) %[3]s;`
 
-	//nolint:dupword
 	metadataTableDefinition = `
 	create table if not exists %[1]s_metadata (
 		collection_id      text                      not null,

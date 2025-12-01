@@ -108,8 +108,8 @@ func TestGetVersion(t *testing.T) {
 
 	version, err := GetVersion(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
-	require.NotEmpty(t, version)
-	require.EqualValues(t, collectionVersion, version)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
 }
 
 func TestImportGeoPackage(t *testing.T) {
@@ -231,8 +231,8 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	// then: check metadata table is updated
 	version, err := GetVersion(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
-	require.NotEmpty(t, version)
-	require.EqualValues(t, collectionVersion, version)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
 
 	// when: second import (should create a new table and switch partitions)
 	collectionVersion = uuid.NewString()
@@ -254,8 +254,8 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	// then: check metadata table is updated
 	version, err = GetVersion(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
-	require.NotEmpty(t, version)
-	require.EqualValues(t, collectionVersion, version)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
 
 	// when: third import (should fill an existing table and switch partitions)
 	collectionVersion = uuid.NewString()
@@ -271,8 +271,8 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	// then: check metadata table is updated
 	version, err = GetVersion(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
-	require.NotEmpty(t, version)
-	require.EqualValues(t, collectionVersion, version)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
 }
 
 func TestImportGeoPackageNoDuplicates(t *testing.T) {
