@@ -20,6 +20,7 @@ import (
 	"github.com/PDOK/gomagpie/internal/search/domain"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -387,7 +388,8 @@ func importGpkg(collectionName string, dbConn string) error {
 	}
 	collection := config.CollectionByID(conf, collectionName)
 	table := []config.FeatureTable{{Name: collectionName, FID: "fid", Geom: "geom"}}
-	return etl.ImportFile(*collection, testSearchIndex, "internal/search/testdata/fake-addresses-crs84.gpkg", table, 5000, false, dbConn)
+	collectionVersion := uuid.NewString()
+	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/search/testdata/fake-addresses-crs84.gpkg", table, 5000, false, dbConn)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {

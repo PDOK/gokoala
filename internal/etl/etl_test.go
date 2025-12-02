@@ -12,6 +12,7 @@ import (
 
 	"github.com/PDOK/gomagpie/config"
 	"github.com/docker/go-connections/nat"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -73,6 +74,44 @@ func makeDbConnection(dbPort nat.Port) string {
 	return fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 }
 
+func TestGetVersion(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+	ctx := context.Background()
+
+	// given
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	// when/then
+	err = CreateSearchIndex(dbConn, "search_index", 28992, language.English)
+	require.NoError(t, err)
+
+	cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
+	if err != nil {
+		t.Error(err)
+	}
+	require.NotNil(t, cfg)
+	collection := config.CollectionByID(cfg, "addresses")
+	require.NotNil(t, collection)
+	table := []config.FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
+	collectionVersion := uuid.NewString()
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
+		1000, true, dbConn)
+	require.NoError(t, err)
+
+	version, err := GetVersion(dbConn, "addresses", "search_index")
+	require.NoError(t, err)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
+}
+
 func TestImportGeoPackage(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -121,7 +160,8 @@ func TestImportGeoPackage(t *testing.T) {
 		require.NoError(t, err)
 
 		table := []config.FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
-		err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+		collectionVersion := uuid.NewString()
+		err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
 			1000, true, dbConn)
 		require.NoError(t, err)
 
@@ -168,7 +208,8 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	table := []config.FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
 
 	// when: first import (should create new table)
-	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+	collectionVersion := uuid.NewString()
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
 		1000, true, dbConn)
 	require.NoError(t, err)
 
@@ -187,8 +228,15 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotZero(t, indexCountFirst)
 
+	// then: check metadata table is updated
+	version, err := GetVersion(dbConn, "addresses", "search_index")
+	require.NoError(t, err)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
+
 	// when: second import (should create a new table and switch partitions)
-	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+	collectionVersion = uuid.NewString()
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
 		1000, true, dbConn)
 	require.NoError(t, err)
 
@@ -203,8 +251,15 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	assert.NotZero(t, indexCountSecond)
 	assert.Equal(t, indexCountFirst, indexCountSecond)
 
+	// then: check metadata table is updated
+	version, err = GetVersion(dbConn, "addresses", "search_index")
+	require.NoError(t, err)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
+
 	// when: third import (should fill an existing table and switch partitions)
-	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+	collectionVersion = uuid.NewString()
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
 		1000, true, dbConn)
 	require.NoError(t, err)
 
@@ -212,6 +267,12 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	err = db.QueryRow(ctx, "select count(*) from search_index_addresses_alpha").Scan(&tableCount)
 	require.NoError(t, err)
 	assert.NotZero(t, tableCount)
+
+	// then: check metadata table is updated
+	version, err = GetVersion(dbConn, "addresses", "search_index")
+	require.NoError(t, err)
+	assert.NotEmpty(t, version)
+	assert.Equal(t, collectionVersion, version)
 }
 
 func TestImportGeoPackageNoDuplicates(t *testing.T) {
@@ -244,12 +305,14 @@ func TestImportGeoPackageNoDuplicates(t *testing.T) {
 	table := []config.FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
 
 	// when: first import (should create new table)
-	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+	collectionVersion := uuid.NewString()
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
 		1000, true, dbConn)
 	require.NoError(t, err)
 
 	// when: second import (should create a new table and switch partitions)
-	err = ImportFile(*collection, "search_index", pwd+"/testdata/addresses-crs84.gpkg", table,
+	collectionVersion = uuid.NewString()
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
 		1000, true, dbConn)
 	require.NoError(t, err)
 

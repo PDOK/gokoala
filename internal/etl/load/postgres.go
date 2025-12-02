@@ -45,6 +45,13 @@ var (
 		geometry            geometry(point, %[2]d)   null,
 	    ts                  tsvector                 generated always as (to_tsvector('custom_dict', suggest)) stored
 	) %[3]s;`
+
+	metadataTableDefinition = `
+	create table if not exists %[1]s_metadata (
+		collection_id      text                      not null,
+		collection_version uuid                      not null,
+		updated_date       timestamptz default now() not null
+	);`
 )
 
 type Postgres struct {
@@ -130,7 +137,7 @@ func (p *Postgres) Load(records []t.SearchIndexRecord) (int64, error) {
 	return loaded, nil
 }
 
-func (p *Postgres) PostLoad(collectionID string, index string) error {
+func (p *Postgres) PostLoad(collectionID string, index string, collectionVersion string) error {
 	if p.partitionToDetach != "" {
 	RETRY:
 		detach := fmt.Sprintf(`alter table %[1]s detach partition %[2]s concurrently;`, index, p.partitionToDetach)
@@ -159,6 +166,16 @@ func (p *Postgres) PostLoad(collectionID string, index string) error {
 			return fmt.Errorf("error attaching partition index to parent index: %s: %w", indexName, err)
 		}
 	}
+
+	metadata := fmt.Sprintf(`
+        insert into %[1]s_metadata (collection_id, collection_version)
+        values ('%[2]s', '%[3]s')
+        on conflict (collection_id)
+        do update set collection_version = '%[3]s';`, index, collectionID, collectionVersion)
+	_, err = p.db.Exec(context.Background(), metadata)
+	if err != nil {
+		return fmt.Errorf("error updating metadata table of index %s. Error: %w", index, err)
+	}
 	return nil
 }
 
@@ -168,6 +185,19 @@ func (p *Postgres) Optimize() error {
 		return fmt.Errorf("failed optimizing: error performing vacuum analyze: %w", err)
 	}
 	return nil
+}
+
+// Get the current version of a collection in the search index
+func (p *Postgres) GetVersion(collectionID string, index string) (string, error) {
+	currentVersion := ""
+	err := p.db.QueryRow(context.Background(), fmt.Sprintf(`
+        select collection_version
+        from %[2]s_metadata
+        where collection_id = '%[1]s';`, collectionID, index)).Scan(&currentVersion)
+	if err != nil {
+		return "", fmt.Errorf("error getting version: %w", err)
+	}
+	return currentVersion, nil
 }
 
 // Init initialize search index. Should be idempotent!
@@ -218,7 +248,7 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	}
 
 	// create primary key when it doesn't exist yet
-	pkey := fmt.Sprintf(`
+	primaryKey := fmt.Sprintf(`
 		do $$
 		begin
 		    if not exists (
@@ -233,9 +263,36 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 		    end if;
 		end;
 		$$;`, index)
-	_, err = p.db.Exec(context.Background(), pkey)
+	_, err = p.db.Exec(context.Background(), primaryKey)
 	if err != nil {
 		return fmt.Errorf("error creating primary key: %w", err)
+	}
+
+	// create search index metadata table
+	_, err = p.db.Exec(context.Background(), fmt.Sprintf(metadataTableDefinition, index))
+	if err != nil {
+		return fmt.Errorf("error creating search index metadata table: %w", err)
+	}
+
+	// create metadata primary key when it doesn't exist yet
+	metadataPrimaryKey := fmt.Sprintf(`
+		do $$
+		begin
+		    if not exists (
+		        select 1
+		        from   pg_constraint
+		        where  conrelid = '%[1]s_metadata'::regclass
+		        and    contype = 'p'
+		    )
+		    then
+		        alter table %[1]s_metadata
+		        add constraint %[1]s_metadata_pkey primary key (collection_id);
+		    end if;
+		end;
+		$$;`, index)
+	_, err = p.db.Exec(context.Background(), metadataPrimaryKey)
+	if err != nil {
+		return fmt.Errorf("error creating metadata primary key: %w", err)
 	}
 
 	// create custom collation to correctly handle "numbers in strings" when sorting results

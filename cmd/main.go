@@ -29,6 +29,7 @@ const (
 	shutdownDelayFlag        = "shutdown-delay"
 	configFileFlag           = "config-file"
 	collectionIDFlag         = "collection-id"
+	collectionVersionFlag    = "collection-version"
 	enableTrailingSlashFlag  = "enable-trailing-slash"
 	enableCorsFlag           = "enable-cors"
 	dbHostFlag               = "db-host"
@@ -98,6 +99,12 @@ var (
 			Usage:    "reference to collection ID in the config file",
 			Required: true,
 			EnvVars:  []string{strcase.ToScreamingSnake(collectionIDFlag)},
+		},
+		collectionVersionFlag: &cli.StringFlag{
+			Name:     collectionVersionFlag,
+			Usage:    "version reference of the collection",
+			Required: true,
+			EnvVars:  []string{strcase.ToScreamingSnake(collectionVersionFlag)},
 		},
 		enableTrailingSlashFlag: &cli.BoolFlag{
 			Name:     enableTrailingSlashFlag,
@@ -334,6 +341,33 @@ func main() {
 			},
 		},
 		{
+			Name:     "get-version",
+			Category: "etl",
+			Usage:    "Get the version of a collection in a search index",
+			Flags: []cli.Flag{
+				commonDBFlags[dbHostFlag],
+				commonDBFlags[dbPortFlag],
+				commonDBFlags[dbNameFlag],
+				commonDBFlags[dbUsernameFlag],
+				commonDBFlags[dbPasswordFlag],
+				commonDBFlags[dbSslModeFlag],
+				&cli.PathFlag{
+					Name:     searchIndexFlag,
+					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+					Usage:    "Name of search index",
+					Required: false,
+					Value:    "search_index",
+				},
+				serviceFlags[collectionIDFlag],
+			},
+			Action: func(c *cli.Context) error {
+				dbConn := flagsToDBConnStr(c)
+				version, err := etl.GetVersion(dbConn, c.String(collectionIDFlag), c.String(searchIndexFlag))
+				fmt.Println(version)
+				return err
+			},
+		},
+		{
 			Name:     "import-file",
 			Category: "etl",
 			Usage:    "Import file into search index",
@@ -346,6 +380,7 @@ func main() {
 				commonDBFlags[dbSslModeFlag],
 				serviceFlags[configFileFlag],
 				serviceFlags[collectionIDFlag],
+				serviceFlags[collectionVersionFlag],
 				&cli.PathFlag{
 					Name:     searchIndexFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
@@ -413,8 +448,8 @@ func main() {
 				if collection == nil {
 					return fmt.Errorf("no configured collection found with id: %s", collectionID)
 				}
-				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.Path(fileFlag), featureTables,
-					c.Int(pageSizeFlag), c.Bool(skipOptimizeFlag), dbConn)
+				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.String(collectionVersionFlag),
+					c.Path(fileFlag), featureTables, c.Int(pageSizeFlag), c.Bool(skipOptimizeFlag), dbConn)
 			},
 		},
 	}
