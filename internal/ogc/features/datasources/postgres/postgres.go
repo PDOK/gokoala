@@ -81,6 +81,7 @@ func NewPostgres(collections config.GeoSpatialCollections, pgConfig config.Postg
 			MaxDecimals:              maxDecimals,
 			ForceUTC:                 forceUTC,
 			PropertiesByCollectionID: collections.FeaturePropertiesByID(),
+			RelationsByCollectionID:  collections.FeatureRelationsByID(),
 		},
 		db:         db,
 		schemaName: pgConfig.Schema,

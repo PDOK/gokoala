@@ -33,6 +33,7 @@ type DatasourceCommon struct {
 	TableByCollectionID           map[string]*Table
 	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
+	RelationsByCollectionID       map[string][]config.Relation
 }
 
 // Table metadata about a table containing features or attributes in a data source.
@@ -136,19 +137,23 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 
 func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
+	var sqlBuilder strings.Builder
+	sqlBuilder.WriteString(sql)
+
 	if len(pf) > 0 {
 		position := 0
+
 		for k, v := range pf {
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
 			// column name in double quotes in case it is a reserved keyword
 			// also: we don't currently support LIKE since wildcard searches don't use the index
-			sql += fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam)
+			sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam))
 			namedParams[namedParam] = v
 		}
 	}
 
-	return sql, namedParams
+	return sqlBuilder.String(), namedParams
 }
 
 func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (sql string, namedParams map[string]any) {
@@ -166,6 +171,50 @@ func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol
 
 func ColumnsToSQL(columns []string) string {
 	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
+}
+
+type RelationsClause struct {
+	CTESQL         string
+	CTENamedParams map[string]any
+
+	JoinSQL         string
+	JoinNamedParams map[string]any
+
+	SelectSQL string
+}
+
+func (dc *DatasourceCommon) RelationsToSQL(relations []config.Relation, symbol string) RelationsClause {
+	result := RelationsClause{}
+	if len(relations) > 0 {
+		for _, relation := range relations {
+			relationID := relation.Columns.Target
+			if dc.ExternalFidColumn != "" {
+				relationID = dc.ExternalFidColumn
+			}
+			cteName := relation.RelatedCollection
+			if relation.Prefix != "" {
+				cteName += "_" + relation.Prefix
+			}
+			cteName += "_agg"
+
+			result.CTESQL += fmt.Sprintf(`%[1]s as (
+				select junction.%[5]s,
+					   group_concat(other.%[4]s) as fids
+				from %[3]s junction
+				inner join %[1]s other on other.%[2]s = junction.%[6]s
+				group by junction.%[5]s
+			),`, cteName, relation.Columns.Source, relation.Junction.Name,
+				relationID, relation.Junction.Columns.Source,
+				relation.Junction.Columns.Target)
+
+			result.JoinSQL += fmt.Sprintf(`left join %[1]s on nextprevfeat.%[2]s = %[1]s.%[3]s`,
+				cteName, relation.Columns.Source, relation.Junction.Columns.Source)
+
+			result.SelectSQL = cteName + ".fids"
+		}
+	}
+
+	return result
 }
 
 func ValidateUniqueness(result map[string]*Table) {
