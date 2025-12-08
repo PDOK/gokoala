@@ -183,7 +183,7 @@ type RelationsClause struct {
 	SelectSQL string
 }
 
-func (dc *DatasourceCommon) RelationsToSQL(relations []config.Relation, symbol string) RelationsClause {
+func (dc *DatasourceCommon) RelationsToSQL(relations []config.Relation, _ string) RelationsClause {
 	result := RelationsClause{}
 	if len(relations) > 0 {
 		for _, relation := range relations {
@@ -201,11 +201,11 @@ func (dc *DatasourceCommon) RelationsToSQL(relations []config.Relation, symbol s
 				select junction.%[5]s,
 					   group_concat(other.%[4]s) as fids
 				from %[3]s junction
-				inner join %[1]s other on other.%[2]s = junction.%[6]s
+				inner join %[7]s other on other.%[2]s = junction.%[6]s
 				group by junction.%[5]s
 			),`, cteName, relation.Columns.Source, relation.Junction.Name,
 				relationID, relation.Junction.Columns.Source,
-				relation.Junction.Columns.Target)
+				relation.Junction.Columns.Target, relation.RelatedCollection)
 
 			result.JoinSQL += fmt.Sprintf(`left join %[1]s on nextprevfeat.%[2]s = %[1]s.%[3]s`,
 				cteName, relation.Columns.Source, relation.Junction.Columns.Source)
