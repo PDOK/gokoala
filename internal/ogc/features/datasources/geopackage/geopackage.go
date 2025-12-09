@@ -454,13 +454,21 @@ func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	return fmt.Sprintf(", \"%s\"", table.GeometryColumnName)
 }
 
-func selectGpkgRelation(relation config.Relation, relationName string, targetFID string) string {
+// selectGpkgRelation Assemble GeoPackage specific query to select related features using a many-to-many table e.g.:
+// (
+//
+//		select group_concat(other.external_fid)
+//		from building_appartment junction join appartment other on other.id = junction.appartment_id
+//		where junction.building_id = building.id
+//	) as fids
+func selectGpkgRelation(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string {
 	return fmt.Sprintf(`(
 				select group_concat(other.%[1]s)
 				from %[2]s junction join %[4]s other on other.%[5]s = junction.%[6]s
-				where junction.%[7]s = nextprevfeat.%[8]s
+				where junction.%[7]s = %[9]s.%[8]s
 			) as %[3]s`, targetFID, relation.Junction.Name,
 		relationName, relation.RelatedCollection,
 		relation.Columns.Target, relation.Junction.Columns.Target,
-		relation.Junction.Columns.Source, relation.Columns.Source)
+		relation.Junction.Columns.Source, relation.Columns.Source,
+		sourceTableAlias)
 }

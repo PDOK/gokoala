@@ -132,7 +132,11 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 	}
 
 	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()), true)
-	result += dc.relationsToSQL(relationsConfig, selectRelation)
+	if includePrevNext {
+		result += dc.relationsToSQL(relationsConfig, selectRelation, "nextprevfeat")
+	} else {
+		result += dc.relationsToSQL(relationsConfig, selectRelation, table.Name)
+	}
 	result += selectGeom(axisOrder, table)
 
 	return result
@@ -183,15 +187,15 @@ func ColumnsToSQL(columns []string, escape bool) string {
 	return strings.Join(columns, `", "`)
 }
 
-type SelectRelation func(relation config.Relation, relationName string, targetFID string) string
+type SelectRelation func(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string
 
-func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRelation SelectRelation) string {
+func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRelation SelectRelation, sourceTableAlias string) string {
 	result := ""
 	if len(relations) == 0 {
 		return result
 	}
 
-	selects := make([]string, 0)
+	selectClauses := make([]string, 0)
 	for _, relation := range relations {
 		relationName := relation.RelatedCollection
 		if relation.Prefix != "" {
@@ -201,15 +205,15 @@ func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRe
 		targetFID := relation.Columns.Target
 		if dc.ExternalFidColumn != "" {
 			targetFID = dc.ExternalFidColumn
-			relationName += "_" + dc.ExternalFidColumn
+			//relationName += "_" + dc.ExternalFidColumn
 		}
 
-		selects = append(selects, selectRelation(relation, relationName, targetFID))
+		selectClauses = append(selectClauses, selectRelation(relation, relationName, targetFID, sourceTableAlias))
 	}
 
-	if len(selects) > 0 {
+	if len(selectClauses) > 0 {
 		result += ", "
-		result += ColumnsToSQL(selects, false)
+		result += ColumnsToSQL(selectClauses, false)
 	}
 	return result
 }
