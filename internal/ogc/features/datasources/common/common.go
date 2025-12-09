@@ -87,8 +87,10 @@ func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error)
 type SelectGeom func(order domain.AxisOrder, table *Table) string
 
 // SelectColumns build select clause.
-func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder, selectGeom SelectGeom,
-	propConfig *config.FeatureProperties, relationsConfig []config.Relation, includePrevNext bool) string {
+func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder,
+	selectGeom SelectGeom, selectRelation SelectRelation,
+	propConfig *config.FeatureProperties, relationsConfig []config.Relation,
+	includePrevNext bool) string {
 
 	columns := orderedmap.New[string, struct{}]() // map (actually a set) to prevent accidental duplicate columns
 	switch {
@@ -129,13 +131,8 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 		columns.Set(domain.NextFid, struct{}{})
 	}
 
-	// bring regular columns, feature relation select clauses and the geometry column together in a single string
 	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()), true)
-	relations := dc.relationsToSQL(relationsConfig)
-	if len(relations) > 0 {
-		result += ", "
-		result += ColumnsToSQL(relations, false)
-	}
+	result += dc.relationsToSQL(relationsConfig, selectRelation)
 	result += selectGeom(axisOrder, table)
 
 	return result
@@ -186,8 +183,10 @@ func ColumnsToSQL(columns []string, escape bool) string {
 	return strings.Join(columns, `", "`)
 }
 
-func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation) []string {
-	result := make([]string, 0)
+type SelectRelation func(relation config.Relation, relationName string, targetFID string) string
+
+func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRelation SelectRelation) string {
+	selects := make([]string, 0)
 	for _, relation := range relations {
 		relationName := relation.RelatedCollection
 		if relation.Prefix != "" {
@@ -200,18 +199,14 @@ func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation) []string
 			relationName += "_" + dc.ExternalFidColumn
 		}
 
-		sql := fmt.Sprintf(`(
-				select group_concat(other.%[1]s)
-				from %[2]s junction join %[4]s other on other.%[5]s = junction.%[6]s
-				where junction.%[7]s = nextprevfeat.%[8]s
-			) as %[3]s`, targetFID, relation.Junction.Name,
-			relationName, relation.RelatedCollection,
-			relation.Columns.Target, relation.Junction.Columns.Target,
-			relation.Junction.Columns.Source, relation.Columns.Source)
-
-		result = append(result, sql)
+		selects = append(selects, selectRelation(relation, relationName, targetFID))
 	}
 
+	result := ""
+	if len(selects) > 0 {
+		result += ", "
+		result += ColumnsToSQL(selects, false)
+	}
 	return result
 }
 

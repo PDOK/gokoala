@@ -123,7 +123,8 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 	defer cancel()
 
 	propConfig := pg.PropertiesByCollectionID[collection]
-	query, queryArgs, err := pg.makeFeaturesQuery(propConfig, table, false, axisOrder, criteria)
+	relationsConfig := pg.RelationsByCollectionID[collection]
+	query, queryArgs, err := pg.makeFeaturesQuery(propConfig, relationsConfig, table, false, axisOrder, criteria)
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -185,7 +186,9 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	}
 
 	propConfig := pg.PropertiesByCollectionID[collection]
-	selectClause := pg.SelectColumns(table, axisOrder, selectPostGISGeometry, propConfig, nil, false)
+	relationsConfig := pg.RelationsByCollectionID[collection]
+	selectClause := pg.SelectColumns(table, axisOrder, selectPostGISGeometry, selectPostGISRelation,
+		propConfig, relationsConfig, false)
 
 	// TODO: find better place for this srid logic
 	srid := outputSRID.GetOrDefault()
@@ -220,14 +223,15 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 }
 
 // Build specific features queries based on the given options.
-func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, table *common.Table,
+func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, relationsConfig []config.Relation, table *common.Table,
 	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
 
 	var selectClause string
 	if onlyFIDs {
 		selectClause = common.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid}, true)
 	} else {
-		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, propConfig, nil, true)
+		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, selectPostGISRelation,
+			propConfig, relationsConfig, true)
 	}
 
 	// TODO: find better place for this srid logic
@@ -318,4 +322,15 @@ func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	}
 
 	return fmt.Sprintf(", st_transform(\"%[1]s\", @outputSrid::int) as \"%[1]s\"", table.GeometryColumnName)
+}
+
+func selectPostGISRelation(relation config.Relation, relationName string, targetFID string) string {
+	return fmt.Sprintf(`(
+				select string_agg(other.%[1]s, ',')
+				from %[2]s junction join %[4]s other on other.%[5]s = junction.%[6]s
+				where junction.%[7]s = nextprevfeat.%[8]s
+			) as %[3]s`, targetFID, relation.Junction.Name,
+		relationName, relation.RelatedCollection,
+		relation.Columns.Target, relation.Junction.Columns.Target,
+		relation.Junction.Columns.Source, relation.Columns.Source)
 }
