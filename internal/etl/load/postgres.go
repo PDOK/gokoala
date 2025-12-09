@@ -2,6 +2,7 @@ package load
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -195,7 +196,7 @@ func (p *Postgres) GetVersion(collectionID string, index string) (string, error)
         from %[2]s_metadata
         where collection_id = '%[1]s';`, collectionID, index)).Scan(&currentVersion)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			log.Printf("no version found for collection '%s' in index '%s'", collectionID, index)
 			return currentVersion, nil
 		}
