@@ -131,6 +131,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 		columns.Set(domain.NextFid, struct{}{})
 	}
 
+	// turn columns and subquery's into SQL string
 	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()), true)
 	if includePrevNext {
 		result += dc.relationsToSQL(relationsConfig, selectRelation, "nextprevfeat")
@@ -187,6 +188,7 @@ func ColumnsToSQL(columns []string, escape bool) string {
 	return strings.Join(columns, `", "`)
 }
 
+// SelectRelation function signature to select related features using a many-to-many table
 type SelectRelation func(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string
 
 func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRelation SelectRelation, sourceTableAlias string) string {
@@ -205,7 +207,7 @@ func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRe
 		targetFID := relation.Columns.Target
 		if dc.ExternalFidColumn != "" {
 			targetFID = dc.ExternalFidColumn
-			//relationName += "_" + dc.ExternalFidColumn
+			relationName += "_" + dc.ExternalFidColumn
 		}
 
 		selectClauses = append(selectClauses, selectRelation(relation, relationName, targetFID, sourceTableAlias))
