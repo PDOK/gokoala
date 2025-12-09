@@ -186,6 +186,11 @@ func ColumnsToSQL(columns []string, escape bool) string {
 type SelectRelation func(relation config.Relation, relationName string, targetFID string) string
 
 func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRelation SelectRelation) string {
+	result := ""
+	if len(relations) == 0 {
+		return result
+	}
+
 	selects := make([]string, 0)
 	for _, relation := range relations {
 		relationName := relation.RelatedCollection
@@ -202,7 +207,6 @@ func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRe
 		selects = append(selects, selectRelation(relation, relationName, targetFID))
 	}
 
-	result := ""
 	if len(selects) > 0 {
 		result += ", "
 		result += ColumnsToSQL(selects, false)
