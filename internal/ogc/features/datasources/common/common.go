@@ -87,8 +87,8 @@ func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error)
 type SelectGeom func(order domain.AxisOrder, table *Table) string
 
 // SelectColumns build select clause.
-func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder,
-	selectGeom SelectGeom, propConfig *config.FeatureProperties, includePrevNext bool) string {
+func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder, selectGeom SelectGeom,
+	propConfig *config.FeatureProperties, relationsConfig []config.Relation, includePrevNext bool) string {
 
 	columns := orderedmap.New[string, struct{}]() // map (actually a set) to prevent accidental duplicate columns
 	switch {
@@ -129,7 +129,13 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 		columns.Set(domain.NextFid, struct{}{})
 	}
 
-	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()))
+	// bring regular columns, feature relation select clauses and the geometry column together in a single string
+	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()), true)
+	relations := dc.relationsToSQL(relationsConfig)
+	if len(relations) > 0 {
+		result += ", "
+		result += ColumnsToSQL(relations, false)
+	}
 	result += selectGeom(axisOrder, table)
 
 	return result
@@ -169,38 +175,41 @@ func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol
 	return sql, namedParams
 }
 
-func ColumnsToSQL(columns []string) string {
-	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
+// ColumnsToSQL converts a slice of column names to a comma-separated string of column names.
+//
+// Beware: Always set escape=true to get the column names wrapped in double quotes, the only
+// exception is when using subselects.
+func ColumnsToSQL(columns []string, escape bool) string {
+	if escape {
+		return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
+	}
+	return strings.Join(columns, `", "`)
 }
 
-type RelationSelect struct {
-	Name string
-	SQL  string
-}
+func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation) []string {
+	result := make([]string, 0)
+	for _, relation := range relations {
+		relationName := relation.RelatedCollection
+		if relation.Prefix != "" {
+			relationName += "_" + relation.Prefix
+		}
 
-func (dc *DatasourceCommon) RelationsToSQL(relations []config.Relation) []RelationSelect {
-	result := make([]RelationSelect, 0)
-	if len(relations) > 0 {
-		for _, relation := range relations {
-			relationID := relation.Columns.Target
-			if dc.ExternalFidColumn != "" {
-				relationID = dc.ExternalFidColumn
-			}
-			relationName := relation.RelatedCollection
-			if relation.Prefix != "" {
-				relationName += "_" + relation.Prefix + "_fids"
-			}
+		targetFID := relation.Columns.Target
+		if dc.ExternalFidColumn != "" {
+			targetFID = dc.ExternalFidColumn
+			relationName += "_" + dc.ExternalFidColumn
+		}
 
-			sql := fmt.Sprintf(`(
+		sql := fmt.Sprintf(`(
 				select group_concat(other.%[1]s)
 				from %[2]s junction join %[4]s other on other.%[5]s = junction.%[6]s
 				where junction.%[7]s = nextprevfeat.%[8]s
-			) as %[3]s`, relationID, relation.Junction.Name, relationName, relation.RelatedCollection,
-				relation.Columns.Target, relation.Junction.Columns.Target, relation.Junction.Columns.Source,
-				relation.Columns.Target)
+			) as %[3]s`, targetFID, relation.Junction.Name,
+			relationName, relation.RelatedCollection,
+			relation.Columns.Target, relation.Junction.Columns.Target,
+			relation.Junction.Columns.Source, relation.Columns.Source)
 
-			result = append(result, RelationSelect{Name: relationName, SQL: sql})
-		}
+		result = append(result, sql)
 	}
 
 	return result

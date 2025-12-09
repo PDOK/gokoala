@@ -165,7 +165,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer cancel()
 
 	propConfig := g.PropertiesByCollectionID[collection]
-	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, false)
+	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, nil, false)
 	fids := map[string]any{"fids": featureIDs}
 
 	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select %s from %s where %s in (:fids)",
@@ -270,7 +270,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 
 	propConfig := g.PropertiesByCollectionID[collection]
-	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, false)
+	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, nil, false)
 
 	query := fmt.Sprintf(`select %s from "%s" where "%s" = :fid limit 1`, selectClause, table.Name, fidColumn)
 	rows, err := g.backend.getDB().NamedQueryContext(queryCtx, query, map[string]any{"fid": featureID})
@@ -299,23 +299,21 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	relationsConfig []config.Relation, table *common.Table, onlyFIDs bool, axisOrder d.AxisOrder,
 	criteria ds.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
-	relationClause := g.RelationsToSQL(relationsConfig)
-
 	var selectClause string
 	if onlyFIDs {
-		selectClause = common.ColumnsToSQL([]string{g.FidColumn, d.PrevFid, d.NextFid})
+		selectClause = common.ColumnsToSQL([]string{g.FidColumn, d.PrevFid, d.NextFid}, true)
 	} else {
-		selectClause = g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, true)
+		selectClause = g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, relationsConfig, true)
 	}
 
 	// make query
 	if criteria.Bbox != nil {
-		query, queryArgs, err = g.makeBboxQuery(table, selectClause, relationClause, criteria)
+		query, queryArgs, err = g.makeBboxQuery(table, selectClause, criteria)
 		if err != nil {
 			return
 		}
 	} else {
-		query, queryArgs = g.makeDefaultQuery(table, selectClause, relationClause, criteria)
+		query, queryArgs = g.makeDefaultQuery(table, selectClause, criteria)
 	}
 	// lookup prepared statement for given query, or create new one
 	stmt, err = g.preparedStmtCache.Lookup(ctx, g.backend.getDB(), query)
@@ -323,7 +321,7 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 	return
 }
 
-func (g *GeoPackage) makeDefaultQuery(table *common.Table, selectClause string, relations []common.RelationSelect, criteria ds.FeaturesCriteria) (string, map[string]any) {
+func (g *GeoPackage) makeDefaultQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlxNamedParamSymbol)
 
@@ -333,8 +331,8 @@ with
     prev as (select * from "%[1]s" where "%[2]s" < :fid %[3]s %[4]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as %[6]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[7]s from nextprev)
-select %[5]s, %[8]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
-`, table.Name, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, relations[0].SQL) // don't add user input here, use named params for user input!
+select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :limit
+`, table.Name, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
@@ -346,7 +344,7 @@ select %[5]s, %[8]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s limit :l
 	return defaultQuery, namedParams
 }
 
-func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, _ []common.RelationSelect, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
+func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.Name)
 
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)

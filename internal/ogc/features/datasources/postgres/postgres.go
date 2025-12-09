@@ -185,7 +185,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	}
 
 	propConfig := pg.PropertiesByCollectionID[collection]
-	selectClause := pg.SelectColumns(table, axisOrder, selectPostGISGeometry, propConfig, false)
+	selectClause := pg.SelectColumns(table, axisOrder, selectPostGISGeometry, propConfig, nil, false)
 
 	// TODO: find better place for this srid logic
 	srid := outputSRID.GetOrDefault()
@@ -225,9 +225,9 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, tabl
 
 	var selectClause string
 	if onlyFIDs {
-		selectClause = common.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid})
+		selectClause = common.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid}, true)
 	} else {
-		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, propConfig, true)
+		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, propConfig, nil, true)
 	}
 
 	// TODO: find better place for this srid logic
