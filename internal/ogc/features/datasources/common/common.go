@@ -173,44 +173,33 @@ func ColumnsToSQL(columns []string) string {
 	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
 }
 
-type RelationsClause struct {
-	CTESQL         string
-	CTENamedParams map[string]any
-
-	JoinSQL         string
-	JoinNamedParams map[string]any
-
-	SelectSQL string
+type RelationSelect struct {
+	Name string
+	SQL  string
 }
 
-func (dc *DatasourceCommon) RelationsToSQL(relations []config.Relation, _ string) RelationsClause {
-	result := RelationsClause{}
+func (dc *DatasourceCommon) RelationsToSQL(relations []config.Relation) []RelationSelect {
+	result := make([]RelationSelect, 0)
 	if len(relations) > 0 {
 		for _, relation := range relations {
 			relationID := relation.Columns.Target
 			if dc.ExternalFidColumn != "" {
 				relationID = dc.ExternalFidColumn
 			}
-			cteName := relation.RelatedCollection
+			relationName := relation.RelatedCollection
 			if relation.Prefix != "" {
-				cteName += "_" + relation.Prefix
+				relationName += "_" + relation.Prefix + "_fids"
 			}
-			cteName += "_agg"
 
-			result.CTESQL += fmt.Sprintf(`%[1]s as (
-				select junction.%[5]s,
-					   group_concat(other.%[4]s) as fids
-				from %[3]s junction
-				inner join %[7]s other on other.%[2]s = junction.%[6]s
-				group by junction.%[5]s
-			),`, cteName, relation.Columns.Source, relation.Junction.Name,
-				relationID, relation.Junction.Columns.Source,
-				relation.Junction.Columns.Target, relation.RelatedCollection)
+			sql := fmt.Sprintf(`(
+				select group_concat(other.%[1]s)
+				from %[2]s junction join %[4]s other on other.%[5]s = junction.%[6]s
+				where junction.%[7]s = nextprevfeat.%[8]s
+			) as %[3]s`, relationID, relation.Junction.Name, relationName, relation.RelatedCollection,
+				relation.Columns.Target, relation.Junction.Columns.Target, relation.Junction.Columns.Source,
+				relation.Columns.Target)
 
-			result.JoinSQL += fmt.Sprintf(`left join %[1]s on nextprevfeat.%[2]s = %[1]s.%[3]s`,
-				cteName, relation.Columns.Source, relation.Junction.Columns.Source)
-
-			result.SelectSQL = cteName + ".fids"
+			result = append(result, RelationSelect{Name: relationName, SQL: sql})
 		}
 	}
 
