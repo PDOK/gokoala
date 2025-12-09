@@ -195,6 +195,14 @@ func (p *Postgres) GetVersion(collectionID string, index string) (string, error)
         from %[2]s_metadata
         where collection_id = '%[1]s';`, collectionID, index)).Scan(&currentVersion)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			log.Printf("no version found for collection '%s' in index '%s'", collectionID, index)
+			return currentVersion, nil
+		}
+		if strings.Contains(err.Error(), fmt.Sprintf("relation \"%[1]s_metadata\" does not exist", index)) {
+			log.Printf("metadata table for index '%s' does not exist", index)
+			return currentVersion, nil
+		}
 		return "", fmt.Errorf("error getting version: %w", err)
 	}
 	return currentVersion, nil
