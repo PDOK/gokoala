@@ -36,11 +36,14 @@ func NewProfile(profileName ProfileName, baseURL url.URL, schema Schema) Profile
 	}
 }
 
-func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (newColumnName, relationName string, newColumnValue any) {
+func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (string, string, any) {
+	relationName := newFeatureRelationName(columnName, externalFidColumn)
+	featureRelation := p.schema.findFeatureRelation(relationName)
+	var newColumnName string
+	var newColumnValue any
+
 	switch p.profileName {
 	case RelAsLink:
-		relationName = newFeatureRelationName(columnName, externalFidColumn)
-		featureRelation := p.schema.findFeatureRelation(relationName)
 		newColumnName = relationName + ".href"
 		if columnValue != nil && featureRelation != nil {
 			columnValues := strings.Split(columnValue.(string), ",")
@@ -55,17 +58,30 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 			}
 		}
 	case RelAsKey:
-		relationName = newFeatureRelationName(columnName, externalFidColumn)
 		newColumnName = relationName
-		newColumnValue = columnValue
+		if columnValue != nil {
+			columnValues := strings.Split(columnValue.(string), ",")
+			if len(columnValues) > 1 {
+				newColumnValue = columnValues
+			} else {
+				newColumnValue = columnValue
+			}
+		}
 	case RelAsURI:
 		// almost identical to rel-as-link except that there's no ".href" suffix (and potentially a title in the future)
-		relationName = newFeatureRelationName(columnName, externalFidColumn)
-		featureRelation := p.schema.findFeatureRelation(relationName)
 		newColumnName = relationName
 		if columnValue != nil && featureRelation != nil {
-			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
+			columnValues := strings.Split(columnValue.(string), ",")
+			if len(columnValues) > 1 {
+				newColumnValues := make([]string, 0, len(columnValues))
+				for _, value := range columnValues {
+					newColumnValues = append(newColumnValues, fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, value))
+				}
+				newColumnValue = newColumnValues
+			} else {
+				newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
+			}
 		}
 	}
-	return
+	return newColumnName, relationName, newColumnValue
 }
