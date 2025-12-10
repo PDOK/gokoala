@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/PDOK/gokoala/config"
 )
 
 const regexRemoveSeparators = "[^a-z0-9]?"
@@ -16,12 +18,33 @@ type FeatureRelation struct {
 	CollectionID string
 }
 
-func NewFeatureRelation(name, externalFidColumn string, collectionNames []string) *FeatureRelation {
+func NewFeatureRelation(table string, name, externalFidColumn string, collections config.GeoSpatialCollections) *FeatureRelation {
+	// option 1: deal with relations configured in the config file
+	for _, collection := range collections {
+
+		if collection.HasTableName(table) {
+			if collection.Features.Relations != nil {
+				for _, relation := range collection.Features.Relations {
+					if relation.Columns.Source == name {
+						return &FeatureRelation{
+							Name:         relation.Name(),
+							CollectionID: relation.RelatedCollection,
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// option 2: deal with relations configured in the datasource
 	if !IsFeatureRelation(name, externalFidColumn) {
 		return nil
 	}
 	relationName := newFeatureRelationName(name, externalFidColumn)
-
+	collectionNames := make([]string, 0, len(collections))
+	for _, collection := range collections {
+		collectionNames = append(collectionNames, collection.ID)
+	}
 	return &FeatureRelation{
 		Name:         relationName,
 		CollectionID: findReferencedCollection(collectionNames, relationName),

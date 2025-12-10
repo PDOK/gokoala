@@ -198,11 +198,6 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 func readSchema(db *sqlx.DB, table common.Table, fidColumn, externalFidColumn string,
 	collections config.GeoSpatialCollections) (*d.Schema, error) {
 
-	collectionNames := make([]string, 0, len(collections))
-	for _, collection := range collections {
-		collectionNames = append(collectionNames, collection.ID)
-	}
-
 	// if table "gpkg_data_columns" is included in geopackage, use its description field to supplement the schema.
 	schemaExtension, err := hasSchemaExtension(db)
 	if err != nil {
@@ -226,23 +221,23 @@ func readSchema(db *sqlx.DB, table common.Table, fidColumn, externalFidColumn st
 
 	fields := make([]d.Field, 0)
 	for rows.Next() {
-		var colName, colType, colNotNull, colDescription string
+		var columnName, columnType, colNotNull, colDescription string
 		if schemaExtension {
-			err = rows.Scan(&colName, &colType, &colNotNull, &colDescription)
+			err = rows.Scan(&columnName, &columnType, &colNotNull, &colDescription)
 		} else {
-			err = rows.Scan(&colName, &colType, &colNotNull)
+			err = rows.Scan(&columnName, &columnType, &colNotNull)
 		}
 		if err != nil {
 			return nil, err
 		}
 
 		fields = append(fields, d.Field{
-			Name:              colName,
-			Type:              colType,
+			Name:              columnName,
+			Type:              columnType,
 			Description:       colDescription,
 			IsRequired:        colNotNull == "1",
-			IsPrimaryGeometry: colName == table.GeometryColumnName,
-			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn, collectionNames),
+			IsPrimaryGeometry: columnName == table.GeometryColumnName,
+			FeatureRelation:   d.NewFeatureRelation(table.Name, columnName, externalFidColumn, collections),
 		})
 	}
 	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)

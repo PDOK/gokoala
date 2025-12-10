@@ -16,6 +16,14 @@ type Relation struct {
 	Junction JunctionTable `yaml:"junction,omitempty" json:"junction,omitempty" validate:"required"`
 }
 
+func (r *Relation) Name() string {
+	result := r.RelatedCollection
+	if r.Prefix != "" {
+		result += "_" + r.Prefix
+	}
+	return result
+}
+
 // +kubebuilder:object:generate=true
 type JunctionTable struct {
 	// Name of the junction table

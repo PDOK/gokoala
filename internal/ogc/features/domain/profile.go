@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 	"net/url"
+	"strings"
 )
 
 const featurePath = "%s/collections/%s/items/%s"
@@ -42,7 +43,16 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 		featureRelation := p.schema.findFeatureRelation(relationName)
 		newColumnName = relationName + ".href"
 		if columnValue != nil && featureRelation != nil {
-			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
+			columnValues := strings.Split(columnValue.(string), ",")
+			if len(columnValues) > 1 {
+				newColumnValues := make([]string, 0, len(columnValues))
+				for _, value := range columnValues {
+					newColumnValues = append(newColumnValues, fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, value))
+				}
+				newColumnValue = strings.Join(newColumnValues, ",")
+			} else {
+				newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
+			}
 		}
 	case RelAsKey:
 		relationName = newFeatureRelationName(columnName, externalFidColumn)
@@ -57,6 +67,5 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
 		}
 	}
-
 	return
 }
