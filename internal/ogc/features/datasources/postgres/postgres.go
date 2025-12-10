@@ -325,12 +325,10 @@ func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 }
 
 // selectPostgresRelation Assemble Postgres specific query to select related features using a many-to-many table e.g.:
-// (
 //
-//		select string_agg(other.external_fid, ',')
-//		from building_apartment junction join apartment other on other.id = junction.apartment_id
-//		where junction.building_id = building.id
-//	) as fids
+//	select string_agg(other.external_fid, ',')
+//	from building_apartment junction join apartment other on other.id = junction.apartment_id
+//	where junction.building_id = building.id
 func selectPostgresRelation(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string {
 	return fmt.Sprintf(`(
 				select string_agg(other.%[1]s, ',')

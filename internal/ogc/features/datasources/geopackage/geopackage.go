@@ -131,7 +131,8 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	defer cancel()
 
 	propConfig := g.PropertiesByCollectionID[collection]
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, nil, table, true, -1, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	relationsConfig := g.RelationsByCollectionID[collection]
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, relationsConfig, table, true, -1, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -455,12 +456,10 @@ func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 }
 
 // selectGpkgRelation Assemble GeoPackage specific query to select related features using a many-to-many table e.g.:
-// (
 //
-//		select group_concat(other.external_fid)
-//		from building_apartment junction join apartment other on other.id = junction.apartment_id
-//		where junction.building_id = building.id
-//	) as fids
+//	select group_concat(other.external_fid)
+//	from building_apartment junction join apartment other on other.id = junction.apartment_id
+//	where junction.building_id = building.id
 func selectGpkgRelation(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string {
 	return fmt.Sprintf(`(
 				select group_concat(other.%[1]s)

@@ -82,8 +82,7 @@ func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error)
 	return table, nil
 }
 
-// SelectGeom function signature to select geometry from a table
-// while taking axis order into account.
+// SelectGeom function signature to select geometry from a table while taking axis order into account.
 type SelectGeom func(order domain.AxisOrder, table *Table) string
 
 // SelectColumns build select clause.
@@ -131,7 +130,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 		columns.Set(domain.NextFid, struct{}{})
 	}
 
-	// turn columns and subquery's into SQL string
+	// turn columns and subqueries into SQL string
 	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()), true)
 	if includePrevNext {
 		result += dc.relationsToSQL(relationsConfig, selectRelation, "nextprevfeat")
@@ -188,7 +187,8 @@ func ColumnsToSQL(columns []string, escape bool) string {
 	return strings.Join(columns, `", "`)
 }
 
-// SelectRelation function signature to select related features using a many-to-many table
+// SelectRelation function signature to select related features (using a many-to-many table).
+// The resulting SQL query should return a string of comma-separated FIDs to the related features.
 type SelectRelation func(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string
 
 func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRelation SelectRelation, sourceTableAlias string) string {
@@ -197,7 +197,7 @@ func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRe
 		return result
 	}
 
-	selectClauses := make([]string, 0)
+	subQueries := make([]string, 0)
 	for _, relation := range relations {
 		relationName := relation.RelatedCollection
 		if relation.Prefix != "" {
@@ -210,12 +210,12 @@ func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRe
 			relationName += "_" + dc.ExternalFidColumn
 		}
 
-		selectClauses = append(selectClauses, selectRelation(relation, relationName, targetFID, sourceTableAlias))
+		subQueries = append(subQueries, selectRelation(relation, relationName, targetFID, sourceTableAlias))
 	}
 
-	if len(selectClauses) > 0 {
+	if len(subQueries) > 0 {
 		result += ", "
-		result += ColumnsToSQL(selectClauses, false)
+		result += ColumnsToSQL(subQueries, false)
 	}
 	return result
 }
