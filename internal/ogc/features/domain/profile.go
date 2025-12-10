@@ -38,50 +38,45 @@ func NewProfile(profileName ProfileName, baseURL url.URL, schema Schema) Profile
 
 func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (string, string, any) {
 	relationName := newFeatureRelationName(columnName, externalFidColumn)
-	featureRelation := p.schema.findFeatureRelation(relationName)
 	var newColumnName string
 	var newColumnValue any
 
 	switch p.profileName {
 	case RelAsLink:
 		newColumnName = relationName + ".href"
-		if columnValue != nil && featureRelation != nil {
-			columnValues := strings.Split(columnValue.(string), ",")
-			if len(columnValues) > 1 {
-				newColumnValues := make([]string, 0, len(columnValues))
-				for _, value := range columnValues {
-					newColumnValues = append(newColumnValues, fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, value))
-				}
-				newColumnValue = newColumnValues
-			} else {
-				newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
-			}
-		}
+		newColumnValue = p.mapRelationValue(columnValue, true, relationName)
 	case RelAsKey:
 		newColumnName = relationName
-		if columnValue != nil {
-			columnValues := strings.Split(columnValue.(string), ",")
-			if len(columnValues) > 1 {
-				newColumnValue = columnValues
-			} else {
-				newColumnValue = columnValue
-			}
-		}
+		newColumnValue = p.mapRelationValue(columnValue, false, relationName)
 	case RelAsURI:
 		// almost identical to rel-as-link except that there's no ".href" suffix (and potentially a title in the future)
 		newColumnName = relationName
-		if columnValue != nil && featureRelation != nil {
-			columnValues := strings.Split(columnValue.(string), ",")
-			if len(columnValues) > 1 {
-				newColumnValues := make([]string, 0, len(columnValues))
-				for _, value := range columnValues {
-					newColumnValues = append(newColumnValues, fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, value))
-				}
-				newColumnValue = newColumnValues
-			} else {
-				newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
+		newColumnValue = p.mapRelationValue(columnValue, true, relationName)
+	}
+
+	return newColumnName, relationName, newColumnValue
+}
+
+func (p *Profile) mapRelationValue(columnValue any, formatAsURL bool, relationName string) any {
+	valAsString, ok := columnValue.(string)
+	if !ok {
+		return nil
+	}
+	values := strings.Split(valAsString, ",")
+
+	result := make([]string, 0, len(values))
+	for _, v := range values {
+		if formatAsURL {
+			featureRelation := p.schema.findFeatureRelation(relationName)
+			if featureRelation != nil {
+				v = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, v)
 			}
 		}
+		result = append(result, v)
 	}
-	return newColumnName, relationName, newColumnValue
+
+	if len(result) == 1 {
+		return result[0]
+	}
+	return result
 }
