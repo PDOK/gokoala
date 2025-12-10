@@ -49,7 +49,7 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 				for _, value := range columnValues {
 					newColumnValues = append(newColumnValues, fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, value))
 				}
-				newColumnValue = strings.Join(newColumnValues, ",")
+				newColumnValue = newColumnValues
 			} else {
 				newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
 			}

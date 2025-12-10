@@ -181,6 +181,50 @@ func TestIsLink(t *testing.T) {
 	}
 }
 
+func TestIsStringSlice(t *testing.T) {
+	tests := []struct {
+		name  string
+		input any
+		want  bool
+	}{
+		{
+			name:  "valid string slice",
+			input: []string{"foo", "bar"},
+			want:  true,
+		},
+		{
+			name:  "empty string slice",
+			input: []string{},
+			want:  true,
+		},
+		{
+			name:  "nil input",
+			input: nil,
+			want:  false,
+		},
+		{
+			name:  "string input",
+			input: "foo",
+			want:  false,
+		},
+		{
+			name:  "int slice",
+			input: []int{1, 2},
+			want:  false,
+		},
+		{
+			name:  "interface slice containing strings",
+			input: []any{"foo", "bar"},
+			want:  false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, isStringSlice(tt.input))
+		})
+	}
+}
+
 func ptrTo(s string) *string {
 	return &s
 }
