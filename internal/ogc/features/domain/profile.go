@@ -59,6 +59,9 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 }
 
 func (p *Profile) mapRelationValue(columnValue any, formatAsURL bool, relationName string) any {
+	if columnValue == nil {
+		return nil
+	}
 	featureRelation := p.schema.findFeatureRelation(relationName)
 	if featureRelation == nil {
 		log.Printf("Warning: relation %s not found in schema", relationName)
@@ -74,7 +77,7 @@ func (p *Profile) mapRelationValue(columnValue any, formatAsURL bool, relationNa
 		result = append(result, v)
 	}
 
-	if !featureRelation.IsArray {
+	if len(result) == 1 && !featureRelation.IsArray {
 		return result[0]
 	}
 	return result
