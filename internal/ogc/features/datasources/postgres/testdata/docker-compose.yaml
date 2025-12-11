@@ -74,6 +74,13 @@ services:
 
         ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
           -preserve_fid \
+          -lco SCHEMA=bag_junction \
+          -lco FID=feature_id \
+          -lco COLUMN_TYPES=datum_strt=date,datum_eind=date \
+          /testdata/bag-with-junction-table.gpkg
+
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
           -lco SCHEMA=external_fid \
           -lco FID=feature_id \
           /testdata/external-fid.gpkg

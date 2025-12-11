@@ -1,0 +1,49 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Contains a slimmed-down/example version of the BAG-dataset with a fake junction table
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      transformOnTheFly:
+        - supportedSrs:
+          postgres:
+            host: localhost
+            port: ${DB_PORT}
+            schema: bag_junction
+            fid: feature_id
+            # Rely on defaults for databaseName, user/pass., sslmode, etc
+    collections:
+      - id: verblijfsobjecten
+        metadata:
+          title: Verblijfsobjecten
+          description: Foooo
+        relations:
+          - collection: standplaatsen
+            columns:
+              source: feature_id
+              target: feature_id
+            junction:
+              name: verblijfsobjecten_standplaats
+              columns:
+                source: vbo_id
+                target: standplaats_id
+      - id: standplaatsen
+        metadata:
+          title: Standplaatsen
+          description: Barrr
+        relations:
+          - collection: verblijfsobjecten
+            columns:
+              source: feature_id
+              target: feature_id
+            junction:
+              name: verblijfsobjecten_standplaats
+              columns:
+                source: standplaats_id
+                target: vbo_id

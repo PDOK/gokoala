@@ -13,7 +13,7 @@ import (
 )
 
 func TestFeatures(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 
 	type fields struct {
 		configFiles  []string
@@ -916,6 +916,23 @@ func TestFeatures(t *testing.T) {
 			want: want{
 				body:       "",
 				statusCode: http.StatusNotAcceptable,
+			},
+		},
+		{
+			name: "Request features with many-to-many relationship (using a junction table) to features in another collection",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag_junction_table.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag_junction_table.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=10&f=json",
+				collectionID: "standplaatsen",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_with_junction_table.json",
+				statusCode: http.StatusOK,
 			},
 		},
 	}
