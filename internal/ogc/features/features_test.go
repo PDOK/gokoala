@@ -13,7 +13,7 @@ import (
 )
 
 func TestFeatures(t *testing.T) {
-	//t.Parallel()
+	t.Parallel()
 
 	type fields struct {
 		configFiles  []string
