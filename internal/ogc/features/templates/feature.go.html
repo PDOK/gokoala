@@ -59,7 +59,15 @@
 
                     {{- else if hasSuffix ".href" $key -}}
                     {{- /* render links for relations between features (OGC API part 5) */ -}}
-                    <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+                    {{ if isstringslice $value }}
+                        <td><ul>
+                                {{ range $relationLink := $value }}
+                                    <li><a href="{{ $relationLink }}" target="_blank">{{ $relationLink }}</a></li>
+                                {{ end }}
+                            </ul></td>
+                    {{ else }}
+                        <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+                    {{ end }}
 
                     {{- else if and $webConfig $webConfig.URLAsHyperlink (islink $value) -}}
                     {{- /* render links to arbitray (external) URLs */ -}}

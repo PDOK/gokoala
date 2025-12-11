@@ -33,6 +33,7 @@ type DatasourceCommon struct {
 	TableByCollectionID           map[string]*Table
 	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
 	PropertiesByCollectionID      map[string]*config.FeatureProperties
+	RelationsByCollectionID       map[string][]config.Relation
 }
 
 // Table metadata about a table containing features or attributes in a data source.
@@ -81,13 +82,14 @@ func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error)
 	return table, nil
 }
 
-// SelectGeom function signature to select geometry from a table
-// while taking axis order into account.
+// SelectGeom function signature to select geometry from a table while taking axis order into account.
 type SelectGeom func(order domain.AxisOrder, table *Table) string
 
 // SelectColumns build select clause.
 func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder,
-	selectGeom SelectGeom, propConfig *config.FeatureProperties, includePrevNext bool) string {
+	selectGeom SelectGeom, selectRelation SelectRelation,
+	propConfig *config.FeatureProperties, relationsConfig []config.Relation,
+	includePrevNext bool) string {
 
 	columns := orderedmap.New[string, struct{}]() // map (actually a set) to prevent accidental duplicate columns
 	switch {
@@ -112,7 +114,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 	case table.Schema != nil:
 		// select all columns according to the table schema
 		for _, field := range table.Schema.Fields {
-			if field.Name != table.GeometryColumnName {
+			if field.Name != table.GeometryColumnName && !field.ExcludeRelationFromSelect() {
 				columns.Set(field.Name, struct{}{})
 			}
 		}
@@ -128,7 +130,13 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 		columns.Set(domain.NextFid, struct{}{})
 	}
 
-	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()))
+	// turn columns and subqueries into SQL string
+	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()), true)
+	if includePrevNext {
+		result += dc.relationsToSQL(relationsConfig, selectRelation, "nextprevfeat")
+	} else {
+		result += dc.relationsToSQL(relationsConfig, selectRelation, table.Name)
+	}
 	result += selectGeom(axisOrder, table)
 
 	return result
@@ -136,19 +144,23 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 
 func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
+	var sqlBuilder strings.Builder
+	sqlBuilder.WriteString(sql)
+
 	if len(pf) > 0 {
 		position := 0
+
 		for k, v := range pf {
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
 			// column name in double quotes in case it is a reserved keyword
 			// also: we don't currently support LIKE since wildcard searches don't use the index
-			sql += fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam)
+			sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam))
 			namedParams[namedParam] = v
 		}
 	}
 
-	return sql, namedParams
+	return sqlBuilder.String(), namedParams
 }
 
 func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (sql string, namedParams map[string]any) {
@@ -164,8 +176,48 @@ func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol
 	return sql, namedParams
 }
 
-func ColumnsToSQL(columns []string) string {
-	return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
+// ColumnsToSQL converts a slice of column names to a comma-separated string of column names.
+//
+// Beware: Always set escape=true to get the column names wrapped in double quotes, the only
+// exception is when using subselects.
+func ColumnsToSQL(columns []string, escape bool) string {
+	if escape {
+		return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
+	}
+	return strings.Join(columns, `", "`)
+}
+
+// SelectRelation function signature to select related features (using a many-to-many table).
+// The resulting SQL query should return a string of comma-separated FIDs to the related features.
+type SelectRelation func(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string
+
+func (dc *DatasourceCommon) relationsToSQL(relations []config.Relation, selectRelation SelectRelation, sourceTableAlias string) string {
+	result := ""
+	if len(relations) == 0 {
+		return result
+	}
+
+	subQueries := make([]string, 0)
+	for _, relation := range relations {
+		relationName := relation.RelatedCollection
+		if relation.Prefix != "" {
+			relationName += "_" + relation.Prefix
+		}
+
+		targetFID := relation.Columns.Target
+		if dc.ExternalFidColumn != "" {
+			targetFID = dc.ExternalFidColumn
+			relationName += "_" + dc.ExternalFidColumn
+		}
+
+		subQueries = append(subQueries, selectRelation(relation, relationName, targetFID, sourceTableAlias))
+	}
+
+	if len(subQueries) > 0 {
+		result += ", "
+		result += ColumnsToSQL(subQueries, false)
+	}
+	return result
 }
 
 func ValidateUniqueness(result map[string]*Table) {

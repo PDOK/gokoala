@@ -178,11 +178,6 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 func readSchema(db *pgxpool.Pool, table common.Table, fidColumn, externalFidColumn, schemaName string,
 	collections config.GeoSpatialCollections) (*d.Schema, error) {
 
-	collectionNames := make([]string, 0, len(collections))
-	for _, collection := range collections {
-		collectionNames = append(collectionNames, collection.ID)
-	}
-
 	query := `
 select
     a.attname as column_name,
@@ -221,18 +216,18 @@ order by
 
 	fields := make([]d.Field, 0)
 	for rows.Next() {
-		var colName, colType, colDescription string
+		var columnName, columnType, colDescription string
 		var colNotNull bool
-		if err = rows.Scan(&colName, &colType, &colNotNull, &colDescription); err != nil {
+		if err = rows.Scan(&columnName, &columnType, &colNotNull, &colDescription); err != nil {
 			return nil, err
 		}
 		fields = append(fields, d.Field{
-			Name:              colName,
-			Type:              colType,
+			Name:              columnName,
+			Type:              columnType,
 			Description:       colDescription,
 			IsRequired:        colNotNull,
-			IsPrimaryGeometry: colName == table.GeometryColumnName,
-			FeatureRelation:   d.NewFeatureRelation(colName, externalFidColumn, collectionNames),
+			IsPrimaryGeometry: columnName == table.GeometryColumnName,
+			FeatureRelation:   d.NewFeatureRelation(table.Name, columnName, externalFidColumn, collections),
 		})
 	}
 	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)
