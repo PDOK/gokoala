@@ -76,13 +76,27 @@
             "x-ogc-role": "primary-interval-end",
           {{ else if $feat.FeatureRelation }}
             "description": "{{ i18n "FeatureRelationDescription"}} {{ $feat.Description }}",
-            {{/* OAF part 5: If the features have a property that represents a reference to another feature in the
-                 same or another OGC Web API, the role "reference" can be used for this property */}}
-            "x-ogc-role": "reference",
-            {{ if $feat.FeatureRelation.CollectionID }}
-              {{/* If all instances of the property reference another feature in a fixed collection of the same server,
-                 the id of that collection SHALL be provided in "x-ogc-collectionId" */}}
-              "x-ogc-collectionId": "{{ $feat.FeatureRelation.CollectionID }}",
+            {{ if $feat.FeatureRelation.IsArray }}
+            "items": {
+                "type": "string",
+                {{/* OAF part 5: If the features have a property that represents a reference to another feature in the
+                     same or another OGC Web API, the role "reference" can be used for this property */}}
+                "x-ogc-role": "reference"
+                {{ if $feat.FeatureRelation.CollectionID }}
+                {{/* If all instances of the property reference another feature in a fixed collection of the same server,
+                     the id of that collection SHALL be provided in "x-ogc-collectionId" */}}
+                ,"x-ogc-collectionId": "{{ $feat.FeatureRelation.CollectionID }}"
+                {{ end }}
+            },
+            {{ else }}
+                {{/* OAF part 5: If the features have a property that represents a reference to another feature in the
+                     same or another OGC Web API, the role "reference" can be used for this property */}}
+                "x-ogc-role": "reference",
+                {{ if $feat.FeatureRelation.CollectionID }}
+                  {{/* If all instances of the property reference another feature in a fixed collection of the same server,
+                     the id of that collection SHALL be provided in "x-ogc-collectionId" */}}
+                  "x-ogc-collectionId": "{{ $feat.FeatureRelation.CollectionID }}",
+                {{ end }}
             {{ end }}
           {{ else if $feat.Description }}
             "description": "{{ $feat.Description }}",

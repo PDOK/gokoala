@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 )
@@ -58,24 +59,22 @@ func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, ex
 }
 
 func (p *Profile) mapRelationValue(columnValue any, formatAsURL bool, relationName string) any {
-	valAsString, ok := columnValue.(string)
-	if !ok {
+	featureRelation := p.schema.findFeatureRelation(relationName)
+	if featureRelation == nil {
+		log.Printf("Warning: relation %s not found in schema", relationName)
 		return nil
 	}
-	values := strings.Split(valAsString, ",")
 
+	values := strings.Split(fmt.Sprintf("%v", columnValue), ",")
 	result := make([]string, 0, len(values))
 	for _, v := range values {
 		if formatAsURL {
-			featureRelation := p.schema.findFeatureRelation(relationName)
-			if featureRelation != nil {
-				v = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, v)
-			}
+			v = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, v)
 		}
 		result = append(result, v)
 	}
 
-	if len(result) == 1 {
+	if !featureRelation.IsArray {
 		return result[0]
 	}
 	return result

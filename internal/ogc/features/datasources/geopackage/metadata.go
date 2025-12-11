@@ -231,13 +231,32 @@ func readSchema(db *sqlx.DB, table common.Table, fidColumn, externalFidColumn st
 			return nil, err
 		}
 
+		relation := d.NewFeatureRelation(table.Name, columnName, externalFidColumn, collections)
+		if relation != nil {
+			// when configured using config file, add as a new field
+			if relation.IsDerivedFromConfig {
+				relationType := columnType
+				if relation.IsArray {
+					relationType = d.ArrayType
+				}
+				fields = append(fields, d.Field{
+					Name:              relation.Name,
+					Type:              relationType,
+					Description:       colDescription,
+					IsRequired:        colNotNull == "1",
+					IsPrimaryGeometry: columnName == table.GeometryColumnName,
+					FeatureRelation:   relation,
+				})
+				relation = nil
+			}
+		}
 		fields = append(fields, d.Field{
 			Name:              columnName,
 			Type:              columnType,
 			Description:       colDescription,
 			IsRequired:        colNotNull == "1",
 			IsPrimaryGeometry: columnName == table.GeometryColumnName,
-			FeatureRelation:   d.NewFeatureRelation(table.Name, columnName, externalFidColumn, collections),
+			FeatureRelation:   relation,
 		})
 	}
 	schema, err := d.NewSchema(fields, fidColumn, externalFidColumn)

@@ -22,6 +22,9 @@ type FeatureRelation struct {
 
 	// The true relation can point to multiple features, false when it points to a single feature.
 	IsArray bool
+
+	// True when the relation is configured in based on this application's config file, false when configured in the datasource.
+	IsDerivedFromConfig bool
 }
 
 func NewFeatureRelation(table string, name, externalFidColumn string, collections config.GeoSpatialCollections) *FeatureRelation {
@@ -33,9 +36,10 @@ func NewFeatureRelation(table string, name, externalFidColumn string, collection
 		for _, relation := range collection.Features.Relations {
 			if relation.Columns.Source == name {
 				return &FeatureRelation{
-					Name:         relation.Name(),
-					CollectionID: relation.RelatedCollection,
-					IsArray:      relation.Junction.Name != "",
+					Name:                relation.Name(),
+					CollectionID:        relation.RelatedCollection,
+					IsArray:             relation.Junction.Name != "",
+					IsDerivedFromConfig: true,
 				}
 			}
 		}
@@ -51,8 +55,9 @@ func NewFeatureRelation(table string, name, externalFidColumn string, collection
 	}
 	relationName := newFeatureRelationName(name, externalFidColumn)
 	return &FeatureRelation{
-		Name:         relationName,
-		CollectionID: findReferencedCollection(collectionNames, relationName),
+		Name:                relationName,
+		CollectionID:        findReferencedCollection(collectionNames, relationName),
+		IsDerivedFromConfig: false,
 	}
 }
 

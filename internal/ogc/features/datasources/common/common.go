@@ -114,7 +114,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 	case table.Schema != nil:
 		// select all columns according to the table schema
 		for _, field := range table.Schema.Fields {
-			if field.Name != table.GeometryColumnName {
+			if field.Name != table.GeometryColumnName && !field.ExcludeRelationFromSelect() {
 				columns.Set(field.Name, struct{}{})
 			}
 		}
