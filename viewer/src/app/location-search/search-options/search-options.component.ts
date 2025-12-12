@@ -1,5 +1,4 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core'
-import { CommonModule } from '@angular/common'
 
 import { CollectionsService } from '../../api/services'
 import { CollectionLink, Collection } from '../../api/models'
@@ -15,7 +14,7 @@ type ActiveCollection = {
 
 @Component({
   selector: 'app-search-options',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './search-options.component.html',
   styleUrl: './search-options.component.css',
 })

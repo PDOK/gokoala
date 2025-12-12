@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common'
 import { Component, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
@@ -10,7 +9,7 @@ import { NGXLogger } from 'ngx-logger'
   selector: 'app-legend-view',
   templateUrl: './legend-view.component.html',
   styleUrls: ['./legend-view.component.css'],
-  imports: [CommonModule, LegendItemComponent],
+  imports: [LegendItemComponent],
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {

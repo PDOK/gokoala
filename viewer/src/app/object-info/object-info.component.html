@@ -1,17 +1,21 @@
 <div class="objectinfo" tabindex="0">
-  <table class="featuretable" *ngIf="getFeatureProperties().length > 0">
-    <caption class="featuretablecaption">
-      Object Informatie:
-    </caption>
-    <thead>
-      <th id="Veld">Veld</th>
-      <th id="Waarde">Waarde</th>
-    </thead>
-    <tbody>
-      <tr *ngFor="let f of getFeatureProperties()">
-        <td>{{ f.title }}</td>
-        <td>{{ f.value }}</td>
-      </tr>
-    </tbody>
-  </table>
+  @if (getFeatureProperties().length > 0) {
+    <table class="featuretable">
+      <caption class="featuretablecaption">
+        Object Informatie:
+      </caption>
+      <thead>
+        <th id="Veld">Veld</th>
+        <th id="Waarde">Waarde</th>
+      </thead>
+      <tbody>
+        @for (f of getFeatureProperties(); track f) {
+          <tr>
+            <td>{{ f.title }}</td>
+            <td>{{ f.value }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 </div>

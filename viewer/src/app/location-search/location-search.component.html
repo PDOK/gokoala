@@ -17,20 +17,24 @@
     <app-search-options [url]="url" [searchParams]="searchParams" (searchParamsEvent)="paramChanged($event)"> </app-search-options>
   </div>
 
-  <div *ngIf="results">
-    <div role="list" *ngFor="let r of getResults(results | async)">
-      <div role="listitem">
-        <button
-          class="result-button"
-          part="rbutton"
-          title="{{ getProperty(r, 'collectionId') }}: {{ getDisplayname(r) }}"
-          (mouseover)="selectResultHover(r)"
-          (focus)="selectResultHover(r)"
-          (click)="selectResultClick(r)">
-          <div [innerHTML]="getHighLight(r) | safeHtml"></div>
-          <div></div>
-        </button>
-      </div>
+  @if (results) {
+    <div>
+      @for (r of getResults(results | async); track r) {
+        <div role="list">
+          <div role="listitem">
+            <button
+              class="result-button"
+              part="rbutton"
+              title="{{ getProperty(r, 'collectionId') }}: {{ getDisplayname(r) }}"
+              (mouseover)="selectResultHover(r)"
+              (focus)="selectResultHover(r)"
+              (click)="selectResultClick(r)">
+              <div [innerHTML]="getHighLight(r) | safeHtml"></div>
+              <div></div>
+            </button>
+          </div>
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>
