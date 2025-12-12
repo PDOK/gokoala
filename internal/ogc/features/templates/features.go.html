@@ -159,8 +159,8 @@
     {{ if .Params.ShowViewer }}
     <div class="col-md-6 col-sm-12">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
-        <script type="module" src="view-component/main.js"></script>
-        <script src="view-component/polyfills.js"></script>
+        <script type="module" src="http://localhost:4200/main.js"></script>
+        <script src="http://localhost:4200/polyfills.js"></script>
 
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}

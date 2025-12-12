@@ -13,7 +13,8 @@
     "cypress": "export CYPRESS_REMOTE_DEBUGGING_PORT=9222; npx cypress open",
     "format": "npx prettier --write .",
     "upgrade": "ng update @angular/cli @angular/core angular-cli-ghpages @angular-devkit/build-angular @angular/elements @angular-eslint/eslint-plugin @angular-eslint/eslint-plugin-template @angular-eslint/schematics --force && npm update && npm audit fix --force",
-    "bundle-size": "ng build && esbuild-visualizer --metadata ./dist/view-component/stats.json"
+    "bundle-size": "ng build && esbuild-visualizer --metadata ./dist/view-component/stats.json",
+    "apigen1": "ng-openapi-gen --services true --input https://api.pdok.nl/bzk/location-api/autocomplete/v1-preprod/api?f=json --output ./src/app/api"
   },
   "private": true,
   "dependencies": {
@@ -24,7 +25,6 @@
     "@angular/forms": "^18.2.2",
     "@angular/platform-browser": "18.2.2",
     "@angular/platform-browser-dynamic": "18.2.2",
-    "bootstrap": "^5.3.7",
     "ngx-logger": "^5.0.12",
     "ol": "^9.2.4",
     "ol-mapbox-style": "^12.3.5",

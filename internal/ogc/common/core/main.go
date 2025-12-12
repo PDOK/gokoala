@@ -113,15 +113,6 @@ func (c *CommonCore) apiAsJSON(w http.ResponseWriter, r *http.Request) {
 	c.engine.Serve(w, r, engine.ServeContentType(engine.MediaTypeOpenAPI), engine.ServeOutput(c.engine.OpenAPI.SpecJSON))
 }
 
-func (c *CommonCore) Conformance() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		key := engine.NewTemplateKey(
-			templatesDir+"conformance.go."+c.engine.CN.NegotiateFormat(r),
-			c.engine.WithNegotiatedLanguage(w, r))
-		c.engine.Serve(w, r, engine.ServeTemplate(key))
-	}
-}
-
 func (c *CommonCore) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := engine.NewTemplateKey(templatesDir+"search.go.html", c.engine.WithNegotiatedLanguage(w, r))
