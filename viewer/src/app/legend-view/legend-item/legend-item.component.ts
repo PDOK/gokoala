@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
 import { Feature, Map as OLMap, VectorTile, View } from 'ol'
-import { Feature, Map as OLMap, VectorTile, View } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
 import { getCenter } from 'ol/extent'
 import { MVT } from 'ol/format'

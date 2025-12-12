@@ -129,6 +129,7 @@ export class FeatureService {
           dataProjection: dataproj,
           featureProjection: visualproj,
         })
+        return features as FeatureLike[]
       }),
       catchError(error => {
         this.logger.error('Error fetching features:', error)
