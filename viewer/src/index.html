@@ -48,7 +48,13 @@
       </div>
 
       <div class="box">
-        <app-feature-view id="featureview" projection="CRS84" background-map="BRT" show-bounding-box-button="false"> </app-feature-view>
+        <app-feature-view
+          id="featureview"
+          projection="CRS84"
+          background-map="BRT"
+          initial-background="Visible"
+          show-bounding-box-button="false">
+        </app-feature-view>
       </div>
     </div>
     <div>
@@ -57,6 +63,8 @@
   </body>
   <script type="text/javascript">
     function load() {
+      featureview.style.visibility = 'visible'
+
       locationsearch.addEventListener('activeFeatureHovered', e => {
         console.log('activeFeatureHovered')
         console.log(JSON.stringify(e.detail))
@@ -72,8 +80,6 @@
         featureview.style.visibility = 'visible'
       })
 
-      featureview.style.visibility = 'hidden'
-
       locationsearch.addEventListener('activeFeatureSelected', e => {
         console.log('activeFeatureSelected')
         console.log(JSON.stringify(e.detail))
@@ -82,7 +88,7 @@
 
         console.log('href selected ' + selectedFeature.getProperties().href)
         featureview.setAttribute('items-url', feature.getProperties().href)
-        featureview.style.visibility = 'visible'
+
         featureview.drawFeature = selectedFeature
       })
 

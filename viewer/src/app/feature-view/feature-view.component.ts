@@ -1,4 +1,14 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+} from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { defaults as defaultControls } from 'ol/control'
@@ -46,7 +56,7 @@ export type BackgroundMap = 'BRT' | 'OSM'
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
-export class FeatureViewComponent implements OnChanges, AfterViewInit {
+export class FeatureViewComponent implements OnChanges, OnInit, AfterViewInit {
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
   private _drawFeature: FeatureLike | undefined = undefined
@@ -86,7 +96,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() set drawFeature(drawfeature: RenderFeature | undefined) {
     this._drawFeature = drawfeature
   }
-
+  _background_loaded: boolean = false
+  @Input() initialBackground: 'Visible' | 'Hidden' = 'Hidden'
   @Output() box = new EventEmitter<string>()
   @Output() activeFeature = new EventEmitter<FeatureLike>()
   mapHeight = 400
@@ -104,6 +115,18 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     private featureService: FeatureService,
     private logger: NGXLogger
   ) {}
+  ngOnInit(): void {
+    if (this.initialBackground === 'Visible') {
+      this.init()
+      const nlview = new View({
+        projection: getRijksdriehoek().projection,
+        center: [155000, 463000],
+        zoom: 2,
+      })
+      this.map.setView(nlview)
+      this.loadBackground()
+    }
+  }
 
   private isFeatureLike(value: FeatureLike | undefined) {
     return value instanceof Feature || value instanceof RenderFeature
