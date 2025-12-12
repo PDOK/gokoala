@@ -1,0 +1,29 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "A1",
+    "surface": "rock",
+    "width": null
+  },
+  "id": "2",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as JSON",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/road_extras/items/2?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/road_extras/items/2?f=html"
+    },
+    {
+      "rel": "collection",
+      "title": "The collection to which this feature belongs",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/road_extras?f=json"
+    }
+  ]
+}

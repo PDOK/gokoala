@@ -6,6 +6,7 @@ func Keys[M ~map[K]V, K comparable, V any](input M) []K {
 	for k := range input {
 		output = append(output, k)
 	}
+
 	return output
 }
 
@@ -15,6 +16,7 @@ func Inverse(input map[string]string) map[string]string {
 	for k, v := range input {
 		output[v] = k
 	}
+
 	return output
 }
 
@@ -24,5 +26,6 @@ func Cast[M ~map[K]V, K comparable, V any](input M) map[K]any {
 	for k, v := range input {
 		output[k] = v
 	}
+
 	return output
 }

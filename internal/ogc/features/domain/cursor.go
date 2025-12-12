@@ -16,8 +16,11 @@ const (
 	separator = '|'
 )
 
-// Cursors holds next and previous cursor. Note that we use
-// 'cursor-based pagination' as opposed to 'offset-based pagination'
+// Cursors hold the next and previous cursor. Note that we use
+// 'cursor-based pagination' as opposed to 'offset-based pagination'.
+//
+// The cursor is based on the fid (feature id) of the underlying feature table. This fid is required to be a unique
+// and (auto)incrementing integer. The fid is not required to be contagious, gaps in the fid sequence are allowed.
 type Cursors struct {
 	Prev EncodedCursor
 	Next EncodedCursor
@@ -26,10 +29,10 @@ type Cursors struct {
 	HasNext bool
 }
 
-// EncodedCursor is a scrambled string representation of the fields defined in DecodedCursor
+// EncodedCursor is a scrambled string representation of the fields defined in DecodedCursor.
 type EncodedCursor string
 
-// DecodedCursor the cursor values after decoding EncodedCursor
+// DecodedCursor the cursor values after decoding EncodedCursor.
 type DecodedCursor struct {
 	FiltersChecksum []byte
 	FID             int64
@@ -57,11 +60,13 @@ func encodeCursor(fid int64, filtersChecksum []byte) EncodedCursor {
 	fidAsBytes := big.NewInt(fid).Bytes()
 
 	// format of the cursor: <encoded fid><separator><encoded checksum>
-	return EncodedCursor(base64.RawURLEncoding.EncodeToString(fidAsBytes) + string(separator) + base64.RawURLEncoding.EncodeToString(filtersChecksum))
+	return EncodedCursor(base64.RawURLEncoding.EncodeToString(fidAsBytes) +
+		string(separator) +
+		base64.RawURLEncoding.EncodeToString(filtersChecksum))
 }
 
 // Decode turns encoded cursor into DecodedCursor and verifies that
-// the checksum of query params that act as filters hasn't changed
+// the checksum of query params that act as filters hasn't changed.
 func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 	value, err := neturl.QueryUnescape(string(c))
 	if err != nil || value == "" {
@@ -72,12 +77,14 @@ func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 	encoded := strings.Split(value, string(separator))
 	if len(encoded) < 2 {
 		log.Printf("cursor '%s' doesn't contain expected separator %c", value, separator)
+
 		return DecodedCursor{filtersChecksum, 0}
 	}
 	decodedFid, fidErr := base64.RawURLEncoding.DecodeString(encoded[0])
 	decodedChecksum, checksumErr := base64.RawURLEncoding.DecodeString(encoded[1])
 	if fidErr != nil || checksumErr != nil {
 		log.Printf("decoding cursor value '%s' failed, defaulting to first page", value)
+
 		return DecodedCursor{filtersChecksum, 0}
 	}
 
@@ -91,6 +98,7 @@ func (c EncodedCursor) Decode(filtersChecksum []byte) DecodedCursor {
 	// checksum
 	if !bytes.Equal(decodedChecksum, filtersChecksum) {
 		log.Printf("filters in query params have changed during pagination, resetting to first page")
+
 		return DecodedCursor{filtersChecksum, 0}
 	}
 

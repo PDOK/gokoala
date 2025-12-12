@@ -1,0 +1,8 @@
+:root {
+    --primary-color: {{ .Theme.Color.Primary }};
+    --secondary-color: {{ .Theme.Color.Secondary }};
+    --primary-color-30: color-mix(in srgb, var(--primary-color) 30%, white);
+    --link-color: var(--bs-white);
+    --button-color: var(--primary-color);
+    --bs-body-color: var(--primary-color);
+}

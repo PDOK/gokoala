@@ -1,7 +1,3 @@
-FROM docker.io/golang:1.24-bookworm AS build-env
-ADD hack/build-controller-gen.sh /build-controller-gen.sh
-RUN /build-controller-gen.sh
-
-FROM docker.io/golang:1.24-bookworm
-COPY --from=build-env /bin/controller-gen /bin/controller-gen
-ENTRYPOINT ["/bin/controller-gen"]
+FROM docker.io/golang:1.25-bookworm AS build-env
+RUN go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0
+ENTRYPOINT ["controller-gen"]

@@ -13,35 +13,14 @@ import (
 )
 
 const (
+	AppName      = "GoKoala"
 	CookieMaxAge = 60 * 60 * 24
 )
-
-// NewConfig read YAML config file, required to start GoKoala
-func NewConfig(configFile string) (*Config, error) {
-	yamlData, err := os.ReadFile(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file %w", err)
-	}
-
-	// expand environment variables
-	yamlData = []byte(os.ExpandEnv(string(yamlData)))
-
-	var config *Config
-	err = yaml.Unmarshal(yamlData, &config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
-	}
-	err = validateLocalPaths(config)
-	if err != nil {
-		return nil, fmt.Errorf("validation error in config file, error: %w", err)
-	}
-	return config, nil
-}
 
 // +kubebuilder:object:generate=true
 type Config struct {
 	// Version of the API. When releasing a new version which contains backwards-incompatible changes, a new major version must be released.
-	Version string `yaml:"version" json:"version" validate:"required,semver"`
+	Version string `yaml:"version" json:"version" validate:"required,semver" default:"1.0.0"`
 
 	// Human friendly title of the API. Don't include "OGC API" in the title, this is added automatically.
 	Title string `yaml:"title" json:"title"  validate:"required"`
@@ -70,7 +49,7 @@ type Config struct {
 	OgcAPI OgcAPI `yaml:"ogcApi" json:"ogcApi" validate:"required"`
 
 	// Order in which collections (containing features, tiles, 3d tiles, etc.) should be returned.
-	// When not specified collections are returned in alphabetic order.
+	// When not specified, collections are returned in alphabetic order.
 	// +optional
 	OgcAPICollectionOrder []string `yaml:"collectionOrder,omitempty" json:"collectionOrder,omitempty"`
 
@@ -110,8 +89,32 @@ type Config struct {
 	Resources *Resources `yaml:"resources,omitempty" json:"resources,omitempty"`
 }
 
-// UnmarshalYAML hooks into unmarshalling to set defaults and validate config
-func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
+// NewConfig read YAML config file, required to start GoKoala.
+func NewConfig(configFile string) (*Config, error) {
+	yamlData, err := os.ReadFile(configFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file %w", err)
+	}
+
+	// expand environment variables
+	yamlData = []byte(os.ExpandEnv(string(yamlData)))
+
+	var config *Config
+	err = yaml.Unmarshal(yamlData, &config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
+	}
+
+	err = validateLocalPaths(config)
+	if err != nil {
+		return nil, fmt.Errorf("validation error in config file, error: %w", err)
+	}
+
+	return config, nil
+}
+
+// UnmarshalYAML hooks into unmarshalling to set defaults and validate config.
+func (c *Config) UnmarshalYAML(unmarshal func(any) error) error {
 	type cfg Config
 	if err := unmarshal((*cfg)(c)); err != nil {
 		return err
@@ -124,6 +127,7 @@ func (c *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err := validate(c); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -228,6 +232,7 @@ func setDefaults(config *Config) error {
 	if config.OgcAPI.Tiles != nil {
 		config.OgcAPI.Tiles.Defaults()
 	}
+
 	return nil
 }
 
@@ -240,18 +245,7 @@ func validate(config *Config) error {
 	}
 	err = v.Struct(config)
 	if err != nil {
-		var ive *validator.InvalidValidationError
-		if ok := errors.Is(err, ive); ok {
-			return fmt.Errorf("failed to validate config: %w", err)
-		}
-		var errMessages []string
-		var valErrs validator.ValidationErrors
-		if errors.As(err, &valErrs) {
-			for _, valErr := range valErrs {
-				errMessages = append(errMessages, valErr.Error()+"\n")
-			}
-		}
-		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+		return formatValidationErr(err)
 	}
 
 	// custom validations
@@ -266,6 +260,7 @@ func validate(config *Config) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -287,6 +282,7 @@ func validateLocalPaths(config *Config) error {
 	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.StylesDir) {
 		return errors.New("stylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
 	}
+
 	return nil
 }
 
@@ -310,10 +306,29 @@ func validateConfiguredResources(config *Config) error {
 			}
 		}
 	}
+
 	return nil
 }
 
 func isExistingLocalDir(path string) bool {
 	fileInfo, err := os.Stat(path)
+
 	return err == nil && fileInfo.IsDir()
+}
+
+func formatValidationErr(err error) error {
+	var ive *validator.InvalidValidationError
+	if ok := errors.Is(err, ive); ok {
+		return fmt.Errorf("failed to validate config: %w", err)
+	}
+	var errMessages []string
+	var valErrs validator.ValidationErrors
+	if errors.As(err, &valErrs) {
+		for _, valErr := range valErrs {
+			errMsg := fmt.Sprintf("field: '%s', value: '%v', error: %v\n", valErr.Field(), valErr.Value(), valErr.Error())
+			errMessages = append(errMessages, errMsg)
+		}
+	}
+
+	return fmt.Errorf("invalid config provided:\n%v", errMessages)
 }

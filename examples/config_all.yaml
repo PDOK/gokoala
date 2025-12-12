@@ -101,11 +101,16 @@ ogcApi:
         geopackage:
           local:
             file: ./examples/resources/addresses-crs84.gpkg
+            externalFid: external_fid
     collections:
       - id: addresses  # same collection as the geovolumes/tiles
         metadata: *addressMetadata
         web:
           urlAsHyperlink: true
+        filters:
+          properties:
+            - name: locator_designator_addressnumberextension
+              indexRequired: false
       - id: addresses2
         tableName: addresses
         metadata:

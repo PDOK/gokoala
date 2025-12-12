@@ -1,0 +1,69 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "http://localhost:8080/collections/foo/schema",
+ "title": "Foooo",
+ "description": "Foooo",
+ "type": "object",
+ "required": [
+  "id"
+ ],
+ "properties": {
+  "id": {
+   "readOnly": true,
+   "x-ogc-role": "id",
+   "description": "De unieke identificatie van dit feature.",
+   "type": "integer",
+   "minimum": 0
+  },
+  "geometry": {
+   "x-ogc-role": "primary-geometry",
+   "format": "geometry-point"
+  },
+  "nummer_id": {
+   "type": "string"
+  },
+  "straatnaam": {
+   "description": "This is a placeholder that describes the straatnaam field",
+   "type": "string"
+  },
+  "huisnummer": {
+   "type": "integer"
+  },
+  "huisletter": {
+   "description": "This is a placeholder that describes the huisletter field.",
+   "type": "string"
+  },
+  "toevoeging": {
+   "type": "string"
+  },
+  "woonplaats": {
+   "type": "string"
+  },
+  "postcode": {
+   "type": "string"
+  },
+  "type": {
+   "type": "string"
+  },
+  "status": {
+   "type": "string"
+  },
+  "datum_strt": {
+   "type": "string"
+  },
+  "datum_eind": {
+   "type": "string"
+  },
+  "document": {
+   "description": "This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.This is a multi line placeholder that describes the document field.",
+   "type": "string"
+  },
+  "datum_doc": {
+   "type": "string"
+  },
+  "rdf_seealso": {
+   "type": "string"
+  }
+ },
+ "additionalProperties": true
+}

@@ -1,0 +1,79 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+<hgroup>
+    <h1 class="title h2" id="title">{{ .Config.Title }} - {{ .Params.CollectionTitle }} - Schema</h1>
+</hgroup>
+<div class="row py-3">
+    <div class="col-md-12">
+        <p>
+            {{ i18n "SchemaDescription" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/schema?f=json" aria-label="Open JSON Schema">JSON Schema</a>.
+        </p>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">{{ i18n "FieldName" }}</th>
+                    <th scope="col">{{ i18n "DataType" }}</th>
+                    <th scope="col">{{ i18n "Required" }}</th>
+                    <th scope="col">{{ i18n "DescriptionLabel" }}</th>
+                </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="text-nowrap">id</td>
+                {{ if .Params.HasExternalFid }}
+                    <td class="text-nowrap">uuid</td>
+                {{ else }}
+                    <td class="text-nowrap">integer</td>
+                {{ end }}
+                <td class="text-nowrap">{{ i18n "RequiredYes"}}</td>
+                <td class="text-wrap">{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "FeatureIdStableOverTime"}}{{ end }}</td>
+            </tr>
+            {{ range $feat := .Params.Fields }}
+                {{ $typeFormat := $feat.ToTypeFormat }}
+
+                {{/* Skip feature id and external feature id fields, since we don't include those directly. We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
+                {{ if $feat.IsFid }}
+                    {{ continue }}
+                {{ end }}
+                {{ if $feat.IsExternalFid }}
+                    {{ continue }}
+                {{ end }}
+
+                {{ if $feat.IsPrimaryGeometry }}
+                    {{/* Just like 'id', we call the geometry field always 'geometry' regardless of the column name in the data source */}}
+                    <tr>
+                        <td class="text-nowrap">geometry</td>
+                        <td class="text-nowrap">{{ $typeFormat.Type }}</td>
+                        <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
+                        <td class="text-wrap">{{ $feat.Description }}</td>
+                    </tr>
+                {{ else }}
+                    <tr>
+                        <td class="text-nowrap">
+                        {{ if $feat.FeatureRelation }}
+                            {{ $feat.FeatureRelation.Name }}
+                        {{ else }}
+                            {{ $feat.Name }}
+                        {{ end }}
+                        </td>
+                        <td class="text-nowrap">{{ if $typeFormat.Format }}{{ $typeFormat.Format }}{{ else }}{{ $typeFormat.Type }}{{ end }}</td>
+                        <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
+                        <td class="text-wrap">
+                            {{ if $feat.IsPrimaryIntervalStart }}
+                                {{ i18n "FeatureIntervalStartDescription"}}<br/>
+                            {{ else if $feat.IsPrimaryIntervalEnd }}
+                                {{ i18n "FeatureIntervalEndDescription"}}<br/>
+                            {{ else if $feat.FeatureRelation }}
+                                {{ i18n "FeatureRelationDescription"}}<br/>
+                            {{ end }}
+
+                            {{ $feat.Description }}
+                        </td>
+                    </tr>
+                {{ end }}
+            {{ end }}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{end}}

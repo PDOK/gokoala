@@ -51,6 +51,9 @@
                   "type": "string"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           {{block "problems" . }}{{end}}
@@ -99,6 +102,9 @@
                   "type": "string"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           {{block "problems" . }}{{end}}
@@ -200,13 +206,13 @@
               "$ref": "#/components/schemas/keyword"
             }
           },
-          "attribution": {
-            "description": "The provider of the source data for the collection.",
-            "type": "string",
-            "example": "United Nations"
-          },
           "extent": {
             "$ref": "#/components/schemas/extent"
+          },
+          "itemType": {
+            "description": "indicator about the type of the items in a collection. Example values: 'feature', 'record', 'attribute'. The default value is 'feature'",
+            "type": "string",
+            "default": "feature"
           },
           "crs": {
             "description": "The list of coordinate reference systems supported by the service. The first item is the default coordinate reference system.",
@@ -502,52 +508,6 @@
               "type": "application/vnd.ogc.sld+xml;version=1.0"
             }
           ]
-        }
-      },
-      "link": {
-        "type": "object",
-        "required": [
-          "href"
-        ],
-        "properties": {
-          "href": {
-            "type": "string",
-            "example": "http://data.example.com/buildings/123"
-          },
-          "rel": {
-            "type": "string",
-            "example": "alternate"
-          },
-          "type": {
-            "type": "string",
-            "example": "application/geo+json"
-          },
-          "hreflang": {
-            "type": "string",
-            "example": "en"
-          },
-          "title": {
-            "type": "string",
-            "example": "Trierer Strasse 70, 53115 Bonn"
-          },
-          "length": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "templated": {
-            "description": "Use `true` if the `href` property contains a URI template with variables that needs to be substituted by values to get a URI",
-            "type": "boolean",
-            "default": false,
-            "example": false
-          },
-          "types": {
-            "description": "Without this parameter you should repeat a link for each media type the resource is offered. \nAdding this parameter allows listing alternative media types that you can use for this resource. The value in the `type` parameter becomes the recommended media type.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "example": "image/png, image/jpeg, image/tiff"
-          }
         }
       },
       "keyword": {

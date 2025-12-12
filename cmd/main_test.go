@@ -13,6 +13,7 @@ import (
 	gokoalaEngine "github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -25,7 +26,7 @@ func init() {
 	}
 }
 
-func Test_newRouter(t *testing.T) {
+func TestBuildingBlocks(t *testing.T) {
 	tests := []struct {
 		name       string
 		configFile string
@@ -64,9 +65,33 @@ func Test_newRouter(t *testing.T) {
 		},
 		{
 			name:       "Serve multiple Feature Tables from single GeoPackage",
-			configFile: "internal/ogc/features/testdata/config_features_bag_multiple_feature_tables.yaml",
+			configFile: "internal/ogc/features/testdata/geopackage/config_features_bag_multiple_feature_tables.yaml",
 			apiCall:    "http://localhost:8180/collections?f=json",
 			wantBody:   "internal/ogc/features/testdata/expected_multiple_feature_tables_single_geopackage.json",
+		},
+		{
+			name:       "Serve collections with feature and attributes",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections?f=json",
+			wantBody:   "internal/ogc/features/testdata/expected_collections_features_and_attributes.json",
+		},
+		{
+			name:       "Serve features collection",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections/roads?f=json",
+			wantBody:   "internal/ogc/features/testdata/expected_collection_features.json",
+		},
+		{
+			name:       "Serve attributes collection",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections/road_extras?f=json",
+			wantBody:   "internal/ogc/features/testdata/expected_collection_attributes.json",
+		},
+		{
+			name:       "Serve attributes collection as HTML",
+			configFile: "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
+			apiCall:    "http://localhost:8180/collections/road_extras?f=html",
+			wantBody:   "internal/ogc/features/testdata/expected_collection_attributes_snippet.html",
 		},
 		{
 			name:       "Serve top-level OGC API Tiles",
@@ -108,8 +133,8 @@ func Test_newRouter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			eng, err := gokoalaEngine.NewEngine(tt.configFile, "", false, true)
-			assert.NoError(t, err)
+			eng, err := gokoalaEngine.NewEngine(tt.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			ogc.SetupBuildingBlocks(eng)
 
 			recorder := httptest.NewRecorder()

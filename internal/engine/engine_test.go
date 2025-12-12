@@ -8,14 +8,15 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/go-chi/chi/v5"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -30,15 +31,15 @@ func init() {
 
 func TestEngine_ServePage_LandingPage(t *testing.T) {
 	// given
-	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "", false, true)
-	assert.NoError(t, err)
+	engine, err := NewEngine("internal/engine/testdata/config_minimal.yaml", "internal/engine/testdata/test_theme.yaml", "", false, true)
+	require.NoError(t, err)
 
 	templateKey := NewTemplateKey("internal/ogc/common/core/templates/landing-page.go.json")
 	engine.RenderTemplates("/", nil, templateKey)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		engine.ServePage(w, r, templateKey)
+		engine.Serve(w, r, ServeTemplate(templateKey))
 	})
 
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/", nil)
@@ -74,7 +75,7 @@ func TestEngine_ReverseProxy(t *testing.T) {
 
 	// then
 	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, rec.Body.String(), "Mock response, received header https://api.foobar.example/")
+	assert.Equal(t, "Mock response, received header https://api.foobar.example/", rec.Body.String())
 }
 
 func TestEngine_ReverseProxyAndValidate(t *testing.T) {
@@ -118,10 +119,13 @@ func TestEngine_ReverseProxy_Status204(t *testing.T) {
 }
 
 type mockShutdownHook struct {
+	mutex  sync.Mutex
 	called bool
 }
 
 func (m *mockShutdownHook) Shutdown() {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 	m.called = true
 }
 
@@ -157,10 +161,13 @@ func TestEngine_Start(t *testing.T) {
 
 			// Wait for the server to shut down and check that there was no error
 			err := <-errChan
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			// Check that the shutdown hook was called
-			assert.True(t, mockHook.called)
+			mockHook.mutex.Lock()
+			called := mockHook.called
+			mockHook.mutex.Unlock()
+			assert.True(t, called)
 		})
 	}
 }
@@ -175,14 +182,17 @@ func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
 		OpenAPI: openAPI,
 	}
 	targetURL, _ := url.Parse(mockTargetServer.URL)
+
 	return engine, targetURL
 }
 
 func makeAPICall(t *testing.T, mockTargetServer string) (*httptest.ResponseRecorder, *http.Request) {
+	t.Helper()
 	rec := httptest.NewRecorder()
 	req, err := http.NewRequest(http.MethodGet, mockTargetServer+"/some/path", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	return rec, req
 }

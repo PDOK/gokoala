@@ -1,17 +1,16 @@
 @charset "UTF-8";
 
-/* see https://getbootstrap.com/docs/5.2/customize/css-variables/#root-variables */
-:root {
-    --bs-blue: #1a1e4f;
-    --bs-blue-30: #676b9c; /* --bs-blue, 30% lighter */
-    --lightblue: #add8e6;
-    --bs-body-color: var(--bs-blue);
-}
-
 /* navbar */
 .navbar {
-    background-color: var(--bs-blue);
+    background-color: var(--primary-color);
 }
+
+.logo {
+    width: 170px;
+    height: 65px;
+    object-fit: contain;
+}
+
 .navbar .navbar-outputs {
     --bs-breadcrumb-divider: '|'
 }
@@ -20,19 +19,19 @@
     color: var(--bs-white);
 }
 .navbar .breadcrumb .breadcrumb-item a:hover {
-    color: var(--lightblue);
+    color: var(--secondary-color);
 }
 
 /* cards */
 .card-header {
     color: var(--bs-white);
-    background-color: var(--bs-blue);
+    background-color: var(--primary-color);
 }
 .card-header a {
-    color: var(--bs-white);
+    color: var(--link-color);
 }
 .card-header a:hover {
-    color: var(--lightblue);
+    color: var(--secondary-color);
 }
 
 hgroup {
@@ -40,7 +39,7 @@ hgroup {
 }
 
 footer {
-    background-color: var(--bs-blue);
+    background-color: var(--primary-color);
 }
 
 /* tables */
@@ -58,21 +57,21 @@ td {
 }
 .table-striped>thead>tr>th {
     color: var(--bs-white);
-    background-color:  var(--bs-blue);
+    background-color:  var(--primary-color);
 }
 .table-striped>thead>tr>th a {
-    color: var(--bs-white);
+    color: var(--link-color);
 }
 .table-striped>thead>tr>th a:hover {
-    color: var(--lightblue);
+    color: var(--secondary-color);
 }
 
 .btn-primary {
-    --bs-btn-bg: var(--bs-blue);
+    --bs-btn-bg: var(--primary-color);
     --bs-btn-color: var(--bs-white);
-    --bs-btn-border-color: var(--bs-blue);
-    --bs-btn-hover-bg: var(--bs-blue-30);
-    --bs-btn-hover-border-color: var(--bs-blue-30);
+    --bs-btn-border-color: var(--primary-color);
+    --bs-btn-hover-bg: var(--primary-color-30);
+    --bs-btn-hover-border-color: var(--primary-color-30);
 }
 
 .vectortile-view {

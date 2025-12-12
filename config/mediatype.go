@@ -18,7 +18,7 @@ func (m MediaType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.String())
 }
 
-// UnmarshalJSON turn JSON into MediaType
+// UnmarshalJSON turn JSON into MediaType.
 func (m *MediaType) UnmarshalJSON(b []byte) error {
 	var s string
 	if err := json.Unmarshal(b, &s); err != nil {
@@ -29,16 +29,17 @@ func (m *MediaType) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	m.MediaType = mt
+
 	return nil
 }
 
 // MarshalYAML turns MediaType into YAML.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (m MediaType) MarshalYAML() (interface{}, error) {
-	return m.MediaType.String(), nil
+func (m MediaType) MarshalYAML() (any, error) {
+	return m.String(), nil
 }
 
-// UnmarshalYAML parses a string to MediaType
+// UnmarshalYAML parses a string to MediaType.
 func (m *MediaType) UnmarshalYAML(unmarshal func(any) error) error {
 	var s string
 	if err := unmarshal(&s); err != nil {
@@ -49,6 +50,7 @@ func (m *MediaType) UnmarshalYAML(unmarshal func(any) error) error {
 		return err
 	}
 	m.MediaType = mt
+
 	return nil
 }
 
@@ -64,5 +66,6 @@ func (m *MediaType) DeepCopy() *MediaType {
 	}
 	out := &MediaType{}
 	m.DeepCopyInto(out)
+
 	return out
 }

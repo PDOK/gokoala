@@ -29,6 +29,7 @@ const (
 	specPath          = templatesDir + "openapi/"
 	preamble          = specPath + "preamble.go.json"
 	problems          = specPath + "problems.go.json"
+	headers           = specPath + "headers.go.json"
 	commonCollections = specPath + "common-collections.go.json"
 	featuresSpec      = specPath + "features.go.json"
 	tilesSpec         = specPath + "tiles.go.json"
@@ -47,8 +48,42 @@ type OpenAPI struct {
 	extraOpenAPIFiles []string
 }
 
+// init once.
+func init() {
+	htmlRegex := regexp.MustCompile(HTMLRegex)
+
+	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
+		func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+			_ openapi3filter.EncodingFn) (any, error) {
+
+			data, err := io.ReadAll(body)
+			if err != nil {
+				return nil, errors.New("failed to read response body")
+			}
+			if !htmlRegex.Match(data) {
+				return nil, errors.New("response doesn't contain HTML")
+			}
+
+			return string(data), nil
+		})
+
+	for _, mediaType := range MediaTypeJSONFamily {
+		openapi3filter.RegisterBodyDecoder(mediaType,
+			func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+				_ openapi3filter.EncodingFn) (any, error) {
+				var value any
+				dec := json.NewDecoder(body)
+				dec.UseNumber()
+				if err := dec.Decode(&value); err != nil {
+					return nil, errors.New("response doesn't contain valid JSON")
+				}
+
+				return value, nil
+			})
+	}
+}
+
 func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAPIParams any) *OpenAPI {
-	setupRequestResponseValidation()
 	ctx := context.Background()
 
 	// order matters, see mergeSpecs for details.
@@ -91,38 +126,6 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	}
 }
 
-func setupRequestResponseValidation() {
-	htmlRegex := regexp.MustCompile(HTMLRegex)
-
-	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
-		func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
-			_ openapi3filter.EncodingFn) (any, error) {
-
-			data, err := io.ReadAll(body)
-			if err != nil {
-				return nil, errors.New("failed to read response body")
-			}
-			if !htmlRegex.Match(data) {
-				return nil, errors.New("response doesn't contain HTML")
-			}
-			return string(data), nil
-		})
-
-	for _, mediaType := range MediaTypeJSONFamily {
-		openapi3filter.RegisterBodyDecoder(mediaType,
-			func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
-				_ openapi3filter.EncodingFn) (any, error) {
-				var value any
-				dec := json.NewDecoder(body)
-				dec.UseNumber()
-				if err := dec.Decode(&value); err != nil {
-					return nil, errors.New("response doesn't contain valid JSON")
-				}
-				return value, nil
-			})
-	}
-}
-
 // mergeSpecs merges the given OpenAPI specs.
 //
 // Order matters! We start with the preamble, it is highest in rank and there's no way to override it.
@@ -159,6 +162,7 @@ func mergeSpecs(ctx context.Context, config *gokoalaconfig.Config, files []strin
 		resultSpecJSON = mergedJSON
 		resultSpec = loadSpec(loader, mergedJSON)
 	}
+
 	return resultSpec, resultSpecJSON
 }
 
@@ -177,6 +181,7 @@ func orderByOpenAPIConvention(output map[string]any) any {
 	for k, v := range output {
 		result.Set(k, v)
 	}
+
 	return result
 }
 
@@ -186,6 +191,7 @@ func loadSpec(loader *openapi3.Loader, mergedJSON []byte, fileName ...string) *o
 		log.Print(string(mergedJSON))
 		log.Fatalf("failed to load merged OpenAPI spec %s, due to %v", fileName, err)
 	}
+
 	return resultSpec
 }
 
@@ -203,18 +209,20 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 	if err != nil {
 		log.Fatalf("failed to setup OpenAPI router: %v", err)
 	}
+
 	return openAPIRouter
 }
 
 func renderOpenAPITemplate(config *gokoalaconfig.Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
-	files := []string{problems, file} // add problems template too since it's an "include" template
+	files := []string{problems, headers, file} // add problems and headers template too since it's an "include" template
 	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(files...))
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{Config: config, Params: params}); err != nil {
 		log.Fatalf("failed to render %s, error: %v", file, err)
 	}
+
 	return rendered.Bytes()
 }
 
@@ -230,15 +238,20 @@ func (o *OpenAPI) ValidateRequest(r *http.Request) error {
 			if errors.As(err, &schemaErr) && schemaErr.SchemaField == "maximum" {
 				return nil
 			}
+
 			return fmt.Errorf("request doesn't conform to OpenAPI spec: %w", err)
 		}
 	}
+
 	return nil
 }
 
 func (o *OpenAPI) ValidateResponse(contentType string, body []byte, r *http.Request) error {
 	requestValidationInput, _ := o.getRequestValidationInput(r)
 	if requestValidationInput != nil {
+		if contentType == "" {
+			contentType = MediaTypeJSON
+		}
 		responseHeaders := http.Header{HeaderContentType: []string{contentType}}
 		responseCode := 200
 
@@ -253,6 +266,7 @@ func (o *OpenAPI) ValidateResponse(contentType string, body []byte, r *http.Requ
 			return fmt.Errorf("response doesn't conform to OpenAPI spec: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -261,6 +275,7 @@ func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.Re
 	if err != nil {
 		log.Printf("route not found in OpenAPI spec for url %s (host: %s), "+
 			"skipping OpenAPI validation", r.URL, r.Host)
+
 		return nil, err
 	}
 	opts := &openapi3filter.Options{
@@ -269,6 +284,7 @@ func (o *OpenAPI) getRequestValidationInput(r *http.Request) (*openapi3filter.Re
 	opts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
 		return err.Reason
 	})
+
 	return &openapi3filter.RequestValidationInput{
 		Request:    r,
 		PathParams: pathParams,
@@ -291,5 +307,6 @@ func normalizeBaseURL(baseURL string) string {
 	serverURL, _ := url.Parse(baseURL)
 	result := strings.Replace(baseURL, serverURL.Scheme, "http", 1)
 	result = strings.Replace(result, serverURL.Path, "", 1)
+
 	return result
 }

@@ -38,6 +38,9 @@
                   {{- end -}}
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           {{block "problems" . }}{{end}}
@@ -66,10 +69,16 @@
                   "$ref" : "#/components/schemas/glTF"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           "204" : {
-            "description" : "Tile Not Found"
+            "description" : "Tile Not Found",
+            "headers" : {
+              {{block "headers" . }}{{end}}
+            }
           },
           {{block "problems" . }}{{end}}
         }
@@ -100,10 +109,16 @@
                   "$ref" : "#/components/schemas/binary"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           "204" : {
-            "description" : "Tile Not Found"
+            "description" : "Tile Not Found",
+            "headers" : {
+              {{block "headers" . }}{{end}}
+            }
           },
           {{block "problems" . }}{{end}}
         }
@@ -136,10 +151,16 @@
                   "$ref" : "#/components/schemas/binary"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           "204" : {
-            "description" : "Tile Not Found"
+            "description" : "Tile Not Found",
+            "headers" : {
+              {{block "headers" . }}{{end}}
+            }
           },
           {{block "problems" . }}{{end}}
         }

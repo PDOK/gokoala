@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/stretchr/testify/require"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"golang.org/x/text/language"
@@ -34,6 +35,9 @@ func init() {
 }
 
 func TestNewTiles(t *testing.T) {
+	// given
+	theme, err := config.NewTheme("internal/engine/testdata/test_theme.yaml")
+	require.NoError(t, err)
 	type args struct {
 		e *engine.Engine
 	}
@@ -65,7 +69,7 @@ func TestNewTiles(t *testing.T) {
 										},
 									},
 								},
-								HealthCheck: config.HealthCheck{Srs: "EPSG:28992", TilePath: &tilePath},
+								HealthCheck: config.HealthCheck{Enabled: ptrTo(true), Srs: "EPSG:28992", TilePath: &tilePath},
 							},
 						},
 						Styles: &config.OgcAPIStyles{
@@ -73,7 +77,7 @@ func TestNewTiles(t *testing.T) {
 							SupportedStyles: nil,
 						},
 					},
-				}, "", false, true),
+				}, theme, "", false, true),
 			},
 		},
 		{
@@ -100,7 +104,7 @@ func TestNewTiles(t *testing.T) {
 										},
 									},
 								},
-								HealthCheck: config.HealthCheck{Srs: "EPSG:28992", TilePath: &tilePath},
+								HealthCheck: config.HealthCheck{Enabled: ptrTo(false), Srs: "EPSG:28992", TilePath: &tilePath},
 							},
 						},
 						Styles: &config.OgcAPIStyles{
@@ -108,7 +112,7 @@ func TestNewTiles(t *testing.T) {
 							SupportedStyles: nil,
 						},
 					},
-				}, "", false, true),
+				}, theme, "", false, true),
 			},
 		},
 	}
@@ -313,8 +317,8 @@ func TestTiles_Tile(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.Tile(*newEngine.Config.OgcAPI.Tiles.DatasetTiles)
 			handler.ServeHTTP(rr, req)
@@ -466,8 +470,8 @@ func TestTiles_TileForCollection(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			geoDataTiles := map[string]config.Tiles{newEngine.Config.OgcAPI.Tiles.Collections[0].ID: newEngine.Config.OgcAPI.Tiles.Collections[0].Tiles.GeoDataTiles}
 			handler := tiles.TileForCollection(geoDataTiles)
@@ -525,8 +529,8 @@ func TestTile_TilesetsList(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TilesetsList()
 			handler.ServeHTTP(rr, req)
@@ -574,8 +578,8 @@ func TestTile_TilesetsListForCollection(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TilesetsListForCollection()
 			handler.ServeHTTP(rr, req)
@@ -659,8 +663,8 @@ func TestTile_Tileset(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.Tileset()
 			handler.ServeHTTP(rr, req)
@@ -749,8 +753,8 @@ func TestTile_TilesetForCollection(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TilesetForCollection()
 			handler.ServeHTTP(rr, req)
@@ -834,8 +838,8 @@ func TestTile_TilematrixSet(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TileMatrixSet()
 			handler.ServeHTTP(rr, req)
@@ -903,8 +907,8 @@ func TestTile_TilematrixSets(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
 			handler := tiles.TileMatrixSets()
 			handler.ServeHTTP(rr, req)
@@ -927,6 +931,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 
@@ -943,6 +948,7 @@ func createTileRequest(url string, tileMatrixSetID string, tileMatrix string, ti
 	rctx.URLParams.Add("tileCol", tileCol)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 
@@ -954,6 +960,7 @@ func createTilesetsListRequest(url string, collectionID ...string) (*http.Reques
 	}
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 
@@ -966,6 +973,7 @@ func createTilesetRequest(url string, tileMatrixSetID string, collectionID ...st
 	}
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 
@@ -975,6 +983,7 @@ func createTilematrixSetRequest(url string, tileMatrixSetID string) (*http.Reque
 	rctx.URLParams.Add("tileMatrixSetId", tileMatrixSetID)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 
@@ -983,5 +992,10 @@ func createTilematrixSetsRequest(url string) (*http.Request, error) {
 	rctx := chi.NewRouteContext()
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
+}
+
+func ptrTo[T any](val T) *T {
+	return &val
 }

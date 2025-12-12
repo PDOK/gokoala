@@ -105,6 +105,11 @@ TemporalExtent: Temporele begrenzing
 GoTo: Ga naar de
 ViewIn: Bekijk in de
 Browse: Blader door de
+BrowseFeaturesSuffix: of ga direct naar de features in
+BrowseAttributesSuffix: Dit zijn items/features zonder een geometrie (niet-ruimtelijke data)
+BrowseSchema: Bekijk het
+BrowseSchemaFeaturesSuffix: van de features voor meer details
+BrowseSchemaAttributesSuffix: van de attributes voor meer details
 FeaturesExplanation: GeoJSON is een open en breed geaccepteerd formaat voor feature data en voor veel (web)toepassingen de eerste keus. Formeel ondersteunt het echter alleen de WGS84 projectie. JSON-FG is een uitbreiding op GeoJSON en biedt officiële ondersteuning voor andere projecties. Aangezien JSON-FG een recente ontwikkeling is wordt er vanuit compatibiliteit oogpunt vooralsnog ook GeoJSON in andere projecties aangeboden.
 CollectionTilesHTML: Deze collectie wordt beschikbaar gesteld als vector tiles in &eacute;&eacute;n of meerdere projecties.
 CollectionTilesPlain: Deze collectie wordt beschikbaar gesteld als vector tiles in één of meerdere projecties.
@@ -118,4 +123,16 @@ ReferenceDate: Peildatum
 Size: omvang
 ApplyFilters: Filters toepassen
 ResetFilter: Filters wissen
-BrowseSuffix: of ga direct naar de features in
+
+# Schema page
+Required: Verplicht
+RequiredYes: ja
+RequiredNo: nee
+FieldName: Veldnaam
+DataType: Datatype
+SchemaDescription: Onderstaande tabel beschrijft de aanwezige velden in deze collectie. Deze informatie is ook beschikbaar als
+FeatureIdDescription: De unieke identificatie van dit feature.
+FeatureIdStableOverTime: Dit ID zou stabiel moeten zijn door de tijd heen en altijd naar hetzelfde feature moeten verwijzen.
+FeatureIntervalStartDescription: Betreft startdatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z.
+FeatureIntervalEndDescription: Betreft einddatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z.
+FeatureRelationDescription: Representeert een relatie tussen dit feature en het gerefereerde feature.

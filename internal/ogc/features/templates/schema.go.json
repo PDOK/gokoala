@@ -1,0 +1,116 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/schema",
+  "title": "{{ .Params.CollectionTitle }}",
+  {{ if .Params.CollectionDescription }}
+  "description": "{{ unmarkdown .Params.CollectionDescription }}",
+  {{ end }}
+  "type": "object",
+  "required": [
+    "id"
+    {{ range $feat := .Params.Fields }}
+      {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
+      {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
+      {{ if $feat.IsFid }}
+        {{ continue }}
+      {{ end }}
+      {{ if $feat.IsExternalFid }}
+        {{ continue }}
+      {{ end }}
+
+      {{ if $feat.IsRequired }}
+        ,
+        "{{ $feat.Name }}"
+      {{ end }}
+    {{ end }}
+  ],
+  "properties": {
+    "id": {
+      "readOnly": true,
+      {{/* OAF part 5: A property with "x-ogc-role" set to "id" SHALL be the identifier of the item in the collection that contains the item.*/}}
+      {{/* Only one property in a schema SHALL have "x-ogc-role" with a value "id".*/}}
+      "x-ogc-role": "id",
+      "description": "{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "FeatureIdStableOverTime"}}{{ end }}",
+      {{ if .Params.HasExternalFid }}
+      "type": "string", {{/* OAF part 5: A property with role "id" SHALL either be a string or integer.*/}}
+      "format": "uuid"
+      {{ else }}
+      "type": "integer", {{/* OAF part 5: A property with role "id" SHALL either be a string or integer.*/}}
+      "minimum": 0
+      {{ end }}
+    },
+    {{ $firstProp := true }}
+    {{ range $feat := .Params.Fields }}
+      {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
+      {{/* We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
+      {{ if $feat.IsFid }}
+        {{ continue }}
+      {{ end }}
+      {{ if $feat.IsExternalFid }}
+        {{ continue }}
+      {{ end }}
+
+      {{/* Avoid first comma */}}
+      {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }}
+
+      {{ $typeFormat := $feat.ToTypeFormat }}
+
+      {{ if $feat.IsPrimaryGeometry }}
+        {{/* Just like 'id', we call the geometry field always 'geometry' regardless of the column name in the data source */}}
+        "geometry": {
+          {{/* OAF part 5: Each spatial property SHALL not include a "type" or "$ref" member.*/}}
+          "x-ogc-role": "primary-geometry",
+          "format": "{{ $typeFormat.Format }}"
+        }
+      {{ else }}
+        {{/* Now include the property definition for this field.*/}}
+        "{{ if $feat.FeatureRelation }}{{ $feat.FeatureRelation.Name }}{{ else }}{{ $feat.Name }}{{ end }}": {
+          {{ if $feat.IsPrimaryIntervalStart }}
+            "description": "{{ i18n "FeatureIntervalStartDescription"}} {{ $feat.Description }}",
+            {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-start" SHALL be a temporal property. */}}
+            "x-ogc-role": "primary-interval-start",
+          {{ else if $feat.IsPrimaryIntervalEnd }}
+            "description":"{{ i18n "FeatureIntervalEndDescription"}} {{ $feat.Description }}",
+            {{/* OAF part 5: A property with "x-ogc-role" set to "primary-interval-end" SHALL be a temporal property. */}}
+            "x-ogc-role": "primary-interval-end",
+          {{ else if $feat.FeatureRelation }}
+            "description": "{{ i18n "FeatureRelationDescription"}} {{ $feat.Description }}",
+            {{ if $feat.FeatureRelation.IsArray }}
+            "items": {
+                "type": "string",
+                {{/* OAF part 5: If the features have a property that represents a reference to another feature in the
+                     same or another OGC Web API, the role "reference" can be used for this property */}}
+                "x-ogc-role": "reference"
+                {{ if $feat.FeatureRelation.CollectionID }}
+                {{/* If all instances of the property reference another feature in a fixed collection of the same server,
+                     the id of that collection SHALL be provided in "x-ogc-collectionId" */}}
+                ,"x-ogc-collectionId": "{{ $feat.FeatureRelation.CollectionID }}"
+                {{ end }}
+            },
+            {{ else }}
+                {{/* OAF part 5: If the features have a property that represents a reference to another feature in the
+                     same or another OGC Web API, the role "reference" can be used for this property */}}
+                "x-ogc-role": "reference",
+                {{ if $feat.FeatureRelation.CollectionID }}
+                  {{/* If all instances of the property reference another feature in a fixed collection of the same server,
+                     the id of that collection SHALL be provided in "x-ogc-collectionId" */}}
+                  "x-ogc-collectionId": "{{ $feat.FeatureRelation.CollectionID }}",
+                {{ end }}
+            {{ end }}
+          {{ else if $feat.Description }}
+            "description": "{{ $feat.Description }}",
+          {{ end }}
+
+          {{/* OAF part 5: Each property SHALL include a "type" member, except for spatial properties.*/}}
+          "type": "{{ $typeFormat.Type }}"
+          {{ if $typeFormat.Format }}
+            ,
+            "format": "{{ $typeFormat.Format }}"
+          {{ end }}
+        }
+      {{ end }}
+    {{ end }}
+  },
+  "additionalProperties": true {{/* The default in JSON Schema, just to make it explicit */}}
+}

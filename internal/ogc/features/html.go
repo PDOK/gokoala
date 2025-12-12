@@ -52,6 +52,7 @@ type featureCollectionPage struct {
 	ReferenceDate      *time.Time
 	MapSheetProperties *config.MapSheetDownloadProperties
 	WebConfig          *config.WebConfig
+	ShowViewer         bool
 
 	// Property filters as supplied by the user in the URL: filter name + value(s)
 	PropertyFilters map[string]string
@@ -68,24 +69,51 @@ type featurePage struct {
 	Metadata           *config.GeoSpatialCollectionMetadata
 	MapSheetProperties *config.MapSheetDownloadProperties
 	WebConfig          *config.WebConfig
+	ShowViewer         bool
 }
 
-func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time, propertyFilters map[string]string,
-	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues, configuredFC *config.CollectionEntryFeatures,
-	fc *domain.FeatureCollection) {
+func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
+	collection config.GeoSpatialCollection, cursor domain.Cursors,
+	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	propertyFilters map[string]string,
+	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
+	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
-	collection := configuredCollections[collectionID]
+	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
+		featuresURL, limit, propertyFilters, configuredPropertyFilters)
+
+	hf.engine.RenderAndServe(w, r,
+		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		pageContent, breadcrumbs, outputFormats)
+}
+
+func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.GeoSpatialCollection,
+	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
+	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
+
+	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
+		featuresURL, limit, propertyFilters, configuredPropertyFilters)
+	pageContent.ShowViewer = false // since items have no geometry
+
+	hf.engine.RenderAndServe(w, r,
+		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		pageContent, breadcrumbs, outputFormats)
+}
+
+func (hf *htmlFeatures) toItemsPage(collection config.GeoSpatialCollection, referenceDate *time.Time,
+	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
+	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues) ([]engine.Breadcrumb, *featureCollectionPage) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collectionID, collection.Metadata),
-			Path: collectionsCrumb + collectionID,
+			Name: getCollectionTitle(collection.ID, collection.Metadata),
+			Path: collectionsCrumb + collection.ID,
 		},
 		{
 			Name: "Items",
-			Path: collectionsCrumb + collectionID + "/items",
+			Path: collectionsCrumb + collection.ID + "/items",
 		},
 	}...)
 
@@ -94,77 +122,96 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, collect
 	}
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
-	if configuredFC != nil {
-		if configuredFC.MapSheetDownloads != nil {
-			mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+	if collection.Features != nil {
+		if collection.Features.MapSheetDownloads != nil {
+			mapSheetProps = &collection.Features.MapSheetDownloads.Properties
 		}
-		wc = configuredFC.Web
+		wc = collection.Features.Web
 	}
 
 	pageContent := &featureCollectionPage{
 		*fc,
-		collectionID,
+		collection.ID,
 		collection.Metadata,
 		cursor,
-		featuresURL.toPrevNextURL(collectionID, cursor.Prev, engine.FormatHTML),
-		featuresURL.toPrevNextURL(collectionID, cursor.Next, engine.FormatHTML),
+		featuresURL.toPrevNextURL(collection.ID, cursor.Prev, engine.FormatHTML),
+		featuresURL.toPrevNextURL(collection.ID, cursor.Next, engine.FormatHTML),
 		limit,
 		referenceDate,
 		mapSheetProps,
 		wc,
+		true,
 		propertyFilters,
 		configuredPropertyFilters,
 	}
 
-	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featuresKey, lang), pageContent, breadcrumbs)
+	return breadcrumbs, pageContent
 }
 
-func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, collectionID string,
-	configuredFC *config.CollectionEntryFeatures, feat *domain.Feature) {
-	collection := configuredCollections[collectionID]
+func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
+	collection config.GeoSpatialCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
+	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
+
+	hf.engine.RenderAndServe(w, r,
+		engine.ExpandTemplateKey(featureKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		pageContent, breadcrumbs, outputFormats)
+}
+
+func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request,
+	collection config.GeoSpatialCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
+
+	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
+	pageContent.ShowViewer = false // since items have no geometry
+
+	hf.engine.RenderAndServe(w, r,
+		engine.ExpandTemplateKey(featureKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		pageContent, breadcrumbs, outputFormats)
+}
+
+func (hf *htmlFeatures) toItemPage(collection config.GeoSpatialCollection, feat *domain.Feature) ([]engine.Breadcrumb, *featurePage) {
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collectionID, collection.Metadata),
-			Path: collectionsCrumb + collectionID,
+			Name: getCollectionTitle(collection.ID, collection.Metadata),
+			Path: collectionsCrumb + collection.ID,
 		},
 		{
 			Name: "Items",
-			Path: collectionsCrumb + collectionID + "/items",
+			Path: collectionsCrumb + collection.ID + "/items",
 		},
 		{
 			Name: feat.ID,
-			Path: collectionsCrumb + collectionID + "/items/" + feat.ID,
+			Path: collectionsCrumb + collection.ID + "/items/" + feat.ID,
 		},
 	}...)
 
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
-	if configuredFC != nil {
-		if configuredFC.MapSheetDownloads != nil {
-			mapSheetProps = &configuredFC.MapSheetDownloads.Properties
+	if collection.Features != nil {
+		if collection.Features.MapSheetDownloads != nil {
+			mapSheetProps = &collection.Features.MapSheetDownloads.Properties
 		}
-		wc = configuredFC.Web
+		wc = collection.Features.Web
 	}
 
 	pageContent := &featurePage{
 		*feat,
-		collectionID,
+		collection.ID,
 		feat.ID,
 		collection.Metadata,
 		mapSheetProps,
 		wc,
+		true,
 	}
 
-	lang := hf.engine.CN.NegotiateLanguage(w, r)
-	hf.engine.RenderAndServePage(w, r, engine.ExpandTemplateKey(featureKey, lang), pageContent, breadcrumbs)
+	return breadcrumbs, pageContent
 }
 
 func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollectionMetadata) string {
 	if metadata != nil && metadata.Title != nil {
 		return *metadata.Title
 	}
+
 	return collectionID
 }

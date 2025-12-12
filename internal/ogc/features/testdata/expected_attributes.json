@@ -1,0 +1,111 @@
+{
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "A2",
+        "surface": "rock",
+        "width": 2
+      },
+      "id": "1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "A1",
+        "surface": "rock",
+        "width": null
+      },
+      "id": "2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "A4",
+        "surface": "rock",
+        "width": 333
+      },
+      "id": "3"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "A5",
+        "surface": "rock",
+        "width": 2
+      },
+      "id": "4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "A22",
+        "surface": "dirt",
+        "width": 2
+      },
+      "id": "5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "N233",
+        "surface": "dirt",
+        "width": 8
+      },
+      "id": "6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "N67",
+        "surface": "dirt",
+        "width": 6
+      },
+      "id": "7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Foo bar street",
+        "surface": null,
+        "width": 5
+      },
+      "id": "8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Some street",
+        "surface": "unknown",
+        "width": 5
+      },
+      "id": "9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "6th Street",
+        "surface": null,
+        "width": 5
+      },
+      "id": "10"
+    }
+  ],
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as JSON",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/road_extras/items?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/road_extras/items?f=html"
+    }
+  ],
+  "numberReturned": 10
+}

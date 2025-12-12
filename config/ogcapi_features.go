@@ -3,15 +3,9 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
-	"os"
-	"path/filepath"
 	"slices"
-	"strconv"
-	"strings"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/docker/go-units"
 	"gopkg.in/yaml.v3"
 )
 
@@ -26,44 +20,67 @@ type OgcAPIFeatures struct {
 	// Collections to be served as features through this API
 	Collections GeoSpatialCollections `yaml:"collections" json:"collections" validate:"required,dive"`
 
-	// Limits the amount of features to retrieve with a single call
+	// Limits the number of features to retrieve with a single call
 	// +optional
 	Limit Limit `yaml:"limit,omitempty" json:"limit,omitempty"`
 
-	// One or more datasources to get the features from (geopackages, postgis, etc).
+	// One or more datasources to get the features from (geopackages, postgres, etc).
 	// Optional since you can also define datasources at the collection level
 	// +optional
 	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
 
 	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
-	// since it has significant performance impact when dealing with large JSON payloads.
+	// since it has a significant performance impact when dealing with large JSON payloads.
 	//
 	// +kubebuilder:default=true
 	// +optional
 	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+
+	// Maximum number of decimals allowed in geometry coordinates. When not specified (default value of 0) no limit is enforced.
+	// +optional
+	// +kubebuilder:validation:Minimum=0
+	MaxDecimals int `yaml:"maxDecimals,omitempty" json:"maxDecimals,omitempty" default:"0"`
+
+	// Force timestamps in features to the UTC timezone.
+	//
+	// +kubebuilder:default=false
+	// +optional
+	ForceUTC bool `yaml:"forceUtc,omitempty" json:"forceUtc,omitempty"`
 }
 
-func (oaf *OgcAPIFeatures) ProjectionsForCollections() []string {
-	return oaf.ProjectionsForCollection("")
+func (oaf *OgcAPIFeatures) CollectionsSRS() []string {
+	return oaf.CollectionSRS("")
 }
 
-func (oaf *OgcAPIFeatures) ProjectionsForCollection(collectionID string) []string {
+func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 	uniqueSRSs := make(map[string]struct{})
 	if oaf.Datasources != nil {
-		for _, a := range oaf.Datasources.Additional {
-			uniqueSRSs[a.Srs] = struct{}{}
+		for _, d := range oaf.Datasources.OnTheFly {
+			for _, srs := range d.SupportedSrs {
+				uniqueSRSs[srs.Srs] = struct{}{}
+			}
+		}
+		for _, d := range oaf.Datasources.Additional {
+			uniqueSRSs[d.Srs] = struct{}{}
 		}
 	}
 	for _, coll := range oaf.Collections {
 		if (coll.ID == collectionID || collectionID == "") && coll.Features != nil && coll.Features.Datasources != nil {
-			for _, a := range coll.Features.Datasources.Additional {
-				uniqueSRSs[a.Srs] = struct{}{}
+			for _, d := range coll.Features.Datasources.OnTheFly {
+				for _, srs := range d.SupportedSrs {
+					uniqueSRSs[srs.Srs] = struct{}{}
+				}
 			}
+			for _, d := range coll.Features.Datasources.Additional {
+				uniqueSRSs[d.Srs] = struct{}{}
+			}
+
 			break
 		}
 	}
 	result := util.Keys(uniqueSRSs)
 	slices.Sort(result)
+
 	return result
 }
 
@@ -73,13 +90,17 @@ type CollectionEntryFeatures struct {
 	// +optional
 	TableName *string `yaml:"tableName,omitempty" json:"tableName,omitempty"`
 
-	// Optional collection specific datasources. Mutually exclusive with top-level defined datasources.
+	// Optional collection-specific datasources. Mutually exclusive with top-level defined datasources.
 	// +optional
 	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
 
 	// Filters available for this collection
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
+
+	// Relations define relationships between features across collections
+	// +optional
+	Relations []Relation `yaml:"relations,omitempty" json:"relations,omitempty"`
 
 	// Optional way to exclude feature properties and/or determine the ordering of properties in the response.
 	// +optional
@@ -101,212 +122,9 @@ func (c CollectionEntryFeatures) MarshalJSON() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-// UnmarshalJSON parses a string to CollectionEntryFeatures
+// UnmarshalJSON parses a string to CollectionEntryFeatures.
 func (c *CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
-}
-
-// +kubebuilder:object:generate=true
-type Datasources struct {
-	// Features should always be available in WGS84 (according to spec).
-	// This specifies the datasource to be used for features in the WGS84 projection
-	DefaultWGS84 Datasource `yaml:"defaultWGS84" json:"defaultWGS84" validate:"required"` //nolint:tagliatelle // grandfathered
-
-	// One or more additional datasources for features in other projections. GoKoala doesn't do
-	// any on-the-fly reprojection so additional datasources need to be reprojected ahead of time.
-	// +optional
-	Additional []AdditionalDatasource `yaml:"additional" json:"additional" validate:"dive"`
-}
-
-// +kubebuilder:object:generate=true
-type Datasource struct {
-	// GeoPackage to get the features from.
-	// +optional
-	GeoPackage *GeoPackage `yaml:"geopackage,omitempty" json:"geopackage,omitempty" validate:"required_without_all=PostGIS"`
-
-	// PostGIS database to get the features from (not implemented yet).
-	// +optional
-	PostGIS *PostGIS `yaml:"postgis,omitempty" json:"postgis,omitempty" validate:"required_without_all=GeoPackage"`
-
-	// Add more datasources here such as Mongo, Elastic, etc
-}
-
-// +kubebuilder:object:generate=true
-type AdditionalDatasource struct {
-	// Projection (SRS/CRS) used for the features in this datasource
-	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
-	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
-
-	// The additional datasource
-	Datasource `yaml:",inline" json:",inline"`
-}
-
-// +kubebuilder:object:generate=true
-type PostGIS struct {
-	// placeholder
-}
-
-// +kubebuilder:object:generate=true
-type GeoPackage struct {
-	// Settings to read a GeoPackage from local disk
-	// +optional
-	Local *GeoPackageLocal `yaml:"local,omitempty" json:"local,omitempty" validate:"required_without_all=Cloud"`
-
-	// Settings to read a GeoPackage as a Cloud-Backed SQLite database
-	// +optional
-	Cloud *GeoPackageCloud `yaml:"cloud,omitempty" json:"cloud,omitempty" validate:"required_without_all=Local"`
-}
-
-// +kubebuilder:object:generate=true
-type GeoPackageCommon struct {
-	// Feature id column name
-	// +kubebuilder:default="fid"
-	// +optional
-	Fid string `yaml:"fid,omitempty" json:"fid,omitempty" validate:"required" default:"fid"`
-
-	// External feature id column name. When specified this ID column will be exposed to clients instead of the regular FID column.
-	// It allows one to offer a more stable ID to clients instead of an auto-generated FID. External FID column should contain UUIDs.
-	// +optional
-	ExternalFid string `yaml:"externalFid" json:"externalFid"`
-
-	// Optional timeout after which queries are canceled
-	// +kubebuilder:default="15s"
-	// +optional
-	QueryTimeout Duration `yaml:"queryTimeout,omitempty" json:"queryTimeout,omitempty" validate:"required" default:"15s"`
-
-	// ADVANCED SETTING. When the number of features in a bbox stay within the given value use an RTree index, otherwise use a BTree index.
-	// +kubebuilder:default=8000
-	// +optional
-	MaxBBoxSizeToUseWithRTree int `yaml:"maxBBoxSizeToUseWithRTree,omitempty" json:"maxBBoxSizeToUseWithRTree,omitempty" validate:"required" default:"8000"`
-
-	// ADVANCED SETTING. Sets the SQLite "cache_size" pragma which determines how many pages are cached in-memory.
-	// See https://sqlite.org/pragma.html#pragma_cache_size for details.
-	// Default in SQLite is 2000 pages, which equates to 2000KiB (2048000 bytes). Which is denoted as -2000.
-	// +kubebuilder:default=-2000
-	// +optional
-	InMemoryCacheSize int `yaml:"inMemoryCacheSize,omitempty" json:"inMemoryCacheSize,omitempty" validate:"required" default:"-2000"`
-}
-
-// +kubebuilder:object:generate=true
-type GeoPackageLocal struct {
-	// GeoPackageCommon shared config between local and cloud GeoPackage
-	GeoPackageCommon `yaml:",inline" json:",inline"`
-
-	// Location of GeoPackage on disk.
-	// You can place the GeoPackage here manually (out-of-band) or you can specify Download
-	// and let the application download the GeoPackage for you and store it at this location.
-	File string `yaml:"file" json:"file" validate:"required,omitempty,filepath"`
-
-	// Optional initialization task to download a GeoPackage during startup. GeoPackage will be
-	// downloaded to local disk and stored at the location specified in File.
-	// +optional
-	Download *GeoPackageDownload `yaml:"download,omitempty" json:"download,omitempty"`
-}
-
-// +kubebuilder:object:generate=true
-type GeoPackageDownload struct {
-	// Location of GeoPackage on remote HTTP(S) URL. GeoPackage will be downloaded to local disk
-	// during startup and stored at the location specified in "file".
-	From URL `yaml:"from" json:"from" validate:"required"`
-
-	// ADVANCED SETTING. Determines how many workers (goroutines) in parallel will download the specified GeoPackage.
-	// Setting this to 1 will disable concurrent downloads.
-	// +kubebuilder:default=4
-	// +kubebuilder:validation:Minimum=1
-	// +optional
-	Parallelism int `yaml:"parallelism,omitempty" json:"parallelism,omitempty" validate:"required,gte=1" default:"4"`
-
-	// ADVANCED SETTING. When true TLS certs are NOT validated, false otherwise. Only use true for your own self-signed certificates!
-	// +kubebuilder:default=false
-	// +optional
-	TLSSkipVerify bool `yaml:"tlsSkipVerify,omitempty" json:"tlsSkipVerify,omitempty" default:"false"`
-
-	// ADVANCED SETTING. HTTP request timeout when downloading (part of) GeoPackage.
-	// +kubebuilder:default="2m"
-	// +optional
-	Timeout Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" validate:"required" default:"2m"`
-
-	// ADVANCED SETTING. Minimum delay to use when retrying HTTP request to download (part of) GeoPackage.
-	// +kubebuilder:default="1s"
-	// +optional
-	RetryDelay Duration `yaml:"retryDelay,omitempty" json:"retryDelay,omitempty" validate:"required" default:"1s"`
-
-	// ADVANCED SETTING. Maximum overall delay of the exponential backoff while retrying HTTP requests to download (part of) GeoPackage.
-	// +kubebuilder:default="30s"
-	// +optional
-	RetryMaxDelay Duration `yaml:"retryMaxDelay,omitempty" json:"retryMaxDelay,omitempty" validate:"required" default:"30s"`
-
-	// ADVANCED SETTING. Maximum number of retries when retrying HTTP requests to download (part of) GeoPackage.
-	// +kubebuilder:default=5
-	// +kubebuilder:validation:Minimum=1
-	// +optional
-	MaxRetries int `yaml:"maxRetries,omitempty" json:"maxRetries,omitempty" validate:"required,gte=1" default:"5"`
-}
-
-// +kubebuilder:object:generate=true
-type GeoPackageCloud struct {
-	// GeoPackageCommon shared config between local and cloud GeoPackage
-	GeoPackageCommon `yaml:",inline" json:",inline"`
-
-	// Reference to the cloud storage (either azure or google at the moment).
-	// For example 'azure?emulator=127.0.0.1:10000&sas=0' or 'google'
-	Connection string `yaml:"connection" json:"connection" validate:"required"`
-
-	// Username of the storage account, like devstoreaccount1 when using Azurite
-	User string `yaml:"user" json:"user" validate:"required"`
-
-	// Some kind of credential like a password or key to authenticate with the storage backend, e.g:
-	// 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' when using Azurite
-	Auth string `yaml:"auth" json:"auth" validate:"required"`
-
-	// Container/bucket on the storage account
-	Container string `yaml:"container" json:"container" validate:"required"`
-
-	// Filename of the GeoPackage
-	File string `yaml:"file" json:"file" validate:"required"`
-
-	// Local cache of fetched blocks from cloud storage
-	// +optional
-	Cache GeoPackageCloudCache `yaml:"cache,omitempty" json:"cache,omitempty"`
-
-	// ADVANCED SETTING. Only for debug purposes! When true all HTTP requests executed by sqlite to cloud object storage are logged to stdout
-	// +kubebuilder:default=false
-	// +optional
-	LogHTTPRequests bool `yaml:"logHttpRequests,omitempty" json:"logHttpRequests,omitempty" default:"false"`
-}
-
-func (gc *GeoPackageCloud) CacheDir() (string, error) {
-	fileNameWithoutExt := strings.TrimSuffix(gc.File, filepath.Ext(gc.File))
-	if gc.Cache.Path != nil {
-		randomSuffix := strconv.Itoa(rand.Intn(99999)) //nolint:gosec // random isn't used for security purposes
-		return filepath.Join(*gc.Cache.Path, fileNameWithoutExt+"-"+randomSuffix), nil
-	}
-	cacheDir, err := os.MkdirTemp("", fileNameWithoutExt)
-	if err != nil {
-		return "", fmt.Errorf("failed to create tempdir to cache %s, error %w", fileNameWithoutExt, err)
-	}
-	return cacheDir, nil
-}
-
-// +kubebuilder:object:generate=true
-type GeoPackageCloudCache struct {
-	// Optional path to directory for caching cloud-backed GeoPackage blocks, when omitted a temp dir will be used.
-	// +optional
-	Path *string `yaml:"path,omitempty" json:"path,omitempty" validate:"omitempty,dirpath|filepath"`
-
-	// Max size of the local cache. Accepts human-readable size such as 100Mb, 4Gb, 1Tb, etc. When omitted 1Gb is used.
-	// +kubebuilder:default="1Gb"
-	// +optional
-	MaxSize string `yaml:"maxSize,omitempty" json:"maxSize,omitempty" default:"1Gb"`
-
-	// When true a warm-up query is executed on startup which aims to fill the local cache. Does increase startup time.
-	// +kubebuilder:default=false
-	// +optional
-	WarmUp bool `yaml:"warmUp,omitempty" json:"warmUp,omitempty" default:"false"`
-}
-
-func (cache *GeoPackageCloudCache) MaxSizeAsBytes() (int64, error) {
-	return units.FromHumanSize(cache.MaxSize)
 }
 
 // +kubebuilder:object:generate=true
@@ -326,9 +144,9 @@ type FeatureProperties struct {
 	// Properties/fields of features in this collection. This setting controls two things:
 	//
 	// A) allows one to exclude certain properties, when propertiesExcludeUnknown=true
-	// B) allows one sort the properties in the given order, when propertiesInSpecificOrder=true
+	// B) allows one to sort the properties in the given order, when propertiesInSpecificOrder=true
 	//
-	// When not set all available properties are returned in API responses, in alphabetical order.
+	// When not set, all available properties are returned in API responses, in alphabetical order.
 	// +optional
 	Properties []string `yaml:"properties,omitempty" json:"properties,omitempty"`
 
@@ -431,7 +249,7 @@ type PropertyFilter struct {
 	// +optional
 	AllowedValues []string `yaml:"allowedValues,omitempty" json:"allowedValues,omitempty"`
 
-	// Derive list of allowed values for this property filter from the corresponding column in the datastore.
+	// Derive a list of allowed values for this property filter from the corresponding column in the datastore.
 	// Use with caution since it can increase startup time when used on large tables. Make sure an index in present.
 	//
 	// +kubebuilder:default=false
@@ -468,5 +286,6 @@ func validateFeatureCollections(collections GeoSpatialCollections) error {
 	if len(errMessages) > 0 {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
+
 	return nil
 }

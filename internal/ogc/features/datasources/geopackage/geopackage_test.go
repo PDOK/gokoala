@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
+	"github.com/stretchr/testify/require"
 
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -24,10 +26,13 @@ func init() {
 
 func newTestGeoPackage(file string) geoPackageBackend {
 	loadDriver()
+
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{
-			Fid:                       "feature_id",
-			QueryTimeout:              config.Duration{Duration: 15 * time.Second},
+			DatasourceCommon: config.DatasourceCommon{
+				Fid:          "feature_id",
+				QueryTimeout: config.Duration{Duration: 15 * time.Second},
+			},
 			MaxBBoxSizeToUseWithRTree: 30000,
 			InMemoryCacheSize:         -2000,
 		},
@@ -51,7 +56,9 @@ func TestNewGeoPackage(t *testing.T) {
 				config: config.GeoPackage{
 					Local: &config.GeoPackageLocal{
 						GeoPackageCommon: config.GeoPackageCommon{
-							Fid:               "feature_id",
+							DatasourceCommon: config.DatasourceCommon{
+								Fid: "feature_id",
+							},
 							InMemoryCacheSize: -2000,
 						},
 						File: pwd + "/testdata/bag.gpkg",
@@ -69,7 +76,9 @@ func TestNewGeoPackage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.wantNrOfFeatureTablesInGpkg, len(NewGeoPackage(tt.args.collection, tt.args.config).featureTableByCollectionID), "NewGeoPackage(%v)", tt.args.config)
+			g, err := NewGeoPackage(tt.args.collection, tt.args.config, false, 0, false)
+			require.NoError(t, err)
+			assert.Lenf(t, g.TableByCollectionID, tt.wantNrOfFeatureTablesInGpkg, "NewGeoPackage(%v)", tt.args.config)
 		})
 	}
 }
@@ -78,7 +87,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 	type fields struct {
 		backend          geoPackageBackend
 		fidColumn        string
-		featureTableByID map[string]*featureTable
+		featureTableByID map[string]*common.Table
 		queryTimeout     time.Duration
 	}
 	type args struct {
@@ -101,7 +110,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
@@ -141,7 +150,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
@@ -189,9 +198,9 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 		{
 			name: "get first page of features with reference date",
 			fields: fields{
-				backend:          newTestGeoPackage("/testdata/bag-temporal.gpkg"),
+				backend:          newTestGeoPackage("/testdata/bag-temporal-wgs84.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
@@ -236,7 +245,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
@@ -256,7 +265,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/null-empty-geoms.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
@@ -290,7 +299,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/null-empty-geoms.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     60 * time.Second,
 			},
 			args: args{
@@ -323,19 +332,24 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoPackage{
-				backend:                    tt.fields.backend,
-				fidColumn:                  tt.fields.fidColumn,
-				featureTableByCollectionID: tt.fields.featureTableByID,
-				queryTimeout:               tt.fields.queryTimeout,
+				backend: tt.fields.backend,
+				DatasourceCommon: common.DatasourceCommon{
+					FidColumn:           tt.fields.fidColumn,
+					TableByCollectionID: tt.fields.featureTableByID,
+					QueryTimeout:        tt.fields.queryTimeout,
+				},
 			}
 			g.preparedStmtCache = NewCache()
 			url, _ := neturl.Parse("http://example.com")
-			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
-			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, p)
+			s, err := domain.NewSchema([]domain.Field{}, tt.fields.fidColumn, "")
+			require.NoError(t, err)
+			p := domain.NewProfile(domain.RelAsLink, *url, *s)
+			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, domain.AxisOrderXY, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeatures, error %v, wantErr %v", err, tt.wantErr)
 				}
+
 				return
 			}
 			assert.Equal(t, tt.wantFC.NumberReturned, fc.NumberReturned)
@@ -357,7 +371,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 	type fields struct {
 		backend          geoPackageBackend
 		fidColumn        string
-		featureTableByID map[string]*featureTable
+		featureTableByID map[string]*common.Table
 		queryTimeout     time.Duration
 	}
 	type args struct {
@@ -377,7 +391,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
@@ -400,7 +414,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
@@ -416,7 +430,7 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 			fields: fields{
 				backend:          newTestGeoPackage("/testdata/bag.gpkg"),
 				fidColumn:        "feature_id",
-				featureTableByID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
+				featureTableByID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
 				queryTimeout:     5 * time.Second,
 			},
 			args: args{
@@ -431,18 +445,23 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := &GeoPackage{
-				backend:                    tt.fields.backend,
-				fidColumn:                  tt.fields.fidColumn,
-				featureTableByCollectionID: tt.fields.featureTableByID,
-				queryTimeout:               tt.fields.queryTimeout,
+				backend: tt.fields.backend,
+				DatasourceCommon: common.DatasourceCommon{
+					FidColumn:           tt.fields.fidColumn,
+					TableByCollectionID: tt.fields.featureTableByID,
+					QueryTimeout:        tt.fields.queryTimeout,
+				},
 			}
 			url, _ := neturl.Parse("http://example.com")
-			p := domain.NewProfile(domain.RelAsLink, *url, []string{})
-			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, p)
+			s, err := domain.NewSchema([]domain.Field{}, tt.fields.fidColumn, "")
+			require.NoError(t, err)
+			p := domain.NewProfile(domain.RelAsLink, *url, *s)
+			got, err := g.GetFeature(tt.args.ctx, tt.args.collection, tt.args.featureID, 0, domain.AxisOrderXY, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeature, error %v, wantErr %v", err, tt.wantErr)
 				}
+
 				return
 			}
 			if tt.want != nil {
@@ -456,10 +475,12 @@ func TestGeoPackage_GetFeature(t *testing.T) {
 func TestGeoPackage_Warmup(t *testing.T) {
 	t.Run("warmup", func(t *testing.T) {
 		g := &GeoPackage{
-			backend:                    newTestGeoPackage("/testdata/bag.gpkg"),
-			fidColumn:                  "feature_id",
-			featureTableByCollectionID: map[string]*featureTable{"ligplaatsen": {TableName: "ligplaatsen", GeometryColumnName: "geom"}},
-			queryTimeout:               5 * time.Second,
+			backend: newTestGeoPackage("/testdata/bag.gpkg"),
+			DatasourceCommon: common.DatasourceCommon{
+				FidColumn:           "feature_id",
+				TableByCollectionID: map[string]*common.Table{"ligplaatsen": {Name: "ligplaatsen", GeometryColumnName: "geom"}},
+				QueryTimeout:        5 * time.Second,
+			},
 		}
 		collections :=
 			[]config.GeoSpatialCollection{
@@ -468,7 +489,7 @@ func TestGeoPackage_Warmup(t *testing.T) {
 					Features: &config.CollectionEntryFeatures{},
 				},
 			}
-		err := warmUpFeatureTables(collections, g.featureTableByCollectionID, g.backend.getDB())
-		assert.NoError(t, err)
+		err := warmUpFeatureTables(collections, g.TableByCollectionID, g.backend.getDB())
+		require.NoError(t, err)
 	})
 }

@@ -4,7 +4,6 @@ import { Feature, Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
 import 'cypress-network-idle'
 import { LoggerModule } from 'ngx-logger'
-import { environment } from 'src/environments/environment'
 import { Geometry } from 'ol/geom'
 
 export type ProjectionTest = { code: string; projection: string; geofix: string }
@@ -61,12 +60,12 @@ export function mountFeatureComponent(
     imports: [
       HttpClientModule,
       LoggerModule.forRoot({
-        level: environment.loglevel,
+        level: NgxLoggerLevel.DEBUG,
       }),
     ],
     componentProperties: allprop,
   }).then(comp1 => {
-    const map = comp1.component.map as OLMap
+    const map = comp1.component.map as unknown as OLMap
     map.addEventListener('loadend', cy.stub().as('MapLoaded'))
 
     const viewport = map.getViewport()

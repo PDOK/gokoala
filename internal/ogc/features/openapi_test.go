@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/stretchr/testify/require"
 
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
@@ -11,18 +12,21 @@ import (
 )
 
 func TestCreatePropertyFiltersByCollection(t *testing.T) {
-	eng, err := config.NewConfig("internal/ogc/features/testdata/config_features_bag.yaml")
-	assert.NoError(t, err)
+	eng, err := config.NewConfig("internal/ogc/features/testdata/geopackage/config_features_bag.yaml")
+	require.NoError(t, err)
 	oaf := eng.OgcAPI.Features
 
-	eng2, err := config.NewConfig("internal/ogc/features/testdata/config_features_bag_invalid_filters.yaml")
-	assert.NoError(t, err)
+	eng2, err := config.NewConfig("internal/ogc/features/testdata/geopackage/config_features_bag_invalid_filters.yaml")
+	require.NoError(t, err)
 	oafWithInvalidPropertyFilter := eng2.OgcAPI.Features
+
+	gpkg, err := geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage, false, 0, false)
+	require.NoError(t, err)
 
 	tests := []struct {
 		name        string
 		config      *config.OgcAPIFeatures
-		datasources map[DatasourceKey]ds.Datasource
+		datasources map[datasourceKey]ds.Datasource
 		pf          map[string]ds.PropertyFiltersWithAllowedValues
 		wantResult  map[string][]OpenAPIPropertyFilter
 		wantErr     bool
@@ -38,10 +42,10 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 		{
 			name:   "Valid property filters",
 			config: oaf,
-			datasources: map[DatasourceKey]ds.Datasource{
-				{collectionID: "foo"}: geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage),
+			datasources: map[datasourceKey]ds.Datasource{
+				{collectionID: "foo"}: gpkg,
 			},
-			// keep this in line with the filters in "internal/ogc/features/testdata/config_features_bag.yaml"
+			// keep this in line with the filters in "internal/ogc/features/testdata/geopackage/config_features_bag.yaml"
 			pf: map[string]ds.PropertyFiltersWithAllowedValues{
 				"foo": map[string]ds.PropertyFilterWithAllowedValues{
 					"straatnaam": {
@@ -63,10 +67,10 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 		{
 			name:   "Invalid property filter defined in config",
 			config: oafWithInvalidPropertyFilter,
-			datasources: map[DatasourceKey]ds.Datasource{
-				{collectionID: "foo"}: geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage),
+			datasources: map[datasourceKey]ds.Datasource{
+				{collectionID: "foo"}: gpkg,
 			},
-			// keep this in line with the filters in "internal/ogc/features/testdata/config_features_bag_invalid_filters.yaml"
+			// keep this in line with the filters in "internal/ogc/features/testdata/geopackage/config_features_bag_invalid_filters.yaml"
 			pf: map[string]ds.PropertyFiltersWithAllowedValues{
 				"foo": map[string]ds.PropertyFilterWithAllowedValues{
 					"straatnaam": {
@@ -91,6 +95,7 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 			gotResult, err := createPropertyFiltersByCollection(tt.datasources, tt.pf)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("createPropertyFiltersByCollection() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			assert.Equal(t, tt.wantResult, gotResult)

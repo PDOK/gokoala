@@ -223,52 +223,6 @@
   },
   "components": {
     "schemas": {
-      "link": {
-        "type": "object",
-        "required": [
-          "href",
-          "rel"
-        ],
-        "properties": {
-          "href": {
-            "type": "string",
-            "description": "Supplies the URI to a remote resource (or resource fragment).",
-            "example": "http://data.example.com/buildings/123"
-          },
-          "rel": {
-            "type": "string",
-            "description": "The type or semantics of the relation.",
-            "example": "alternate"
-          },
-          "type": {
-            "type": "string",
-            "description": "A hint indicating what the media type of the result of dereferencing the link should be.",
-            "example": "application/geo+json"
-          },
-          "templated": {
-            "type": "boolean",
-            "description": "This flag set to true if the link is a URL template."
-          },
-          "varBase": {
-            "description": "A base path to retrieve semantic information about the variables used in URL template.",
-            "type": "string",
-            "example": "/ogcapi/vars/"
-          },
-          "hreflang": {
-            "type": "string",
-            "description": "A hint indicating what the language of the result of dereferencing the link should be.",
-            "example": "en"
-          },
-          "title": {
-            "type": "string",
-            "description": "Used to label the destination of a link such that it can be used as a human-readable identifier.",
-            "example": "Trierer Strasse 70, 53115 Bonn"
-          },
-          "length": {
-            "type": "integer"
-          }
-        }
-      },
       "landingPage": {
         "type": "object",
         "required": [
@@ -299,7 +253,6 @@
         }
       },
       "crs": {
-        "title": "CRS",
         "oneOf": [
           {
             "description": "Simplification of the object into a url if the other properties are not present",
@@ -499,7 +452,6 @@
         }
       },
       "tileSet": {
-        "title": "Tile Set Metadata",
         "description": "A resource describing a tileset based on the OGC TileSet Metadata Standard. At least one of the 'TileMatrixSet',  or a link with 'rel' http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme",
         "type": "object",
         "required": [
@@ -1003,7 +955,6 @@
         }
       },
       "tileSet-item": {
-        "title": "Tile Set Metadata item",
         "description": "A minimal tileset element for use within a list of tilesets linking to full description of those tilesets.",
         "type": "object",
         "required": [
@@ -1051,7 +1002,6 @@
         }
       },
       "tileMatrixSet": {
-        "title": "Tile Matrix Set Definition",
         "description": "A definition of a tile matrix set following the Tile Matrix Set standard. For tileset metadata, such a description (in `tileMatrixSet` property) is only required for offline use, as an alternative to a link with a `http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme` relation type.",
         "type": "object",
         "required": [
@@ -1248,7 +1198,6 @@
         }
       },
       "tileMatrixSet-item": {
-        "title": "Tile Matrix Set Item",
         "description": "A minimal tile matrix set element for use within a list of tile matrix sets linking to a full definition.",
         "type": "object",
         "required": [
@@ -1288,7 +1237,6 @@
         }
       },
       "tileMatrixLimits": {
-        "title": "TileMatrixLimits",
         "description": "The limits for an individual tile matrix of a TileSet's TileMatrixSet, as defined in the OGC 2D TileMatrixSet and TileSet Metadata Standard",
         "type": "object",
         "required": [
@@ -1547,6 +1495,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "Enumeration": {
@@ -1562,6 +1513,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "TileSetsList": {
@@ -1594,6 +1548,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "TileSet": {
@@ -1614,6 +1571,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "MapTile": {
@@ -1637,6 +1597,9 @@
               "format": "binary"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "CoverageTile": {
@@ -1654,6 +1617,9 @@
               "format": "binary"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "VectorTile": {
@@ -1665,10 +1631,16 @@
               "format": "binary"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "EmptyTile": {
-        "description": "No data available for this tile."
+        "description": "No data available for this tile.",
+        "headers" : {
+          {{block "headers" . }}{{end}}
+        }
       },
       "TileMatrixSetsList": {
         "description": "List of tile matrix sets (tiling schemes).",
@@ -1691,6 +1663,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       },
       "TileMatrixSet": {
@@ -1706,6 +1681,9 @@
               "type": "string"
             }
           }
+        },
+        "headers" : {
+          {{block "headers" . }}{{end}}
         }
       }
     }

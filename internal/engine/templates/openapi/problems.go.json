@@ -7,6 +7,9 @@
           "$ref": "#/components/schemas/exception"
         }
       }
+    },
+    "headers" : {
+      {{block "headers" . }}{{end}}
     }
 },
 "404": {
@@ -17,6 +20,9 @@
           "$ref": "#/components/schemas/exception"
         }
       }
+    },
+    "headers" : {
+      {{block "headers" . }}{{end}}
     }
 },
 "406": {
@@ -27,6 +33,9 @@
           "$ref": "#/components/schemas/exception"
         }
       }
+    },
+    "headers" : {
+      {{block "headers" . }}{{end}}
     }
 },
 "500": {
@@ -37,6 +46,9 @@
           "$ref": "#/components/schemas/exception"
         }
       }
+    },
+    "headers" : {
+      {{block "headers" . }}{{end}}
     }
 },
 "502": {
@@ -47,6 +59,9 @@
           "$ref": "#/components/schemas/exception"
         }
       }
+    },
+    "headers" : {
+      {{block "headers" . }}{{end}}
     }
 }
 {{ end }}

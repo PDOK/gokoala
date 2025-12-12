@@ -90,13 +90,13 @@
         <form id="form" class="col-12 mt-4">
             <!-- projection -->
             <div class="row mb-2">
-                <label for="srs-select" class="col-sm-3 col-form-label fw-bold"><abbr title="{{ i18n "CrsAbbr" }}">CRS</abbr></label>
-                <div class="col-sm">
+                <label for="srs-select" class="col-sm-4 col-form-label"><abbr title="{{ i18n "CrsAbbr" }}">CRS</abbr></label>
+                <div class="col-sm-8">
                     <select id="srs-select" name="srs" class="form-select">
                         <option value="http://www.opengis.net/def/crs/OGC/1.3/CRS84" selected>
                             http://www.opengis.net/def/crs/OGC/1.3/CRS84
                         </option>
-                        {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollection $.Params.CollectionID }}
+                        {{ range $index, $srs := .Config.OgcAPI.Features.CollectionSRS $.Params.CollectionID }}
                         <option value="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}">http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}</option>
                         {{ end }}
                     </select>
@@ -105,8 +105,8 @@
             {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
             <!-- datetime -->
             <div class="row mb-2">
-                <label for="referencedate-input" class="col-sm-3 col-form-label fw-bold">{{ i18n "ReferenceDate" }}</label>
-                <div class="col-sm">
+                <label for="referencedate-input" class="col-sm-4 col-form-label">{{ i18n "ReferenceDate" }}</label>
+                <div class="col-sm-8">
                     <input id="referencedate-input" name="datetime" type="date" class="form-control"
                            value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}">
                 </div>
@@ -114,8 +114,8 @@
             {{ end }}
             <!-- limit -->
             <div class="row mb-2">
-                <label for="limit-select" class="col-sm-3 col-form-label fw-bold">{{ i18n "Limit" }}</label>
-                <div class="col-sm">
+                <label for="limit-select" class="col-sm-4 col-form-label">{{ i18n "Limit" }}</label>
+                <div class="col-sm-8">
                     <select id="limit-select" name="limit" class="form-select" aria-label="Limit selection">
                         <option value="10" {{if eq .Params.Limit 10 }}selected{{end}}>10 {{ i18n "Items" }}</option>
                         <option value="100" {{if eq .Params.Limit 100 }}selected{{end}}>100 {{ i18n "Items" }}</option>
@@ -130,9 +130,9 @@
             <!-- property filters -->
             {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
             <div class="row mb-2">
-                <label for="{{ $pfName }}-input" class="col-sm-3 col-form-label fw-bold text-truncate"
+                <label for="{{ $pfName }}-input" class="col-sm-4 col-form-label text-truncate"
                        title="{{ $pfName | title }}">{{ $pfName | title }}</label>
-                <div class="col-sm">
+                <div class="col-sm-8">
                     {{ if and $pf $pf.AllowedValues }}
                     <select id="{{ $pfName }}-input" name="{{ $pfName }}" class="form-select">
                         <!-- default to empty value -->
@@ -156,6 +156,7 @@
     </div>
 
     <!-- map viewer -->
+    {{ if .Params.ShowViewer }}
     <div class="col-md-6 col-sm-12">
         <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="module" src="view-component/main.js"></script>
@@ -238,6 +239,8 @@
         </script>
         <noscript>Enable Javascript to view features on a map</noscript>
     </div>
+    {{ end }}
+
 </section>
 
 <section class="row">
@@ -288,7 +291,15 @@
 
                     {{- else if hasSuffix ".href" $key -}}
                     {{- /* render links for relations between features (OGC API part 5) */ -}}
-                    <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+                    {{ if isstringslice $value }}
+                        <td><ul>
+                        {{ range $relationLink := $value }}
+                            <li><a href="{{ $relationLink }}" target="_blank">{{ $relationLink }}</a></li>
+                        {{ end }}
+                        </ul></td>
+                    {{ else }}
+                        <td><a href="{{ $value }}" target="_blank">{{ $value }}</a></td>
+                    {{ end }}
 
                     {{- else if and $webConfig $webConfig.URLAsHyperlink (islink $value) -}}
                     {{- /* render links to arbitray (external) URLs */ -}}

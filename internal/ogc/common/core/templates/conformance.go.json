@@ -37,6 +37,13 @@
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables"*/}}
     {{/* ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters"*/}}
+    ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/schemas"
+    ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/core-roles-features"
+    ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/returnables-and-receivables"
+    ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/feature-references"
+    ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/profile-parameter"
+    ,"http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/profile-references"
+    {{/* Add more part 5 above this line */}}
     ,"http://www.opengis.net/spec/json-fg-1/0.2"
     {{ end }}
 
@@ -81,5 +88,10 @@
         ,"http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/callback"
       {{end}}
     {{end}}
+
+    ,"https://gitdocumentatie.logius.nl/publicatie/api/adr"
+    {{ if and .Params .Params.AttributesConformance }}
+      ,"http://www.pdok.nl/spec/attribute-json/0.1"
+    {{ end }}
   ]
 }

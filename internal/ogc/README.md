@@ -43,7 +43,7 @@ either:
   on the index
 - The most comprehensive solution is to use:
 
-```jinja
+```gotemplate
 {{ $first := true }}
 {{ range $_, $element := .}}
     {{if not $first}}, {{else}} {{$first = false}} {{end}}

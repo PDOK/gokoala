@@ -3,12 +3,14 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -81,10 +83,10 @@ func TestNewConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := NewConfig(tt.args.configFile)
 			if tt.wantErr {
-				assert.Error(t, err)
+				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.wantErrMsg)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -139,7 +141,7 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config, err := NewConfig(tt.args.configFile)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			var actual []string
 			if tt.args.expectedTitles {
 				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return *item.Metadata.Title })
@@ -173,7 +175,7 @@ func TestGeoSpatialCollections_Unique(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config, err := NewConfig(tt.args.configFile)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Len(t, config.AllCollections(), tt.args.nrOfCollections)
 			assert.Len(t, config.AllCollections().Unique(), tt.args.nrOfUniqueCollections)
 		})
@@ -227,10 +229,10 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	}
 }
 
-func TestProjectionsForCollections(t *testing.T) {
+func TestCollectionsSRS(t *testing.T) {
 	oaf := OgcAPIFeatures{
 		Datasources: &Datasources{
-			DefaultWGS84: Datasource{},
+			DefaultWGS84: &Datasource{},
 			Additional: []AdditionalDatasource{
 				{Srs: "EPSG:4355"},
 			},
@@ -240,7 +242,7 @@ func TestProjectionsForCollections(t *testing.T) {
 				ID: "coll1",
 				Features: &CollectionEntryFeatures{
 					Datasources: &Datasources{
-						DefaultWGS84: Datasource{},
+						DefaultWGS84: &Datasource{},
 						Additional: []AdditionalDatasource{
 							{Srs: "EPSG:4326"},
 							{Srs: "EPSG:3857"},
@@ -253,7 +255,7 @@ func TestProjectionsForCollections(t *testing.T) {
 	}
 
 	expected := []string{"EPSG:3857", "EPSG:4326", "EPSG:4355"}
-	assert.Equal(t, expected, oaf.ProjectionsForCollections())
+	assert.Equal(t, expected, oaf.CollectionsSRS())
 }
 
 func TestCacheDir(t *testing.T) {
@@ -284,7 +286,7 @@ func TestCacheDir(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.gc.CacheDir()
 			if (err != nil) != tt.wantErr {
-				assert.Fail(t, "error = %v, wantErr %v", err, tt.wantErr)
+				assert.Fail(t, fmt.Sprintf("error = %v, wantErr %v", err, tt.wantErr))
 			}
 			if tt.gc.Cache.Path == nil {
 				assert.DirExists(t, got)
@@ -367,7 +369,7 @@ func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedGeoSpatialCollection{C: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedGeoSpatialCollection{C: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
 		})
 	}
 }
@@ -540,5 +542,6 @@ func Map[T, V any](collection []T, fn func(T) V) []V {
 	for i, t := range collection {
 		result[i] = fn(t)
 	}
+
 	return result
 }

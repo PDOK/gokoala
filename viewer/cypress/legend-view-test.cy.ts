@@ -4,6 +4,7 @@ import { LegendViewComponent } from './../src/app/legend-view/legend-view.compon
 
 import { checkAccessibility, downloadPng, injectAxe, screenshot } from './shared'
 import { environment } from '../src/environments/environment'
+import { environment } from '../src/environments/environment'
 
 function loadlegend(fixture: string) {
   cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: fixture }).as('geo')

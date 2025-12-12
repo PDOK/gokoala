@@ -7,8 +7,16 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
+
+type openAPIParams struct {
+	PropertyFiltersByCollection map[string][]OpenAPIPropertyFilter
+	CollectionTypes             geospatial.CollectionTypes
+	SchemasByCollection         map[string]domain.Schema
+}
 
 type OpenAPIPropertyFilter struct {
 	Name          string
@@ -17,20 +25,25 @@ type OpenAPIPropertyFilter struct {
 	AllowedValues []string
 }
 
-// rebuildOpenAPIForFeatures Rebuild OpenAPI spec with additional info from given datasources
-func rebuildOpenAPIForFeatures(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource, filters map[string]ds.PropertyFiltersWithAllowedValues) {
+// rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
+func rebuildOpenAPI(e *engine.Engine,
+	datasources map[datasourceKey]ds.Datasource,
+	filters map[string]ds.PropertyFiltersWithAllowedValues,
+	collectionTypes geospatial.CollectionTypes,
+	schemas map[string]domain.Schema) {
+
 	propertyFiltersByCollection, err := createPropertyFiltersByCollection(datasources, filters)
 	if err != nil {
 		log.Fatal(err)
 	}
-	e.RebuildOpenAPI(struct {
-		PropertyFiltersByCollection map[string][]OpenAPIPropertyFilter
-	}{
+	e.RebuildOpenAPI(openAPIParams{
 		PropertyFiltersByCollection: propertyFiltersByCollection,
+		CollectionTypes:             collectionTypes,
+		SchemasByCollection:         schemas,
 	})
 }
 
-func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasource,
+func createPropertyFiltersByCollection(datasources map[datasourceKey]ds.Datasource,
 	filters map[string]ds.PropertyFiltersWithAllowedValues) (map[string][]OpenAPIPropertyFilter, error) {
 
 	result := make(map[string][]OpenAPIPropertyFilter)
@@ -39,25 +52,24 @@ func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasour
 		if len(configuredPropertyFilters) == 0 {
 			continue
 		}
-		featTable, err := datasource.GetFeatureTableMetadata(k.collectionID)
+		featTable, err := datasource.GetSchema(k.collectionID)
 		if err != nil {
 			continue
 		}
-		featTableColumns := featTable.ColumnsWithDataType()
-		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTableColumns))
+		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTable.Fields))
 		for _, fc := range configuredPropertyFilters {
 			match := false
-			for name, dataType := range featTableColumns {
-				if fc.Name == name {
+			for _, field := range featTable.Fields {
+				if fc.Name == field.Name {
 					// match found between property filter in config file and database column name
-					dataType = datasourceToOpenAPI(dataType)
 					propertyFilters = append(propertyFilters, OpenAPIPropertyFilter{
-						Name:          name,
+						Name:          field.Name,
 						Description:   fc.Description,
-						DataType:      dataType,
+						DataType:      field.ToTypeFormat().Type,
 						AllowedValues: fc.AllowedValues,
 					})
 					match = true
+
 					break
 				}
 			}
@@ -71,20 +83,6 @@ func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasour
 		})
 		result[k.collectionID] = propertyFilters
 	}
-	return result, nil
-}
 
-// translate database data types to OpenAPI data types
-func datasourceToOpenAPI(dataType string) string {
-	switch strings.ToUpper(dataType) {
-	case "INTEGER":
-		dataType = "integer"
-	case "REAL", "NUMERIC":
-		dataType = "number"
-	case "TEXT", "VARCHAR":
-		dataType = "string"
-	default:
-		dataType = "string"
-	}
-	return dataType
+	return result, nil
 }

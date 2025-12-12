@@ -16,13 +16,14 @@ func NewProcesses(e *engine.Engine) *Processes {
 	e.Router.Handle("/jobs*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
 	e.Router.Handle("/processes*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
 	e.Router.Handle("/api*", processes.forwarder(e.Config.OgcAPI.Processes.ProcessesServer))
+
 	return processes
 }
 
 func (p *Processes) forwarder(processServer config.URL) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		targetURL := *processServer.URL
-		targetURL.Path = processServer.URL.Path + r.URL.Path
+		targetURL.Path = processServer.Path + r.URL.Path
 		targetURL.RawQuery = r.URL.RawQuery
 		p.engine.ReverseProxy(w, r, &targetURL, false, "")
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// GeoPackage on local disk
+// GeoPackage on local disk.
 type localGeoPackage struct {
 	db *sqlx.DB
 }

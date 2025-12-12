@@ -34,6 +34,7 @@ func newRouter(version string, enableTrailingSlash bool, enableCORS bool) *chi.M
 	// add semver header, implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-57
 	router.Use(middleware.SetHeader(HeaderAPIVersion, version))
 	router.Use(middleware.Compress(5, CompressibleMediaTypes...)) // enable gzip responses
+
 	return router
 }
 
@@ -41,6 +42,7 @@ func optionsFallback(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
+
 			return
 		}
 		next.ServeHTTP(w, r)

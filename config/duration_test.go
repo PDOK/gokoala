@@ -81,7 +81,7 @@ func TestDuration_Marshalling_JSON(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedDuration{D: *tt.duration}, unmarshalledEmbedded, "yaml.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedDuration{D: *tt.duration}, unmarshalledEmbedded, "yaml.Unmarshal")
 		})
 	}
 }

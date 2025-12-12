@@ -19,7 +19,7 @@ type Duration struct {
 // MarshalJSON turn duration tag into JSON
 // Value instead of pointer receiver because only that way it can be used for both.
 func (d Duration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.Duration.String())
+	return json.Marshal(d.String())
 }
 
 func (d *Duration) UnmarshalJSON(b []byte) error {
@@ -28,7 +28,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 
 // MarshalYAML turn duration tag into YAML
 // Value instead of pointer receiver because only that way it can be used for both.
-func (d Duration) MarshalYAML() (interface{}, error) {
+func (d Duration) MarshalYAML() (any, error) {
 	return d.Duration, nil
 }
 
@@ -50,5 +50,6 @@ func (d *Duration) DeepCopy() *Duration {
 	}
 	out := &Duration{}
 	d.DeepCopyInto(out)
+
 	return out
 }

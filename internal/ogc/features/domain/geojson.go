@@ -1,17 +1,18 @@
 package domain
 
 import (
+	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 )
 
-// featureCollectionType allows the GeoJSON type to be automatically set during json marshalling
+// featureCollectionType allows the GeoJSON type to be automatically set during json marshalling.
 type featureCollectionType struct{}
 
 func (fc *featureCollectionType) MarshalJSON() ([]byte, error) {
 	return []byte(`"FeatureCollection"`), nil
 }
 
-// featureType allows the type for Feature to be automatically set during json Marshalling
+// featureType allows the type for Feature to be automatically set during json Marshalling.
 type featureType struct{}
 
 func (ft *featureType) MarshalJSON() ([]byte, error) {
@@ -19,7 +20,7 @@ func (ft *featureType) MarshalJSON() ([]byte, error) {
 }
 
 // FeatureCollection is a GeoJSON FeatureCollection with extras such as links
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type FeatureCollection struct {
 	Type           featureCollectionType `json:"type"`
 	Timestamp      string                `json:"timeStamp,omitempty"`
@@ -29,11 +30,12 @@ type FeatureCollection struct {
 }
 
 // Feature is a GeoJSON Feature with extras such as links
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type Feature struct {
 	Type       featureType       `json:"type"`
 	Properties FeatureProperties `json:"properties"`
-	Geometry   *geojson.Geometry `json:"geometry"`
+	// We support 'null' geometries, don't add an 'omitempty' tag here.
+	Geometry *geojson.Geometry `json:"geometry"`
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
 	ID    string `json:"id"`
@@ -45,8 +47,25 @@ func (f *Feature) Keys() []string {
 	return f.Properties.Keys()
 }
 
+// SetGeom sets the geometry of the Feature by encoding the provided geom.T with
+// optional maximum decimal precision to GeoJSON.
+func (f *Feature) SetGeom(geometry geom.T, maxDecimals int) (err error) {
+	if geometry == nil {
+		f.Geometry = nil
+
+		return
+	}
+	var opts []geojson.EncodeGeometryOption
+	if maxDecimals > 0 {
+		opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}
+	}
+	f.Geometry, err = geojson.Encode(geometry, opts...)
+
+	return
+}
+
 // Link according to RFC 8288, https://datatracker.ietf.org/doc/html/rfc8288
-// Note: fields in this struct are sorted for optimal memory usage (field alignment)
+// Note: fields in this struct are sorted for optimal memory usage (field alignment).
 type Link struct {
 	Rel       string `json:"rel"`
 	Title     string `json:"title,omitempty"`

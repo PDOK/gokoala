@@ -6,11 +6,10 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/PDOK/gokoala/config"
 	eng "github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc"
 	"github.com/urfave/cli/v2"
-
-	_ "go.uber.org/automaxprocs"
 )
 
 var (
@@ -69,12 +68,18 @@ var (
 			Required: false,
 			EnvVars:  []string{"ENABLE_CORS"},
 		},
+		&cli.StringFlag{
+			Name:     "theme-file",
+			Usage:    "reference to a (customized) YAML configuration file for the theme",
+			Required: false,
+			EnvVars:  []string{"THEME_FILE"},
+		},
 	}
 )
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "GoKoala"
+	app.Name = config.AppName
 	app.Usage = "Cloud Native OGC APIs server, written in Go"
 	app.Flags = cliFlags
 	app.Action = func(c *cli.Context) error {
@@ -84,12 +89,13 @@ func main() {
 		debugPort := c.Int("debug-port")
 		shutdownDelay := c.Int("shutdown-delay")
 		configFile := c.String("config-file")
+		themeFile := c.String("theme-file")
 		openAPIFile := c.String("openapi-file")
 		trailingSlash := c.Bool("enable-trailing-slash")
 		cors := c.Bool("enable-cors")
 
 		// Engine encapsulates shared non-OGC API specific logic
-		engine, err := eng.NewEngine(configFile, openAPIFile, trailingSlash, cors)
+		engine, err := eng.NewEngine(configFile, themeFile, openAPIFile, trailingSlash, cors)
 		if err != nil {
 			return err
 		}

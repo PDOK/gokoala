@@ -14,12 +14,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup cgo dependencies
-        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite
+        run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite proj-bin
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
+          check-latest: true
+          go-version: '1.25'
 
       - name: Download
         run: go mod download all
@@ -31,15 +32,10 @@ jobs:
         run: go build -v ./...
 
       - name: Unit Test
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 5
-          max_attempts: 2
-          retry_on: error
-          command: |
-            go test -v -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
-            # remove generate code from coverage results
-            grep -v "zz_generated" cover.out.tmp > cover.out
+        run: |
+          go test -v -race -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
+          echo "remove generate code from coverage results"
+          grep -v "zz_generated" cover.out.tmp > cover.out
 
       - name: Test generating example CRD
         run: hack/generate-crd.sh
@@ -50,14 +46,18 @@ jobs:
         run: go test -v ./... -bench=. -run=^# -benchmem -count=1
 
       - name: Fail when coverage below threshold
-        uses: vladopajic/go-test-coverage@v2
+        # Pin 3rd party action to a specific version as security best-practice.
+        # Version used: https://github.com/vladopajic/go-test-coverage/releases/tag/v2.17.0
+        uses: vladopajic/go-test-coverage@cc5012c2cfa84542e02b079141958a885861d326
         with:
           profile: cover.out
           local-prefix: github.com/PDOK/gokoala
           threshold-total: 80  # 80% overall coverage is the minimum
 
       - name: Update coverage report
-        uses: ncruces/go-coverage-report@v0
+        # Pin 3rd party action to a specific version as security best-practice.
+        # Version used: https://github.com/ncruces/go-coverage-report/releases/tag/v0.3.1
+        uses: ncruces/go-coverage-report@aa507d98fb11c2b4dffa1b731e0786f50fd8ec93
         with:
           coverage-file: cover.out
           report: true

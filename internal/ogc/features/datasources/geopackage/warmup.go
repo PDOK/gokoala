@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -14,22 +15,24 @@ import (
 // This encompasses traversing index(es) to fill the local cache.
 func warmUpFeatureTables(
 	configuredCollections config.GeoSpatialCollections,
-	featureTableByCollectionID map[string]*featureTable,
+	tableByCollectionID map[string]*common.Table,
 	db *sqlx.DB) error {
 
-	for collID, table := range featureTableByCollectionID {
+	for collID, table := range tableByCollectionID {
 		if table == nil {
 			return errors.New("given table can't be nil")
 		}
 		for _, coll := range configuredCollections {
 			if coll.ID == collID && coll.Features != nil {
-				if err := warmUpFeatureTable(table.TableName, db); err != nil {
+				if err := warmUpFeatureTable(table.Name, db); err != nil {
 					return err
 				}
+
 				break
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -44,5 +47,6 @@ select minx,maxx,miny,maxy from %[1]s where minx <= 0 and maxx >= 0 and miny <= 
 		return fmt.Errorf("failed to warm-up feature table '%s': %w", tableName, err)
 	}
 	log.Printf("end warm-up of feature table '%s'", tableName)
+
 	return nil
 }

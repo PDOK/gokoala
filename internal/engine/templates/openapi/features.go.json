@@ -22,6 +22,9 @@
         "operationId": "{{ $coll.ID }}.getFeatures",
         "parameters": [
           {
+            "$ref": "#/components/parameters/f-features"
+          },
+          {
             "$ref": "#/components/parameters/limit"
           },
           {
@@ -42,6 +45,9 @@
             "$ref": "#/components/parameters/datetime_notsupported"
           },
           {{ end }}
+          {
+            "$ref": "#/components/parameters/profile"
+          },
           {
             "$ref": "#/components/parameters/cursor"
           }
@@ -75,8 +81,12 @@
           {{ end }}
         ],
         "responses": {
+          {{- $collType := "undefined" -}}
+          {{- if and $.Params $.Params.CollectionTypes -}}
+            {{- $collType = $.Params.CollectionTypes.Get $coll.ID -}}
+          {{- end -}}
           "200": {
-            "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include information about the number of selected and\nreturned features (`numberMatched` and `numberReturned`) as well as\nlinks to support paging (link relation `next`).",
+            "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include links to support paging (link relation `next`).",
             "headers": {
               "Content-Crs": {
                 "description": "a URI, in angular brackets, identifying the coordinate reference system used in the content / payload",
@@ -84,142 +94,29 @@
                   "type": "string"
                 },
                 "example": "<http://www.opengis.net/def/crs/EPSG/0/3395>"
-              }
+              },
+              {{block "headers" . }}{{end}}
             },
             "content": {
+              {{- if eq $collType "features" -}}
               "application/geo+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureCollectionGeoJSON"
-                },
-                "example": {
-                  "type": "FeatureCollection",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
-                      "rel": "next",
-                      "type": "application/geo+json",
-                      "title": "next page"
-                    }
-                  ],
-                  "timeStamp": "2018-04-03T14:52:23Z",
-{{/*                  "numberMatched": 123,*/}}
-                  "numberReturned": 2,
-                  "features": [
-                    {
-                      "type": "Feature",
-                      "id": "123",
-                      "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "properties": {
-                        "function": "residential",
-                        "floors": "2",
-                        "lastUpdate": "2015-08-01T12:34:56Z"
-                      }
-                    },
-                    {
-                      "type": "Feature",
-                      "id": "132",
-                      "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "properties": {
-                        "function": "public use",
-                        "floors": "10",
-                        "lastUpdate": "2013-12-03T10:15:37Z"
-                      }
-                    }
-                  ]
+                  "$ref": "#/components/schemas/featureCollectionGeoJSON_{{ $coll.ID }}"
                 }
               },
               "application/vnd.ogc.fg+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureCollectionJSONFG"
-                },
-                "example": {
-                  "conformsTo": [
-                    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
-                  ],
-                  "type": "FeatureCollection",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json&cursor=hash&limit=2",
-                      "rel": "next",
-                      "type": "application/geo+json",
-                      "title": "next page"
-                    }
-                  ],
-                  "timeStamp": "2018-04-03T14:52:23Z",
-                  {{/*                  "numberMatched": 123,*/}}
-                  "numberReturned": 2,
-                  "features": [
-                    {
-                      "type": "Feature",
-                      "id": "123",
-                      "place": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "geometry": null,
-                      "time": null,
-                      "properties": {
-                        "function": "residential",
-                        "floors": "2",
-                        "lastUpdate": "2015-08-01T12:34:56Z"
-                      }
-                    },
-                    {
-                      "type": "Feature",
-                      "id": "132",
-                      "place": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "geometry": null,
-                      "time": null,
-                      "properties": {
-                        "function": "public use",
-                        "floors": "10",
-                        "lastUpdate": "2013-12-03T10:15:37Z"
-                      }
-                    }
-                  ]
+                  "$ref": "#/components/schemas/featureCollectionJSONFG_{{ $coll.ID }}"
                 }
               },
+              {{- end -}}
+              {{ if eq $collType "attributes" }}
+              "application/json": {
+                "schema": {
+                    "$ref": "#/components/schemas/featureCollectionJSON_{{ $coll.ID }}"
+                }
+              },
+              {{- end -}}
               "text/html": {
                 "schema": {
                   "type": "string"
@@ -250,7 +147,13 @@
             }
           },
           {
+            "$ref": "#/components/parameters/f-features"
+          },
+          {
             "$ref": "#/components/parameters/crs"
+          },
+          {
+            "$ref": "#/components/parameters/profile"
           }
         ],
         "responses": {
@@ -263,99 +166,58 @@
                   "type": "string"
                 },
                 "example": "<http://www.opengis.net/def/crs/EPSG/0/3395>"
-              }
+              },
+              {{block "headers" . }}{{end}}
             },
             "content": {
+              {{- if eq $collType "features" -}}
               "application/geo+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureGeoJSON"
-                },
-                "example": {
-                  "type": "Feature",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/id/building/123",
-                      "rel": "canonical",
-                      "title": "canonical URI of the building"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings",
-                      "rel": "collection",
-                      "type": "application/geo+json",
-                      "title": "the collection document"
-                    }
-                  ],
-                  "id": "123",
-                  "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [
-                      "..."
-                    ]
-                  },
-                  "properties": {
-                    "function": "residential",
-                    "floors": "2",
-                    "lastUpdate": "2015-08-01T12:34:56Z"
-                  }
+                  "$ref": "#/components/schemas/featureGeoJSON_{{ $coll.ID }}"
                 }
               },
               "application/vnd.ogc.fg+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureJSONFG"
-                },
-                "example": {
-                  "type": "Feature",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/id/building/123",
-                      "rel": "canonical",
-                      "title": "canonical URI of the building"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items/123?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings",
-                      "rel": "collection",
-                      "type": "application/geo+json",
-                      "title": "the collection document"
-                    }
-                  ],
-                  "id": "123",
-                  "place": {
-                    "type": "Polygon",
-                    "coordinates": [
-                      "..."
-                    ]
-                  },
-                  "geometry": null,
-                  "time": null,
-                  "properties": {
-                    "function": "residential",
-                    "floors": "2",
-                    "lastUpdate": "2015-08-01T12:34:56Z"
-                  }
+                  "$ref": "#/components/schemas/featureJSONFG_{{ $coll.ID }}"
+                }
+              },
+              {{- end -}}
+              {{ if eq $collType "attributes" }}
+              "application/json": {
+                "schema": {
+                   "$ref": "#/components/schemas/featureJSON_{{ $coll.ID }}"
+                 }
+              },
+              {{- end -}}
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    },
+    "/collections/{{ $coll.ID }}/schema": {
+      "get": {
+        "tags" : [ "Features" ],
+        "summary": "fetch the schema of this collection",
+        "description": "Fetch the schema of the collection with id `{{ $coll.ID }}`. The schema describes the features such as the available fields and data types.\n\nUse content negotiation to request HTML or JSON schema.",
+        "operationId": "{{ $coll.ID }}.getSchema",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response is a document containing the schema that describes the features in this collection.",
+            "content": {
+              "application/schema+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jsonSchema"
                 }
               },
               "text/html": {
@@ -363,6 +225,9 @@
                   "type": "string"
                 }
               }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
             }
           },
           {{block "problems" . }}{{end}}
@@ -385,7 +250,9 @@
         },
         "description": "The extent of the features in the collection. In the Core only spatial and temporal\nextents are specified. Extensions may add additional members to represent other\nextents, for example, thermal or pressure ranges."
       },
-      "featureCollectionJSONFG": {
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureCollectionJSONFG_{{ $coll.ID }}": {
         "required": [
           "features",
           "type"
@@ -407,7 +274,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureJSONFG"
+              "$ref": "#/components/schemas/featureJSONFG_{{ $coll.ID }}"
             }
           },
           "links": {
@@ -426,8 +293,12 @@
             "$ref": "#/components/schemas/numberReturned"
           }
         }
-      },
-      "featureCollectionGeoJSON": {
+      }
+      {{- end -}}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureCollectionGeoJSON_{{ $coll.ID }}": {
         "required": [
           "features",
           "type"
@@ -443,7 +314,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureGeoJSON"
+              "$ref": "#/components/schemas/featureGeoJSON_{{ $coll.ID }}"
             }
           },
           "links": {
@@ -462,8 +333,52 @@
             "$ref": "#/components/schemas/numberReturned"
           }
         }
-      },
-      "featureJSONFG": {
+      }
+      {{ end }}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureCollectionJSON_{{ $coll.ID }}": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/featureJSON_{{ $coll.ID }}"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          },
+          "timeStamp": {
+            "$ref": "#/components/schemas/timeStamp"
+          },
+{{/*          "numberMatched": {*/}}
+{{/*            "$ref": "#/components/schemas/numberMatched"*/}}
+{{/*          },*/}}
+          "numberReturned": {
+            "$ref": "#/components/schemas/numberReturned"
+          }
+        }
+      }
+      {{ end }}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureJSONFG_{{ $coll.ID }}": {
         "required": [
             "time",
             "place",
@@ -514,8 +429,7 @@
             ]
           },
           "properties": {
-            "type": "object",
-            "nullable": true
+            "$ref": "#/components/schemas/propertiesGeoJSON_{{ $coll.ID }}"
           },
           "id": {
             "oneOf": [
@@ -534,8 +448,12 @@
             }
           }
         }
-      },
-      "featureGeoJSON": {
+      }
+      {{- end -}}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureGeoJSON_{{ $coll.ID }}": {
         "required": [
           "geometry",
           "properties",
@@ -558,8 +476,7 @@
             ]
           },
           "properties": {
-            "type": "object",
-            "nullable": true
+            "$ref": "#/components/schemas/propertiesGeoJSON_{{ $coll.ID }}"
           },
           "id": {
             "oneOf": [
@@ -578,7 +495,95 @@
             }
           }
         }
-      },
+      }
+      {{ end }}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "featureJSON_{{ $coll.ID }}": {
+        "required": [
+          "properties",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "properties": {
+            "$ref": "#/components/schemas/propertiesGeoJSON_{{ $coll.ID }}"
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/link"
+            }
+          }
+        }
+      }
+      {{ end }}
+      ,
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
+      {{- if $index -}},{{- end -}}
+      "propertiesGeoJSON_{{ $coll.ID }}": {
+        "type": "object",
+        "properties": {
+          {{ if and $.Params $.Params.SchemasByCollection -}}
+            {{ range $schemaColl, $schema := $.Params.SchemasByCollection -}}
+              {{ if eq $coll.ID $schemaColl -}}
+
+                {{ $firstProp := true -}}
+                {{ range $index, $schemaField := $schema.Fields -}}
+                  {{/* Skip feature id and external feature id fields, since we don't include those directly. */}}
+                  {{/* We always use an 'id' field as required by GeoJSON / JSON-FG.*/}}
+                  {{ if $schemaField.IsFid -}}
+                    {{ continue }}
+                  {{ end -}}
+                  {{ if $schemaField.IsExternalFid -}}
+                    {{ continue }}
+                  {{ end -}}
+                  {{/* Skip geometry field, since we don't include this directly. */}}
+                  {{/* We always use an 'geometry' field as required by GeoJSON / JSON-FG.*/}}
+                  {{ if $schemaField.IsPrimaryGeometry -}}
+                    {{ continue }}
+                  {{ end -}}
+
+                  {{/* Avoid first comma */}}
+                  {{ if not $firstProp }},{{ else }}{{ $firstProp = false }}{{ end }}
+
+                  "{{ $schemaField.Name }}": {
+                    {{ $typeFormat := $schemaField.ToTypeFormat -}}
+                    "type": "{{ $typeFormat.Type }}",
+                    {{ if eq $typeFormat.Type "array" }}
+                    "items": {
+                        "type": "string"
+                    },
+                    {{ else if $typeFormat.Format }}"format": "{{ $typeFormat.Format }}", {{ end }}
+                    "nullable": {{ not $schemaField.IsRequired }},
+                    "description": "{{ $schemaField.Description }}"
+                  }
+                {{ end -}}
+
+              {{ end -}}
+            {{ end -}}
+          {{ end -}}
+        }
+      }
+      {{- end -}}
+      ,
       "geometryGeoJSON": {
         "oneOf": [
           {
@@ -648,37 +653,6 @@
                 "type": "number"
               }
             }
-          }
-        }
-      },
-      "link": {
-        "required": [
-          "href"
-        ],
-        "type": "object",
-        "properties": {
-          "href": {
-            "type": "string",
-            "example": "http://data.example.com/buildings/123"
-          },
-          "rel": {
-            "type": "string",
-            "example": "alternate"
-          },
-          "type": {
-            "type": "string",
-            "example": "application/geo+json"
-          },
-          "hreflang": {
-            "type": "string",
-            "example": "en"
-          },
-          "title": {
-            "type": "string",
-            "example": "Trierer Strasse 70, 53115 Bonn"
-          },
-          "length": {
-            "type": "integer"
           }
         }
       },
@@ -902,6 +876,47 @@
           }
         },
         "description": "The temporal extent of the features in the collection."
+      },
+      "jsonSchema": {
+        "required": [
+          "type",
+          "$id",
+          "$schema"
+        ],
+        "type": "object",
+        "description": "A JSON Schema definition",
+        "properties": {
+          "$id": {
+            "type": "string",
+            "description": "URI that serves as the schema identifier"
+          },
+          "$schema": {
+            "type": "string",
+            "description": "URI that identifies the JSON Schema version"
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable title of the schema"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the schema"
+          },
+          "type": {
+            "type": "string"
+          },
+          "required": {
+            "type": "array",
+            "description": "List of required property names",
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "description": "Schema for object properties"
+          }
+        }
       }
     },
     "parameters": {
@@ -951,7 +966,7 @@
           "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
           "enum": [
             "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollections }}
+            {{ range $index, $srs := .Config.OgcAPI.Features.CollectionsSRS }}
             ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
             {{ end }}
           ]
@@ -970,7 +985,7 @@
           "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
           "enum": [
             "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-            {{ range $index, $srs := .Config.OgcAPI.Features.ProjectionsForCollections }}
+            {{ range $index, $srs := .Config.OgcAPI.Features.CollectionsSRS }}
             ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
             {{ end }}
           ]
@@ -1046,6 +1061,42 @@
         "schema": {
           "type": "string"
         }
+      },
+      "profile" : {
+        "name" : "profile",
+        "in" : "query",
+        "description" : "Select the profile to be used for the response. Available profiles:\n\n* `rel-as-link`: When the data contains relations between features, each relation is represented by a property with suffix `.href` which contains a URL to the linked feature.\n* `rel-as-uri`: When the data contains relations between features, each relation is represented by a property containing the URL to the linked feature.\n* `rel-as-key`: When the data contains relations between features, each relation is represented by a property containing only the ID of the linked feature.",
+        "required" : false,
+        "style" : "form",
+        "explode" : false,
+        "schema" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "rel-as-link",
+              "rel-as-uri",
+              "rel-as-key"
+            ]
+          }
+        }
+      },
+      "f-features": {
+        "description": "The optional f parameter indicates the output format that the server shall provide as part of the response document.  The default format is JSON.",
+        "explode": false,
+        "in": "query",
+        "name": "f",
+        "required": false,
+        "schema": {
+          "default": "json",
+          "enum": [
+            "json",
+            "jsonfg",
+            "html"
+          ],
+          "type": "string"
+        },
+        "style": "form"
       }
     }
   }

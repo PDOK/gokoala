@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
 )
@@ -18,39 +19,45 @@ type Datasource interface {
 	GetFeatureIDs(ctx context.Context, collection string, criteria FeaturesCriteria) ([]int64, domain.Cursors, error)
 
 	// GetFeaturesByID returns a collection of Features with the given IDs. To be used in concert with GetFeatureIDs
-	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, profile domain.Profile) (*domain.FeatureCollection, error)
+	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, error)
 
 	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
-	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
+	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
 
 	// GetFeature returns a specific Feature, based on its feature id
-	GetFeature(ctx context.Context, collection string, featureID any, profile domain.Profile) (*domain.Feature, error)
+	GetFeature(ctx context.Context, collection string, featureID any, outputSRID domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
 
-	// GetFeatureTableMetadata returns metadata about a feature table associated with the given collection
-	GetFeatureTableMetadata(collection string) (FeatureTableMetadata, error)
+	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
+	GetSchema(collection string) (*domain.Schema, error)
 
 	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values.
-	// When enrichments don't apply the returned result should still contain all property filters as specified in the (YAML) config.
+	// When enrichments don't apply, the returned result should still contain all property filters as specified in the (YAML) config.
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
+
+	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
+	GetCollectionType(collection string) (geospatial.CollectionType, error)
+
+	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
+	SupportsOnTheFlyTransformation() bool
 
 	// Close closes (connections to) the datasource gracefully
 	Close()
 }
 
-// FeaturesCriteria to select a certain set of Features
+// FeaturesCriteria to select a certain set of Features.
 type FeaturesCriteria struct {
-	// pagination
+	// pagination (OAF part 1)
 	Cursor domain.DecodedCursor
 	Limit  int
 
-	// multiple projections support
-	InputSRID  int // derived from bbox or filter param when available, or WGS84 as default
-	OutputSRID int // derived from crs param when available, or WGS84 as default
+	// multiple projections support (OAF part 2)
+	InputSRID  domain.SRID // derived from bbox or filter param when available, or WGS84 as default
+	OutputSRID domain.SRID // derived from crs param when available, or WGS84 as default
 
-	// filtering by bounding box
+	// filtering by bounding box (OAF part 1)
 	Bbox *geom.Bounds
 
-	// filtering by reference date/time
+	// filtering by reference date/time (OAF part 1)
 	TemporalCriteria TemporalCriteria
 
 	// filtering by properties (OAF part 1)
@@ -61,7 +68,7 @@ type FeaturesCriteria struct {
 	FilterLang string
 }
 
-// TemporalCriteria criteria to filter based on date/time
+// TemporalCriteria criteria to filter based on date/time.
 type TemporalCriteria struct {
 	// reference date
 	ReferenceDate time.Time
@@ -71,15 +78,7 @@ type TemporalCriteria struct {
 	EndDateProperty   string
 }
 
-// FeatureTableMetadata abstraction to access metadata of a feature table (aka attribute table)
-type FeatureTableMetadata interface {
-
-	// ColumnsWithDataType returns a mapping from column names to column data types.
-	// Note: data types can be datasource specific.
-	ColumnsWithDataType() map[string]string
-}
-
-// PropertyFilterWithAllowedValues property filter as configured in the (YAML) config, but enriched with allowed values
+// PropertyFilterWithAllowedValues property filter as configured in the (YAML) config, but enriched with allowed values.
 type PropertyFilterWithAllowedValues struct {
 	config.PropertyFilter
 
@@ -87,5 +86,5 @@ type PropertyFilterWithAllowedValues struct {
 	AllowedValues []string
 }
 
-// PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name
+// PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name.
 type PropertyFiltersWithAllowedValues map[string]PropertyFilterWithAllowedValues

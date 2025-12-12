@@ -39,6 +39,7 @@ func (u *URL) UnmarshalYAML(unmarshal func(any) error) error {
 	} else if parsedURL != nil {
 		u.URL = parsedURL
 	}
+
 	return nil
 }
 
@@ -48,7 +49,8 @@ func (u URL) MarshalJSON() ([]byte, error) {
 	if u.URL == nil {
 		return json.Marshal("")
 	}
-	return json.Marshal(u.URL.String())
+
+	return json.Marshal(u.String())
 }
 
 // UnmarshalJSON parses a string to URL and also removes trailing slash if present,
@@ -59,11 +61,12 @@ func (u *URL) UnmarshalJSON(b []byte) error {
 
 // MarshalYAML turns URL into YAML.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (u URL) MarshalYAML() (interface{}, error) {
+func (u URL) MarshalYAML() (any, error) {
 	if u.URL == nil {
 		return "", nil
 	}
-	return u.URL.String(), nil
+
+	return u.String(), nil
 }
 
 // DeepCopyInto copies the receiver, writes into out.
@@ -80,6 +83,7 @@ func (u *URL) DeepCopy() *URL {
 	}
 	out := &URL{}
 	u.DeepCopyInto(out)
+
 	return out
 }
 
@@ -87,5 +91,6 @@ func parseURL(s string) (*url.URL, error) {
 	if !validURLRegexp.MatchString(s) {
 		return nil, fmt.Errorf("invalid URL: %s", s)
 	}
+
 	return url.Parse(strings.TrimSuffix(s, "/"))
 }

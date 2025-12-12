@@ -1,39 +1,5 @@
 {
-  "id": "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
-  "links": [
-    {
-      "rel": "self",
-      "title": "This document as GeoJSON",
-      "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=json"
-    },
-    {
-      "rel": "alternate",
-      "title": "This document as JSON-FG",
-      "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=jsonfg"
-    },
-    {
-      "rel": "alternate",
-      "title": "This document as HTML",
-      "type": "text/html",
-      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=html"
-    },
-    {
-      "rel": "collection",
-      "title": "The collection to which this feature belongs",
-      "type": "application/json",
-      "href": "http://localhost:8080/collections/dutch-addresses?f=json"
-    }
-  ],
   "type": "Feature",
-  "geometry": {
-    "type": "Point",
-    "coordinates": [
-      120632.16219196285,
-      566422.0191711548
-    ]
-  },
   "properties": {
     "alternativeidentifier": "",
     "beginlifespanversion": null,
@@ -75,5 +41,39 @@
     "status_href": "",
     "validfrom": "2009-12-21T00:00:00Z",
     "validto": null
-  }
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      120632.16219,
+      566422.01917
+    ]
+  },
+  "id": "b29c12b1-21a9-5e63-83b4-0ff9122ef80f",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/dutch-addresses/items/b29c12b1-21a9-5e63-83b4-0ff9122ef80f?f=html"
+    },
+    {
+      "rel": "collection",
+      "title": "The collection to which this feature belongs",
+      "type": "application/json",
+      "href": "http://localhost:8080/collections/dutch-addresses?f=json"
+    }
+  ]
 }

@@ -1,260 +1,91 @@
 package features
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
-	"time"
+	"sync"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/google/uuid"
-	"github.com/twpayne/go-geom"
-
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgis"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/go-chi/chi/v5"
+	"github.com/PDOK/gokoala/internal/ogc/features/proj"
 )
 
 const (
 	templatesDir = "internal/ogc/features/templates/"
 )
 
-var (
-	configuredCollections  map[string]config.GeoSpatialCollection
-	emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.Feature, 0)}
-)
-
-type DatasourceKey struct {
-	srid         int
-	collectionID string
-}
-
-type DatasourceConfig struct {
-	collections config.GeoSpatialCollections
-	ds          config.Datasource
-}
-
 type Features struct {
-	engine                    *engine.Engine
-	datasources               map[DatasourceKey]ds.Datasource
+	engine *engine.Engine
+
+	datasources               map[datasourceKey]ds.Datasource
+	axisOrderBySRID           map[int]domain.AxisOrder
+	configuredCollections     map[string]config.GeoSpatialCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
-	defaultProfile            domain.Profile
+	collectionTypes           geospatial.CollectionTypes
+	schemas                   map[string]domain.Schema
 
 	html *htmlFeatures
 	json *jsonFeatures
 }
 
+// NewFeatures Bootstraps OGC API Features logic.
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := createDatasources(e)
-	configuredCollections = cacheConfiguredFeatureCollections(e)
+	axisOrderBySRID := determineAxisOrder(datasources)
+	configuredCollections := cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
+	collectionTypes := determineCollectionTypes(datasources)
 
-	rebuildOpenAPIForFeatures(e, datasources, configuredPropertyFilters)
+	schemas := renderSchemas(e, datasources)
+	rebuildOpenAPI(e, datasources, configuredPropertyFilters, collectionTypes, schemas)
 
 	f := &Features{
 		engine:                    e,
 		datasources:               datasources,
+		axisOrderBySRID:           axisOrderBySRID,
+		configuredCollections:     configuredCollections,
 		configuredPropertyFilters: configuredPropertyFilters,
-		defaultProfile:            domain.NewProfile(domain.RelAsLink, *e.Config.BaseURL.URL, util.Keys(configuredCollections)),
+		collectionTypes:           collectionTypes,
+		schemas:                   schemas,
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
+
 	return f
 }
 
-// Features serve a FeatureCollection with the given collectionId
-//
-// Beware: this is one of the most performance sensitive pieces of code in the system.
-// Try to do as much initialization work outside the hot path, and only do essential
-// operations inside this method.
-func (f *Features) Features() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-
-		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
-		if !ok {
-			handleCollectionNotFound(w, collectionID)
-			return
-		}
-		url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
-			referenceDate, propertyFilters, err := f.parseFeaturesURL(r, collection)
-		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
-
-		var newCursor domain.Cursors
-		var fc *domain.FeatureCollection
-		if querySingleDatasource(inputSRID, outputSRID, bbox) {
-			// fast path
-			datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-			fc, newCursor, err = datasource.GetFeatures(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:           encodedCursor.Decode(url.checksum()),
-				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
-				Bbox:             bbox,
-				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
-				PropertyFilters:  propertyFilters,
-				// Add filter, filter-lang
-			}, f.defaultProfile)
-			if err != nil {
-				handleFeaturesQueryError(w, collectionID, err)
-				return
-			}
-		} else {
-			// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
-			var fids []int64
-			datasource := f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collectionID}]
-			fids, newCursor, err = datasource.GetFeatureIDs(r.Context(), collectionID, ds.FeaturesCriteria{
-				Cursor:           encodedCursor.Decode(url.checksum()),
-				Limit:            limit,
-				InputSRID:        inputSRID.GetOrDefault(),
-				OutputSRID:       outputSRID.GetOrDefault(),
-				Bbox:             bbox,
-				TemporalCriteria: getTemporalCriteria(collection, referenceDate),
-				PropertyFilters:  propertyFilters,
-				// Add filter, filter-lang
-			})
-			if err == nil && fids != nil {
-				datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-				fc, err = datasource.GetFeaturesByID(r.Context(), collectionID, fids, f.defaultProfile)
-			}
-			if err != nil {
-				handleFeaturesQueryError(w, collectionID, err)
-				return
-			}
-		}
-		if fc == nil {
-			fc = emptyFeatureCollection
-		}
-
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
-		case engine.FormatHTML:
-			f.html.features(w, r, collectionID, newCursor, url, limit, &referenceDate,
-				propertyFilters, f.configuredPropertyFilters[collectionID], collection.Features, fc)
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featuresAsGeoJSON(w, r, collectionID, newCursor, url, collection.Features, fc)
-		case engine.FormatJSONFG:
-			f.json.featuresAsJSONFG(w, r, collectionID, newCursor, url, collection.Features, fc, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-			return
-		}
-	}
+func (f *Features) GetCollectionTypes() geospatial.CollectionTypes {
+	return f.collectionTypes
 }
 
-// Feature serves a single Feature
-func (f *Features) Feature() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-
-		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := configuredCollections[collectionID]
-		if !ok {
-			handleCollectionNotFound(w, collectionID)
-			return
-		}
-		featureID, err := parseFeatureID(r)
-		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		url := featureURL{*f.engine.Config.BaseURL.URL, r.URL.Query()}
-		outputSRID, contentCrs, err := url.parse()
-		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
-
-		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collectionID}]
-		feat, err := datasource.GetFeature(r.Context(), collectionID, featureID, f.defaultProfile)
-		if err != nil {
-			handleFeatureQueryError(w, collectionID, featureID, err)
-			return
-		}
-		if feat == nil {
-			handleFeatureNotFound(w, collectionID, featureID)
-			return
-		}
-
-		format := f.engine.CN.NegotiateFormat(r)
-		switch format {
-		case engine.FormatHTML:
-			f.html.feature(w, r, collectionID, collection.Features, feat)
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
-		case engine.FormatJSONFG:
-			f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
-			return
-		}
-	}
+type datasourceKey struct {
+	srid         int
+	collectionID string
 }
 
-func (f *Features) parseFeaturesURL(r *http.Request, collection config.GeoSpatialCollection) (featureCollectionURL,
-	domain.EncodedCursor, int, domain.SRID, domain.SRID, domain.ContentCrs, *geom.Bounds, time.Time, map[string]string, error) {
-
-	url := featureCollectionURL{
-		*f.engine.Config.BaseURL.URL,
-		r.URL.Query(),
-		f.engine.Config.OgcAPI.Features.Limit,
-		f.configuredPropertyFilters[collection.ID],
-		collection.HasDateTime(),
-	}
-	encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err := url.parse()
-	return url, encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox, referenceDate, propertyFilters, err
+type datasourceConfig struct {
+	collections       config.GeoSpatialCollections
+	ds                config.Datasource
+	transformOnTheFly bool
 }
 
-func parseFeatureID(r *http.Request) (any, error) {
-	var featureID any
-	featureID, err := uuid.Parse(chi.URLParam(r, "featureId"))
-	if err != nil {
-		// fallback to numerical feature id
-		featureID, err = strconv.ParseInt(chi.URLParam(r, "featureId"), 10, 0)
-		if err != nil {
-			return nil, errors.New("feature ID must be a UUID or number")
-		}
-	}
-	return featureID, nil
-}
-
-func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {
-	result := make(map[string]config.GeoSpatialCollection)
-	for _, collection := range e.Config.OgcAPI.Features.Collections {
-		result[collection.ID] = collection
-	}
-	return result
-}
-
-func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
-	configured := make(map[DatasourceKey]*DatasourceConfig, len(e.Config.OgcAPI.Features.Collections))
+func createDatasources(e *engine.Engine) map[datasourceKey]ds.Datasource {
+	configured := make(map[datasourceKey]*datasourceConfig, len(e.Config.OgcAPI.Features.Collections))
 
 	// configure collection specific datasources first
 	configureCollectionDatasources(e, configured)
 	// now configure top-level datasources, for the whole dataset. But only when
-	// there's no collection specific datasource already configured
+	// there's no collection-specific datasource already configured
 	configureTopLevelDatasources(e, configured)
 
 	if len(configured) == 0 {
@@ -263,29 +94,95 @@ func createDatasources(e *engine.Engine) map[DatasourceKey]ds.Datasource {
 
 	// now we have a mapping from collection+projection => desired datasource (the 'configured' map).
 	// but the actual datasource connection still needs to be CREATED and associated with these collections.
-	// this is what we'll going to do now, but in the process we need to make sure no duplicate datasources
-	// are instantiated, since multiple collection can point to the same datasource and we only what to have a single
+	// this is what we're going to do now, but in the process we need to make sure no duplicate datasources
+	// are instantiated: since multiple collections can point to the same datasource, and we only want to have a single
 	// datasource/connection-pool serving those collections.
 	createdDatasources := make(map[config.Datasource]ds.Datasource)
-	result := make(map[DatasourceKey]ds.Datasource, len(configured))
+
+	result := make(map[datasourceKey]ds.Datasource, len(configured))
 	for k, cfg := range configured {
 		if cfg == nil {
 			continue
 		}
 		existing, ok := createdDatasources[cfg.ds]
 		if !ok {
-			// make sure to only create a new datasource when it hasn't already been done before (for another collection)
-			created := newDatasource(e, cfg.collections, cfg.ds)
+			// make sure to only create a new datasource when it hasn't already been done before
+			// since we only want a single connection-pool per (geopackage/postgresql) database.
+			created := newDatasource(e, cfg.collections, cfg.ds, cfg.transformOnTheFly)
 			createdDatasources[cfg.ds] = created
 			result[k] = created
 		} else {
 			result[k] = existing
 		}
 	}
+
 	return result
 }
 
-func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource,
+func determineAxisOrder(datasources map[datasourceKey]ds.Datasource) map[int]domain.AxisOrder {
+	log.Println("start determining axis order for all configured CRSs")
+	order := map[int]domain.AxisOrder{
+		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
+	}
+
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	for key := range datasources {
+		mu.Lock()
+		_, exists := order[key.srid]
+		mu.Unlock()
+
+		if !exists {
+			wg.Add(1)
+
+			// use goroutine to avoid blocking on GetAxisOrder(). The mutex is necessary
+			// to avoid race conditions on the map.
+			go func() {
+				defer wg.Done()
+
+				axisOrder, err := proj.GetAxisOrder(domain.SRID(key.srid))
+				if err != nil {
+					log.Printf("Warning: failed to determine whether EPSG:%d needs "+
+						"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
+					axisOrder = domain.AxisOrderXY
+				}
+
+				mu.Lock()
+				order[key.srid] = axisOrder
+				mu.Unlock()
+			}()
+		}
+	}
+	wg.Wait()
+
+	log.Println("done determining axis order for all configured CRSs")
+
+	return order
+}
+
+func determineCollectionTypes(datasources map[datasourceKey]ds.Datasource) geospatial.CollectionTypes {
+	result := make(map[string]geospatial.CollectionType)
+	for key, datasource := range datasources {
+		collectionType, err := datasource.GetCollectionType(key.collectionID)
+		if err != nil {
+			continue
+		}
+		result[key.collectionID] = collectionType
+	}
+
+	return geospatial.NewCollectionTypes(result)
+}
+
+func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.GeoSpatialCollection {
+	result := make(map[string]config.GeoSpatialCollection)
+	for _, collection := range e.Config.OgcAPI.Features.Collections {
+		result[collection.ID] = collection
+	}
+
+	return result
+}
+
+func configurePropertyFiltersWithAllowedValues(datasources map[datasourceKey]ds.Datasource,
 	collections map[string]config.GeoSpatialCollection) map[string]ds.PropertyFiltersWithAllowedValues {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
@@ -305,84 +202,146 @@ func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.
 			}
 		}
 	}
+
 	return result
 }
 
-func configureTopLevelDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
+// configureTopLevelDatasources configures top-level datasources - in one or multiple CRS's - which can be
+// used by one or multiple collections (e.g., one GPKG that holds an entire dataset)
+//
+//nolint:cyclop
+func configureTopLevelDatasources(e *engine.Engine, result map[datasourceKey]*datasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	if cfg.Datasources == nil {
 		return
 	}
-	var defaultDS *DatasourceConfig
-	for _, coll := range cfg.Collections {
-		key := DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
-		if result[key] == nil {
-			if defaultDS == nil {
-				defaultDS = &DatasourceConfig{cfg.Collections, cfg.Datasources.DefaultWGS84}
+	// Ahead-of-time WGS84
+	if cfg.Datasources.DefaultWGS84 != nil {
+		var defaultDS *datasourceConfig
+		for _, coll := range cfg.Collections {
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				if defaultDS == nil {
+					defaultDS = &datasourceConfig{cfg.Collections, *cfg.Datasources.DefaultWGS84, false}
+				}
+				result[key] = defaultDS
 			}
-			result[key] = defaultDS
 		}
 	}
 
+	// Ahead-of-time additional SRSs
 	for _, additional := range cfg.Datasources.Additional {
 		for _, coll := range cfg.Collections {
 			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
-			key := DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
+			key := datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
 			if result[key] == nil {
-				result[key] = &DatasourceConfig{cfg.Collections, additional.Datasource}
+				result[key] = &datasourceConfig{cfg.Collections, additional.Datasource, false}
+			}
+		}
+	}
+
+	// On-the-fly SRSs -- add these as last since we prefer ahead-of-time projections
+	for _, otf := range cfg.Datasources.OnTheFly {
+		for _, coll := range cfg.Collections {
+			// WGS84
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+			}
+			// All other configured SRSs
+			for _, srs := range otf.SupportedSrs {
+				srid, err := domain.EpsgToSrid(srs.Srs)
+				if err != nil {
+					log.Fatal(err)
+				}
+				key = datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}
+				if result[key] == nil {
+					result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+				}
 			}
 		}
 	}
 }
 
-func configureCollectionDatasources(e *engine.Engine, result map[DatasourceKey]*DatasourceConfig) {
+// configureCollectionDatasources configures datasources - in one or multiple CRS's - which are specific
+// to a certain collection (e.g., a separate GPKG per collection).
+func configureCollectionDatasources(e *engine.Engine, result map[datasourceKey]*datasourceConfig) {
 	cfg := e.Config.OgcAPI.Features
 	for _, coll := range cfg.Collections {
 		if coll.Features == nil || coll.Features.Datasources == nil {
 			continue
 		}
-		defaultDS := &DatasourceConfig{cfg.Collections, coll.Features.Datasources.DefaultWGS84}
-		result[DatasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
+		// Ahead-of-time WGS84
+		if coll.Features.Datasources.DefaultWGS84 != nil {
+			defaultDS := &datasourceConfig{cfg.Collections, *coll.Features.Datasources.DefaultWGS84, false}
+			result[datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}] = defaultDS
+		}
 
+		// Ahead-of-time additional SRSs
 		for _, additional := range coll.Features.Datasources.Additional {
 			srid, err := domain.EpsgToSrid(additional.Srs)
 			if err != nil {
 				log.Fatal(err)
 			}
-			additionalDS := &DatasourceConfig{cfg.Collections, additional.Datasource}
-			result[DatasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
+			additionalDS := &datasourceConfig{cfg.Collections, additional.Datasource, false}
+			result[datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
+		}
+
+		// On-the-fly SRSs -- add these as last since we prefer ahead-of-time projections
+		for _, otf := range coll.Features.Datasources.OnTheFly {
+			// WGS84
+			key := datasourceKey{srid: domain.WGS84SRID, collectionID: coll.ID}
+			if result[key] == nil {
+				result[key] = &datasourceConfig{cfg.Collections, otf.Datasource, true}
+			}
+			// All other configured SRSs
+			for _, srs := range otf.SupportedSrs {
+				srid, err := domain.EpsgToSrid(srs.Srs)
+				if err != nil {
+					log.Fatal(err)
+				}
+				additionalDS := &datasourceConfig{cfg.Collections, otf.Datasource, true}
+				result[datasourceKey{srid: srid.GetOrDefault(), collectionID: coll.ID}] = additionalDS
+			}
 		}
 	}
 }
 
-func newDatasource(e *engine.Engine, coll config.GeoSpatialCollections, dsConfig config.Datasource) ds.Datasource {
+func newDatasource(e *engine.Engine, collections config.GeoSpatialCollections,
+	dsConfig config.Datasource, transformOnTheFly bool) ds.Datasource {
+
+	maxDecimals := e.Config.OgcAPI.Features.MaxDecimals
+	forceUTC := e.Config.OgcAPI.Features.ForceUTC
+
 	var datasource ds.Datasource
-	if dsConfig.GeoPackage != nil {
-		datasource = geopackage.NewGeoPackage(coll, *dsConfig.GeoPackage)
-	} else if dsConfig.PostGIS != nil {
-		datasource = postgis.NewPostGIS()
+	var err error
+	switch {
+	case dsConfig.GeoPackage != nil:
+		datasource, err = geopackage.NewGeoPackage(collections, *dsConfig.GeoPackage, transformOnTheFly, maxDecimals, forceUTC)
+	case dsConfig.Postgres != nil:
+		datasource, err = postgres.NewPostgres(collections, *dsConfig.Postgres, transformOnTheFly, maxDecimals, forceUTC)
+	default:
+		log.Fatal("got unknown datasource type")
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 	e.RegisterShutdownHook(datasource.Close)
+
 	return datasource
 }
 
-func querySingleDatasource(input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {
-	return bbox == nil ||
-		int(input) == int(output) ||
-		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||
-		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
+func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
+	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }
 
-func getTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {
-	var temporalCriteria ds.TemporalCriteria
-	if collection.HasDateTime() {
-		temporalCriteria = ds.TemporalCriteria{
-			ReferenceDate:     referenceDate,
-			StartDateProperty: collection.Metadata.TemporalProperties.StartDate,
-			EndDateProperty:   collection.Metadata.TemporalProperties.EndDate}
-	}
-	return temporalCriteria
+func handleFormatNotSupported(w http.ResponseWriter, format string) {
+	msg := fmt.Sprintf("format %s is not supported", format)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotAcceptable, w, msg)
 }

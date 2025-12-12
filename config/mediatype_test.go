@@ -111,7 +111,7 @@ func TestMediaType_Unmarshalling_JSON(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedMediaType{M: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedMediaType{M: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
 		})
 	}
 }
@@ -178,7 +178,7 @@ func TestMediaType_Unmarshalling_YAML(t *testing.T) {
 			if !tt.wantErr(t, err, errors.New("yaml.Unmarshal")) {
 				return
 			}
-			assert.EqualValuesf(t, &TestEmbeddedMediaType{M: *tt.want}, unmarshalledEmbedded, "yaml.Unmarshal")
+			assert.Equalf(t, &TestEmbeddedMediaType{M: *tt.want}, unmarshalledEmbedded, "yaml.Unmarshal")
 		})
 	}
 }

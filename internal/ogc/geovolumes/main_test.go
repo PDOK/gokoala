@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -104,8 +105,8 @@ func TestThreeDimensionalGeoVolume_Tile(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine)
 			handler := threeDimensionalGeoVolume.Tile()
 			handler.ServeHTTP(rr, req)
@@ -168,8 +169,8 @@ func TestThreeDimensionalGeoVolume_CollectionContent(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine)
 			handler := threeDimensionalGeoVolume.Tileset("tileset.json")
 			handler.ServeHTTP(rr, req)
@@ -231,8 +232,8 @@ func TestThreeDimensionalGeoVolume_ExplicitTileSet(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
 			threeDimensionalGeoVolume := NewThreeDimensionalGeoVolumes(newEngine)
 			handler := threeDimensionalGeoVolume.ExplicitTileset()
 			handler.ServeHTTP(rr, req)
@@ -255,6 +256,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	defer ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 
@@ -269,6 +271,7 @@ func createTileRequest(url string, containerID string, tilePathPrefix string, ti
 	rctx.URLParams.Add("tileColAndSuffix", tileColAndSuffix)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 func createTileSetRequest(url string, containerID string, tileSet string) (*http.Request, error) {
@@ -279,5 +282,6 @@ func createTileSetRequest(url string, containerID string, tileSet string) (*http
 	rctx.URLParams.Add("explicitTileSet", tileSet)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }

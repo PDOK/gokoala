@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPreparedStatementCache(t *testing.T) {
@@ -28,10 +29,10 @@ func TestPreparedStatementCache(t *testing.T) {
 			assert.NotNil(t, c)
 
 			db, err := sqlx.Connect("sqlite3", ":memory:")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			stmt, err := c.Lookup(t.Context(), db, tt.query)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.NotNil(t, stmt)
 
 			c.Close()
@@ -45,10 +46,10 @@ func TestPreparedStatementCache(t *testing.T) {
 		assert.NotNil(t, c)
 
 		db, err := sqlx.Connect("sqlite3", ":memory:")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Run multiple goroutines that will access the cache concurrently.
-		for i := 0; i < 25; i++ {
+		for range 25 {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()

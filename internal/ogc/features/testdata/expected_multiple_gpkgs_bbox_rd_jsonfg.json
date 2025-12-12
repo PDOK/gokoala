@@ -1,4 +1,7 @@
 {
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "coordRefSys": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
   "links": [
     {
       "rel": "self",
@@ -19,13 +22,9 @@
       "href": "http://localhost:8080/collections/dutch-addresses/items?bbox=120379.69%2C566718.72%2C120396.30%2C566734.62&bbox-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=html&limit=10"
     }
   ],
-  "numberReturned": 6,
-  "timeStamp": "2000-01-01T00:00:00Z",
-  "type": "FeatureCollection",
   "conformsTo": [
     "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
   ],
-  "coordRefSys": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
   "features": [
     {
       "id": "5c03c8bd-f70a-5d0a-8523-405ef8ca4985",
@@ -35,8 +34,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          4.87061,
+          53.08625
         ]
       },
       "properties": {
@@ -90,8 +89,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          4.87061,
+          53.08625
         ]
       },
       "properties": {
@@ -145,8 +144,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          4.87061,
+          53.08625
         ]
       },
       "properties": {
@@ -200,8 +199,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.870605436073915,
-          53.086246771780075
+          4.87061,
+          53.08625
         ]
       },
       "properties": {
@@ -255,8 +254,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.870615118577688,
-          53.086268434044996
+          4.87062,
+          53.08627
         ]
       },
       "properties": {
@@ -310,8 +309,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.870615118577688,
-          53.086268434044996
+          4.87062,
+          53.08627
         ]
       },
       "properties": {
@@ -357,5 +356,6 @@
         "validto": null
       }
     }
-  ]
+  ],
+  "numberReturned": 6
 }

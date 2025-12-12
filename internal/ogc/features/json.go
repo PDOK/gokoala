@@ -32,13 +32,14 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 		log.Println("JSON response validation is enabled (by default). When serving large feature collections " +
 			"set 'validateResponses' to 'false' to improve performance")
 	}
+
 	return &jsonFeatures{
 		engine:           e,
 		validateResponse: *e.Config.OgcAPI.Features.ValidateResponses,
 	}
 }
 
-// GeoJSON
+// GeoJSON.
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
 	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection) {
 
@@ -54,7 +55,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// GeoJSON
+// GeoJSON.
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	configuredFC *config.CollectionEntryFeatures, feat *domain.Feature, url featureURL) {
 
@@ -75,7 +76,53 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 	}
 }
 
-// JSON-FG
+// GeoJSON for non-spatial data ("attribute JSON").
+func (jf *jsonFeatures) featuresAsAttributeJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
+	featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
+
+	fgFC := domain.AttributeCollection{}
+	if len(fc.Features) == 0 {
+		fgFC.Features = make([]*domain.Attribute, 0)
+	} else {
+		for _, f := range fc.Features {
+			fgF := domain.Attribute{
+				ID:         f.ID,
+				Links:      f.Links,
+				Properties: f.Properties,
+			}
+			fgFC.Features = append(fgFC.Features, &fgF)
+		}
+	}
+	fgFC.NumberReturned = fc.NumberReturned
+	fgFC.Timestamp = now().Format(time.RFC3339)
+	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSON, collectionID, cursor, featuresURL)
+
+	if jf.validateResponse {
+		jf.serveAndValidateJSON(&fgFC, engine.MediaTypeJSON, r, w)
+	} else {
+		serveJSON(&fgFC, engine.MediaTypeJSON, w)
+	}
+}
+
+// GeoJSON for non-spatial data ("attribute JSON").
+func (jf *jsonFeatures) featureAsAttributeJSON(w http.ResponseWriter, r *http.Request, collectionID string,
+	f *domain.Feature, url featureURL) {
+
+	fgF := domain.Attribute{
+		ID:         f.ID,
+		Links:      f.Links,
+		Properties: f.Properties,
+	}
+	fgF.Links = jf.createFeatureLinks(engine.FormatJSON, url, collectionID, fgF.ID)
+
+	if jf.validateResponse {
+		jf.serveAndValidateJSON(&fgF, engine.MediaTypeJSON, r, w)
+	} else {
+		serveJSON(&fgF, engine.MediaTypeJSON, w)
+	}
+}
+
+// JSON-FG.
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
 	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
@@ -108,7 +155,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 	}
 }
 
-// JSON-FG
+// JSON-FG.
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
 	configuredFC *config.CollectionEntryFeatures, f *domain.Feature, url featureURL, crs domain.ContentCrs) {
 
@@ -168,6 +215,13 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 			Type:  engine.MediaTypeGeoJSON,
 			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
 		})
+	case engine.FormatJSON:
+		links = append(links, domain.Link{
+			Rel:   "self",
+			Title: "This document as JSON",
+			Type:  engine.MediaTypeJSON,
+			Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSON),
+		})
 	}
 
 	links = append(links, domain.Link{
@@ -214,6 +268,7 @@ func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, colle
 			})
 		}
 	}
+
 	return links
 }
 
@@ -248,6 +303,13 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 			Type:  engine.MediaTypeGeoJSON,
 			Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSON),
 		})
+	case engine.FormatJSON:
+		links = append(links, domain.Link{
+			Rel:   "self",
+			Title: "This document as JSON",
+			Type:  engine.MediaTypeJSON,
+			Href:  url.toSelfURL(collectionID, featureID, engine.FormatJSON),
+		})
 	}
 	links = append(links, domain.Link{
 		Rel:   "alternate",
@@ -261,6 +323,7 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 		Type:  engine.MediaTypeJSON,
 		Href:  url.toCollectionURL(collectionID, engine.FormatJSON),
 	})
+
 	return links
 }
 
@@ -299,17 +362,23 @@ func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *h
 	json := &bytes.Buffer{}
 	if err := getEncoder(json).Encode(input); err != nil {
 		handleJSONEncodingFailure(err, w)
+
 		return
 	}
-	jf.engine.Serve(w, r, false /* performed earlier */, jf.validateResponse, contentType, json.Bytes())
+	jf.engine.Serve(w, r,
+		engine.ServeValidation(false /* performed earlier */, jf.validateResponse),
+		engine.ServeContentType(contentType),
+		engine.ServeOutput(json.Bytes()),
+	)
 }
 
-// serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream
+// serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream.
 func serveJSON(input any, contentType string, w http.ResponseWriter) {
 	w.Header().Set(engine.HeaderContentType, contentType)
 
 	if err := getEncoder(w).Encode(input); err != nil {
 		handleJSONEncodingFailure(err, w)
+
 		return
 	}
 }
@@ -325,11 +394,13 @@ func getEncoder(w io.Writer) jsonEncoder {
 		// use Go stdlib JSON encoder
 		encoder := stdjson.NewEncoder(w)
 		encoder.SetEscapeHTML(false)
+
 		return encoder
 	}
 	// use ~7% overall faster 3rd party JSON encoder (in case of issues switch back to stdlib using env variable)
 	encoder := perfjson.NewEncoder(w)
 	encoder.SetEscapeHTML(false)
+
 	return encoder
 }
 
@@ -350,5 +421,6 @@ func getMapSheetProperties(configuredFC *config.CollectionEntryFeatures) *config
 	if configuredFC != nil && configuredFC.MapSheetDownloads != nil {
 		return &configuredFC.MapSheetDownloads.Properties
 	}
+
 	return nil
 }

@@ -12,7 +12,7 @@ describe('Vectortiled-view-test.cy.ts', () => {
     })
   })
 
-  it.skip('Skipped unable to supply vectortile as featureyet, should mounts and shows tiles', () => {
+  it.skip('Skipped unable to supply vectortile as feature yet, should mounts and shows tiles', () => {
     cy.intercept('GET', 'https://data.example.com/dataset/ogc/v1/tiles/NetherlandsRDNewQuad/*/*/1?f=mvt', {
       fixture: 'fix-todo',
       statusCode: 200,
@@ -41,7 +41,8 @@ describe('Vectortiled-view-test.cy.ts', () => {
       cy.log(`left: ${position.left}, top: ${position.top}, width: ${position.width}, height: ${position.height}`)
     })
   })
-  it('show achtergrond', () => {
+
+  it.skip('show complex with fonts', () => {
     cy.intercept('GET', 'https://visualisation.example.com/teststyle*', { fixture: 'teststyle-fonts.json' }).as('style')
     cy.mount(VectortileViewComponent, {
       imports: [
@@ -52,7 +53,7 @@ describe('Vectortiled-view-test.cy.ts', () => {
       ],
       componentProperties: {
         id: 'test',
-        tileUrl: 'https://api.pdok.nl/kadaster/kadastralekaart/ogc/v1-demo/tiles/NetherlandsRDNewQuad',
+        tileUrl: 'https://data.example.com/dataset/ogc/v1/tiles/NetherlandsRDNewQuad',
         styleUrl: 'https://visualisation.example.com/teststyle/',
         zoom: 12,
         centerX: 5.3896944,

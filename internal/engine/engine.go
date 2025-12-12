@@ -27,22 +27,9 @@ import (
 const (
 	templatesDir    = "internal/engine/templates/"
 	shutdownTimeout = 5 * time.Second
-
-	HeaderLink            = "Link"
-	HeaderAccept          = "Accept"
-	HeaderAcceptLanguage  = "Accept-Language"
-	HeaderAcceptRanges    = "Accept-Ranges"
-	HeaderRange           = "Range"
-	HeaderContentType     = "Content-Type"
-	HeaderContentLength   = "Content-Length"
-	HeaderContentCrs      = "Content-Crs"
-	HeaderContentEncoding = "Content-Encoding"
-	HeaderBaseURL         = "X-BaseUrl"
-	HeaderRequestedWith   = "X-Requested-With"
-	HeaderAPIVersion      = "API-Version"
 )
 
-// Engine encapsulates shared non-OGC API specific logic
+// Engine encapsulates shared non-OGC API specific logic.
 type Engine struct {
 	Config    *config.Config
 	OpenAPI   *OpenAPI
@@ -53,19 +40,24 @@ type Engine struct {
 	shutdownHooks []func()
 }
 
-// NewEngine builds a new Engine
-func NewEngine(configFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
+// NewEngine builds a new Engine.
+func NewEngine(configFile string, themeFile string, openAPIFile string, enableTrailingSlash bool, enableCORS bool) (*Engine, error) {
 	cfg, err := config.NewConfig(configFile)
 	if err != nil {
 		return nil, err
 	}
-	return NewEngineWithConfig(cfg, openAPIFile, enableTrailingSlash, enableCORS), nil
+	theme, err := config.NewTheme(themeFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewEngineWithConfig(cfg, theme, openAPIFile, enableTrailingSlash, enableCORS), nil
 }
 
-// NewEngineWithConfig builds a new Engine
-func NewEngineWithConfig(config *config.Config, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
+// NewEngineWithConfig builds a new Engine.
+func NewEngineWithConfig(config *config.Config, theme *config.Theme, openAPIFile string, enableTrailingSlash bool, enableCORS bool) *Engine {
 	contentNegotiation := newContentNegotiation(config.AvailableLanguages)
-	templates := newTemplates(config)
+	templates := newTemplates(config, theme)
 	openAPI := newOpenAPI(config, []string{openAPIFile}, nil)
 	router := newRouter(config.Version, enableTrailingSlash, enableCORS)
 
@@ -81,10 +73,12 @@ func NewEngineWithConfig(config *config.Config, openAPIFile string, enableTraili
 	newSitemap(engine)
 	newHealthEndpoint(engine)
 	newResourcesEndpoint(engine)
+	newThemeEndpoints(theme, engine)
+
 	return engine
 }
 
-// Start the engine by initializing all components and starting the server
+// Start the engine by initializing all components and starting the server.
 func (e *Engine) Start(address string, debugPort int, shutdownDelay int) error {
 	// debug server (binds to localhost).
 	if debugPort > 0 {
@@ -104,50 +98,6 @@ func (e *Engine) Start(address string, debugPort int, shutdownDelay int) error {
 	return e.startServer("main server", address, shutdownDelay, e.Router)
 }
 
-// startServer creates and starts an HTTP server, also takes care of graceful shutdown
-func (e *Engine) startServer(name string, address string, shutdownDelay int, router *chi.Mux) error {
-	// create HTTP server
-	server := http.Server{
-		Addr:    address,
-		Handler: router,
-
-		ReadTimeout:       15 * time.Second,
-		ReadHeaderTimeout: 15 * time.Second,
-	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-	defer stop()
-
-	go func() {
-		log.Printf("%s listening on http://%2s", name, address)
-		// ListenAndServe always returns a non-nil error. After Shutdown or
-		// Close, the returned error is ErrServerClosed
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("failed to shutdown %s: %v", name, err)
-		}
-	}()
-
-	// listen for interrupt signal and then perform shutdown
-	<-ctx.Done()
-	stop()
-
-	// execute shutdown hooks
-	for _, shutdownHook := range e.shutdownHooks {
-		shutdownHook()
-	}
-
-	if shutdownDelay > 0 {
-		log.Printf("stop signal received, initiating shutdown of %s after %d seconds delay", name, shutdownDelay)
-		time.Sleep(time.Duration(shutdownDelay) * time.Second)
-	}
-	log.Printf("shutting down %s gracefully", name)
-
-	// shutdown with a max timeout.
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
-	return server.Shutdown(timeoutCtx)
-}
-
 // RegisterShutdownHook register a func to execute during graceful shutdown, e.g. to clean up resources.
 func (e *Engine) RegisterShutdownHook(fn func()) {
 	e.shutdownHooks = append(e.shutdownHooks, fn)
@@ -161,7 +111,7 @@ func (e *Engine) RebuildOpenAPI(openAPIParams any) {
 }
 
 // ParseTemplate parses both HTML and non-HTML templates depending on the format given in the TemplateKey and
-// stores it in the engine for future rendering using RenderAndServePage.
+// stores it in the engine for future rendering using RenderAndServe.
 func (e *Engine) ParseTemplate(key TemplateKey) {
 	e.Templates.parseAndSaveTemplate(key)
 }
@@ -173,41 +123,24 @@ func (e *Engine) RenderTemplates(urlPath string, breadcrumbs []Breadcrumb, keys 
 	e.renderTemplates(urlPath, nil, breadcrumbs, true, keys...)
 }
 
-// RenderTemplatesWithParams renders both HTMl and non-HTML templates depending on the format given in the TemplateKey.
+// RenderTemplatesWithParams renders both HTML and non-HTML templates depending on the format given in the TemplateKey.
 func (e *Engine) RenderTemplatesWithParams(urlPath string, params any, breadcrumbs []Breadcrumb, keys ...TemplateKey) {
 	e.renderTemplates(urlPath, params, breadcrumbs, true, keys...)
 }
 
-func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Breadcrumb, validate bool, keys ...TemplateKey) {
-	for _, key := range keys {
-		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
-
-		if validate {
-			// we already perform OpenAPI validation here during startup to catch
-			// issues early on, in addition to runtime OpenAPI response validation
-			// all templates are created in all available languages, hence all are checked
-			for lang := range e.Templates.localizers {
-				key.Language = lang
-				if err := e.validateStaticResponse(key, urlPath); err != nil {
-					log.Fatal(err)
-				}
-			}
-		}
-	}
-}
-
-// RenderAndServePage renders an already parsed HTML or non-HTML template on-the-fly depending
-// on the format in the given TemplateKey. The result isn't store in engine, it's served directly to the client.
+// RenderAndServe renders an already parsed HTML or non-HTML template on-the-fly depending
+// on the format in the given TemplateKey. The result isn't stored in engine, it's served directly to the client.
 //
 // NOTE: only used this for dynamic pages that can't be pre-rendered and cached (e.g. with data from a datastore),
 // otherwise use ServePage for pre-rendered pages.
-func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key TemplateKey,
-	params any, breadcrumbs []Breadcrumb) {
+func (e *Engine) RenderAndServe(w http.ResponseWriter, r *http.Request, key TemplateKey,
+	params any, breadcrumbs []Breadcrumb, availableFormats []OutputFormat) {
 
 	// validate request
 	if err := e.OpenAPI.ValidateRequest(r); err != nil {
 		log.Printf("%v", err.Error())
 		RenderProblem(ProblemBadRequest, w, err.Error())
+
 		return
 	}
 
@@ -222,73 +155,114 @@ func (e *Engine) RenderAndServePage(w http.ResponseWriter, r *http.Request, key 
 	var output []byte
 	if key.Format == FormatHTML {
 		htmlTmpl := parsedTemplate.(*htmltemplate.Template)
-		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "")
+		output = e.Templates.renderHTMLTemplate(htmlTmpl, r.URL, params, breadcrumbs, "", availableFormats)
 	} else {
 		jsonTmpl := parsedTemplate.(*texttemplate.Template)
 		output = e.Templates.renderNonHTMLTemplate(jsonTmpl, params, key, "")
 	}
-	contentType := e.CN.formatToMediaType(key.Format)
+	contentType := e.CN.formatToMediaType(key)
 
 	// validate response
 	if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
 		log.Printf("%v", err.Error())
 		RenderProblem(ProblemServerError, w, err.Error())
+
 		return
 	}
 	writeResponse(w, contentType, output)
 }
 
-// ServePage serves a pre-rendered template while also validating against the OpenAPI spec
-func (e *Engine) ServePage(w http.ResponseWriter, r *http.Request, templateKey TemplateKey) {
-	e.serve(w, r, &templateKey, true, true, "", nil)
-}
+// Serve serves a response (which is either a pre-rendered template based on TemplateKey or a slice of arbitrary bytes)
+// while also validating against the OpenAPI spec.
+func (e *Engine) Serve(w http.ResponseWriter, r *http.Request, opt ...ServeOption) {
+	s := &serve{
+		validateRequest:  true,
+		validateResponse: true,
+	}
+	for _, o := range opt {
+		o(s)
+	}
 
-// Serve serves the given response (arbitrary bytes) while also validating against the OpenAPI spec
-func (e *Engine) Serve(w http.ResponseWriter, r *http.Request,
-	validateRequest bool, validateResponse bool, contentType string, output []byte) {
-	e.serve(w, r, nil, validateRequest, validateResponse, contentType, output)
-}
-
-func (e *Engine) serve(w http.ResponseWriter, r *http.Request, templateKey *TemplateKey,
-	validateRequest bool, validateResponse bool, contentType string, output []byte) {
-
-	if validateRequest {
+	if s.validateRequest {
 		if err := e.OpenAPI.ValidateRequest(r); err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemBadRequest, w, err.Error())
+
 			return
 		}
 	}
 
-	if templateKey != nil {
+	output := s.output
+	if s.templateKey != nil {
 		// render output
 		var err error
-		output, err = e.Templates.getRenderedTemplate(*templateKey)
+		output, err = e.Templates.getRenderedTemplate(*s.templateKey)
 		if err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemNotFound, w)
+
 			return
 		}
-		contentType = e.CN.formatToMediaType(templateKey.Format)
+		if s.contentType == "" {
+			s.contentType = e.CN.formatToMediaType(*s.templateKey)
+		}
 	}
 
-	if validateResponse {
-		if err := e.OpenAPI.ValidateResponse(contentType, output, r); err != nil {
+	if s.validateResponse {
+		if err := e.OpenAPI.ValidateResponse(s.contentType, output, r); err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemServerError, w, err.Error())
+
 			return
 		}
 	}
-	writeResponse(w, contentType, output)
+	writeResponse(w, s.contentType, output)
 }
 
-// ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response
+type serve struct {
+	templateKey *TemplateKey
+	output      []byte
+
+	validateRequest  bool
+	validateResponse bool
+
+	contentType string
+}
+
+type ServeOption func(*serve)
+
+func ServeTemplate(templateKey TemplateKey) ServeOption {
+	return func(s *serve) {
+		s.templateKey = &templateKey
+	}
+}
+
+func ServeOutput(output []byte) ServeOption {
+	return func(s *serve) {
+		s.output = output
+	}
+}
+
+func ServeValidation(validateRequest bool, validateResponse bool) ServeOption {
+	return func(s *serve) {
+		s.validateRequest = validateRequest
+		s.validateResponse = validateResponse
+	}
+}
+
+func ServeContentType(contentType string) ServeOption {
+	return func(s *serve) {
+		s.contentType = contentType
+	}
+}
+
+// ReverseProxy forwards given HTTP request to given target server, and optionally tweaks response.
 func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *url.URL,
 	prefer204 bool, contentTypeOverwrite string) {
 	e.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, false)
 }
 
-// ReverseProxyAndValidate forwards given HTTP request to given target server, and optionally tweaks and validates response
+// ReverseProxyAndValidate forwards given HTTP request to given target server, and optionally tweaks and validates response.
 func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request, target *url.URL,
 	prefer204 bool, contentTypeOverwrite string, validateResponse bool) {
 
@@ -332,8 +306,9 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			if err != nil {
 				return err
 			}
-			e.Serve(w, r, false, true, contentType, res)
+			e.Serve(w, r, ServeValidation(false, true), ServeContentType(contentType), ServeOutput(res))
 		}
+
 		return nil
 	}
 
@@ -343,6 +318,69 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 		ErrorHandler:   errorHandler,
 	}
 	reverseProxy.ServeHTTP(w, r)
+}
+
+// startServer creates and starts an HTTP server, also takes care of graceful shutdown.
+func (e *Engine) startServer(name string, address string, shutdownDelay int, router *chi.Mux) error {
+	// create HTTP server
+	server := http.Server{
+		Addr:    address,
+		Handler: router,
+
+		ReadTimeout:       15 * time.Second,
+		ReadHeaderTimeout: 15 * time.Second,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	defer stop()
+
+	go func() {
+		log.Printf("%s listening on http://%2s", name, address)
+		// ListenAndServe always returns a non-nil error. After Shutdown or
+		// Close, the returned error is ErrServerClosed
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("failed to shutdown %s: %v", name, err)
+		}
+	}()
+
+	// listen for interrupt signal and then perform shutdown
+	<-ctx.Done()
+	stop()
+
+	// execute shutdown hooks
+	for _, shutdownHook := range e.shutdownHooks {
+		shutdownHook()
+	}
+
+	if shutdownDelay > 0 {
+		log.Printf("stop signal received, initiating shutdown of %s after %d seconds delay", name, shutdownDelay)
+		time.Sleep(time.Duration(shutdownDelay) * time.Second)
+	}
+	log.Printf("shutting down %s gracefully", name)
+
+	// shutdown with a max timeout.
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+
+	return server.Shutdown(timeoutCtx)
+}
+
+func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Breadcrumb, validate bool, keys ...TemplateKey) {
+	for _, key := range keys {
+		e.Templates.renderAndSaveTemplate(key, breadcrumbs, params)
+
+		if validate {
+			// we already perform OpenAPI validation here during startup to catch
+			// issues early on, in addition to runtime OpenAPI response validation
+			// all templates are created in all available languages, hence all are checked
+			for lang := range e.Templates.localizers {
+				key.Language = lang
+				if err := e.validateStaticResponse(key, urlPath); err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+	}
 }
 
 func removeBody(r *http.Response) {
@@ -360,14 +398,15 @@ func (e *Engine) validateStaticResponse(key TemplateKey, urlPath string) error {
 		return fmt.Errorf("failed to construct request to validate %s "+
 			"template against OpenAPI spec %v", key.Name, err)
 	}
-	err = e.OpenAPI.ValidateResponse(e.CN.formatToMediaType(key.Format), template, req)
+	err = e.OpenAPI.ValidateResponse(e.CN.formatToMediaType(key), template, req)
 	if err != nil {
 		return fmt.Errorf("validation of template %s failed: %w", key.Name, err)
 	}
+
 	return nil
 }
 
-// return response output to client
+// return response output to client.
 func writeResponse(w http.ResponseWriter, contentType string, output []byte) {
 	if contentType != "" {
 		w.Header().Set(HeaderContentType, contentType)
@@ -375,7 +414,7 @@ func writeResponse(w http.ResponseWriter, contentType string, output []byte) {
 	SafeWrite(w.Write, output)
 }
 
-// SafeWrite executes the given http.ResponseWriter.Write while logging errors
+// SafeWrite executes the given http.ResponseWriter.Write while logging errors.
 func SafeWrite(write func([]byte) (int, error), body []byte) {
 	_, err := write(body)
 	if err != nil {

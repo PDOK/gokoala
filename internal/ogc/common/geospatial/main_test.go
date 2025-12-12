@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/text/language"
 
 	"github.com/PDOK/gokoala/internal/engine"
@@ -31,6 +32,9 @@ func init() {
 }
 
 func TestNewCollections(t *testing.T) {
+	// given
+	theme, err := config.NewTheme("internal/engine/testdata/test_theme.yaml")
+	require.NoError(t, err)
 	type args struct {
 		e *engine.Engine
 	}
@@ -56,13 +60,13 @@ func TestNewCollections(t *testing.T) {
 							},
 						},
 					},
-				}, "", false, true),
+				}, theme, "", false, true),
 			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			collections := NewCollections(test.args.e)
+			collections := NewCollections(test.args.e, NewCollectionTypes(nil))
 			assert.NotEmpty(t, collections.engine.Templates.RenderedTemplates)
 		})
 	}
@@ -117,9 +121,9 @@ func TestNewCollections_Collections(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
-			collections := NewCollections(newEngine)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
+			collections := NewCollections(newEngine, NewCollectionTypes(nil))
 			handler := collections.Collections()
 			handler.ServeHTTP(rr, req)
 
@@ -190,9 +194,9 @@ func TestNewCollections_Collection(t *testing.T) {
 			rr, ts := createMockServer()
 			defer ts.Close()
 
-			newEngine, err := engine.NewEngine(tt.fields.configFile, "", false, true)
-			assert.NoError(t, err)
-			collections := NewCollections(newEngine)
+			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
+			collections := NewCollections(newEngine, NewCollectionTypes(nil))
 			handler := collections.Collection()
 			handler.ServeHTTP(rr, req)
 
@@ -214,6 +218,7 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 
@@ -222,6 +227,7 @@ func createCollectionsRequest(url string) (*http.Request, error) {
 	rctx := chi.NewRouteContext()
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }
 
@@ -232,5 +238,6 @@ func createCollectionRequest(url string, containerID string) (*http.Request, err
 	rctx.URLParams.Add("collectionId", containerID)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 	return req, err
 }

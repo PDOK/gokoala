@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8080/collections/ligplaatsen/schema",
+  "title": "Ligplaatsen",
+  "description": "Ligplaatsen example data",
+  "type": "object",
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "readOnly": true,
+      "x-ogc-role": "id",
+      "description": "De unieke identificatie van dit feature. Dit ID zou stabiel moeten zijn door de tijd heen en altijd naar hetzelfde feature moeten verwijzen.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "geometry": {
+      "x-ogc-role": "primary-geometry",
+      "format": "geometry-point"
+    },
+    "nummer_id": {
+      "type": "string"
+    },
+    "straatnaam": {
+      "type": "string"
+    },
+    "huisnummer": {
+      "type": "integer"
+    },
+    "huisletter": {
+      "type": "string"
+    },
+    "toevoeging": {
+      "type": "string"
+    },
+    "woonplaats": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "datum_strt": {
+      "type": "string"
+    },
+    "datum_eind": {
+      "type": "string"
+    },
+    "document": {
+      "type": "string"
+    },
+    "datum_doc": {
+      "type": "string"
+    },
+    "rdf_seealso": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

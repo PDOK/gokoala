@@ -29,27 +29,57 @@ const (
 	bboxCrsParam   = "bbox-crs"
 	filterParam    = "filter"
 	filterCrsParam = "filter-crs"
+	profileParam   = "profile"
 
 	propertyFilterMaxLength = 512
 	propertyFilterWildcard  = "*"
 )
 
 var (
-	checksumExcludedParams = []string{engine.FormatParam, cursorParam} // don't include these in checksum
+	// don't include these params in checksum.
+	checksumExcludedParams = []string{
+		engine.FormatParam,
+		cursorParam,
+	}
+
+	// request for /items should only accept these params (+ filters)
+	// defined as a set for fast lookup.
+	featuresKnownParams = map[string]struct{}{
+		engine.FormatParam: {},
+		limitParam:         {},
+		cursorParam:        {},
+		crsParam:           {},
+		dateTimeParam:      {},
+		bboxParam:          {},
+		bboxCrsParam:       {},
+		filterParam:        {},
+		filterCrsParam:     {},
+		profileParam:       {},
+	}
+
+	// request for /item/{id} should only accept these params
+	// defined as a set for fast lookup.
+	featureKnownParams = map[string]struct{}{
+		engine.FormatParam: {},
+		crsParam:           {},
+		profileParam:       {},
+	}
 )
 
-// URL to a page in a collection of features
+// URL to a page in a collection of features.
 type featureCollectionURL struct {
 	baseURL                   url.URL
 	params                    url.Values
 	limit                     config.Limit
 	configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
+	schema                    d.Schema
 	supportsDatetime          bool
 }
 
-// parse the given URL to values required to delivery a set of Features
+// parse the given URL to values required to delivery a set of Features.
 func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int, inputSRID d.SRID, outputSRID d.SRID,
-	contentCrs d.ContentCrs, bbox *geom.Bounds, referenceDate time.Time, propertyFilters map[string]string, err error) {
+	contentCrs d.ContentCrs, bbox *geom.Bounds, referenceDate time.Time, propertyFilters map[string]string,
+	profile d.Profile, err error) {
 
 	err = fc.validateNoUnknownParams()
 	if err != nil {
@@ -61,18 +91,20 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
-	referenceDate, dateTimeErr := parseDateTime(fc.params, fc.supportsDatetime)
+	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
+	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
 	_, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
-	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, dateTimeErr, filterErr, inputSRIDErr)
+	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, referenceDateErr, filterErr, inputSRIDErr)
+
 	return
 }
 
 // Calculate checksum over the query parameters that have a "filtering effect" on
 // the result set such as limit, bbox, property filters, CQL filters, etc. These query params
 // aren't allowed to be changed during pagination. The checksum allows for the latter
-// to be verified
+// to be verified.
 func (fc featureCollectionURL) checksum() []byte {
 	var valuesToHash bytes.Buffer
 	sortedQueryParams := make([]string, 0, len(fc.params))
@@ -100,8 +132,10 @@ OUTER:
 	if len(bytesToHash) > 0 {
 		hasher := fnv.New32a() // fast non-cryptographic hash
 		_, _ = hasher.Write(bytesToHash)
+
 		return hasher.Sum(nil)
 	}
+
 	return []byte{}
 }
 
@@ -111,6 +145,7 @@ func (fc featureCollectionURL) toSelfURL(collectionID string, format string) str
 
 	result := fc.baseURL.JoinPath("collections", collectionID, "items")
 	result.RawQuery = copyParams.Encode()
+
 	return result.String()
 }
 
@@ -121,45 +156,42 @@ func (fc featureCollectionURL) toPrevNextURL(collectionID string, cursor d.Encod
 
 	result := fc.baseURL.JoinPath("collections", collectionID, "items")
 	result.RawQuery = copyParams.Encode()
+
 	return result.String()
 }
 
 // implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
 func (fc featureCollectionURL) validateNoUnknownParams() error {
-	copyParams := clone(fc.params)
-	copyParams.Del(engine.FormatParam)
-	copyParams.Del(limitParam)
-	copyParams.Del(cursorParam)
-	copyParams.Del(crsParam)
-	copyParams.Del(dateTimeParam)
-	copyParams.Del(bboxParam)
-	copyParams.Del(bboxCrsParam)
-	copyParams.Del(filterParam)
-	copyParams.Del(filterCrsParam)
-	for pf := range fc.configuredPropertyFilters {
-		copyParams.Del(pf)
+	for param := range fc.params {
+		if _, ok := featuresKnownParams[param]; !ok {
+			if _, configured := fc.configuredPropertyFilters[param]; !configured {
+				return fmt.Errorf("unknown query parameter(s) found: %s", param)
+			}
+		}
 	}
-	if len(copyParams) > 0 {
-		return fmt.Errorf("unknown query parameter(s) found: %v", copyParams.Encode())
-	}
+
 	return nil
 }
 
-// URL to a specific Feature
+// URL to a specific Feature.
 type featureURL struct {
 	baseURL url.URL
 	params  url.Values
+	schema  d.Schema
 }
 
-// parse the given URL to values required to delivery a specific Feature
-func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, err error) {
+// parse the given URL to values required to delivery a specific Feature.
+func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Profile, err error) {
 	err = f.validateNoUnknownParams()
 	if err != nil {
 		return
 	}
 
-	srid, err = parseCrsToSRID(f.params, crsParam)
+	srid, crsErr := parseCrsToSRID(f.params, crsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
+	profile, profileErr := parseProfile(f.params, f.baseURL, f.schema)
+	err = errors.Join(crsErr, profileErr)
+
 	return
 }
 
@@ -169,6 +201,7 @@ func (f featureURL) toSelfURL(collectionID string, featureID string, format stri
 
 	result := f.baseURL.JoinPath("collections", collectionID, "items", featureID)
 	result.RawQuery = newParams.Encode()
+
 	return result.String()
 }
 
@@ -178,17 +211,18 @@ func (f featureURL) toCollectionURL(collectionID string, format string) string {
 
 	result := f.baseURL.JoinPath("collections", collectionID)
 	result.RawQuery = newParams.Encode()
+
 	return result.String()
 }
 
 // implements req 7.6 (https://docs.ogc.org/is/17-069r4/17-069r4.html#query_parameters)
 func (f featureURL) validateNoUnknownParams() error {
-	copyParams := clone(f.params)
-	copyParams.Del(engine.FormatParam)
-	copyParams.Del(crsParam)
-	if len(copyParams) > 0 {
-		return fmt.Errorf("unknown query parameter(s) found: %v", copyParams.Encode())
+	for param := range f.params {
+		if _, ok := featureKnownParams[param]; !ok {
+			return fmt.Errorf("unknown query parameter(s) found: %s", param)
+		}
 	}
+
 	return nil
 }
 
@@ -197,6 +231,7 @@ func clone(params url.Values) url.Values {
 	for k, v := range params {
 		copyParams[k] = v
 	}
+
 	return copyParams
 }
 
@@ -208,6 +243,7 @@ func consolidateSRIDs(bboxSRID d.SRID, filterSRID d.SRID) (inputSRID d.SRID, err
 	if bboxSRID != d.UndefinedSRID || filterSRID != d.UndefinedSRID {
 		inputSRID = bboxSRID // or filterCrs, both the same
 	}
+
 	return inputSRID, err
 }
 
@@ -228,10 +264,15 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	if limit < 0 {
 		err = errors.New("limit can't be negative")
 	}
+
 	return limit, err
 }
 
 func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
+	if params.Get(bboxParam) == "" && params.Get(bboxCrsParam) != "" {
+		return nil, d.UndefinedSRID, errors.New("bbox-crs can't be used without bbox parameter")
+	}
+
 	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
@@ -258,6 +299,7 @@ func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
 	if surfaceArea(bbox) <= 0 {
 		return nil, bboxSRID, errors.New("bbox has no surface area")
 	}
+
 	return bbox, bboxSRID, nil
 }
 
@@ -272,6 +314,7 @@ func parseCrsToContentCrs(params url.Values) d.ContentCrs {
 	if param == "" {
 		return d.WGS84CrsURI
 	}
+
 	return d.ContentCrs(param)
 }
 
@@ -297,6 +340,7 @@ func parseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 		}
 		srid = d.SRID(val)
 	}
+
 	return srid, nil
 }
 
@@ -319,6 +363,7 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Prope
 			propertyFilters[name] = pf
 		}
 	}
+
 	return propertyFilters, nil
 }
 
@@ -332,8 +377,10 @@ func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error)
 		if strings.Contains(datetime, "/") {
 			return time.Time{}, fmt.Errorf("datetime param '%s' represents an interval, intervals are currently not supported", datetime)
 		}
+
 		return time.Parse(time.RFC3339, datetime)
 	}
+
 	return time.Time{}, nil
 }
 
@@ -344,5 +391,18 @@ func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error
 	if filter != "" {
 		return filter, filterSRID, errors.New("CQL filter param is currently not supported")
 	}
+
 	return filter, filterSRID, nil
+}
+
+func parseProfile(params url.Values, baseURL url.URL, schema d.Schema) (d.Profile, error) {
+	profile := d.RelAsLink
+	if params.Has(profileParam) {
+		profile = d.ProfileName(params.Get(profileParam))
+		if !slices.Contains(d.SupportedProfiles, profile) {
+			return d.Profile{}, fmt.Errorf("profile %s is not supported, only supporting %s", profile, d.SupportedProfiles)
+		}
+	}
+
+	return d.NewProfile(profile, baseURL, schema), nil
 }

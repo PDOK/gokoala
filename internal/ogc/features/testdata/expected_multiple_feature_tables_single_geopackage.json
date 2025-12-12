@@ -23,6 +23,7 @@
     {
       "id": "ligplaatsen",
       "title": "ligplaatsen",
+      "itemType": "feature",
       "crs": [
         "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
       ],
@@ -57,6 +58,18 @@
           "type": "text/html",
           "title": "The HTML representation of the ligplaatsen features served from this endpoint",
           "href": "http://localhost:8080/collections/ligplaatsen/items?f=html"
+        },
+        {
+          "rel": "http://www.opengis.net/def/rel/ogc/1.0/schema",
+          "type": "application/schema+json",
+          "title": "The JSON representation of the ligplaatsen schema",
+          "href": "http://localhost:8080/collections/ligplaatsen/schema?f=json"
+        },
+        {
+          "rel": "http://www.opengis.net/def/rel/ogc/1.0/schema",
+          "type": "text/html",
+          "title": "The HTML representation of the ligplaatsen schema",
+          "href": "http://localhost:8080/collections/ligplaatsen/schema?f=html"
         }
       ],
       "content": []
@@ -64,6 +77,7 @@
     {
       "id": "standplaatsen",
       "title": "standplaatsen",
+      "itemType": "feature",
       "crs": [
         "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
       ],
@@ -98,6 +112,18 @@
           "type": "text/html",
           "title": "The HTML representation of the standplaatsen features served from this endpoint",
           "href": "http://localhost:8080/collections/standplaatsen/items?f=html"
+        },
+        {
+          "rel": "http://www.opengis.net/def/rel/ogc/1.0/schema",
+          "type": "application/schema+json",
+          "title": "The JSON representation of the standplaatsen schema",
+          "href": "http://localhost:8080/collections/standplaatsen/schema?f=json"
+        },
+        {
+          "rel": "http://www.opengis.net/def/rel/ogc/1.0/schema",
+          "type": "text/html",
+          "title": "The HTML representation of the standplaatsen schema",
+          "href": "http://localhost:8080/collections/standplaatsen/schema?f=html"
         }
       ],
       "content": []

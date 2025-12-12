@@ -37,18 +37,20 @@ func (o OgcAPITiles) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON parses a string to OgcAPITiles
+// UnmarshalJSON parses a string to OgcAPITiles.
 func (o *OgcAPITiles) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, o)
 }
 
 func (o *OgcAPITiles) Defaults() {
 	if o.DatasetTiles != nil && o.DatasetTiles.HealthCheck.Srs == DefaultSrs &&
-		o.DatasetTiles.HealthCheck.TilePath == nil {
+		o.DatasetTiles.HealthCheck.TilePath == nil && *o.DatasetTiles.HealthCheck.Enabled {
 		o.DatasetTiles.deriveHealthCheckTilePath()
 	} else if o.Collections != nil {
 		for _, coll := range o.Collections {
-			if coll.Tiles != nil && coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs && coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil {
+			if coll.Tiles != nil && coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs &&
+				coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil &&
+				*coll.Tiles.GeoDataTiles.HealthCheck.Enabled {
 				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
 			}
 		}
@@ -74,7 +76,7 @@ func (c CollectionEntryTiles) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON parses a string to CollectionEntryTiles
+// UnmarshalJSON parses a string to CollectionEntryTiles.
 func (c *CollectionEntryTiles) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }
@@ -96,6 +98,7 @@ func (o *OgcAPITiles) HasType(t TilesType) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -107,17 +110,18 @@ var AllTileProjections = map[string]string{
 	"EPSG:3857":  "WebMercatorQuad",
 }
 
-// HasProjection true when the given projection is supported for this dataset
+// HasProjection true when the given projection is supported for this dataset.
 func (o *OgcAPITiles) HasProjection(srs string) bool {
 	for _, projection := range o.GetProjections() {
 		if projection.Srs == srs {
 			return true
 		}
 	}
+
 	return false
 }
 
-// GetProjections projections supported for this dataset
+// GetProjections projections supported for this dataset.
 func (o *OgcAPITiles) GetProjections() []SupportedSrs {
 	supportedSrsSet := map[SupportedSrs]struct{}{}
 	if o.DatasetTiles != nil {
@@ -137,6 +141,7 @@ func (o *OgcAPITiles) GetProjections() []SupportedSrs {
 	sort.Slice(result, func(i, j int) bool {
 		return len(result[i].Srs) > len(result[j].Srs)
 	})
+
 	return result
 }
 
@@ -204,7 +209,7 @@ type TileCoordinates struct {
 	y int
 }
 
-// default tiles for EPSG:28992 - location centered just outside a village in the province of Friesland
+// default tiles for EPSG:28992 - location centered just outside a village in the province of Friesland.
 var HealthCheckDefaultTiles = map[int]TileCoordinates{
 	0:  {x: 0, y: 0},
 	1:  {x: 1, y: 0},
@@ -227,6 +232,11 @@ var HealthCheckDefaultTiles = map[int]TileCoordinates{
 
 // +kubebuilder:object:generate=true
 type HealthCheck struct {
+	// Enable/disable healthcheck on tiles. Defaults to true.
+	// +kubebuilder:default=true
+	// +optional
+	Enabled *bool `yaml:"enabled" json:"enabled" default:"true"`
+
 	// Projection (SRS/CRS) used for tile healthcheck
 	// +kubebuilder:default="EPSG:28992"
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
@@ -248,14 +258,17 @@ func validateTileProjections(tiles *OgcAPITiles) error {
 		}
 	}
 	for _, collection := range tiles.Collections {
-		for _, srs := range collection.Tiles.GeoDataTiles.SupportedSrs {
-			if _, ok := AllTileProjections[srs.Srs]; !ok {
-				errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
+		if collection.Tiles != nil {
+			for _, srs := range collection.Tiles.GeoDataTiles.SupportedSrs {
+				if _, ok := AllTileProjections[srs.Srs]; !ok {
+					errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
+				}
 			}
 		}
 	}
 	if len(errMessages) > 0 {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
 	}
+
 	return nil
 }

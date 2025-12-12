@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// GeoSpatialCollections All collections configured for this OGC API. Can contain a mix of tiles/features/etc.
 type GeoSpatialCollections []GeoSpatialCollection
 
 // +kubebuilder:object:generate=true
@@ -62,14 +63,20 @@ func (c GeoSpatialCollection) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON parses a string to GeoSpatialCollection
+// UnmarshalJSON parses a string to GeoSpatialCollection.
 func (c *GeoSpatialCollection) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, c)
 }
 
-// HasDateTime true when collection has temporal support, false otherwise
+// HasDateTime true when collection has temporal support, false otherwise.
 func (c *GeoSpatialCollection) HasDateTime() bool {
 	return c.Metadata != nil && c.Metadata.TemporalProperties != nil
+}
+
+// HasTableName true when collection uses the given table, false otherwise.
+func (c *GeoSpatialCollection) HasTableName(table string) bool {
+	return c.Features != nil && c.Features.TableName != nil &&
+		table == *c.Features.TableName
 }
 
 // +kubebuilder:object:generate=true
@@ -161,7 +168,7 @@ type DownloadLink struct {
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 }
 
-// HasCollections does this API offer collections with for example features, tiles, 3d tiles, etc
+// HasCollections does this API offer collections with for example features, tiles, 3d tiles, etc.
 func (c *Config) HasCollections() bool {
 	return c.AllCollections() != nil
 }
@@ -186,25 +193,42 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	} else {
 		sortByAlphabet(result)
 	}
+
+	return result
+}
+
+// FeaturePropertiesByID returns a map of collection IDs to their corresponding FeatureProperties.
+// Skips collections that do not have features defined.
+func (g GeoSpatialCollections) FeaturePropertiesByID() map[string]*FeatureProperties {
+	result := make(map[string]*FeatureProperties)
+	for _, collection := range g {
+		if collection.Features == nil {
+			continue
+		}
+		result[collection.ID] = collection.Features.FeatureProperties
+	}
+
 	return result
 }
 
 // Unique lists all unique GeoSpatialCollections (no duplicate IDs).
-// Don't use in hot path (creates a map on every invocation).
+// Don't use in the hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 	collectionsByID := g.toMap()
 	result := make([]GeoSpatialCollection, 0, collectionsByID.Len())
 	for pair := collectionsByID.Oldest(); pair != nil; pair = pair.Next() {
 		result = append(result, pair.Value)
 	}
+
 	return result
 }
 
 // ContainsID check if given collection - by ID - exists.
-// Don't use in hot path (creates a map on every invocation).
+// Don't use in the hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) ContainsID(id string) bool {
 	collectionsByID := g.toMap()
 	_, ok := collectionsByID.Get(id)
+
 	return ok
 }
 
@@ -222,6 +246,7 @@ func (g GeoSpatialCollections) toMap() orderedmap.OrderedMap[string, GeoSpatialC
 			collectionsByID.Set(current.ID, current)
 		}
 	}
+
 	return *collectionsByID
 }
 
@@ -236,6 +261,7 @@ func sortByAlphabet(collection []GeoSpatialCollection) {
 		if collection[j].Metadata != nil && collection[j].Metadata.Title != nil {
 			jName = *collection[j].Metadata.Title
 		}
+
 		return iName < jName
 	})
 }

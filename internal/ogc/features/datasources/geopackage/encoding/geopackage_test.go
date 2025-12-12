@@ -17,6 +17,7 @@ func fmt8Bit(n byte) string {
 	s := strconv.FormatUint(uint64(n), 2)
 	offset := len(val) - len(s)
 	copy(val[offset:], s)
+
 	return string(val)
 }
 
@@ -33,8 +34,11 @@ func TestHeaderFlag(t *testing.T) {
 	}
 
 	fn := func(tc tcase) (string, func(*testing.T)) {
+		t.Helper()
+
 		return tcheader(tc.header), func(t *testing.T) {
-			t.Parallel()
+			t.Helper()
+
 			if tc.header.IsEmpty() != tc.IsEmpty {
 				t.Errorf("is empty, expected %v got %v", tc.IsEmpty, tc.header.IsEmpty())
 			}
@@ -187,7 +191,11 @@ func TestBinaryHeader(t *testing.T) {
 		err          error
 	}
 	fn := func(tc tcase) func(*testing.T) {
+		t.Helper()
+
 		return func(t *testing.T) {
+			t.Helper()
+
 			var bh *BinaryHeader
 			var err error
 			if tc.bytes != nil {
@@ -196,17 +204,18 @@ func TestBinaryHeader(t *testing.T) {
 			if tc.err != nil {
 				if err == nil {
 					t.Errorf("error, expected %v got nil", tc.err)
+
 					return
 				}
 				if tc.err.Error() != err.Error() {
 					t.Errorf("error, expected %v got %v", tc.err.Error(), err.Error())
 				}
+
 				return
 			}
 			if err != nil {
 				t.Errorf("error, expected nil got %v", err.Error())
 				return
-
 			}
 
 			if bh.Version() != tc.version {
