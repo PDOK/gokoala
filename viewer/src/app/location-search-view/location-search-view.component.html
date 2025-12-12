@@ -1,0 +1,27 @@
+<div class="dropdown" [attr.aria-expanded]="open()">
+  <input
+    type="text"
+    [formControl]="form.controls.location"
+    [placeholder]="placeholder"
+    class="form-control dropdown-toggle"
+    id="search-input"
+    autocomplete="off"
+    [attr.aria-expanded]="true"
+    (focus)="openIfNot()"
+    (click)="openIfNot()" />
+  <ul class="dropdown-menu w-100" [ngClass]="{ show: open() }" aria-labelledby="search-input">
+    @if ((features$ | async)?.length) {
+      @for (feature of features$ | async; track feature.id) {
+        <li class="dropdown-item">
+          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'displayName' }}</button>
+        </li>
+      }
+    } @else if (form.controls.location.value && form.controls.location.value.length > 2 && !searching()) {
+      <li class="dropdown-item">No results found</li>
+    } @else if (searching()) {
+      <li class="dropdown-item">Searching...</li>
+    } @else {
+      <li class="dropdown-item">Type at least 3 characters to search</li>
+    }
+  </ul>
+</div>

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { map, Observable } from 'rxjs'
+import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
@@ -111,7 +111,7 @@ export class FeatureService {
       }
       return geom
     }
-
+    if (url.url == '') return of([])
     return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
       map(data => {
         let processedData = data

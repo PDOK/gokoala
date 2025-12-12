@@ -1,0 +1,9 @@
+{{ define "content" }}
+    <hgroup>
+        <h1 class="title" id="title">{{ .Config.Title }} - Locatie API</h1>
+    </hgroup>
+    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+    <script type="module" src="view-component/main.js"></script>
+    <script src="view-component/polyfills.js"></script>
+        <app-location-search-view></app-location-search-view>
+{{ end }}
