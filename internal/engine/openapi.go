@@ -26,17 +26,18 @@ import (
 )
 
 const (
-	specPath          = templatesDir + "openapi/"
-	preamble          = specPath + "preamble.go.json"
-	problems          = specPath + "problems.go.json"
-	headers           = specPath + "headers.go.json"
-	commonCollections = specPath + "common-collections.go.json"
-	featuresSpec      = specPath + "features.go.json"
-	tilesSpec         = specPath + "tiles.go.json"
-	stylesSpec        = specPath + "styles.go.json"
-	geoVolumesSpec    = specPath + "3dgeovolumes.go.json"
-	commonSpec        = specPath + "common.go.json"
-	HTMLRegex         = `<[/]?([a-zA-Z]+).*?>`
+	specPath           = templatesDir + "openapi/"
+	preamble           = specPath + "preamble.go.json"
+	problems           = specPath + "problems.go.json"
+	headers            = specPath + "headers.go.json"
+	commonCollections  = specPath + "common-collections.go.json"
+	featuresSpec       = specPath + "features.go.json"
+	featuresSearchSpec = specPath + "features-search.go.json"
+	tilesSpec          = specPath + "tiles.go.json"
+	stylesSpec         = specPath + "styles.go.json"
+	geoVolumesSpec     = specPath + "3dgeovolumes.go.json"
+	commonSpec         = specPath + "common.go.json"
+	HTMLRegex          = `<[/]?([a-zA-Z]+).*?>`
 )
 
 type OpenAPI struct {
@@ -96,6 +97,9 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	}
 	if config.OgcAPI.Features != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSpec)
+	}
+	if config.OgcAPI.Features != nil && len(config.OgcAPI.Features.Collections.WithSearch()) > 0 {
+		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSearchSpec)
 	}
 	if config.OgcAPI.Styles != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, stylesSpec)

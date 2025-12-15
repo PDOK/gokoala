@@ -40,8 +40,13 @@ jobs:
       - name: Test generating example CRD
         run: hack/generate-crd.sh
 
-      # we don't (yet) fail on benchmark results, these are just to make sure
-      # the benchmarks keep working
+      - name: Fuzz
+        run: |
+          for pkg in $(go list ./...); do
+            echo "Fuzzing $pkg"
+            go test -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
+          done
+
       - name: Benchmark
         run: go test -v ./... -bench=. -run=^# -benchmem -count=1
 

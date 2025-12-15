@@ -45,6 +45,7 @@ FROM docker.io/debian:bookworm-slim
 RUN set -eux && \
     apt-get update && \
     apt-get install --no-install-recommends -y  \
+      jq=* \
       libcurl4=*  \
       curl=*  \
       openssl=*  \

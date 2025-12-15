@@ -114,6 +114,9 @@ type CollectionEntryFeatures struct {
 	// Configuration specifically related to HTML/Web representation
 	// +optional
 	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
+
+	// Search config related to location search/suggest
+	Search *Search `yaml:"search,omitempty" json:"search,omitempty"`
 }
 
 // MarshalJSON custom because inlining only works on embedded structs.
