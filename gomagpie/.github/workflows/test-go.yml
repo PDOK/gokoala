@@ -1,0 +1,60 @@
+---
+name: test (go)
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup cgo dependencies
+        run: sudo apt-get update && sudo apt-get install libsqlite3-mod-spatialite
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          check-latest: true
+          go-version: '1.25'
+
+      - name: Download
+        run: go mod download all
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Unit Test
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 2
+          retry_on: error
+          command: |
+            go test -v -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out ./...
+
+      - name: Fuzz
+        run: cd internal/search && go test -fuzz=Fuzz -fuzztime=10s -run=^$
+
+      - name: Fail when coverage below threshold
+        uses: vladopajic/go-test-coverage@v2
+        with:
+          profile: cover.out
+          local-prefix: github.com/PDOK/gomagpie
+          threshold-total: 75  # 80% overall coverage is the minimum. TODO: temporally set to 75%
+
+      - name: Update coverage report
+        uses: ncruces/go-coverage-report@v0
+        with:
+          coverage-file: cover.out
+          report: true
+          chart: false
+          amend: false
+          reuse-go: true
+        if: |
+          github.event_name == 'push'
+        continue-on-error: false
