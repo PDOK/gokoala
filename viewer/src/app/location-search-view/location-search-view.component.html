@@ -1,4 +1,4 @@
-@let features = features$ | async;
+@let features = ['test'];
 @let hasFeatures = !!features?.length;
 @let hasSearched = hasSearched$ | async;
 
@@ -12,16 +12,10 @@
       id="search-input"
       autocomplete="off"
       [attr.aria-expanded]="true"
-      (focus)="openIfNot()"
-      (click)="openIfNot()"
+      (focus)="openSearchIfNot()"
+      (click)="openSearchIfNot()"
       aria-describedby="settings" />
-    <button
-      class="btn btn-secondary"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#collection-settings"
-      aria-controls="collection-settings"
-      aria-expanded="false">
+    <button class="btn btn-secondary" type="button" (click)="toggleCollectionSettings()">
       <i class="bi bi-sliders"></i>
     </button>
   </div>
@@ -29,7 +23,7 @@
     @if (features !== null && hasFeatures && !searching()) {
       @for (feature of features; track $index) {
         <li class="dropdown-item">
-          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'displayName' }}</button>
+          <!--          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'displayName' }}</button>-->
         </li>
       }
     } @else if (!hasFeatures && !searching() && hasSearched) {
@@ -39,4 +33,4 @@
     }
   </ul>
 </div>
-<app-collection-settings></app-collection-settings>
+<app-collection-settings [open]="collectionSettingsOpen()"></app-collection-settings>

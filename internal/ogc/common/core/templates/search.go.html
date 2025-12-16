@@ -9,7 +9,7 @@
     </hgroup>
     <section class="row py-3" x-data="{itemsUrl: ''}">
         <div class="col-md-6 col-sm-12">
-            <div class="card">
+            <div class="card mb-3">
                 <h2 class="card-header h5">
                     Search
                 </h2>
@@ -20,8 +20,18 @@
                 </div>
             </div>
             <!-- filters -->
-            <form id="form" class="col-12 mt-4">
+            <form id="form" class="col-12">
                 <!-- projection -->
+                <div class="row mb-4">
+                    <label for="location-search" class="col-sm-4 col-form-label">Locatie</label>
+                    <div class="col-sm-8">
+                        <app-location-search-view
+                                id="locationsearch"
+                                @location-selected.camel="itemsUrl = $event.detail"
+                                class="d-block mb-2"
+                        ></app-location-search-view>
+                    </div>
+                </div>
                 <div class="row mb-2">
                     <label for="srs-select" class="col-sm-4 col-form-label"><abbr title="{{ i18n "CrsAbbr" }}">CRS</abbr></label>
                     <div class="col-sm-8">
@@ -51,11 +61,6 @@
             </form>
         </div>
         <div class="col-md-6 col-sm-12">
-            <app-location-search-view
-                    id="locationsearch"
-                    @location-selected.camel="itemsUrl = $event.detail"
-                    class="d-block mb-2"
-            ></app-location-search-view>
             <app-feature-view
                     id="featureview"
                     projection="http://www.opengis.net/def/crs/OGC/1.3/CRS84"

@@ -1,5 +1,15 @@
-<div id="collection-settings" class="collapse">
-  <div class="card card-body">
-    <b>Collecties</b>
+@let collections = collections$ | async;
+<div [ngClass]="{ show: open }" class="collapse mt-2">
+  <div class="card card-body container-fluid">
+    <div class="row">
+      <div class="col font-bold">Collectie</div>
+      <div class="col-4 bold">Relevantie</div>
+    </div>
+    @for (collection of collections; track collection.id) {
+      <div class="row mb-2">
+        <label [for]="collection.id" class="col col-form-label">{{ collection.title }}</label>
+        <div class="col-4"><input [id]="collection.id" type="text" class="form-control" /></div>
+      </div>
+    }
   </div>
 </div>
