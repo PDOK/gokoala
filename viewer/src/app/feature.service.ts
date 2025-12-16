@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { catchError, map, Observable, of } from 'rxjs'
+import { map, Observable } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
@@ -130,10 +130,6 @@ export class FeatureService {
           featureProjection: visualproj,
         })
         return features as FeatureLike[]
-      }),
-      catchError(error => {
-        this.logger.error('Error fetching features:', error)
-        return of([])
       })
     )
   }

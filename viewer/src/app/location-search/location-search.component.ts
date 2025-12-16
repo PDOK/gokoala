@@ -1,23 +1,15 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core'
-
 import { CommonModule } from '@angular/common'
-
-import { NGXLogger } from 'ngx-logger'
 import { FeaturesService } from '../api/services'
-
 import { defaultMapping, ProjectionMapping } from '../feature.service'
-
 import { BackgroundMap } from '../feature-view/feature-view.component'
 import { SafeHtmlPipe } from '../safe-html.pipe'
 import { SearchOptionsComponent } from './search-options/search-options.component'
-
 import { FeatureLike } from 'ol/Feature'
 import { GeoJSON } from 'ol/format'
 import { Search$Json$Params } from '../api/fn/features/search-json'
 import { FeatureCollectionJsonfg, FeatureJsonfg } from '../api/models'
-
 import { HttpHeaders } from '@angular/common/http'
-
 import { currentHttp, CurrentHttp } from '../app.module'
 import { Observable } from 'rxjs'
 
@@ -64,12 +56,12 @@ export class LocationSearchComponent implements OnInit {
   activeSearchUrlEmited: CurrentHttp = { url: '', headers: new HttpHeaders() }
 
   constructor(
-    private logger: NGXLogger,
+    //private logger: NGXLogger,
     private featuresService: FeaturesService,
     private elementRef: ElementRef
   ) {}
   ngOnInit(): void {
-    this.logger.debug('LocationSearchComponent initialized with URL:', this.url)
+    // this.logger.debug('LocationSearchComponent initialized with URL:', this.url)
     this.activeSearchUrl.emit(currentHttp)
   }
 
@@ -77,7 +69,7 @@ export class LocationSearchComponent implements OnInit {
     const inputValue = (event.target as HTMLInputElement).value
     if (inputValue.length > 1) {
       this.searchParams.q = inputValue
-      this.logger.debug(inputValue)
+      // this.logger.debug(inputValue)
       this.activeSearchText.emit(inputValue)
       this.deSelectResult()
       this.lookup()
@@ -148,8 +140,8 @@ export class LocationSearchComponent implements OnInit {
 
   paramChanged(event: Search$Json$Params) {
     this.deSelectResult()
-    this.logger.debug('paramchanged:')
-    this.logger.debug(JSON.stringify(event))
+    // this.logger.debug('paramchanged:')
+    // this.logger.debug(JSON.stringify(event))
     this.searchParams = event
     this.lookup()
   }

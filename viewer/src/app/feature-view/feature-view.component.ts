@@ -34,7 +34,6 @@ import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { getPointResolution, get as getProjection, transform } from 'ol/proj'
-import { NGXLogger } from 'ngx-logger'
 import RenderFeature from 'ol/render/Feature'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
@@ -112,8 +111,7 @@ export class FeatureViewComponent implements OnChanges, OnInit, AfterViewInit {
 
   constructor(
     private el: ElementRef,
-    private featureService: FeatureService,
-    private logger: NGXLogger
+    private featureService: FeatureService
   ) {}
   ngOnInit(): void {
     if (this.initialBackground === 'Visible') {
@@ -149,7 +147,7 @@ export class FeatureViewComponent implements OnChanges, OnInit, AfterViewInit {
       })
 
       this.map.addLayer(drawFeatureLayer)
-      this.logger.log('drawlayer added')
+      //this.logger.log('drawlayer added')
       return vectorSource.getExtent()
     } else {
       this.map.getLayers().forEach(layer => {
@@ -184,8 +182,8 @@ export class FeatureViewComponent implements OnChanges, OnInit, AfterViewInit {
         this.changeView()
         this.loadFeatures(this.features)
         this.loadBackground()
-        this.logger.log(this.map.getView().getProjection())
-        this.logger.log('resolution' + this.map.getView().getResolution())
+        // this.logger.log(this.map.getView().getProjection())
+        // this.logger.log('resolution' + this.map.getView().getResolution())
       })
   }
 
