@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable } from 'rxjs'
 import { Link } from './link'
@@ -45,7 +45,8 @@ export interface TileMatrixSetLimit {
   providedIn: 'root',
 })
 export class MatrixSetService {
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient)
+
   getMatrixSet(url: string): Observable<MatrixSet> {
     return this.http.get<MatrixSet>(url)
   }

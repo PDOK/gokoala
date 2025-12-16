@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http'
-import { ErrorHandler, Injectable } from '@angular/core'
+import { ErrorHandler, Injectable, inject } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
 import { Subject } from 'rxjs'
 
@@ -14,6 +14,8 @@ export type ErrorDetail = {
   providedIn: 'root',
 })
 export class GlobalErrorHandlerService implements ErrorHandler {
+  private logger = inject(NGXLogger)
+
   initialErrorDetail: ErrorDetail = {
     title: 'unknown error',
     detail: 'unknown error',
@@ -24,7 +26,7 @@ export class GlobalErrorHandlerService implements ErrorHandler {
   private _errorDetailSource = new Subject<ErrorDetail>()
   public errorDetailStream$ = this._errorDetailSource.asObservable()
 
-  constructor(private logger: NGXLogger) {
+  constructor() {
     this._errorDetailSource.next(this.initialErrorDetail)
   }
 

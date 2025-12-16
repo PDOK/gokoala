@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
+import { Component, Input, OnChanges, OnInit, ViewEncapsulation, inject } from '@angular/core'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { LegendItemComponent } from './legend-item/legend-item.component'
@@ -13,6 +13,9 @@ import { NGXLogger } from 'ngx-logger'
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {
+  private logger = inject(NGXLogger)
+  private mapboxStyleService = inject(MapboxStyleService)
+
   mapboxStyle!: MapboxStyle
   // URL to a Mapbox style JSON endpoint
   @Input() styleUrl!: string
@@ -27,10 +30,7 @@ export class LegendViewComponent implements OnInit, OnChanges {
 
   LegendItems: LegendItem[] = []
 
-  constructor(
-    private logger: NGXLogger,
-    private mapboxStyleService: MapboxStyleService
-  ) {
+  constructor() {
     recordStyleLayer(true)
   }
 

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ErrorHandler } from '@angular/core'
+import { AfterViewInit, Component, ErrorHandler, inject } from '@angular/core'
 import { ErrorDetail, GlobalErrorHandlerService } from '../global-error-handler.service'
 import { NGXLogger } from 'ngx-logger'
 
@@ -10,12 +10,10 @@ import { NGXLogger } from 'ngx-logger'
   providers: [{ provide: ErrorHandler, useClass: GlobalErrorHandlerService }],
 })
 export class StatusBoxComponent implements AfterViewInit {
-  errorDetail: ErrorDetail | undefined = undefined
+  private logger = inject(NGXLogger)
+  private globalErrorHandlerService = inject(GlobalErrorHandlerService)
 
-  constructor(
-    private logger: NGXLogger,
-    private globalErrorHandlerService: GlobalErrorHandlerService
-  ) {}
+  errorDetail: ErrorDetail | undefined = undefined
 
   ngAfterViewInit(): void {
     this.globalErrorHandlerService.errorDetailStream$.subscribe(errorDetail => {

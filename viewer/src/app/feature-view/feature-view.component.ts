@@ -8,6 +8,7 @@ import {
   OnChanges,
   OnInit,
   Output,
+  inject,
 } from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
@@ -56,6 +57,9 @@ export type BackgroundMap = 'BRT' | 'OSM'
   standalone: true,
 })
 export class FeatureViewComponent implements OnChanges, OnInit, AfterViewInit {
+  private el = inject(ElementRef)
+  private featureService = inject(FeatureService)
+
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
   private _drawFeature: FeatureLike | undefined = undefined
@@ -108,11 +112,6 @@ export class FeatureViewComponent implements OnChanges, OnInit, AfterViewInit {
     zoom: 1,
   })
   features: FeatureLike[] = []
-
-  constructor(
-    private el: ElementRef,
-    private featureService: FeatureService
-  ) {}
   ngOnInit(): void {
     if (this.initialBackground === 'Visible') {
       this.init()

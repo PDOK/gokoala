@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { Observable } from 'rxjs'
 import { Feature } from 'ol'
 import { StyleLike } from 'ol/style/Style'
@@ -103,10 +103,8 @@ export function exhaustiveGuard(_value: never): never {
   providedIn: 'root',
 })
 export class MapboxStyleService {
-  constructor(
-    private http: HttpClient,
-    private logger: NGXLogger
-  ) {}
+  private http = inject(HttpClient)
+  private logger = inject(NGXLogger)
 
   getMapboxStyle(url: string): Observable<MapboxStyle> {
     return this.http.get<MapboxStyle>(url)

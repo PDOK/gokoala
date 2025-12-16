@@ -7,7 +7,7 @@ import {
   provideHttpClient,
   withInterceptors,
 } from '@angular/common/http'
-import { ErrorHandler, Injector, NgModule } from '@angular/core'
+import { ErrorHandler, Injector, NgModule, inject } from '@angular/core'
 import { createCustomElement } from '@angular/elements'
 import { BrowserModule } from '@angular/platform-browser'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
@@ -62,7 +62,11 @@ export class GlobalHttpInterceptor {
   ],
 })
 export class AppModule {
-  constructor(private injector: Injector) {
+  private injector = inject(Injector)
+
+  constructor() {
+    const injector = this.injector
+
     const vectorTileView = createCustomElement(VectortileViewComponent, { injector })
     customElements.define('app-vectortile-view', vectorTileView)
 

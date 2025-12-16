@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, inject } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FeaturesService } from '../api/services'
 import { defaultMapping, ProjectionMapping } from '../feature.service'
@@ -21,6 +21,9 @@ import { Observable } from 'rxjs'
   standalone: true,
 })
 export class LocationSearchComponent implements OnInit {
+  private featuresService = inject(FeaturesService)
+  private elementRef = inject(ElementRef)
+
   selectedResultUrl: string | undefined = undefined
   @Output() activeFeatureHovered = new EventEmitter<FeatureLike>()
   @Output() activeFeatureSelected = new EventEmitter<FeatureLike>()
@@ -54,12 +57,6 @@ export class LocationSearchComponent implements OnInit {
   projection: ProjectionMapping = defaultMapping
   results: Observable<FeatureCollectionJsonfg> | undefined = undefined
   activeSearchUrlEmited: CurrentHttp = { url: '', headers: new HttpHeaders() }
-
-  constructor(
-    //private logger: NGXLogger,
-    private featuresService: FeaturesService,
-    private elementRef: ElementRef
-  ) {}
   ngOnInit(): void {
     // this.logger.debug('LocationSearchComponent initialized with URL:', this.url)
     this.activeSearchUrl.emit(currentHttp)

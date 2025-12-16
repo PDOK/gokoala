@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { map, Observable } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { ProjectionLike } from 'ol/proj'
@@ -77,10 +77,8 @@ export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', 
   providedIn: 'root',
 })
 export class FeatureService {
-  constructor(
-    private logger: NGXLogger,
-    private http: HttpClient
-  ) {}
+  private logger = inject(NGXLogger)
+  private http = inject(HttpClient)
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.debug('Getfeatures')

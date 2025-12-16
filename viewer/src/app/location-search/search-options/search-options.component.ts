@@ -1,4 +1,4 @@
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core'
+import { Component, Input, Output, OnInit, EventEmitter, inject } from '@angular/core'
 
 import { CollectionsService } from '../../api/services'
 import { CollectionLink, Collection } from '../../api/models'
@@ -19,6 +19,9 @@ type ActiveCollection = {
   styleUrl: './search-options.component.css',
 })
 export class SearchOptionsComponent implements OnInit {
+  private logger = inject(NGXLogger)
+  private collectionService = inject(CollectionsService)
+
   @Input() url: string | undefined = undefined
   defaultColparams = { relevance: 0.5, version: 1 }
   @Input() searchParams: Search$Json$Params = {
@@ -29,11 +32,6 @@ export class SearchOptionsComponent implements OnInit {
   infomessage: string | undefined = undefined
   active: ActiveCollection[] = []
   visible: boolean = false
-
-  constructor(
-    private logger: NGXLogger,
-    private collectionService: CollectionsService
-  ) {}
 
   ngOnInit() {
     if (this.url) {
