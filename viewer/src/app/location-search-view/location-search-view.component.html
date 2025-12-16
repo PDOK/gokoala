@@ -1,27 +1,42 @@
-<div class="dropdown" [attr.aria-expanded]="open()">
-  <input
-    type="text"
-    [formControl]="form.controls.location"
-    [placeholder]="placeholder"
-    class="form-control dropdown-toggle"
-    id="search-input"
-    autocomplete="off"
-    [attr.aria-expanded]="true"
-    (focus)="openIfNot()"
-    (click)="openIfNot()" />
-  <ul class="dropdown-menu w-100" [ngClass]="{ show: open() }" aria-labelledby="search-input">
-    @if ((features$ | async)?.length) {
-      @for (feature of features$ | async; track feature.id) {
+@let features = features$ | async;
+@let hasFeatures = !!features?.length;
+@let hasSearched = hasSearched$ | async;
+
+<div class="dropdown" [attr.aria-expanded]="searchOpen()">
+  <div class="input-group">
+    <input
+      type="text"
+      [formControl]="form.controls.location"
+      [placeholder]="placeholder"
+      class="form-control"
+      id="search-input"
+      autocomplete="off"
+      [attr.aria-expanded]="true"
+      (focus)="openIfNot()"
+      (click)="openIfNot()"
+      aria-describedby="settings" />
+    <button
+      class="btn btn-secondary"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#collection-settings"
+      aria-controls="collection-settings"
+      aria-expanded="false">
+      <i class="bi bi-sliders"></i>
+    </button>
+  </div>
+  <ul class="dropdown-menu w-100" [ngClass]="{ show: searchOpen() && hasSearched }" aria-labelledby="search-input">
+    @if (features !== null && hasFeatures && !searching()) {
+      @for (feature of features; track $index) {
         <li class="dropdown-item">
           <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'displayName' }}</button>
         </li>
       }
-    } @else if (form.controls.location.value && form.controls.location.value.length > 2 && !searching()) {
+    } @else if (!hasFeatures && !searching() && hasSearched) {
       <li class="dropdown-item">No results found</li>
     } @else if (searching()) {
       <li class="dropdown-item">Searching...</li>
-    } @else {
-      <li class="dropdown-item">Type at least 3 characters to search</li>
     }
   </ul>
 </div>
+<app-collection-settings></app-collection-settings>

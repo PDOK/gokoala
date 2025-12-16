@@ -39,6 +39,10 @@ export function exhaustiveGuard(_value: never): never {
 }
 
 export type BackgroundMap = 'BRT' | 'OSM'
+export enum InitialView {
+  HIDDEN = 'HIDDEN',
+  VISIBLE = 'VISIBLE',
+}
 
 @Component({
   selector: 'app-feature-view',
@@ -75,6 +79,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() fillColor: string = 'rgba(0,0,255)'
   @Input() strokeColor: string = '#3399CC'
   @Input() mode: 'default' | 'auto' = 'default'
+  @Input() initialView: InitialView = InitialView.HIDDEN
 
   @Input() labelField = undefined
   @Input() labelOptions: string | undefined = undefined
@@ -119,18 +124,27 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       .pipe(take(1))
       .subscribe(data => {
         this.features = data
-        // this.changeView()
-
-        this.loadBackground()
-        this._view.setCenter([470715.91, 142735.75])
-        this.map.setView(this._view)
-        this.map.render()
+        this.map.getLayers().clear()
+        this.changeView()
         this.loadFeatures(this.features)
+        this.loadBackground()
+        this.logger.log(this.map.getView().getProjection())
         this.logger.log('resolution' + this.map.getView().getResolution())
       })
   }
 
   ngAfterViewInit() {
+    if (this.initialView === InitialView.VISIBLE) {
+      const AMERSFOORT_CENTER = [155000, 463000]
+      this.init()
+      const nlview = new View({
+        projection: getRijksdriehoek().projection,
+        center: AMERSFOORT_CENTER,
+        zoom: 2.5,
+      })
+      this.map.setView(nlview)
+      this.loadBackground()
+    }
     this.changeMode()
   }
 

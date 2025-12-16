@@ -1,12 +1,12 @@
-import { Component, ElementRef, EventEmitter, HostListener, inject, Input, OnDestroy, OnInit, Output, signal } from '@angular/core'
+import { Component, ElementRef, EventEmitter, HostListener, inject, Input, OnDestroy, OnInit, Output, Signal, signal } from '@angular/core'
 
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, map, Observable, Subscription, switchMap, tap } from 'rxjs'
 import { FeaturesService } from '../api/services'
-import { filter } from 'rxjs/operators'
-import { AsyncPipe, NgClass } from '@angular/common'
+import { AsyncPipe, JsonPipe, NgClass } from '@angular/common'
 import { FeatureJsonfg } from '../api/models/feature-jsonfg'
 import { PropertyValuePipe } from './property-value.pipe'
+import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 
 interface LocationForm {
   location: FormControl<string | null>
@@ -15,7 +15,7 @@ interface LocationForm {
 @Component({
   selector: 'app-location-search-view',
   standalone: true,
-  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass],
+  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
 })
@@ -26,10 +26,13 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy {
 
   form!: FormGroup<LocationForm>
   features$?: Observable<FeatureJsonfg[]>
+
   defaultColparams = { relevance: 0.5, version: 1 }
 
-  open = signal(false)
+  searchOpen = signal(false)
   searching = signal(false)
+  hasSearched$!: Observable<boolean>
+
   // eslint-disable-next-line
   searchParams: any = {
     q: '',
@@ -56,15 +59,15 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy {
 
   initLocationListener() {
     this.features$ = this.form.controls.location.valueChanges.pipe(
-      filter(val => val !== null && val.length > 3),
-      debounceTime(50),
       distinctUntilChanged(),
-      tap(val => (this.searchParams.q = val ? val : '')),
       tap(() => this.searching.set(true)),
+      debounceTime(200),
+      tap(val => (this.searchParams.q = val ? val : '')),
       switchMap(() => this._featureService.search$Json(this.searchParams)),
       tap(() => this.searching.set(false)),
-      map(val => val.features)
+      map(val => val?.features || [])
     )
+    this.hasSearched$ = this.form.controls.location.valueChanges.pipe(map(value => value !== null && value.length > 3))
   }
 
   ngOnDestroy() {
@@ -74,19 +77,15 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy {
   selectFeature(feature: FeatureJsonfg) {
     const propertyValuePipe = new PropertyValuePipe()
     this.locationSelected.emit(propertyValuePipe.transform(feature.properties, 'href'))
-    this.open.set(false)
-  }
-
-  toggle() {
-    this.open.update(open => !open)
+    this.searchOpen.set(false)
   }
 
   openIfNot() {
-    if (!this.open()) this.open.set(true)
+    if (!this.searchOpen()) this.searchOpen.set(true)
   }
 
   close() {
-    this.open.set(false)
+    this.searchOpen.set(false)
   }
 
   @HostListener('document:mousedown', ['$event'])
