@@ -9,6 +9,9 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/etl/config"
 	"github.com/google/uuid"
 	"github.com/twpayne/go-geom"
 )
@@ -45,19 +48,19 @@ func NewTransformer() *Transformer {
 	}
 }
 
-func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatialCollection) ([]SearchIndexRecord, error) {
+func (t Transformer) Transform(records []RawRecord, collection config.Collection) ([]SearchIndexRecord, error) {
 	result := make([]SearchIndexRecord, 0, len(records))
 	for _, r := range records {
-		fieldValuesByName, err := slicesToStringMap(collection.Search.Fields, r.FieldValues)
+		fieldValuesByName, err := slicesToStringMap(collection.Fields, r.FieldValues)
 		if err != nil {
 			return nil, err
 		}
-		displayName, err := t.renderTemplate(collection.Search.DisplayNameTemplate, fieldValuesByName)
+		displayName, err := t.renderTemplate(collection.DisplayNameTemplate, fieldValuesByName)
 		if err != nil {
 			return nil, err
 		}
-		suggestions := make([]string, 0, len(collection.Search.ETL.SuggestTemplates))
-		for _, suggestTemplate := range collection.Search.ETL.SuggestTemplates {
+		suggestions := make([]string, 0, len(collection.SuggestTemplates))
+		for _, suggestTemplate := range collection.SuggestTemplates {
 			suggestion, err := t.renderTemplate(suggestTemplate, fieldValuesByName)
 			if err != nil {
 				return nil, err
@@ -73,7 +76,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 
 		geometry := r.Geometry
 
-		externalFid, err := generateExternalFid(r.ExternalFidBase, collection.Search.ETL.ExternalFid, r.ExternalFidValues)
+		externalFid, err := generateExternalFid(r.ExternalFidBase, collection.ExternalFid, r.ExternalFidValues)
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +87,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.GeoSpatial
 				FeatureID:         strconv.FormatInt(r.FeatureID, 10),
 				ExternalFid:       externalFid,
 				CollectionID:      collection.ID,
-				CollectionVersion: collection.Search.Version,
+				CollectionVersion: collection.APIVersion,
 				DisplayName:       displayName,
 				Suggest:           suggestion,
 				GeometryType:      r.GeometryType,

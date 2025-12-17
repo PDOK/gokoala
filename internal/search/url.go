@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	d "github.com/PDOK/gokoala/internal/search/domain"
-	"github.com/PDOK/gomagpie/internal/engine"
-	"github.com/PDOK/gomagpie/internal/engine/util"
 	"github.com/twpayne/go-geom"
 )
 

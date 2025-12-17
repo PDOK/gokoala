@@ -1,4 +1,4 @@
-package etl
+package main
 
 import (
 	"fmt"
@@ -7,50 +7,37 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/etl"
+	"github.com/PDOK/gokoala/internal/etl/config"
 	"github.com/iancoleman/strcase"
-	"golang.org/x/text/language"
-
 	"github.com/urfave/cli/v2"
+	"golang.org/x/text/language"
 )
 
 const (
-	appName = "gomagpie"
+	appName = "gokoala-etl"
 
-	hostFlag                 = "host"
-	portFlag                 = "port"
-	debugPortFlag            = "debug-port"
-	shutdownDelayFlag        = "shutdown-delay"
-	configFileFlag           = "config-file"
-	collectionIDFlag         = "collection-id"
-	collectionVersionFlag    = "collection-version"
-	enableTrailingSlashFlag  = "enable-trailing-slash"
-	enableCorsFlag           = "enable-cors"
-	dbHostFlag               = "db-host"
-	dbNameFlag               = "db-name"
-	dbPasswordFlag           = "db-password"
-	dbPortFlag               = "db-port"
-	dbSslModeFlag            = "db-ssl-mode"
-	dbUsernameFlag           = "db-username"
-	searchIndexFlag          = "search-index"
-	sridFlag                 = "srid"
-	fileFlag                 = "file"
-	featureTableFlag         = "feature-table"
-	featureTableFidFlag      = "fid"
-	featureTableGeomFlag     = "geom"
-	pageSizeFlag             = "page-size"
-	skipOptimizeFlag         = "skip-optimize"
-	rewritesFileFlag         = "rewrites-file"
-	synonymsFileFlag         = "synonyms-file"
-	languageFlag             = "lang"
-	rankNormalization        = "rank-normalization"
-	exactMatchMultiplier     = "exact-match-multiplier"
-	primarySuggestMultiplier = "primary-suggest-multiplier"
-	rankThreshold            = "rank-threshold"
-	preRankLimitMultiplier   = "pre-rank-limit-multiplier"
-	preRankWordCountCutoff   = "pre-rank-word-count-cutoff"
-	synonymsExactMatch       = "synonyms-exact-match"
+	hostFlag                = "host"
+	portFlag                = "port"
+	debugPortFlag           = "debug-port"
+	shutdownDelayFlag       = "shutdown-delay"
+	configFileFlag          = "config-file"
+	collectionIDFlag        = "collection-id"
+	collectionVersionFlag   = "collection-version"
+	enableTrailingSlashFlag = "enable-trailing-slash"
+	enableCorsFlag          = "enable-cors"
+	dbHostFlag              = "db-host"
+	dbNameFlag              = "db-name"
+	dbPasswordFlag          = "db-password"
+	dbPortFlag              = "db-port"
+	dbSslModeFlag           = "db-ssl-mode"
+	dbUsernameFlag          = "db-username"
+	searchIndexFlag         = "search-index"
+	sridFlag                = "srid"
+	fileFlag                = "file"
+	pageSizeFlag            = "page-size"
+	skipOptimizeFlag        = "skip-optimize"
+	languageFlag            = "lang"
 )
 
 var (
@@ -165,140 +152,13 @@ var (
 	}
 )
 
-//nolint:funlen,maintidx
+//nolint:funlen
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
 	app.Usage = "Run location search and geocoding API, or use as CLI to support the ETL process for this API."
 	app.UseShortOptionHandling = true
 	app.Commands = []*cli.Command{
-		//{
-		//	Name:  "start-service",
-		//	Usage: "Start service to serve location API",
-		//	Flags: []cli.Flag{
-		//		serviceFlags[hostFlag],
-		//		serviceFlags[portFlag],
-		//		serviceFlags[debugPortFlag],
-		//		serviceFlags[shutdownDelayFlag],
-		//		serviceFlags[configFileFlag],
-		//		serviceFlags[enableTrailingSlashFlag],
-		//		serviceFlags[enableCorsFlag],
-		//		serviceFlags[sridFlag],
-		//		commonDBFlags[dbHostFlag],
-		//		commonDBFlags[dbPortFlag],
-		//		commonDBFlags[dbNameFlag],
-		//		commonDBFlags[dbUsernameFlag],
-		//		commonDBFlags[dbPasswordFlag],
-		//		commonDBFlags[dbSslModeFlag],
-		//		&cli.PathFlag{
-		//			Name:    searchIndexFlag,
-		//			EnvVars: []string{strcase.ToScreamingSnake(searchIndexFlag)},
-		//			Usage:   "Name of search index to use",
-		//			Value:   "search_index",
-		//		},
-		//		&cli.PathFlag{
-		//			Name:     rewritesFileFlag,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(rewritesFileFlag)},
-		//			Usage:    "Path to csv file containing rewrites.csv used to generate suggestions",
-		//			Required: true,
-		//		},
-		//		&cli.PathFlag{
-		//			Name:     synonymsFileFlag,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(synonymsFileFlag)},
-		//			Usage:    "Path to csv file containing synonyms used to generate suggestions",
-		//			Required: true,
-		//		},
-		//		&cli.IntFlag{
-		//			Name:     rankNormalization,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(rankNormalization)},
-		//			Usage:    "Normalization specifies whether and how a document's length should impact its rank. Possible values are 0, 1, 2, 4, 8, 16 and 32. For more information see https://www.postgresql.org/docs/current/textsearch-controls.html",
-		//			Required: false,
-		//			Value:    1,
-		//		},
-		//		&cli.Float64Flag{
-		//			Name:     exactMatchMultiplier,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(exactMatchMultiplier)},
-		//			Usage:    "Multiply the exact match rank to boost it above the wildcard matches",
-		//			Required: false,
-		//			Value:    3.0,
-		//		},
-		//		&cli.Float64Flag{
-		//			Name:     primarySuggestMultiplier,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(primarySuggestMultiplier)},
-		//			Usage:    "The primary suggest is equal to the display name. With this multiplier you can boost it above other suggests",
-		//			Required: false,
-		//			Value:    1.01,
-		//		},
-		//		&cli.IntFlag{
-		//			Name:     rankThreshold,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(rankThreshold)},
-		//			Usage:    "The threshold above which results are pre-ranked instead ranked exactly",
-		//			Required: false,
-		//			Value:    40000,
-		//		},
-		//		&cli.IntFlag{
-		//			Name:     preRankLimitMultiplier,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(preRankLimitMultiplier)},
-		//			Usage:    "The number of results which are pre-ranked when the rank threshold is hit",
-		//			Required: false,
-		//			Value:    10,
-		//		},
-		//		&cli.IntFlag{
-		//			Name:     preRankWordCountCutoff,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(preRankWordCountCutoff)},
-		//			Usage:    "Pre-ranking is based on word count. Results with a word count above this cutoff are not eligible for pre-ranking",
-		//			Required: false,
-		//			Value:    3,
-		//		},
-		//		&cli.BoolFlag{
-		//			Name:     synonymsExactMatch,
-		//			EnvVars:  []string{strcase.ToScreamingSnake(synonymsExactMatch)},
-		//			Usage:    "When true synonyms are taken into account during exact match calculation",
-		//			Required: false,
-		//			Value:    false,
-		//		},
-		//	},
-		//	Action: func(c *cli.Context) error {
-		//		log.Println(c.Command.Usage)
-		//
-		//		address := net.JoinHostPort(c.String(hostFlag), strconv.Itoa(c.Int(portFlag)))
-		//		debugPort := c.Int(debugPortFlag)
-		//		shutdownDelay := c.Int(shutdownDelayFlag)
-		//		configFile := c.String(configFileFlag)
-		//		trailingSlash := c.Bool(enableTrailingSlashFlag)
-		//		cors := c.Bool(enableCorsFlag)
-		//
-		//		dbConn := flagsToDBConnStr(c)
-		//
-		//		// Engine encapsulates shared logic
-		//		engine, err := eng.NewEngine(configFile, trailingSlash, cors)
-		//		if err != nil {
-		//			return err
-		//		}
-		//		// Each OGC API building block makes use of said Engine
-		//		ogc.SetupBuildingBlocks(engine, dbConn)
-		//		// Create search endpoint
-		//		_, err = search.NewSearch(
-		//			engine,
-		//			dbConn,
-		//			c.String(searchIndexFlag),
-		//			c.Int(sridFlag),
-		//			c.Path(rewritesFileFlag),
-		//			c.Path(synonymsFileFlag),
-		//			c.Int(rankNormalization),
-		//			c.Float64(exactMatchMultiplier),
-		//			c.Float64(primarySuggestMultiplier),
-		//			c.Int(rankThreshold),
-		//			c.Int(preRankLimitMultiplier),
-		//			c.Int(preRankWordCountCutoff),
-		//			c.Bool(synonymsExactMatch),
-		//		)
-		//		if err != nil {
-		//			return err
-		//		}
-		//		return engine.Start(address, debugPort, shutdownDelay)
-		//	},
-		//},
 		{
 			Name:     "create-search-index",
 			Category: "etl",
@@ -389,26 +249,6 @@ func main() {
 					Usage:    "Path to (e.g GeoPackage) file to import",
 					Required: true,
 				},
-				&cli.StringFlag{
-					Name:     featureTableFidFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFidFlag)},
-					Usage:    "Name of feature ID field in file",
-					Required: false,
-					Value:    "fid",
-				},
-				&cli.StringFlag{
-					Name:     featureTableGeomFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(featureTableGeomFlag)},
-					Usage:    "Name of geometry field in file",
-					Required: false,
-					Value:    "geom",
-				},
-				&cli.StringSliceFlag{
-					Name:     featureTableFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(featureTableFlag)},
-					Usage:    "Name of the table in given file to import",
-					Required: true,
-				},
 				&cli.IntFlag{
 					Name:     pageSizeFlag,
 					EnvVars:  []string{strcase.ToScreamingSnake(pageSizeFlag)},
@@ -430,21 +270,13 @@ func main() {
 				if err != nil {
 					return err
 				}
-				var featureTables []etl.FeatureTable
-				for _, table := range c.StringSlice(featureTableFlag) {
-					featureTables = append(featureTables, etl.FeatureTable{
-						Name: table,
-						FID:  c.String(featureTableFidFlag),
-						Geom: c.String(featureTableGeomFlag),
-					})
-				}
 				collectionID := c.String(collectionIDFlag)
-				collection := config.CollectionByID(cfg, collectionID)
+				collection := cfg.CollectionByID(collectionID)
 				if collection == nil {
 					return fmt.Errorf("no configured collection found with id: %s", collectionID)
 				}
 				return etl.ImportFile(*collection, c.String(searchIndexFlag), c.String(collectionVersionFlag),
-					c.Path(fileFlag), featureTables, c.Int(pageSizeFlag), c.Bool(skipOptimizeFlag), dbConn)
+					c.Path(fileFlag), c.Int(pageSizeFlag), c.Bool(skipOptimizeFlag), dbConn)
 			},
 		},
 	}

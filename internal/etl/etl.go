@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/etl/config"
 	"github.com/PDOK/gokoala/internal/etl/extract"
 	"github.com/PDOK/gokoala/internal/etl/load"
 	t "github.com/PDOK/gokoala/internal/etl/transform"
@@ -16,7 +16,7 @@ import (
 type Extract interface {
 
 	// Extract raw records from the source database to be transformed and loaded into the target search index
-	Extract(table FeatureTable, fields []string, externaFidFields []string,
+	Extract(table config.FeatureTable, fields []string, externaFidFields []string,
 		where string, limit int, offset int) ([]t.RawRecord, error)
 
 	// Close connection to the source database
@@ -27,7 +27,7 @@ type Extract interface {
 type Transform interface {
 
 	// Transform each raw record in one or more search records depending on the given configuration
-	Transform(records []t.RawRecord, collection config.GeoSpatialCollection) ([]t.SearchIndexRecord, error)
+	Transform(records []t.RawRecord, collection config.Collection) ([]t.SearchIndexRecord, error)
 }
 
 // Load - the 'L' in ETL. Datasource agnostic interface to load data into target database.
@@ -78,17 +78,11 @@ func GetVersion(dbConn string, collectionID string, searchIndex string) (string,
 	return db.GetVersion(collectionID, searchIndex)
 }
 
-type FeatureTable struct {
-	Name string
-	FID  string
-	Geom string
-}
-
 // ImportFile import source data into the target search index using extract-transform-load principle
 //
 //nolint:funlen
-func ImportFile(collection config.GeoSpatialCollection, searchIndex string, collectionVersion string, filePath string,
-	tables []FeatureTable, pageSize int, skipOptimize bool, dbConn string) error {
+func ImportFile(collection config.Collection, searchIndex string, collectionVersion string, filePath string,
+	pageSize int, skipOptimize bool, dbConn string) error {
 
 	source, err := newSourceToExtract(filePath)
 	if err != nil {
@@ -108,13 +102,9 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, coll
 	}
 
 	// import each feature table
-	for _, table := range tables {
-		details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Name, collection.ID, searchIndex)
+	for _, table := range collection.Tables {
+		details := fmt.Sprintf("file %s (feature table '%s', collection '%s') into search index %s", filePath, table.Table, collection.ID, searchIndex)
 		log.Printf("start import of %s", details)
-		if collection.Features != nil && collection.Features.Search == nil {
-			return fmt.Errorf("no search configuration found for feature table: %s", table.Name)
-		}
-		searchCfg := collection.Features.Search
 
 		// import records in batches depending on page size
 		offset := 0
@@ -122,10 +112,10 @@ func ImportFile(collection config.GeoSpatialCollection, searchIndex string, coll
 			log.Println("---")
 			log.Printf("extracting source records from offset %d", offset)
 			var externalFidFields []string
-			if searchCfg.ETL.ExternalFid != nil {
-				externalFidFields = searchCfg.ETL.ExternalFid.Fields
+			if collection.ExternalFid != nil {
+				externalFidFields = collection.ExternalFid.Fields
 			}
-			sourceRecords, err := source.Extract(table, searchCfg.Fields, externalFidFields, searchCfg.ETL.Filter, pageSize, offset)
+			sourceRecords, err := source.Extract(table, collection.Fields, externalFidFields, collection.Filter, pageSize, offset)
 			if err != nil {
 				return fmt.Errorf("failed extracting source records: %w", err)
 			}

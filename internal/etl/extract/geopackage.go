@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/PDOK/gokoala/internal/etl/config"
 	t "github.com/PDOK/gokoala/internal/etl/transform"
-	"github.com/PDOK/gomagpie/config"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/twpayne/go-geom"
@@ -81,7 +81,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, externa
 		from %[2]s
 		%[5]s
 		limit :limit
-		offset :offset`, strings.Join(extraFields, ","), table.Name, table.FID, table.Geom, where)
+		offset :offset`, strings.Join(extraFields, ","), table.Table, table.FID, table.Geom, where)
 
 	rows, err := g.db.NamedQuery(query, map[string]any{"limit": limit, "offset": offset})
 	if err != nil {
@@ -98,7 +98,7 @@ func (g *GeoPackage) Extract(table config.FeatureTable, fields []string, externa
 		if len(row) != len(fields)+len(externalFidFields)+nrOfStandardFieldsInQuery {
 			return nil, fmt.Errorf("unexpected row length (%v)", len(row))
 		}
-		record, err := mapRowToRawRecord(row, fields, externalFidFields, table.Name)
+		record, err := mapRowToRawRecord(row, fields, externalFidFields, table.Table)
 		if err != nil {
 			return nil, err
 		}

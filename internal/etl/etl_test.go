@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/etl/config"
 	"github.com/docker/go-connections/nat"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -98,12 +98,11 @@ func TestGetVersion(t *testing.T) {
 		t.Error(err)
 	}
 	require.NotNil(t, cfg)
-	collection := config.CollectionByID(cfg, "addresses")
+	collection := cfg.CollectionByID("addresses")
 	require.NotNil(t, collection)
-	table := []FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
 	collectionVersion := uuid.NewString()
-	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
-		1000, true, dbConn)
+	err = ImportFile(*collection, "search_index", collectionVersion,
+		pwd+"/testdata/addresses-crs84.gpkg", 1000, true, dbConn)
 	require.NoError(t, err)
 
 	version, err := GetVersion(dbConn, "addresses", "search_index")
@@ -147,21 +146,18 @@ func TestImportGeoPackage(t *testing.T) {
 			t.Error(err)
 		}
 		require.NotNil(t, cfg)
-		collection := config.CollectionByID(cfg, "addresses")
-		require.NotNil(t, collection)
-		for _, coll := range cfg.OgcAPI.Features.Collections {
-			if coll.Search != nil {
-				coll.Search.ETL.Filter = tt.where
-			}
+		for i := range cfg.Collections {
+			cfg.Collections[i].Filter = tt.where
 		}
+		collection := cfg.CollectionByID("addresses")
+		require.NotNil(t, collection)
 
 		// when/then
 		err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
 		require.NoError(t, err)
 
-		table := []FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
 		collectionVersion := uuid.NewString()
-		err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
+		err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg",
 			1000, true, dbConn)
 		require.NoError(t, err)
 
@@ -198,18 +194,16 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 		t.Error(err)
 	}
 	require.NotNil(t, cfg)
-	collection := config.CollectionByID(cfg, "addresses")
+	collection := cfg.CollectionByID("addresses")
 	require.NotNil(t, collection)
 
 	// when: create index
 	err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
 	require.NoError(t, err)
 
-	table := []FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
-
 	// when: first import (should create new table)
 	collectionVersion := uuid.NewString()
-	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg",
 		1000, true, dbConn)
 	require.NoError(t, err)
 
@@ -236,7 +230,7 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 
 	// when: second import (should create a new table and switch partitions)
 	collectionVersion = uuid.NewString()
-	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg",
 		1000, true, dbConn)
 	require.NoError(t, err)
 
@@ -259,7 +253,7 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 
 	// when: third import (should fill an existing table and switch partitions)
 	collectionVersion = uuid.NewString()
-	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg",
 		1000, true, dbConn)
 	require.NoError(t, err)
 
@@ -295,24 +289,22 @@ func TestImportGeoPackageNoDuplicates(t *testing.T) {
 		t.Error(err)
 	}
 	require.NotNil(t, cfg)
-	collection := config.CollectionByID(cfg, "addresses")
+	collection := cfg.CollectionByID("addresses")
 	require.NotNil(t, collection)
 
 	// when: create index
 	err = CreateSearchIndex(dbConn, "search_index", 4326, language.English)
 	require.NoError(t, err)
 
-	table := []FeatureTable{{Name: "addresses", FID: "fid", Geom: "geom"}}
-
 	// when: first import (should create new table)
 	collectionVersion := uuid.NewString()
-	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg",
 		1000, true, dbConn)
 	require.NoError(t, err)
 
 	// when: second import (should create a new table and switch partitions)
 	collectionVersion = uuid.NewString()
-	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg", table,
+	err = ImportFile(*collection, "search_index", collectionVersion, pwd+"/testdata/addresses-crs84.gpkg",
 		1000, true, dbConn)
 	require.NoError(t, err)
 
@@ -330,7 +322,7 @@ func TestImportGeoPackageNoDuplicates(t *testing.T) {
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
-		Image: "docker.io/postgis/postgis:16-3.5", // use debian, not alpine (proj issues between environments)
+		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments)
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
 			"POSTGRES_PASSWORD": "postgres",
@@ -341,8 +333,8 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 		WaitingFor:   wait.ForLog("PostgreSQL init process complete; ready for start up."),
 		Files: []testcontainers.ContainerFile{
 			{
-				HostFilePath:      "../../tests/testdata/sql/init-db.sql",
-				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("../../testdata/init-db.sql"),
+				HostFilePath:      "./testdata/init-db.sql",
+				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("/testdata/init-db.sql"),
 				FileMode:          0755,
 			},
 		},
@@ -352,7 +344,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 		ContainerRequest: req,
 		Started:          true,
 	})
-	if err != nil {
+	if err != nil || container == nil {
 		t.Error(err)
 	}
 	port, err := container.MappedPort(ctx, "5432/tcp")

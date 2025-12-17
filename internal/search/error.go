@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/PDOK/gomagpie/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine"
 )
 
 // log error, but send generic message to client to prevent possible information leakage from datasource

@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine"
 	ds "github.com/PDOK/gokoala/internal/search/datasources"
 	"github.com/PDOK/gokoala/internal/search/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/search/domain"
-	"github.com/PDOK/gomagpie/config"
-	"github.com/PDOK/gomagpie/internal/engine"
 )
 
 const (
@@ -107,9 +107,15 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 		if !ok || collectionID == "" {
 			return fmt.Errorf("collection reference not found in feature %s", feat.ID)
 		}
-		collection := config.CollectionByID(s.engine.Config, collectionID.(string))
-		if collection.Search != nil {
-			for _, ogcColl := range collection.Search.OGCCollections {
+		var collection *config.GeoSpatialCollection
+		for _, coll := range s.engine.Config.AllCollections() {
+			if collectionID == coll.ID && coll.Features != nil && coll.Features.Search != nil {
+				collection = &coll
+				break
+			}
+		}
+		if collection != nil {
+			for _, ogcColl := range collection.Features.Search.OGCCollections {
 				geomType, ok := feat.Properties[domain.PropGeomType]
 				if !ok || geomType == "" {
 					return fmt.Errorf("geometry type not found in feature %s", feat.ID)

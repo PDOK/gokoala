@@ -14,11 +14,10 @@ import (
 	"testing"
 	"time"
 
-	etl2 "github.com/PDOK/gokoala/cmd/etl"
+	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/etl"
+	etlconfig "github.com/PDOK/gokoala/internal/etl/config"
 	"github.com/PDOK/gokoala/internal/search/domain"
-	"github.com/PDOK/gomagpie/config"
-	"github.com/PDOK/gomagpie/internal/engine"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -58,7 +57,7 @@ func TestSearch(t *testing.T) {
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
 	// given available engine
-	eng, err := engine.NewEngine(configFile, false, false)
+	eng, err := engine.NewEngine(configFile, "", "", false, false)
 	require.NoError(t, err)
 
 	// given search endpoint
@@ -383,20 +382,22 @@ func TestSearch(t *testing.T) {
 }
 
 func importGpkg(collectionName string, dbConn string) error {
-	conf, err := config.NewConfig(configFile)
+	conf, err := etlconfig.NewConfig(configFile)
 	if err != nil {
 		return err
 	}
-	collection := config.CollectionByID(conf, collectionName)
-	table := []etl2.main{{Name: collectionName, FID: "fid", Geom: "geom"}}
+	collection := conf.CollectionByID(collectionName)
+	if collection == nil {
+		return fmt.Errorf("collection %s not found in config", collectionName)
+	}
 	collectionVersion := uuid.NewString()
-	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/search/testdata/fake-addresses-crs84.gpkg", table, 5000, false, dbConn)
+	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/search/testdata/fake-addresses-crs84.gpkg", 5000, false, dbConn)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
-		Image: "docker.io/postgis/postgis:16-3.5", // use debian, not alpine (proj issues between environments)
+		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments)
 		Name:  "postgis",
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
