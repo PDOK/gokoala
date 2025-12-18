@@ -18,7 +18,7 @@
           {
             "$ref": "#/components/parameters/q"
           },
-          {{- range $index, $coll := .Config.Collections.WithSearch -}}
+          {{- range $index, $coll := .Config.OgcAPI.Features.Collections.WithSearch -}}
           {{- if $index -}},{{- end -}}
           {
             "$ref": "#/components/parameters/{{ $coll.ID }}-collection-search"
@@ -676,7 +676,7 @@
           "maxLength": 200
         }
       },
-      {{- range $index, $coll := .Config.Collections.WithSearch -}}
+      {{- range $index, $coll := .Config.OgcAPI.Features.Collections.WithSearch -}}
       {{- if $index -}},{{- end -}}
       "{{ $coll.ID }}-collection-search": {
         "name": "{{ $coll.ID }}",

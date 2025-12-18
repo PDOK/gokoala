@@ -17,9 +17,9 @@ import (
 )
 
 func init() {
-	// change working dir to root, to mimic behavior of 'go run' in order to resolve files.
+	// change working dir to root, to mimic behavior of 'go run' to resolve files.
 	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../")
+	dir := path.Join(path.Dir(filename), "../../")
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)

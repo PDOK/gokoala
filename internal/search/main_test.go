@@ -29,7 +29,8 @@ import (
 )
 
 const testSearchIndex = "search_index"
-const configFile = "internal/search/testdata/config.yaml"
+const etlConfigFile = "internal/search/testdata/config_etl.yaml"
+const searchConfigFile = "internal/search/testdata/config_search.yaml"
 
 func init() {
 	// change working dir to root
@@ -57,7 +58,7 @@ func TestSearch(t *testing.T) {
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
 	// given available engine
-	eng, err := engine.NewEngine(configFile, "", "", false, false)
+	eng, err := engine.NewEngine(searchConfigFile, "", "", false, false)
 	require.NoError(t, err)
 
 	// given search endpoint
@@ -382,7 +383,7 @@ func TestSearch(t *testing.T) {
 }
 
 func importGpkg(collectionName string, dbConn string) error {
-	conf, err := etlconfig.NewConfig(configFile)
+	conf, err := etlconfig.NewConfig(etlConfigFile)
 	if err != nil {
 		return err
 	}
@@ -409,8 +410,8 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 		WaitingFor:   wait.ForLog("PostgreSQL init process complete; ready for start up."),
 		Files: []testcontainers.ContainerFile{
 			{
-				HostFilePath:      "tests/testdata/sql/init-db.sql",
-				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("testdata/init-db.sql"),
+				HostFilePath:      "internal/etl/testdata/init-db.sql",
+				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("/testdata/init-db.sql"),
 				FileMode:          0755,
 			},
 		},
@@ -426,6 +427,9 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 	port, err := container.MappedPort(ctx, "5432/tcp")
 	if err != nil {
 		t.Error(err)
+	}
+	if port.Int() == 0 {
+		t.Error("port is 0")
 	}
 
 	log.Println("Giving postgres a few extra seconds to fully start")

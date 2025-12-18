@@ -3,6 +3,7 @@ package config
 // +kubebuilder:object:generate=true
 type Search struct {
 	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate and SuggestTemplates.
+	// +kubebuilder:validation:MinItems=1
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required"`
 
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
@@ -19,6 +20,7 @@ type Search struct {
 // +kubebuilder:object:generate=true
 type RelatedOGCAPIFeaturesCollection struct {
 	// Base URL/Href to the OGC Features API
+	// +kubebuilder:validation:Type=string
 	APIBaseURL URL `yaml:"api" json:"api" validate:"required"`
 
 	// Geometry type of the features in the related collection.
