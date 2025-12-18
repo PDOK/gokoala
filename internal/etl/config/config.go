@@ -11,20 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Config struct {
-	// Collections used in this dataset
-	Collections []Collection `yaml:"collections" json:"collections" validate:"required"`
-}
-
-func (c *Config) CollectionByID(id string) *Collection {
-	for _, coll := range c.Collections {
-		if coll.ID == id {
-			return &coll
-		}
-	}
-	return nil
-}
-
 // NewConfig read YAML config file
 func NewConfig(configFile string) (*Config, error) {
 	yamlData, err := os.ReadFile(configFile)
@@ -41,6 +27,20 @@ func NewConfig(configFile string) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
 	return config, nil
+}
+
+type Config struct {
+	// Collections used in this dataset
+	Collections []Collection `yaml:"collections" json:"collections" validate:"required"`
+}
+
+func (c *Config) CollectionByID(id string) *Collection {
+	for _, coll := range c.Collections {
+		if coll.ID == id {
+			return &coll
+		}
+	}
+	return nil
 }
 
 // UnmarshalYAML hooks into unmarshalling to set defaults and validate config
@@ -102,15 +102,15 @@ type Collection struct {
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
 	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
 
-	// Version of this collection exposed though the API e.g., q=foo&thiscollection[version]=1&othercollection[version]=2
-	APIVersion int `yaml:"apiVersion,omitempty" json:"apiVersion,omitempty" default:"1"`
+	// Version of this collection exposed through the API e.g., q=foo&thiscollection[version]=1&othercollection[version]=2
+	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
 	// One or more templates that make up the autosuggestions. Uses Go text/template syntax to reference fields.
 	SuggestTemplates []string `yaml:"suggestTemplates" json:"suggestTemplates" validate:"required,min=1"`
 
 	// SQLite WHERE clause to filter features when importing/ETL-ing
 	// (Without the WHERE keyword, only the clause)
-	// +Optional
+	// +optional
 	Filter string `yaml:"filter,omitempty" json:"filter,omitempty"`
 
 	// Optional configuration for generation of external_fid
@@ -123,9 +123,11 @@ type FeatureTable struct {
 	Table string `yaml:"table" json:"table" validate:"required"`
 
 	// Name of the feature ID column
+	// +optional
 	FID string `yaml:"fid,omitempty" json:"fid,omitempty" default:"fid" validate:"required"`
 
 	// Name of the geometry column
+	// +optional
 	Geom string `yaml:"geom,omitempty" json:"geom,omitempty" default:"geom" validate:"required"`
 }
 
