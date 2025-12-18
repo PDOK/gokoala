@@ -11,6 +11,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Config struct {
+	// Collections used in this dataset
+	Collections []Collection `yaml:"collections" json:"collections" validate:"required"`
+}
+
 // NewConfig read YAML config file
 func NewConfig(configFile string) (*Config, error) {
 	yamlData, err := os.ReadFile(configFile)
@@ -27,11 +32,6 @@ func NewConfig(configFile string) (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config file, error: %w", err)
 	}
 	return config, nil
-}
-
-type Config struct {
-	// Collections used in this dataset
-	Collections []Collection `yaml:"collections" json:"collections" validate:"required"`
 }
 
 func (c *Config) CollectionByID(id string) *Collection {

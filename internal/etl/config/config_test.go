@@ -44,7 +44,7 @@ func TestNewConfig(t *testing.T) {
 				require.Error(t, err)
 				assert.ErrorContains(t, err, tt.wantErrMsg)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Len(t, cfg.Collections, 1)
 				assert.Equal(t, "addresses", cfg.Collections[0].ID)
 				assert.Equal(t, "addresses", cfg.Collections[0].Tables[0].Table)
