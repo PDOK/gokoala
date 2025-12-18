@@ -87,7 +87,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.Collection
 				FeatureID:         strconv.FormatInt(r.FeatureID, 10),
 				ExternalFid:       externalFid,
 				CollectionID:      collection.ID,
-				CollectionVersion: collection.APIVersion,
+				CollectionVersion: collection.Version,
 				DisplayName:       displayName,
 				Suggest:           suggestion,
 				GeometryType:      r.GeometryType,

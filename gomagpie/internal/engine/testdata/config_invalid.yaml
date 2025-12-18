@@ -1,9 +1,0 @@
----
-version: 1.0.2.6.8
-title: Invalid config file
-abstract: Version is invalid according to semver validation.
-baseUrl: http://test.example
-serviceIdentifier: Min
-license:
-  name: MIT
-  url: https://www.tldrlegal.com/license/mit-license
