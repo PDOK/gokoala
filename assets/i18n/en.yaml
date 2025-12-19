@@ -67,8 +67,12 @@ Standard: Standard
 Draft: Draft
 
 # Search page
-LocationAPI: Locatie API
-CurrentUrl: Huidige URL
+LocationAPI: Location API
+CurrentUrl: Current URL
+SearchByLocation: Search by location
+Searching: Searching...
+NoResultsFound: No results found
+Relevance: Relevance
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract: |-

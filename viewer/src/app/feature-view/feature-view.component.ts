@@ -16,7 +16,7 @@ import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
-import { DataUrl, FeatureService, ProjectionMapping, defaultMapping } from '../feature.service'
+import { DataUrl, FeatureService, ProjectionMapping, defaultMapping } from '../shared/services/feature.service'
 import { getRijksdriehoek } from '../map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { BoxControl, emitBox } from './boxcontrol'
@@ -122,7 +122,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.featureService
       .getFeatures(featuresUrl)
       .pipe(take(1))
-      .subscribe(data => {
+      .subscribe((data: any) => {
         this.features = data
         this.map.getLayers().clear()
         this.changeView()
@@ -142,7 +142,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
         center: AMERSFOORT_CENTER,
         zoom: 2.5,
       })
-      this.map.setView(nlview)
+      this._view = nlview
+      this.map.setView(this._view)
       this.loadBackground()
     }
     this.changeMode()

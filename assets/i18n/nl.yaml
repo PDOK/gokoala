@@ -68,6 +68,11 @@ Draft: Concept
 # Search page
 LocationAPI: Locatie API
 CurrentUrl: Huidige URL
+SearchByLocation: Zoeken op locatie
+Searching: Zoeken...
+NoResultsFound: Geen resultaten gevonden
+Relevance: Relevantie
+
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract: |-

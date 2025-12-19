@@ -1,15 +1,31 @@
 @let collections = collections$ | async;
 <div [ngClass]="{ show: open }" class="collapse mt-2">
   <div class="card card-body container-fluid">
-    <div class="row">
-      <div class="col font-bold">Collectie</div>
-      <div class="col-4 bold">Relevantie</div>
+    <div class="row mb-2">
+      <div class="col fw-semibold">{{ collectionText }}</div>
+      <div class="col-4 col-xxl-2 fw-semibold">{{ relevanceText }}</div>
     </div>
-    @for (collection of collections; track collection.id) {
-      <div class="row mb-2">
-        <label [for]="collection.id" class="col col-form-label">{{ collection.title }}</label>
-        <div class="col-4"><input [id]="collection.id" type="text" class="form-control" /></div>
-      </div>
+    @for (collectionSetting of form.controls; track $index) {
+      @let collection = collections?.[$index];
+
+      @if (collection) {
+        <div class="row mb-2" [formGroup]="collectionSetting">
+          <label [for]="collection.id" class="col col-form-label">
+            <input type="checkbox" [formControl]="collectionSetting.controls.checked" class="d-inline-block me-1" />
+            {{ collection.title }}
+          </label>
+          <div class="col-4 col-xxl-2">
+            <input
+              [id]="collection.id"
+              type="number"
+              [formControl]="collectionSetting.controls.relevance"
+              class="form-control"
+              step="0.1"
+              min="0"
+              max="1" />
+          </div>
+        </div>
+      }
     }
   </div>
 </div>
