@@ -1,12 +1,12 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{ define "header" }}
     <link rel="stylesheet" type="text/css" href="view-component/styles.css">
-    <script type="module" src="view-component/main.js"></script>
-    <script src="view-component/polyfills.js"></script>
 {{ end }}
 {{ define "content" }}
 {{ if .Params }}
 {{ $baseUrl := .Config.BaseURL }}
+<script type="module" src="view-component/main.js"></script>
+<script src="view-component/polyfills.js"></script>
 <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ .Params.Title }}</h1>
 </hgroup>
