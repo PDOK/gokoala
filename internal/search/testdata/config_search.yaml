@@ -17,19 +17,19 @@ availableLanguages:
   - en
 ogcApi:
   features:
-    #    datasources:
-    #      transformOnTheFly:
-    #        - supportedSrs:
-    #            - srs: EPSG:3857
-    #            - srs: EPSG:4258
-    #            - srs: EPSG:28992
-    #          postgres:
-    #            host: postgres
-    #            port: 5432
-    #            user: postgres
-    #            databaseName: postgres
-    #            externalFid: external_fid
-    #            queryTimeout: 20s
+    datasources:
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:3857
+            - srs: EPSG:4258
+            - srs: EPSG:28992
+          postgres:
+            host: postgres
+            port: 5432
+            user: postgres
+            databaseName: postgres
+            externalFid: external_fid
+            queryTimeout: 20s
     collections:
       - id: addresses
         search:
@@ -61,7 +61,7 @@ ogcApi:
           ogcCollections:
             - api: https://example.com/ogc/v1
               collection: buildings
-              geometryType: point
+              geometryType: polygon
         tableName: buildings  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           title: Dutch Buildings
