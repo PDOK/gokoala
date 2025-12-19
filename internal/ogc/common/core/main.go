@@ -65,7 +65,9 @@ func NewCommonCore(e *engine.Engine, extraConformanceClasses ExtraConformanceCla
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-17
 	e.Router.Get(alternativeAPIPath, func(w http.ResponseWriter, r *http.Request) { core.apiAsJSON(w, r) })
 	e.Router.Get(conformancePath, core.Conformance())
-	e.Router.Get(searchPath, core.Search())
+	if e.Config.SearchEnabled {
+		e.Router.Get(searchPath, core.Search())
+	}
 	e.Router.Handle("/*", http.FileServer(http.Dir("assets")))
 
 	return core
