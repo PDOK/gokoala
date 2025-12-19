@@ -6,10 +6,12 @@ import {
   HostListener,
   inject,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
   signal,
+  SimpleChanges,
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
@@ -30,7 +32,7 @@ interface LocationForm {
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LocationSearchViewComponent implements OnInit, OnDestroy {
+export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
   @Input() projection?: string
 
   @Input() placeholder = 'Search by location'
@@ -68,6 +70,12 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy {
     this.initLocationListener()
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (!changes['projection'].isFirstChange() && changes['projection'].currentValue !== changes['projection'].previousValue) {
+      this.form.controls.location.patchValue('', { emitEvent: true })
+    }
+  }
+
   initLocationListener() {
     this.features$ = this.form.controls.location.valueChanges.pipe(
       distinctUntilChanged(),
@@ -78,12 +86,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy {
       debounceTime(200),
       tap(val => (this.query = val || '')),
       switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection)),
-      tap(() => {
-        this.storeQuery()
-      }),
-      tap(() => {
-        this.searching.set(false)
-      }),
+      tap(() => this.storeQuery()),
+      tap(() => this.searching.set(false)),
       takeUntil(this._destroy$)
     )
 

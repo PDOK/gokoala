@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core'
-import { AsyncPipe, JsonPipe, NgClass } from '@angular/common'
-import { map, Observable, share, skip, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
+import { AsyncPipe, NgClass } from '@angular/common'
+import { map, Observable, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
 import { Collection, CollectionsService } from '../../shared/services/collections.service'
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 
@@ -12,7 +12,7 @@ interface CollectionSetting {
 @Component({
   selector: 'app-collection-settings',
   standalone: true,
-  imports: [NgClass, AsyncPipe, ReactiveFormsModule, JsonPipe],
+  imports: [NgClass, AsyncPipe, ReactiveFormsModule],
   templateUrl: './collection-settings.component.html',
   styleUrl: './collection-settings.component.css',
 })

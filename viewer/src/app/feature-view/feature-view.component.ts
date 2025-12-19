@@ -5,7 +5,7 @@ import { defaults as defaultControls } from 'ol/control'
 
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
-import { Extent, getCenter, getTopLeft, extend } from 'ol/extent'
+import { Extent, getCenter, getTopLeft } from 'ol/extent'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 import { Tile, Vector as VectorLayer } from 'ol/layer'
@@ -25,8 +25,6 @@ import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { getPointResolution, get as getProjection, transform } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
-import { extentFromProjection } from 'ol/tilegrid'
-import TileGrid from 'ol/tilegrid/TileGrid'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -122,7 +120,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.featureService
       .getFeatures(featuresUrl)
       .pipe(take(1))
-      .subscribe((data: any) => {
+      .subscribe(data => {
         this.features = data
         this.map.getLayers().clear()
         this.changeView()
@@ -183,6 +181,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     ) {
       if (changes.itemsUrl?.currentValue) {
         this.init()
+      } else if (changes.projection?.currentValue) {
+        this.changeView()
       }
     }
 
@@ -303,27 +303,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     })
 
     this.map.setView(this._view)
-  }
-
-  extentFromTileMatrix(grid: TileGrid, z: number, projExtent: Extent) {
-    const range = grid.getTileRangeForExtentAndZ(projExtent, z)
-    // Build full extent from top-left and bottom-right tiles
-    const tl = grid.getTileCoordExtent([z, range.minX, range.minY])
-    const br = grid.getTileCoordExtent([z, range.maxX, range.maxY])
-    return extend(tl.slice() as [number, number, number, number], br as [number, number, number, number])
-  }
-
-  fitToWmtsMatrix(map: OLMap, wmtsLayer: TileLayer<WMTSSource>, z: number) {
-    const source = wmtsLayer.getSource()!
-    const grid = source.getTileGrid()!
-    const proj = source.getProjection()!
-    const projExtent = proj.getExtent() ?? extentFromProjection(proj)
-
-    const matrixExtent = this.extentFromTileMatrix(grid, z, projExtent)
-
-    const view = new View({ projection: proj, rotation: 0 })
-    map.setView(view)
-    view.fit(matrixExtent, { size: map.getSize() })
   }
 
   setViewExtent(extent: Extent, scale: number) {
