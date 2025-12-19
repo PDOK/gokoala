@@ -138,14 +138,16 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 	namedParams = make(map[string]any)
 	if len(pf) > 0 {
 		position := 0
+		var sqlSb141 strings.Builder
 		for k, v := range pf {
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
 			// column name in double quotes in case it is a reserved keyword
 			// also: we don't currently support LIKE since wildcard searches don't use the index
-			sql += fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam)
+			sqlSb141.WriteString(fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam))
 			namedParams[namedParam] = v
 		}
+		sql += sqlSb141.String()
 	}
 
 	return sql, namedParams
