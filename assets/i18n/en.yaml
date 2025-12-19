@@ -39,6 +39,8 @@ Specification: specification
 SpecificationText: The specification in OpenAPI v3 format describes the OGC API in such a way that both humans and computers can explore the API's options. It shows both in- and output options, and helps to quickly generate a first working API call with the desired result.
 Conformance: Conformance
 ConformanceText: The conformance describes which OGC standards this API implements.
+Search: Search
+SearchText: Space to write text for the search option
 Collections: Collections
 CollectionsText: This API offers one or more collections that divide the dataset in various object types, which can be called separately through for instance <i>features</i> or <i>tiles</i>.
 Tiles: Tiles
@@ -63,6 +65,14 @@ TileMatrixSetsCollectionText: |-
 ConformanceAbstract: Below are references to OGC API conformance classes to which this service conforms. <br/>The status column indicates whether the given specification is deemed an official standard by the OGC.
 Standard: Standard
 Draft: Draft
+
+# Search page
+LocationAPI: Location API
+CurrentUrl: Current URL
+SearchByLocation: Search by location
+Searching: Searching...
+NoResultsFound: No results found
+Relevance: Relevance
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract: |-

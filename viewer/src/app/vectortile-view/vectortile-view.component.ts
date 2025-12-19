@@ -171,7 +171,7 @@ export class VectortileViewComponent implements OnChanges {
         this.setZoomLevel(tile)
         this.cdf.detectChanges()
       },
-      error: msg => {
+      error: (msg: unknown) => {
         this.logger.log(this.id + 'error: ' + JSON.stringify(msg))
       },
     })
@@ -229,7 +229,7 @@ export class VectortileViewComponent implements OnChanges {
         })
         this.drawMap(matrix)
       },
-      error: error => {
+      error: (error: unknown) => {
         this.logger.log(this.id + 'tilematrixset not found: ' + matrixUrl, error)
         this.projection = new MapProjection(this.tileUrl).Projection
         this.tileGrid = new TileGrid({

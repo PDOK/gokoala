@@ -16,7 +16,7 @@ import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
-import { DataUrl, FeatureService, ProjectionMapping, defaultMapping } from '../feature.service'
+import { DataUrl, FeatureService, ProjectionMapping, defaultMapping } from '../shared/services/feature.service'
 import { getRijksdriehoek } from '../map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { BoxControl, emitBox } from './boxcontrol'
@@ -37,6 +37,10 @@ export function exhaustiveGuard(_value: never): never {
 }
 
 export type BackgroundMap = 'BRT' | 'OSM'
+export enum InitialView {
+  HIDDEN = 'HIDDEN',
+  VISIBLE = 'VISIBLE',
+}
 
 @Component({
   selector: 'app-feature-view',
@@ -73,6 +77,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   @Input() fillColor: string = 'rgba(0,0,255)'
   @Input() strokeColor: string = '#3399CC'
   @Input() mode: 'default' | 'auto' = 'default'
+  @Input() initialView: InitialView = InitialView.HIDDEN
 
   @Input() labelField = undefined
   @Input() labelOptions: string | undefined = undefined
@@ -89,7 +94,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   map: OLMap = this.getMap()
   private _view: View = new View({
     projection: this._projection.visualProjection,
-    zoom: 1,
+    zoom: 4,
   })
   features: FeatureLike[] = []
 
@@ -102,7 +107,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   private getMap(): OLMap {
     return new OLMap({
       view: this._view,
-
       controls: [],
     })
   }
@@ -118,6 +122,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       .pipe(take(1))
       .subscribe(data => {
         this.features = data
+        this.map.getLayers().clear()
         this.changeView()
         this.loadFeatures(this.features)
         this.loadBackground()
@@ -127,6 +132,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    if (this.initialView === InitialView.VISIBLE) {
+      this.viewToCenter()
+    }
     this.changeMode()
   }
 
@@ -134,6 +142,18 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.features = []
     this.showButtons()
     this.addFeatureEmit()
+  }
+
+  viewToCenter() {
+    const AMERSFOORT_CENTER = [155000, 463000]
+    this.init()
+    this._view = new View({
+      projection: getRijksdriehoek().projection,
+      center: AMERSFOORT_CENTER,
+      zoom: 2.5,
+    })
+    this.map.setView(this._view)
+    this.loadBackground()
   }
 
   showButtons() {
@@ -161,6 +181,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     ) {
       if (changes.itemsUrl?.currentValue) {
         this.init()
+      } else if (changes.projection?.currentValue) {
+        this.changeView()
       }
     }
 
@@ -192,6 +214,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   }
 
   loadFeatures(features: FeatureLike[]) {
+    if (!features.length) return
     const vsource = new VectorSource({
       features: features,
     }) as VectorSource<Feature<Geometry>>
@@ -272,7 +295,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     const currentPointResolution = getPointResolution(currentProjection, 1 / currentMPU, currentCenter, 'm') * currentMPU
     const newPointResolution = getPointResolution(newProjection, 1 / newMPU, newCenter, 'm') * newMPU
     const newResolution = (currentResolution * currentPointResolution) / newPointResolution
-
     this._view = new View({
       center: newCenter,
       resolution: newResolution,
