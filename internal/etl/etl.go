@@ -36,8 +36,8 @@ type Load interface {
 	// Init the target database by creating an empty search index
 	Init(index string, srid int, lang language.Tag) error
 
-	// Get the current version of a collection loaded in the search index
-	GetVersion(collectionID string, index string) (string, error)
+	// GetRevision Get the revision of a collection loaded in the search index
+	GetRevision(collectionID string, index string) (string, error)
 
 	// PreLoad hook to execute logic before loading records into the search index.
 	// For example, by creating tables or partitions
@@ -49,7 +49,7 @@ type Load interface {
 
 	// PostLoad hook to execute logic after loading records into the search index.
 	// For example, by switching partitions or rebuilding indexes.
-	PostLoad(collectionID string, index string, collectionVersion string) error
+	PostLoad(collectionID string, index string, revision string) error
 
 	// Optimize once ETL is completed (optional)
 	Optimize() error
@@ -68,20 +68,20 @@ func CreateSearchIndex(dbConn string, searchIndex string, srid int, lang languag
 	return db.Init(searchIndex, srid, lang)
 }
 
-// GetVersion returns the current version of a collection in the target search index
-func GetVersion(dbConn string, collectionID string, searchIndex string) (string, error) {
+// GetRevision returns the current version of a collection in the target search index
+func GetRevision(dbConn string, collectionID string, searchIndex string) (string, error) {
 	db, err := newTargetToLoad(dbConn)
 	if err != nil {
 		return "", err
 	}
 	defer db.Close()
-	return db.GetVersion(collectionID, searchIndex)
+	return db.GetRevision(collectionID, searchIndex)
 }
 
 // ImportFile import source data into the target search index using extract-transform-load principle
 //
 //nolint:funlen
-func ImportFile(collection config.Collection, searchIndex string, collectionVersion string, filePath string,
+func ImportFile(collection config.Collection, searchIndex string, revision string, filePath string,
 	pageSize int, skipOptimize bool, dbConn string) error {
 
 	source, err := newSourceToExtract(filePath)
@@ -140,7 +140,7 @@ func ImportFile(collection config.Collection, searchIndex string, collectionVers
 	}
 
 	// post-load
-	if err = target.PostLoad(collection.ID, searchIndex, collectionVersion); err != nil {
+	if err = target.PostLoad(collection.ID, searchIndex, revision); err != nil {
 		return err
 	}
 

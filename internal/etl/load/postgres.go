@@ -49,9 +49,9 @@ var (
 
 	metadataTableDefinition = `
 	create table if not exists %[1]s_metadata (
-		collection_id      text                      not null,
-		collection_version uuid                      not null,
-		updated_date       timestamptz default now() not null
+		collection_id       text                      not null,
+		revision 			uuid                      not null,
+		revision_date       timestamptz default now() not null
 	);`
 )
 
@@ -138,7 +138,7 @@ func (p *Postgres) Load(records []t.SearchIndexRecord) (int64, error) {
 	return loaded, nil
 }
 
-func (p *Postgres) PostLoad(collectionID string, index string, collectionVersion string) error {
+func (p *Postgres) PostLoad(collectionID string, index string, revision string) error {
 	if p.partitionToDetach != "" {
 	RETRY:
 		detach := fmt.Sprintf(`alter table %[1]s detach partition %[2]s concurrently;`, index, p.partitionToDetach)
@@ -169,10 +169,10 @@ func (p *Postgres) PostLoad(collectionID string, index string, collectionVersion
 	}
 
 	metadata := fmt.Sprintf(`
-        insert into %[1]s_metadata (collection_id, collection_version)
+        insert into %[1]s_metadata (collection_id, revision)
         values ('%[2]s', '%[3]s')
         on conflict (collection_id)
-        do update set collection_version = '%[3]s';`, index, collectionID, collectionVersion)
+        do update set revision = '%[3]s';`, index, collectionID, revision)
 	_, err = p.db.Exec(context.Background(), metadata)
 	if err != nil {
 		return fmt.Errorf("error updating metadata table of index %s. Error: %w", index, err)
@@ -188,25 +188,25 @@ func (p *Postgres) Optimize() error {
 	return nil
 }
 
-// Get the current version of a collection in the search index
-func (p *Postgres) GetVersion(collectionID string, index string) (string, error) {
-	currentVersion := ""
+// GetRevision get the revision of a collection in the search index
+func (p *Postgres) GetRevision(collectionID string, index string) (string, error) {
+	currentRevision := ""
 	err := p.db.QueryRow(context.Background(), fmt.Sprintf(`
-        select collection_version
+        select revision
         from %[2]s_metadata
-        where collection_id = '%[1]s';`, collectionID, index)).Scan(&currentVersion)
+        where collection_id = '%[1]s';`, collectionID, index)).Scan(&currentRevision)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			log.Printf("no version found for collection '%s' in index '%s'", collectionID, index)
-			return currentVersion, nil
+			log.Printf("no revision found for collection '%s' in index '%s'", collectionID, index)
+			return currentRevision, nil
 		}
 		if strings.Contains(err.Error(), fmt.Sprintf("relation \"%[1]s_metadata\" does not exist", index)) {
 			log.Printf("metadata table for index '%s' does not exist", index)
-			return currentVersion, nil
+			return currentRevision, nil
 		}
-		return "", fmt.Errorf("error getting version: %w", err)
+		return "", fmt.Errorf("error getting revision: %w", err)
 	}
-	return currentVersion, nil
+	return currentRevision, nil
 }
 
 // Init initialize search index. Should be idempotent!

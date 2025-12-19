@@ -105,7 +105,7 @@ func TestGetVersion(t *testing.T) {
 		pwd+"/testdata/addresses-crs84.gpkg", 1000, true, dbConn)
 	require.NoError(t, err)
 
-	version, err := GetVersion(dbConn, "addresses", "search_index")
+	version, err := GetRevision(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
 	assert.NotEmpty(t, version)
 	assert.Equal(t, collectionVersion, version)
@@ -223,7 +223,7 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	assert.NotZero(t, indexCountFirst)
 
 	// then: check metadata table is updated
-	version, err := GetVersion(dbConn, "addresses", "search_index")
+	version, err := GetRevision(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
 	assert.NotEmpty(t, version)
 	assert.Equal(t, collectionVersion, version)
@@ -246,7 +246,7 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	assert.Equal(t, indexCountFirst, indexCountSecond)
 
 	// then: check metadata table is updated
-	version, err = GetVersion(dbConn, "addresses", "search_index")
+	version, err = GetRevision(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
 	assert.NotEmpty(t, version)
 	assert.Equal(t, collectionVersion, version)
@@ -263,7 +263,7 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	assert.NotZero(t, tableCount)
 
 	// then: check metadata table is updated
-	version, err = GetVersion(dbConn, "addresses", "search_index")
+	version, err = GetRevision(dbConn, "addresses", "search_index")
 	require.NoError(t, err)
 	assert.NotEmpty(t, version)
 	assert.Equal(t, collectionVersion, version)

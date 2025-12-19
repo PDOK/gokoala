@@ -125,8 +125,8 @@ func main() {
 			},
 		},
 		{
-			Name:  "get-version",
-			Usage: "Get the version of a collection in a search index",
+			Name:  "get-revision",
+			Usage: "Get the revision of a collection in a search index",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
@@ -150,7 +150,7 @@ func main() {
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
-				version, err := etl.GetVersion(dbConn, c.String(collectionIDFlag), c.String(searchIndexFlag))
+				version, err := etl.GetRevision(dbConn, c.String(collectionIDFlag), c.String(searchIndexFlag))
 				fmt.Println(version)
 				return err
 			},
