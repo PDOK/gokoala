@@ -4,6 +4,7 @@ import (
 	neturl "net/url"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -105,11 +106,28 @@ func TestMapRelationUsingProfile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			url, err := neturl.Parse("http://example.com")
 			require.NoError(t, err)
+			collections := config.GeoSpatialCollections{
+				config.GeoSpatialCollection{
+					ID: "some_collection",
+				}, config.GeoSpatialCollection{
+					ID: "another_collection",
+				}, config.GeoSpatialCollection{
+					ID: "foo",
+				}, config.GeoSpatialCollection{
+					ID: "bar",
+				}, config.GeoSpatialCollection{
+					ID: "baz_bazoo",
+				}, config.GeoSpatialCollection{
+					ID: "baz_bazoo_boo",
+				}, config.GeoSpatialCollection{
+					ID: "baz_bazoo_boo_foo",
+				},
+			}
 			schema, err := NewSchema([]Field{
 				{
 					Name:            tt.columnName,
 					Type:            "string",
-					FeatureRelation: NewFeatureRelation(tt.columnName, tt.externalFidCol, []string{"some_collection", "another_collection", "foo", "bar", "baz_bazoo", "baz_bazoo_boo", "baz_bazoo_boo_foo"}),
+					FeatureRelation: NewFeatureRelation("some table", tt.columnName, tt.externalFidCol, collections),
 				}}, "fid", "")
 			require.NoError(t, err)
 			profile := NewProfile(tt.profile, *url, *schema)

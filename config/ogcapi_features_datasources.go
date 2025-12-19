@@ -27,14 +27,14 @@ type Datasources struct {
 	// No on-the-fly transformation/reprojection is performed, so the features in these additional datasources
 	// need to be transformed/reprojected ahead of time. For example, using ogr2ogr.
 	// +optional
-	Additional []AdditionalDatasource `yaml:"additional" json:"additional" validate:"dive"`
+	Additional []AdditionalDatasource `yaml:"additional,omitempty" json:"additional,omitempty" validate:"dive"`
 
 	// Datasource containing features which will be transformed/reprojected on-the-fly to the specified
 	// coordinate reference systems. No need to transform/reproject ahead of time.
 	//
 	// Note: On-the-fly transformation/reprojection may impact performance when using (very) large geometries.
 	// +optional
-	OnTheFly []OnTheFlyDatasource `yaml:"transformOnTheFly" json:"transformOnTheFly" validate:"dive"`
+	OnTheFly []OnTheFlyDatasource `yaml:"transformOnTheFly,omitempty" json:"transformOnTheFly,omitempty" validate:"dive"`
 }
 
 // +kubebuilder:object:generate=true

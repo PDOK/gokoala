@@ -50,6 +50,8 @@ var geometryTypes = []string{
 	multipolygonType,
 }
 
+const ArrayType = "array"
+
 // Schema derived from the data source schema.
 // Describes the schema of a single collection (table in the data source).
 type Schema struct {
@@ -147,6 +149,10 @@ type Field struct {
 	IsExternalFid          bool
 }
 
+func (f Field) ExcludeRelationFromSelect() bool {
+	return f.FeatureRelation != nil && f.FeatureRelation.IsDerivedFromConfig
+}
+
 // TypeFormat type and optional format according to JSON schema (https://json-schema.org/).
 type TypeFormat struct {
 	Type   string
@@ -171,6 +177,8 @@ func (f Field) ToTypeFormat() TypeFormat {
 		return TypeFormat{Type: "integer"}
 	case "real", "float", "double", "doubleprecision", "numeric", "decimal":
 		return TypeFormat{Type: "number", Format: "double"}
+	case ArrayType:
+		return TypeFormat{Type: ArrayType}
 	case "uuid":
 		// From OAF Part 5: Properties that represent a UUID SHOULD be represented as a string with format "uuid".
 		return TypeFormat{Type: "string", Format: "uuid"}
