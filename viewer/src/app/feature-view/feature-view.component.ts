@@ -135,16 +135,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   ngAfterViewInit() {
     if (this.initialView === InitialView.VISIBLE) {
-      const AMERSFOORT_CENTER = [155000, 463000]
-      this.init()
-      const nlview = new View({
-        projection: getRijksdriehoek().projection,
-        center: AMERSFOORT_CENTER,
-        zoom: 2.5,
-      })
-      this._view = nlview
-      this.map.setView(this._view)
-      this.loadBackground()
+      this.viewToCenter()
     }
     this.changeMode()
   }
@@ -153,6 +144,18 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.features = []
     this.showButtons()
     this.addFeatureEmit()
+  }
+
+  viewToCenter() {
+    const AMERSFOORT_CENTER = [155000, 463000]
+    this.init()
+    this._view = new View({
+      projection: getRijksdriehoek().projection,
+      center: AMERSFOORT_CENTER,
+      zoom: 2.5,
+    })
+    this.map.setView(this._view)
+    this.loadBackground()
   }
 
   showButtons() {
@@ -178,9 +181,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
       changes.itemsUrl?.previousValue !== changes.itemsUrl?.currentValue ||
       changes.projection?.previousValue !== changes.projection?.currentValue
     ) {
-      // if (changes.itemsUrl?.currentValue) {
-      this.init()
-      // }
+      if (changes.itemsUrl?.currentValue) {
+        this.init()
+      }
     }
 
     if (changes.mode?.previousValue && changes.mode?.previousValue != changes.mode?.currentValue) {

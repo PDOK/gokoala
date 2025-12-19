@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core'
 import { AsyncPipe, JsonPipe, NgClass } from '@angular/common'
-import { map, Observable, shareReplay, skip, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
+import { map, Observable, share, skip, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
 import { Collection, CollectionsService } from '../../shared/services/collections.service'
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 
@@ -32,7 +32,8 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.form = new FormArray<FormGroup<CollectionSetting>>([])
-    this.collections$ = this._collectionsService.getCollections().pipe(shareReplay(), takeUntil(this._destroy$))
+    this.collections$ = this._collectionsService.getCollections().pipe(takeUntil(this._destroy$))
+    this.emitFormChanges()
     this.buildForm()
   }
 
@@ -56,30 +57,27 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
       })
 
       if (!hasAnyParam) this.form.controls.forEach(control => control.patchValue({ checked: true }))
-
-      this.emitFormChanges()
     })
   }
 
   emitFormChanges() {
-    const formPipe = this.form.valueChanges.pipe(
-      startWith(this.form.getRawValue()),
-      withLatestFrom(this.collections$),
-      map(([formValues, collections]) => {
-        const searchParams: { [key: string]: number } = {}
-        formValues.forEach((formValue, idx) => {
-          if (formValue.checked && formValue.relevance) searchParams[collections[idx].title] = formValue.relevance
-        })
-        return searchParams
-      }),
-      takeUntil(this._destroy$)
-    )
-
-    formPipe.pipe(skip(1)).subscribe(formValue => this.storeSettings(formValue))
-
-    formPipe.subscribe(formValue => {
-      this.formChange.emit(formValue)
-    })
+    this.form.valueChanges
+      .pipe(
+        startWith(this.form.getRawValue()),
+        withLatestFrom(this.collections$),
+        map(([formValues, collections]) => {
+          const searchParams: { [key: string]: number } = {}
+          formValues.forEach((formValue, idx) => {
+            if (formValue.checked && formValue.relevance) searchParams[collections[idx].title] = formValue.relevance
+          })
+          return searchParams
+        }),
+        tap(formValue => {
+          this.formChange.emit(formValue)
+        }),
+        takeUntil(this._destroy$)
+      )
+      .subscribe(formValue => this.storeSettings(formValue))
   }
 
   private storeSettings(formValue: { [key: string]: number }) {
