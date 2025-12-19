@@ -158,7 +158,6 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 			sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam))
 			namedParams[namedParam] = v
 		}
-		sql += sqlSb141.String()
 	}
 
 	return sqlBuilder.String(), namedParams
