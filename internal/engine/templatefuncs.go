@@ -27,13 +27,14 @@ var (
 func init() {
 	customFuncs := texttemplate.FuncMap{
 		// custom template functions (keep lowercase)
-		"markdown":   markdown,
-		"unmarkdown": unmarkdown,
-		"truncate":   truncateText,
-		"humansize":  humanSize,
-		"bytessize":  bytesSize,
-		"isdate":     isDate,
-		"islink":     isLink,
+		"markdown":      markdown,
+		"unmarkdown":    unmarkdown,
+		"truncate":      truncateText,
+		"humansize":     humanSize,
+		"bytessize":     bytesSize,
+		"isdate":        isDate,
+		"islink":        isLink,
+		"isstringslice": isStringSlice,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	globalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -145,4 +146,11 @@ func isLink(v any) bool {
 	}
 
 	return false
+}
+
+// isStringSlice true when given input is slice of strings, false otherwise.
+func isStringSlice(v any) bool {
+	_, ok := v.([]string)
+
+	return ok
 }

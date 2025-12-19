@@ -567,7 +567,11 @@
                   "{{ $schemaField.Name }}": {
                     {{ $typeFormat := $schemaField.ToTypeFormat -}}
                     "type": "{{ $typeFormat.Type }}",
-                    {{ if $typeFormat.Format }}"format": "{{ $typeFormat.Format }}", {{ end }}
+                    {{ if eq $typeFormat.Type "array" }}
+                    "items": {
+                        "type": "string"
+                    },
+                    {{ else if $typeFormat.Format }}"format": "{{ $typeFormat.Format }}", {{ end }}
                     "nullable": {{ not $schemaField.IsRequired }},
                     "description": "{{ $schemaField.Description }}"
                   }

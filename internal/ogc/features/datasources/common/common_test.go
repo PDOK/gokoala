@@ -111,7 +111,7 @@ func TestColumnsToSQL(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ColumnsToSQL(tt.columns)
+			result := ColumnsToSQL(tt.columns, true)
 			assert.Equal(t, tt.expectedQuery, result)
 		})
 	}

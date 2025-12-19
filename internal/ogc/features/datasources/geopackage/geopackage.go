@@ -74,6 +74,7 @@ func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.G
 			MaxDecimals:              maxDecimals,
 			ForceUTC:                 forceUTC,
 			PropertiesByCollectionID: collections.FeaturePropertiesByID(),
+			RelationsByCollectionID:  collections.FeatureRelationsByID(),
 		},
 		preparedStmtCache: NewCache(),
 	}
@@ -130,7 +131,8 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 	defer cancel()
 
 	propConfig := g.PropertiesByCollectionID[collection]
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, true, -1, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	relationsConfig := g.RelationsByCollectionID[collection]
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, relationsConfig, table, true, -1, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -164,7 +166,9 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 	defer cancel()
 
 	propConfig := g.PropertiesByCollectionID[collection]
-	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, false)
+	relationsConfig := g.RelationsByCollectionID[collection]
+	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, selectGpkgRelation,
+		propConfig, relationsConfig, false)
 	fids := map[string]any{"fids": featureIDs}
 
 	query, queryArgs, err := sqlx.Named(fmt.Sprintf("select %s from %s where %s in (:fids)",
@@ -208,7 +212,8 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 	defer cancel()
 
 	propConfig := g.PropertiesByCollectionID[collection]
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, table, false, axisOrder, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	relationsConfig := g.RelationsByCollectionID[collection]
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, relationsConfig, table, false, axisOrder, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -268,7 +273,9 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 
 	propConfig := g.PropertiesByCollectionID[collection]
-	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, false)
+	relationsConfig := g.RelationsByCollectionID[collection]
+	selectClause := g.SelectColumns(table, axisOrder, selectGpkgGeometry, selectGpkgRelation,
+		propConfig, relationsConfig, false)
 
 	query := fmt.Sprintf(`select %s from "%s" where "%s" = :fid limit 1`, selectClause, table.Name, fidColumn)
 	rows, err := g.backend.getDB().NamedQueryContext(queryCtx, query, map[string]any{"fid": featureID})
@@ -293,14 +300,16 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
-func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties, table *common.Table,
-	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
+func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties,
+	relationsConfig []config.Relation, table *common.Table, onlyFIDs bool, axisOrder d.AxisOrder,
+	criteria ds.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
 	var selectClause string
 	if onlyFIDs {
-		selectClause = common.ColumnsToSQL([]string{g.FidColumn, d.PrevFid, d.NextFid})
+		selectClause = common.ColumnsToSQL([]string{g.FidColumn, d.PrevFid, d.NextFid}, true)
 	} else {
-		selectClause = g.SelectColumns(table, axisOrder, selectGpkgGeometry, propConfig, true)
+		selectClause = g.SelectColumns(table, axisOrder, selectGpkgGeometry, selectGpkgRelation,
+			propConfig, relationsConfig, true)
 	}
 
 	// make query
@@ -444,4 +453,21 @@ func selectGpkgGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	}
 
 	return fmt.Sprintf(", \"%s\"", table.GeometryColumnName)
+}
+
+// selectGpkgRelation Assemble GeoPackage specific query to select related features using a many-to-many table e.g.:
+//
+//	select group_concat(other.external_fid)
+//	from building_apartment junction join apartment other on other.id = junction.apartment_id
+//	where junction.building_id = building.id
+func selectGpkgRelation(relation config.Relation, relationName string, targetFID string, sourceTableAlias string) string {
+	return fmt.Sprintf(`(
+				select group_concat(other.%[1]s)
+				from %[2]s junction join %[4]s other on other.%[5]s = junction.%[6]s
+				where junction.%[7]s = %[9]s.%[8]s
+			) as %[3]s`, targetFID, relation.Junction.Name,
+		relationName, relation.RelatedCollection,
+		relation.Columns.Target, relation.Junction.Columns.Target,
+		relation.Junction.Columns.Source, relation.Columns.Source,
+		sourceTableAlias)
 }

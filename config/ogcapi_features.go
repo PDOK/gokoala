@@ -98,6 +98,10 @@ type CollectionEntryFeatures struct {
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
 
+	// Relations define relationships between features across collections
+	// +optional
+	Relations []Relation `yaml:"relations,omitempty" json:"relations,omitempty"`
+
 	// Optional way to exclude feature properties and/or determine the ordering of properties in the response.
 	// +optional
 	*FeatureProperties `yaml:",inline" json:",inline"`

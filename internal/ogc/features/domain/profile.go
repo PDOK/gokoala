@@ -2,7 +2,9 @@ package domain
 
 import (
 	"fmt"
+	"log"
 	"net/url"
+	"strings"
 )
 
 const featurePath = "%s/collections/%s/items/%s"
@@ -35,28 +37,48 @@ func NewProfile(profileName ProfileName, baseURL url.URL, schema Schema) Profile
 	}
 }
 
-func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (newColumnName, relationName string, newColumnValue any) {
+func (p *Profile) MapRelationUsingProfile(columnName string, columnValue any, externalFidColumn string) (string, string, any) {
+	relationName := newFeatureRelationName(columnName, externalFidColumn)
+	var newColumnName string
+	var newColumnValue any
+
 	switch p.profileName {
 	case RelAsLink:
-		relationName = newFeatureRelationName(columnName, externalFidColumn)
-		featureRelation := p.schema.findFeatureRelation(relationName)
 		newColumnName = relationName + ".href"
-		if columnValue != nil && featureRelation != nil {
-			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
-		}
+		newColumnValue = p.mapRelationValue(columnValue, true, relationName)
 	case RelAsKey:
-		relationName = newFeatureRelationName(columnName, externalFidColumn)
 		newColumnName = relationName
-		newColumnValue = columnValue
+		newColumnValue = p.mapRelationValue(columnValue, false, relationName)
 	case RelAsURI:
 		// almost identical to rel-as-link except that there's no ".href" suffix (and potentially a title in the future)
-		relationName = newFeatureRelationName(columnName, externalFidColumn)
-		featureRelation := p.schema.findFeatureRelation(relationName)
 		newColumnName = relationName
-		if columnValue != nil && featureRelation != nil {
-			newColumnValue = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, columnValue)
-		}
+		newColumnValue = p.mapRelationValue(columnValue, true, relationName)
 	}
 
-	return
+	return newColumnName, relationName, newColumnValue
+}
+
+func (p *Profile) mapRelationValue(columnValue any, formatAsURL bool, relationName string) any {
+	if columnValue == nil {
+		return nil
+	}
+	featureRelation := p.schema.findFeatureRelation(relationName)
+	if featureRelation == nil {
+		log.Printf("Warning: relation %s not found in schema", relationName)
+		return nil
+	}
+
+	values := strings.Split(fmt.Sprintf("%v", columnValue), ",")
+	result := make([]string, 0, len(values))
+	for _, v := range values {
+		if formatAsURL {
+			v = fmt.Sprintf(featurePath, p.baseURL, featureRelation.CollectionID, v)
+		}
+		result = append(result, v)
+	}
+
+	if len(result) == 1 && !featureRelation.IsArray {
+		return result[0]
+	}
+	return result
 }
