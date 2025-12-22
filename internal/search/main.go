@@ -109,13 +109,13 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 		}
 		var collection *config.GeoSpatialCollection
 		for _, coll := range s.engine.Config.AllCollections() {
-			if collectionID == coll.ID && coll.Features != nil && coll.Features.Search != nil {
+			if collectionID == coll.ID && coll.Features != nil && coll.FeaturesSearch != nil {
 				collection = &coll
 				break
 			}
 		}
 		if collection != nil {
-			for _, ogcColl := range collection.Features.Search.OGCCollections {
+			for _, ogcColl := range collection.FeaturesSearch.OGCCollections {
 				geomType, ok := feat.Properties[domain.PropGeomType]
 				if !ok || geomType == "" {
 					return fmt.Errorf("geometry type not found in feature %s", feat.ID)
