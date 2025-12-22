@@ -98,16 +98,16 @@ func main() {
 	app.Action = func(c *cli.Context) error {
 		log.Printf("%s - %s\n", app.Name, app.Usage)
 
-		address := net.JoinHostPort(c.String("host"), strconv.Itoa(c.Int("port")))
-		debugPort := c.Int("debug-port")
-		shutdownDelay := c.Int("shutdown-delay")
-		configFile := c.String("config-file")
-		themeFile := c.String("theme-file")
-		openAPIFile := c.String("openapi-file")
-		trailingSlash := c.Bool("enable-trailing-slash")
-		cors := c.Bool("enable-cors")
+		address := net.JoinHostPort(c.String(hostFlag), strconv.Itoa(c.Int(portFlag)))
+		debugPort := c.Int(debugPortFlag)
+		shutdownDelay := c.Int(shutdownDelayFlag)
+		configFile := c.String(configFileFlag)
+		themeFile := c.String(themeFileFlag)
+		openAPIFile := c.String(openAPIFileFlag)
+		trailingSlash := c.Bool(enableTrailingSlashFlag)
+		cors := c.Bool(enableCorsFlag)
 
-		// Engine encapsulates shared non-OGC API specific logic
+		// Engine encapsulates shared non-OGCAPI specific logic
 		engine, err := eng.NewEngine(configFile, themeFile, openAPIFile, trailingSlash, cors)
 		if err != nil {
 			return err
