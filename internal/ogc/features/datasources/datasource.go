@@ -27,6 +27,11 @@ type Datasource interface {
 	// GetFeature returns a specific Feature, based on its feature id
 	GetFeature(ctx context.Context, collection string, featureID any, outputSRID domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
 
+	// SearchFeaturesAcrossCollections search features in one or more collections. Collections can be located
+	// in this dataset or in other datasets.
+	SearchFeaturesAcrossCollections(ctx context.Context, searchQuery domain.SearchQuery, collections domain.CollectionsWithParams,
+		srid domain.SRID, bbox *geom.Bounds, bboxSRID domain.SRID, limit int) (*domain.FeatureCollection, error)
+
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
 

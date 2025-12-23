@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PDOK/gokoala/internal/search/domain"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 // QueryExpansion query expansion involves evaluating a user's input (what words were typed into the search query area)

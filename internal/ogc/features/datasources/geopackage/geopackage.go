@@ -298,6 +298,11 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], queryCtx.Err()
 }
 
+func (g *GeoPackage) SearchFeaturesAcrossCollections(_ context.Context, _ d.SearchQuery,
+	_ d.CollectionsWithParams, _ d.SRID, _ *geom.Bounds, _ d.SRID, _ int) (*d.FeatureCollection, error) {
+	return &d.FeatureCollection{}, errors.New("not implemented, searching features is currently only implemented for Postgres")
+}
+
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
 func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties,

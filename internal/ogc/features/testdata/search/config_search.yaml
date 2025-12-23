@@ -24,10 +24,10 @@ ogcApi:
             - srs: EPSG:4258
             - srs: EPSG:28992
           postgres:
-            host: postgres
-            port: 5432
+            host: localhost
+            port: ${DB_PORT}
             user: postgres
-            databaseName: postgres
+            databaseName: test_db
             externalFid: external_fid
             queryTimeout: 20s
     collections:

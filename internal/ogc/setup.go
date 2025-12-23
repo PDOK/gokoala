@@ -5,11 +5,11 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/common/core"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features"
+	"github.com/PDOK/gokoala/internal/ogc/features/search"
 	"github.com/PDOK/gokoala/internal/ogc/geovolumes"
 	"github.com/PDOK/gokoala/internal/ogc/processes"
 	"github.com/PDOK/gokoala/internal/ogc/styles"
 	"github.com/PDOK/gokoala/internal/ogc/tiles"
-	"github.com/PDOK/gokoala/internal/search"
 )
 
 func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile string) error {

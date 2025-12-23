@@ -1,15 +1,12 @@
-package search
+package features
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"path"
-	"path/filepath"
 	"runtime"
 	"testing"
 	"time"
@@ -17,20 +14,18 @@ import (
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/etl"
 	etlconfig "github.com/PDOK/gokoala/internal/etl/config"
-	"github.com/PDOK/gokoala/internal/search/domain"
-	"github.com/docker/go-connections/nat"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/PDOK/gokoala/internal/ogc/features/search"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 	"golang.org/x/text/language"
 )
 
 const testSearchIndex = "search_index"
-const etlConfigFile = "internal/search/testdata/config_etl.yaml"
-const searchConfigFile = "internal/search/testdata/config_search.yaml"
+const etlConfigFile = "internal/ogc/features/testdata/search/config_etl.yaml"
+const searchConfigFile = "internal/ogc/features/testdata/search/config_search.yaml"
 
 func init() {
 	// change working dir to root
@@ -46,27 +41,26 @@ func TestSearch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
-	ctx := context.Background()
+	//ctx := context.Background()
+	//
+	//// given available postgres
+	//dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	//if err != nil {
+	//	t.Error(err)
+	//}
+	//defer terminateContainer(ctx, t, postgisContainer)
 
-	// given available postgres
-	dbPort, postgisContainer, err := setupPostgis(ctx, t)
-	if err != nil {
-		t.Error(err)
-	}
-	defer terminateContainer(ctx, t, postgisContainer)
-
-	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
+	dbConn := fmt.Sprintf("postgres://postgres:postgres@localhost:%d/%s?sslmode=disable", postgresPort.Int(), "test_db")
 
 	// given available engine
-	eng, err := engine.NewEngine(searchConfigFile, "", "", false, false)
+	newEngine, err := engine.NewEngine(searchConfigFile, "", "", false, false)
 	require.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint, err := NewSearch(eng, dbConn, testSearchIndex, domain.WGS84SRIDPostgis,
-		"internal/search/testdata/rewrites.csv",
-		"internal/search/testdata/synonyms.csv",
-		1, 3.0, 1.01,
-		4000, 10, 3, false)
+	qe, err := search.NewQueryExpansion(
+		"internal/ogc/features/testdata/search/rewrites.csv",
+		"internal/ogc/features/testdata/search/synonyms.csv")
+	features := NewFeatures(newEngine, qe)
 	require.NoError(t, err)
 
 	// given empty search index
@@ -98,7 +92,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=!foo&addresses[version]=1",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-boolean-operators.json",
+				body:       "internal/ogc/features/testdata/search/expected-boolean-operators.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -108,7 +102,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&limit=50",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-collection.json",
+				body:       "internal/ogc/features/testdata/search/expected-search-no-collection.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -118,7 +112,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&addresses",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-version-1.json",
+				body:       "internal/ogc/features/testdata/search/expected-search-no-version-1.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -128,7 +122,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&addresses=1",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-version-2.json",
+				body:       "internal/ogc/features/testdata/search/expected-search-no-version-2.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -138,7 +132,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&addresses[foo]=1",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-version-3.json",
+				body:       "internal/ogc/features/testdata/search/expected-search-no-version-3.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -148,7 +142,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-complex-search-term.json",
+				body:       "internal/ogc/features/testdata/search/expected-complex-search-term.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -158,7 +152,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Achtertune 1794BL Oosterend&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-display-name-first-result.json",
+				body:       "internal/ogc/features/testdata/search/expected-display-name-first-result.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -168,7 +162,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Holland Den Burg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-exact-match.json",
+				body:       "internal/ogc/features/testdata/search/expected-exact-match.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -178,7 +172,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Akenbuurt 1&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-short-before-long.json",
+				body:       "internal/ogc/features/testdata/search/expected-short-before-long.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -188,7 +182,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Amaliaweg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-1.json",
+				body:       "internal/ogc/features/testdata/search/expected-housenumber-ranking-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -198,7 +192,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Abbewaal&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-2.json",
+				body:       "internal/ogc/features/testdata/search/expected-housenumber-ranking-2.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -208,7 +202,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Amstel Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-3.json",
+				body:       "internal/ogc/features/testdata/search/expected-housenumber-ranking-3.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -218,7 +212,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-4.json",
+				body:       "internal/ogc/features/testdata/search/expected-housenumber-ranking-4.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -228,7 +222,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-4.json",
+				body:       "internal/ogc/features/testdata/search/expected-housenumber-ranking-4.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -238,7 +232,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=A Ottoland&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-short-streetname.json",
+				body:       "internal/ogc/features/testdata/search/expected-short-streetname.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -248,7 +242,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Spui Den Haag&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features/testdata/search/expected-synonym-with-space.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -258,7 +252,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Spui 's-Gravenhage&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features/testdata/search/expected-synonym-with-space.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -268,7 +262,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=A.B.C straat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-streetname-with-dots.json",
+				body:       "internal/ogc/features/testdata/search/expected-streetname-with-dots.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -278,7 +272,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=1944&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-streetname-with-number.json",
+				body:       "internal/ogc/features/testdata/search/expected-streetname-with-number.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -288,7 +282,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Ir. Mr. Dr. van Waterschoot van der Grachtstraat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-long-street.json",
+				body:       "internal/ogc/features/testdata/search/expected-long-street.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -298,7 +292,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Brânbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features/testdata/search/expected-frisian-street.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -308,7 +302,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Branbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features/testdata/search/expected-frisian-street.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -318,7 +312,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Molwerk&buildings[version]=1&buildings[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-polygon.json",
+				body:       "internal/ogc/features/testdata/search/expected-polygon.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -328,7 +322,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Achter&addresses[version]=1&addresses[relevance]=0.8&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-two-collections.json",
+				body:       "internal/ogc/features/testdata/search/expected-two-collections.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -338,7 +332,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Achter&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-one-collection.json",
+				body:       "internal/ogc/features/testdata/search/expected-one-collection.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -348,7 +342,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-rd.json",
+				body:       "internal/ogc/features/testdata/search/expected-rd.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -364,8 +358,8 @@ func TestSearch(t *testing.T) {
 			defer ts.Close()
 
 			// when
-			handler := searchEndpoint.Search()
-			req, err := createRequest(tt.fields.url)
+			handler := features.Search()
+			req, err := createSearchRequest(tt.fields.url)
 			require.NoError(t, err)
 			handler.ServeHTTP(rr, req)
 
@@ -392,79 +386,61 @@ func importGpkg(collectionName string, dbConn string) error {
 		return fmt.Errorf("collection %s not found in config", collectionName)
 	}
 	collectionVersion := uuid.NewString()
-	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/search/testdata/fake-addresses-crs84.gpkg", 5000, false, dbConn)
+	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/ogc/features/testdata/search/fake-addresses-crs84.gpkg", 5000, false, dbConn)
 }
 
-func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
-	t.Helper()
-	req := testcontainers.ContainerRequest{
-		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments)
-		Name:  "postgis",
-		Env: map[string]string{
-			"POSTGRES_USER":     "postgres",
-			"POSTGRES_PASSWORD": "postgres",
-			"POSTGRES_DB":       "postgres",
-		},
-		ExposedPorts: []string{"5432/tcp"},
-		Cmd:          []string{"postgres", "-c", "fsync=off"},
-		WaitingFor:   wait.ForLog("PostgreSQL init process complete; ready for start up."),
-		Files: []testcontainers.ContainerFile{
-			{
-				HostFilePath:      "internal/etl/testdata/init-db.sql",
-				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("/testdata/init-db.sql"),
-				FileMode:          0755,
-			},
-		},
-	}
+//func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
+//	t.Helper()
+//	req := testcontainers.ContainerRequest{
+//		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments)
+//		Name:  "postgis",
+//		Env: map[string]string{
+//			"POSTGRES_USER":     "postgres",
+//			"POSTGRES_PASSWORD": "postgres",
+//			"POSTGRES_DB":       "postgres",
+//		},
+//		ExposedPorts: []string{"5432/tcp"},
+//		Cmd:          []string{"postgres", "-c", "fsync=off"},
+//		WaitingFor:   wait.ForLog("PostgreSQL init process complete; ready for start up."),
+//		Files: []testcontainers.ContainerFile{
+//			{
+//				HostFilePath:      "internal/etl/testdata/init-db.sql",
+//				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("/testdata/init-db.sql"),
+//				FileMode:          0755,
+//			},
+//		},
+//	}
+//
+//	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+//		ContainerRequest: req,
+//		Started:          true,
+//	})
+//	if err != nil {
+//		t.Error(err)
+//	}
+//	port, err := container.MappedPort(ctx, "5432/tcp")
+//	if err != nil {
+//		t.Error(err)
+//	}
+//	if port.Int() == 0 {
+//		t.Error("port is 0")
+//	}
+//
+//	log.Println("Giving postgres a few extra seconds to fully start")
+//	time.Sleep(2 * time.Second)
+//	log.Printf("Postgres running at port %s", port.Port())
+//
+//	return port, container, err
+//}
+//
+//func terminateContainer(ctx context.Context, t *testing.T, container testcontainers.Container) {
+//	t.Helper()
+//	if err := container.Terminate(ctx); err != nil {
+//		t.Fatalf("Failed to terminate container: %s", err.Error())
+//	}
+//}
 
-	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		t.Error(err)
-	}
-	port, err := container.MappedPort(ctx, "5432/tcp")
-	if err != nil {
-		t.Error(err)
-	}
-	if port.Int() == 0 {
-		t.Error("port is 0")
-	}
-
-	log.Println("Giving postgres a few extra seconds to fully start")
-	time.Sleep(2 * time.Second)
-	log.Printf("Postgres running at port %s", port.Port())
-
-	return port, container, err
-}
-
-func terminateContainer(ctx context.Context, t *testing.T, container testcontainers.Container) {
-	t.Helper()
-	if err := container.Terminate(ctx); err != nil {
-		t.Fatalf("Failed to terminate container: %s", err.Error())
-	}
-}
-
-func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
-	rr := httptest.NewRecorder()
-	l, err := net.Listen("tcp", "localhost:9095")
-	if err != nil {
-		log.Fatal(err)
-	}
-	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		engine.SafeWrite(w.Write, []byte(r.URL.String()))
-	}))
-	err = ts.Listener.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-	ts.Listener = l
-	ts.Start()
-	return rr, ts
-}
-
-func createRequest(url string) (*http.Request, error) {
+func createSearchRequest(url string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if req == nil || err != nil {
 		return req, err

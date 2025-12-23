@@ -14,7 +14,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/PDOK/gokoala/internal/ogc/features/proj"
-	"github.com/PDOK/gokoala/internal/search"
+	"github.com/PDOK/gokoala/internal/ogc/features/search"
 )
 
 const (
@@ -64,7 +64,7 @@ func NewFeatures(e *engine.Engine, queryExpansion *search.QueryExpansion) *Featu
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
 	if e.Config.OgcAPI.Features.SupportsSearch() {
-		e.Router.Get("/search", f.Schema())
+		e.Router.Get("/search", f.Search())
 	}
 
 	return f

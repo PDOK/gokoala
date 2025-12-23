@@ -1,7 +1,7 @@
 package config
 
 // +kubebuilder:object:generate=true
-type GlobalFeaturesSearch struct {
+type GlobalSearchSettings struct {
 	// ADVANCED SETTING. Normalization specifies whether and how a document's length should impact its rank.
 	// Possible values are 0, 1, 2, 4, 8, 16 and 32. For more information see https://www.postgresql.org/docs/current/textsearch-controls.html
 	// +kubebuilder:default=1
@@ -34,11 +34,11 @@ type GlobalFeaturesSearch struct {
 
 // +kubebuilder:object:generate=true
 type CollectionEntryFeaturesSearch struct {
-	Search CollectionFeaturesSearch `yaml:"search" json:"search" validate:"required"`
+	Search CollectionSearchSettings `yaml:"search" json:"search" validate:"required"`
 }
 
 // +kubebuilder:object:generate=true
-type CollectionFeaturesSearch struct {
+type CollectionSearchSettings struct {
 	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
 	// +kubebuilder:validation:MinItems=1
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required"`

@@ -10,6 +10,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -25,6 +26,9 @@ const (
 	postgresCompose = "internal/ogc/features/datasources/postgres/testdata/docker-compose.yaml"
 )
 
+var postgresPort nat.Port
+var setupOnce sync.Once
+
 func init() {
 	// change working dir to root, to mimic behavior of 'go run' in order to resolve template files.
 	_, filename, _, _ := runtime.Caller(0)
@@ -38,13 +42,16 @@ func init() {
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
-	stack := setup(ctx)
+	stack, port := setup(ctx)
+	setupOnce.Do(func() {
+		postgresPort = port
+	})
 	exitCode := m.Run()
 	teardown(ctx, stack)
 	os.Exit(exitCode)
 }
 
-func setup(ctx context.Context) *compose.DockerCompose {
+func setup(ctx context.Context) (*compose.DockerCompose, nat.Port) {
 	// mock time
 	now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
 	engine.Now = now
@@ -57,7 +64,7 @@ func setup(ctx context.Context) *compose.DockerCompose {
 		log.Fatal("failed to set env var", err)
 	}
 
-	return stack
+	return stack, port
 }
 
 func teardown(ctx context.Context, stack *compose.DockerCompose) {

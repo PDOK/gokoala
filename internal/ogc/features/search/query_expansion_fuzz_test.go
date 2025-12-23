@@ -16,7 +16,7 @@ import (
 func init() {
 	// change working dir to root
 	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../")
+	dir := path.Join(path.Dir(filename), "../../../../")
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)
@@ -25,7 +25,7 @@ func init() {
 
 // Run with: go test -fuzz=Fuzz -fuzztime=10s -run=^$
 func FuzzExpand(f *testing.F) {
-	queryExpansion, err := NewQueryExpansion("internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
+	queryExpansion, err := NewQueryExpansion("internal/ogc/features/testdata/search/rewrites.csv", "internal/ogc/features/testdata/search/synonyms.csv")
 	require.NoError(f, err)
 
 	testcases := []string{"Foo", "Bar", "Baz", "Den Haag", "Fryslân", "Gouverneurstraat", "West", "1e", "tweede", "Oud", "Oude"}

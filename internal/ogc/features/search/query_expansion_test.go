@@ -15,7 +15,7 @@ import (
 func init() {
 	// change working dir to root
 	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../")
+	dir := path.Join(path.Dir(filename), "../../../../")
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)
@@ -208,7 +208,7 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			queryExpansion, err := NewQueryExpansion("internal/search/testdata/rewrites.csv", "internal/search/testdata/synonyms.csv")
+			queryExpansion, err := NewQueryExpansion("internal/ogc/features/testdata/search/rewrites.csv", "internal/ogc/features/testdata/search/synonyms.csv")
 			require.NoError(t, err)
 			actual, err := queryExpansion.Expand(context.Background(), tt.args.searchQuery)
 			require.NoError(t, err)

@@ -1,4 +1,4 @@
-package search
+package features
 
 import (
 	"errors"
@@ -8,18 +8,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/engine/util"
-	d "github.com/PDOK/gokoala/internal/search/domain"
+	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
 )
 
 const (
-	queryParam   = "q"
-	limitParam   = "limit"
-	crsParam     = "crs"
-	bboxParam    = "bbox"
-	bboxCrsParam = "bbox-crs"
+	queryParam = "q"
 
 	limitDefault = 10
 	limitMax     = 50
@@ -32,7 +28,9 @@ var (
 	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
 )
 
-func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string, outputSRID d.SRID, outputCRS string, bbox *geom.Bounds, bboxSRID d.SRID, limit int, err error) {
+func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string,
+	outputSRID d.SRID, outputCRS string, bbox *geom.Bounds, bboxSRID d.SRID, limit int, err error) {
+
 	err = validateNoUnknownParams(query)
 	if err != nil {
 		return
@@ -41,7 +39,10 @@ func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, se
 	collections, collErr := parseCollections(query)
 	outputSRID, outputSRIDErr := parseCrsToPostgisSRID(query, crsParam)
 	outputCRS = query.Get(crsParam)
-	limit, limitErr := parseLimit(query)
+	limit, limitErr := parseLimit(query, config.Limit{
+		Default: limitDefault,
+		Max:     limitMax,
+	})
 	bbox, bboxSRID, bboxErr := parseBbox(query)
 
 	err = errors.Join(collErr, searchTermErr, limitErr, outputSRIDErr, bboxErr)
@@ -108,14 +109,6 @@ func validateNoUnknownParams(query url.Values) error {
 	return nil
 }
 
-func clone(params url.Values) url.Values {
-	copyParams := url.Values{}
-	for k, v := range params {
-		copyParams[k] = v
-	}
-	return copyParams
-}
-
 func parseCrsToPostgisSRID(params url.Values, paramName string) (d.SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
@@ -139,54 +132,4 @@ func parseCrsToPostgisSRID(params url.Values, paramName string) (d.SRID, error) 
 		srid = d.SRID(val)
 	}
 	return srid, nil
-}
-
-func parseLimit(params url.Values) (int, error) {
-	limit := limitDefault
-	var err error
-	if params.Get(limitParam) != "" {
-		limit, err = strconv.Atoi(params.Get(limitParam))
-		if err != nil {
-			err = errors.New("limit must be numeric")
-		}
-		// "If the value of the limit parameter is larger than the maximum value, this SHALL NOT result
-		//  in an error (instead use the maximum as the parameter value)."
-		if limit > limitMax {
-			limit = limitMax
-		}
-	}
-	if limit < 0 {
-		err = errors.New("limit can't be negative")
-	}
-	return limit, err
-}
-
-func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
-	bboxSRID, err := parseCrsToPostgisSRID(params, bboxCrsParam)
-	if err != nil {
-		return nil, d.UndefinedSRID, err
-	}
-
-	if params.Get(bboxParam) == "" {
-		return nil, d.UndefinedSRID, nil
-	}
-	bboxValues := strings.Split(params.Get(bboxParam), ",")
-	if len(bboxValues) != 4 {
-		return nil, bboxSRID, errors.New("bbox should contain exactly 4 values " +
-			"separated by commas: minx,miny,maxx,maxy")
-	}
-
-	bboxFloats := make([]float64, len(bboxValues))
-	for i, v := range bboxValues {
-		bboxFloats[i], err = strconv.ParseFloat(v, 64)
-		if err != nil {
-			return nil, bboxSRID, fmt.Errorf("failed to parse value %s in bbox, error: %w", v, err)
-		}
-	}
-
-	bbox := geom.NewBounds(geom.XY).Set(bboxFloats...)
-	if util.SurfaceArea(bbox) <= 0 {
-		return nil, bboxSRID, errors.New("bbox has no surface area")
-	}
-	return bbox, bboxSRID, nil
 }

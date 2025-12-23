@@ -49,7 +49,7 @@ type OgcAPIFeatures struct {
 
 	// Global settings for search. Does not apply to regular OGC API Features collections, only
 	// to collections used for location search/geocoding purposes.
-	Search GlobalFeaturesSearch `yaml:"search,omitempty" json:"search,omitempty"`
+	Search GlobalSearchSettings `yaml:"search,omitempty" json:"search,omitempty"`
 }
 
 func (oaf *OgcAPIFeatures) CollectionsSRS() []string {
