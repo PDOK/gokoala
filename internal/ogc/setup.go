@@ -9,9 +9,10 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/processes"
 	"github.com/PDOK/gokoala/internal/ogc/styles"
 	"github.com/PDOK/gokoala/internal/ogc/tiles"
+	"github.com/PDOK/gokoala/internal/search"
 )
 
-func SetupBuildingBlocks(engine *engine.Engine) {
+func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile string) error {
 	// OGC 3D GeoVolumes API
 	if engine.Config.OgcAPI.GeoVolumes != nil {
 		geovolumes.NewThreeDimensionalGeoVolumes(engine)
@@ -27,7 +28,11 @@ func SetupBuildingBlocks(engine *engine.Engine) {
 	// OGC Features API
 	collectionTypes := geospatial.NewCollectionTypes(nil)
 	if engine.Config.OgcAPI.Features != nil {
-		f := features.NewFeatures(engine)
+		qe, err := search.NewQueryExpansion(rewritesFile, synonymsFile)
+		if err != nil {
+			return err
+		}
+		f := features.NewFeatures(engine, qe)
 		collectionTypes = f.GetCollectionTypes()
 	}
 	// OGC Processes API
@@ -41,4 +46,5 @@ func SetupBuildingBlocks(engine *engine.Engine) {
 	if engine.Config.HasCollections() {
 		geospatial.NewCollections(engine, collectionTypes)
 	}
+	return nil
 }

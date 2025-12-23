@@ -962,7 +962,7 @@ func TestFeatures(t *testing.T) {
 					newEngine.Config.OgcAPI.Features.MaxDecimals = 5
 					newEngine.Config.OgcAPI.Features.ForceUTC = true
 
-					features := NewFeatures(newEngine)
+					features := NewFeatures(newEngine, nil)
 					handler := features.Features()
 					handler.ServeHTTP(rr, req)
 

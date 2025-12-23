@@ -32,15 +32,16 @@ ogcApi:
             queryTimeout: 20s
     collections:
       - id: addresses
-        fields:
-          - address_street
-          - address_postal
-          - address_place
-        displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
-        ogcCollections:
-          - api: https://example.com/ogc/v1
-            collection: addresses
-            geometryType: point
+        search:
+          fields:
+            - address_street
+            - address_postal
+            - address_place
+          displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
+          ogcCollections:
+            - api: https://example.com/ogc/v1
+              collection: addresses
+              geometryType: point
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           title: Dutch Addresses
@@ -52,14 +53,15 @@ ogcApi:
             bbox: [ "50.2129", "2.52713", "55.7212", "7.37403" ]
             interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]
       - id: buildings
-        fields:
-          - street
-          - place
-        displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
-        ogcCollections:
-          - api: https://example.com/ogc/v1
-            collection: buildings
-            geometryType: polygon
+        search:
+          fields:
+            - street
+            - place
+          displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
+          ogcCollections:
+            - api: https://example.com/ogc/v1
+              collection: buildings
+              geometryType: polygon
         tableName: buildings  # name of the feature table (optional), when omitted collection ID is used.
         metadata:
           title: Dutch Buildings

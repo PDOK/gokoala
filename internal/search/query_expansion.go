@@ -22,6 +22,9 @@ type QueryExpansion struct {
 }
 
 func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, error) {
+	if rewritesFile == "" && synonymsFile == "" {
+		return nil, nil
+	}
 	rewrites, rewErr := readCsvFile(rewritesFile, false)
 	synonyms, synErr := readCsvFile(synonymsFile, true)
 

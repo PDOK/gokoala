@@ -1,7 +1,44 @@
 package config
 
 // +kubebuilder:object:generate=true
+type GlobalFeaturesSearch struct {
+	// ADVANCED SETTING. Normalization specifies whether and how a document's length should impact its rank.
+	// Possible values are 0, 1, 2, 4, 8, 16 and 32. For more information see https://www.postgresql.org/docs/current/textsearch-controls.html
+	// +kubebuilder:default=1
+	RankNormalization int `yaml:"rankNormalization,omitempty" json:"rankNormalization,omitempty" default:"1"`
+
+	// ADVANCED SETTING. Multiply the exact match rank to boost it above the wildcard matches.
+	// +kubebuilder:default=3.0
+	ExactMatchMultiplier float64 `yaml:"exactMatchMultiplier,omitempty" json:"exactMatchMultiplier,omitempty" default:"3.0"`
+
+	// ADVANCED SETTING. The primary suggest is equal to the display name. With this multiplier you can boost it above other suggests.
+	// +kubebuilder:default=1.01
+	PrimarySuggestMultiplier float64 `yaml:"primarySuggestMultiplier,omitempty" json:"primarySuggestMultiplier,omitempty" default:"1.01"`
+
+	// ADVANCED SETTING. The threshold above which results are pre-ranked instead ranked exactly.
+	// +kubebuilder:default=40000
+	RankThreshold int `yaml:"rankThreshold,omitempty" json:"rankThreshold,omitempty" default:"40000"`
+
+	// ADVANCED SETTING. The number of results which are pre-ranked when the rank threshold is hit.
+	// +kubebuilder:default=10
+	PreRankLimitMultiplier int `yaml:"preRankLimitMultiplier,omitempty" json:"preRankLimitMultiplier,omitempty" default:"10"`
+
+	// ADVANCED SETTING. Pre-ranking is based on word count. Results with a word count above this cutoff are not eligible for pre-ranking.
+	// +kubebuilder:default=3
+	PreRankWordCountCutoff int `yaml:"preRankWordCountCutoff,omitempty" json:"preRankWordCountCutoff,omitempty" default:"3"`
+
+	// ADVANCED SETTING. When true synonyms are taken into account during exact match calculation.
+	// +kubebuilder:default=false
+	SynonymsExactMatch bool `yaml:"synonymsExactMatch,omitempty" json:"synonymsExactMatch,omitempty" default:"false"`
+}
+
+// +kubebuilder:object:generate=true
 type CollectionEntryFeaturesSearch struct {
+	Search CollectionFeaturesSearch `yaml:"search" json:"search" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type CollectionFeaturesSearch struct {
 	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
 	// +kubebuilder:validation:MinItems=1
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required"`
@@ -10,6 +47,7 @@ type CollectionEntryFeaturesSearch struct {
 	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
 
 	// Version of the collection exposed through the API.
+	// +kubebuilder:default=1
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
 	// (Links to) the individual OGC API (feature) collections that are searchable in this collection.

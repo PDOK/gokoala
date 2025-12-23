@@ -239,7 +239,7 @@ func TestSchema(t *testing.T) {
 
 					newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 					require.NoError(t, err)
-					features := NewFeatures(newEngine)
+					features := NewFeatures(newEngine, nil)
 					handler := features.Schema()
 					handler.ServeHTTP(rr, req)
 

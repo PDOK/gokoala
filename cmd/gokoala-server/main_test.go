@@ -135,7 +135,8 @@ func TestBuildingBlocks(t *testing.T) {
 			// given
 			eng, err := gokoalaEngine.NewEngine(tt.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
-			ogc.SetupBuildingBlocks(eng)
+			err = ogc.SetupBuildingBlocks(eng, "", "")
+			require.NoError(t, err)
 
 			recorder := httptest.NewRecorder()
 			req, err := http.NewRequest(http.MethodGet, tt.apiCall, nil)

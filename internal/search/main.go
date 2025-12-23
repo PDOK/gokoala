@@ -115,7 +115,7 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 			}
 		}
 		if collection != nil {
-			for _, ogcColl := range collection.FeaturesSearch.OGCCollections {
+			for _, ogcColl := range collection.FeaturesSearch.Search.OGCCollections {
 				geomType, ok := feat.Properties[domain.PropGeomType]
 				if !ok || geomType == "" {
 					return fmt.Errorf("geometry type not found in feature %s", feat.ID)

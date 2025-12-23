@@ -14,6 +14,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/PDOK/gokoala/internal/ogc/features/proj"
+	"github.com/PDOK/gokoala/internal/search"
 )
 
 const (
@@ -29,13 +30,14 @@ type Features struct {
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 	collectionTypes           geospatial.CollectionTypes
 	schemas                   map[string]domain.Schema
+	queryExpansion            *search.QueryExpansion
 
 	html *htmlFeatures
 	json *jsonFeatures
 }
 
 // NewFeatures Bootstraps OGC API Features logic.
-func NewFeatures(e *engine.Engine) *Features {
+func NewFeatures(e *engine.Engine, queryExpansion *search.QueryExpansion) *Features {
 	datasources := createDatasources(e)
 	axisOrderBySRID := determineAxisOrder(datasources)
 	configuredCollections := cacheConfiguredFeatureCollections(e)
@@ -53,6 +55,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		configuredPropertyFilters: configuredPropertyFilters,
 		collectionTypes:           collectionTypes,
 		schemas:                   schemas,
+		queryExpansion:            queryExpansion,
 		html:                      newHTMLFeatures(e),
 		json:                      newJSONFeatures(e),
 	}
@@ -60,6 +63,9 @@ func NewFeatures(e *engine.Engine) *Features {
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
+	if e.Config.OgcAPI.Features.SupportsSearch() {
+		e.Router.Get("/search", f.Schema())
+	}
 
 	return f
 }

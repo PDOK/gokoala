@@ -46,6 +46,10 @@ type OgcAPIFeatures struct {
 	// +kubebuilder:default=false
 	// +optional
 	ForceUTC bool `yaml:"forceUtc,omitempty" json:"forceUtc,omitempty"`
+
+	// Global settings for search. Does not apply to regular OGC API Features collections, only
+	// to collections used for location search/geocoding purposes.
+	Search GlobalFeaturesSearch `yaml:"search,omitempty" json:"search,omitempty"`
 }
 
 func (oaf *OgcAPIFeatures) CollectionsSRS() []string {
@@ -82,6 +86,10 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 	slices.Sort(result)
 
 	return result
+}
+
+func (oaf *OgcAPIFeatures) SupportsSearch() bool {
+	return oaf.Collections != nil && len(oaf.Collections.WithSearch()) > 0
 }
 
 // +kubebuilder:object:generate=true

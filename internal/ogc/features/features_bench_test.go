@@ -75,7 +75,7 @@ func BenchmarkFeatures(b *testing.B) {
 
 		newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 		require.NoError(b, err)
-		features := NewFeatures(newEngine)
+		features := NewFeatures(newEngine, nil)
 		handler := features.Features()
 
 		// Start benchmark
