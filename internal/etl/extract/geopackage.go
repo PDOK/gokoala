@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"sync"
 
@@ -34,7 +35,9 @@ func loadDriver() {
 	once.Do(func() {
 		spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
 		driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
-		sql.Register(sqliteDriverName, driver)
+		if !slices.Contains(sql.Drivers(), sqliteDriverName) {
+			sql.Register(sqliteDriverName, driver)
+		}
 	})
 }
 

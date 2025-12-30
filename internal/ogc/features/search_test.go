@@ -52,7 +52,17 @@ func TestSearch(t *testing.T) {
 
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@localhost:%d/%s?sslmode=disable", postgresPort.Int(), "test_db")
 
-	// given available engine
+	// given empty search index
+	err := etl.CreateSearchIndex(dbConn, testSearchIndex, domain.WGS84SRIDPostgis, language.Dutch)
+	require.NoError(t, err)
+
+	// given imported geopackage
+	err = importGpkg("addresses", dbConn) // in CRS84
+	require.NoError(t, err)
+	err = importGpkg("buildings", dbConn) // in EPSG:4326
+	require.NoError(t, err)
+
+	// given available engine, with connection to the database
 	newEngine, err := engine.NewEngine(searchConfigFile, "", "", false, false)
 	require.NoError(t, err)
 
@@ -61,16 +71,6 @@ func TestSearch(t *testing.T) {
 		"internal/ogc/features/testdata/search/rewrites.csv",
 		"internal/ogc/features/testdata/search/synonyms.csv")
 	features := NewFeatures(newEngine, qe)
-	require.NoError(t, err)
-
-	// given empty search index
-	err = etl.CreateSearchIndex(dbConn, testSearchIndex, domain.WGS84SRIDPostgis, language.Dutch)
-	require.NoError(t, err)
-
-	// given imported geopackage
-	err = importGpkg("addresses", dbConn) // in CRS84
-	require.NoError(t, err)
-	err = importGpkg("buildings", dbConn) // in EPSG:4326
 	require.NoError(t, err)
 
 	// run test cases

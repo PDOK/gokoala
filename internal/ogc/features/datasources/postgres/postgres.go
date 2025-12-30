@@ -234,7 +234,7 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQ
 	if err != nil {
 		return nil, err
 	}
-	sql := makeSQL(searchQuery.SearchIndex, srid, bboxFilter)
+	sql := makeSearchQuery(searchQuery.SearchIndex, srid, bboxFilter)
 	wildcardQuery := searchQuery.ToWildcardQuery()
 	exactMatchQuery := searchQuery.ToExactMatchQuery(settings.SynonymsExactMatch)
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
@@ -269,7 +269,7 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQ
 }
 
 //nolint:funlen
-func makeSQL(index string, srid d.SRID, bboxFilter string) string {
+func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
 	// language=postgresql
 	return fmt.Sprintf(`
 	WITH query_wildcard AS (
@@ -384,6 +384,7 @@ func makeSQL(index string, srid d.SRID, bboxFilter string) string {
 	LIMIT @limit`, index, srid, bboxFilter) // don't add user input here, use $X params for user input!
 }
 
+// TODO move to mapper
 func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureCollection, error) {
 	fc := d.FeatureCollection{Features: make([]*d.Feature, 0)}
 	for rows.Next() {
@@ -422,6 +423,7 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 	return &fc, queryCtx.Err()
 }
 
+// TODO move to mapper
 func getFeatureID(externalFid *string, featureID string) string {
 	if externalFid != nil {
 		return *externalFid
@@ -429,6 +431,7 @@ func getFeatureID(externalFid *string, featureID string) string {
 	return featureID
 }
 
+// TODO move to mapper
 // adapted from https://github.com/twpayne/go-geom/blob/b22fd061f1531a51582333b5bd45710a455c4978/encoding/geojson/geojson.go#L525
 // encodeBBox encodes b as a GeoJson Bounding Box.
 func encodeBBox(bbox geom.T) (*[]float64, error) {
