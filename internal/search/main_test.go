@@ -405,7 +405,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 	t.Helper()
 	req := testcontainers.ContainerRequest{
 		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments)
-		Name:  "postgres",
+		Name:  "postgres_search",
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
 			"POSTGRES_PASSWORD": "postgres",
