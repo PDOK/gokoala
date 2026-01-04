@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/search/domain"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	perfjson "github.com/goccy/go-json"
 )
 

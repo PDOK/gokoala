@@ -4,6 +4,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/PDOK/gokoala/config"
 )
 
 const (
@@ -25,13 +27,19 @@ const (
 
 // SearchQuery based on parsed search terms/words.
 type SearchQuery struct {
+	Settings config.SearchSettings
+
 	words           []string
 	withoutSynonyms map[string]struct{}
 	withSynonyms    map[string][]string
 }
 
 func NewSearchQuery(words []string, withoutSynonyms map[string]struct{}, withSynonyms map[string][]string) *SearchQuery {
-	return &SearchQuery{words, withoutSynonyms, withSynonyms}
+	return &SearchQuery{
+		config.SearchSettings{},
+		words,
+		withoutSynonyms,
+		withSynonyms}
 }
 
 func (q *SearchQuery) ToWildcardQuery() string {

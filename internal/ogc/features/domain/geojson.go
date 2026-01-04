@@ -36,6 +36,8 @@ type Feature struct {
 	Properties FeatureProperties `json:"properties"`
 	// We support 'null' geometries, don't add an 'omitempty' tag here.
 	Geometry *geojson.Geometry `json:"geometry"`
+	// Bbox is optional, and we use 'omitempty' here on purpose
+	Bbox *[]float64 `json:"bbox,omitempty"`
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
 	ID    string `json:"id"`

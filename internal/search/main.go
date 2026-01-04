@@ -1,22 +1,20 @@
 package search
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	ds "github.com/PDOK/gokoala/internal/search/datasources"
-	"github.com/PDOK/gokoala/internal/search/datasources/postgres"
+	"github.com/PDOK/gokoala/internal/ogc/features"
+	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	featdomain "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/PDOK/gokoala/internal/search/domain"
-)
-
-const (
-	timeout = time.Second * 15
 )
 
 type Search struct {
@@ -26,29 +24,24 @@ type Search struct {
 	json           *jsonFeatures
 }
 
-func NewSearch(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rewritesFile string,
-	synonymsFile string, rankNormalization int, exactMatchMultiplier float64, primarySuggestMultiplier float64,
-	rankThreshold int, preRankLimitMultiplier int, preRankWordCountCutoff int, synonymsExactMatch bool) (*Search, error) {
+func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datasource,
+	_ map[int]featdomain.AxisOrder, rewritesFile, synonymsFile string) (*Search, error) {
 
 	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO come up with something smarter
+	var firstDS ds.Datasource
+	for _, v := range datasources {
+		firstDS = v
+		break
+	}
+
 	s := &Search{
-		engine: e,
-		datasource: newDatasource(
-			e,
-			dbConn,
-			searchIndex,
-			searchIndexSrid,
-			rankNormalization,
-			exactMatchMultiplier,
-			primarySuggestMultiplier,
-			rankThreshold,
-			preRankLimitMultiplier,
-			preRankWordCountCutoff,
-			synonymsExactMatch,
-		),
+		engine:         e,
+		datasource:     firstDS,
 		json:           newJSONFeatures(e),
 		queryExpansion: queryExpansion,
 	}
@@ -76,6 +69,7 @@ func (s *Search) Search() http.HandlerFunc {
 			handleQueryError(w, err)
 			return
 		}
+		searchQuery.Settings = s.engine.Config.OgcAPI.FeaturesSearch.SearchSettings
 
 		// Perform actual search
 		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), *searchQuery, collections, outputSRID, bbox, bboxSRID, limit)
@@ -101,10 +95,10 @@ func (s *Search) Search() http.HandlerFunc {
 }
 
 //nolint:nestif
-func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS string) error {
+func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, outputCRS string) error {
 	for _, feat := range fc.Features {
-		collectionID, ok := feat.Properties[domain.PropCollectionID]
-		if !ok || collectionID == "" {
+		collectionID := feat.Properties.Value(domain.PropCollectionID)
+		if collectionID == "" {
 			return fmt.Errorf("collection reference not found in feature %s", feat.ID)
 		}
 		var collection *config.GeoSpatialCollection
@@ -116,8 +110,8 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 		}
 		if collection != nil {
 			for _, ogcColl := range collection.FeaturesSearch.OGCCollections {
-				geomType, ok := feat.Properties[domain.PropGeomType]
-				if !ok || geomType == "" {
+				geomType := feat.Properties.Value(domain.PropGeomType)
+				if geomType == "" {
 					return fmt.Errorf("geometry type not found in feature %s", feat.ID)
 				}
 				if strings.EqualFold(ogcColl.GeometryType, geomType.(string)) {
@@ -132,8 +126,8 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 					}
 
 					// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
-					feat.Properties[domain.PropHref] = href
-					feat.Links = []domain.Link{
+					feat.Properties.Set(domain.PropHref, href)
+					feat.Links = []featdomain.Link{
 						{
 							Rel:   "canonical",
 							Title: "The actual feature in the corresponding OGC API",
@@ -148,26 +142,13 @@ func (s *Search) enrichFeaturesWithHref(fc *domain.FeatureCollection, outputCRS 
 	return nil
 }
 
-func newDatasource(e *engine.Engine, dbConn string, searchIndex string, searchIndexSrid int, rankNormalization int,
-	exactMatchMultiplier float64, primarySuggestMultiplier float64, rankThreshold int,
-	preRankLimitMultiplier int, preRankWordCountCutoff int, synonymsExactMatch bool) ds.Datasource {
-
-	datasource, err := postgres.NewPostgres(
-		dbConn,
-		timeout,
-		searchIndex,
-		domain.SRID(searchIndexSrid),
-		rankNormalization,
-		exactMatchMultiplier,
-		primarySuggestMultiplier,
-		rankThreshold,
-		preRankLimitMultiplier,
-		preRankWordCountCutoff,
-		synonymsExactMatch,
-	)
-	if err != nil {
-		log.Fatalf("failed to create datasource: %v", err)
+// log error, but send generic message to client to prevent possible information leakage from datasource
+func handleQueryError(w http.ResponseWriter, err error) {
+	msg := "failed to fulfill search request"
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		// provide more context when user hits the query timeout
+		msg += ": querying took too long (timeout encountered). Simplify your request and try again, or contact support"
 	}
-	e.RegisterShutdownHook(datasource.Close)
-	return datasource
+	log.Printf("%s, error: %v\n", msg, err)
+	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
 }

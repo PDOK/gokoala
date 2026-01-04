@@ -17,7 +17,8 @@ import (
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/etl"
 	etlconfig "github.com/PDOK/gokoala/internal/etl/config"
-	"github.com/PDOK/gokoala/internal/search/domain"
+	"github.com/PDOK/gokoala/internal/ogc/features"
+	featdomain "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -28,9 +29,13 @@ import (
 	"golang.org/x/text/language"
 )
 
-const testSearchIndex = "search_index"
-const etlConfigFile = "internal/search/testdata/config_etl.yaml"
-const searchConfigFile = "internal/search/testdata/config_search.yaml"
+const (
+	postgresPortEnv = "DB_PORT"
+
+	testSearchIndex  = "search_index"
+	etlConfigFile    = "internal/search/testdata/config_etl.yaml"
+	searchConfigFile = "internal/search/testdata/config_search.yaml"
+)
 
 func init() {
 	// change working dir to root
@@ -57,26 +62,27 @@ func TestSearch(t *testing.T) {
 
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
-	// given available engine
-	eng, err := engine.NewEngine(searchConfigFile, "", "", false, false)
-	require.NoError(t, err)
-
-	// given search endpoint
-	searchEndpoint, err := NewSearch(eng, dbConn, testSearchIndex, domain.WGS84SRIDPostgis,
-		"internal/search/testdata/rewrites.csv",
-		"internal/search/testdata/synonyms.csv",
-		1, 3.0, 1.01,
-		4000, 10, 3, false)
-	require.NoError(t, err)
-
 	// given empty search index
-	err = etl.CreateSearchIndex(dbConn, testSearchIndex, domain.WGS84SRIDPostgis, language.Dutch)
+	err = etl.CreateSearchIndex(dbConn, testSearchIndex, featdomain.WGS84SRIDPostgis, language.Dutch)
 	require.NoError(t, err)
 
 	// given imported geopackage
 	err = importGpkg("addresses", dbConn) // in CRS84
 	require.NoError(t, err)
 	err = importGpkg("buildings", dbConn) // in EPSG:4326
+	require.NoError(t, err)
+
+	// given available engine
+	eng, err := engine.NewEngine(searchConfigFile, "", "", false, false)
+	require.NoError(t, err)
+
+	datasources := features.CreateDatasources(eng.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, eng.RegisterShutdownHook)
+	// axisOrderBySRID := features.DetermineAxisOrder(datasources)
+
+	// given search endpoint
+	searchEndpoint, err := NewSearch(eng, datasources, nil,
+		"internal/search/testdata/rewrites.csv",
+		"internal/search/testdata/synonyms.csv")
 	require.NoError(t, err)
 
 	// run test cases
@@ -399,7 +405,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 	t.Helper()
 	req := testcontainers.ContainerRequest{
 		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments)
-		Name:  "postgis",
+		Name:  "postgres",
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
 			"POSTGRES_PASSWORD": "postgres",
@@ -431,6 +437,9 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 	if port.Int() == 0 {
 		t.Error("port is 0")
 	}
+	if err = os.Setenv(postgresPortEnv, port.Port()); err != nil {
+		log.Fatal("failed to set env var", err)
+	}
 
 	log.Println("Giving postgres a few extra seconds to fully start")
 	time.Sleep(2 * time.Second)
@@ -443,6 +452,9 @@ func terminateContainer(ctx context.Context, t *testing.T, container testcontain
 	t.Helper()
 	if err := container.Terminate(ctx); err != nil {
 		t.Fatalf("Failed to terminate container: %s", err.Error())
+	}
+	if err := os.Unsetenv(postgresPortEnv); err != nil {
+		log.Fatal("failed to unset env var", err)
 	}
 }
 

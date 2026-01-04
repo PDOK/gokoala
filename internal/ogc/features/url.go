@@ -21,12 +21,12 @@ import (
 )
 
 const (
+	LimitParam     = "limit"
+	CrsParam       = "crs"
+	BboxParam      = "bbox"
+	BboxCrsParam   = "bbox-crs"
 	cursorParam    = "cursor"
-	limitParam     = "limit"
-	crsParam       = "crs"
 	dateTimeParam  = "datetime"
-	bboxParam      = "bbox"
-	bboxCrsParam   = "bbox-crs"
 	filterParam    = "filter"
 	filterCrsParam = "filter-crs"
 	profileParam   = "profile"
@@ -46,12 +46,12 @@ var (
 	// defined as a set for fast lookup.
 	featuresKnownParams = map[string]struct{}{
 		engine.FormatParam: {},
-		limitParam:         {},
+		LimitParam:         {},
 		cursorParam:        {},
-		crsParam:           {},
+		CrsParam:           {},
 		dateTimeParam:      {},
-		bboxParam:          {},
-		bboxCrsParam:       {},
+		BboxParam:          {},
+		BboxCrsParam:       {},
 		filterParam:        {},
 		filterCrsParam:     {},
 		profileParam:       {},
@@ -61,7 +61,7 @@ var (
 	// defined as a set for fast lookup.
 	featureKnownParams = map[string]struct{}{
 		engine.FormatParam: {},
-		crsParam:           {},
+		CrsParam:           {},
 		profileParam:       {},
 	}
 )
@@ -86,11 +86,11 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 		return
 	}
 	encodedCursor = d.EncodedCursor(fc.params.Get(cursorParam))
-	limit, limitErr := parseLimit(fc.params, fc.limit)
-	outputSRID, outputSRIDErr := parseCrsToSRID(fc.params, crsParam)
+	limit, limitErr := ParseLimit(fc.params, fc.limit)
+	outputSRID, outputSRIDErr := parseCrsToSRID(fc.params, CrsParam)
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
-	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
+	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
 	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
 	_, filterSRID, filterErr := parseFilter(fc.params)
@@ -187,7 +187,7 @@ func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Pro
 		return
 	}
 
-	srid, crsErr := parseCrsToSRID(f.params, crsParam)
+	srid, crsErr := parseCrsToSRID(f.params, CrsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
 	profile, profileErr := parseProfile(f.params, f.baseURL, f.schema)
 	err = errors.Join(crsErr, profileErr)
@@ -247,11 +247,11 @@ func consolidateSRIDs(bboxSRID d.SRID, filterSRID d.SRID) (inputSRID d.SRID, err
 	return inputSRID, err
 }
 
-func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
+func ParseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	limit := limitCfg.Default
 	var err error
-	if params.Get(limitParam) != "" {
-		limit, err = strconv.Atoi(params.Get(limitParam))
+	if params.Get(LimitParam) != "" {
+		limit, err = strconv.Atoi(params.Get(LimitParam))
 		if err != nil {
 			err = errors.New("limit must be numeric")
 		}
@@ -268,20 +268,20 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	return limit, err
 }
 
-func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
-	if params.Get(bboxParam) == "" && params.Get(bboxCrsParam) != "" {
+func ParseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
+	if params.Get(BboxParam) == "" && params.Get(BboxCrsParam) != "" {
 		return nil, d.UndefinedSRID, errors.New("bbox-crs can't be used without bbox parameter")
 	}
 
-	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
+	bboxSRID, err := parseCrsToSRID(params, BboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
 	}
 
-	if params.Get(bboxParam) == "" {
+	if params.Get(BboxParam) == "" {
 		return nil, d.UndefinedSRID, nil
 	}
-	bboxValues := strings.Split(params.Get(bboxParam), ",")
+	bboxValues := strings.Split(params.Get(BboxParam), ",")
 	if len(bboxValues) != 4 {
 		return nil, bboxSRID, errors.New("bbox should contain exactly 4 values " +
 			"separated by commas: minx,miny,maxx,maxy")
@@ -310,7 +310,7 @@ func surfaceArea(bbox *geom.Bounds) float64 {
 }
 
 func parseCrsToContentCrs(params url.Values) d.ContentCrs {
-	param := params.Get(crsParam)
+	param := params.Get(CrsParam)
 	if param == "" {
 		return d.WGS84CrsURI
 	}

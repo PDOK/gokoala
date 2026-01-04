@@ -27,7 +27,7 @@ type OpenAPIPropertyFilter struct {
 
 // rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
 func rebuildOpenAPI(e *engine.Engine,
-	datasources map[datasourceKey]ds.Datasource,
+	datasources map[DatasourceKey]ds.Datasource,
 	filters map[string]ds.PropertyFiltersWithAllowedValues,
 	collectionTypes geospatial.CollectionTypes,
 	schemas map[string]domain.Schema) {
@@ -43,7 +43,7 @@ func rebuildOpenAPI(e *engine.Engine,
 	})
 }
 
-func createPropertyFiltersByCollection(datasources map[datasourceKey]ds.Datasource,
+func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasource,
 	filters map[string]ds.PropertyFiltersWithAllowedValues) (map[string][]OpenAPIPropertyFilter, error) {
 
 	result := make(map[string][]OpenAPIPropertyFilter)

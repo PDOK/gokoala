@@ -16,6 +16,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage/encoding"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
+	search "github.com/PDOK/gokoala/internal/search/domain"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
@@ -296,6 +297,11 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	}
 
 	return features[0], queryCtx.Err()
+}
+
+func (g *GeoPackage) SearchFeaturesAcrossCollections(_ context.Context, _ search.SearchQuery,
+	_ search.CollectionsWithParams, _ d.SRID, _ *geom.Bounds, _ d.SRID, _ int) (*d.FeatureCollection, error) {
+	return &d.FeatureCollection{}, errors.New("not implemented, searching features is currently only implemented for Postgres")
 }
 
 // Build specific features queries based on the given options.

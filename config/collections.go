@@ -192,6 +192,9 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	if c.OgcAPI.Features != nil {
 		result = append(result, c.OgcAPI.Features.Collections...)
 	}
+	if c.OgcAPI.FeaturesSearch != nil {
+		result = append(result, c.OgcAPI.FeaturesSearch.Collections...)
+	}
 
 	// sort
 	if len(c.OgcAPICollectionOrder) > 0 {
