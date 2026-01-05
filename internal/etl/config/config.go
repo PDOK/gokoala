@@ -94,10 +94,10 @@ type Collection struct {
 	ID string `yaml:"id" json:"id" validate:"required"`
 
 	// One or more feature tables backing this collection.
-	Tables []FeatureTable `yaml:"tables" json:"tables" validate:"required"`
+	Tables []FeatureTable `yaml:"tables" json:"tables" validate:"required,dive"`
 
 	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate and SuggestTemplates.
-	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required"`
+	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required,unique"`
 
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
 	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
@@ -134,9 +134,9 @@ type FeatureTable struct {
 type ExternalFid struct {
 	// Namespace (UUID5) used to generate external_fid, defaults to uuid.NameSpaceURL
 	// +kubebuilder:default="6ba7b811-9dad-11d1-80b4-00c04fd430c8"
-	UUIDNamespace uuid.UUID `yaml:"uuidNamespace,omitempty" json:"uuidNamespace,omitempty" default:"6ba7b811-9dad-11d1-80b4-00c04fd430c8" validate:"required"`
+	UUIDNamespace uuid.UUID `yaml:"uuidNamespace,omitempty" json:"uuidNamespace,omitempty" default:"6ba7b811-9dad-11d1-80b4-00c04fd430c8" validate:"required,uuid"`
 
 	// Fields used to generate external_fid in the target OGC Features Collection(s).
 	// Field names should match those in the source datasource.
-	Fields []string `yaml:"fields" json:"fields" validate:"required"`
+	Fields []string `yaml:"fields" json:"fields" validate:"required,unique"`
 }
