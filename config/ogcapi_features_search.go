@@ -21,12 +21,16 @@ type SearchSettings struct {
 	RankNormalization int `yaml:"rankNormalization,omitempty" json:"rankNormalization,omitempty" default:"1" validate:"gt=0"`
 
 	// ADVANCED SETTING. Multiply the exact match rank to boost it above the wildcard matches.
+	// +kubebuilder:validation:Pattern=`^-?\d+(\.\d+)?$`
+	// +kubebuilder:validation:Minimum=0
 	// +kubebuilder:default=3.0
-	ExactMatchMultiplier float64 `yaml:"exactMatchMultiplier,omitempty" json:"exactMatchMultiplier,omitempty" default:"3.0" validate:"gt=0.0"`
+	ExactMatchMultiplier string `yaml:"exactMatchMultiplier,omitempty" json:"exactMatchMultiplier,omitempty" default:"3.0" validate:"gt=0"`
 
 	// ADVANCED SETTING. The primary suggest is equal to the display name. With this multiplier you can boost it above other suggests.
+	// +kubebuilder:validation:Pattern=`^-?\d+(\.\d+)?$`
+	// +kubebuilder:validation:Minimum=0
 	// +kubebuilder:default=1.01
-	PrimarySuggestMultiplier float64 `yaml:"primarySuggestMultiplier,omitempty" json:"primarySuggestMultiplier,omitempty" default:"1.01" validate:"gt=0"`
+	PrimarySuggestMultiplier string `yaml:"primarySuggestMultiplier,omitempty" json:"primarySuggestMultiplier,omitempty" default:"1.01" validate:"gt=0"`
 
 	// ADVANCED SETTING. The threshold above which results are pre-ranked instead ranked exactly.
 	// +kubebuilder:default=40000
