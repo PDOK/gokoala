@@ -69,10 +69,16 @@ func (s *Search) Search() http.HandlerFunc {
 			handleQueryError(w, err)
 			return
 		}
-		searchQuery.Settings = s.engine.Config.OgcAPI.FeaturesSearch.SearchSettings
 
 		// Perform actual search
-		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), *searchQuery, collections, outputSRID, bbox, bboxSRID, limit)
+		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), ds.FeaturesSearchCriteria{
+			SearchQuery: *searchQuery,
+			Settings:    s.engine.Config.OgcAPI.FeaturesSearch.SearchSettings,
+			Limit:       limit,
+			InputSRID:   bboxSRID,
+			OutputSRID:  outputSRID,
+			Bbox:        bbox,
+		}, collections)
 		if err != nil {
 			handleQueryError(w, err)
 			return
@@ -94,7 +100,6 @@ func (s *Search) Search() http.HandlerFunc {
 	}
 }
 
-//nolint:nestif
 func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, outputCRS string) error {
 	for _, feat := range fc.Features {
 		collectionID := feat.Properties.Value(domain.PropCollectionID)
@@ -108,33 +113,34 @@ func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, output
 				break
 			}
 		}
-		if collection != nil {
-			for _, ogcColl := range collection.FeaturesSearch.OGCCollections {
-				geomType := feat.Properties.Value(domain.PropGeomType)
-				if geomType == "" {
-					return fmt.Errorf("geometry type not found in feature %s", feat.ID)
+		if collection == nil {
+			continue
+		}
+		for _, ogcColl := range collection.FeaturesSearch.OGCCollections {
+			geomType := feat.Properties.Value(domain.PropGeomType)
+			if geomType == "" {
+				return fmt.Errorf("geometry type not found in feature %s", feat.ID)
+			}
+			if strings.EqualFold(ogcColl.GeometryType, geomType.(string)) {
+				href, err := url.JoinPath(ogcColl.APIBaseURL.String(), "collections", ogcColl.CollectionID, "items", feat.ID)
+				if err != nil {
+					return fmt.Errorf("failed to construct API url %w", err)
 				}
-				if strings.EqualFold(ogcColl.GeometryType, geomType.(string)) {
-					href, err := url.JoinPath(ogcColl.APIBaseURL.String(), "collections", ogcColl.CollectionID, "items", feat.ID)
-					if err != nil {
-						return fmt.Errorf("failed to construct API url %w", err)
-					}
-					href += "?f=json"
+				href += "?f=json"
 
-					if outputCRS != "" {
-						href += "&crs=" + outputCRS
-					}
+				if outputCRS != "" {
+					href += "&crs=" + outputCRS
+				}
 
-					// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
-					feat.Properties.Set(domain.PropHref, href)
-					feat.Links = []featdomain.Link{
-						{
-							Rel:   "canonical",
-							Title: "The actual feature in the corresponding OGC API",
-							Type:  "application/geo+json",
-							Href:  href,
-						},
-					}
+				// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
+				feat.Properties.Set(domain.PropHref, href)
+				feat.Links = []featdomain.Link{
+					{
+						Rel:   "canonical",
+						Title: "The actual feature in the corresponding OGC API",
+						Type:  "application/geo+json",
+						Href:  href,
+					},
 				}
 			}
 		}

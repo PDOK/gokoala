@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
@@ -48,7 +47,7 @@ func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, se
 	}
 	searchTerms, searchTermErr := parseSearchTerms(query)
 	collections, collErr := parseCollections(query)
-	outputSRID, outputSRIDErr := parseCrsToPostgisSRID(query, features.CrsParam)
+	outputSRID, outputSRIDErr := features.ParseCrsToSRID(query, features.CrsParam)
 	outputCRS = query.Get(features.CrsParam)
 	limit, limitErr := features.ParseLimit(query, config.Limit{
 		Default: limitDefault,
@@ -111,29 +110,4 @@ func validateNoUnknownParams(query url.Values) error {
 		}
 	}
 	return nil
-}
-
-func parseCrsToPostgisSRID(params url.Values, paramName string) (fd.SRID, error) {
-	param := params.Get(paramName)
-	if param == "" {
-		return fd.WGS84SRIDPostgis, nil // default to WGS84
-	}
-	param = strings.TrimSpace(param)
-	if !strings.HasPrefix(param, fd.CrsURIPrefix) {
-		return fd.UndefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, fd.CrsURIPrefix, param)
-	}
-	var srid fd.SRID
-	lastIndex := strings.LastIndex(param, "/")
-	if lastIndex != -1 {
-		crsCode := param[lastIndex+1:]
-		if crsCode == fd.WGS84CodeOGC {
-			return fd.WGS84SRIDPostgis, nil // CRS84 is WGS84, we use EPSG:4326 for Postgres TODO: check if correct since axis order differs between CRS84 and EPSG:4326
-		}
-		val, err := strconv.Atoi(crsCode)
-		if err != nil {
-			return 0, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
-		}
-		srid = fd.SRID(val)
-	}
-	return srid, nil
 }

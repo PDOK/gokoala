@@ -299,9 +299,8 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], queryCtx.Err()
 }
 
-func (g *GeoPackage) SearchFeaturesAcrossCollections(_ context.Context, _ search.SearchQuery,
-	_ search.CollectionsWithParams, _ d.SRID, _ *geom.Bounds, _ d.SRID, _ int) (*d.FeatureCollection, error) {
-	return &d.FeatureCollection{}, errors.New("not implemented, searching features is currently only implemented for Postgres")
+func (g *GeoPackage) SearchFeaturesAcrossCollections(_ context.Context, _ ds.FeaturesSearchCriteria, _ search.CollectionsWithParams) (*d.FeatureCollection, error) {
+	return &d.FeatureCollection{}, errors.New("searching features is currently NOT IMPLEMENTED for GeoPackages, only for Postgres")
 }
 
 // Build specific features queries based on the given options.

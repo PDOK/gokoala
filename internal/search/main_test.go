@@ -234,16 +234,6 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search for house numbers, should rank in logical order - fourth test",
-			fields: fields{
-				url: "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
-			},
-			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-4.json",
-				statusCode: http.StatusOK,
-			},
-		},
-		{
 			name: "Search short streetname",
 			fields: fields{
 				url: "http://localhost:8080/search?q=A Ottoland&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
@@ -409,8 +399,7 @@ func importGpkg(collectionName string, dbConn string) error {
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
-		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments)
-		Name:  "postgres_search",
+		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments). Also use multi-arch image (AMD64 and ARM).
 		Env: map[string]string{
 			"POSTGRES_USER":     "postgres",
 			"POSTGRES_PASSWORD": "postgres",

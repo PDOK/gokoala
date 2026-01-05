@@ -87,7 +87,7 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	}
 	encodedCursor = d.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := ParseLimit(fc.params, fc.limit)
-	outputSRID, outputSRIDErr := parseCrsToSRID(fc.params, CrsParam)
+	outputSRID, outputSRIDErr := ParseCrsToSRID(fc.params, CrsParam)
 	contentCrs = parseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
@@ -187,7 +187,7 @@ func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Pro
 		return
 	}
 
-	srid, crsErr := parseCrsToSRID(f.params, CrsParam)
+	srid, crsErr := ParseCrsToSRID(f.params, CrsParam)
 	contentCrs = parseCrsToContentCrs(f.params)
 	profile, profileErr := parseProfile(f.params, f.baseURL, f.schema)
 	err = errors.Join(crsErr, profileErr)
@@ -273,7 +273,7 @@ func ParseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
 		return nil, d.UndefinedSRID, errors.New("bbox-crs can't be used without bbox parameter")
 	}
 
-	bboxSRID, err := parseCrsToSRID(params, BboxCrsParam)
+	bboxSRID, err := ParseCrsToSRID(params, BboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
 	}
@@ -318,7 +318,7 @@ func parseCrsToContentCrs(params url.Values) d.ContentCrs {
 	return d.ContentCrs(param)
 }
 
-func parseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
+func ParseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
 		return d.UndefinedSRID, nil
@@ -386,7 +386,7 @@ func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error)
 
 func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error) {
 	filter = params.Get(filterParam)
-	filterSRID, _ = parseCrsToSRID(params, filterCrsParam)
+	filterSRID, _ = ParseCrsToSRID(params, filterCrsParam)
 
 	if filter != "" {
 		return filter, filterSRID, errors.New("CQL filter param is currently not supported")

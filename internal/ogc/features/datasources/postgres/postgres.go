@@ -224,36 +224,44 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	return features[0], queryCtx.Err()
 }
 
-func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQuery search.SearchQuery,
-	collections search.CollectionsWithParams, srid d.SRID, bbox *geom.Bounds, bboxSRID d.SRID, limit int) (*d.FeatureCollection, error) {
+func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteria ds.FeaturesSearchCriteria,
+	collections search.CollectionsWithParams) (*d.FeatureCollection, error) {
 
 	queryCtx, cancel := context.WithTimeout(ctx, pg.QueryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
-	bboxFilter, bboxQueryArgs, err := bboxToSQL(bbox, bboxSRID, "r.geom", "r.bbox")
+	// TODO: find better place for this srid logic
+	if criteria.InputSRID == d.UndefinedSRID || criteria.InputSRID == d.WGS84SRID {
+		criteria.InputSRID = d.WGS84SRIDPostgis
+	}
+	if criteria.OutputSRID == d.UndefinedSRID || criteria.OutputSRID == d.WGS84SRID {
+		criteria.OutputSRID = d.WGS84SRIDPostgis
+	}
+
+	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r.geom", "r.bbox")
 	if err != nil {
 		return nil, err
 	}
-	sql := makeSearchQuery(searchQuery.Settings.IndexName, srid, bboxFilter)
-	wildcardQuery := searchQuery.ToWildcardQuery()
-	exactMatchQuery := searchQuery.ToExactMatchQuery(searchQuery.Settings.SynonymsExactMatch)
+	sql := makeSearchQuery(criteria.Settings.IndexName, criteria.OutputSRID, bboxFilter)
+	wildcardQuery := criteria.SearchQuery.ToWildcardQuery()
+	exactMatchQuery := criteria.SearchQuery.ToExactMatchQuery(criteria.Settings.SynonymsExactMatch)
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
 	log.Printf("\nSEARCH QUERY (wildcard): %s\n", wildcardQuery)
 
 	// Create query params
 	namedParams := map[string]any{
-		"lm":              limit,
+		"lm":              criteria.Limit,
 		"wildcardquery":   wildcardQuery,
 		"exactmatchquery": exactMatchQuery,
 		"names":           names,
 		"versions":        versions,
 		"relevance":       relevance,
-		"rn":              searchQuery.Settings.RankNormalization,
-		"emm":             searchQuery.Settings.ExactMatchMultiplier,
-		"psm":             searchQuery.Settings.PrimarySuggestMultiplier,
-		"rt":              searchQuery.Settings.RankThreshold,
-		"prlm":            searchQuery.Settings.PreRankLimitMultiplier,
-		"prwcc":           searchQuery.Settings.PreRankWordCountCutoff,
+		"rn":              criteria.Settings.RankNormalization,
+		"emm":             criteria.Settings.ExactMatchMultiplier,
+		"psm":             criteria.Settings.PrimarySuggestMultiplier,
+		"rt":              criteria.Settings.RankThreshold,
+		"prlm":            criteria.Settings.PreRankLimitMultiplier,
+		"prwcc":           criteria.Settings.PreRankWordCountCutoff,
 	}
 	maps.Copy(namedParams, bboxQueryArgs)
 
@@ -265,7 +273,7 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, searchQ
 	defer rows.Close()
 
 	// Turn rows into FeatureCollection
-	return mapRowsToFeatures(queryCtx, rows)
+	return pg.mapRowsToFeatures(queryCtx, rows)
 }
 
 //nolint:funlen
@@ -385,7 +393,7 @@ func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
 }
 
 // TODO move to mapper
-func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureCollection, error) {
+func (pg *Postgres) mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureCollection, error) {
 	fc := d.FeatureCollection{Features: make([]*d.Feature, 0)}
 	for rows.Next() {
 		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
@@ -401,7 +409,7 @@ func mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureColle
 		if err != nil {
 			return nil, err
 		}
-		geojsonGeom, err := geojson.Encode(geometry, geojson.EncodeGeometryWithMaxDecimalDigits(10))
+		geojsonGeom, err := geojson.Encode(geometry, geojson.EncodeGeometryWithMaxDecimalDigits(pg.MaxDecimals))
 		if err != nil {
 			return nil, err
 		}

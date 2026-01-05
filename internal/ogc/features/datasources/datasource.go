@@ -30,8 +30,7 @@ type Datasource interface {
 
 	// SearchFeaturesAcrossCollections search features in one or more collections. Collections can be located
 	// in this dataset or in other datasets.
-	SearchFeaturesAcrossCollections(ctx context.Context, searchQuery search.SearchQuery, collections search.CollectionsWithParams,
-		srid domain.SRID, bbox *geom.Bounds, bboxSRID domain.SRID, limit int) (*domain.FeatureCollection, error)
+	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, collections search.CollectionsWithParams) (*domain.FeatureCollection, error)
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
@@ -94,3 +93,22 @@ type PropertyFilterWithAllowedValues struct {
 
 // PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name.
 type PropertyFiltersWithAllowedValues map[string]PropertyFilterWithAllowedValues
+
+// FeaturesSearchCriteria to search features (geocoding).
+type FeaturesSearchCriteria struct {
+	// the search query after query expansion
+	SearchQuery search.SearchQuery
+
+	// global search settings
+	Settings config.SearchSettings
+
+	// search doesn't use pagination, we just return the top N results as indicated by the specified limit
+	Limit int
+
+	// multiple projections support (OAF part 2)
+	InputSRID  domain.SRID // derived from bbox param when available, or WGS84 as default
+	OutputSRID domain.SRID // derived from crs param when available, or WGS84 as default
+
+	// filtering by bounding box (OAF part 1)
+	Bbox *geom.Bounds
+}

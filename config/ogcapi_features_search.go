@@ -13,32 +13,32 @@ type OgcAPIFeaturesSearch struct {
 type SearchSettings struct {
 	// Name of the search index in the data store.
 	// +kubebuilder:default=search_index
-	IndexName string `yaml:"indexName" json:"indexName" validate:"required" default:"search_index"`
+	IndexName string `yaml:"indexName" json:"indexName" default:"search_index" validate:"required"`
 
 	// ADVANCED SETTING. Normalization specifies whether and how a document's length should impact its rank.
 	// Possible values are 0, 1, 2, 4, 8, 16 and 32. For more information see https://www.postgresql.org/docs/current/textsearch-controls.html
 	// +kubebuilder:default=1
-	RankNormalization int `yaml:"rankNormalization,omitempty" json:"rankNormalization,omitempty" default:"1"`
+	RankNormalization int `yaml:"rankNormalization,omitempty" json:"rankNormalization,omitempty" default:"1" validate:"gt=0"`
 
 	// ADVANCED SETTING. Multiply the exact match rank to boost it above the wildcard matches.
 	// +kubebuilder:default=3.0
-	ExactMatchMultiplier float64 `yaml:"exactMatchMultiplier,omitempty" json:"exactMatchMultiplier,omitempty" default:"3.0"`
+	ExactMatchMultiplier float64 `yaml:"exactMatchMultiplier,omitempty" json:"exactMatchMultiplier,omitempty" default:"3.0" validate:"gt=0.0"`
 
 	// ADVANCED SETTING. The primary suggest is equal to the display name. With this multiplier you can boost it above other suggests.
 	// +kubebuilder:default=1.01
-	PrimarySuggestMultiplier float64 `yaml:"primarySuggestMultiplier,omitempty" json:"primarySuggestMultiplier,omitempty" default:"1.01"`
+	PrimarySuggestMultiplier float64 `yaml:"primarySuggestMultiplier,omitempty" json:"primarySuggestMultiplier,omitempty" default:"1.01" validate:"gt=0"`
 
 	// ADVANCED SETTING. The threshold above which results are pre-ranked instead ranked exactly.
 	// +kubebuilder:default=40000
-	RankThreshold int `yaml:"rankThreshold,omitempty" json:"rankThreshold,omitempty" default:"40000"`
+	RankThreshold int `yaml:"rankThreshold,omitempty" json:"rankThreshold,omitempty" default:"40000" validate:"gt=0"`
 
 	// ADVANCED SETTING. The number of results which are pre-ranked when the rank threshold is hit.
 	// +kubebuilder:default=10
-	PreRankLimitMultiplier int `yaml:"preRankLimitMultiplier,omitempty" json:"preRankLimitMultiplier,omitempty" default:"10"`
+	PreRankLimitMultiplier int `yaml:"preRankLimitMultiplier,omitempty" json:"preRankLimitMultiplier,omitempty" default:"10" validate:"gt=0"`
 
 	// ADVANCED SETTING. Pre-ranking is based on word count. Results with a word count above this cutoff are not eligible for pre-ranking.
 	// +kubebuilder:default=3
-	PreRankWordCountCutoff int `yaml:"preRankWordCountCutoff,omitempty" json:"preRankWordCountCutoff,omitempty" default:"3"`
+	PreRankWordCountCutoff int `yaml:"preRankWordCountCutoff,omitempty" json:"preRankWordCountCutoff,omitempty" default:"3" validate:"gt=0"`
 
 	// ADVANCED SETTING. When true synonyms are taken into account during exact match calculation.
 	// +kubebuilder:default=false
@@ -76,7 +76,7 @@ type RelatedOGCAPIFeaturesCollection struct {
 	GeometryType string `yaml:"geometryType" json:"geometryType" validate:"required"`
 
 	// Collection ID in the OGC Features API
-	CollectionID string `yaml:"collection" json:"collection" validate:"required"`
+	CollectionID string `yaml:"collection" json:"collection" validate:"required,lowercase_id"`
 
 	// `datetime` query parameter for the OGC Features API. In case it's temporal.
 	// E.g.: "{now()-1h}"
