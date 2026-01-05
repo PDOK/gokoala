@@ -48,8 +48,6 @@ func init() {
 }
 
 func TestSearch(t *testing.T) {
-	t.Parallel()
-
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -360,8 +358,6 @@ func TestSearch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			// given mock time
 			now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
 			engine.Now = now
