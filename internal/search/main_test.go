@@ -73,14 +73,19 @@ func TestSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// given available engine
-	eng, err := engine.NewEngine(searchConfigFile, "", "", false, false)
+	newEngine, err := engine.NewEngine(searchConfigFile, "", "", false, false)
 	require.NoError(t, err)
 
-	datasources := features.CreateDatasources(eng.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, eng.RegisterShutdownHook)
+	// use fixed decimal limit in coordinates and UTC timezone across all tests for
+	// stable output between different data sources (postgres, geopackage, etc)
+	newEngine.Config.OgcAPI.FeaturesSearch.MaxDecimals = 5
+	newEngine.Config.OgcAPI.FeaturesSearch.ForceUTC = true
+
+	datasources := features.CreateDatasources(newEngine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, newEngine.RegisterShutdownHook)
 	// axisOrderBySRID := features.DetermineAxisOrder(datasources)
 
 	// given search endpoint
-	searchEndpoint, err := NewSearch(eng, datasources, nil,
+	searchEndpoint, err := NewSearch(newEngine, datasources, nil,
 		"internal/search/testdata/rewrites.csv",
 		"internal/search/testdata/synonyms.csv")
 	require.NoError(t, err)
