@@ -51,7 +51,6 @@ type SearchSettings struct {
 type CollectionEntryFeaturesSearch struct {
 	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
 	// +kubebuilder:validation:MinItems=1
-	// +kubebuilder:validation:items:UniqueItems=true
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required,unique"`
 
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
