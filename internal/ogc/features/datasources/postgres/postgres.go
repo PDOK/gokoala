@@ -459,7 +459,7 @@ func encodeBBox(bbox geom.T) (*[]float64, error) {
 
 // Build specific features queries based on the given options.
 func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, relationsConfig []config.Relation, table *common.Table,
-	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
+	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (string, pgx.NamedArgs, error) {
 
 	var selectClause string
 	if onlyFIDs {
@@ -477,10 +477,6 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	return pg.makeQuery(table, selectClause, criteria)
-}
-
-func (pg *Postgres) makeQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
