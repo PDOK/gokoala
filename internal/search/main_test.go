@@ -48,6 +48,8 @@ func init() {
 }
 
 func TestSearch(t *testing.T) {
+	t.Parallel()
+
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
@@ -58,7 +60,9 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	defer terminateContainer(ctx, t, postgisContainer)
+	t.Cleanup(func() {
+		terminateContainer(ctx, t, postgisContainer)
+	})
 
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
@@ -356,6 +360,8 @@ func TestSearch(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			// given mock time
 			now = func() time.Time { return time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC) }
 			engine.Now = now
@@ -454,19 +460,19 @@ func terminateContainer(ctx context.Context, t *testing.T, container testcontain
 
 func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	rr := httptest.NewRecorder()
-	l, err := net.Listen("tcp", "localhost:9095")
+	l, err := net.Listen("tcp", "localhost:") // random port
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to start mocks erver", err)
 	}
 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		engine.SafeWrite(w.Write, []byte(r.URL.String()))
 	}))
-	err = ts.Listener.Close()
-	if err != nil {
-		log.Fatal(err)
+	if err = ts.Listener.Close(); err != nil {
+		log.Fatal("failed to close mocks erver", err)
 	}
 	ts.Listener = l
 	ts.Start()
+
 	return rr, ts
 }
 

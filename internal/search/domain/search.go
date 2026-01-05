@@ -13,13 +13,9 @@ const (
 
 // GeoJSON properties in search response
 const (
-	PropCollectionID      = "collectionId"
-	PropCollectionVersion = "collectionVersion"
-	PropGeomType          = "collectionGeometryType"
-	PropDisplayName       = "displayName"
-	PropHighlight         = "highlight"
-	PropScore             = "score"
-	PropHref              = "href"
+	PropCollectionID = "collection_id"
+	PropGeomType     = "collection_geometry_type"
+	PropHref         = "href"
 )
 
 // SearchQuery based on parsed search terms/words.

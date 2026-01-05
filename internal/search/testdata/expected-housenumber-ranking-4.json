@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amstel 4 1791AN Amsterdam",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amstel 4 1791AN Amsterdam",
         "highlight": "<b>Amstel</b> <b>4</b> 1791AN <b>Amsterdam</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/101?f=json",
         "score": 0.10015919208526612

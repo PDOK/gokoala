@@ -95,7 +95,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows,
 	return result, prevNextID, ctx.Err()
 }
 
-//nolint:cyclop
+//nolint:cyclop,funlen
 func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Feature, columns []string, values []any,
 	fidColumn string, externalFidColumn string, geomColumn string, schema *domain.Schema, mapGeom MapGeom, mapRel MapRelation,
 	formatOpts FormatOpts) (*domain.PrevNextFID, error) {
@@ -111,7 +111,6 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 		case geomColumn:
 			if columnValue == nil {
 				feature.Properties.Set(columnName, nil)
-
 				continue
 			}
 			mappedGeom, err := mapGeom(columnValue)
@@ -120,6 +119,18 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 			}
 			if err = feature.SetGeom(mappedGeom, formatOpts.MaxDecimals); err != nil {
 				return nil, fmt.Errorf("failed to map/encode geometry to JSON, error: %w", err)
+			}
+
+		case "bbox":
+			if columnValue == nil {
+				continue
+			}
+			mappedBbox, err := mapGeom(columnValue)
+			if err != nil {
+				return nil, fmt.Errorf("failed to map/decode bbox from datasource, error: %w", err)
+			}
+			if err = feature.SetBbox(mappedBbox); err != nil {
+				return nil, fmt.Errorf("failed to map/encode bbox to JSON, error: %w", err)
 			}
 
 		case domain.MinxField, domain.MinyField, domain.MaxxField, domain.MaxyField:
@@ -149,7 +160,6 @@ func mapColumnsToFeature(ctx context.Context, firstRow bool, feature *domain.Fea
 		default:
 			if columnValue == nil {
 				feature.Properties.Set(columnName, nil)
-
 				continue
 			}
 			// map any non-nil, non-id, non-bounding box and non-geometry column as a feature property
@@ -215,6 +225,11 @@ func mapExternalFid(columns []string, values []any, externalFidColumn string, fe
 		case externalFidColumn == "":
 			continue
 		case columnName == externalFidColumn:
+			if columnValue == nil {
+				// external_fid is configured but not available, keep feature ID as-is.
+				feature.Properties.Delete(externalFidColumn)
+				continue
+			}
 			// When externalFidColumn is configured, overwrite feature ID and drop externalFidColumn.
 			// Note: This happens in a second pass over the feature, since we want to overwrite the
 			// feature ID irrespective of the order of columns in the table

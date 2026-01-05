@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amstel 3 1791AN Amsterdam",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amstel 3 1791AN Amsterdam",
         "highlight": "<b>Amstel</b> 3 1791AN <b>Amsterdam</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/103?f=json",
         "score": 0.06677279472351075
@@ -41,10 +41,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amstel 4 1791AN Amsterdam",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amstel 4 1791AN Amsterdam",
         "highlight": "<b>Amstel</b> 4 1791AN <b>Amsterdam</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/101?f=json",
         "score": 0.06677279472351075
@@ -69,10 +69,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amstel 10-4 1791AN Amsterdam",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amstel 10-4 1791AN Amsterdam",
         "highlight": "<b>Amstel</b> 10-4 1791AN <b>Amsterdam</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/102?f=json",
         "score": 0.04498371481895447

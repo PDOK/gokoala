@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POLYGON",
-        "collectionId": "buildings",
-        "collectionVersion": "1",
-        "displayName": "Achterweg Oosterend",
+        "collection_geometry_type": "POLYGON",
+        "collection_id": "buildings",
+        "collection_version": 1,
+        "display_name": "Achterweg Oosterend",
         "highlight": "<b>Achterweg</b> Oosterend",
         "href": "https://example.com/ogc/v1/collections/buildings/items/16c531ff-b6ad-51c3-b000-e650086712c1?f=json",
         "score": 0.0728191375732422

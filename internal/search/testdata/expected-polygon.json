@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POLYGON",
-        "collectionId": "buildings",
-        "collectionVersion": "1",
-        "displayName": "Molwerk 1 't Horntje",
+        "collection_geometry_type": "POLYGON",
+        "collection_id": "buildings",
+        "collection_version": 1,
+        "display_name": "Molwerk 1 't Horntje",
         "highlight": "<b>Molwerk</b> 1 't Horntje",
         "href": "https://example.com/ogc/v1/collections/buildings/items/4e2d75f6-4200-5759-8d2c-8d161a761f80?f=json",
         "score": 0.20031838417053224

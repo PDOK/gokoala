@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json",
         "score": 0.2325624465942383
@@ -41,10 +41,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json",
         "score": 0.2325624465942383
@@ -69,10 +69,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json",
         "score": 0.2325624465942383
@@ -97,10 +97,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json",
         "score": 0.2325624465942383
@@ -125,10 +125,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json",
         "score": 0.2325624465942383
@@ -153,10 +153,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json",
         "score": 0.2325624465942383
@@ -181,10 +181,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json",
         "score": 0.2325624465942383
@@ -209,10 +209,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json",
         "score": 0.2325624465942383
@@ -237,10 +237,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json",
         "score": 0.2325624465942383
@@ -265,10 +265,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Achtertune 1794BL Oosterend",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
         "highlight": "<b>Achtertune</b> <b>1794BL</b> <b>Oosterend</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json",
         "score": 0.2325624465942383

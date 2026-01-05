@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/435?f=json",
         "score": 0.2912765502929688
@@ -41,10 +41,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/436?f=json",
         "score": 0.2912765502929688
@@ -69,10 +69,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/437?f=json",
         "score": 0.2912765502929688
@@ -97,10 +97,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/438?f=json",
         "score": 0.2912765502929688
@@ -125,10 +125,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/439?f=json",
         "score": 0.2912765502929688
@@ -153,10 +153,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/440?f=json",
         "score": 0.2912765502929688
@@ -181,10 +181,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/441?f=json",
         "score": 0.2912765502929688
@@ -209,10 +209,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/442?f=json",
         "score": 0.2912765502929688
@@ -237,10 +237,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/443?f=json",
         "score": 0.2912765502929688
@@ -265,10 +265,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Amaliaweg 1797SW Den Hoorn",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Amaliaweg 1797SW Den Hoorn",
         "highlight": "<b>Amaliaweg</b> 1797SW",
         "href": "https://example.com/ogc/v1/collections/addresses/items/434?f=json",
         "score": 0.2912765502929688

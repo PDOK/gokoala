@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 )
@@ -54,15 +55,28 @@ func (f *Feature) Keys() []string {
 func (f *Feature) SetGeom(geometry geom.T, maxDecimals int) (err error) {
 	if geometry == nil {
 		f.Geometry = nil
-
 		return
 	}
+
 	var opts []geojson.EncodeGeometryOption
 	if maxDecimals > 0 {
 		opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}
 	}
 	f.Geometry, err = geojson.Encode(geometry, opts...)
+	return
+}
 
+// SetBbox sets the bounding box of the Feature by deriving the bounds of the provided geom.T
+func (f *Feature) SetBbox(geometry geom.T) (err error) {
+	if geometry == nil {
+		f.Bbox = nil
+		return
+	}
+
+	f.Bbox, err = util.EncodeBBox(geometry)
+	if err != nil {
+		return err
+	}
 	return
 }
 

@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Abbewaal 1 1791WX Den Burg",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Abbewaal 1 1791WX Den Burg",
         "highlight": "<b>Abbewaal</b> 1 1791WX",
         "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json",
         "score": 0.23083121776580812
@@ -41,10 +41,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Abbewaal 2 1791WX Den Burg",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Abbewaal 2 1791WX Den Burg",
         "highlight": "<b>Abbewaal</b> 2 1791WX",
         "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json",
         "score": 0.23083121776580812
@@ -69,10 +69,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Abbewaal 10 1791WZ Den Burg",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Abbewaal 10 1791WZ Den Burg",
         "highlight": "<b>Abbewaal</b> 10 1791WZ",
         "href": "https://example.com/ogc/v1/collections/addresses/items/53?f=json",
         "score": 0.23083121776580812
@@ -97,10 +97,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Abbewaal 11 1791WZ Den Burg",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Abbewaal 11 1791WZ Den Burg",
         "highlight": "<b>Abbewaal</b> 11 1791WZ",
         "href": "https://example.com/ogc/v1/collections/addresses/items/54?f=json",
         "score": 0.23083121776580812

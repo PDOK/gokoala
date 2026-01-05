@@ -16,7 +16,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twpayne/go-geom"
-	"github.com/twpayne/go-geom/encoding/geojson"
 	"github.com/twpayne/go-geom/encoding/wkt"
 	pgxgeom "github.com/twpayne/pgx-geom"
 	pgxuuid "github.com/vgarvardt/pgx-google-uuid/v5"
@@ -272,8 +271,17 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 	}
 	defer rows.Close()
 
-	// Turn rows into FeatureCollection
-	return pg.mapRowsToFeatures(queryCtx, rows)
+	fc := d.FeatureCollection{}
+	fc.Features, _, err = common.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
+		pg.FidColumn, pg.ExternalFidColumn, "geometry",
+		nil, nil, mapPostGISGeometry, nil,
+		common.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
+	if err != nil {
+		return nil, err
+	}
+	fc.NumberReturned = len(fc.Features)
+
+	return &fc, queryCtx.Err()
 }
 
 //nolint:funlen
@@ -320,15 +328,15 @@ func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
 	)
 	SELECT
 	    rn.display_name,
-		rn.feature_id,
-		rn.external_fid,
+		rn.feature_id AS fid,
+		rn.external_fid AS external_fid,
 		rn.collection_id,
 		rn.collection_version,
-		rn.geometry_type,
+		rn.geometry_type AS collection_geometry_type,
 		st_transform(rn.bbox, %[2]d)::geometry AS bbox,
 		st_transform(rn.geometry, %[2]d)::geometry AS geometry,
-		rn.rank,
-		ts_headline('custom_dict', rn.suggest, (SELECT query FROM query_wildcard)) AS highlighted_text
+		rn.rank as score,
+		ts_headline('custom_dict', rn.suggest, (SELECT query FROM query_wildcard)) AS highlight
 	FROM (
 		SELECT
 			r.*,
@@ -390,71 +398,6 @@ func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
 	    rn.rank DESC,
 	    rn.display_name COLLATE "custom_numeric" ASC
 	LIMIT (@lm::int)`, index, srid, bboxFilter) // don't add user input here, use $X params for user input!
-}
-
-// TODO move to mapper
-func (pg *Postgres) mapRowsToFeatures(queryCtx context.Context, rows pgx.Rows) (*d.FeatureCollection, error) {
-	fc := d.FeatureCollection{Features: make([]*d.Feature, 0)}
-	for rows.Next() {
-		var displayName, highlightedText, featureID, collectionID, collectionVersion, geomType string
-		var rank float64
-		var bbox, geometry geom.T
-		var externalFid *string
-
-		if err := rows.Scan(&displayName, &featureID, &externalFid, &collectionID, &collectionVersion, &geomType,
-			&bbox, &geometry, &rank, &highlightedText); err != nil {
-			return nil, err
-		}
-		geojsonBbox, err := encodeBBox(bbox)
-		if err != nil {
-			return nil, err
-		}
-		geojsonGeom, err := geojson.Encode(geometry, geojson.EncodeGeometryWithMaxDecimalDigits(pg.MaxDecimals))
-		if err != nil {
-			return nil, err
-		}
-		fc.Features = append(fc.Features, &d.Feature{
-			ID:       getFeatureID(externalFid, featureID),
-			Geometry: geojsonGeom,
-			Bbox:     geojsonBbox,
-			Properties: d.NewFeaturePropertiesWithData(false, map[string]any{
-				search.PropCollectionID:      collectionID,
-				search.PropCollectionVersion: collectionVersion,
-				search.PropGeomType:          geomType,
-				search.PropDisplayName:       displayName,
-				search.PropHighlight:         highlightedText,
-				search.PropScore:             rank,
-			}),
-		})
-		fc.NumberReturned = len(fc.Features)
-	}
-	return &fc, queryCtx.Err()
-}
-
-// TODO move to mapper
-func getFeatureID(externalFid *string, featureID string) string {
-	if externalFid != nil {
-		return *externalFid
-	}
-	return featureID
-}
-
-// TODO move to mapper
-// adapted from https://github.com/twpayne/go-geom/blob/b22fd061f1531a51582333b5bd45710a455c4978/encoding/geojson/geojson.go#L525
-// encodeBBox encodes b as a GeoJson Bounding Box.
-func encodeBBox(bbox geom.T) (*[]float64, error) {
-	if bbox == nil {
-		return nil, nil
-	}
-	b := bbox.Bounds()
-	switch l := b.Layout(); l {
-	case geom.XY, geom.XYM:
-		return &[]float64{b.Min(0), b.Min(1), b.Max(0), b.Max(1)}, nil
-	case geom.XYZ, geom.XYZM, geom.NoLayout:
-		return nil, fmt.Errorf("unsupported type: %d", rune(l))
-	default:
-		return nil, fmt.Errorf("unsupported type: %d", rune(l))
-	}
 }
 
 // Build specific features queries based on the given options.
@@ -548,7 +491,6 @@ func mapPostGISGeometry(columnValue any) (geom.T, error) {
 	if !ok {
 		return nil, errors.New("failed to convert column value to geometry")
 	}
-
 	return geometry, nil
 }
 
@@ -558,7 +500,6 @@ func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	if axisOrder == d.AxisOrderYX {
 		return fmt.Sprintf(", st_flipcoordinates(st_transform(\"%[1]s\", @outputSrid::int)) as \"%[1]s\"", table.GeometryColumnName)
 	}
-
 	return fmt.Sprintf(", st_transform(\"%[1]s\", @outputSrid::int) as \"%[1]s\"", table.GeometryColumnName)
 }
 

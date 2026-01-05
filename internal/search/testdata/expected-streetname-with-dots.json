@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "A.B.C.-straat 1 bis 1234 AB Utrecht",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "A.B.C.-straat 1 bis 1234 AB Utrecht",
         "highlight": "<b>A.B.C</b>.-<b>straat</b> 1 bis 1234 AB",
         "href": "https://example.com/ogc/v1/collections/addresses/items/156?f=json",
         "score": 0.1644474744796753

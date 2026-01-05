@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Plein 1944 1234 AB Nijmegen",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Plein 1944 1234 AB Nijmegen",
         "highlight": "Plein <b>1944</b> 1234 AB",
         "href": "https://example.com/ogc/v1/collections/addresses/items/157?f=json",
         "score": 0.19882718324661255
@@ -41,10 +41,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "16 april 1944 Pad 1234 AB Velsen-Noord",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "16 april 1944 Pad 1234 AB Velsen-Noord",
         "highlight": "16 april <b>1944</b> Pad 1234 AB",
         "href": "https://example.com/ogc/v1/collections/addresses/items/158?f=json",
         "score": 0.1644474744796753

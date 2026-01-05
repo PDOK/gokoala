@@ -13,10 +13,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Spui 70 2511 BT s-Gravenhage",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Spui 70 2511 BT s-Gravenhage",
         "highlight": "<b>Spui</b> 70 2511 BT <b>s</b>-<b>Gravenhage</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/154?f=json",
         "score": 0.029046258330345156
@@ -41,10 +41,10 @@
     {
       "type": "Feature",
       "properties": {
-        "collectionGeometryType": "POINT",
-        "collectionId": "addresses",
-        "collectionVersion": "1",
-        "displayName": "Spui 180 2511 BW 's-Gravenhage",
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Spui 180 2511 BW 's-Gravenhage",
         "highlight": "<b>Spui</b> 180 2511 BW '<b>s</b>-<b>Gravenhage</b>",
         "href": "https://example.com/ogc/v1/collections/addresses/items/155?f=json",
         "score": 0.029046258330345156
