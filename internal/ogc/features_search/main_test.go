@@ -64,17 +64,11 @@ func TestSearch(t *testing.T) {
 
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
-	// given empty search index
+	// given empty search index in postgres
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex, fd.WGS84SRIDPostgis, language.Dutch)
 	require.NoError(t, err)
 
-	// given imported geopackage
-	err = importGpkg("addresses", dbConn) // in CRS84
-	require.NoError(t, err)
-	err = importGpkg("buildings", dbConn) // in EPSG:4326
-	require.NoError(t, err)
-
-	// given available engine
+	// given available engine + datasources
 	newEngine, err := engine.NewEngine(searchConfigFile, "", "", false, false)
 	require.NoError(t, err)
 
@@ -84,10 +78,16 @@ func TestSearch(t *testing.T) {
 	newEngine.Config.OgcAPI.FeaturesSearch.ForceUTC = true
 
 	datasources := features.CreateDatasources(newEngine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, newEngine.RegisterShutdownHook)
-	// axisOrderBySRID := features.DetermineAxisOrder(datasources)
+	axisOrderBySRID := features.DetermineAxisOrder(datasources)
+
+	// given imported geopackage
+	err = importGpkg("addresses", dbConn) // in CRS84
+	require.NoError(t, err)
+	err = importGpkg("buildings", dbConn) // in EPSG:4326
+	require.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint, err := NewSearch(newEngine, datasources, nil,
+	searchEndpoint, err := NewSearch(newEngine, datasources, axisOrderBySRID,
 		"internal/ogc/features_search/testdata/rewrites.csv",
 		"internal/ogc/features_search/testdata/synonyms.csv")
 	require.NoError(t, err)
