@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/PDOK/gokoala/internal/etl"
-	"github.com/PDOK/gokoala/internal/etl/config"
+	"github.com/PDOK/gokoala/internal/search/etl"
+	"github.com/PDOK/gokoala/internal/search/etl/config"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/text/language"

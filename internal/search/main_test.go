@@ -15,10 +15,10 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/etl"
-	etlconfig "github.com/PDOK/gokoala/internal/etl/config"
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/PDOK/gokoala/internal/search/etl"
+	etlconfig "github.com/PDOK/gokoala/internal/search/etl/config"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -412,7 +412,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 		WaitingFor:   wait.ForLog("PostgreSQL init process complete; ready for start up."),
 		Files: []testcontainers.ContainerFile{
 			{
-				HostFilePath:      "internal/etl/testdata/init-db.sql",
+				HostFilePath:      "internal/search/etl/testdata/init-db.sql",
 				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("/testdata/init-db.sql"),
 				FileMode:          0755,
 			},

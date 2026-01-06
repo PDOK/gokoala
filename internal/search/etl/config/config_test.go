@@ -13,7 +13,7 @@ import (
 func init() {
 	// change working dir to root, to mimic behavior of 'go run' in order to resolve template/config files.
 	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../../")
+	dir := path.Join(path.Dir(filename), "../../../../")
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)
@@ -33,7 +33,7 @@ func TestNewConfig(t *testing.T) {
 		{
 			name: "read valid config file",
 			args: args{
-				configFile: "internal/etl/testdata/config.yaml",
+				configFile: "internal/search/etl/testdata/config.yaml",
 			},
 		},
 	}

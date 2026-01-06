@@ -11,7 +11,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/PDOK/gokoala/internal/etl/config"
+	"github.com/PDOK/gokoala/internal/search/etl/config"
 	"github.com/google/uuid"
 	"github.com/twpayne/go-geom"
 )

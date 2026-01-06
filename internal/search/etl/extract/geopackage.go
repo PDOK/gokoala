@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/PDOK/gokoala/internal/etl/config"
-	t "github.com/PDOK/gokoala/internal/etl/transform"
+	"github.com/PDOK/gokoala/internal/search/etl/config"
+	t "github.com/PDOK/gokoala/internal/search/etl/transform"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/twpayne/go-geom"
