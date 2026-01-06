@@ -18,7 +18,7 @@ import (
 	"github.com/PDOK/gokoala/internal/etl"
 	etlconfig "github.com/PDOK/gokoala/internal/etl/config"
 	"github.com/PDOK/gokoala/internal/ogc/features"
-	featdomain "github.com/PDOK/gokoala/internal/ogc/features/domain"
+	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -65,7 +65,7 @@ func TestSearch(t *testing.T) {
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
 	// given empty search index
-	err = etl.CreateSearchIndex(dbConn, testSearchIndex, featdomain.WGS84SRIDPostgis, language.Dutch)
+	err = etl.CreateSearchIndex(dbConn, testSearchIndex, fd.WGS84SRIDPostgis, language.Dutch)
 	require.NoError(t, err)
 
 	// given imported geopackage

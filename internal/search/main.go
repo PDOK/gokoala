@@ -13,21 +13,28 @@ import (
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
-	featdomain "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/PDOK/gokoala/internal/search/domain"
+	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/PDOK/gokoala/internal/search/query_expansion"
+)
+
+// GeoJSON properties in search response
+const (
+	propCollectionID = "collection_id"
+	propGeomType     = "collection_geometry_type"
+	propHref         = "href"
 )
 
 type Search struct {
 	engine         *engine.Engine
 	datasource     ds.Datasource
-	queryExpansion *QueryExpansion
+	queryExpansion *query_expansion.QueryExpansion
 	json           *jsonSearchResults
 }
 
 func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datasource,
-	_ map[int]featdomain.AxisOrder, rewritesFile, synonymsFile string) (*Search, error) {
+	_ map[int]fd.AxisOrder, rewritesFile, synonymsFile string) (*Search, error) {
 
-	queryExpansion, err := NewQueryExpansion(rewritesFile, synonymsFile)
+	queryExpansion, err := query_expansion.NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +115,9 @@ func (s *Search) Search() http.HandlerFunc {
 	}
 }
 
-func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, contentCrs featdomain.ContentCrs) error {
+func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.ContentCrs) error {
 	for _, feat := range fc.Features {
-		collectionID := feat.Properties.Value(domain.PropCollectionID)
+		collectionID := feat.Properties.Value(propCollectionID)
 		if collectionID == "" {
 			return fmt.Errorf("collection reference not found in feature %s", feat.ID)
 		}
@@ -125,7 +132,7 @@ func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, conten
 			continue
 		}
 		for _, ogcColl := range collection.FeaturesSearch.OGCCollections {
-			geomType := feat.Properties.Value(domain.PropGeomType)
+			geomType := feat.Properties.Value(propGeomType)
 			if geomType == "" {
 				return fmt.Errorf("geometry type not found in feature %s", feat.ID)
 			}
@@ -134,15 +141,15 @@ func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, conten
 				if err != nil {
 					return fmt.Errorf("failed to construct API url %w", err)
 				}
-				href += "?f=json"
+				href += "?f=" + engine.FormatJSON
 
 				if contentCrs != "" && !contentCrs.IsWGS84() {
 					href += fmt.Sprintf("&crs=%s", contentCrs)
 				}
 
 				// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
-				feat.Properties.Set(domain.PropHref, href)
-				feat.Links = []featdomain.Link{
+				feat.Properties.Set(propHref, href)
+				feat.Links = []fd.Link{
 					{
 						Rel:   "canonical",
 						Title: "The actual feature in the corresponding OGC API",

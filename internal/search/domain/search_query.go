@@ -5,19 +5,6 @@ import (
 	"strings"
 )
 
-const (
-	VersionParam     = "version"
-	RelevanceParam   = "relevance"
-	DefaultRelevance = 0.5
-)
-
-// GeoJSON properties in search response
-const (
-	PropCollectionID = "collection_id"
-	PropGeomType     = "collection_geometry_type"
-	PropHref         = "href"
-)
-
 // SearchQuery based on parsed search terms/words.
 type SearchQuery struct {
 	words           []string

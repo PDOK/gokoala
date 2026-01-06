@@ -1,4 +1,4 @@
-package search
+package query_expansion
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 func init() {
 	// change working dir to root
 	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../")
+	dir := path.Join(path.Dir(filename), "../../../")
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)

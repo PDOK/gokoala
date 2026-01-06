@@ -1,4 +1,4 @@
-package search
+package query_expansion
 
 import (
 	"context"

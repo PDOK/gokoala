@@ -2,6 +2,12 @@ package domain
 
 import "strconv"
 
+const (
+	VersionParam     = "version"
+	RelevanceParam   = "relevance"
+	DefaultRelevance = 0.5
+)
+
 // CollectionsWithParams collection name with associated CollectionParams
 // These are provided though a URL query string as "deep object" params, e.g. paramName[prop1]=value1&paramName[prop2]=value2&....
 type CollectionsWithParams map[string]CollectionParams
