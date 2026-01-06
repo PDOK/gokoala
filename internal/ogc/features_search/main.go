@@ -1,4 +1,4 @@
-package search
+package features_search
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/PDOK/gokoala/internal/search/query_expansion"
+	"github.com/PDOK/gokoala/internal/ogc/features_search/query_expansion"
 )
 
 // GeoJSON properties in search response

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	t "github.com/PDOK/gokoala/internal/search/etl/transform"
+	t "github.com/PDOK/gokoala/internal/ogc/features_search/etl/transform"
 	"github.com/jackc/pgx/v5"
 	pgxgeom "github.com/twpayne/pgx-geom"
 	"golang.org/x/text/language"

@@ -7,11 +7,11 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/common/core"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features"
+	"github.com/PDOK/gokoala/internal/ogc/features_search"
 	"github.com/PDOK/gokoala/internal/ogc/geovolumes"
 	"github.com/PDOK/gokoala/internal/ogc/processes"
 	"github.com/PDOK/gokoala/internal/ogc/styles"
 	"github.com/PDOK/gokoala/internal/ogc/tiles"
-	"github.com/PDOK/gokoala/internal/search"
 )
 
 func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile string) {
@@ -37,7 +37,7 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	if engine.Config.OgcAPI.FeaturesSearch != nil {
 		ds := features.CreateDatasources(engine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, engine.RegisterShutdownHook)
 		ao := features.DetermineAxisOrder(ds)
-		_, err := search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile)
+		_, err := features_search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile)
 		if err != nil {
 			log.Fatal(err)
 		}

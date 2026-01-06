@@ -1,4 +1,4 @@
-package search
+package features_search
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	d "github.com/PDOK/gokoala/internal/search/domain"
+	d "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/twpayne/go-geom"
 )
 

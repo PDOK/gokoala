@@ -5,10 +5,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/PDOK/gokoala/internal/search/etl/config"
-	"github.com/PDOK/gokoala/internal/search/etl/extract"
-	"github.com/PDOK/gokoala/internal/search/etl/load"
-	t "github.com/PDOK/gokoala/internal/search/etl/transform"
+	"github.com/PDOK/gokoala/internal/ogc/features_search/etl/config"
+	"github.com/PDOK/gokoala/internal/ogc/features_search/etl/extract"
+	"github.com/PDOK/gokoala/internal/ogc/features_search/etl/load"
+	t "github.com/PDOK/gokoala/internal/ogc/features_search/etl/transform"
 	"golang.org/x/text/language"
 )
 

@@ -16,7 +16,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage/encoding"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	search "github.com/PDOK/gokoala/internal/search/domain"
+	search "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"

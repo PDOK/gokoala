@@ -1,4 +1,4 @@
-package search
+package features_search
 
 import (
 	"net/http"

@@ -14,7 +14,7 @@ services:
     command: [ "postgres", "-c", "log_statement=all" ]
     volumes:
       - ./create-schemas.sql:/docker-entrypoint-initdb.d/0-create-schemas.sql
-      - ../../../../../search/etl/testdata/init-db.sql:/docker-entrypoint-initdb.d/1-init-search-db.sql
+      - ../../../../features_search/etl/testdata/init-db.sql:/docker-entrypoint-initdb.d/1-init-search-db.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 5s

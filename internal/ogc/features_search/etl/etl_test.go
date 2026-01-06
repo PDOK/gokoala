@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/PDOK/gokoala/internal/search/etl/config"
+	"github.com/PDOK/gokoala/internal/ogc/features_search/etl/config"
 	"github.com/docker/go-connections/nat"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"

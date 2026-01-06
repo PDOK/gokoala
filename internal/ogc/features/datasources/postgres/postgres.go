@@ -11,7 +11,7 @@ import (
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	search "github.com/PDOK/gokoala/internal/search/domain"
+	search "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

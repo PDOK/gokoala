@@ -1,4 +1,4 @@
-package search
+package features_search
 
 import (
 	"context"
@@ -17,8 +17,8 @@ import (
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/PDOK/gokoala/internal/search/etl"
-	etlconfig "github.com/PDOK/gokoala/internal/search/etl/config"
+	"github.com/PDOK/gokoala/internal/ogc/features_search/etl"
+	etlconfig "github.com/PDOK/gokoala/internal/ogc/features_search/etl/config"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -33,14 +33,14 @@ const (
 	postgresPortEnv = "DB_PORT"
 
 	testSearchIndex  = "search_index"
-	etlConfigFile    = "internal/search/testdata/config_etl.yaml"
-	searchConfigFile = "internal/search/testdata/config_search.yaml"
+	etlConfigFile    = "internal/ogc/features_search/testdata/config_etl.yaml"
+	searchConfigFile = "internal/ogc/features_search/testdata/config_search.yaml"
 )
 
 func init() {
 	// change working dir to root
 	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "../../")
+	dir := path.Join(path.Dir(filename), "../../../")
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)
@@ -88,8 +88,8 @@ func TestSearch(t *testing.T) {
 
 	// given search endpoint
 	searchEndpoint, err := NewSearch(newEngine, datasources, nil,
-		"internal/search/testdata/rewrites.csv",
-		"internal/search/testdata/synonyms.csv")
+		"internal/ogc/features_search/testdata/rewrites.csv",
+		"internal/ogc/features_search/testdata/synonyms.csv")
 	require.NoError(t, err)
 
 	// run test cases
@@ -111,7 +111,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=!foo&addresses[version]=1",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-boolean-operators.json",
+				body:       "internal/ogc/features_search/testdata/expected-boolean-operators.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -121,7 +121,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&limit=50",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-collection.json",
+				body:       "internal/ogc/features_search/testdata/expected-search-no-collection.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -131,7 +131,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&addresses",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-version-1.json",
+				body:       "internal/ogc/features_search/testdata/expected-search-no-version-1.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -141,7 +141,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&addresses=1",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-version-2.json",
+				body:       "internal/ogc/features_search/testdata/expected-search-no-version-2.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -151,7 +151,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Oudeschild&addresses[foo]=1",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-search-no-version-3.json",
+				body:       "internal/ogc/features_search/testdata/expected-search-no-version-3.json",
 				statusCode: http.StatusBadRequest,
 			},
 		},
@@ -161,7 +161,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-complex-search-term.json",
+				body:       "internal/ogc/features_search/testdata/expected-complex-search-term.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -171,7 +171,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Achtertune 1794BL Oosterend&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-display-name-first-result.json",
+				body:       "internal/ogc/features_search/testdata/expected-display-name-first-result.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -181,7 +181,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Holland Den Burg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-exact-match.json",
+				body:       "internal/ogc/features_search/testdata/expected-exact-match.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -191,7 +191,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Akenbuurt 1&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-short-before-long.json",
+				body:       "internal/ogc/features_search/testdata/expected-short-before-long.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -201,7 +201,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Amaliaweg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-1.json",
+				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -211,7 +211,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Abbewaal&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-2.json",
+				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-2.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -221,7 +221,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Amstel Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-3.json",
+				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-3.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -231,7 +231,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-housenumber-ranking-4.json",
+				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-4.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -241,7 +241,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=A Ottoland&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-short-streetname.json",
+				body:       "internal/ogc/features_search/testdata/expected-short-streetname.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -251,7 +251,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Spui Den Haag&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -261,7 +261,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Spui 's-Gravenhage&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -271,7 +271,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=A.B.C straat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-streetname-with-dots.json",
+				body:       "internal/ogc/features_search/testdata/expected-streetname-with-dots.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -281,7 +281,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=1944&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-streetname-with-number.json",
+				body:       "internal/ogc/features_search/testdata/expected-streetname-with-number.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -291,7 +291,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Ir. Mr. Dr. van Waterschoot van der Grachtstraat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-long-street.json",
+				body:       "internal/ogc/features_search/testdata/expected-long-street.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -301,7 +301,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Brânbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -311,7 +311,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Branbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -321,7 +321,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Molwerk&buildings[version]=1&buildings[relevance]=0.8&limit=10&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-polygon.json",
+				body:       "internal/ogc/features_search/testdata/expected-polygon.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -331,7 +331,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Achter&addresses[version]=1&addresses[relevance]=0.8&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-two-collections.json",
+				body:       "internal/ogc/features_search/testdata/expected-two-collections.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -341,7 +341,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Achter&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-one-collection.json",
+				body:       "internal/ogc/features_search/testdata/expected-one-collection.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -351,7 +351,7 @@ func TestSearch(t *testing.T) {
 				url: "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
 			},
 			want: want{
-				body:       "internal/search/testdata/expected-rd.json",
+				body:       "internal/ogc/features_search/testdata/expected-rd.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -395,7 +395,7 @@ func importGpkg(collectionName string, dbConn string) error {
 		return fmt.Errorf("collection %s not found in config", collectionName)
 	}
 	collectionVersion := uuid.NewString()
-	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/search/testdata/fake-addresses-crs84.gpkg", 5000, false, dbConn)
+	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/ogc/features_search/testdata/fake-addresses-crs84.gpkg", 5000, false, dbConn)
 }
 
 func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
@@ -412,7 +412,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 		WaitingFor:   wait.ForLog("PostgreSQL init process complete; ready for start up."),
 		Files: []testcontainers.ContainerFile{
 			{
-				HostFilePath:      "internal/search/etl/testdata/init-db.sql",
+				HostFilePath:      "internal/ogc/features_search/etl/testdata/init-db.sql",
 				ContainerFilePath: "/docker-entrypoint-initdb.d/" + filepath.Base("/testdata/init-db.sql"),
 				FileMode:          0755,
 			},
