@@ -7,7 +7,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	domain2 "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
+	searchdomain "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/twpayne/go-geom"
 )
 
@@ -30,7 +30,7 @@ type Datasource interface {
 
 	// SearchFeaturesAcrossCollections search features in one or more collections. Collections can be located
 	// in this dataset or in other datasets.
-	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, collections domain2.CollectionsWithParams) (*domain.FeatureCollection, error)
+	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, axisOrder domain.AxisOrder, collections searchdomain.CollectionsWithParams) (*domain.FeatureCollection, error)
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
@@ -97,7 +97,7 @@ type PropertyFiltersWithAllowedValues map[string]PropertyFilterWithAllowedValues
 // FeaturesSearchCriteria to search features (geocoding).
 type FeaturesSearchCriteria struct {
 	// the search query after query expansion
-	SearchQuery domain2.SearchQuery
+	SearchQuery searchdomain.SearchQuery
 
 	// global search settings
 	Settings config.SearchSettings

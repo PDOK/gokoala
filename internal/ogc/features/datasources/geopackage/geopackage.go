@@ -299,7 +299,7 @@ func (g *GeoPackage) GetFeature(ctx context.Context, collection string, featureI
 	return features[0], queryCtx.Err()
 }
 
-func (g *GeoPackage) SearchFeaturesAcrossCollections(_ context.Context, _ ds.FeaturesSearchCriteria, _ search.CollectionsWithParams) (*d.FeatureCollection, error) {
+func (g *GeoPackage) SearchFeaturesAcrossCollections(_ context.Context, _ ds.FeaturesSearchCriteria, _ d.AxisOrder, _ search.CollectionsWithParams) (*d.FeatureCollection, error) {
 	return &d.FeatureCollection{}, errors.New("searching features is currently NOT IMPLEMENTED for GeoPackages, only for Postgres")
 }
 

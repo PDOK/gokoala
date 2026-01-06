@@ -25,14 +25,15 @@ const (
 )
 
 type Search struct {
-	engine         *engine.Engine
-	datasource     ds.Datasource
-	queryExpansion *query_expansion.QueryExpansion
-	json           *jsonSearchResults
+	engine          *engine.Engine
+	datasource      ds.Datasource
+	axisOrderBySRID map[int]fd.AxisOrder
+	queryExpansion  *query_expansion.QueryExpansion
+	json            *jsonSearchResults
 }
 
 func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datasource,
-	_ map[int]fd.AxisOrder, rewritesFile, synonymsFile string) (*Search, error) {
+	axisOrderBySRID map[int]fd.AxisOrder, rewritesFile, synonymsFile string) (*Search, error) {
 
 	queryExpansion, err := query_expansion.NewQueryExpansion(rewritesFile, synonymsFile)
 	if err != nil {
@@ -52,10 +53,11 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 	}
 
 	s := &Search{
-		engine:         e,
-		datasource:     searchDS,
-		json:           newJSONSearchResults(e),
-		queryExpansion: queryExpansion,
+		engine:          e,
+		datasource:      searchDS,
+		axisOrderBySRID: axisOrderBySRID,
+		json:            newJSONSearchResults(e),
+		queryExpansion:  queryExpansion,
 	}
 	e.Router.Get("/search", s.Search())
 	return s, nil
@@ -91,7 +93,7 @@ func (s *Search) Search() http.HandlerFunc {
 			InputSRID:   bboxSRID,
 			OutputSRID:  outputSRID,
 			Bbox:        bbox,
-		}, collections)
+		}, s.axisOrderBySRID[outputSRID.GetOrDefault()], collections)
 		if err != nil {
 			handleQueryError(w, err)
 			return

@@ -16,6 +16,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features"
+	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/PDOK/gokoala/internal/ogc/features_search/etl"
 	etlconfig "github.com/PDOK/gokoala/internal/ogc/features_search/etl/config"
@@ -61,7 +62,6 @@ func TestSearch(t *testing.T) {
 	t.Cleanup(func() {
 		terminateContainer(ctx, t, postgisContainer)
 	})
-
 	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
 
 	// given empty search index in postgres
@@ -69,16 +69,7 @@ func TestSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// given available engine + datasources
-	newEngine, err := engine.NewEngine(searchConfigFile, "", "", false, false)
-	require.NoError(t, err)
-
-	// use fixed decimal limit in coordinates and UTC timezone across all tests for
-	// stable output between different data sources (postgres, geopackage, etc)
-	newEngine.Config.OgcAPI.FeaturesSearch.MaxDecimals = 5
-	newEngine.Config.OgcAPI.FeaturesSearch.ForceUTC = true
-
-	datasources := features.CreateDatasources(newEngine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, newEngine.RegisterShutdownHook)
-	axisOrderBySRID := features.DetermineAxisOrder(datasources)
+	theEngine, datasources, axisOrderBySRID := newEngine(t)
 
 	// given imported geopackage
 	err = importGpkg("addresses", dbConn) // in CRS84
@@ -87,7 +78,7 @@ func TestSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint, err := NewSearch(newEngine, datasources, axisOrderBySRID,
+	searchEndpoint, err := NewSearch(theEngine, datasources, axisOrderBySRID,
 		"internal/ogc/features_search/testdata/rewrites.csv",
 		"internal/ogc/features_search/testdata/synonyms.csv")
 	require.NoError(t, err)
@@ -383,6 +374,22 @@ func TestSearch(t *testing.T) {
 			assert.JSONEq(t, string(expectedBody), rr.Body.String())
 		})
 	}
+}
+
+func newEngine(t *testing.T) (*engine.Engine, map[features.DatasourceKey]ds.Datasource, map[int]fd.AxisOrder) {
+	t.Helper()
+	theEngine, err := engine.NewEngine(searchConfigFile, "", "", false, false)
+	require.NoError(t, err)
+
+	// use fixed decimal limit in coordinates and UTC timezone across all tests for
+	// stable output between different data sources (postgres, geopackage, etc)
+	theEngine.Config.OgcAPI.FeaturesSearch.MaxDecimals = 5
+	theEngine.Config.OgcAPI.FeaturesSearch.ForceUTC = true
+
+	datasources := features.CreateDatasources(theEngine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, theEngine.RegisterShutdownHook)
+	axisOrderBySRID := features.DetermineAxisOrder(datasources)
+
+	return theEngine, datasources, axisOrderBySRID
 }
 
 func importGpkg(collectionName string, dbConn string) error {

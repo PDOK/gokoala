@@ -24,6 +24,9 @@ import (
 const (
 	// https://github.com/jackc/pgx/issues/387#issuecomment-1107666716
 	pgxNamedParamSymbol = "@"
+
+	searchGeomColumn = "geometry"
+	searchBboxColumn = "bbox"
 )
 
 type Postgres struct {
@@ -224,7 +227,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 }
 
 func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteria ds.FeaturesSearchCriteria,
-	collections search.CollectionsWithParams) (*d.FeatureCollection, error) {
+	axisOrder d.AxisOrder, collections search.CollectionsWithParams) (*d.FeatureCollection, error) {
 
 	queryCtx, cancel := context.WithTimeout(ctx, pg.QueryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
@@ -237,11 +240,11 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r.geom", "r.bbox")
+	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r."+searchGeomColumn, "r."+searchBboxColumn)
 	if err != nil {
 		return nil, err
 	}
-	sql := makeSearchQuery(criteria.Settings.IndexName, criteria.OutputSRID, bboxFilter)
+	sql := makeSearchQuery(criteria.Settings.IndexName, bboxFilter, axisOrder)
 	wildcardQuery := criteria.SearchQuery.ToWildcardQuery()
 	exactMatchQuery := criteria.SearchQuery.ToExactMatchQuery(criteria.Settings.SynonymsExactMatch)
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
@@ -261,6 +264,7 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 		"rt":              criteria.Settings.RankThreshold,
 		"prlm":            criteria.Settings.PreRankLimitMultiplier,
 		"prwcc":           criteria.Settings.PreRankWordCountCutoff,
+		"outputSrid":      criteria.OutputSRID.GetOrDefault(),
 	}
 	maps.Copy(namedParams, bboxQueryArgs)
 
@@ -273,7 +277,7 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 
 	fc := d.FeatureCollection{}
 	fc.Features, _, err = common.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
-		pg.FidColumn, pg.ExternalFidColumn, "geometry",
+		pg.FidColumn, pg.ExternalFidColumn, searchGeomColumn,
 		nil, nil, mapPostGISGeometry, nil,
 		common.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
 	if err != nil {
@@ -285,7 +289,10 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 }
 
 //nolint:funlen
-func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
+func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) string {
+	selectGeom := selectPostGISGeometry(axisOrder, &common.Table{GeometryColumnName: searchGeomColumn})
+	selectBbox := selectPostGISGeometry(axisOrder, &common.Table{GeometryColumnName: searchBboxColumn})
+
 	// language=postgresql
 	return fmt.Sprintf(
 		`WITH query_wildcard AS (
@@ -313,7 +320,7 @@ func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
 				-- make a virtual table by creating tuples from the provided arrays.
 				SELECT * FROM unnest(@names::text[], @versions::int[])
 			)
-		%[3]s -- bounding box intersect filter
+		%[4]s -- bounding box intersect filter
 	),
 	results_count AS (
 	    SELECT
@@ -332,9 +339,9 @@ func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
 		rn.external_fid AS external_fid,
 		rn.collection_id,
 		rn.collection_version,
-		rn.geometry_type AS collection_geometry_type,
-		st_transform(rn.bbox, %[2]d)::geometry AS bbox,
-		st_transform(rn.geometry, %[2]d)::geometry AS geometry,
+		rn.geometry_type AS collection_geometry_type
+		%[2]s
+		%[3]s,
 		rn.rank as score,
 		ts_headline('custom_dict', rn.suggest, (SELECT query FROM query_wildcard)) AS highlight
 	FROM (
@@ -397,7 +404,7 @@ func makeSearchQuery(index string, srid d.SRID, bboxFilter string) string {
 	ORDER BY -- use same "order by" clause everywhere
 	    rn.rank DESC,
 	    rn.display_name COLLATE "custom_numeric" ASC
-	LIMIT (@lm::int)`, index, srid, bboxFilter) // don't add user input here, use $X params for user input!
+	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use $X params for user input!
 }
 
 // Build specific features queries based on the given options.
