@@ -1,4 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{ define "head"}}
+    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+{{ end }}
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
@@ -93,7 +96,6 @@
 
     {{ if .Params.ShowViewer }}
     <div class="col-md-4 col-sm-12">
-        <link rel="stylesheet" type="text/css" href="view-component/styles.css">
         <script type="module" src="view-component/main.js"></script>
         <script src="view-component/polyfills.js"></script>
 
