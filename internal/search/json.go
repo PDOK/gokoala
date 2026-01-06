@@ -56,29 +56,31 @@ func (jsr *jsonSearchResults) serve(input any, contentType string, r *http.Reque
 func createLinks(baseURL url.URL) []domain.Link {
 	links := make([]domain.Link, 0)
 
-	href := baseURL.JoinPath("search")
-	query := href.Query()
-	query.Set(engine.FormatParam, engine.FormatJSON)
-	href.RawQuery = query.Encode()
-
 	links = append(links, domain.Link{
 		Rel:   "self",
 		Title: "This document as GeoJSON",
 		Type:  engine.MediaTypeGeoJSON,
-		Href:  href.String(),
+		Href:  toSelfURL(baseURL, engine.FormatJSON),
 	})
-	// TODO: support HTML and JSON-FG output in location API
-	//  links = append(links, domain.Link{
-	//	Rel:   "alternate",
-	//	Title: "This document as JSON-FG",
-	//	Type:  engine.MediaTypeJSONFG,
-	//	Href:  featuresURL.toSelfURL(collectionID, engine.FormatJSONFG),
-	//  })
-	//  links = append(links, domain.Link{
-	//	Rel:   "alternate",
-	//	Title: "This document as HTML",
-	//	Type:  engine.MediaTypeHTML,
-	//	Href:  featuresURL.toSelfURL(collectionID, engine.FormatHTML),
-	//  })
+	links = append(links, domain.Link{
+		Rel:   "alternate",
+		Title: "This document as JSON-FG",
+		Type:  engine.MediaTypeJSONFG,
+		Href:  toSelfURL(baseURL, engine.FormatJSONFG),
+	})
+	links = append(links, domain.Link{
+		Rel:   "alternate",
+		Title: "This document as HTML",
+		Type:  engine.MediaTypeHTML,
+		Href:  toSelfURL(baseURL, engine.FormatHTML),
+	})
 	return links
+}
+
+func toSelfURL(baseURL url.URL, format string) string {
+	href := baseURL.JoinPath("search")
+	query := href.Query()
+	query.Set(engine.FormatParam, format)
+	href.RawQuery = query.Encode()
+	return href.String()
 }

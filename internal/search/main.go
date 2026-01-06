@@ -32,16 +32,21 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 		return nil, err
 	}
 
-	// TODO come up with something smarter
-	var firstDS ds.Datasource
+	var searchDS ds.Datasource
 	for _, v := range datasources {
-		firstDS = v
+		if v.SupportsOnTheFlyTransformation() {
+			searchDS = v
+		}
 		break
+	}
+	if searchDS == nil {
+		log.Fatal("no datasource configured for search, please check your config file. " +
+			"Only a single datasource (Postgres) is supported for search.")
 	}
 
 	s := &Search{
 		engine:         e,
-		datasource:     firstDS,
+		datasource:     searchDS,
 		json:           newJSONSearchResults(e),
 		queryExpansion: queryExpansion,
 	}
@@ -151,7 +156,7 @@ func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, conten
 	return nil
 }
 
-// log error, but send generic message to client to prevent possible information leakage from datasource
+// log error but send a generic message to the client to prevent possible information leakage from datasource.
 func handleQueryError(w http.ResponseWriter, err error) {
 	msg := "failed to fulfill search request"
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
