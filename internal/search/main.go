@@ -21,7 +21,7 @@ type Search struct {
 	engine         *engine.Engine
 	datasource     ds.Datasource
 	queryExpansion *QueryExpansion
-	json           *jsonFeatures
+	json           *jsonSearchResults
 }
 
 func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datasource,
@@ -42,7 +42,7 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 	s := &Search{
 		engine:         e,
 		datasource:     firstDS,
-		json:           newJSONFeatures(e),
+		json:           newJSONSearchResults(e),
 		queryExpansion: queryExpansion,
 	}
 	e.Router.Get("/search", s.Search())
@@ -57,11 +57,12 @@ func (s *Search) Search() http.HandlerFunc {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
-		collections, searchTerms, outputSRID, outputCRS, bbox, bboxSRID, limit, err := parseQueryParams(r.URL.Query())
+		collections, searchTerms, outputSRID, contentCrs, bbox, bboxSRID, limit, err := parseQueryParams(r.URL.Query())
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
+		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		// Query expansion
 		searchQuery, err := s.queryExpansion.Expand(r.Context(), searchTerms)
@@ -83,7 +84,7 @@ func (s *Search) Search() http.HandlerFunc {
 			handleQueryError(w, err)
 			return
 		}
-		if err = s.enrichFeaturesWithHref(fc, outputCRS); err != nil {
+		if err = s.enrichFeaturesWithHref(fc, contentCrs); err != nil {
 			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
 			return
 		}
@@ -92,7 +93,9 @@ func (s *Search) Search() http.HandlerFunc {
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatGeoJSON, engine.FormatJSON:
-			s.json.featuresAsGeoJSON(w, r, *s.engine.Config.BaseURL.URL, fc)
+			s.json.searchResultsAsGeoJSON(w, r, *s.engine.Config.BaseURL.URL, fc)
+		case engine.FormatJSONFG:
+			s.json.searchResultsAsJSONFG(w, r, *s.engine.Config.BaseURL.URL, fc, contentCrs)
 		default:
 			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
 			return
@@ -100,7 +103,7 @@ func (s *Search) Search() http.HandlerFunc {
 	}
 }
 
-func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, outputCRS string) error {
+func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, contentCrs featdomain.ContentCrs) error {
 	for _, feat := range fc.Features {
 		collectionID := feat.Properties.Value(domain.PropCollectionID)
 		if collectionID == "" {
@@ -128,8 +131,8 @@ func (s *Search) enrichFeaturesWithHref(fc *featdomain.FeatureCollection, output
 				}
 				href += "?f=json"
 
-				if outputCRS != "" {
-					href += "&crs=" + outputCRS
+				if contentCrs != "" && !contentCrs.IsWGS84() {
+					href += fmt.Sprintf("&crs=%s", contentCrs)
 				}
 
 				// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.

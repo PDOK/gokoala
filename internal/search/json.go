@@ -1,73 +1,75 @@
 package search
 
 import (
-	"bytes"
-	stdjson "encoding/json"
-	"io"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	perfjson "github.com/goccy/go-json"
 )
 
 var (
-	now                            = time.Now // allow mocking
-	disableJSONPerfOptimization, _ = strconv.ParseBool(os.Getenv("DISABLE_JSON_PERF_OPTIMIZATION"))
+	now = time.Now // allow mocking
 )
 
-type jsonFeatures struct {
+type jsonSearchResults struct {
 	engine           *engine.Engine
 	validateResponse bool
 }
 
-func newJSONFeatures(e *engine.Engine) *jsonFeatures {
-	return &jsonFeatures{
+func newJSONSearchResults(e *engine.Engine) *jsonSearchResults {
+	return &jsonSearchResults{
 		engine:           e,
-		validateResponse: true, // TODO make configurable
+		validateResponse: *e.Config.OgcAPI.FeaturesSearch.ValidateResponses,
 	}
 }
 
-func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, baseURL url.URL, fc *domain.FeatureCollection) {
+// GeoJSON.
+func (jsr *jsonSearchResults) searchResultsAsGeoJSON(w http.ResponseWriter, r *http.Request, baseURL url.URL,
+	fc *domain.FeatureCollection) {
+
 	fc.Timestamp = now().Format(time.RFC3339)
-	fc.Links = createFeatureCollectionLinks(baseURL) // TODO add links
+	fc.Links = createLinks(baseURL)
 
-	if jf.validateResponse {
-		jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
+	jsr.serve(&fc, engine.MediaTypeGeoJSON, r, w)
+}
+
+// JSON-FG.
+func (jsr *jsonSearchResults) searchResultsAsJSONFG(w http.ResponseWriter, r *http.Request, baseURL url.URL,
+	fc *domain.FeatureCollection, crs domain.ContentCrs) {
+
+	fgFC := domain.JSONFGFeatureCollection{}
+	fgFC.ConformsTo = []string{domain.ConformanceJSONFGCore}
+	fgFC.CoordRefSys = string(crs)
+	if len(fc.Features) == 0 {
+		fgFC.Features = make([]*domain.JSONFGFeature, 0)
 	} else {
-		jf.serveJSON(&fc, engine.MediaTypeGeoJSON, w)
+		for _, f := range fc.Features {
+			fgF := domain.JSONFGFeature{
+				ID:         f.ID,
+				Links:      f.Links,
+				Properties: f.Properties,
+			}
+			fgF.SetGeom(crs, f.Geometry)
+			fgFC.Features = append(fgFC.Features, &fgF)
+		}
 	}
+	fgFC.NumberReturned = fc.NumberReturned
+	fgFC.Timestamp = now().Format(time.RFC3339)
+	fgFC.Links = createLinks(baseURL)
+
+	jsr.serve(&fc, engine.MediaTypeJSONFG, r, w)
 }
 
-// serveAndValidateJSON serves JSON after performing OpenAPI response validation.
-func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *http.Request, w http.ResponseWriter) {
-	json := &bytes.Buffer{}
-	if err := getEncoder(json).Encode(input); err != nil {
-		handleJSONEncodingFailure(err, w)
-		return
-	}
-	jf.engine.Serve(w, r,
-		engine.ServeValidation(false /* performed earlier */, jf.validateResponse),
-		engine.ServeContentType(contentType),
-		engine.ServeOutput(json.Bytes()))
+func (jsr *jsonSearchResults) serve(input any, contentType string, r *http.Request, w http.ResponseWriter) {
+	jsr.engine.Serve(w, r,
+		engine.ServeJSON(input),
+		engine.ServeValidation(false /* performed earlier */, jsr.validateResponse),
+		engine.ServeContentType(contentType))
 }
 
-// serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream
-func (jf *jsonFeatures) serveJSON(input any, contentType string, w http.ResponseWriter) {
-	w.Header().Set(engine.HeaderContentType, contentType)
-
-	if err := getEncoder(w).Encode(input); err != nil {
-		handleJSONEncodingFailure(err, w)
-		return
-	}
-}
-
-func createFeatureCollectionLinks(baseURL url.URL) []domain.Link {
+func createLinks(baseURL url.URL) []domain.Link {
 	links := make([]domain.Link, 0)
 
 	href := baseURL.JoinPath("search")
@@ -95,28 +97,4 @@ func createFeatureCollectionLinks(baseURL url.URL) []domain.Link {
 	//	Href:  featuresURL.toSelfURL(collectionID, engine.FormatHTML),
 	//  })
 	return links
-}
-
-type jsonEncoder interface {
-	Encode(input any) error
-}
-
-// Create JSONEncoder. Note escaping of '<', '>' and '&' is disabled (HTMLEscape is false).
-// Especially the '&' is important since we use this character in the next/prev links.
-func getEncoder(w io.Writer) jsonEncoder {
-	if disableJSONPerfOptimization {
-		// use Go stdlib JSON encoder
-		encoder := stdjson.NewEncoder(w)
-		encoder.SetEscapeHTML(false)
-		return encoder
-	}
-	// use ~7% overall faster 3rd party JSON encoder (in case of issues switch back to stdlib using env variable)
-	encoder := perfjson.NewEncoder(w)
-	encoder.SetEscapeHTML(false)
-	return encoder
-}
-
-func handleJSONEncodingFailure(err error, w http.ResponseWriter) {
-	log.Printf("JSON encoding failed: %v", err)
-	engine.RenderProblem(engine.ProblemServerError, w, "Failed to write JSON response")
 }

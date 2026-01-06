@@ -39,7 +39,7 @@ var (
 )
 
 func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, searchTerms string,
-	outputSRID fd.SRID, outputCRS string, bbox *geom.Bounds, bboxSRID fd.SRID, limit int, err error) {
+	outputSRID fd.SRID, contentCrs fd.ContentCrs, bbox *geom.Bounds, bboxSRID fd.SRID, limit int, err error) {
 
 	err = validateNoUnknownParams(query)
 	if err != nil {
@@ -48,7 +48,7 @@ func parseQueryParams(query url.Values) (collections d.CollectionsWithParams, se
 	searchTerms, searchTermErr := parseSearchTerms(query)
 	collections, collErr := parseCollections(query)
 	outputSRID, outputSRIDErr := features.ParseCrsToSRID(query, features.CrsParam)
-	outputCRS = query.Get(features.CrsParam)
+	contentCrs = features.ParseCrsToContentCrs(query)
 	limit, limitErr := features.ParseLimit(query, config.Limit{
 		Default: limitDefault,
 		Max:     limitMax,

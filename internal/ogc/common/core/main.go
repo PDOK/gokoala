@@ -102,5 +102,5 @@ func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CommonCore) apiAsJSON(w http.ResponseWriter, r *http.Request) {
-	c.engine.Serve(w, r, engine.ServeContentType(engine.MediaTypeOpenAPI), engine.ServeOutput(c.engine.OpenAPI.SpecJSON))
+	c.engine.Serve(w, r, engine.ServeContentType(engine.MediaTypeOpenAPI), engine.ServePreRenderedOutput(c.engine.OpenAPI.SpecJSON))
 }

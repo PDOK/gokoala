@@ -37,3 +37,11 @@ type JSONFGFeature struct {
 	Links       []Link            `json:"links,omitempty"`
 	ConformsTo  []string          `json:"conformsTo,omitempty"`
 }
+
+func (jf *JSONFGFeature) SetGeom(crs ContentCrs, geom *geojson.Geometry) {
+	if crs.IsWGS84() {
+		jf.Geometry = geom
+	} else {
+		jf.Place = geom
+	}
+}

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"math"
 	"net/url"
 	"slices"
 	"sort"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
@@ -88,7 +88,7 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	encodedCursor = d.EncodedCursor(fc.params.Get(cursorParam))
 	limit, limitErr := ParseLimit(fc.params, fc.limit)
 	outputSRID, outputSRIDErr := ParseCrsToSRID(fc.params, CrsParam)
-	contentCrs = parseCrsToContentCrs(fc.params)
+	contentCrs = ParseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
@@ -188,7 +188,7 @@ func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Pro
 	}
 
 	srid, crsErr := ParseCrsToSRID(f.params, CrsParam)
-	contentCrs = parseCrsToContentCrs(f.params)
+	contentCrs = ParseCrsToContentCrs(f.params)
 	profile, profileErr := parseProfile(f.params, f.baseURL, f.schema)
 	err = errors.Join(crsErr, profileErr)
 
@@ -296,20 +296,14 @@ func ParseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
 	}
 
 	bbox := geom.NewBounds(geom.XY).Set(bboxFloats...)
-	if surfaceArea(bbox) <= 0 {
+	if util.SurfaceArea(bbox) <= 0 {
 		return nil, bboxSRID, errors.New("bbox has no surface area")
 	}
 
 	return bbox, bboxSRID, nil
 }
 
-func surfaceArea(bbox *geom.Bounds) float64 {
-	// Use the same logic as bbox.Area() in https://github.com/go-spatial/geom to calculate surface area.
-	// The bounds.Area() in github.com/twpayne/go-geom behaves differently and is not what we're looking for.
-	return math.Abs((bbox.Max(1) - bbox.Min(1)) * (bbox.Max(0) - bbox.Min(0)))
-}
-
-func parseCrsToContentCrs(params url.Values) d.ContentCrs {
+func ParseCrsToContentCrs(params url.Values) d.ContentCrs {
 	param := params.Get(CrsParam)
 	if param == "" {
 		return d.WGS84CrsURI
