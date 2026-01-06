@@ -39,23 +39,7 @@ func (jsr *jsonSearchResults) searchResultsAsGeoJSON(w http.ResponseWriter, r *h
 func (jsr *jsonSearchResults) searchResultsAsJSONFG(w http.ResponseWriter, r *http.Request, baseURL url.URL,
 	fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
-	fgFC := domain.JSONFGFeatureCollection{}
-	fgFC.ConformsTo = []string{domain.ConformanceJSONFGCore}
-	fgFC.CoordRefSys = string(crs)
-	if len(fc.Features) == 0 {
-		fgFC.Features = make([]*domain.JSONFGFeature, 0)
-	} else {
-		for _, f := range fc.Features {
-			fgF := domain.JSONFGFeature{
-				ID:         f.ID,
-				Links:      f.Links,
-				Properties: f.Properties,
-			}
-			fgF.SetGeom(crs, f.Geometry)
-			fgFC.Features = append(fgFC.Features, &fgF)
-		}
-	}
-	fgFC.NumberReturned = fc.NumberReturned
+	fgFC := domain.FeatureCollectionToJSONFG(*fc, crs)
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = createLinks(baseURL)
 
