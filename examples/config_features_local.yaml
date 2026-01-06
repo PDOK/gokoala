@@ -79,3 +79,4 @@ ogcApi:
             srs: EPSG:4326
             bbox: ["50.2129", "2.52713", "55.7212", "7.37403"]
             interval: ["\"1970-01-01T00:00:00Z\"", "null"]
+searchEnabled: true
