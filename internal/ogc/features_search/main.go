@@ -22,6 +22,9 @@ const (
 	propCollectionID = "collection_id"
 	propGeomType     = "collection_geometry_type"
 	propHref         = "href"
+
+	templatesDir = "internal/ogc/features_search/templates/"
+	searchPath   = "/search"
 )
 
 type Search struct {
@@ -46,6 +49,28 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 		return nil, err
 	}
 
+	searchDS, err := getDatasource(datasources)
+	if err != nil {
+		return nil, err
+	}
+
+	s := &Search{
+		engine:          e,
+		datasource:      searchDS,
+		axisOrderBySRID: axisOrderBySRID,
+		json:            newJSONSearchResults(e),
+		queryExpansion:  queryExpansion,
+	}
+	e.Router.Get(searchPath, s.Search())
+
+	e.RenderTemplates(searchPath,
+		[]engine.Breadcrumb{{Name: "Search", Path: "search"}},
+		engine.NewTemplateKey(templatesDir+"search.go.html"))
+
+	return s, nil
+}
+
+func getDatasource(datasources map[features.DatasourceKey]ds.Datasource) (ds.Datasource, error) {
 	var searchDS ds.Datasource
 	for _, v := range datasources {
 		if v.SupportsOnTheFlyTransformation() {
@@ -57,69 +82,83 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 		return nil, errors.New("no datasource configured for search, please check your config file. " +
 			"Only a single datasource (Postgres) is supported for features search")
 	}
-
-	s := &Search{
-		engine:          e,
-		datasource:      searchDS,
-		axisOrderBySRID: axisOrderBySRID,
-		json:            newJSONSearchResults(e),
-		queryExpansion:  queryExpansion,
-	}
-	e.Router.Get("/search", s.Search())
-	return s, nil
+	return searchDS, nil
 }
 
 // Search autosuggest locations based on user input
 func (s *Search) Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Validate
-		if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		collections, searchTerms, outputSRID, contentCrs, bbox, bboxSRID, limit, err := parseQueryParams(r.URL.Query())
-		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-			return
-		}
-		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
-
-		// Query expansion
-		searchQuery, err := s.queryExpansion.Expand(r.Context(), searchTerms)
-		if err != nil {
-			handleQueryError(w, err)
-			return
-		}
-
-		// Perform actual search
-		fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), ds.FeaturesSearchCriteria{
-			SearchQuery: *searchQuery,
-			Settings:    s.engine.Config.OgcAPI.FeaturesSearch.SearchSettings,
-			Limit:       limit,
-			InputSRID:   bboxSRID,
-			OutputSRID:  outputSRID,
-			Bbox:        bbox,
-		}, s.axisOrderBySRID[outputSRID.GetOrDefault()], collections)
-		if err != nil {
-			handleQueryError(w, err)
-			return
-		}
-		if err = s.enrichFeaturesWithHref(fc, contentCrs); err != nil {
-			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
-			return
-		}
-
-		// Output
 		format := s.engine.CN.NegotiateFormat(r)
 		switch format {
-		case engine.FormatGeoJSON, engine.FormatJSON:
-			s.json.searchResultsAsGeoJSON(w, r, *s.engine.Config.BaseURL.URL, fc)
-		case engine.FormatJSONFG:
-			s.json.searchResultsAsJSONFG(w, r, *s.engine.Config.BaseURL.URL, fc, contentCrs)
-		default:
-			engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
+		case engine.FormatHTML:
+			s.searchAsHTML(w, r)
+			return
+		case engine.FormatJSON:
+			s.searchAsJSON(w, r)
 			return
 		}
+		engine.RenderProblem(engine.ProblemNotFound, w)
+	}
+}
+
+func (s *Search) searchAsHTML(w http.ResponseWriter, r *http.Request) {
+	key := engine.NewTemplateKey(
+		templatesDir+"search.go."+s.engine.CN.NegotiateFormat(r),
+		s.engine.WithNegotiatedLanguage(w, r))
+
+	s.engine.Serve(w, r,
+		engine.ServeTemplate(key),
+		engine.ServeValidation(false, false))
+}
+
+func (s *Search) searchAsJSON(w http.ResponseWriter, r *http.Request) {
+	// Validate
+	if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
+		engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+		return
+	}
+	collections, searchTerms, outputSRID, contentCrs, bbox, bboxSRID, limit, err := parseQueryParams(r.URL.Query())
+	if err != nil {
+		engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+		return
+	}
+	w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
+
+	// Query expansion
+	searchQuery, err := s.queryExpansion.Expand(r.Context(), searchTerms)
+	if err != nil {
+		handleQueryError(w, err)
+		return
+	}
+
+	// Perform actual search
+	fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), ds.FeaturesSearchCriteria{
+		SearchQuery: *searchQuery,
+		Settings:    s.engine.Config.OgcAPI.FeaturesSearch.SearchSettings,
+		Limit:       limit,
+		InputSRID:   bboxSRID,
+		OutputSRID:  outputSRID,
+		Bbox:        bbox,
+	}, s.axisOrderBySRID[outputSRID.GetOrDefault()], collections)
+	if err != nil {
+		handleQueryError(w, err)
+		return
+	}
+	if err = s.enrichFeaturesWithHref(fc, contentCrs); err != nil {
+		engine.RenderProblem(engine.ProblemServerError, w, err.Error())
+		return
+	}
+
+	// Output
+	format := s.engine.CN.NegotiateFormat(r)
+	switch format {
+	case engine.FormatGeoJSON, engine.FormatJSON:
+		s.json.asGeoJSON(w, r, *s.engine.Config.BaseURL.URL, fc)
+	case engine.FormatJSONFG:
+		s.json.asJSONFG(w, r, *s.engine.Config.BaseURL.URL, fc, contentCrs)
+	default:
+		engine.RenderProblem(engine.ProblemNotAcceptable, w, fmt.Sprintf("format '%s' is not supported", format))
+		return
 	}
 }
 

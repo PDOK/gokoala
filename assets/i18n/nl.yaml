@@ -40,7 +40,7 @@ SpecificationText: De specificatie in OpenAPI v3 formaat beschrijft deze API op 
 Conformance: Conformance
 ConformanceText: De conformance beschrijft welke OGC standaarden deze API implementeert.
 Search: Zoeken
-SearchText: Hier kunt u zoeken in de Locatie-API
+SearchText: Geocodeerservice om naar <i>features</i> te zoeken in één of meerdere collecties op basis van vrije tekst, zoals een adres of plaatsnaam.
 Collections: Collections
 CollectionsText: Deze API biedt één of meerdere collecties waarmee onderscheid gemaakt wordt in verschillende object typen, die bijvoorbeeld als <i>features</i> of <i>tiles</i> separaat aangeroepen kunnen worden.
 Tiles: Tiles
@@ -72,7 +72,6 @@ SearchByLocation: Zoeken op locatie
 Searching: Zoeken...
 NoResultsFound: Geen resultaten gevonden
 Relevance: Relevantie
-
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract: |-

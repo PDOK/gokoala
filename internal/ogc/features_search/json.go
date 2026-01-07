@@ -26,7 +26,7 @@ func newJSONSearchResults(e *engine.Engine) *jsonSearchResults {
 }
 
 // GeoJSON.
-func (jsr *jsonSearchResults) searchResultsAsGeoJSON(w http.ResponseWriter, r *http.Request, baseURL url.URL,
+func (jsr *jsonSearchResults) asGeoJSON(w http.ResponseWriter, r *http.Request, baseURL url.URL,
 	fc *domain.FeatureCollection) {
 
 	fc.Timestamp = now().Format(time.RFC3339)
@@ -36,7 +36,7 @@ func (jsr *jsonSearchResults) searchResultsAsGeoJSON(w http.ResponseWriter, r *h
 }
 
 // JSON-FG.
-func (jsr *jsonSearchResults) searchResultsAsJSONFG(w http.ResponseWriter, r *http.Request, baseURL url.URL,
+func (jsr *jsonSearchResults) asJSONFG(w http.ResponseWriter, r *http.Request, baseURL url.URL,
 	fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
 	fgFC := domain.FeatureCollectionToJSONFG(*fc, crs)

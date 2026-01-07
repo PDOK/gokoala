@@ -100,14 +100,23 @@
     {{ end }}
     {{ if .Config.MetadataLinks }}
     ,
-    {{- range $m, $metadataLink := .Config.MetadataLinks -}}
-    {{ if $m }},{{ end }}
+      {{- range $m, $metadataLink := .Config.MetadataLinks -}}
+      {{ if $m }},{{ end }}
     {
       "rel" : "http://www.opengis.net/def/rel/ogc/1.0/data-meta",
       "title" : "Metadata for {{ $metadataLink.Category }} at {{ $metadataLink.Name }}",
       "href" : "{{ $metadataLink.URL }}"
     }
-    {{- end -}}
+      {{- end -}}
+    {{ end }}
+    {{ if .Config.OgcAPI.FeaturesSearch }}
+    ,
+    {
+      "rel" : "search",
+      "type" : "application/geo+json",
+      "title" : "Geocoding endpoint to search for features across one or more collections based on free text search criteria.",
+      "href" : "{{ .Config.BaseURL }}/search"
+    }
     {{ end }}
   ]
 }
