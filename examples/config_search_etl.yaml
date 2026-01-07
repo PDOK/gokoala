@@ -1,3 +1,4 @@
+# This is a sample config file for the gokoala-etl tool
 ---
 collections:
   - id: addresses

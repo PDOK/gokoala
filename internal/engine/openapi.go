@@ -98,7 +98,7 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	if config.OgcAPI.Features != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSpec)
 	}
-	if config.OgcAPI.Features != nil && len(config.OgcAPI.Features.Collections.WithSearch()) > 0 {
+	if config.OgcAPI.FeaturesSearch != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSearchSpec)
 	}
 	if config.OgcAPI.Styles != nil {

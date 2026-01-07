@@ -10,7 +10,7 @@
   "paths": {
     "/search": {
       "get": {
-        "tags" : [ "Features" ],
+        "tags" : [ "Features Search" ],
         "summary": "search features in one or more collections across datasets.",
         "description": "This endpoint allows one to implement autocomplete functionality for location search. The `q` parameter accepts a partial location name and will return all matching locations up to the specified `limit`. The list of search results are offered as features (in GeoJSON, JSON-FG) but contain only minimal information; like a feature ID, highlighted text and a bounding box. When you want to get the full feature you must follow the included link (`href`) in the search result. This allows one to retrieve all properties of the feature and the full geometry from the corresponding OGC API.",
         "operationId": "search",
@@ -18,7 +18,7 @@
           {
             "$ref": "#/components/parameters/q"
           },
-          {{- range $index, $coll := .Config.OgcAPI.Features.Collections.WithSearch -}}
+          {{- range $index, $coll := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections -}}
           {{- if $index -}},{{- end -}}
           {
             "$ref": "#/components/parameters/{{ $coll.ID }}-collection-search"
@@ -277,7 +277,6 @@
             "time",
             "place",
             "geometry",
-            "bbox",
             "properties",
             "type"
         ],
@@ -357,7 +356,6 @@
       "featureGeoJSON": {
         "required": [
           "geometry",
-          "bbox",
           "properties",
           "type"
         ],
@@ -676,7 +674,7 @@
           "maxLength": 200
         }
       },
-      {{- range $index, $coll := .Config.OgcAPI.Features.Collections.WithSearch -}}
+      {{- range $index, $coll := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections -}}
       {{- if $index -}},{{- end -}}
       "{{ $coll.ID }}-collection-search": {
         "name": "{{ $coll.ID }}",
@@ -753,7 +751,7 @@
           "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
           "enum": [
             "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-            {{ range $index, $srs := .Config.OgcAPI.Features.CollectionsSRS }}
+            {{ range $index, $srs := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.CollectionsSRS }}
             ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
             {{ end }}
           ]
@@ -772,7 +770,7 @@
           "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
           "enum": [
             "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-            {{ range $index, $srs := .Config.OgcAPI.Features.CollectionsSRS }}
+            {{ range $index, $srs := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.CollectionsSRS }}
             ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
             {{ end }}
           ]

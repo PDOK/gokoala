@@ -241,16 +241,6 @@ func (g GeoSpatialCollections) ContainsID(id string) bool {
 	return ok
 }
 
-func (g GeoSpatialCollections) WithSearch() GeoSpatialCollections {
-	result := make([]GeoSpatialCollection, 0, len(g))
-	for _, collection := range g {
-		if collection.FeaturesSearch != nil {
-			result = append(result, collection)
-		}
-	}
-	return result
-}
-
 func (g GeoSpatialCollections) toMap() orderedmap.OrderedMap[string, GeoSpatialCollection] {
 	collectionsByID := orderedmap.New[string, GeoSpatialCollection]()
 	for _, current := range g {

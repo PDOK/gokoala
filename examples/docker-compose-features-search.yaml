@@ -29,8 +29,11 @@ services:
       - sh
       - -c
       - |
-        /gokoala-etl create-search-index --db-host postgres --db-name postgres --srid 4326
-        /gokoala-etl import-file --db-host postgres --db-name postgres \
+        /gokoala-etl create-search-index \
+          --db-host postgres --db-name postgres --srid 4326
+
+        /gokoala-etl import-file \
+          --db-host postgres --db-name postgres \
           --config-file /examples/config_search_etl.yaml \
           --revision=a8bdb084-fabb-4c28-bdb0-84fabbbc2819 \
           --file /testdata/fake-addresses-crs84.gpkg

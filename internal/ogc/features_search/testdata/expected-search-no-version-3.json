@@ -1,5 +1,5 @@
 {
-  "detail": "no version specified in request for collection addresses, specify at least one collection and version. For example: 'foo[version]=1' where 'foo' is the collection and '1' the version",
+  "detail": "request doesn't conform to OpenAPI spec: parameter \"addresses\" in query has an error: property \"version\" is missing",
   "status": 400,
   "timeStamp": "2000-01-01T00:00:00Z",
   "title": "Bad Request"
