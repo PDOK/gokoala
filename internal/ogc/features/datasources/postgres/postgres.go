@@ -207,10 +207,6 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
-	if err != nil {
-		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
-	}
-	defer rows.Close()
 
 	features, _, err := common.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
 		pg.FidColumn, pg.ExternalFidColumn, table.GeometryColumnName,
@@ -286,6 +282,62 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 	fc.NumberReturned = len(fc.Features)
 
 	return &fc, queryCtx.Err()
+}
+
+// Build specific features queries based on the given options.
+func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, relationsConfig []config.Relation, table *common.Table,
+	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (string, pgx.NamedArgs, error) {
+
+	var selectClause string
+	if onlyFIDs {
+		selectClause = common.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid}, true)
+	} else {
+		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, selectPostgresRelation,
+			propConfig, relationsConfig, true)
+	}
+
+	// TODO: find better place for this srid logic
+	if criteria.InputSRID == d.UndefinedSRID || criteria.InputSRID == d.WGS84SRID {
+		criteria.InputSRID = d.WGS84SRIDPostgis
+	}
+	if criteria.OutputSRID == d.UndefinedSRID || criteria.OutputSRID == d.WGS84SRID {
+		criteria.OutputSRID = d.WGS84SRIDPostgis
+	}
+
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
+
+	var bboxClause string
+	var bboxNamedParams map[string]any
+	if criteria.Bbox != nil {
+		var err error
+		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, "")
+		if err != nil {
+			return "", nil, err
+		}
+	}
+
+	query := fmt.Sprintf(`
+with
+    next as (select * from "%[1]s" where "%[2]s" >= @fid %[3]s %[4]s %[8]s order by %[2]s asc limit @limit + 1),
+    prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s %[8]s order by %[2]s desc limit @limit),
+    nextprev as (select * from next union all select * from prev),
+    nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
+select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
+`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
+
+	namedParams := map[string]any{
+		"fid":        criteria.Cursor.FID,
+		"limit":      criteria.Limit,
+		"outputSrid": criteria.OutputSRID,
+	}
+	if criteria.Bbox != nil {
+		maps.Copy(namedParams, bboxNamedParams)
+	}
+	maps.Copy(namedParams, pfNamedParams)
+	maps.Copy(namedParams, temporalNamedParams)
+
+	return query, namedParams, nil
 }
 
 //nolint:funlen
@@ -405,62 +457,6 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	    rn.rank DESC,
 	    rn.display_name COLLATE "custom_numeric" ASC
 	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use $X params for user input!
-}
-
-// Build specific features queries based on the given options.
-func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, relationsConfig []config.Relation, table *common.Table,
-	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (string, pgx.NamedArgs, error) {
-
-	var selectClause string
-	if onlyFIDs {
-		selectClause = common.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid}, true)
-	} else {
-		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, selectPostgresRelation,
-			propConfig, relationsConfig, true)
-	}
-
-	// TODO: find better place for this srid logic
-	if criteria.InputSRID == d.UndefinedSRID || criteria.InputSRID == d.WGS84SRID {
-		criteria.InputSRID = d.WGS84SRIDPostgis
-	}
-	if criteria.OutputSRID == d.UndefinedSRID || criteria.OutputSRID == d.WGS84SRID {
-		criteria.OutputSRID = d.WGS84SRIDPostgis
-	}
-
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
-
-	var bboxClause string
-	var bboxNamedParams map[string]any
-	if criteria.Bbox != nil {
-		var err error
-		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, "")
-		if err != nil {
-			return "", nil, err
-		}
-	}
-
-	query := fmt.Sprintf(`
-with
-    next as (select * from "%[1]s" where "%[2]s" >= @fid %[3]s %[4]s %[8]s order by %[2]s asc limit @limit + 1),
-    prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s %[8]s order by %[2]s desc limit @limit),
-    nextprev as (select * from next union all select * from prev),
-    nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
-select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
-`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
-
-	namedParams := map[string]any{
-		"fid":        criteria.Cursor.FID,
-		"limit":      criteria.Limit,
-		"outputSrid": criteria.OutputSRID,
-	}
-	if criteria.Bbox != nil {
-		maps.Copy(namedParams, bboxNamedParams)
-	}
-	maps.Copy(namedParams, pfNamedParams)
-	maps.Copy(namedParams, temporalNamedParams)
-
-	return query, namedParams, nil
 }
 
 func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string, bboxColumn string) (string, map[string]any, error) {
