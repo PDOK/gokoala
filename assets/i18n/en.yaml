@@ -40,7 +40,7 @@ SpecificationText: The specification in OpenAPI v3 format describes the OGC API 
 Conformance: Conformance
 ConformanceText: The conformance describes which OGC standards this API implements.
 Search: Search
-SearchText: Geocoding service to search for <i>features<i> in one or more collections based on free text, such as an address or place name.
+SearchText: Geocoding service to search for <i>features</i> in one or more collections based on free text, such as an address or place name.
 Collections: Collections
 CollectionsText: This API offers one or more collections that divide the dataset in various object types, which can be called separately through for instance <i>features</i> or <i>tiles</i>.
 Tiles: Tiles
