@@ -110,11 +110,9 @@ type Collection struct {
 
 	// SQLite WHERE clause to filter features when importing/ETL-ing
 	// (Without the WHERE keyword, only the clause)
-	// +optional
 	Filter string `yaml:"filter,omitempty" json:"filter,omitempty"`
 
 	// Optional configuration for generation of external_fid
-	// +optional
 	ExternalFid *ExternalFid `yaml:"externalFid,omitempty" json:"externalFid,omitempty"`
 }
 
@@ -123,17 +121,14 @@ type FeatureTable struct {
 	Table string `yaml:"table" json:"table" validate:"required"`
 
 	// Name of the feature ID column
-	// +optional
 	FID string `yaml:"fid,omitempty" json:"fid,omitempty" default:"fid" validate:"required"`
 
 	// Name of the geometry column
-	// +optional
 	Geom string `yaml:"geom,omitempty" json:"geom,omitempty" default:"geom" validate:"required"`
 }
 
 type ExternalFid struct {
-	// Namespace (UUID5) used to generate external_fid, defaults to uuid.NameSpaceURL
-	// +kubebuilder:default="6ba7b811-9dad-11d1-80b4-00c04fd430c8"
+	// Namespace (for UUID5) used to generate external_fid, defaults to uuid.NameSpaceURL
 	UUIDNamespace uuid.UUID `yaml:"uuidNamespace,omitempty" json:"uuidNamespace,omitempty" default:"6ba7b811-9dad-11d1-80b4-00c04fd430c8" validate:"required,uuid"`
 
 	// Fields used to generate external_fid in the target OGC Features Collection(s).
