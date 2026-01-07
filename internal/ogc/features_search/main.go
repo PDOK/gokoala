@@ -24,6 +24,7 @@ const (
 	propHref         = "href"
 
 	templatesDir = "internal/ogc/features_search/templates/"
+	searchHTML   = "search.go.html"
 	searchPath   = "/search"
 )
 
@@ -65,24 +66,9 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 
 	e.RenderTemplates(searchPath,
 		[]engine.Breadcrumb{{Name: "Search", Path: "search"}},
-		engine.NewTemplateKey(templatesDir+"search.go.html"))
+		engine.NewTemplateKey(templatesDir+searchHTML))
 
 	return s, nil
-}
-
-func getDatasource(datasources map[features.DatasourceKey]ds.Datasource) (ds.Datasource, error) {
-	var searchDS ds.Datasource
-	for _, v := range datasources {
-		if v.SupportsOnTheFlyTransformation() {
-			searchDS = v
-		}
-		break
-	}
-	if searchDS == nil {
-		return nil, errors.New("no datasource configured for search, please check your config file. " +
-			"Only a single datasource (Postgres) is supported for features search")
-	}
-	return searchDS, nil
 }
 
 // Search autosuggest locations based on user input
@@ -103,7 +89,7 @@ func (s *Search) Search() http.HandlerFunc {
 
 func (s *Search) searchAsHTML(w http.ResponseWriter, r *http.Request) {
 	key := engine.NewTemplateKey(
-		templatesDir+"search.go."+s.engine.CN.NegotiateFormat(r),
+		templatesDir+searchHTML,
 		s.engine.WithNegotiatedLanguage(w, r))
 
 	s.engine.Serve(w, r,
@@ -111,6 +97,7 @@ func (s *Search) searchAsHTML(w http.ResponseWriter, r *http.Request) {
 		engine.ServeValidation(false, false))
 }
 
+// searchAsJSON the actual search endpoint, handle requests like "/search?q=foo&mycollection[version]=1".
 func (s *Search) searchAsJSON(w http.ResponseWriter, r *http.Request) {
 	// Validate
 	if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
@@ -219,4 +206,19 @@ func handleQueryError(w http.ResponseWriter, err error) {
 	}
 	log.Printf("%s, error: %v\n", msg, err)
 	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
+}
+
+func getDatasource(datasources map[features.DatasourceKey]ds.Datasource) (ds.Datasource, error) {
+	var result ds.Datasource
+	for _, v := range datasources {
+		if v.SupportsOnTheFlyTransformation() {
+			result = v
+		}
+		break
+	}
+	if result == nil {
+		return nil, errors.New("no datasource configured for search, please check your config file. " +
+			"Only a single datasource (Postgres) is supported for features search")
+	}
+	return result, nil
 }
