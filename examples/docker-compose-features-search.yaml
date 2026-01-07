@@ -11,29 +11,31 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "postgres"
-    command: ["postgres", "-c", "log_statement=all"]
+    command: [ "postgres", "-c", "log_statement=all" ]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 5s
       retries: 30
 
-  postgres-init-data:
-    image: ghcr.io/osgeo/gdal:ubuntu-small-3.8.3
+  gokoala-etl:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    image: gokoala:local
     depends_on:
       postgres:
         condition: service_healthy
-    entrypoint:
+    entrypoint: # language=bash
       - sh
       - -c
       - |
-        set -e
-        echo "START import GeoPackage in Postgres"
-        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
-          -preserve_fid \
-          -lco FID=fid \
-          /examples/resources/addresses-rd.gpkg
-        echo "DONE import GeoPackage in Postgres"
+        /gokoala-etl create-search-index --db-host postgres --db-name postgres --srid 4326
+        /gokoala-etl import-file --db-host postgres --db-name postgres \
+          --config-file /examples/config_search_etl.yaml \
+          --revision=a8bdb084-fabb-4c28-bdb0-84fabbbc2819 \
+          --file /testdata/fake-addresses-crs84.gpkg
     volumes:
+      - ../internal/ogc/features_search/testdata/:/testdata
       - ./:/examples
 
   gokoala:
@@ -42,10 +44,17 @@ services:
       dockerfile: Dockerfile
     image: gokoala:local
     depends_on:
-      postgres-init-data:
+      gokoala-etl:
         condition: service_completed_successfully
-    command: "--config-file ./examples/config_features_postgres.yaml"
+    entrypoint: # language=bash
+      - sh
+      - -c
+      - |
+        /gokoala-server --config-file ./examples/config_search.yaml \
+          --synonyms-file ./testdata/synonyms.csv \
+          --rewrites-file ./testdata/rewrites.csv
     volumes:
+      - ../internal/ogc/features_search/testdata/:/testdata
       - ./:/examples
     ports:
       - "8080:8080"
@@ -53,16 +62,3 @@ services:
       test: /bin/curl --fail http://127.0.0.1:8080 || exit 1
       interval: 1s
       retries: 30
-
-  smoketest:
-    image: ghcr.io/osgeo/gdal:ubuntu-small-3.8.3
-    depends_on:
-      gokoala:
-        condition: service_healthy
-    entrypoint:
-      - sh
-      - -c
-      - |
-        set -e
-        echo "test OGC API"
-        ogrinfo -so OAPIF:http://gokoala:8080 dutch-addresses

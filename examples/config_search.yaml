@@ -1,0 +1,74 @@
+---
+version: 1.0.0
+title: Search Addresses
+serviceIdentifier: Search
+abstract: >-
+  This API allows you to search through address features.
+# just a dummy picture, but you can put an actual thumbnail here
+thumbnail: old.png
+resources:
+  directory: ./examples/resources
+keywords:
+  - keyword1
+  - keyword2
+lastUpdated: "2025-12-18T12:00:00Z"
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+baseUrl: http://localhost:8080
+availableLanguages:
+  - nl
+  - en
+ogcApi:
+  featuresSearch:
+    datasources:
+      transformOnTheFly:
+        - supportedSrs:
+            - srs: EPSG:3857
+            - srs: EPSG:4258
+            - srs: EPSG:28992
+          postgres:
+            host: postgres
+            user: postgres
+            databaseName: postgres
+            externalFid: external_fid
+    collections:
+      - id: addresses
+        fields:
+          - address_street
+          - address_postal
+          - address_place
+        displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
+        collectionRefs:
+          - api: https://example.com/ogc/v1
+            collection: addresses
+            geometryType: point
+        tableName: addresses
+        metadata:
+          title: Dutch Addresses
+          description: These are example addresses
+          keywords:
+            - Address
+          extent:
+            srs: EPSG:4326
+            bbox: [ "50.2129", "2.52713", "55.7212", "7.37403" ]
+            interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]
+      - id: buildings
+        fields:
+          - street
+          - place
+        displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
+        collectionRefs:
+          - api: https://example.com/ogc/v1
+            collection: buildings
+            geometryType: polygon
+        tableName: buildings
+        metadata:
+          title: Dutch Buildings
+          description: These are example buildings
+          keywords:
+            - Building
+          extent:
+            srs: EPSG:4326
+            bbox: [ "50.2129", "2.52713", "55.7212", "7.37403" ]
+            interval: [ "\"1970-01-01T00:00:00Z\"", "null" ]

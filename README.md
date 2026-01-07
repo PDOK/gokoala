@@ -38,14 +38,20 @@ GoKoala supports:
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG.
   - Supported datastores:
-    - [GeoPackage](https://www.geopackage.org/). These can be regular/local or [Cloud-Backed](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki) GeoPackages. No on-the-fly 
-      reprojection/transformation is applied, separate GeoPackages should be configured ahead-of-time in each CRS.
-    - [PostgreSQL](https://postgis.net/) (PostGIS). Supports on-the-fly reprojection/transformation of features.
+    - [PostgreSQL](https://postgis.net/) with the PostGIS extension. Supports on-the-fly reprojection/transformation of
+      features.
+    - [GeoPackage](https://www.geopackage.org/). Can be a single GeoPackage for the whole dataset or multiple
+      GeoPackages for each collection. No on-the-fly reprojection/transformation is applied, separate GeoPackages
+      should be configured ahead-of-time in each CRS.
+    - [Cloud-Backed GeoPackage](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki). GeoPackages are SQLite
+      databases and this uses a SQLite extension to store the GeoPackages in cloud object storage
+      (like Azure Blob Storage). No on-the-fly reprojection/transformation is applied, separate GeoPackages
+      should be configured ahead-of-time in each CRS.
   - Supports property filtering (`/items?<property>=<value>`) and temporal filtering (`/items?datetime=<timestamp>`).
   - Implements _cursor_-based pagination (also known as _keyset_ pagination) to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
-  - Validates required indexes on startup.
+  - Validates required indexes on startup for optimal performance.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
   of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing.
   Currently, three projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and
@@ -58,8 +64,7 @@ GoKoala supports:
 Besides OGC APIs, GoKoala also offers an API for geocoding. This builds on top of OGC API Features and
 allows the user to search for features across one or multiple collections using free-text search terms. To support this
 use case, one first needs to create a search index in Postgres using the [gokoala-etl](cmd/gokoala-etl) tool.
-Furthermore, you need to configure the `featuresSearch` section in the config file. This is currently considered an
-advanced feature.
+Furthermore, you need to configure the `featuresSearch` section in the config file.
 
 ## Build
 
