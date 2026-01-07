@@ -27,7 +27,7 @@ ogcApi:
             host: localhost
             port: ${DB_PORT}
             user: postgres
-            databaseName: test_db
+            databaseName: search_db
             externalFid: external_fid
             queryTimeout: 20s
     collections:

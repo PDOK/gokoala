@@ -62,7 +62,7 @@ func TestSearch(t *testing.T) {
 	t.Cleanup(func() {
 		terminateContainer(ctx, t, postgisContainer)
 	})
-	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
+	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "search_db")
 
 	// given empty search index in postgres
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex, fd.WGS84SRIDPostgis, language.Dutch)

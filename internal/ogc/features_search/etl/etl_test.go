@@ -71,7 +71,7 @@ func TestCreateSearchIndexIdempotent(t *testing.T) {
 }
 
 func makeDbConnection(dbPort nat.Port) string {
-	return fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "test_db")
+	return fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "search_db")
 }
 
 func TestGetVersion(t *testing.T) {
