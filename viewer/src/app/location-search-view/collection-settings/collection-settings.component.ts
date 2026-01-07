@@ -42,7 +42,7 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
     let hasAnyParam = false
     this.collections$.subscribe(collections => {
       collections.forEach(collection => {
-        const param = url.searchParams.get(`${collection.title}[relevance]`)
+        const param = url.searchParams.get(`${collection.id}[relevance]`)
         let relevance = 0.5
         if (param) {
           hasAnyParam = true
@@ -68,7 +68,7 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
         map(([formValues, collections]) => {
           const searchParams: { [key: string]: number } = {}
           formValues.forEach((formValue, idx) => {
-            if (formValue.checked && formValue.relevance) searchParams[collections[idx].title] = formValue.relevance
+            if (formValue.checked && formValue.relevance) searchParams[collections[idx].id] = formValue.relevance
           })
           return searchParams
         }),
