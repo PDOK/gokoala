@@ -17,7 +17,6 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features_search/query_expansion"
 )
 
-// GeoJSON properties in search response
 const (
 	propCollectionID = "collection_id"
 	propGeomType     = "collection_geometry_type"
