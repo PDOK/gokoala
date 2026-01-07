@@ -1,3 +1,5 @@
+// Package etl contains extract-transform-load logic to create the search index.
+// It's used by `cmd/gokoala-etl` which is a standalone binary.
 package etl
 
 import (
@@ -115,6 +117,8 @@ func ImportFile(collection config.Collection, searchIndex string, revision strin
 			if collection.ExternalFid != nil {
 				externalFidFields = collection.ExternalFid.Fields
 			}
+
+			// Extract
 			sourceRecords, err := source.Extract(table, collection.Fields, externalFidFields, collection.Filter, pageSize, offset)
 			if err != nil {
 				return fmt.Errorf("failed extracting source records: %w", err)
@@ -123,12 +127,16 @@ func ImportFile(collection config.Collection, searchIndex string, revision strin
 			if sourceRecordCount == 0 {
 				break // no more batches of records to extract
 			}
+
+			// Transform
 			log.Printf("extracted %d source records, starting transform", sourceRecordCount)
 			targetRecords, err := transformer.Transform(sourceRecords, collection)
 			if err != nil {
 				return fmt.Errorf("failed to transform raw records to search index records: %w", err)
 			}
 			log.Printf("transform completed, %d source records transformed into %d target records", sourceRecordCount, len(targetRecords))
+
+			// Load
 			loaded, err := target.Load(targetRecords)
 			if err != nil {
 				return fmt.Errorf("failed loading records into target: %w", err)
