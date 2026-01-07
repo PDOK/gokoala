@@ -34,10 +34,11 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/theme.css" rel="stylesheet">
     <link href="css/gokoala.css" rel="stylesheet">
+    {{block "head" .}}{{end}}
 
     <script>
         // match window title to page title
-        window.addEventListener("load", (event) => {
+        window.addEventListener("load", () => {
             if (document.getElementById("title")) {
                 document.title = document.getElementById("title").innerHTML;
             }

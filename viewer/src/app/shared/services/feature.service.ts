@@ -1,61 +1,62 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { map, Observable } from 'rxjs'
+import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
-import { initProj4 } from './map-projection'
+import { initProj4 } from '../../map-projection'
 import { FeatureLike } from 'ol/Feature'
-import { Link } from './link'
+import { Link } from '../../link'
 import { get as getProj } from 'ol/proj'
+import { environment } from '../../../environments/environment'
 
-export type pointGeoJSON = {
+export type PointGeoJSON = {
   coordinates: Array<number>
 }
 
-export type multipointGeoJSON = {
+export type MultipointGeoJSON = {
   coordinates: Array<Array<number>>
 }
 
-export type linestringGeoJSON = {
+export type LinestringGeoJSON = {
   coordinates: Array<Array<number>>
 }
 
-export type multilinestringGeoJSON = {
+export type MultilinestringGeoJSON = {
   coordinates: Array<Array<Array<number>>>
 }
 
-export type polygonGeoJSON = {
+export type PolygonGeoJSON = {
   coordinates: Array<Array<Array<number>>>
 }
 
-export type multipolygonGeoJSON = {
+export type MultipolygonGeoJSON = {
   coordinates: Array<Array<Array<Array<number>>>>
 }
 
 export type geometrycollectionGeoJSON = {
-  geometries: Array<geometryGeoJSON>
+  geometries: Array<GeometryGeoJSON>
 }
 
-export type geometryGeoJSON =
-  | pointGeoJSON
-  | multipointGeoJSON
-  | linestringGeoJSON
-  | multilinestringGeoJSON
-  | polygonGeoJSON
-  | multipolygonGeoJSON
+export type GeometryGeoJSON =
+  | PointGeoJSON
+  | MultipointGeoJSON
+  | LinestringGeoJSON
+  | MultilinestringGeoJSON
+  | PolygonGeoJSON
+  | MultipolygonGeoJSON
   | geometrycollectionGeoJSON
 
-export type featureGeoJSON = {
-  geometry: geometryGeoJSON
+export type FeatureGeoJSON = {
+  geometry: GeometryGeoJSON
   id?: string | number
   links?: Array<Link>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties: Record<string, any> | null
 }
 
-export type featureCollectionGeoJSON = {
-  features: Array<featureGeoJSON>
+export type FeatureCollectionGeoJSON = {
+  features: Array<FeatureGeoJSON>
   links?: Array<Link>
   numberReturned?: number
 }
@@ -81,6 +82,17 @@ export class FeatureService {
     private logger: NGXLogger,
     private http: HttpClient
   ) {}
+
+  queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string): Observable<FeatureGeoJSON[]> {
+    const url = new URL('search', environment.locationApi)
+    url.searchParams.append('q', q)
+    if (crs) url.searchParams.append('crs', crs)
+    for (const key in searchParams) {
+      url.searchParams.append(`${key}[relevance]`, searchParams[key].toString())
+      url.searchParams.append(`${key}[version]`, '1')
+    }
+    return this.http.get<FeatureCollectionGeoJSON>(url.toString()).pipe(map(res => res.features))
+  }
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.debug('Getfeatures')
@@ -111,8 +123,8 @@ export class FeatureService {
       }
       return geom
     }
-
-    return this.http.get<featureCollectionGeoJSON>(url.url).pipe(
+    if (url.url == '') return of([])
+    return this.http.get<FeatureCollectionGeoJSON>(url.url).pipe(
       map(data => {
         let processedData = data
         if (url.dataMapping.swapAllowed && dataproj.getAxisOrientation() !== visualproj.getAxisOrientation()) {

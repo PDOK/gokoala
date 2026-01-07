@@ -1,4 +1,8 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "head"}}
+    <link rel="stylesheet" type="text/css" href="css/swagger-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="css/swagger-ui-pdok.css">
+{{end}}
 {{define "content"}}
 <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - OpenAPI {{ i18n "Specification" }}</h1>
@@ -33,9 +37,6 @@
         <div id="swagger-ui">
             Loading...
         </div>
-
-        <link rel="stylesheet" type="text/css" href="css/swagger-ui.min.css">
-        <link rel="stylesheet" type="text/css" href="css/swagger-ui-pdok.css">
 
         <!-- Load Swagger -->
         <script src="js/swagger-ui-bundle.js" charset="UTF-8"></script>

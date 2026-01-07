@@ -1,4 +1,7 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{ define "head" }}
+    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+{{ end }}
 {{define "content"}}
   <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Tiles" }}</h1>
@@ -103,7 +106,6 @@
           </tr>
         </tbody>
       </table>
-      <link rel="stylesheet" type="text/css" href="view-component/styles.css">
       <script type="module" src="view-component/main.js"></script>
       <script src="view-component/polyfills.js"></script>
        <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
