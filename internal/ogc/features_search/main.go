@@ -48,8 +48,8 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 		break
 	}
 	if searchDS == nil {
-		log.Fatal("no datasource configured for search, please check your config file. " +
-			"Only a single datasource (Postgres) is supported for search.")
+		return nil, errors.New("no datasource configured for search, please check your config file. " +
+			"Only a single datasource (Postgres) is supported for features search")
 	}
 
 	s := &Search{

@@ -92,13 +92,13 @@ var (
 		&cli.PathFlag{
 			Name:     rewritesFileFlag,
 			EnvVars:  []string{strcase.ToScreamingSnake(rewritesFileFlag)},
-			Usage:    "path to CSV file containing rewrites used to generate suggestions. Only for OGC API Features with search enabled.",
+			Usage:    "path to CSV file containing rewrites used to generate suggestions. Only for OGC API Features Search.",
 			Required: false,
 		},
 		&cli.PathFlag{
 			Name:     synonymsFileFlag,
 			EnvVars:  []string{strcase.ToScreamingSnake(synonymsFileFlag)},
-			Usage:    "path to CSV file containing synonyms used to generate suggestions. Only for OGC API Features with search enabled.",
+			Usage:    "path to CSV file containing synonyms used to generate suggestions. Only for OGC API Features Search.",
 			Required: false,
 		},
 	}
@@ -127,7 +127,10 @@ func main() {
 			return err
 		}
 		// Each OGC API building block makes use of said Engine
-		ogc.SetupBuildingBlocks(engine, c.String(rewritesFileFlag), c.String(synonymsFileFlag))
+		err = ogc.SetupBuildingBlocks(engine, c.String(rewritesFileFlag), c.String(synonymsFileFlag))
+		if err != nil {
+			return err
+		}
 
 		return engine.Start(address, debugPort, shutdownDelay)
 	}

@@ -31,6 +31,8 @@ See OGC APIs listed on https://api.pdok.nl. These are powered by GoKoala.
 
 ## Features
 
+GoKoala supports:
+
 - [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
   OpenAPI specification and interactive Swagger UI. Multilingual support available.
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
@@ -52,6 +54,12 @@ See OGC APIs listed on https://api.pdok.nl. These are powered by GoKoala.
   and JSON representation of supported (Mapbox) styles.
 - [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
+
+Besides OGC APIs, GoKoala also offers an API for geocoding. This builds on top of OGC API Features and
+allows the user to search for features across one or multiple collections using free-text search terms. To support this
+use case, one first needs to create a search index in Postgres using the [gokoala-etl](cmd/gokoala-etl) tool.
+Furthermore, you need to configure the `featuresSearch` section in the config file. This is currently considered an
+advanced feature.
 
 ## Build
 

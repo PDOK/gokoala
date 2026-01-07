@@ -80,12 +80,12 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
-	app.Usage = "Run location search and geocoding API, or use as CLI to support the ETL process for this API."
+	app.Usage = "Run an ETL (Extract-Transform-Load) process to populate the Features Search API."
 	app.UseShortOptionHandling = true
 	app.Commands = []*cli.Command{
 		{
 			Name:  "create-search-index",
-			Usage: "Create empty search index in database",
+			Usage: "Create an empty search index in the database",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
@@ -126,7 +126,7 @@ func main() {
 		},
 		{
 			Name:  "get-revision",
-			Usage: "Get the revision of a collection in a search index",
+			Usage: "Get the revision of a collection in the search index",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
@@ -157,7 +157,7 @@ func main() {
 		},
 		{
 			Name:  "import-file",
-			Usage: "Import file into search index",
+			Usage: "Import a file (e.g. GeoPackage) into the search index",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],

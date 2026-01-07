@@ -1,8 +1,6 @@
 package ogc
 
 import (
-	"log"
-
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/common/core"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -14,7 +12,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/tiles"
 )
 
-func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile string) {
+func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile string) error {
 	// OGC 3D GeoVolumes API
 	if engine.Config.OgcAPI.GeoVolumes != nil {
 		geovolumes.NewThreeDimensionalGeoVolumes(engine)
@@ -39,7 +37,7 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 		ao := features.DetermineAxisOrder(ds)
 		_, err := features_search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 	// OGC Processes API
@@ -53,4 +51,5 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	if engine.Config.HasCollections() {
 		geospatial.NewCollections(engine, collectionTypes)
 	}
+	return nil
 }
