@@ -37,7 +37,7 @@ ogcApi:
           - address_postal
           - address_place
         displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
-        ogcCollections:
+        collectionRefs:
           - api: https://example.com/ogc/v1
             collection: addresses
             geometryType: point
@@ -56,7 +56,7 @@ ogcApi:
           - street
           - place
         displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
-        ogcCollections:
+        collectionRefs:
           - api: https://example.com/ogc/v1
             collection: buildings
             geometryType: polygon

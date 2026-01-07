@@ -115,8 +115,8 @@ func (in *CollectionEntryFeaturesSearch) DeepCopyInto(out *CollectionEntryFeatur
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.OGCCollections != nil {
-		in, out := &in.OGCCollections, &out.OGCCollections
+	if in.CollectionRefs != nil {
+		in, out := &in.CollectionRefs, &out.CollectionRefs
 		*out = make([]RelatedOGCAPIFeaturesCollection, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])

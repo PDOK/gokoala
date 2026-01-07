@@ -60,9 +60,9 @@ type CollectionEntryFeaturesSearch struct {
 	// +kubebuilder:default=1
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
-	// (Links to) the individual OGC API (feature) collections that are searchable in this collection.
+	// Links to the individual OGC API (feature) collections that are searchable in this collection.
 	// +kubebuilder:validation:MinItems=1
-	OGCCollections []RelatedOGCAPIFeaturesCollection `yaml:"ogcCollections" json:"ogcCollections" validate:"required,min=1"`
+	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs" json:"collectionRefs" validate:"required,min=1"`
 }
 
 // +kubebuilder:object:generate=true
