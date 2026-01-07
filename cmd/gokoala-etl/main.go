@@ -9,6 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/ogc/features_search/etl"
 	"github.com/PDOK/gokoala/internal/ogc/features_search/etl/config"
+	"github.com/google/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/text/language"
@@ -126,7 +127,7 @@ func main() {
 		},
 		{
 			Name:  "get-revision",
-			Usage: "Get the revision of a collection in the search index",
+			Usage: "Get the revision (UUID) of a collection in the search index",
 			Flags: []cli.Flag{
 				commonDBFlags[dbHostFlag],
 				commonDBFlags[dbPortFlag],
@@ -150,8 +151,8 @@ func main() {
 			},
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
-				version, err := etl.GetRevision(dbConn, c.String(collectionIDFlag), c.String(searchIndexFlag))
-				fmt.Println(version)
+				revision, err := etl.GetRevision(dbConn, c.String(collectionIDFlag), c.String(searchIndexFlag))
+				fmt.Println(revision)
 				return err
 			},
 		},
@@ -173,7 +174,7 @@ func main() {
 				},
 				&cli.StringFlag{
 					Name:     revisionFlag,
-					Usage:    "Revision number of the data in the collection",
+					Usage:    "Revision number of the data in the collection, should be a UUID",
 					Required: true,
 					EnvVars:  []string{strcase.ToScreamingSnake(revisionFlag)},
 				},
@@ -211,9 +212,14 @@ func main() {
 				if err != nil {
 					return err
 				}
+				revision := c.String(revisionFlag)
+				_, err = uuid.Parse(revision)
+				if err != nil {
+					return fmt.Errorf("invalid revision %s, must be a UUID", revision)
+				}
 				file := c.Path(fileFlag)
 				for _, coll := range cfg.Collections {
-					err = etl.ImportFile(coll, c.String(searchIndexFlag), c.String(revisionFlag),
+					err = etl.ImportFile(coll, c.String(searchIndexFlag), revision,
 						file, c.Int(pageSizeFlag), c.Bool(skipOptimizeFlag), dbConn)
 
 					if err != nil {

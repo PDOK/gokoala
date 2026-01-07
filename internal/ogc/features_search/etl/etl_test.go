@@ -75,7 +75,6 @@ func makeDbConnection(dbPort nat.Port) string {
 }
 
 func TestGetVersion(t *testing.T) {
-
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
