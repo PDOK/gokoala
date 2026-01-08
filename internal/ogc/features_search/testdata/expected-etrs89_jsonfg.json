@@ -1,6 +1,7 @@
 {
   "type": "FeatureCollection",
   "timeStamp": "2000-01-01T00:00:00Z",
+  "coordRefSys": "http://www.opengis.net/def/crs/EPSG/0/4258",
   "links": [
     {
       "rel": "self",
@@ -21,9 +22,22 @@
       "href": "http://localhost:8080/search?f=html"
     }
   ],
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+  ],
   "features": [
     {
+      "id": "107",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05452,
+          4.80096
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -33,14 +47,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/107?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05452,
-          4.80096
-        ]
-      },
-      "id": "107",
       "links": [
         {
           "rel": "canonical",
@@ -51,7 +57,17 @@
       ]
     },
     {
+      "id": "104",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05491,
+          4.79988
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -61,14 +77,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/104?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05491,
-          4.79988
-        ]
-      },
-      "id": "104",
       "links": [
         {
           "rel": "canonical",
@@ -79,7 +87,17 @@
       ]
     },
     {
+      "id": "105",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05505,
+          4.79932
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -89,14 +107,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/105?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05505,
-          4.79932
-        ]
-      },
-      "id": "105",
       "links": [
         {
           "rel": "canonical",
@@ -107,7 +117,17 @@
       ]
     },
     {
+      "id": "106",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05536,
+          4.79933
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -117,14 +137,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/106?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05536,
-          4.79933
-        ]
-      },
-      "id": "106",
       "links": [
         {
           "rel": "canonical",
@@ -135,7 +147,17 @@
       ]
     },
     {
+      "id": "108",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05537,
+          4.79902
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -145,14 +167,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/108?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05537,
-          4.79902
-        ]
-      },
-      "id": "108",
       "links": [
         {
           "rel": "canonical",
@@ -163,7 +177,17 @@
       ]
     },
     {
+      "id": "109",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05573,
+          4.79891
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -173,14 +197,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/109?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05573,
-          4.79891
-        ]
-      },
-      "id": "109",
       "links": [
         {
           "rel": "canonical",
@@ -191,7 +207,17 @@
       ]
     },
     {
+      "id": "110",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05573,
+          4.79891
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -201,14 +227,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/110?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05573,
-          4.79891
-        ]
-      },
-      "id": "110",
       "links": [
         {
           "rel": "canonical",
@@ -219,7 +237,17 @@
       ]
     },
     {
+      "id": "111",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05573,
+          4.79891
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -229,14 +257,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/111?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05573,
-          4.79891
-        ]
-      },
-      "id": "111",
       "links": [
         {
           "rel": "canonical",
@@ -247,7 +267,17 @@
       ]
     },
     {
+      "id": "112",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05573,
+          4.79891
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -257,14 +287,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/112?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05573,
-          4.79891
-        ]
-      },
-      "id": "112",
       "links": [
         {
           "rel": "canonical",
@@ -275,7 +297,17 @@
       ]
     },
     {
+      "id": "113",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05573,
+          4.79891
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -285,14 +317,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/113?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05573,
-          4.79891
-        ]
-      },
-      "id": "113",
       "links": [
         {
           "rel": "canonical",
@@ -303,7 +327,17 @@
       ]
     },
     {
+      "id": "114",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.05573,
+          4.79891
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -313,14 +347,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.05573,
-          4.79891
-        ]
-      },
-      "id": "114",
       "links": [
         {
           "rel": "canonical",
@@ -331,7 +357,17 @@
       ]
     },
     {
+      "id": "1",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08349,
+          4.87327
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -341,14 +377,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08349,
-          4.87327
-        ]
-      },
-      "id": "1",
       "links": [
         {
           "rel": "canonical",
@@ -359,7 +387,17 @@
       ]
     },
     {
+      "id": "10",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08353,
+          4.8743
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -369,14 +407,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08353,
-          4.8743
-        ]
-      },
-      "id": "10",
       "links": [
         {
           "rel": "canonical",
@@ -387,7 +417,17 @@
       ]
     },
     {
+      "id": "115",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08355,
+          4.87442
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -397,14 +437,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08355,
-          4.87442
-        ]
-      },
-      "id": "115",
       "links": [
         {
           "rel": "canonical",
@@ -415,7 +447,17 @@
       ]
     },
     {
+      "id": "117",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08343,
+          4.8746
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -425,14 +467,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08343,
-          4.8746
-        ]
-      },
-      "id": "117",
       "links": [
         {
           "rel": "canonical",
@@ -443,7 +477,17 @@
       ]
     },
     {
+      "id": "118",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08343,
+          4.8746
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -453,14 +497,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08343,
-          4.8746
-        ]
-      },
-      "id": "118",
       "links": [
         {
           "rel": "canonical",
@@ -471,7 +507,17 @@
       ]
     },
     {
+      "id": "2",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08349,
+          4.87327
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -481,14 +527,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08349,
-          4.87327
-        ]
-      },
-      "id": "2",
       "links": [
         {
           "rel": "canonical",
@@ -499,7 +537,17 @@
       ]
     },
     {
+      "id": "3",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08349,
+          4.87327
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -509,14 +557,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08349,
-          4.87327
-        ]
-      },
-      "id": "3",
       "links": [
         {
           "rel": "canonical",
@@ -527,7 +567,17 @@
       ]
     },
     {
+      "id": "4",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08349,
+          4.87327
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -537,14 +587,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08349,
-          4.87327
-        ]
-      },
-      "id": "4",
       "links": [
         {
           "rel": "canonical",
@@ -555,7 +597,17 @@
       ]
     },
     {
+      "id": "8",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.0835,
+          4.87345
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -565,14 +617,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.0835,
-          4.87345
-        ]
-      },
-      "id": "8",
       "links": [
         {
           "rel": "canonical",
@@ -583,7 +627,17 @@
       ]
     },
     {
+      "id": "9",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08356,
+          4.87362
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -593,14 +647,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08356,
-          4.87362
-        ]
-      },
-      "id": "9",
       "links": [
         {
           "rel": "canonical",
@@ -611,7 +657,17 @@
       ]
     },
     {
+      "id": "116",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08328,
+          4.87515
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -621,14 +677,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/116?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08328,
-          4.87515
-        ]
-      },
-      "id": "116",
       "links": [
         {
           "rel": "canonical",
@@ -639,7 +687,17 @@
       ]
     },
     {
+      "id": "5",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08325,
+          4.87483
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -649,14 +707,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/5?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08325,
-          4.87483
-        ]
-      },
-      "id": "5",
       "links": [
         {
           "rel": "canonical",
@@ -667,7 +717,17 @@
       ]
     },
     {
+      "id": "6",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08329,
+          4.87477
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -677,14 +737,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/6?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08329,
-          4.87477
-        ]
-      },
-      "id": "6",
       "links": [
         {
           "rel": "canonical",
@@ -695,7 +747,17 @@
       ]
     },
     {
+      "id": "7",
       "type": "Feature",
+      "time": null,
+      "place": {
+        "type": "Point",
+        "coordinates": [
+          53.08329,
+          4.87477
+        ]
+      },
+      "geometry": null,
       "properties": {
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
@@ -705,14 +767,6 @@
         "href": "https://example.com/ogc/v1/collections/addresses/items/7?f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
         "score": 0.04551196098327637
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          53.08329,
-          4.87477
-        ]
-      },
-      "id": "7",
       "links": [
         {
           "rel": "canonical",

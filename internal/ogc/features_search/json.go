@@ -43,7 +43,7 @@ func (jsr *jsonSearchResults) asJSONFG(w http.ResponseWriter, r *http.Request, b
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = createLinks(baseURL)
 
-	jsr.serve(&fc, engine.MediaTypeJSONFG, r, w)
+	jsr.serve(&fgFC, engine.MediaTypeJSONFG, r, w)
 }
 
 func (jsr *jsonSearchResults) serve(input any, contentType string, r *http.Request, w http.ResponseWriter) {
