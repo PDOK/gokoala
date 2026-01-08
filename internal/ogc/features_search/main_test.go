@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 
@@ -85,7 +86,8 @@ func TestSearch(t *testing.T) {
 
 	// run test cases
 	type fields struct {
-		url string
+		url    string
+		format string
 	}
 	type want struct {
 		body       string
@@ -99,7 +101,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search with boolean operators",
 			fields: fields{
-				url: "http://localhost:8080/search?q=!foo&addresses[version]=1",
+				url:    "http://localhost:8080/search?q=!foo&addresses[version]=1",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-boolean-operators.json",
@@ -109,7 +112,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search without collection parameter(s)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Oudeschild&limit=50",
+				url:    "http://localhost:8080/search?q=Oudeschild&limit=50",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-search-no-collection.json",
@@ -119,7 +123,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search with collection without version (first variant)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Oudeschild&addresses",
+				url:    "http://localhost:8080/search?q=Oudeschild&addresses",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-search-no-version-1.json",
@@ -129,7 +134,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search with collection without version (second variant)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Oudeschild&addresses=1",
+				url:    "http://localhost:8080/search?q=Oudeschild&addresses=1",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-search-no-version-2.json",
@@ -139,7 +145,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Fail on search with collection without version (third variant)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Oudeschild&addresses[foo]=1",
+				url:    "http://localhost:8080/search?q=Oudeschild&addresses[foo]=1",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-search-no-version-3.json",
@@ -149,7 +156,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Complex search term with synonyms and rewrites, should not result in error",
 			fields: fields{
-				url: "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=goev straat 1 in Den Haag niet in Friesland&addresses[version]=1&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-complex-search-term.json",
@@ -159,7 +167,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search matches multiple suggests, the suggest which equals the display name should be the first result",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Achtertune 1794BL Oosterend&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Achtertune 1794BL Oosterend&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-display-name-first-result.json",
@@ -169,7 +178,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search exact match before should be ranked before wildcard match",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Holland Den Burg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Holland Den Burg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-exact-match.json",
@@ -179,7 +189,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Short results should rank above longer results (for example housenr 1 should rank before 1A)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Akenbuurt 1&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Akenbuurt 1&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-short-before-long.json",
@@ -189,7 +200,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search for house numbers, should rank in logical order",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Amaliaweg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Amaliaweg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-1.json",
@@ -199,7 +211,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search for house numbers, should rank in logical order - second test",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Abbewaal&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Abbewaal&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-2.json",
@@ -209,7 +222,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search for house numbers, should rank in logical order - third test",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Amstel Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Amstel Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-3.json",
@@ -219,7 +233,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search for house numbers, should rank in logical order - fourth test",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Amstel 4 Amsterdam&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-housenumber-ranking-4.json",
@@ -229,7 +244,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search short streetname",
 			fields: fields{
-				url: "http://localhost:8080/search?q=A Ottoland&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=A Ottoland&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-short-streetname.json",
@@ -239,7 +255,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search synonym with space",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Spui Den Haag&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Spui Den Haag&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
@@ -249,7 +266,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search synonym with space - second test",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Spui 's-Gravenhage&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Spui 's-Gravenhage&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
@@ -259,7 +277,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search streetname with dots",
 			fields: fields{
-				url: "http://localhost:8080/search?q=A.B.C straat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=A.B.C straat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-streetname-with-dots.json",
@@ -269,7 +288,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search streetname with number (not housenumber)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=1944&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=1944&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-streetname-with-number.json",
@@ -279,7 +299,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search long street",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Ir. Mr. Dr. van Waterschoot van der Grachtstraat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Ir. Mr. Dr. van Waterschoot van der Grachtstraat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-long-street.json",
@@ -289,7 +310,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search frisian street - with frisian input",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Brânbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Brânbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
@@ -299,7 +321,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search frisian street - with dutch input",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Branbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Branbuorren&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
@@ -309,7 +332,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search building with polygon output",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Molwerk&buildings[version]=1&buildings[relevance]=0.8&limit=10&f=json",
+				url:    "http://localhost:8080/search?q=Molwerk&buildings[version]=1&buildings[relevance]=0.8&limit=10&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-polygon.json",
@@ -319,7 +343,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search in two collections, with matches in both collections",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Achter&addresses[version]=1&addresses[relevance]=0.8&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
+				url:    "http://localhost:8080/search?q=Achter&addresses[version]=1&addresses[relevance]=0.8&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-two-collections.json",
@@ -329,7 +354,8 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search in one collections (while another collection also has a match but that one shouldn't appear in the results)",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Achter&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
+				url:    "http://localhost:8080/search?q=Achter&buildings[version]=1&buildings[relevance]=0.8&limit=50&f=json",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-one-collection.json",
@@ -339,10 +365,44 @@ func TestSearch(t *testing.T) {
 		{
 			name: "Search and get output in RD",
 			fields: fields{
-				url: "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+				format: "json",
 			},
 			want: want{
 				body:       "internal/ogc/features_search/testdata/expected-rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search and get output in ETRS89",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-etrs89.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search and get output as JSON-FG (in ETRS89)",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=jsonfg&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-etrs89_jsonfg.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search and get output in HTML (snippet)",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=html",
+				format: "html",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-snippet.html",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -371,7 +431,14 @@ func TestSearch(t *testing.T) {
 			if err != nil {
 				require.NoError(t, err)
 			}
-			assert.JSONEq(t, string(expectedBody), rr.Body.String())
+			switch tt.fields.format {
+			case engine.FormatJSON:
+				assert.JSONEq(t, string(expectedBody), rr.Body.String())
+			case engine.FormatHTML:
+				assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
+			default:
+				assert.Fail(t, "implement support to test format: "+tt.fields.format)
+			}
 		})
 	}
 }
@@ -486,4 +553,8 @@ func createRequest(url string) (*http.Request, error) {
 	}
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, chi.NewRouteContext()))
 	return req, err
+}
+
+func normalize(s string) string {
+	return strings.ToLower(strings.Join(strings.Fields(s), ""))
 }

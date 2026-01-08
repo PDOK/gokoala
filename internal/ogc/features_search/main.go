@@ -28,11 +28,13 @@ const (
 )
 
 type Search struct {
-	engine          *engine.Engine
+	engine *engine.Engine
+
 	datasource      ds.Datasource
 	axisOrderBySRID map[int]fd.AxisOrder
 	queryExpansion  *query_expansion.QueryExpansion
-	json            *jsonSearchResults
+
+	json *jsonSearchResults
 }
 
 func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datasource,
@@ -78,7 +80,7 @@ func (s *Search) Search() http.HandlerFunc {
 		case engine.FormatHTML:
 			s.searchAsHTML(w, r)
 			return
-		case engine.FormatJSON:
+		case engine.FormatJSON, engine.FormatGeoJSON, engine.FormatJSONFG:
 			s.searchAsJSON(w, r)
 			return
 		}
