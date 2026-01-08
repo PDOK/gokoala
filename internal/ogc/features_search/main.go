@@ -81,7 +81,7 @@ func (s *Search) Search() http.HandlerFunc {
 			s.searchAsHTML(w, r)
 			return
 		case engine.FormatJSON, engine.FormatGeoJSON, engine.FormatJSONFG:
-			s.searchAsJSON(w, r)
+			s.searchAsJSON(w, r, format)
 			return
 		}
 		engine.RenderProblem(engine.ProblemNotFound, w)
@@ -99,7 +99,7 @@ func (s *Search) searchAsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 // searchAsJSON the actual search endpoint, handle requests like "/search?q=foo&mycollection[version]=1".
-func (s *Search) searchAsJSON(w http.ResponseWriter, r *http.Request) {
+func (s *Search) searchAsJSON(w http.ResponseWriter, r *http.Request, format string) {
 	// Validate
 	if err := s.engine.OpenAPI.ValidateRequest(r); err != nil {
 		engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -138,7 +138,6 @@ func (s *Search) searchAsJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Output
-	format := s.engine.CN.NegotiateFormat(r)
 	switch format {
 	case engine.FormatGeoJSON, engine.FormatJSON:
 		s.json.asGeoJSON(w, r, *s.engine.Config.BaseURL.URL, fc)
@@ -172,14 +171,9 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 				return fmt.Errorf("geometry type not found in feature %s", feat.ID)
 			}
 			if strings.EqualFold(ogcColl.GeometryType, geomType.(string)) {
-				href, err := url.JoinPath(ogcColl.APIBaseURL.String(), "collections", ogcColl.CollectionID, "items", feat.ID)
+				href, err := s.makeHref(ogcColl, feat, contentCrs)
 				if err != nil {
-					return fmt.Errorf("failed to construct API url %w", err)
-				}
-				href += "?f=" + engine.FormatJSON
-
-				if contentCrs != "" && !contentCrs.IsWGS84() {
-					href += fmt.Sprintf("&crs=%s", contentCrs)
+					return err
 				}
 
 				// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
@@ -196,6 +190,25 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 		}
 	}
 	return nil
+}
+
+func (s *Search) makeHref(ogcColl config.RelatedOGCAPIFeaturesCollection,
+	feat *fd.Feature, contentCrs fd.ContentCrs) (string, error) {
+
+	result, err := url.JoinPath(ogcColl.CollectionURL(s.engine.Config.BaseURL), feat.ID)
+	if err != nil {
+		return "", fmt.Errorf("failed to construct API url %w", err)
+	}
+
+	// add query params
+	result += "?f=" + engine.FormatJSON
+	if contentCrs != "" && !contentCrs.IsWGS84() {
+		result += fmt.Sprintf("&crs=%s", contentCrs)
+	}
+	if ogcColl.Datetime != nil && *ogcColl.Datetime != "" {
+		result += "&datetime=" + *ogcColl.Datetime
+	}
+	return result, nil
 }
 
 // log error but send a generic message to the client to prevent possible information leakage from datasource.

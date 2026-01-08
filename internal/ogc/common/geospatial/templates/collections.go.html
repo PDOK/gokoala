@@ -10,8 +10,8 @@
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
-                {{/* collections used for search aren't clickable, unless it's also a regular featurs collection */}}
-                {{ if not $coll.FeaturesSearch }}
+                {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
+                {{ if or (not $coll.FeaturesSearch) ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
                     <h2 class="card-header h5">
                         {{ if and $coll.Metadata $coll.Metadata.Title }}
                             <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
@@ -107,12 +107,15 @@
                     <li class="list-group-item">
                         <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $coll.FeaturesSearch.DisplayNameTemplate }}</code>
                     </li>
-                    <li class="list-group-item">
-                        <strong>{{ i18n "OGCCollections" }}</strong>
-                        <ul>{{- range $o, $collRef := $coll.FeaturesSearch.CollectionRefs -}}
-                        <li><a href="{{ $collRef.APIBaseURL }}/collections/{{ $collRef.CollectionID }}">{{ $collRef.CollectionID }}</a></li>
-                        {{- end -}}</ul>
-                    </li>
+                        {{/* collection reference is only required for remotely hosted collections */}}
+                        {{ if not ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
+                        <li class="list-group-item">
+                            <strong>{{ i18n "OGCCollections" }}</strong>
+                            <ul>{{- range $o, $collRef := $coll.FeaturesSearch.CollectionRefs -}}
+                            <li><a href="{{ $collRef.CollectionURL $baseUrl }}">{{ $collRef.CollectionID }}</a></li>
+                            {{- end -}}</ul>
+                        </li>
+                        {{ end }}
                     {{ end }}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}

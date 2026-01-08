@@ -1,5 +1,7 @@
 package config
 
+import "net/url"
+
 // +kubebuilder:object:generate=true
 type OgcAPIFeaturesSearch struct {
 	// Builds on top of the OGC API Features configuration.
@@ -65,23 +67,51 @@ type CollectionEntryFeaturesSearch struct {
 	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs" json:"collectionRefs" validate:"required,min=1"`
 }
 
+// IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.
+// In other words: it references a local feature collection and doesn't point to a remote one.
+func (cfs *CollectionEntryFeaturesSearch) IsLocalFeatureCollection(collID string) bool {
+	if len(cfs.CollectionRefs) == 1 {
+		collRef := cfs.CollectionRefs[0]
+		return collRef.CollectionID == collID && collRef.APIBaseURL.URL == nil
+	}
+	return false
+}
+
 // +kubebuilder:object:generate=true
 type RelatedOGCAPIFeaturesCollection struct {
-	// Base URL/Href to the OGC Features API
+	// Base URL/Href to the OGC Features API.
+	//
+	// Only required when the given collection is hosted on a different server than the search API
+	// (in a separate deployment).Otherwise, the base URL of this server is used.
+	//
 	// +kubebuilder:validation:Type=string
-	APIBaseURL URL `yaml:"api" json:"api" validate:"required"`
+	APIBaseURL URL `yaml:"api,omitempty" json:"api,omitempty"`
 
 	// Geometry type of the features in the related collection.
 	// A collection in an OGC Features API has a single geometry type.
 	// But a searchable collection has no geometry type distinction and thus
 	// could be assembled of multiple OGC Feature API collections (with the same feature type).
+	//
+	// +kubebuilder:validation:Enum=point,multipoint,linestring,multilinestring,polygon,multipolygon
 	GeometryType string `yaml:"geometryType" json:"geometryType" validate:"required"`
 
-	// Collection ID in the OGC Features API
+	// Collection ID in the OGC Features API. This can be a collection on this
+	// server (listed under ogcApi>Features>Collections) or a remote collection on another server.
 	CollectionID string `yaml:"collection" json:"collection" validate:"required,lowercase_id"`
 
 	// `datetime` query parameter for the OGC Features API. In case it's temporal.
 	// E.g.: "{now()-1h}"
 	// +optional
 	Datetime *string `yaml:"datetime,omitempty" json:"datetime,omitempty"`
+}
+
+func (ogcColl *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {
+	if ogcColl.APIBaseURL.URL != nil && ogcColl.APIBaseURL.String() != "" {
+		baseURL = ogcColl.APIBaseURL
+	}
+	result, err := url.JoinPath(baseURL.String(), "collections", ogcColl.CollectionID, "items")
+	if err != nil {
+		return ""
+	}
+	return result
 }
