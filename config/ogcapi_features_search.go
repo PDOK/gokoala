@@ -92,7 +92,7 @@ type RelatedOGCAPIFeaturesCollection struct {
 	// But a searchable collection has no geometry type distinction and thus
 	// could be assembled of multiple OGC Feature API collections (with the same feature type).
 	//
-	// +kubebuilder:validation:Enum=point,multipoint,linestring,multilinestring,polygon,multipolygon
+	// +kubebuilder:validation:Enum=point;multipoint;linestring;multilinestring;polygon;multipolygon
 	GeometryType string `yaml:"geometryType" json:"geometryType" validate:"required"`
 
 	// Collection ID in the OGC Features API. This can be a collection on this
