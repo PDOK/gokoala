@@ -276,6 +276,7 @@ Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), [PRO
 Also make sure `gcc` or similar is available since the application uses cgo.
 
 ```bash
+go generate ./...
 go build -o gokoala cmd/gokoala-server/main.go
 ./gokoala
 ```

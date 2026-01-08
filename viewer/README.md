@@ -1,6 +1,6 @@
 # Viewer
 
-This viewer is available as a [WebComponent](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) and amongst others able to:
+This viewer is available as a set of [WebComponents](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) and amongst others able to:
 
 - display vector tiles, with object information
 - display GeoJSON features on a map

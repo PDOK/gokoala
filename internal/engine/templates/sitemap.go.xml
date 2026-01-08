@@ -78,4 +78,9 @@
             <loc>{{- .Config.BaseURL -}}/styles?f=html</loc>
         </url>
     {{- end -}}
+    {{- if .Config.OgcAPI.FeaturesSearch -}}
+    <url>
+        <loc>{{- .Config.BaseURL -}}/search?f=html</loc>
+    </url>
+    {{- end -}}
 </urlset>
