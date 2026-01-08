@@ -36,6 +36,9 @@
           },
           {
             "$ref": "#/components/parameters/crs"
+          },
+          {
+            "$ref": "#/components/parameters/f-features"
           }
         ],
         "responses": {
@@ -53,131 +56,12 @@
             "content": {
               "application/geo+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureCollectionGeoJSON"
-                },
-                "example": {
-                  "type": "FeatureCollection",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    }
-                  ],
-                  "timeStamp": "2018-04-03T14:52:23Z",
-{{/*                  "numberMatched": 123,*/}}
-                  "numberReturned": 2,
-                  "features": [
-                    {
-                      "type": "Feature",
-                      "id": "123",
-                      "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "bbox": [
-                        "..."
-                      ],
-                      "properties": {
-                        "function": "residential",
-                        "floors": "2",
-                        "lastUpdate": "2015-08-01T12:34:56Z"
-                      }
-                    },
-                    {
-                      "type": "Feature",
-                      "id": "132",
-                      "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "bbox": null,
-                      "properties": {
-                        "function": "public use",
-                        "floors": "10",
-                        "lastUpdate": "2013-12-03T10:15:37Z"
-                      }
-                    }
-                  ]
+                  "$ref": "#/components/schemas/searchFeatureCollectionGeoJSON"
                 }
               },
               "application/vnd.ogc.fg+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/featureCollectionJSONFG"
-                },
-                "example": {
-                  "conformsTo": [
-                    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
-                  ],
-                  "type": "FeatureCollection",
-                  "links": [
-                    {
-                      "href": "http://data.example.com/collections/buildings/items.json",
-                      "rel": "self",
-                      "type": "application/geo+json",
-                      "title": "this document"
-                    },
-                    {
-                      "href": "http://data.example.com/collections/buildings/items?f=html",
-                      "rel": "alternate",
-                      "type": "text/html",
-                      "title": "this document as HTML"
-                    }
-                  ],
-                  "timeStamp": "2018-04-03T14:52:23Z",
-                  {{/*                  "numberMatched": 123,*/}}
-                  "numberReturned": 2,
-                  "features": [
-                    {
-                      "type": "Feature",
-                      "id": "123",
-                      "place": {
-                        "type": "Point",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "geometry": null,
-                      "bbox": [
-                        "..."
-                      ],
-                      "time": null,
-                      "properties": {
-                        "function": "residential",
-                        "floors": "2",
-                        "lastUpdate": "2015-08-01T12:34:56Z"
-                      }
-                    },
-                    {
-                      "type": "Feature",
-                      "id": "132",
-                      "place": {
-                        "type": "Point",
-                        "coordinates": [
-                          "..."
-                        ]
-                      },
-                      "geometry": null,
-                      "bbox": null,
-                      "time": null,
-                      "properties": {
-                        "function": "public use",
-                        "floors": "10",
-                        "lastUpdate": "2013-12-03T10:15:37Z"
-                      }
-                    }
-                  ]
+                  "$ref": "#/components/schemas/searchFeatureCollectionJSONFG"
                 }
               },
               "text/html": {
@@ -194,7 +78,7 @@
   },
   "components": {
     "schemas": {
-      "featureCollectionJSONFG": {
+      "searchFeatureCollectionJSONFG": {
         "required": [
           "features",
           "type"
@@ -216,7 +100,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureJSONFG"
+              "$ref": "#/components/schemas/searchFeatureJSONFG"
             }
           },
           "links": {
@@ -236,7 +120,7 @@
           }
         }
       },
-      "featureCollectionGeoJSON": {
+      "searchFeatureCollectionGeoJSON": {
         "required": [
           "features",
           "type"
@@ -252,7 +136,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureGeoJSON"
+              "$ref": "#/components/schemas/searchFeatureGeoJSON"
             }
           },
           "links": {
@@ -272,7 +156,7 @@
           }
         }
       },
-      "featureJSONFG": {
+      "searchFeatureJSONFG": {
         "required": [
             "time",
             "place",
@@ -332,8 +216,7 @@
             }
           },
           "properties": {
-            "type": "object",
-            "nullable": true
+            "$ref": "#/components/schemas/searchProperties"
           },
           "id": {
             "oneOf": [
@@ -353,7 +236,7 @@
           }
         }
       },
-      "featureGeoJSON": {
+      "searchFeatureGeoJSON": {
         "required": [
           "geometry",
           "properties",
@@ -380,8 +263,7 @@
             }
           },
           "properties": {
-            "type": "object",
-            "nullable": true
+            "$ref": "#/components/schemas/searchProperties"
           },
           "id": {
             "oneOf": [
@@ -400,6 +282,47 @@
             }
           }
         }
+      },
+      "searchProperties": {
+        "properties": {
+          "collection_id": {
+            "description": "identifier of a collection.",
+            "nullable": false,
+            "type": "string"
+          },
+          "collection_version": {
+            "description": "version of a collection.",
+            "nullable": false,
+            "type": "integer"
+          },
+          "collection_geometery_type": {
+            "description": "geometry type of a collection.",
+            "nullable": false,
+            "type": "string"
+          },
+          "display_name": {
+            "description": "human readable name of the found feature.",
+            "nullable": false,
+            "type": "string"
+          },
+          "highlight": {
+            "description": "human readable name of the found feature, with the search term highlighted.",
+            "nullable": true,
+            "type": "string"
+          },
+          "href": {
+            "description": "reference to the actual feature, possibly in another OGC API. Follow this link to get the full feature data.",
+            "nullable": false,
+            "type": "string"
+          },
+          "score": {
+            "description": "ranking score of the found feature, higher is better.",
+            "nullable": false,
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "type": "object"
       },
       "geometryGeoJSON": {
         "oneOf": [
@@ -470,37 +393,6 @@
                 "type": "number"
               }
             }
-          }
-        }
-      },
-      "link": {
-        "required": [
-          "href"
-        ],
-        "type": "object",
-        "properties": {
-          "href": {
-            "type": "string",
-            "example": "http://data.example.com/buildings/123"
-          },
-          "rel": {
-            "type": "string",
-            "example": "alternate"
-          },
-          "type": {
-            "type": "string",
-            "example": "application/geo+json"
-          },
-          "hreflang": {
-            "type": "string",
-            "example": "en"
-          },
-          "title": {
-            "type": "string",
-            "example": "Trierer Strasse 70, 53115 Bonn"
-          },
-          "length": {
-            "type": "integer"
           }
         }
       },
@@ -791,6 +683,23 @@
           "type": "integer",
           "default": 10
         }
+      },
+      "f-features": {
+        "description": "The optional f parameter indicates the output format that the server shall provide as part of the response document.  The default format is JSON.",
+        "explode": false,
+        "in": "query",
+        "name": "f",
+        "required": false,
+        "schema": {
+          "default": "json",
+          "enum": [
+            "json",
+            "jsonfg",
+            "html"
+          ],
+          "type": "string"
+        },
+        "style": "form"
       }
     }
   }

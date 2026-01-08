@@ -93,7 +93,7 @@ func (s *Search) searchAsHTML(w http.ResponseWriter, r *http.Request) {
 
 	s.engine.Serve(w, r,
 		engine.ServeTemplate(key),
-		engine.ServeValidation(false, false))
+		engine.ServeValidation(false, true))
 }
 
 // searchAsJSON the actual search endpoint, handle requests like "/search?q=foo&mycollection[version]=1".
