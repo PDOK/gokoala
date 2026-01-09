@@ -87,10 +87,6 @@ type Config struct {
 	// Location where resources (e.g. thumbnails) specific to the given dataset are hosted
 	// +optional
 	Resources *Resources `yaml:"resources,omitempty" json:"resources,omitempty"`
-
-	// Location API enabled
-	// +optional
-	SearchEnabled bool `yaml:"searchEnabled" json:"searchEnabled"`
 }
 
 // NewConfig read YAML config file, required to start GoKoala.
