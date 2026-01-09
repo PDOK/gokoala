@@ -144,7 +144,7 @@ func main() {
 				},
 				&cli.StringFlag{
 					Name:     collectionIDFlag,
-					Usage:    "ID/name of the collection in the search index to get the version of",
+					Usage:    "ID/name of the collection in the search index to get the revision of",
 					Required: true,
 					EnvVars:  []string{strcase.ToScreamingSnake(collectionIDFlag)},
 				},
