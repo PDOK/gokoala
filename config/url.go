@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
@@ -25,6 +26,16 @@ type URL struct {
 	// This is a pointer so the wrapper can directly be used in templates, e.g.: {{ .Config.BaseURL }}
 	// Otherwise you would need .String() or template.URL(). (Might be a bug.)
 	*url.URL
+}
+
+// NewURL parses a string to URL and also resolves any environment variables present in the given string.
+func NewURL(s string) (*URL, error) {
+	resolvedURL := os.ExpandEnv(s)
+	parsedURL, err := parseURL(resolvedURL)
+	if err != nil {
+		return nil, err
+	}
+	return &URL{URL: parsedURL}, nil
 }
 
 // UnmarshalYAML parses a string to URL and also removes trailing slash if present,

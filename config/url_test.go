@@ -7,11 +7,72 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
 type TestEmbeddedURL struct {
 	U URL `json:"u" yaml:"u"`
+}
+
+func TestNewURL(t *testing.T) {
+	t.Setenv("TEST_BASE_URL", "https://example.com")
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+		wantErr  bool
+	}{
+		{
+			name:     "Valid HTTP URL",
+			input:    "http://localhost:8080",
+			expected: "http://localhost:8080",
+			wantErr:  false,
+		},
+		{
+			name:     "Valid HTTPS URL with trailing slash (should be trimmed)",
+			input:    "https://example.com/",
+			expected: "https://example.com",
+			wantErr:  false,
+		},
+		{
+			name:     "Environment variable resolution",
+			input:    "${TEST_BASE_URL}/api",
+			expected: "https://example.com/api",
+			wantErr:  false,
+		},
+		{
+			name:    "Invalid URL scheme",
+			input:   "ftp://example.com",
+			wantErr: true,
+		},
+		{
+			name:    "Plain text string (invalid URL)",
+			input:   "not-a-url",
+			wantErr: true,
+		},
+		{
+			name:    "Empty string",
+			input:   "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewURL(tt.input)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				assert.Nil(t, got)
+			} else {
+				require.NoError(t, err)
+				assert.NotNil(t, got)
+				assert.Equal(t, tt.expected, got.String())
+			}
+		})
+	}
 }
 
 func TestURL_DeepCopy(t *testing.T) {
