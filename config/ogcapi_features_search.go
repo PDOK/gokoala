@@ -98,11 +98,6 @@ type RelatedOGCAPIFeaturesCollection struct {
 	// Collection ID in the OGC Features API. This can be a collection on this
 	// server (listed under ogcApi>Features>Collections) or a remote collection on another server.
 	CollectionID string `yaml:"collection" json:"collection" validate:"required,lowercase_id"`
-
-	// `datetime` query parameter for the OGC Features API. In case it's temporal.
-	// E.g.: "{now()-1h}"
-	// +optional
-	Datetime *string `yaml:"datetime,omitempty" json:"datetime,omitempty"`
 }
 
 func (ogcColl *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {

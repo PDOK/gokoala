@@ -205,9 +205,6 @@ func (s *Search) makeHref(ogcColl config.RelatedOGCAPIFeaturesCollection,
 	if contentCrs != "" && !contentCrs.IsWGS84() {
 		result += fmt.Sprintf("&crs=%s", contentCrs)
 	}
-	if ogcColl.Datetime != nil && *ogcColl.Datetime != "" {
-		result += "&datetime=" + *ogcColl.Datetime
-	}
 	return result, nil
 }
 
