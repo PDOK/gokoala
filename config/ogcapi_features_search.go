@@ -63,7 +63,8 @@ type CollectionEntryFeaturesSearch struct {
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
 	// Links to the individual OGC API (feature) collections that are searchable in this collection.
-	// +kubebuilder:validation:MinItems=1
+	// TODO: remove optional marker once collections are refactored
+	// +optional
 	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs" json:"collectionRefs" validate:"required,min=1"`
 }
 
