@@ -52,11 +52,14 @@ type SearchSettings struct {
 // +kubebuilder:object:generate=true
 type CollectionEntryFeaturesSearch struct {
 	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
-	// +kubebuilder:validation:MinItems=1
-	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required,unique"`
+	// TODO: remove optional marker once collections are refactored
+	// +optional
+	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
 
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
-	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
+	// TODO: remove optional marker once collections are refactored
+	// +optional
+	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
 
 	// Version of the collection exposed through the API.
 	// +kubebuilder:default=1
@@ -65,7 +68,7 @@ type CollectionEntryFeaturesSearch struct {
 	// Links to the individual OGC API (feature) collections that are searchable in this collection.
 	// TODO: remove optional marker once collections are refactored
 	// +optional
-	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs" json:"collectionRefs" validate:"required,min=1"`
+	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
 }
 
 // IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.
