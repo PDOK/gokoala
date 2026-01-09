@@ -1,0 +1,55 @@
+{{- /*gotype: github.com/PDOK/gomagpie/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+<hgroup>
+    <h1 class="title" id="title">{{ .Config.Title }} - Conformance</h1>
+</hgroup>
+<div class="row">
+    <div class="col-md-12">
+        <p>
+            {{ i18n "ConformanceAbstract" }}
+        </p>
+    </div>
+</div>
+<section class="row row-cols-md-6 g-4 py-3">
+    <div class="col-md-6 col-sm-12">
+        <div class="card">
+            <h2 class="card-header h5">Common</h2>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">Conformance</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core" target="_blank" aria-label="{{ i18n "To" }} conf/core {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core</a></td>
+                        <td>{{ i18n "Standard" }}</td>
+                    </tr>
+                    <tr>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json" target="_blank" aria-label="{{ i18n "To" }} conf/json {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json</a></td>
+                        <td>{{ i18n "Standard" }}</td>
+                    </tr>
+                    <tr>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html" target="_blank" aria-label="{{ i18n "To" }} conf/html {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html</a></td>
+                        <td>{{ i18n "Standard" }}</td>
+                    </tr>
+                    <tr>
+                        <td><a href="http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30" target="_blank" aria-label="{{ i18n "To" }} conf/oas30 {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30</a></td>
+                        <td>{{ i18n "Standard" }}</td>
+                    </tr>
+                    {{ if .Config.HasCollections }}
+                    <tr>
+                        <td>http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/collections</td>
+                        <td>{{ i18n "Draft" }}</td>
+                    </tr>
+                    {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</section>
+{{end}}

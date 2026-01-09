@@ -1,0 +1,89 @@
+{
+  "numberReturned": 2,
+  "collections": [
+    {
+      "id": "adres",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              1.657292,
+              48.040502,
+              12.431727,
+              56.11059
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        }
+      },
+      "title": "Adres",
+      "description": "Adressen van Nederland",
+      "keywords": [{"keyword":  "adres"}, {"keyword": "Nederland"}],
+      "version": 1,
+      "displayNameTemplate": "{{.straatnaam}} {{.huisnummer}}{{.huisletter}}, {{.postcode}} {{.woonplaats}}",
+      "links": [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "adres",
+          "href": "https://api.pdok.nl/owner/dataset/ogc/v1/collections/adres"
+        }
+      ]
+    },
+    {
+      "id": "weg",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -1.657292,
+              48.040502,
+              12.431727,
+              56.11059
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        }
+      },
+      "title": "Weg",
+      "description": "wegen van Nederland",
+      "keywords": [{"keyword":  "weg"}, {"keyword": "Nederland"}],
+      "version": 2,
+      "displayNameTemplate": "{{.straatnaam}} {{.postcode}}, {{.woonplaats}}",
+      "links":  [
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "weg_line",
+          "href": "https://api.pdok.nl/owner/dataset/ogc/v1/collections/weg_line"
+        },
+        {
+          "rel": "source",
+          "type": "text/html",
+          "title": "weg_polygon",
+          "href": "https://api.pdok.nl/owner/dataset/ogc/v1/collections/weg_polygon"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "href": "http://localhost:8080/collections?f=json",
+      "rel": "self",
+      "type": "application/json",
+      "title": "This document as JSON"
+    },
+    {
+      "href": "http://localhost:8080/collections?f=html",
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "This document as HTML"
+    },
+    {
+      "href": "https://www.tldrlegal.com/license/mit-license",
+      "rel": "license",
+      "type": "text/html",
+      "title": "MIT"
+    }
+  ]
+}
