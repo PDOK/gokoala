@@ -132,21 +132,6 @@
             </div>
         </div>
     </div>
-    {{ if .Config.SearchEnabled }}
-    <div class="col-md-4 col-sm-12">
-        <div class="card h-100">
-            <h2 class="card-header h5">
-                <a href="search" aria-label="{{ i18n "To" }} {{ i18n "Search" }}">{{ i18n "Search" }}</a>
-            </h2>
-            <div class="card-body">
-                <p>
-                    {{ i18n "SearchText" }}
-                </p>
-            </div>
-        </div>
-    </div>
-    {{ end }}
-
 
     {{ if .Config.OgcAPI.FeaturesSearch }}
     <div class="col-md-4 col-sm-12">
