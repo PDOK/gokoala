@@ -12,6 +12,7 @@ const (
 	apiPath            = "/api"
 	alternativeAPIPath = "/openapi.json"
 	conformancePath    = "/conformance"
+	searchPath         = "/search"
 )
 
 type ExtraConformanceClasses struct {
@@ -35,6 +36,12 @@ func NewCommonCore(e *engine.Engine, extraConformanceClasses ExtraConformanceCla
 			Path: "api",
 		},
 	}
+	searchBreadCrumbs := []engine.Breadcrumb{
+		{
+			Name: "Search",
+			Path: "search",
+		},
+	}
 
 	e.RenderTemplates(rootPath,
 		nil,
@@ -48,7 +55,7 @@ func NewCommonCore(e *engine.Engine, extraConformanceClasses ExtraConformanceCla
 		conformanceBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"conformance.go.json"),
 		engine.NewTemplateKey(templatesDir+"conformance.go.html"))
-
+	e.RenderTemplates(searchPath, searchBreadCrumbs, engine.NewTemplateKey(templatesDir+"search.go.html"))
 	core := &CommonCore{
 		engine: e,
 	}
@@ -57,6 +64,9 @@ func NewCommonCore(e *engine.Engine, extraConformanceClasses ExtraConformanceCla
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-17
 	e.Router.Get(alternativeAPIPath, func(w http.ResponseWriter, r *http.Request) { core.apiAsJSON(w, r) })
 	e.Router.Get(conformancePath, core.Conformance())
+	if e.Config.SearchEnabled {
+		e.Router.Get(searchPath, core.Search())
+	}
 	e.Router.Handle("/*", http.FileServer(http.Dir("assets")))
 
 	return core
@@ -90,6 +100,13 @@ func (c *CommonCore) API() http.HandlerFunc {
 			return
 		}
 		engine.RenderProblem(engine.ProblemNotFound, w)
+	}
+}
+
+func (c *CommonCore) Search() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		key := engine.NewTemplateKey(templatesDir+"search.go.html", c.engine.WithNegotiatedLanguage(w, r))
+		c.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
 }
 
