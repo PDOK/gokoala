@@ -2,13 +2,11 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
-import { ProjectionLike } from 'ol/proj'
+import { get as getProj, ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
 import { initProj4 } from '../../map-projection'
 import { FeatureLike } from 'ol/Feature'
 import { Link } from '../../link'
-import { get as getProj } from 'ol/proj'
-import { environment } from '../../../environments/environment'
 
 export type PointGeoJSON = {
   coordinates: Array<number>
@@ -84,7 +82,7 @@ export class FeatureService {
   ) {}
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string): Observable<FeatureGeoJSON[]> {
-    const url = new URL('search', environment.locationApi)
+    const url = new URL('search', window.location.origin)
     url.searchParams.append('q', q)
     if (crs) url.searchParams.append('crs', crs)
     for (const key in searchParams) {

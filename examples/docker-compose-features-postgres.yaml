@@ -1,7 +1,9 @@
 ---
 services:
   postgres:
-    image: docker.io/postgis/postgis:16-3.5  # use debian, not alpine
+    # We use a multi-arch image (x86/arm64). There's currently no official release of this image yet on docker.io/postgis.
+    # In the meantime we'll use this image from the same maintainer. See https://github.com/postgis/docker-postgis/issues/216
+    image: docker.io/imresamu/postgis:16-3.5-bookworm  # use debian, not alpine.
     container_name: "postgres"
     ports:
       - "5432:5432"

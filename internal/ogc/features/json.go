@@ -1,25 +1,18 @@
 package features
 
 import (
-	"bytes"
-	stdjson "encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	perfjson "github.com/goccy/go-json"
 )
 
 var (
-	now                            = time.Now // allow mocking
-	disableJSONPerfOptimization, _ = strconv.ParseBool(os.Getenv("DISABLE_JSON_PERF_OPTIMIZATION"))
+	now = time.Now // allow mocking
 )
 
 type jsonFeatures struct {
@@ -48,11 +41,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 
 	jf.createFeatureDownloadLinks(configuredFC, fc)
 
-	if jf.validateResponse {
-		jf.serveAndValidateJSON(&fc, engine.MediaTypeGeoJSON, r, w)
-	} else {
-		serveJSON(&fc, engine.MediaTypeGeoJSON, w)
-	}
+	jf.serve(&fc, engine.MediaTypeGeoJSON, r, w)
 }
 
 // GeoJSON.
@@ -69,11 +58,7 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 		})
 	}
 
-	if jf.validateResponse {
-		jf.serveAndValidateJSON(&feat, engine.MediaTypeGeoJSON, r, w)
-	} else {
-		serveJSON(&feat, engine.MediaTypeGeoJSON, w)
-	}
+	jf.serve(&feat, engine.MediaTypeGeoJSON, r, w)
 }
 
 // GeoJSON for non-spatial data ("attribute JSON").
@@ -97,11 +82,7 @@ func (jf *jsonFeatures) featuresAsAttributeJSON(w http.ResponseWriter, r *http.R
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSON, collectionID, cursor, featuresURL)
 
-	if jf.validateResponse {
-		jf.serveAndValidateJSON(&fgFC, engine.MediaTypeJSON, r, w)
-	} else {
-		serveJSON(&fgFC, engine.MediaTypeJSON, w)
-	}
+	jf.serve(&fgFC, engine.MediaTypeJSON, r, w)
 }
 
 // GeoJSON for non-spatial data ("attribute JSON").
@@ -115,44 +96,20 @@ func (jf *jsonFeatures) featureAsAttributeJSON(w http.ResponseWriter, r *http.Re
 	}
 	fgF.Links = jf.createFeatureLinks(engine.FormatJSON, url, collectionID, fgF.ID)
 
-	if jf.validateResponse {
-		jf.serveAndValidateJSON(&fgF, engine.MediaTypeJSON, r, w)
-	} else {
-		serveJSON(&fgF, engine.MediaTypeJSON, w)
-	}
+	jf.serve(&fgF, engine.MediaTypeJSON, r, w)
 }
 
 // JSON-FG.
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
 	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
-	fgFC := domain.JSONFGFeatureCollection{}
-	fgFC.ConformsTo = []string{domain.ConformanceJSONFGCore}
-	fgFC.CoordRefSys = string(crs)
-	if len(fc.Features) == 0 {
-		fgFC.Features = make([]*domain.JSONFGFeature, 0)
-	} else {
-		for _, f := range fc.Features {
-			fgF := domain.JSONFGFeature{
-				ID:         f.ID,
-				Links:      f.Links,
-				Properties: f.Properties,
-			}
-			setGeom(crs, &fgF, f)
-			fgFC.Features = append(fgFC.Features, &fgF)
-		}
-	}
-	fgFC.NumberReturned = fc.NumberReturned
+	fgFC := domain.FeatureCollectionToJSONFG(*fc, crs)
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSONFG, collectionID, cursor, featuresURL)
 
 	jf.createJSONFGFeatureDownloadLinks(configuredFC, &fgFC)
 
-	if jf.validateResponse {
-		jf.serveAndValidateJSON(&fgFC, engine.MediaTypeJSONFG, r, w)
-	} else {
-		serveJSON(&fgFC, engine.MediaTypeJSONFG, w)
-	}
+	jf.serve(&fgFC, engine.MediaTypeJSONFG, r, w)
 }
 
 // JSON-FG.
@@ -166,7 +123,7 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 		CoordRefSys: string(crs),
 		Properties:  f.Properties,
 	}
-	setGeom(crs, &fgF, f)
+	fgF.SetGeom(crs, f.Geometry)
 	fgF.Links = jf.createFeatureLinks(engine.FormatJSONFG, url, collectionID, fgF.ID)
 	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		fgF.Links = append(fgF.Links, domain.Link{
@@ -177,11 +134,7 @@ func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, 
 		})
 	}
 
-	if jf.validateResponse {
-		jf.serveAndValidateJSON(&fgF, engine.MediaTypeJSONFG, r, w)
-	} else {
-		serveJSON(&fgF, engine.MediaTypeJSONFG, w)
-	}
+	jf.serve(&fgF, engine.MediaTypeJSONFG, r, w)
 }
 
 func (jf *jsonFeatures) createFeatureCollectionLinks(currentFormat string, collectionID string,
@@ -357,70 +310,16 @@ func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(configuredFC *config.Co
 	}
 }
 
-// serveAndValidateJSON serves JSON after performing OpenAPI response validation.
-func (jf *jsonFeatures) serveAndValidateJSON(input any, contentType string, r *http.Request, w http.ResponseWriter) {
-	json := &bytes.Buffer{}
-	if err := getEncoder(json).Encode(input); err != nil {
-		handleJSONEncodingFailure(err, w)
-
-		return
-	}
+func (jf *jsonFeatures) serve(input any, contentType string, r *http.Request, w http.ResponseWriter) {
 	jf.engine.Serve(w, r,
+		engine.ServeJSON(input),
 		engine.ServeValidation(false /* performed earlier */, jf.validateResponse),
-		engine.ServeContentType(contentType),
-		engine.ServeOutput(json.Bytes()),
-	)
-}
-
-// serveJSON serves JSON *WITHOUT* OpenAPI validation by writing directly to the response output stream.
-func serveJSON(input any, contentType string, w http.ResponseWriter) {
-	w.Header().Set(engine.HeaderContentType, contentType)
-
-	if err := getEncoder(w).Encode(input); err != nil {
-		handleJSONEncodingFailure(err, w)
-
-		return
-	}
-}
-
-type jsonEncoder interface {
-	Encode(input any) error
-}
-
-// Create JSONEncoder. Note escaping of '<', '>' and '&' is disabled (HTMLEscape is false).
-// Especially the '&' is important since we use this character in the next/prev links.
-func getEncoder(w io.Writer) jsonEncoder {
-	if disableJSONPerfOptimization {
-		// use Go stdlib JSON encoder
-		encoder := stdjson.NewEncoder(w)
-		encoder.SetEscapeHTML(false)
-
-		return encoder
-	}
-	// use ~7% overall faster 3rd party JSON encoder (in case of issues switch back to stdlib using env variable)
-	encoder := perfjson.NewEncoder(w)
-	encoder.SetEscapeHTML(false)
-
-	return encoder
-}
-
-func handleJSONEncodingFailure(err error, w http.ResponseWriter) {
-	log.Printf("JSON encoding failed: %v", err)
-	engine.RenderProblem(engine.ProblemServerError, w, "Failed to write JSON response")
-}
-
-func setGeom(crs domain.ContentCrs, jsonfgFeature *domain.JSONFGFeature, feature *domain.Feature) {
-	if crs.IsWGS84() {
-		jsonfgFeature.Geometry = feature.Geometry
-	} else {
-		jsonfgFeature.Place = feature.Geometry
-	}
+		engine.ServeContentType(contentType))
 }
 
 func getMapSheetProperties(configuredFC *config.CollectionEntryFeatures) *config.MapSheetDownloadProperties {
 	if configuredFC != nil && configuredFC.MapSheetDownloads != nil {
 		return &configuredFC.MapSheetDownloads.Properties
 	}
-
 	return nil
 }

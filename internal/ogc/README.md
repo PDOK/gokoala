@@ -1,10 +1,22 @@
 # OGC API
 
 OGC APIs are constructed by different building blocks. These building blocks
-are composed of the different [OGC API standards](https://ogcapi.ogc.org/). 
-Each OGC building block resides in its own Go package. 
+are composed of the different [OGC API standards](https://ogcapi.ogc.org/).
+Each OGC building block resides in its own Go package.
 
-When coding we try to use the naming convention as used by the OGC, so it is clear
+- package `common` represents OGC API Common.
+- package `features` represents OGC API Features. It's the most extensive building block.
+- package `feature_search` is **NOT** part of the OGC API standard, but build on top of OGC API Features.
+  It's an API for geocoding and searching features across multiple collections. The need for this
+  functionality is also expressed in an
+  OGC [feature request](https://github.com/opengeospatial/ogcapi-features/issues/939). This building block was
+  previously known as [gomagpie](https://github.com/PDOK/gomagpie).
+- package `geovolumes` represents OGC API 3D GeoVolumes / 3D Tiles.
+- package `processes` represents OGC API Processes.
+- package `styles` represents OGC API Styles.
+- package `tiles` represents OGC API Tiles.
+
+When coding, we try to use the naming convention as used by the OGC, so it is clear
 which specification or part is referred to in code.
 
 ## Coding
@@ -46,7 +58,7 @@ either:
 ```gotemplate
 {{ $first := true }}
 {{ range $_, $element := .}}
-    {{if not $first}}, {{else}} {{$first = false}} {{end}}
-    {{$element.Name}}
+{{if not $first}}, {{else}} {{$first = false}} {{end}}
+{{$element.Name}}
 {{end}}
 ```

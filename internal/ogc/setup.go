@@ -5,13 +5,14 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/common/core"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features"
+	"github.com/PDOK/gokoala/internal/ogc/features_search"
 	"github.com/PDOK/gokoala/internal/ogc/geovolumes"
 	"github.com/PDOK/gokoala/internal/ogc/processes"
 	"github.com/PDOK/gokoala/internal/ogc/styles"
 	"github.com/PDOK/gokoala/internal/ogc/tiles"
 )
 
-func SetupBuildingBlocks(engine *engine.Engine) {
+func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile string) error {
 	// OGC 3D GeoVolumes API
 	if engine.Config.OgcAPI.GeoVolumes != nil {
 		geovolumes.NewThreeDimensionalGeoVolumes(engine)
@@ -30,6 +31,15 @@ func SetupBuildingBlocks(engine *engine.Engine) {
 		f := features.NewFeatures(engine)
 		collectionTypes = f.GetCollectionTypes()
 	}
+	// Features Search API, build on top of the OGC Features API
+	if engine.Config.OgcAPI.FeaturesSearch != nil {
+		ds := features.CreateDatasources(engine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, engine.RegisterShutdownHook)
+		ao := features.DetermineAxisOrder(ds)
+		_, err := features_search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile)
+		if err != nil {
+			return err
+		}
+	}
 	// OGC Processes API
 	if engine.Config.OgcAPI.Processes != nil {
 		processes.NewProcesses(engine)
@@ -41,4 +51,5 @@ func SetupBuildingBlocks(engine *engine.Engine) {
 	if engine.Config.HasCollections() {
 		geospatial.NewCollections(engine, collectionTypes)
 	}
+	return nil
 }

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 )
@@ -36,6 +37,8 @@ type Feature struct {
 	Properties FeatureProperties `json:"properties"`
 	// We support 'null' geometries, don't add an 'omitempty' tag here.
 	Geometry *geojson.Geometry `json:"geometry"`
+	// Bbox is optional, and we use 'omitempty' here on purpose
+	Bbox *[]float64 `json:"bbox,omitempty"`
 	// We expect feature ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
 	ID    string `json:"id"`
@@ -52,15 +55,28 @@ func (f *Feature) Keys() []string {
 func (f *Feature) SetGeom(geometry geom.T, maxDecimals int) (err error) {
 	if geometry == nil {
 		f.Geometry = nil
-
 		return
 	}
+
 	var opts []geojson.EncodeGeometryOption
 	if maxDecimals > 0 {
 		opts = []geojson.EncodeGeometryOption{geojson.EncodeGeometryWithMaxDecimalDigits(maxDecimals)}
 	}
 	f.Geometry, err = geojson.Encode(geometry, opts...)
+	return
+}
 
+// SetBbox sets the bounding box of the Feature by deriving the bounds of the provided geom.T
+func (f *Feature) SetBbox(geometry geom.T) (err error) {
+	if geometry == nil {
+		f.Bbox = nil
+		return
+	}
+
+	f.Bbox, err = util.EncodeBBox(geometry)
+	if err != nil {
+		return err
+	}
 	return
 }
 

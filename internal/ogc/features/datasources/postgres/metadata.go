@@ -29,11 +29,21 @@ func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fi
 	}
 	log.Println(metadata)
 
-	tableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
+	var collectionsWithoutSearch config.GeoSpatialCollections
+	for i := range collections {
+		if collections[i].FeaturesSearch == nil {
+			collectionsWithoutSearch = append(collectionsWithoutSearch, collections[i])
+		}
+	}
+	if len(collectionsWithoutSearch) == 0 {
+		return
+	}
+
+	tableByCollectionID, err = readFeatureTables(collectionsWithoutSearch, db, fidColumn, externalFidColumn, schemaName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collectionsWithoutSearch, db)
 	if err != nil {
 		log.Fatal(err)
 	}

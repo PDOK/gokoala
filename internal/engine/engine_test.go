@@ -172,6 +172,98 @@ func TestEngine_Start(t *testing.T) {
 	}
 }
 
+func TestEngine_Serve(t *testing.T) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer mockServer.Close()
+
+	e, _ := makeEngine(mockServer)
+
+	// Pre-populate rendered templates for testing
+	templateKey := TemplateKey{Name: "test-template", Format: FormatJSON}
+	e.Templates.RenderedTemplates[templateKey] = []byte(`{"template": "rendered"}`)
+
+	tests := []struct {
+		name                string
+		opts                []ServeOption
+		expectedStatus      int
+		expectedBody        string
+		expectedContentType string
+	}{
+		{
+			name: "Serve JSON",
+			opts: []ServeOption{
+				ServeValidation(false, false),
+				ServeJSON(map[string]string{"foo": "bar"}),
+				ServeContentType("application/json"),
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        "{\"foo\":\"bar\"}\n",
+			expectedContentType: "application/json",
+		},
+		{
+			name: "Serve JSON with response validation",
+			opts: []ServeOption{
+				ServeValidation(false, true),
+				ServeJSON(map[string]string{"foo": "bar"}),
+				ServeContentType("application/json"),
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody:   "{\"foo\":\"bar\"}\n",
+		},
+		{
+			name: "Serve template",
+			opts: []ServeOption{
+				ServeValidation(false, false),
+				ServeTemplate(templateKey),
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        `{"template": "rendered"}`,
+			expectedContentType: MediaTypeJSON,
+		},
+		{
+			name: "Fail serve template",
+			opts: []ServeOption{
+				ServeValidation(false, false),
+				ServeTemplate(TemplateKey{Name: "non-existent"}),
+			},
+			expectedStatus: http.StatusNotFound,
+		},
+		{
+			name: "Serve ore-rendered output",
+			opts: []ServeOption{
+				ServeValidation(false, false),
+				ServePreRenderedOutput([]byte("raw-data")),
+				ServeContentType("text/plain"),
+			},
+			expectedStatus:      http.StatusOK,
+			expectedBody:        "raw-data",
+			expectedContentType: "text/plain",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, mockServer.URL, nil)
+
+			// when
+			e.Serve(w, r, tt.opts...)
+
+			// then
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedBody != "" {
+				assert.Equal(t, tt.expectedBody, w.Body.String())
+			}
+			if tt.expectedContentType != "" {
+				assert.Equal(t, tt.expectedContentType, w.Header().Get(HeaderContentType))
+			}
+		})
+	}
+}
+
 func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
 	cfg := &config.Config{
 		BaseURL: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
@@ -180,6 +272,10 @@ func makeEngine(mockTargetServer *httptest.Server) (*Engine, *url.URL) {
 	engine := &Engine{
 		Config:  cfg,
 		OpenAPI: openAPI,
+		Templates: &Templates{
+			RenderedTemplates: map[TemplateKey][]byte{},
+		},
+		CN: newContentNegotiation(cfg.AvailableLanguages),
 	}
 	targetURL, _ := url.Parse(mockTargetServer.URL)
 

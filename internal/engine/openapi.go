@@ -26,17 +26,18 @@ import (
 )
 
 const (
-	specPath          = templatesDir + "openapi/"
-	preamble          = specPath + "preamble.go.json"
-	problems          = specPath + "problems.go.json"
-	headers           = specPath + "headers.go.json"
-	commonCollections = specPath + "common-collections.go.json"
-	featuresSpec      = specPath + "features.go.json"
-	tilesSpec         = specPath + "tiles.go.json"
-	stylesSpec        = specPath + "styles.go.json"
-	geoVolumesSpec    = specPath + "3dgeovolumes.go.json"
-	commonSpec        = specPath + "common.go.json"
-	HTMLRegex         = `<[/]?([a-zA-Z]+).*?>`
+	specPath           = templatesDir + "openapi/"
+	preamble           = specPath + "preamble.go.json"
+	problems           = specPath + "problems.go.json"
+	headers            = specPath + "headers.go.json"
+	commonCollections  = specPath + "common-collections.go.json"
+	featuresSpec       = specPath + "features.go.json"
+	featuresSearchSpec = specPath + "features-search.go.json"
+	tilesSpec          = specPath + "tiles.go.json"
+	stylesSpec         = specPath + "styles.go.json"
+	geoVolumesSpec     = specPath + "3dgeovolumes.go.json"
+	commonSpec         = specPath + "common.go.json"
+	HTMLRegex          = `<[/]?([a-zA-Z]+).*?>`
 )
 
 type OpenAPI struct {
@@ -96,6 +97,9 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	}
 	if config.OgcAPI.Features != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSpec)
+	}
+	if config.OgcAPI.FeaturesSearch != nil {
+		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSearchSpec)
 	}
 	if config.OgcAPI.Styles != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, stylesSpec)
@@ -216,7 +220,7 @@ func newOpenAPIRouter(doc *openapi3.T) routers.Router {
 func renderOpenAPITemplate(config *gokoalaconfig.Config, fileName string, params any) []byte {
 	file := filepath.Clean(fileName)
 	files := []string{problems, headers, file} // add problems and headers template too since it's an "include" template
-	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(globalTemplateFuncs).ParseFiles(files...))
+	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).Funcs(GlobalTemplateFuncs).ParseFiles(files...))
 
 	var rendered bytes.Buffer
 	if err := parsed.Execute(&rendered, &TemplateData{Config: config, Params: params}); err != nil {
@@ -232,7 +236,7 @@ func (o *OpenAPI) ValidateRequest(r *http.Request) error {
 		err := openapi3filter.ValidateRequest(context.Background(), requestValidationInput)
 		if err != nil {
 			var schemaErr *openapi3.SchemaError
-			// Don't fail on maximum constraints because OGC has decided these are soft limits, for instance
+			// Don't fail on maximum constraints because OGC has decided these are soft limits, for instance,
 			// in features: "If the value of the limit parameter is larger than the maximum value, this
 			// SHALL NOT result in an error (instead use the maximum as the parameter value)."
 			if errors.As(err, &schemaErr) && schemaErr.SchemaField == "maximum" {

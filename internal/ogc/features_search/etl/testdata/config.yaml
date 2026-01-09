@@ -1,0 +1,20 @@
+---
+collections:
+  - id: addresses
+    tables:
+      - table: addresses
+        fid: fid
+        geom: geom
+    fields:
+      - component_thoroughfarename
+      - component_postaldescriptor
+      - component_addressareaname
+    displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
+    suggestTemplates:
+      - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+      - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
+      - "{{ .component_thoroughfarename }}, {{ .component_postaldescriptor }} {{ .component_addressareaname }}"
+    externalFid:
+      uuidNamespace: 098c4e26-6e36-5693-bae9-df35db0bee49
+      fields:
+        - fid

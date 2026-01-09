@@ -38,28 +38,34 @@ type GeoSpatialCollection struct {
 	// Features specific to this collection
 	// +optional
 	Features *CollectionEntryFeatures `yaml:",inline" json:",inline"`
+
+	// Features search (geocoding) specific to this collection
+	// +optional
+	FeaturesSearch *CollectionEntryFeaturesSearch `yaml:",inline" json:",inline"`
 }
 
 type GeoSpatialCollectionJSON struct {
 	// Keep this in sync with the GeoSpatialCollection struct!
-	ID                           string                        `json:"id"`
-	Metadata                     *GeoSpatialCollectionMetadata `json:"metadata,omitempty"`
-	Links                        *CollectionLinks              `json:"links,omitempty"`
-	*CollectionEntry3dGeoVolumes `json:",inline"`
-	*CollectionEntryTiles        `json:",inline"`
-	*CollectionEntryFeatures     `json:",inline"`
+	ID                             string                        `json:"id"`
+	Metadata                       *GeoSpatialCollectionMetadata `json:"metadata,omitempty"`
+	Links                          *CollectionLinks              `json:"links,omitempty"`
+	*CollectionEntry3dGeoVolumes   `json:",inline"`
+	*CollectionEntryTiles          `json:",inline"`
+	*CollectionEntryFeatures       `json:",inline"`
+	*CollectionEntryFeaturesSearch `json:",inline"`
 }
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
 func (c GeoSpatialCollection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(GeoSpatialCollectionJSON{
-		ID:                          c.ID,
-		Metadata:                    c.Metadata,
-		Links:                       c.Links,
-		CollectionEntry3dGeoVolumes: c.GeoVolumes,
-		CollectionEntryTiles:        c.Tiles,
-		CollectionEntryFeatures:     c.Features,
+		ID:                            c.ID,
+		Metadata:                      c.Metadata,
+		Links:                         c.Links,
+		CollectionEntry3dGeoVolumes:   c.GeoVolumes,
+		CollectionEntryTiles:          c.Tiles,
+		CollectionEntryFeatures:       c.Features,
+		CollectionEntryFeaturesSearch: c.FeaturesSearch,
 	})
 }
 
@@ -185,6 +191,9 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 	}
 	if c.OgcAPI.Features != nil {
 		result = append(result, c.OgcAPI.Features.Collections...)
+	}
+	if c.OgcAPI.FeaturesSearch != nil {
+		result = append(result, c.OgcAPI.FeaturesSearch.Collections...)
 	}
 
 	// sort

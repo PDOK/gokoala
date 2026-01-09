@@ -59,7 +59,6 @@ func NewCommonCore(e *engine.Engine, extraConformanceClasses ExtraConformanceCla
 	core := &CommonCore{
 		engine: e,
 	}
-
 	e.Router.Get(rootPath, core.LandingPage())
 	e.Router.Get(apiPath, core.API())
 	// implements https://gitdocumentatie.logius.nl/publicatie/api/adr/#api-17
@@ -95,11 +94,9 @@ func (c *CommonCore) API() http.HandlerFunc {
 		switch format {
 		case engine.FormatHTML:
 			c.apiAsHTML(w, r)
-
 			return
 		case engine.FormatJSON:
 			c.apiAsJSON(w, r)
-
 			return
 		}
 		engine.RenderProblem(engine.ProblemNotFound, w)
@@ -119,5 +116,5 @@ func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CommonCore) apiAsJSON(w http.ResponseWriter, r *http.Request) {
-	c.engine.Serve(w, r, engine.ServeContentType(engine.MediaTypeOpenAPI), engine.ServeOutput(c.engine.OpenAPI.SpecJSON))
+	c.engine.Serve(w, r, engine.ServeContentType(engine.MediaTypeOpenAPI), engine.ServePreRenderedOutput(c.engine.OpenAPI.SpecJSON))
 }

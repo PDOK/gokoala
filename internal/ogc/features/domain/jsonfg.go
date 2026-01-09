@@ -37,3 +37,33 @@ type JSONFGFeature struct {
 	Links       []Link            `json:"links,omitempty"`
 	ConformsTo  []string          `json:"conformsTo,omitempty"`
 }
+
+func (jf *JSONFGFeature) SetGeom(crs ContentCrs, geom *geojson.Geometry) {
+	if crs.IsWGS84() {
+		jf.Geometry = geom
+	} else {
+		jf.Place = geom
+	}
+}
+
+// FeatureCollectionToJSONFG converts a FeatureCollection to an INITIAL JSON-FG FeatureCollection
+func FeatureCollectionToJSONFG(fc FeatureCollection, crs ContentCrs) JSONFGFeatureCollection {
+	fgFC := JSONFGFeatureCollection{}
+	fgFC.ConformsTo = []string{ConformanceJSONFGCore}
+	fgFC.CoordRefSys = string(crs)
+	if len(fc.Features) == 0 {
+		fgFC.Features = make([]*JSONFGFeature, 0)
+	} else {
+		for _, f := range fc.Features {
+			fgF := JSONFGFeature{
+				ID:         f.ID,
+				Links:      f.Links,
+				Properties: f.Properties,
+			}
+			fgF.SetGeom(crs, f.Geometry)
+			fgFC.Features = append(fgFC.Features, &fgF)
+		}
+	}
+	fgFC.NumberReturned = fc.NumberReturned
+	return fgFC
+}

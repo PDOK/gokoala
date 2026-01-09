@@ -11,6 +11,7 @@ import (
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
+	search "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -23,6 +24,9 @@ import (
 const (
 	// https://github.com/jackc/pgx/issues/387#issuecomment-1107666716
 	pgxNamedParamSymbol = "@"
+
+	searchGeomColumn = "geometry"
+	searchBboxColumn = "bbox"
 )
 
 type Postgres struct {
@@ -203,10 +207,6 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
 	}
 	defer rows.Close()
-	if err != nil {
-		return nil, fmt.Errorf("query '%s' failed: %w", query, err)
-	}
-	defer rows.Close()
 
 	features, _, err := common.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
 		pg.FidColumn, pg.ExternalFidColumn, table.GeometryColumnName,
@@ -222,9 +222,71 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	return features[0], queryCtx.Err()
 }
 
+func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteria ds.FeaturesSearchCriteria,
+	axisOrder d.AxisOrder, collections search.CollectionsWithParams) (*d.FeatureCollection, error) {
+
+	queryCtx, cancel := context.WithTimeout(ctx, pg.QueryTimeout) // https://go.dev/doc/database/cancel-operations
+	defer cancel()
+
+	// TODO: find better place for this srid logic
+	if criteria.InputSRID == d.UndefinedSRID || criteria.InputSRID == d.WGS84SRID {
+		criteria.InputSRID = d.WGS84SRIDPostgis
+	}
+	if criteria.OutputSRID == d.UndefinedSRID || criteria.OutputSRID == d.WGS84SRID {
+		criteria.OutputSRID = d.WGS84SRIDPostgis
+	}
+
+	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r."+searchGeomColumn, "r."+searchBboxColumn)
+	if err != nil {
+		return nil, err
+	}
+	sql := makeSearchQuery(criteria.Settings.IndexName, bboxFilter, axisOrder)
+	wildcardQuery := criteria.SearchQuery.ToWildcardQuery()
+	exactMatchQuery := criteria.SearchQuery.ToExactMatchQuery(criteria.Settings.SynonymsExactMatch)
+	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
+	log.Printf("\nSEARCH QUERY (wildcard): %s\n", wildcardQuery)
+
+	// Create query params
+	namedParams := map[string]any{
+		"lm":              criteria.Limit,
+		"wildcardquery":   wildcardQuery,
+		"exactmatchquery": exactMatchQuery,
+		"names":           names,
+		"versions":        versions,
+		"relevance":       relevance,
+		"rn":              criteria.Settings.RankNormalization,
+		"emm":             criteria.Settings.ExactMatchMultiplier,
+		"psm":             criteria.Settings.PrimarySuggestMultiplier,
+		"rt":              criteria.Settings.RankThreshold,
+		"prlm":            criteria.Settings.PreRankLimitMultiplier,
+		"prwcc":           criteria.Settings.PreRankWordCountCutoff,
+		"outputSrid":      criteria.OutputSRID.GetOrDefault(),
+	}
+	maps.Copy(namedParams, bboxQueryArgs)
+
+	// Execute search query
+	rows, err := pg.db.Query(queryCtx, sql, pgx.NamedArgs(namedParams))
+	if err != nil {
+		return nil, fmt.Errorf("query '%s' failed: %w", sql, err)
+	}
+	defer rows.Close()
+
+	fc := d.FeatureCollection{}
+	fc.Features, _, err = common.MapRowsToFeatures(queryCtx, FromPgxRows(rows),
+		pg.FidColumn, pg.ExternalFidColumn, searchGeomColumn,
+		nil, nil, mapPostGISGeometry, nil,
+		common.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
+	if err != nil {
+		return nil, err
+	}
+	fc.NumberReturned = len(fc.Features)
+
+	return &fc, queryCtx.Err()
+}
+
 // Build specific features queries based on the given options.
 func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, relationsConfig []config.Relation, table *common.Table,
-	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (query string, queryArgs pgx.NamedArgs, err error) {
+	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (string, pgx.NamedArgs, error) {
 
 	var selectClause string
 	if onlyFIDs {
@@ -242,10 +304,6 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	return pg.makeQuery(table, selectClause, criteria)
-}
-
-func (pg *Postgres) makeQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
 
@@ -253,7 +311,7 @@ func (pg *Postgres) makeQuery(table *common.Table, selectClause string, criteria
 	var bboxNamedParams map[string]any
 	if criteria.Bbox != nil {
 		var err error
-		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)
+		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, "")
 		if err != nil {
 			return "", nil, err
 		}
@@ -282,14 +340,140 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 	return query, namedParams, nil
 }
 
-func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, map[string]any, error) {
+//nolint:funlen
+func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) string {
+	selectGeom := selectPostGISGeometry(axisOrder, &common.Table{GeometryColumnName: searchGeomColumn})
+	selectBbox := selectPostGISGeometry(axisOrder, &common.Table{GeometryColumnName: searchBboxColumn})
+
+	// language=postgresql
+	return fmt.Sprintf(
+		`WITH query_wildcard AS (
+		SELECT to_tsquery('custom_dict', @wildcardquery) query
+	),
+	query_exact AS (
+		SELECT to_tsquery('custom_dict', @exactmatchquery) query
+	),
+	results AS NOT MATERIALIZED ( -- the results query is called twice, materializing it results in a non optimal query plan for one of the calls
+		SELECT
+			r.display_name,
+			r.feature_id,
+			r.external_fid,
+			r.collection_id,
+			r.collection_version,
+			r.geometry_type,
+			r.bbox,
+			r.geometry,
+			r.suggest,
+			r.ts
+		FROM
+			%[1]s r
+		WHERE
+			r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
+				-- make a virtual table by creating tuples from the provided arrays.
+				SELECT * FROM unnest(@names::text[], @versions::int[])
+			)
+		%[4]s -- bounding box intersect filter
+	),
+	results_count AS (
+	    SELECT
+	    	COUNT(*) c
+	    FROM (
+	        SELECT
+				r.feature_id
+	        FROM
+				results r
+	        LIMIT @rt
+	    ) as rc
+	)
+	SELECT
+	    rn.display_name,
+		rn.feature_id AS fid,
+		rn.external_fid AS external_fid,
+		rn.collection_id,
+		rn.collection_version,
+		rn.geometry_type AS collection_geometry_type
+		%[2]s
+		%[3]s,
+		rn.rank as score,
+		ts_headline('custom_dict', rn.suggest, (SELECT query FROM query_wildcard)) AS highlight
+	FROM (
+		SELECT
+			r.*,
+			ROW_NUMBER() OVER (
+				PARTITION BY
+					r.display_name,
+					r.collection_id,
+					r.collection_version,
+					r.feature_id,
+					r.external_fid
+				ORDER BY -- use same "order by" clause everywhere
+					r.rank DESC,
+					r.display_name COLLATE "custom_numeric" ASC
+			) AS row_number
+		FROM (
+			SELECT
+				u.*,
+				CASE WHEN u.display_name = u.suggest THEN (
+					ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm * @psm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)
+				) * rel.relevance
+				ELSE (
+					ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)
+				) * rel.relevance
+				END AS rank
+			FROM (
+				-- a UNION ALL is used, because a CASE in the ORDER BY clause causes a sequence scan instead of an index scan
+				-- because of 1 = 1 in the WHERE clauses below the results are only added if WHEN is true, otherwise the results are ignored
+				(
+					SELECT
+						*
+					FROM
+						results r
+					WHERE
+						-- less then rank threshold results don't need to be pre-ranked, they can be ranked based on score
+						CASE WHEN (SELECT c from results_count) < @rt THEN 1 = 1 END
+				) UNION ALL (
+					SELECT
+						*
+					FROM
+						results r
+					WHERE
+						-- pre-rank more then rank threshold results by ordering on suggest length and display_name
+						CASE WHEN (SELECT c from results_count) = @rt THEN 1 = 1 END AND
+						array_length(string_to_array(r.suggest, ' '), 1) <= @prwcc
+					ORDER BY
+						array_length(string_to_array(r.suggest, ' '), 1) ASC,
+						r.display_name COLLATE "custom_numeric" ASC
+					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on scor
+				)
+			) u
+			LEFT JOIN
+				(SELECT * FROM unnest(@names::text[], @relevance::float[]) rel(collection_id,relevance)) rel
+			ON
+				rel.collection_id = u.collection_id
+		) r
+	) rn
+	WHERE rn.row_number = 1
+	ORDER BY -- use same "order by" clause everywhere
+	    rn.rank DESC,
+	    rn.display_name COLLATE "custom_numeric" ASC
+	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use $X params for user input!
+}
+
+func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string, bboxColumn string) (string, map[string]any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxNamedParams map[string]any
 	var err error
 	if bbox != nil {
-		bboxFilter = fmt.Sprintf(`and
-			st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int))
-		`, geomColumn)
+		if bboxColumn == "" {
+			bboxFilter = fmt.Sprintf(`and
+				st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int))
+			`, geomColumn)
+		} else {
+			bboxFilter = fmt.Sprintf(`and
+				(st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int)) or
+				st_intersects(st_transform(%[2]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int)))
+			`, geomColumn, bboxColumn)
+		}
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
 			return "", nil, err
@@ -310,7 +494,6 @@ func mapPostGISGeometry(columnValue any) (geom.T, error) {
 	if !ok {
 		return nil, errors.New("failed to convert column value to geometry")
 	}
-
 	return geometry, nil
 }
 
@@ -320,7 +503,6 @@ func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	if axisOrder == d.AxisOrderYX {
 		return fmt.Sprintf(", st_flipcoordinates(st_transform(\"%[1]s\", @outputSrid::int)) as \"%[1]s\"", table.GeometryColumnName)
 	}
-
 	return fmt.Sprintf(", st_transform(\"%[1]s\", @outputSrid::int) as \"%[1]s\"", table.GeometryColumnName)
 }
 

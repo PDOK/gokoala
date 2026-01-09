@@ -1,0 +1,2 @@
+DROP DATABASE IF EXISTS search_db;
+CREATE DATABASE search_db;

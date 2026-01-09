@@ -1,0 +1,83 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/search?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/search?f=html"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Plein 1944 1234 AB Nijmegen",
+        "highlight": "Plein <b>1944</b> 1234 AB",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/157?f=json",
+        "score": 0.19882718324661255
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79294,
+          53.05095
+        ]
+      },
+      "id": "157",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/157?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "16 april 1944 Pad 1234 AB Velsen-Noord",
+        "highlight": "16 april <b>1944</b> Pad 1234 AB",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/158?f=json",
+        "score": 0.1644474744796753
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79287,
+          53.05093
+        ]
+      },
+      "id": "158",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/158?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 2
+}

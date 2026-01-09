@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/util"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -29,7 +30,7 @@ const (
 	shutdownTimeout = 5 * time.Second
 )
 
-// Engine encapsulates shared non-OGC API specific logic.
+// Engine encapsulates shared non-OGCAPI specific logic.
 type Engine struct {
 	Config    *config.Config
 	OpenAPI   *OpenAPI
@@ -175,6 +176,8 @@ func (e *Engine) RenderAndServe(w http.ResponseWriter, r *http.Request, key Temp
 // Serve serves a response (which is either a pre-rendered template based on TemplateKey or a slice of arbitrary bytes)
 // while also validating against the OpenAPI spec.
 func (e *Engine) Serve(w http.ResponseWriter, r *http.Request, opt ...ServeOption) {
+	var err error
+
 	s := &serve{
 		validateRequest:  true,
 		validateResponse: true,
@@ -183,8 +186,9 @@ func (e *Engine) Serve(w http.ResponseWriter, r *http.Request, opt ...ServeOptio
 		o(s)
 	}
 
+	// validate
 	if s.validateRequest {
-		if err := e.OpenAPI.ValidateRequest(r); err != nil {
+		if err = e.OpenAPI.ValidateRequest(r); err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemBadRequest, w, err.Error())
 
@@ -192,11 +196,10 @@ func (e *Engine) Serve(w http.ResponseWriter, r *http.Request, opt ...ServeOptio
 		}
 	}
 
-	output := s.output
-	if s.templateKey != nil {
-		// render output
-		var err error
-		output, err = e.Templates.getRenderedTemplate(*s.templateKey)
+	// render output
+	switch {
+	case s.templateKey != nil:
+		s.output, err = e.Templates.getRenderedTemplate(*s.templateKey)
 		if err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemNotFound, w)
@@ -206,27 +209,44 @@ func (e *Engine) Serve(w http.ResponseWriter, r *http.Request, opt ...ServeOptio
 		if s.contentType == "" {
 			s.contentType = e.CN.formatToMediaType(*s.templateKey)
 		}
+	case s.json != nil:
+		if !s.validateResponse {
+			// shortcut for max performance: serve JSON *WITHOUT* OpenAPI validation
+			// by writing directly to the response output stream
+			w.Header().Set(HeaderContentType, s.contentType)
+			e.encodeJSON(w, s.json, w)
+			return
+		}
+		outputBuf := &bytes.Buffer{}
+		e.encodeJSON(w, s.json, outputBuf)
+		s.output = outputBuf.Bytes()
 	}
 
+	// validate
 	if s.validateResponse {
-		if err := e.OpenAPI.ValidateResponse(s.contentType, output, r); err != nil {
+		if err := e.OpenAPI.ValidateResponse(s.contentType, s.output, r); err != nil {
 			log.Printf("%v", err.Error())
 			RenderProblem(ProblemServerError, w, err.Error())
 
 			return
 		}
 	}
-	writeResponse(w, s.contentType, output)
+	writeResponse(w, s.contentType, s.output)
 }
 
+// serve options
 type serve struct {
+	// input
 	templateKey *TemplateKey
-	output      []byte
+	json        any
 
+	// output
+	output      []byte
+	contentType string
+
+	// validation
 	validateRequest  bool
 	validateResponse bool
-
-	contentType string
 }
 
 type ServeOption func(*serve)
@@ -237,7 +257,13 @@ func ServeTemplate(templateKey TemplateKey) ServeOption {
 	}
 }
 
-func ServeOutput(output []byte) ServeOption {
+func ServeJSON(json any) ServeOption {
+	return func(s *serve) {
+		s.json = &json
+	}
+}
+
+func ServePreRenderedOutput(output []byte) ServeOption {
 	return func(s *serve) {
 		s.output = output
 	}
@@ -306,7 +332,10 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 			if err != nil {
 				return err
 			}
-			e.Serve(w, r, ServeValidation(false, true), ServeContentType(contentType), ServeOutput(res))
+			e.Serve(w, r,
+				ServeValidation(false, true),
+				ServeContentType(contentType),
+				ServePreRenderedOutput(res))
 		}
 
 		return nil
@@ -380,6 +409,13 @@ func (e *Engine) renderTemplates(urlPath string, params any, breadcrumbs []Bread
 				}
 			}
 		}
+	}
+}
+
+func (e *Engine) encodeJSON(w http.ResponseWriter, input any, output io.Writer) {
+	if err := util.GetJSONEncoder(output).Encode(input); err != nil {
+		log.Printf("JSON encoding failed: %v", err)
+		RenderProblem(ProblemServerError, w, "Failed to write JSON response")
 	}
 }
 

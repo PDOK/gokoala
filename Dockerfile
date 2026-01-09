@@ -3,7 +3,7 @@ FROM docker.io/node:lts-alpine3.17 AS build-component
 RUN mkdir -p /usr/src/app
 COPY ./viewer /usr/src/app
 WORKDIR /usr/src/app
-RUN npm config set registry http://registry.npmjs.org && \
+RUN npm config set registry https://registry.npmjs.org && \
     npm install && \
     npm run build
 
@@ -28,11 +28,18 @@ RUN set -eux && \
 # install controller-gen (used by go generate)
 RUN hack/build-controller-gen.sh
 
-# build the binary with debug information removed.
+# build all binaries with debug information removed.
 # no tests are run since some tests rely on Testcontainers which doesn't work in multi-stage builds (dind).
+
+# gokoala-etl
 RUN go mod download all && \
     go generate -v ./... && \
-    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala github.com/PDOK/gokoala/cmd
+    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala-etl github.com/PDOK/gokoala/cmd/gokoala-etl/
+
+# gokoala-server
+RUN go mod download all && \
+    go generate -v ./... && \
+    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala-server github.com/PDOK/gokoala/cmd/gokoala-server/
 
 # delete all go files (and testdata dirs) so only assets/templates/etc remain, since in a later
 # stage we need to copy these remaining files including their subdirectories to the final docker image.
@@ -45,6 +52,7 @@ FROM docker.io/debian:bookworm-slim
 RUN set -eux && \
     apt-get update && \
     apt-get install --no-install-recommends -y  \
+      jq=* \
       libcurl4=*  \
       curl=*  \
       openssl=*  \
@@ -59,7 +67,8 @@ WORKDIR /tmp
 WORKDIR /
 
 # include executable
-COPY --from=build-env /gokoala /
+COPY --from=build-env /gokoala-server /
+COPY --from=build-env /gokoala-etl /
 
 # include assets/templates/etc (be specific here to only include required dirs)
 COPY --from=build-env /go/src/service/assets/ /assets/
@@ -73,4 +82,4 @@ COPY --from=build-component /usr/src/app/dist/view-component/3rdpartylicenses.tx
 
 # run as non-root
 USER 1001
-ENTRYPOINT ["/gokoala"]
+ENTRYPOINT ["/gokoala-server"]

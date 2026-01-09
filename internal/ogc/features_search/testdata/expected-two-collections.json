@@ -1,0 +1,761 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/search?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/search?f=html"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AL Den Burg",
+        "highlight": "<b>Achterom</b> 1791AL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/107?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.80096,
+          53.05452
+        ]
+      },
+      "id": "107",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/107?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/104?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79988,
+          53.05491
+        ]
+      },
+      "id": "104",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/104?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/105?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79932,
+          53.05505
+        ]
+      },
+      "id": "105",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/105?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/106?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79933,
+          53.05536
+        ]
+      },
+      "id": "106",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/106?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/108?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79902,
+          53.05537
+        ]
+      },
+      "id": "108",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/108?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/109?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79891,
+          53.05573
+        ]
+      },
+      "id": "109",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/109?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/110?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79891,
+          53.05573
+        ]
+      },
+      "id": "110",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/110?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/111?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79891,
+          53.05573
+        ]
+      },
+      "id": "111",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/111?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/112?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79891,
+          53.05573
+        ]
+      },
+      "id": "112",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/112?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/113?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79891,
+          53.05573
+        ]
+      },
+      "id": "113",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/113?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achterom 1791AN Den Burg",
+        "highlight": "<b>Achterom</b> 1791AN",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79891,
+          53.05573
+        ]
+      },
+      "id": "114",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/114?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87327,
+          53.08349
+        ]
+      },
+      "id": "1",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8743,
+          53.08353
+        ]
+      },
+      "id": "10",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87442,
+          53.08355
+        ]
+      },
+      "id": "115",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8746,
+          53.08343
+        ]
+      },
+      "id": "117",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8746,
+          53.08343
+        ]
+      },
+      "id": "118",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87327,
+          53.08349
+        ]
+      },
+      "id": "2",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87327,
+          53.08349
+        ]
+      },
+      "id": "3",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87327,
+          53.08349
+        ]
+      },
+      "id": "4",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87345,
+          53.0835
+        ]
+      },
+      "id": "8",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BL Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BL",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87362,
+          53.08356
+        ]
+      },
+      "id": "9",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BM Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BM",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/116?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87515,
+          53.08328
+        ]
+      },
+      "id": "116",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/116?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BM Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BM",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/5?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87483,
+          53.08325
+        ]
+      },
+      "id": "5",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/5?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BM Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BM",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/6?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87477,
+          53.08329
+        ]
+      },
+      "id": "6",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/6?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Achtertune 1794BM Oosterend",
+        "highlight": "<b>Achtertune</b> 1794BM",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/7?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87477,
+          53.08329
+        ]
+      },
+      "id": "7",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/7?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POLYGON",
+        "collection_id": "buildings",
+        "collection_version": 1,
+        "display_name": "Achterweg Oosterend",
+        "highlight": "<b>Achterweg</b> Oosterend",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/16c531ff-b6ad-51c3-b000-e650086712c1?f=json",
+        "score": 0.0728191375732422
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.77957,
+          53.004
+        ]
+      },
+      "bbox": [
+        4.779332890357867,
+        53.00388426530902,
+        4.779812361584029,
+        53.00410390075021
+      ],
+      "id": "16c531ff-b6ad-51c3-b000-e650086712c1",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/buildings/items/16c531ff-b6ad-51c3-b000-e650086712c1?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 26
+}

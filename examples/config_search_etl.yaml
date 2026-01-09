@@ -1,0 +1,31 @@
+# This is a sample config file for the gokoala-etl tool
+---
+collections:
+  - id: addresses
+    tables:
+      - table: addresses
+    fields:
+      - address_street
+      - address_postal
+      - address_place
+    displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
+    suggestTemplates:
+      - "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}" # equal to display name
+      - "{{ .address_street | firstupper  }} {{ .address_postal}}, {{ .address_place }}"
+      - "{{ .address_street }} {{ .address_postal }}"
+      - "{{ .address_postal }}, {{ .address_place }}"
+  - id: buildings
+    tables:
+      - table: buildings
+    fields:
+      - street
+      - place
+    displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
+    suggestTemplates:
+      - "{{ .street | firstupper  }} {{ .place }}" # equal to display name
+      - "{{ .street | firstupper  }} - {{ .place }}"
+      - "{{ .place  }} {{ .street }}"
+    externalFid:
+      uuidNamespace: 098c4e26-6e36-5693-bae9-df35db0bee49
+      fields:
+        - fid

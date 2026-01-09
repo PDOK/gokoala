@@ -58,7 +58,7 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
-		datasource := f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
+		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
 		collectionType := f.collectionTypes.Get(collection.ID)
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
 			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
@@ -128,7 +128,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, 
 	} else {
 		// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
 		var fids []int64
-		datasource = f.datasources[datasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collection.ID}]
+		datasource = f.datasources[DatasourceKey{srid: inputSRID.GetOrDefault(), collectionID: collection.ID}]
 		fids, newCursor, err = datasource.GetFeatureIDs(ctx, collection.ID, ds.FeaturesCriteria{
 			Cursor:           currentCursor,
 			Limit:            limit,
@@ -141,7 +141,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, 
 		})
 		if err == nil && fids != nil {
 			// this is step 2: get the actual features in output CRS by feature ID
-			datasource = f.datasources[datasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
+			datasource = f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
 			fc, err = datasource.GetFeaturesByID(ctx, collection.ID, fids, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 		}
 	}

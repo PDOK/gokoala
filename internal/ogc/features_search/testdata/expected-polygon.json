@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/search?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/search?f=html"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POLYGON",
+        "collection_id": "buildings",
+        "collection_version": 1,
+        "display_name": "Molwerk 1 't Horntje",
+        "highlight": "<b>Molwerk</b> 1 't Horntje",
+        "href": "https://example.com/ogc/v1/collections/buildings/items/4e2d75f6-4200-5759-8d2c-8d161a761f80?f=json",
+        "score": 0.20031838417053224
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.77957,
+          53.004
+        ]
+      },
+      "bbox": [
+        4.779332890357867,
+        53.00388426530902,
+        4.779812361584029,
+        53.00410390075021
+      ],
+      "id": "4e2d75f6-4200-5759-8d2c-8d161a761f80",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/buildings/items/4e2d75f6-4200-5759-8d2c-8d161a761f80?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 1
+}

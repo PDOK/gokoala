@@ -7,6 +7,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	searchdomain "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/twpayne/go-geom"
 )
 
@@ -26,6 +27,10 @@ type Datasource interface {
 
 	// GetFeature returns a specific Feature, based on its feature id
 	GetFeature(ctx context.Context, collection string, featureID any, outputSRID domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
+
+	// SearchFeaturesAcrossCollections search features in one or more collections. Collections can be located
+	// in this dataset or in other datasets.
+	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, axisOrder domain.AxisOrder, collections searchdomain.CollectionsWithParams) (*domain.FeatureCollection, error)
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
 	GetSchema(collection string) (*domain.Schema, error)
@@ -88,3 +93,22 @@ type PropertyFilterWithAllowedValues struct {
 
 // PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name.
 type PropertyFiltersWithAllowedValues map[string]PropertyFilterWithAllowedValues
+
+// FeaturesSearchCriteria to search features (geocoding).
+type FeaturesSearchCriteria struct {
+	// the search query after query expansion
+	SearchQuery searchdomain.SearchQuery
+
+	// global search settings
+	Settings config.SearchSettings
+
+	// search doesn't use pagination, we just return the top N results as indicated by the specified limit
+	Limit int
+
+	// multiple projections support (OAF part 2)
+	InputSRID  domain.SRID // derived from bbox param when available, or WGS84 as default
+	OutputSRID domain.SRID // derived from crs param when available, or WGS84 as default
+
+	// filtering by bounding box (OAF part 1)
+	Bbox *geom.Bounds
+}

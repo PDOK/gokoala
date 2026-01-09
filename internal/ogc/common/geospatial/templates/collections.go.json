@@ -146,6 +146,23 @@
             }
           {{end}}
         {{end}}
+        {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections }}
+          {{ if $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections.ContainsID $coll.ID }}
+            {{/* collection reference is only required for remotely hosted collections */}}
+            {{ if not ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
+              ,
+              {{ range $o, $collRef := $coll.FeaturesSearch.CollectionRefs -}}
+              {{ if $o }},{{ end }}
+              {
+                "rel": "canonical",
+                "type": "text/html",
+                "title": "{{ $collRef.CollectionID }}",
+                "href": "{{ $collRef.APIBaseURL }}/collections/{{ $collRef.CollectionID }}"
+              }
+              {{- end }}
+            {{- end }}
+          {{end}}
+        {{end}}
         {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
           {{ if $cfg.OgcAPI.Features.Collections.ContainsID $coll.ID }}
             {{ if eq $collType "features" }}
@@ -166,7 +183,7 @@
               "type" : "text/html",
               "title" : "The HTML representation of the {{ $coll.ID }} features served from this endpoint",
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
-            },
+            }
             {{ end }}
             {{ if eq $collType "attributes" }}
             ,{
@@ -180,9 +197,9 @@
               "type" : "text/html",
               "title" : "The HTML representation of the {{ $coll.ID }} attributes served from this endpoint",
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
-            },
+            }
             {{ end }}
-            {
+            ,{
               "rel" : "http://www.opengis.net/def/rel/ogc/1.0/schema",
               "type" : "application/schema+json",
               "title" : "The JSON representation of the {{ $coll.ID }} schema",

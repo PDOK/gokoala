@@ -54,3 +54,10 @@ additional attributes (e.g. population density) that are not part of the feature
 
 - Start GoKoala as specified in the root [README](../README.md#run)
   and provide `config_attributes.yaml` as the config file.
+
+## Features Search example
+
+This example demonstrates geocoding and searching for features using an extension of OGC API Features.
+
+- Run `docker-compose -f docker-compose-features-search.yaml up`
+- Open http://localhost:8080/search to explore the search UI.

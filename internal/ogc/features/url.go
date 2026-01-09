@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"math"
 	"net/url"
 	"slices"
 	"sort"
@@ -15,18 +14,19 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
 )
 
 const (
+	LimitParam     = "limit"
+	CrsParam       = "crs"
+	BboxParam      = "bbox"
+	BboxCrsParam   = "bbox-crs"
 	cursorParam    = "cursor"
-	limitParam     = "limit"
-	crsParam       = "crs"
 	dateTimeParam  = "datetime"
-	bboxParam      = "bbox"
-	bboxCrsParam   = "bbox-crs"
 	filterParam    = "filter"
 	filterCrsParam = "filter-crs"
 	profileParam   = "profile"
@@ -46,12 +46,12 @@ var (
 	// defined as a set for fast lookup.
 	featuresKnownParams = map[string]struct{}{
 		engine.FormatParam: {},
-		limitParam:         {},
+		LimitParam:         {},
 		cursorParam:        {},
-		crsParam:           {},
+		CrsParam:           {},
 		dateTimeParam:      {},
-		bboxParam:          {},
-		bboxCrsParam:       {},
+		BboxParam:          {},
+		BboxCrsParam:       {},
 		filterParam:        {},
 		filterCrsParam:     {},
 		profileParam:       {},
@@ -61,7 +61,7 @@ var (
 	// defined as a set for fast lookup.
 	featureKnownParams = map[string]struct{}{
 		engine.FormatParam: {},
-		crsParam:           {},
+		CrsParam:           {},
 		profileParam:       {},
 	}
 )
@@ -86,11 +86,11 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 		return
 	}
 	encodedCursor = d.EncodedCursor(fc.params.Get(cursorParam))
-	limit, limitErr := parseLimit(fc.params, fc.limit)
-	outputSRID, outputSRIDErr := parseCrsToSRID(fc.params, crsParam)
-	contentCrs = parseCrsToContentCrs(fc.params)
+	limit, limitErr := ParseLimit(fc.params, fc.limit)
+	outputSRID, outputSRIDErr := ParseCrsToSRID(fc.params, CrsParam)
+	contentCrs = ParseCrsToContentCrs(fc.params)
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
-	bbox, bboxSRID, bboxErr := parseBbox(fc.params)
+	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
 	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
 	_, filterSRID, filterErr := parseFilter(fc.params)
@@ -187,8 +187,8 @@ func (f featureURL) parse() (srid d.SRID, contentCrs d.ContentCrs, profile d.Pro
 		return
 	}
 
-	srid, crsErr := parseCrsToSRID(f.params, crsParam)
-	contentCrs = parseCrsToContentCrs(f.params)
+	srid, crsErr := ParseCrsToSRID(f.params, CrsParam)
+	contentCrs = ParseCrsToContentCrs(f.params)
 	profile, profileErr := parseProfile(f.params, f.baseURL, f.schema)
 	err = errors.Join(crsErr, profileErr)
 
@@ -247,11 +247,11 @@ func consolidateSRIDs(bboxSRID d.SRID, filterSRID d.SRID) (inputSRID d.SRID, err
 	return inputSRID, err
 }
 
-func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
+func ParseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	limit := limitCfg.Default
 	var err error
-	if params.Get(limitParam) != "" {
-		limit, err = strconv.Atoi(params.Get(limitParam))
+	if params.Get(LimitParam) != "" {
+		limit, err = strconv.Atoi(params.Get(LimitParam))
 		if err != nil {
 			err = errors.New("limit must be numeric")
 		}
@@ -268,20 +268,20 @@ func parseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 	return limit, err
 }
 
-func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
-	if params.Get(bboxParam) == "" && params.Get(bboxCrsParam) != "" {
+func ParseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
+	if params.Get(BboxParam) == "" && params.Get(BboxCrsParam) != "" {
 		return nil, d.UndefinedSRID, errors.New("bbox-crs can't be used without bbox parameter")
 	}
 
-	bboxSRID, err := parseCrsToSRID(params, bboxCrsParam)
+	bboxSRID, err := ParseCrsToSRID(params, BboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
 	}
 
-	if params.Get(bboxParam) == "" {
+	if params.Get(BboxParam) == "" {
 		return nil, d.UndefinedSRID, nil
 	}
-	bboxValues := strings.Split(params.Get(bboxParam), ",")
+	bboxValues := strings.Split(params.Get(BboxParam), ",")
 	if len(bboxValues) != 4 {
 		return nil, bboxSRID, errors.New("bbox should contain exactly 4 values " +
 			"separated by commas: minx,miny,maxx,maxy")
@@ -296,21 +296,15 @@ func parseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
 	}
 
 	bbox := geom.NewBounds(geom.XY).Set(bboxFloats...)
-	if surfaceArea(bbox) <= 0 {
+	if util.SurfaceArea(bbox) <= 0 {
 		return nil, bboxSRID, errors.New("bbox has no surface area")
 	}
 
 	return bbox, bboxSRID, nil
 }
 
-func surfaceArea(bbox *geom.Bounds) float64 {
-	// Use the same logic as bbox.Area() in https://github.com/go-spatial/geom to calculate surface area.
-	// The bounds.Area() in github.com/twpayne/go-geom behaves differently and is not what we're looking for.
-	return math.Abs((bbox.Max(1) - bbox.Min(1)) * (bbox.Max(0) - bbox.Min(0)))
-}
-
-func parseCrsToContentCrs(params url.Values) d.ContentCrs {
-	param := params.Get(crsParam)
+func ParseCrsToContentCrs(params url.Values) d.ContentCrs {
+	param := params.Get(CrsParam)
 	if param == "" {
 		return d.WGS84CrsURI
 	}
@@ -318,7 +312,7 @@ func parseCrsToContentCrs(params url.Values) d.ContentCrs {
 	return d.ContentCrs(param)
 }
 
-func parseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
+func ParseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 	param := params.Get(paramName)
 	if param == "" {
 		return d.UndefinedSRID, nil
@@ -386,7 +380,7 @@ func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error)
 
 func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error) {
 	filter = params.Get(filterParam)
-	filterSRID, _ = parseCrsToSRID(params, filterCrsParam)
+	filterSRID, _ = ParseCrsToSRID(params, filterCrsParam)
 
 	if filter != "" {
 		return filter, filterSRID, errors.New("CQL filter param is currently not supported")

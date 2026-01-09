@@ -22,7 +22,7 @@
     @if (hasFeatures && !searching()) {
       @for (feature of features; track $index) {
         <li class="dropdown-item">
-          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'displayName' }}</button>
+          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'display_name' }}</button>
         </li>
       }
     } @else if (!hasFeatures && !searching() && hasSearched) {

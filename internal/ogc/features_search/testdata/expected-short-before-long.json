@@ -1,0 +1,111 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?f=json"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/search?f=jsonfg"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/search?f=html"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Akenbuurt 1 1791PJ Den Burg",
+        "highlight": "<b>Akenbuurt</b> <b>1</b> <b>1791PJ</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/27?f=json",
+        "score": 0.23083121776580812
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.77907,
+          53.05735
+        ]
+      },
+      "id": "27",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/27?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Akenbuurt 1a 1791PJ Den Burg",
+        "highlight": "<b>Akenbuurt</b> <b>1a</b> <b>1791PJ</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/28?f=json",
+        "score": 0.05770780444145203
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.77907,
+          53.05735
+        ]
+      },
+      "id": "28",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/28?f=json"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Akenbuurt 2 1791PJ Den Burg",
+        "highlight": "<b>Akenbuurt</b> 2 <b>1791PJ</b>",
+        "href": "https://example.com/ogc/v1/collections/addresses/items/29?f=json",
+        "score": 0.028853902220726015
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.77907,
+          53.05735
+        ]
+      },
+      "id": "29",
+      "links": [
+        {
+          "rel": "canonical",
+          "title": "The actual feature in the corresponding OGC API",
+          "type": "application/geo+json",
+          "href": "https://example.com/ogc/v1/collections/addresses/items/29?f=json"
+        }
+      ]
+    }
+  ],
+  "numberReturned": 3
+}
