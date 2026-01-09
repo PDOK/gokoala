@@ -24,12 +24,12 @@ type SearchSettings struct {
 
 	// ADVANCED SETTING. Multiply the exact match rank to boost it above the wildcard matches.
 	// +kubebuilder:validation:Pattern=`^-?\d+(\.\d+)?$`
-	// +kubebuilder:default=3.0
+	// +kubebuilder:default="3.0"
 	ExactMatchMultiplier string `yaml:"exactMatchMultiplier,omitempty" json:"exactMatchMultiplier,omitempty" default:"3.0" validate:"numeric,gt=0"`
 
 	// ADVANCED SETTING. The primary suggest is equal to the display name. With this multiplier you can boost it above other suggests.
 	// +kubebuilder:validation:Pattern=`^-?\d+(\.\d+)?$`
-	// +kubebuilder:default=1.01
+	// +kubebuilder:default="1.01"
 	PrimarySuggestMultiplier string `yaml:"primarySuggestMultiplier,omitempty" json:"primarySuggestMultiplier,omitempty" default:"1.01" validate:"numeric,gt=0"`
 
 	// ADVANCED SETTING. The threshold above which results are pre-ranked instead ranked exactly.
@@ -98,11 +98,6 @@ type RelatedOGCAPIFeaturesCollection struct {
 	// Collection ID in the OGC Features API. This can be a collection on this
 	// server (listed under ogcApi>Features>Collections) or a remote collection on another server.
 	CollectionID string `yaml:"collection" json:"collection" validate:"required,lowercase_id"`
-
-	// `datetime` query parameter for the OGC Features API. In case it's temporal.
-	// E.g.: "{now()-1h}"
-	// +optional
-	Datetime *string `yaml:"datetime,omitempty" json:"datetime,omitempty"`
 }
 
 func (ogcColl *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {
