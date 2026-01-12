@@ -62,7 +62,8 @@ type CollectionEntryFeaturesSearch struct {
 	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
 
 	// Version of the collection exposed through the API.
-	// +kubebuilder:default=1
+	// TODO: remove optional marker once collections are refactored
+	// +optional
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
 	// Links to the individual OGC API (feature) collections that are searchable in this collection.
