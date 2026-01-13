@@ -28,7 +28,7 @@ ogcApi:
             - srs: EPSG:4258
             - srs: EPSG:28992
           postgres:
-            host: localhost
+            host: postgres
             user: postgres
             databaseName: postgres
             externalFid: external_fid
