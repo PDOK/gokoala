@@ -71,7 +71,10 @@ CurrentUrl: Huidige URL
 SearchByLocation: Zoeken op locatie
 Searching: Zoeken...
 NoResultsFound: Geen resultaten gevonden
-Relevance: Relevantie
+RelevanceHeader: Relevantie
+CollectionsHeader: Collecties
+SearchHelpText: Zoekterm moet minimaal drie tekens lang zijn.
+NoCollectionSelectedText: Er moet minimaal één collectie geselecteerd zijn.
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract: |-

@@ -6,19 +6,20 @@
     <input
       type="text"
       [formControl]="form.controls.location"
-      [placeholder]="placeholder"
+      [placeholder]="placeholderText"
       class="form-control"
+      [ngClass]="{ 'is-invalid': !hasSearchParams() }"
       id="search-input"
       autocomplete="off"
       [attr.aria-expanded]="true"
       (focus)="openSearchIfNot()"
       (click)="openSearchIfNot()"
-      aria-describedby="settings" />
+      aria-describedby="searchHelpBlock" />
     <button class="btn btn-secondary" type="button" (click)="toggleCollectionSettings()">
       <i class="bi bi-sliders"></i>
     </button>
   </div>
-  <ul class="dropdown-menu w-100" [ngClass]="{ show: searchOpen() && hasSearched }" aria-labelledby="search-input">
+  <ul class="dropdown-menu w-100" [ngClass]="{ show: searchOpen() && hasSearchParams() && hasSearched }" aria-labelledby="search-input">
     @if (hasFeatures && !searching()) {
       @for (feature of features; track $index) {
         <li class="dropdown-item">
@@ -32,8 +33,14 @@
     }
   </ul>
 </div>
+<div
+  id="searchHelpBlock"
+  class="form-text"
+  *ngIf="(!form.controls.location.value || form.controls.location.value.length < MIN_QUERY_LENGTH) && hasSearchParams()">
+  {{ searchHelpText }}
+</div>
+<div *ngIf="!hasSearchParams()" class="d-block invalid-feedback">{{ noCollectionsSelectedText }}</div>
 <app-collection-settings
   [open]="collectionSettingsOpen()"
-  (formChange)="searchParams = $event"
-  [collectionText]="collectionText"
+  (formChange)="onFormChange($event)"
   [relevanceText]="relevanceText"></app-collection-settings>
