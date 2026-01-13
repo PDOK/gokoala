@@ -13,7 +13,7 @@ import {
   signal,
   SimpleChanges,
 } from '@angular/core'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
 import { AsyncPipe, JsonPipe, NgClass, NgIf } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
