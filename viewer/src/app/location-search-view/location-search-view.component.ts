@@ -16,7 +16,7 @@ import {
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
-import { safeGetCurrentUrl, safePushState } from '../shared/save-globel-this-tools'
+import { safeGetCurrentUrl, safePushState, NgIf } from '../shared/save-globel-this-tools'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { PropertyValuePipe } from './property-value.pipe'
@@ -28,7 +28,7 @@ interface LocationForm {
 @Component({
   selector: 'app-location-search-view',
   standalone: true,
-  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent],
+  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent, NgIf],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,13 +37,15 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   private host = inject<ElementRef<HTMLElement>>(ElementRef)
   @Input() url: string | undefined = undefined
 
-  @Input() projection?: string
+  @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
 
-  @Input() placeholder = 'Search by location'
+  @Input() placeholderText = 'Search by location'
   @Input() noResultsText = 'No results found'
   @Input() searchingText = 'Searching...'
   @Input() relevanceText = 'Relevance'
-  @Input() collectionText = 'Collection'
+  @Input() collectionsText = 'Collections'
+  @Input() searchHelpText = 'Search query must be at least three characters long.'
+  @Input() noCollectionsSelectedText = 'A minimum of one collection must be selected.'
 
   @Output() locationSelected = new EventEmitter<string>()
 
@@ -51,11 +53,13 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   features$?: Observable<FeatureGeoJSON[]>
 
   query: string = ''
+  readonly MIN_QUERY_LENGTH = 3
   searchParams: { [key: string]: number } = {}
 
   searchOpen = signal(false)
   searching = signal(false)
   collectionSettingsOpen = signal(false)
+  hasSearchParams = signal(true)
 
   hasSearched$!: Observable<boolean>
 
@@ -83,10 +87,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   initLocationListener() {
     this.features$ = this.form.controls.location.valueChanges.pipe(
       distinctUntilChanged(),
-      filter(value => value !== null && value.length >= 3),
-      tap(() => {
-        this.searching.set(true)
-      }),
+      filter(value => value !== null && value.length >= this.MIN_QUERY_LENGTH && this.hasSearchParams()),
+      tap(() => this.searching.set(true)),
       debounceTime(200),
       tap(val => (this.query = val || '')),
       switchMap(val => this._featureService.queryFeatures(this.url, val || '', this.searchParams, this.projection)),
@@ -95,7 +97,14 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       takeUntil(this._destroy$)
     )
 
-    this.hasSearched$ = this.form.controls.location.valueChanges.pipe(map(value => value !== null && value.length > 3))
+    this.hasSearched$ = this.form.controls.location.valueChanges.pipe(map(value => value !== null && value.length >= this.MIN_QUERY_LENGTH))
+  }
+
+  onFormChange($event: { [p: string]: number }) {
+    this.hasSearchParams.update(() => {
+      return Object.keys($event).length > 0
+    })
+    this.searchParams = $event
   }
 
   selectFeature(feature: FeatureGeoJSON) {
