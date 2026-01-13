@@ -1,8 +1,20 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  inject,
+} from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { defaults as defaultControls } from 'ol/control'
 
+import { NGXLogger } from 'ngx-logger'
+import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
 import { Extent, getCenter, getTopLeft } from 'ol/extent'
@@ -10,21 +22,18 @@ import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 import { Tile, Vector as VectorLayer } from 'ol/layer'
 import TileLayer from 'ol/layer/Tile'
-import { Projection } from 'ol/proj'
+import { Projection, getPointResolution, get as getProjection, transform } from 'ol/proj'
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
+import { Options as TextOptions } from 'ol/style/Text'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
-import { DataUrl, FeatureService, ProjectionMapping, defaultMapping } from '../shared/services/feature.service'
 import { getRijksdriehoek } from '../map-projection'
+import { DataUrl, FeatureService, ProjectionMapping, defaultMapping } from '../shared/services/feature.service'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { BoxControl, emitBox } from './boxcontrol'
 import { FullBoxControl } from './fullboxcontrol'
-import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
-import { Options as TextOptions } from 'ol/style/Text'
-import { getPointResolution, get as getProjection, transform } from 'ol/proj'
-import { NGXLogger } from 'ngx-logger'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,6 +59,10 @@ export enum InitialView {
   standalone: true,
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit {
+  private readonly el = inject(ElementRef)
+  private readonly featureService = inject(FeatureService)
+  private readonly logger = inject(NGXLogger)
+
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
 
@@ -97,12 +110,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     zoom: 4,
   })
   features: FeatureLike[] = []
-
-  constructor(
-    private el: ElementRef,
-    private featureService: FeatureService,
-    private logger: NGXLogger
-  ) {}
 
   private getMap(): OLMap {
     return new OLMap({
@@ -235,11 +242,9 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
           this.setViewExtent(extent, 1.05)
         }
       }
-    } else {
-      if (this.initial) {
-        this.setViewExtent(extent, 1)
-        this.initial = false
-      }
+    } else if (this.initial) {
+      this.setViewExtent(extent, 1)
+      this.initial = false
     }
   }
 
@@ -357,7 +362,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     if (this.labelField) {
       eventType = 'click'
     }
-    this.map.on(eventType, (evt: MapBrowserEvent<UIEvent>) => {
+    this.map.on(eventType, (evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>) => {
       this.map.forEachFeatureAtPixel(
         evt.pixel,
         (feature: FeatureLike) => {
@@ -405,6 +410,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     }
     const pointResolution = getPointResolution(view.getProjection(), 1, center)
     const resolution = scale / (pointResolution * inchesPerMeter * dpi)
-    return parseFloat(resolution.toFixed(6))
+    return Number.parseFloat(resolution.toFixed(6))
   }
 }

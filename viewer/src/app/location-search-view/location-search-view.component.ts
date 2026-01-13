@@ -1,3 +1,4 @@
+import { AsyncPipe, JsonPipe, NgClass } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,10 +16,10 @@ import {
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
-import { AsyncPipe, NgClass } from '@angular/common'
-import { PropertyValuePipe } from './property-value.pipe'
-import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
+import { safeGetCurrentUrl, safePushState } from '../shared/save-globel-this-tools'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
+import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
+import { PropertyValuePipe } from './property-value.pipe'
 
 interface LocationForm {
   location: FormControl<string | null>
@@ -33,6 +34,9 @@ interface LocationForm {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
+  private host = inject<ElementRef<HTMLElement>>(ElementRef)
+  @Input() url: string | undefined = undefined
+
   @Input() projection?: string
 
   @Input() placeholder = 'Search by location'
@@ -58,10 +62,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   private _featureService = inject(FeatureService)
   private _destroy$ = new Subject<void>()
 
-  constructor(private host: ElementRef<HTMLElement>) {}
-
   ngOnInit() {
-    const url = new URL(window.location.href)
+    const url = safeGetCurrentUrl(this.url)
     this.query = url.searchParams.get('q') || ''
     this.form = new FormGroup<LocationForm>({
       location: new FormControl(this.query),
@@ -71,8 +73,10 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (!changes['projection'].isFirstChange() && changes['projection'].currentValue !== changes['projection'].previousValue) {
-      this.form.controls.location.patchValue('', { emitEvent: true })
+    if (changes['projection']) {
+      if (!changes['projection'].isFirstChange() && changes['projection'].currentValue !== changes['projection'].previousValue) {
+        this.form.controls.location.patchValue('', { emitEvent: true })
+      }
     }
   }
 
@@ -85,7 +89,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       }),
       debounceTime(200),
       tap(val => (this.query = val || '')),
-      switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection)),
+      switchMap(val => this._featureService.queryFeatures(this.url, val || '', this.searchParams, this.projection)),
       tap(() => this.storeQuery()),
       tap(() => this.searching.set(false)),
       takeUntil(this._destroy$)
@@ -113,9 +117,9 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   private storeQuery() {
-    const url = new URL(window.location.href)
+    const url = safeGetCurrentUrl(this.url)
     url.searchParams.set('q', this.query)
-    history.pushState({}, '', url.toString())
+    safePushState({}, '', url.toString())
   }
 
   @HostListener('document:mousedown', ['$event'])

@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser'
 import { VectortileViewComponent } from './vectortile-view/vectortile-view.component'
 import { createCustomElement } from '@angular/elements'
 import { ObjectInfoComponent } from './object-info/object-info.component'
-import { NgModule, Injector } from '@angular/core'
+import { NgModule, Injector, inject } from '@angular/core'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
@@ -24,7 +24,11 @@ import { LocationSearchViewComponent } from './location-search-view/location-sea
   providers: [provideHttpClient(withInterceptorsFromDi())],
 })
 export class AppModule {
-  constructor(private injector: Injector) {
+  private injector = inject(Injector)
+
+  constructor() {
+    const injector = this.injector
+
     const vectorTileView = createCustomElement(VectortileViewComponent, { injector })
     customElements.define('app-vectortile-view', vectorTileView)
 

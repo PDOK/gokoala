@@ -1,6 +1,7 @@
 @let features = features$ | async;
 @let hasFeatures = !!features?.length;
 @let hasSearched = hasSearched$ | async;
+
 <div class="dropdown" [attr.aria-expanded]="searchOpen()">
   <div class="input-group">
     <input
@@ -20,9 +21,11 @@
   </div>
   <ul class="dropdown-menu w-100" [ngClass]="{ show: searchOpen() && hasSearched }" aria-labelledby="search-input">
     @if (hasFeatures && !searching()) {
+      <!--pre>Form values: {{ features | json }}</pre-->
+
       @for (feature of features; track $index) {
         <li class="dropdown-item">
-          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'display_name' }}</button>
+          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'displayName' }}</button>
         </li>
       }
     } @else if (!hasFeatures && !searching() && hasSearched) {
@@ -33,6 +36,7 @@
   </ul>
 </div>
 <app-collection-settings
+  [url]="url"
   [open]="collectionSettingsOpen()"
   (formChange)="searchParams = $event"
   [collectionText]="collectionText"

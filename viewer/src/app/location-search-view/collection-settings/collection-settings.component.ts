@@ -1,8 +1,9 @@
-import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core'
 import { AsyncPipe, NgClass } from '@angular/common'
-import { map, Observable, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
-import { Collection, CollectionsService } from '../../shared/services/collections.service'
+import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core'
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
+import { map, Observable, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
+import { safeGetCurrentUrl, safeReplaceState } from 'src/app/shared/save-globel-this-tools'
+import { Collection, CollectionsService } from '../../shared/services/collections.service'
 
 interface CollectionSetting {
   checked: FormControl<boolean>
@@ -17,6 +18,7 @@ interface CollectionSetting {
   styleUrl: './collection-settings.component.css',
 })
 export class CollectionSettingsComponent implements OnInit, OnDestroy {
+  @Input() url: string | undefined = undefined
   @Input() open: boolean = false
   @Input() collectionText = 'Collection'
   @Input() relevanceText = 'Relevance'
@@ -32,13 +34,14 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.form = new FormArray<FormGroup<CollectionSetting>>([])
-    this.collections$ = this._collectionsService.getCollections().pipe(takeUntil(this._destroy$))
+    const url = safeGetCurrentUrl(this.url)
+    this.collections$ = this._collectionsService.getCollections(url).pipe(takeUntil(this._destroy$))
     this.emitFormChanges()
     this.buildForm()
   }
 
   buildForm() {
-    const url = new URL(window.location.href)
+    const url = safeGetCurrentUrl(this.url)
     let hasAnyParam = false
     this.collections$.subscribe(collections => {
       collections.forEach(collection => {
@@ -81,13 +84,13 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
   }
 
   private storeSettings(formValue: { [key: string]: number }) {
-    const url = new URL(window.location.href)
+    const url = safeGetCurrentUrl(this.url)
     url.search = ''
     for (const key in formValue) {
       url.searchParams.append(`${key}[relevance]`, formValue[key].toString())
       url.searchParams.append(`${key}[version]`, '1')
     }
-    history.replaceState({}, '', url.toString())
+    safeReplaceState({}, '', url.toString())
   }
 
   ngOnDestroy() {
