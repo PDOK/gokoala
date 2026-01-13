@@ -17,7 +17,6 @@ import View from 'ol/View'
 import { Subject } from 'rxjs'
 import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../map-projection'
 
-import { CommonModule } from '@angular/common'
 import { NGXLogger } from 'ngx-logger'
 import { MapBrowserEvent } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
@@ -67,7 +66,7 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   styleUrls: ['./vectortile-view.component.css'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
   ],

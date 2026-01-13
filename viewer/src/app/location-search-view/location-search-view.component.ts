@@ -1,4 +1,4 @@
-import { AsyncPipe, JsonPipe, NgClass } from '@angular/common'
+import { AsyncPipe, NgClass } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,7 +16,7 @@ import {
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
-import { safeGetCurrentUrl, safePushState, NgIf } from '../shared/save-globel-this-tools'
+import { safeGetCurrentUrl, safePushState } from '../shared/save-globel-this-tools'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { PropertyValuePipe } from './property-value.pipe'
@@ -28,7 +28,7 @@ interface LocationForm {
 @Component({
   selector: 'app-location-search-view',
   standalone: true,
-  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent, NgIf],
+  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
