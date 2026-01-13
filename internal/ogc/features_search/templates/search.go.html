@@ -23,11 +23,14 @@
                     <div class="col">
                         <app-location-search-view
                                 id="location-search"
-                                searchingText="{{ i18n "Searching" }}"
-                                noResultsText="{{ i18n "NoResultsFound" }}"
-                                collectionText="{{ i18n "Collections" }}"
-                                relevanceText="{{ i18n "Relevance" }}"
-                                placeholder="{{ i18n "SearchByLocation" }}"
+                                projection=""
+                                searching-text="{{ i18n "Searching" }}"
+                                no-results-text="{{ i18n "NoResultsFound" }}"
+                                collection-text="{{ i18n "CollectionsHeader" }}"
+                                relevance-text="{{ i18n "RelevanceHeader" }}"
+                                placeholder-text="{{ i18n "SearchByLocation" }}"
+                                search-help-text="{{ i18n "SearchHelpText" }}"
+                                no-collections-selected-text="{{ i18n "NoCollectionSelectedText" }}"
                                 class="d-block"
                         ></app-location-search-view>
                     </div>
@@ -87,6 +90,6 @@
             featureView.setAttribute("projection", projection);
         })
     </script>
-    <script src="view-component/polyfills.js"></script>
-    <script type="module" src="view-component/main.js"></script>
+    <script src="http://localhost:4200/polyfills.js"></script>
+    <script type="module" src="http://localhost:4200/main.js"></script>
 {{ end }}
