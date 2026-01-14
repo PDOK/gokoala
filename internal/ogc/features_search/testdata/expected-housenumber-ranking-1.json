@@ -40,15 +40,7 @@
           53.01914
         ]
       },
-      "id": "435",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/435?f=json"
-        }
-      ]
+      "id": "435"
     },
     {
       "type": "Feature",
@@ -68,15 +60,7 @@
           53.0245
         ]
       },
-      "id": "436",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/436?f=json"
-        }
-      ]
+      "id": "436"
     },
     {
       "type": "Feature",
@@ -96,15 +80,7 @@
           53.0245
         ]
       },
-      "id": "437",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/437?f=json"
-        }
-      ]
+      "id": "437"
     },
     {
       "type": "Feature",
@@ -124,15 +100,7 @@
           53.0245
         ]
       },
-      "id": "438",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/438?f=json"
-        }
-      ]
+      "id": "438"
     },
     {
       "type": "Feature",
@@ -152,15 +120,7 @@
           53.0245
         ]
       },
-      "id": "439",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/439?f=json"
-        }
-      ]
+      "id": "439"
     },
     {
       "type": "Feature",
@@ -180,15 +140,7 @@
           53.02431
         ]
       },
-      "id": "440",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/440?f=json"
-        }
-      ]
+      "id": "440"
     },
     {
       "type": "Feature",
@@ -208,15 +160,7 @@
           53.02418
         ]
       },
-      "id": "441",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/441?f=json"
-        }
-      ]
+      "id": "441"
     },
     {
       "type": "Feature",
@@ -236,15 +180,7 @@
           53.02418
         ]
       },
-      "id": "442",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/442?f=json"
-        }
-      ]
+      "id": "442"
     },
     {
       "type": "Feature",
@@ -264,15 +200,7 @@
           53.02388
         ]
       },
-      "id": "443",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/443?f=json"
-        }
-      ]
+      "id": "443"
     },
     {
       "type": "Feature",
@@ -292,15 +220,7 @@
           53.01914
         ]
       },
-      "id": "434",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/434?f=json"
-        }
-      ]
+      "id": "434"
     }
   ],
   "numberReturned": 10

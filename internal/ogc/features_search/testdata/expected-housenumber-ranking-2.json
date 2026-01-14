@@ -40,15 +40,7 @@
           53.06172
         ]
       },
-      "id": "51",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/51?f=json"
-        }
-      ]
+      "id": "51"
     },
     {
       "type": "Feature",
@@ -68,15 +60,7 @@
           53.06172
         ]
       },
-      "id": "52",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/52?f=json"
-        }
-      ]
+      "id": "52"
     },
     {
       "type": "Feature",
@@ -96,15 +80,7 @@
           53.0628
         ]
       },
-      "id": "53",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/53?f=json"
-        }
-      ]
+      "id": "53"
     },
     {
       "type": "Feature",
@@ -124,15 +100,7 @@
           53.0628
         ]
       },
-      "id": "54",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/54?f=json"
-        }
-      ]
+      "id": "54"
     }
   ],
   "numberReturned": 4

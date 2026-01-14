@@ -175,17 +175,8 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 				if err != nil {
 					return err
 				}
-
-				// add href to feature both in GeoJSON properties (for broad compatibility and in line with OGC API Features part 5) and as a Link.
+				// add href to feature (in line with OGC API Features part 5).
 				feat.Properties.Set(propHref, href)
-				feat.Links = []fd.Link{
-					{
-						Rel:   "canonical",
-						Title: "The actual feature in the corresponding OGC API",
-						Type:  "application/geo+json",
-						Href:  href,
-					},
-				}
 			}
 		}
 	}
