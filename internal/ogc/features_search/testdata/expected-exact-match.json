@@ -30,7 +30,9 @@
         "collection_version": 1,
         "display_name": "Ada van Holland 1791DG Den Burg",
         "highlight": "Ada van <b>Holland</b> 1791DG <b>Den</b> <b>Burg</b>",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/11?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/11?f=json"
+        ],
         "score": 0.08284040689468385
       },
       "geometry": {
@@ -50,7 +52,9 @@
         "collection_version": 1,
         "display_name": "Ada van Hollandstraat 1791DH Den Burg",
         "highlight": "Ada van <b>Hollandstraat</b> 1791DH <b>Den</b> <b>Burg</b>",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/12?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/12?f=json"
+        ],
         "score": 0.020555934309959414
       },
       "geometry": {
