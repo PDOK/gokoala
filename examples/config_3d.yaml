@@ -23,9 +23,9 @@ availableLanguages:
   - en
 ogcApi:
   3dgeovolumes:
-    tileServer: https://3d.kadaster.nl
+    tileServer: https://example.com
     collections:
       - id: gebouwen
-        tileServerPath: /3dtiles/2022/Gebouwen
+        tileServerPath: /path/to/tileserver
         isDTM: false
         isImplicit: true
