@@ -49,7 +49,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   features$?: Observable<FeatureGeoJSON[]>
 
   query: string = ''
-  readonly MIN_QUERY_LENGTH = 3
+  readonly MIN_QUERY_LENGTH = 2
   searchParams: { [key: string]: number } = {}
 
   searchOpen = signal(false)
