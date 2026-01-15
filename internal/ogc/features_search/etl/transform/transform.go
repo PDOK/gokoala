@@ -151,11 +151,11 @@ func generateExternalFid(collectionID string, externalFid *config.ExternalFid, e
 		if len(externalFid.Fields) != len(externalFidValues) {
 			return nil, fmt.Errorf("slices must be of the same length, got %d keys and %d values", len(externalFid.Fields), len(externalFidValues))
 		}
-		var uuidInputSb154 strings.Builder
+		var stringBuilder strings.Builder
 		for _, value := range externalFidValues {
-			uuidInputSb154.WriteString(fmt.Sprint(value))
+			stringBuilder.WriteString(fmt.Sprint(value))
 		}
-		uuidInput += uuidInputSb154.String()
+		uuidInput += stringBuilder.String()
 		result := uuid.NewSHA1(externalFid.UUIDNamespace, []byte(uuidInput)).String()
 		return &result, nil
 	}
