@@ -40,15 +40,7 @@
           53.08349
         ]
       },
-      "id": "1",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/1?f=json"
-        }
-      ]
+      "id": "1"
     },
     {
       "type": "Feature",
@@ -68,15 +60,7 @@
           53.08353
         ]
       },
-      "id": "10",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/10?f=json"
-        }
-      ]
+      "id": "10"
     },
     {
       "type": "Feature",
@@ -96,15 +80,7 @@
           53.08355
         ]
       },
-      "id": "115",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/115?f=json"
-        }
-      ]
+      "id": "115"
     },
     {
       "type": "Feature",
@@ -124,15 +100,7 @@
           53.08343
         ]
       },
-      "id": "117",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/117?f=json"
-        }
-      ]
+      "id": "117"
     },
     {
       "type": "Feature",
@@ -152,15 +120,7 @@
           53.08343
         ]
       },
-      "id": "118",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/118?f=json"
-        }
-      ]
+      "id": "118"
     },
     {
       "type": "Feature",
@@ -180,15 +140,7 @@
           53.08349
         ]
       },
-      "id": "2",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/2?f=json"
-        }
-      ]
+      "id": "2"
     },
     {
       "type": "Feature",
@@ -208,15 +160,7 @@
           53.08349
         ]
       },
-      "id": "3",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/3?f=json"
-        }
-      ]
+      "id": "3"
     },
     {
       "type": "Feature",
@@ -236,15 +180,7 @@
           53.08349
         ]
       },
-      "id": "4",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/4?f=json"
-        }
-      ]
+      "id": "4"
     },
     {
       "type": "Feature",
@@ -264,15 +200,7 @@
           53.0835
         ]
       },
-      "id": "8",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/8?f=json"
-        }
-      ]
+      "id": "8"
     },
     {
       "type": "Feature",
@@ -292,15 +220,7 @@
           53.08356
         ]
       },
-      "id": "9",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/9?f=json"
-        }
-      ]
+      "id": "9"
     }
   ],
   "numberReturned": 10

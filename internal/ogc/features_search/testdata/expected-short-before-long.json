@@ -40,15 +40,7 @@
           53.05735
         ]
       },
-      "id": "27",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/27?f=json"
-        }
-      ]
+      "id": "27"
     },
     {
       "type": "Feature",
@@ -68,15 +60,7 @@
           53.05735
         ]
       },
-      "id": "28",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/28?f=json"
-        }
-      ]
+      "id": "28"
     },
     {
       "type": "Feature",
@@ -96,15 +80,7 @@
           53.05735
         ]
       },
-      "id": "29",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/29?f=json"
-        }
-      ]
+      "id": "29"
     }
   ],
   "numberReturned": 3

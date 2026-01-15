@@ -40,15 +40,7 @@
           53.05093
         ]
       },
-      "id": "159",
-      "links": [
-        {
-          "rel": "canonical",
-          "title": "The actual feature in the corresponding OGC API",
-          "type": "application/geo+json",
-          "href": "https://example.com/ogc/v1/collections/addresses/items/159?f=json"
-        }
-      ]
+      "id": "159"
     }
   ],
   "numberReturned": 1
