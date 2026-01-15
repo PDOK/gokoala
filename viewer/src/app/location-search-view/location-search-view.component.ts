@@ -75,7 +75,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (!changes['projection'].isFirstChange() && changes['projection'].currentValue !== changes['projection'].previousValue) {
+    if (!changes['projection']?.isFirstChange() && changes['projection']?.currentValue !== changes['projection']?.previousValue) {
       this.form.controls.location.patchValue('', { emitEvent: true })
     }
   }
