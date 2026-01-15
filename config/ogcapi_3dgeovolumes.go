@@ -25,7 +25,7 @@ type CollectionEntry3dGeoVolumes struct {
 	// Is a digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM.
 	// +kubebuilder:default=false
 	// +optional
-	IsDTM bool `yaml:"isDTM,omitempty" json:"isDTM,omitempty" default:"false"`
+	IsDtm bool `yaml:"isDtm,omitempty" json:"isDtm,omitempty" default:"false"`
 
 	// Optional flag to indicate that the collection is implicit.
 	// +optional

@@ -94,7 +94,7 @@ func (t *ThreeDimensionalGeoVolumes) Tile() http.HandlerFunc {
 		tilePath := chi.URLParam(r, "*")
 
 		contentType := ""
-		if collection.GeoVolumes != nil && collection.GeoVolumes.IsDTM {
+		if collection.GeoVolumes != nil && collection.GeoVolumes.IsDtm {
 			// DTM has a specialized mediatype, although application/octet-stream will also work with Cesium
 			contentType = engine.MediaTypeQuantizedMesh
 		}

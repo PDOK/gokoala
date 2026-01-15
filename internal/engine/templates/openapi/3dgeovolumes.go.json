@@ -12,7 +12,7 @@
   },
   "paths" : {
     {{- range $index, $coll := .Config.OgcAPI.GeoVolumes.Collections -}}
-    {{ if and $coll.GeoVolumes (not $coll.GeoVolumes.IsDTM) }}
+    {{ if and $coll.GeoVolumes (not $coll.GeoVolumes.IsDtm) }}
     {{- if $index -}},{{- end -}}
     "/collections/{{ $coll.ID }}/3dtiles" : {
       "get" : {
@@ -87,7 +87,7 @@
       }
     }
     {{ end }}
-    {{ if and $coll.GeoVolumes $coll.GeoVolumes.IsDTM }}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.IsDtm }}
     ,
     "/collections/{{ $coll.ID }}/quantized-mesh/{path}" : {
       "get" : {
