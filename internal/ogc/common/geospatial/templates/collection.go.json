@@ -81,7 +81,7 @@
     }
     {{ end }}
     {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-      {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.Has3DTiles }}
+      {{ if and .Params.Collection.GeoVolumes (not .Params.Collection.GeoVolumes.IsDTM) }}
       ,
       {
         "rel" : "items",
@@ -90,7 +90,7 @@
         "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/3dtiles?f=json"
       }
       {{ end }}
-      {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.HasDTM }}
+      {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.IsDTM }}
       ,
       {
         "rel" : "items",
@@ -181,7 +181,7 @@
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   ,
   "content" : [
-      {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.Has3DTiles }}
+      {{ if and .Params.Collection.GeoVolumes (not .Params.Collection.GeoVolumes.IsDTM) }}
       {
         "rel" : "original",
         "type" : "application/json+3dtiles",
@@ -189,7 +189,7 @@
         "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/3dtiles?f=json",
         "collectionType": "3d-container"
       }
-      {{ else if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.HasDTM }}
+      {{ else if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.IsDTM }}
       {
         "rel" : "original",
         "type" : "application/json",

@@ -132,10 +132,10 @@
                     </h2>
                     <div class="card-body">
                         <ul>
-                            {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.Has3DTiles }}
+                            {{ if and .Params.Collection.GeoVolumes (not .Params.Collection.GeoVolumes.IsDTM) }}
                                 <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/3dtiles" aria-label="{{ i18n "GoTo"}} 3D Tiles">3D Tiles</a></li>
                             {{ end }}
-                            {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.HasDTM }}
+                            {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.IsDTM }}
                                 <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/quantized-mesh" aria-label="{{ i18n "GoTo"}} Quantized Mesh DTM">Quantized Mesh DTM</a></li>
                             {{ end }}
                             {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.URL3DViewer }}

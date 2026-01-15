@@ -33,20 +33,17 @@ func NewThreeDimensionalGeoVolumes(e *engine.Engine) *ThreeDimensionalGeoVolumes
 
 	// 3D Tiles
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles", geoVolumes.Tileset("tileset.json"))
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/tileset.json", geoVolumes.Tileset("tileset.json"))
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/3dtiles/*", geoVolumes.Tile())
+
+	// 3D Tiles without /3dtiles prefix (do not publish in OpenAPI Spec)
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}", geoVolumes.Tileset("tileset.json"))
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/tileset.json", geoVolumes.Tileset("tileset.json"))
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/*", geoVolumes.Tile())
 
 	// DTM/Quantized Mesh
 	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh", geoVolumes.Tileset("layer.json"))
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-
-	// path '/3dtiles' or '/quantized-mesh' is preferred but optional when requesting the actual tiles/tileset.
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{explicitTileSet}.json", geoVolumes.ExplicitTileset())
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
-	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/{tilePathPrefix}/{tileMatrix}/{tileRow}/{tileColAndSuffix}", geoVolumes.Tile())
+	e.Router.Get(geospatial.CollectionsPath+"/{3dContainerId}/quantized-mesh/*", geoVolumes.Tile())
 
 	return geoVolumes
 }
@@ -93,18 +90,16 @@ func (t *ThreeDimensionalGeoVolumes) Tile() http.HandlerFunc {
 		if collection.GeoVolumes != nil && collection.GeoVolumes.TileServerPath != nil {
 			tileServerPath = *collection.GeoVolumes.TileServerPath
 		}
-		tilePathPrefix := chi.URLParam(r, "tilePathPrefix") // optional
-		tileMatrix := chi.URLParam(r, "tileMatrix")
-		tileRow := chi.URLParam(r, "tileRow")
-		tileColAndSuffix := chi.URLParam(r, "tileColAndSuffix")
+
+		tilePath := chi.URLParam(r, "*")
 
 		contentType := ""
-		if collection.GeoVolumes != nil && collection.GeoVolumes.HasDTM() {
+		if collection.GeoVolumes != nil && collection.GeoVolumes.IsDTM {
 			// DTM has a specialized mediatype, although application/octet-stream will also work with Cesium
 			contentType = engine.MediaTypeQuantizedMesh
 		}
 
-		path, _ := url.JoinPath("/", tileServerPath, tilePathPrefix, tileMatrix, tileRow, tileColAndSuffix)
+		path, _ := url.JoinPath("/", tileServerPath, tilePath)
 		t.reverseProxy(w, r, path, true, contentType)
 	}
 }

@@ -30,21 +30,6 @@ func (in *CollectionEntry3dGeoVolumes) DeepCopyInto(out *CollectionEntry3dGeoVol
 		*out = new(string)
 		**out = **in
 	}
-	if in.URITemplate3dTiles != nil {
-		in, out := &in.URITemplate3dTiles, &out.URITemplate3dTiles
-		*out = new(string)
-		**out = **in
-	}
-	if in.URITemplateImplicitTilingSubtree != nil {
-		in, out := &in.URITemplateImplicitTilingSubtree, &out.URITemplateImplicitTilingSubtree
-		*out = new(string)
-		**out = **in
-	}
-	if in.URITemplateDTM != nil {
-		in, out := &in.URITemplateDTM, &out.URITemplateDTM
-		*out = new(string)
-		**out = **in
-	}
 	if in.URL3DViewer != nil {
 		in, out := &in.URL3DViewer, &out.URL3DViewer
 		*out = (*in).DeepCopy()

@@ -23,7 +23,9 @@ availableLanguages:
   - en
 ogcApi:
   3dgeovolumes:
-    tileServer: https://api.pdok.nl/kadaster/3d-basisvoorziening/ogc/v1/collections
+    tileServer: https://3d.kadaster.nl
     collections:
       - id: gebouwen
-        uriTemplate3dTiles: "t/{level}/{x}/{y}.glb"
+        tileServerPath: /3dtiles/2022/Gebouwen
+        isDTM: false
+        isImplicit: true
