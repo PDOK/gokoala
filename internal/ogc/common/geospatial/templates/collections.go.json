@@ -112,7 +112,7 @@
         {{ end }}
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
-            {{ if and $coll.GeoVolumes $coll.GeoVolumes.Has3DTiles }}
+            {{ if and $coll.GeoVolumes (not $coll.GeoVolumes.IsDtm) }}
             ,{
               "rel" : "items",
               "type" : "application/json+3dtiles",
@@ -120,7 +120,7 @@
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
             }
             {{end}}
-            {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
+            {{ if and $coll.GeoVolumes $coll.GeoVolumes.IsDtm }}
             ,{
               "rel" : "items",
               "type" : "application/json",
@@ -231,7 +231,7 @@
       "content" : [
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
-            {{ if and $coll.GeoVolumes $coll.GeoVolumes.Has3DTiles }}
+            {{ if and $coll.GeoVolumes (not $coll.GeoVolumes.IsDtm) }}
             {
               "rel" : "original",
               "type" : "application/json+3dtiles",
@@ -239,7 +239,7 @@
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json",
               "collectionType": "3d-container"
             }
-            {{ else if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
+            {{ else if and $coll.GeoVolumes $coll.GeoVolumes.IsDtm }}
             {
               "rel" : "original",
               "type" : "application/json",

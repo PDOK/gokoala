@@ -12,13 +12,13 @@
   },
   "paths" : {
     {{- range $index, $coll := .Config.OgcAPI.GeoVolumes.Collections -}}
-    {{ if and $coll.GeoVolumes $coll.GeoVolumes.URITemplate3dTiles }}
+    {{ if and $coll.GeoVolumes (not $coll.GeoVolumes.IsDtm) }}
     {{- if $index -}},{{- end -}}
     "/collections/{{ $coll.ID }}/3dtiles" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
         "summary" : "retrieve the root 3D Tiles tileset of the feature collection '{{ $coll.ID }}'",
-        {{- if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree -}}
+        {{- if and $coll.GeoVolumes $coll.GeoVolumes.IsImplicit -}}
         "description" : "Access a 3D Tiles 1.1 tileset with implicit quadtree tiling.",
         {{- else -}}
         "description" : "Access a 3D Tiles 1.1 tileset with explicit quadtree tiling.",
@@ -31,7 +31,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  {{- if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree -}}
+                  {{- if and $coll.GeoVolumes $coll.GeoVolumes.IsImplicit -}}
                   "$ref" : "#/components/schemas/Tileset3dTiles_Implicit"
                   {{- else -}}
                   "$ref" : "#/components/schemas/Tileset3dTiles_Explicit"
@@ -47,19 +47,21 @@
         }
       }
     },
-    "/collections/{{ $coll.ID }}/3dtiles/{{ $coll.GeoVolumes.URITemplate3dTiles }}" : {
+    "/collections/{{ $coll.ID }}/3dtiles/{path}" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
         "summary" : "retrieve a glTF tile of the feature collection '{{ $coll.ID }}'",
-        "description" : "Access a 3D Tiles 1.1 Content file, a glTF 2.0 binary file.",
+        "description" : "Returns a 3D Tiles 1.1 content file, a glTF 2.0 file, or a tileset.json manifest",
         "operationId" : "get3dTilesContent.{{ $coll.ID }}",
-        "parameters" : [ {
-          "$ref" : "#/components/parameters/level"
-        }, {
-          "$ref" : "#/components/parameters/x"
-        }, {
-          "$ref" : "#/components/parameters/y"
-        } ],
+        "parameters" : [
+            {
+                "name": "path",
+                "in": "path",
+                "required": true,
+                "schema": { "type": "string" },
+                "description": "Tileset.json or subtree path"
+            }
+        ],
         "responses" : {
           "200" : {
             "description" : "The operation was executed successfully.",
@@ -85,63 +87,23 @@
       }
     }
     {{ end }}
-    {{ if and $coll.GeoVolumes $coll.GeoVolumes.URITemplateImplicitTilingSubtree }}
+    {{ if and $coll.GeoVolumes $coll.GeoVolumes.IsDtm }}
     ,
-    "/collections/{{ $coll.ID }}/3dtiles/{{ $coll.GeoVolumes.URITemplateImplicitTilingSubtree }}" : {
-      "get" : {
-        "tags" : [ "3D Tiles" ],
-        "summary" : "retrieve a 3D Tiles subtree of the feature collection '{{ $coll.ID }}'",
-        "description" : "Access a 3D Tiles 1.1 Subtree file.",
-        "operationId" : "get3dTilesSubtree.{{ $coll.ID }}",
-        "parameters" : [ {
-          "$ref" : "#/components/parameters/level"
-        }, {
-          "$ref" : "#/components/parameters/x"
-        }, {
-          "$ref" : "#/components/parameters/y"
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "The operation was executed successfully.",
-            "content" : {
-              "application/octet-stream" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/binary"
-                }
-              }
-            },
-            "headers" : {
-              {{block "headers" . }}{{end}}
-            }
-          },
-          "204" : {
-            "description" : "Tile Not Found",
-            "headers" : {
-              {{block "headers" . }}{{end}}
-            }
-          },
-          {{block "problems" . }}{{end}}
-        }
-      }
-    }
-    {{ end }}
-    {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
-    ,
-    "/collections/{{ $coll.ID }}/quantized-mesh/{{ $coll.GeoVolumes.URITemplateDTM }}" : {
+    "/collections/{{ $coll.ID }}/quantized-mesh/{path}" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
         "summary" : "retrieve digital terrain model (DTM)",
         "description" : "Access the digital terrain model (DTM) in Quantized Mesh format.",
         "operationId" : "getDTM.{{ $coll.ID }}",
-        "parameters" : [ {
-          "$ref" : "#/components/parameters/level"
-        }, {
-          "$ref" : "#/components/parameters/x"
-        }, {
-          "$ref" : "#/components/parameters/y"
-        }, {
-          "$ref" : "#/components/parameters/v"
-        }],
+        "parameters" : [
+            {
+                "name": "path",
+                "in": "path",
+                "required": true,
+                "schema": { "type": "string" },
+                "description": "layout.json or Quantized Mesh tile"
+            }
+        ],
         "responses" : {
           "200" : {
             "description" : "The operation was executed successfully.",

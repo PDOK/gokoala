@@ -22,27 +22,16 @@ type CollectionEntry3dGeoVolumes struct {
 	// +optional
 	TileServerPath *string `yaml:"tileServerPath,omitempty" json:"tileServerPath,omitempty"`
 
-	// URI template for individual 3D tiles.
+	// Is a digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM.
+	// +kubebuilder:default=false
 	// +optional
-	URITemplate3dTiles *string `yaml:"uriTemplate3dTiles,omitempty" json:"uriTemplate3dTiles,omitempty" validate:"required_without_all=URITemplateDTM"`
+	IsDtm bool `yaml:"isDtm,omitempty" json:"isDtm,omitempty"`
 
-	// Optional URI template for subtrees, only required when "implicit tiling" extension is used.
+	// Optional flag to indicate that the collection is implicit.
 	// +optional
-	URITemplateImplicitTilingSubtree *string `yaml:"uriTemplateImplicitTilingSubtree,omitempty" json:"uriTemplateImplicitTilingSubtree,omitempty"`
-
-	// URI template for digital terrain model (DTM) in Quantized Mesh format, REQUIRED when you want to serve a DTM.
-	// +optional
-	URITemplateDTM *string `yaml:"uriTemplateDTM,omitempty" json:"uriTemplateDTM,omitempty" validate:"required_without_all=URITemplate3dTiles"` //nolint:tagliatelle // grandfathered
+	IsImplicit bool `yaml:"isImplicit,omitempty" json:"isImplicit,omitempty"`
 
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
 	// +optional
 	URL3DViewer *URL `yaml:"3dViewerUrl,omitempty" json:"3dViewerUrl,omitempty"`
-}
-
-func (gv *CollectionEntry3dGeoVolumes) Has3DTiles() bool {
-	return gv.URITemplate3dTiles != nil
-}
-
-func (gv *CollectionEntry3dGeoVolumes) HasDTM() bool {
-	return gv.URITemplateDTM != nil
 }
