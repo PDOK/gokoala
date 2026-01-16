@@ -30,7 +30,9 @@
         "collection_version": 1,
         "display_name": "Akenbuurt 1 1791PJ Den Burg",
         "highlight": "<b>Akenbuurt</b> <b>1</b> <b>1791PJ</b>",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/27?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/27?f=json"
+        ],
         "score": 0.23083121776580812
       },
       "geometry": {
@@ -50,7 +52,9 @@
         "collection_version": 1,
         "display_name": "Akenbuurt 1a 1791PJ Den Burg",
         "highlight": "<b>Akenbuurt</b> <b>1a</b> <b>1791PJ</b>",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/28?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/28?f=json"
+        ],
         "score": 0.05770780444145203
       },
       "geometry": {
@@ -70,7 +74,9 @@
         "collection_version": 1,
         "display_name": "Akenbuurt 2 1791PJ Den Burg",
         "highlight": "<b>Akenbuurt</b> 2 <b>1791PJ</b>",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/29?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/29?f=json"
+        ],
         "score": 0.028853902220726015
       },
       "geometry": {

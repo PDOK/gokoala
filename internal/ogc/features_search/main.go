@@ -176,7 +176,7 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 					return err
 				}
 				// add href to feature (in line with OGC API Features part 5).
-				feat.Properties.Set(propHref, href)
+				feat.Properties.Set(propHref, []string{href})
 			}
 		}
 	}

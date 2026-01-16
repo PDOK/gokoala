@@ -313,7 +313,11 @@
           "href": {
             "description": "reference to the actual feature, possibly in another OGC API. Follow this link to get the full feature data.",
             "nullable": false,
-            "type": "string"
+            "type": "string",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "score": {
             "description": "ranking score of the found feature, higher is better.",
