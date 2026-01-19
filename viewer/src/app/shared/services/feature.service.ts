@@ -87,8 +87,8 @@ export class FeatureService {
       params.set('crs', crs)
     }
     for (const key in searchParams) {
-      params.set(`${key}[relevance]`, searchParams[key].toString())
-      params.set(`${key}[version]`, '1')
+      params.append(`${key}[relevance]`, searchParams[key].toString())
+      params.append(`${key}[version]`, '1')
     }
     return this.http.get<FeatureCollectionGeoJSON>('search', { params }).pipe(map(res => res.features))
   }
