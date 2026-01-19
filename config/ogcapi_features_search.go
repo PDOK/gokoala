@@ -8,7 +8,7 @@ type OgcAPIFeaturesSearch struct {
 	OgcAPIFeatures `yaml:",inline" json:",inline"`
 
 	// Settings related to the search API/index.
-	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings" validate:"required"`
+	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings"`
 }
 
 // +kubebuilder:object:generate=true
