@@ -4,9 +4,9 @@ import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { get as getProj, ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
-import { initProj4 } from '../../map-projection'
+import { initProj4 } from '../model/map-projection'
 import { FeatureLike } from 'ol/Feature'
-import { Link } from '../../link'
+import { Link } from '../model/link'
 
 export type PointGeoJSON = {
   coordinates: Array<number>

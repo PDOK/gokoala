@@ -1,5 +1,14 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
-import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+} from '@angular/core'
+import { Feature, Map as OLMap, MapBrowserEvent, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { defaults as defaultControls } from 'ol/control'
 
@@ -10,20 +19,19 @@ import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
 import { Tile, Vector as VectorLayer } from 'ol/layer'
 import TileLayer from 'ol/layer/Tile'
-import { Projection } from 'ol/proj'
+import { get as getProjection, getPointResolution, Projection, transform } from 'ol/proj'
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import { take } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
-import { DataUrl, FeatureService, ProjectionMapping, defaultMapping } from '../shared/services/feature.service'
-import { getRijksdriehoek } from '../map-projection'
+import { DataUrl, defaultMapping, FeatureService, ProjectionMapping } from '../shared/services/feature.service'
+import { getRijksdriehoek } from '../shared/model/map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { BoxControl, emitBox } from './boxcontrol'
 import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
-import { getPointResolution, get as getProjection, transform } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */

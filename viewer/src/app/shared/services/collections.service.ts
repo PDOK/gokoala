@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core'
 import { HttpClient, HttpParams } from '@angular/common/http'
 import { map, Observable } from 'rxjs'
-import { Link } from '../../link'
+import { Link } from '../model/link'
 
 export interface Collection {
   id: string
