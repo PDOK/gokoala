@@ -157,7 +157,7 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 		}
 		var collection *config.GeoSpatialCollection
 		for _, coll := range s.engine.Config.AllCollections() {
-			if collectionID == coll.ID && coll.Features != nil && coll.FeaturesSearch != nil {
+			if collectionID == coll.ID && coll.FeaturesSearch != nil {
 				collection = &coll
 				break
 			}
