@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
@@ -82,14 +82,15 @@ export class FeatureService {
   ) {}
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string): Observable<FeatureGeoJSON[]> {
-    const url = new URL('search', window.location.origin)
-    url.searchParams.append('q', q)
-    if (crs) url.searchParams.append('crs', crs)
-    for (const key in searchParams) {
-      url.searchParams.append(`${key}[relevance]`, searchParams[key].toString())
-      url.searchParams.append(`${key}[version]`, '1')
+    const params = new HttpParams().set('q', q)
+    if (crs) {
+      params.set('crs', crs)
     }
-    return this.http.get<FeatureCollectionGeoJSON>(url.toString()).pipe(map(res => res.features))
+    for (const key in searchParams) {
+      params.set(`${key}[relevance]`, searchParams[key].toString())
+      params.set(`${key}[version]`, '1')
+    }
+    return this.http.get<FeatureCollectionGeoJSON>('search', { params }).pipe(map(res => res.features))
   }
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
