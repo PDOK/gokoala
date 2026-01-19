@@ -82,19 +82,18 @@ export class FeatureService {
   ) {}
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string): Observable<FeatureGeoJSON[]> {
-    const params = new HttpParams().set('q', q)
+    let params = new HttpParams().set('q', q)
     if (crs) {
-      params.set('crs', crs)
+      params = params.set('crs', crs)
     }
     for (const key in searchParams) {
-      params.set(`${key}[relevance]`, searchParams[key].toString())
-      params.set(`${key}[version]`, '1')
+      params = params.append(`${key}[relevance]`, searchParams[key].toString())
+      params = params.append(`${key}[version]`, '1')
     }
     return this.http.get<FeatureCollectionGeoJSON>('search', { params }).pipe(map(res => res.features))
   }
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
-    this.logger.debug('Getfeatures')
     this.logger.debug(JSON.stringify(url))
     const dataproj = getProj(url.dataMapping.dataProjection)!
     this.logger.debug(dataproj.getAxisOrientation()) // Ensure the projection is initialized

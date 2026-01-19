@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-} from '@angular/core'
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
 import { Feature, Map as OLMap, MapBrowserEvent, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { defaults as defaultControls } from 'ol/control'
