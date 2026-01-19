@@ -78,6 +78,7 @@ COPY --from=build-env /go/src/service/themes/ /themes
 # include viewer as asset
 COPY --from=build-component /usr/src/app/dist/view-component/browser/*.js  /assets/view-component/
 COPY --from=build-component /usr/src/app/dist/view-component/browser/*.css  /assets/view-component/
+COPY --from=build-component /usr/src/app/dist/view-component/browser/media/  /assets/view-component/media/
 COPY --from=build-component /usr/src/app/dist/view-component/3rdpartylicenses.txt /assets/view-component/3rdpartylicenses.txt
 
 # run as non-root
