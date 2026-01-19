@@ -50,7 +50,7 @@
                     {{ end }}
                     {{ if and $coll.Metadata $coll.Metadata.Keywords }}
                     <li class="list-group-item">
-                        <strong>{{ i18n "Keywords" }}</strong>: {{ $coll.Metadata.Keywords | join ", " }}
+                        <strong>{{ i18n "Keywords" }}</strong>: {{ truncateslice ($coll.Metadata.Keywords | join ", ") 400 }}
                     </li>
                     {{ end }}
                     {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
