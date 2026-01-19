@@ -8,6 +8,7 @@ type OgcAPIFeaturesSearch struct {
 	OgcAPIFeatures `yaml:",inline" json:",inline"`
 
 	// Settings related to the search API/index.
+	// +optional
 	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings"`
 }
 
