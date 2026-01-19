@@ -30,6 +30,7 @@ func init() {
 		"markdown":      markdown,
 		"unmarkdown":    unmarkdown,
 		"truncate":      truncateText,
+		"truncateslice": truncateSlice,
 		"humansize":     humanSize,
 		"bytessize":     bytesSize,
 		"isdate":        isDate,
@@ -100,6 +101,15 @@ func truncateText(s *string, limit int) *string {
 	}
 
 	return s
+}
+
+// truncateSlice truncate text separated by commas to avoid overly long text on overview pages.
+func truncateSlice(s string, limit int) string {
+	if s == "" {
+		return s
+	}
+	result := truncateText(&s, limit)
+	return *result
 }
 
 // humanSize converts size in bytes to a human-readable size.

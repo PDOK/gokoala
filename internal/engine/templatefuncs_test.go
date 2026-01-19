@@ -62,6 +62,24 @@ func TestTruncateText(t *testing.T) {
 	}
 }
 
+func TestTruncateSlice(t *testing.T) {
+	tests := []struct {
+		input    string
+		limit    int
+		expected string
+	}{
+		{"This text is not too long.", 50, "This text is not too long."},
+		{"", 50, ""},
+		{"This text is longer than the configured limit allows it to be.", 50, "This text is longer than the configured limit..."},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			assert.Equal(t, tt.expected, truncateSlice(tt.input, tt.limit))
+		})
+	}
+}
+
 func TestHumanSize(t *testing.T) {
 	tests := []struct {
 		input    any
