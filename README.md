@@ -275,10 +275,20 @@ Design principles:
 Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), [PROJ](https://proj.org/en/stable/install.html), `openssl` and `curl` are installed.
 Also make sure `gcc` or similar is available since the application uses cgo.
 
+#### `gokoala-server` (serving OGC APIs)
+
 ```bash
 go generate ./...
-go build -o gokoala cmd/gokoala-server/main.go
-./gokoala
+go build -o gokoala-server cmd/gokoala-server/main.go
+./gokoala-server
+```
+
+#### `gokoala-etl` (loading search-index for geocoding)
+
+```bash
+go generate ./...
+go build -o gokoala-etl cmd/gokoala-etl/main.go
+./gokoala-etl
 ```
 
 To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also happens there.

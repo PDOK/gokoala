@@ -2,6 +2,8 @@
 *.iml
 .vscode/
 gokoala
+gokoala-etl
+gokoala-server
 assets/view-component/
 viewer/.nx
 viewer/cypress/screenshots
