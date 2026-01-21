@@ -20,12 +20,12 @@ type OgcAPITiles struct {
 
 	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
-	Collections []CollectionEntryTiles `yaml:"collections,omitempty" json:"collections,omitempty"`
+	Collections []CollectionTiles `yaml:"collections,omitempty" json:"collections,omitempty"`
 }
 
 type OgcAPITilesJSON struct {
 	*Tiles      `json:",inline"`
-	Collections []CollectionEntryTiles `json:"collections,omitempty"`
+	Collections []CollectionTiles `json:"collections,omitempty"`
 }
 
 // MarshalJSON custom because inlining only works on embedded structs.
@@ -58,7 +58,7 @@ func (o *OgcAPITiles) Defaults() {
 }
 
 // +kubebuilder:object:generate=true
-type CollectionEntryTiles struct {
+type CollectionTiles struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
@@ -81,38 +81,38 @@ type CollectionEntryTilesJSON struct {
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (ct CollectionEntryTiles) MarshalJSON() ([]byte, error) {
+func (ct CollectionTiles) MarshalJSON() ([]byte, error) {
 	return json.Marshal(CollectionEntryTilesJSON{
 		Tiles: ct.GeoDataTiles,
 	})
 }
 
-// UnmarshalJSON parses a string to CollectionEntryTiles.
-func (ct CollectionEntryTiles) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON parses a string to CollectionTiles.
+func (ct CollectionTiles) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, ct)
 }
 
-func (ct CollectionEntryTiles) GetID() string {
+func (ct CollectionTiles) GetID() string {
 	return ct.ID
 }
 
-func (ct CollectionEntryTiles) GetMetadata() *GeoSpatialCollectionMetadata {
+func (ct CollectionTiles) GetMetadata() *GeoSpatialCollectionMetadata {
 	return ct.Metadata
 }
 
-func (ct CollectionEntryTiles) GetLinks() *CollectionLinks {
+func (ct CollectionTiles) GetLinks() *CollectionLinks {
 	return ct.Links
 }
 
-func (ct CollectionEntryTiles) HasDateTime() bool {
+func (ct CollectionTiles) HasDateTime() bool {
 	return ct.Metadata != nil && ct.Metadata.TemporalProperties != nil
 }
 
-func (ct CollectionEntryTiles) HasTableName(_ string) bool {
+func (ct CollectionTiles) HasTableName(_ string) bool {
 	return false
 }
 
-func (ct CollectionEntryTiles) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+func (ct CollectionTiles) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	ct.Metadata = mergeMetadata(ct, other)
 	ct.Links = mergeLinks(ct, other)
 	return ct

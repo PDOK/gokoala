@@ -178,7 +178,7 @@ func Test_newOpenAPI(t *testing.T) {
 							Collections: []gokoalaconfig.GeoSpatialCollection{
 								{
 									ID: "foobar",
-									Features: &gokoalaconfig.CollectionEntryFeatures{
+									Features: &gokoalaconfig.CollectionFeatures{
 										Datasources: &gokoalaconfig.Datasources{
 											DefaultWGS84: &gokoalaconfig.Datasource{
 												GeoPackage: &gokoalaconfig.GeoPackage{

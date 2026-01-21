@@ -6,7 +6,7 @@ type OgcAPI3dGeoVolumes struct {
 	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
 
 	// Collections to be served as 3D GeoVolumes
-	Collections []CollectionEntry3dGeoVolumes `yaml:"collections" json:"collections"`
+	Collections []Collection3dGeoVolumes `yaml:"collections" json:"collections"`
 
 	// Whether JSON responses will be validated against the OpenAPI spec
 	// since it has a significant performance impact when dealing with large JSON payloads.
@@ -17,7 +17,7 @@ type OgcAPI3dGeoVolumes struct {
 }
 
 // +kubebuilder:object:generate=true
-type CollectionEntry3dGeoVolumes struct {
+type Collection3dGeoVolumes struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
@@ -48,27 +48,27 @@ type CollectionEntry3dGeoVolumes struct {
 	URL3DViewer *URL `yaml:"3dViewerUrl,omitempty" json:"3dViewerUrl,omitempty"`
 }
 
-func (cgv CollectionEntry3dGeoVolumes) GetID() string {
+func (cgv Collection3dGeoVolumes) GetID() string {
 	return cgv.ID
 }
 
-func (cgv CollectionEntry3dGeoVolumes) GetMetadata() *GeoSpatialCollectionMetadata {
+func (cgv Collection3dGeoVolumes) GetMetadata() *GeoSpatialCollectionMetadata {
 	return cgv.Metadata
 }
 
-func (cgv CollectionEntry3dGeoVolumes) GetLinks() *CollectionLinks {
+func (cgv Collection3dGeoVolumes) GetLinks() *CollectionLinks {
 	return cgv.Links
 }
 
-func (cgv CollectionEntry3dGeoVolumes) HasDateTime() bool {
+func (cgv Collection3dGeoVolumes) HasDateTime() bool {
 	return cgv.Metadata != nil && cgv.Metadata.TemporalProperties != nil
 }
 
-func (cgv CollectionEntry3dGeoVolumes) HasTableName(_ string) bool {
+func (cgv Collection3dGeoVolumes) HasTableName(_ string) bool {
 	return false
 }
 
-func (cgv CollectionEntry3dGeoVolumes) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+func (cgv Collection3dGeoVolumes) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	cgv.Metadata = mergeMetadata(cgv, other)
 	cgv.Links = mergeLinks(cgv, other)
 	return cgv

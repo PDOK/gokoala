@@ -50,7 +50,7 @@ type ColumnRelation struct {
 func (g GeoSpatialCollections) FeatureRelationsByID() map[string][]Relation {
 	result := make(map[string][]Relation)
 	for _, collection := range g {
-		featureCollection, ok := collection.(*CollectionEntryFeatures)
+		featureCollection, ok := collection.(*CollectionFeatures)
 		if !ok {
 			continue
 		}

@@ -8,7 +8,7 @@ type OgcAPIFeaturesSearch struct {
 	OgcAPIFeatures `yaml:",inline" json:",inline"`
 
 	// Collections available for search through this API
-	Collections []CollectionEntryFeaturesSearch `yaml:"collections" json:"collections" validate:"required,dive"`
+	Collections []CollectionFeaturesSearch `yaml:"collections" json:"collections" validate:"required,dive"`
 
 	// Settings related to the search API/index.
 	// +optional
@@ -54,7 +54,7 @@ type SearchSettings struct {
 }
 
 // +kubebuilder:object:generate=true
-type CollectionEntryFeaturesSearch struct {
+type CollectionFeaturesSearch struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
@@ -81,27 +81,27 @@ type CollectionEntryFeaturesSearch struct {
 	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
 }
 
-func (cfs CollectionEntryFeaturesSearch) GetID() string {
+func (cfs CollectionFeaturesSearch) GetID() string {
 	return cfs.ID
 }
 
-func (cfs CollectionEntryFeaturesSearch) GetMetadata() *GeoSpatialCollectionMetadata {
+func (cfs CollectionFeaturesSearch) GetMetadata() *GeoSpatialCollectionMetadata {
 	return cfs.Metadata
 }
 
-func (cfs CollectionEntryFeaturesSearch) GetLinks() *CollectionLinks {
+func (cfs CollectionFeaturesSearch) GetLinks() *CollectionLinks {
 	return cfs.Links
 }
 
-func (cfs CollectionEntryFeaturesSearch) HasDateTime() bool {
+func (cfs CollectionFeaturesSearch) HasDateTime() bool {
 	return cfs.Metadata != nil && cfs.Metadata.TemporalProperties != nil
 }
 
-func (cfs CollectionEntryFeaturesSearch) HasTableName(_ string) bool {
+func (cfs CollectionFeaturesSearch) HasTableName(_ string) bool {
 	return false
 }
 
-func (cfs CollectionEntryFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+func (cfs CollectionFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	cfs.Metadata = mergeMetadata(cfs, other)
 	cfs.Links = mergeLinks(cfs, other)
 	return cfs
@@ -109,7 +109,7 @@ func (cfs CollectionEntryFeaturesSearch) Merge(other GeoSpatialCollection) GeoSp
 
 // IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.
 // In other words: it references a local feature collection and doesn't point to a remote one.
-func (cfs *CollectionEntryFeaturesSearch) IsLocalFeatureCollection(collID string) bool {
+func (cfs *CollectionFeaturesSearch) IsLocalFeatureCollection(collID string) bool {
 	if len(cfs.CollectionRefs) == 1 {
 		collRef := cfs.CollectionRefs[0]
 		return collRef.CollectionID == collID && collRef.APIBaseURL.URL == nil

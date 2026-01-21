@@ -133,19 +133,19 @@ func (c *Config) HasCollections() bool {
 func (c *Config) AllCollections() GeoSpatialCollections {
 	var result []GeoSpatialCollection
 	if c.OgcAPI.GeoVolumes != nil {
-		geoVolumes := types.ToInterfaceSlice[CollectionEntry3dGeoVolumes, GeoSpatialCollection](c.OgcAPI.GeoVolumes.Collections)
+		geoVolumes := types.ToInterfaceSlice[Collection3dGeoVolumes, GeoSpatialCollection](c.OgcAPI.GeoVolumes.Collections)
 		result = append(result, geoVolumes...)
 	}
 	if c.OgcAPI.Tiles != nil {
-		tiles := types.ToInterfaceSlice[CollectionEntryTiles, GeoSpatialCollection](c.OgcAPI.Tiles.Collections)
+		tiles := types.ToInterfaceSlice[CollectionTiles, GeoSpatialCollection](c.OgcAPI.Tiles.Collections)
 		result = append(result, tiles...)
 	}
 	if c.OgcAPI.Features != nil {
-		features := types.ToInterfaceSlice[CollectionEntryFeatures, GeoSpatialCollection](c.OgcAPI.Features.Collections)
+		features := types.ToInterfaceSlice[CollectionFeatures, GeoSpatialCollection](c.OgcAPI.Features.Collections)
 		result = append(result, features...)
 	}
 	if c.OgcAPI.FeaturesSearch != nil {
-		featuresSearch := types.ToInterfaceSlice[CollectionEntryFeaturesSearch, GeoSpatialCollection](c.OgcAPI.FeaturesSearch.Collections)
+		featuresSearch := types.ToInterfaceSlice[CollectionFeaturesSearch, GeoSpatialCollection](c.OgcAPI.FeaturesSearch.Collections)
 		result = append(result, featuresSearch...)
 	}
 
@@ -164,7 +164,7 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 func (g GeoSpatialCollections) FeaturePropertiesByID() map[string]*FeatureProperties {
 	result := make(map[string]*FeatureProperties)
 	for _, collection := range g {
-		featureCollection, ok := collection.(*CollectionEntryFeatures)
+		featureCollection, ok := collection.(*CollectionFeatures)
 		if !ok {
 			continue
 		}

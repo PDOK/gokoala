@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/stretchr/testify/require"
 
@@ -43,7 +44,7 @@ func newTestGeoPackage(file string) geoPackageBackend {
 func TestNewGeoPackage(t *testing.T) {
 	type args struct {
 		config     config.GeoPackage
-		collection config.GeoSpatialCollections
+		collection []config.CollectionFeatures
 	}
 	tests := []struct {
 		name                        string
@@ -64,10 +65,9 @@ func TestNewGeoPackage(t *testing.T) {
 						File: pwd + "/testdata/bag.gpkg",
 					},
 				},
-				collection: []config.GeoSpatialCollection{
+				collection: []config.CollectionFeatures{
 					{
-						ID:       "ligplaatsen",
-						Features: &config.CollectionEntryFeatures{},
+						ID: "ligplaatsen",
 					},
 				},
 			},
@@ -76,7 +76,8 @@ func TestNewGeoPackage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g, err := NewGeoPackage(tt.args.collection, tt.args.config, false, 0, false)
+			featCollection := types.ToInterfaceSlice[config.CollectionFeatures, config.GeoSpatialCollection](tt.args.collection)
+			g, err := NewGeoPackage(featCollection, tt.args.config, false, 0, false)
 			require.NoError(t, err)
 			assert.Lenf(t, g.TableByCollectionID, tt.wantNrOfFeatureTablesInGpkg, "NewGeoPackage(%v)", tt.args.config)
 		})
@@ -483,13 +484,13 @@ func TestGeoPackage_Warmup(t *testing.T) {
 			},
 		}
 		collections :=
-			[]config.GeoSpatialCollection{
+			[]config.CollectionFeatures{
 				{
-					ID:       "ligplaatsen",
-					Features: &config.CollectionEntryFeatures{},
+					ID: "ligplaatsen",
 				},
 			}
-		err := warmUpFeatureTables(collections, g.TableByCollectionID, g.backend.getDB())
+		featCollection := types.ToInterfaceSlice[config.CollectionFeatures, config.GeoSpatialCollection](collections)
+		err := warmUpFeatureTables(featCollection, g.TableByCollectionID, g.backend.getDB())
 		require.NoError(t, err)
 	})
 }

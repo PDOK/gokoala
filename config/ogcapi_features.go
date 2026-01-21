@@ -18,7 +18,7 @@ type OgcAPIFeatures struct {
 	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
 
 	// Collections to be served as features through this API
-	Collections []CollectionEntryFeatures `yaml:"collections" json:"collections" validate:"required,dive"`
+	Collections []CollectionFeatures `yaml:"collections" json:"collections" validate:"required,dive"`
 
 	// Limits the number of features to retrieve with a single call
 	// +optional
@@ -85,7 +85,7 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 }
 
 // +kubebuilder:object:generate=true
-type CollectionEntryFeatures struct {
+type CollectionFeatures struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
@@ -130,36 +130,36 @@ type CollectionEntryFeatures struct {
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (cf CollectionEntryFeatures) MarshalJSON() ([]byte, error) {
+func (cf CollectionFeatures) MarshalJSON() ([]byte, error) {
 	return json.Marshal(cf)
 }
 
-// UnmarshalJSON parses a string to CollectionEntryFeatures.
-func (cf CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON parses a string to CollectionFeatures.
+func (cf CollectionFeatures) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, cf)
 }
 
-func (cf CollectionEntryFeatures) GetID() string {
+func (cf CollectionFeatures) GetID() string {
 	return cf.ID
 }
 
-func (cf CollectionEntryFeatures) GetMetadata() *GeoSpatialCollectionMetadata {
+func (cf CollectionFeatures) GetMetadata() *GeoSpatialCollectionMetadata {
 	return cf.Metadata
 }
 
-func (cf CollectionEntryFeatures) GetLinks() *CollectionLinks {
+func (cf CollectionFeatures) GetLinks() *CollectionLinks {
 	return cf.Links
 }
 
-func (cf CollectionEntryFeatures) HasDateTime() bool {
+func (cf CollectionFeatures) HasDateTime() bool {
 	return cf.Metadata != nil && cf.Metadata.TemporalProperties != nil
 }
 
-func (cf CollectionEntryFeatures) HasTableName(table string) bool {
+func (cf CollectionFeatures) HasTableName(table string) bool {
 	return cf.TableName != nil && table == *cf.TableName
 }
 
-func (cf CollectionEntryFeatures) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+func (cf CollectionFeatures) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	cf.Metadata = mergeMetadata(cf, other)
 	cf.Links = mergeLinks(cf, other)
 	return cf
@@ -304,7 +304,7 @@ type TemporalProperties struct {
 	EndDate string `yaml:"endDate" json:"endDate" validate:"required"`
 }
 
-func validateFeatureCollections(collections []CollectionEntryFeatures) error {
+func validateFeatureCollections(collections []CollectionFeatures) error {
 	var errMessages []string
 	for _, collection := range collections {
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
