@@ -1,93 +1,42 @@
 package config
 
 import (
-	"encoding/json"
 	"log"
 	"sort"
 
 	"dario.cat/mergo"
+	"github.com/PDOK/gokoala/internal/engine/types"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
-	"gopkg.in/yaml.v3"
 )
 
 // GeoSpatialCollections All collections configured for this OGC API. Can contain a mix of tiles/features/etc.
+// +kubebuilder:object:generate:false
 type GeoSpatialCollections []GeoSpatialCollection
 
-// +kubebuilder:object:generate=true
-type GeoSpatialCollection struct {
-	// Unique ID of the collection
-	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
-	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+// +kubebuilder:object:generate:false
+type GeoSpatialCollection interface {
 
-	// Metadata describing the collection contents
-	// +optional
-	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	// GetID Unique ID of the collection
+	GetID() string
 
-	// Links pertaining to this collection (e.g., downloads, documentation)
-	// +optional
-	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+	// GetMetadata Metadata describing the collection contents
+	GetMetadata() *GeoSpatialCollectionMetadata
 
-	// 3D GeoVolumes specific to this collection
-	// +optional
-	GeoVolumes *CollectionEntry3dGeoVolumes `yaml:",inline" json:",inline"`
+	// GetLinks Links pertaining to this collection (e.g., downloads, documentation)
+	GetLinks() *CollectionLinks
 
-	// Tiles specific to this collection
-	// +optional
-	Tiles *CollectionEntryTiles `yaml:",inline" json:",inline"`
+	// HasDateTime true when collection has temporal support, false otherwise.
+	HasDateTime() bool
 
-	// Features specific to this collection
-	// +optional
-	Features *CollectionEntryFeatures `yaml:",inline" json:",inline"`
+	// HasTableName true when collection uses the given table, false otherwise.
+	HasTableName(table string) bool
 
-	// Features search (geocoding) specific to this collection
-	// +optional
-	FeaturesSearch *CollectionEntryFeaturesSearch `yaml:",inline" json:",inline"`
-}
-
-type GeoSpatialCollectionJSON struct {
-	// Keep this in sync with the GeoSpatialCollection struct!
-	ID                             string                        `json:"id"`
-	Metadata                       *GeoSpatialCollectionMetadata `json:"metadata,omitempty"`
-	Links                          *CollectionLinks              `json:"links,omitempty"`
-	*CollectionEntry3dGeoVolumes   `json:",inline"`
-	*CollectionEntryTiles          `json:",inline"`
-	*CollectionEntryFeatures       `json:",inline"`
-	*CollectionEntryFeaturesSearch `json:",inline"`
-}
-
-// MarshalJSON custom because inlining only works on embedded structs.
-// Value instead of pointer receiver because only that way it can be used for both.
-func (c GeoSpatialCollection) MarshalJSON() ([]byte, error) {
-	return json.Marshal(GeoSpatialCollectionJSON{
-		ID:                            c.ID,
-		Metadata:                      c.Metadata,
-		Links:                         c.Links,
-		CollectionEntry3dGeoVolumes:   c.GeoVolumes,
-		CollectionEntryTiles:          c.Tiles,
-		CollectionEntryFeatures:       c.Features,
-		CollectionEntryFeaturesSearch: c.FeaturesSearch,
-	})
-}
-
-// UnmarshalJSON parses a string to GeoSpatialCollection.
-func (c *GeoSpatialCollection) UnmarshalJSON(b []byte) error {
-	return yaml.Unmarshal(b, c)
-}
-
-// HasDateTime true when collection has temporal support, false otherwise.
-func (c *GeoSpatialCollection) HasDateTime() bool {
-	return c.Metadata != nil && c.Metadata.TemporalProperties != nil
-}
-
-// HasTableName true when collection uses the given table, false otherwise.
-func (c *GeoSpatialCollection) HasTableName(table string) bool {
-	return c.Features != nil && c.Features.TableName != nil &&
-		table == *c.Features.TableName
+	Merge(collection GeoSpatialCollection) GeoSpatialCollection
 }
 
 // +kubebuilder:object:generate=true
 type GeoSpatialCollectionMetadata struct {
-	// Human friendly title of this collection. When no title is specified the collection ID is used.
+	// Human-friendly title of this collection. When no title is specified the collection ID is used.
 	// +optional
 	Title *string `yaml:"title,omitempty" json:"title,omitempty"`
 
@@ -150,7 +99,7 @@ type Extent struct {
 
 // +kubebuilder:object:generate=true
 type CollectionLinks struct {
-	// Links to downloads of entire collection. These will be rendered as rel=enclosure links
+	// Links to downloads of an entire collection. These will be rendered as rel=enclosure links
 	// +optional
 	Downloads []DownloadLink `yaml:"downloads,omitempty" json:"downloads,omitempty" validate:"dive"`
 
@@ -179,21 +128,25 @@ func (c *Config) HasCollections() bool {
 	return c.AllCollections() != nil
 }
 
-// AllCollections get all collections - with  for example features, tiles, 3d tiles - offered through this OGC API.
+// AllCollections get all collections - with for example features, tiles, 3d tiles - offered through this OGC API.
 // Results are returned in alphabetic or literal order.
 func (c *Config) AllCollections() GeoSpatialCollections {
-	var result GeoSpatialCollections
+	var result []GeoSpatialCollection
 	if c.OgcAPI.GeoVolumes != nil {
-		result = append(result, c.OgcAPI.GeoVolumes.Collections...)
+		geoVolumes := types.ToInterfaceSlice[CollectionEntry3dGeoVolumes, GeoSpatialCollection](c.OgcAPI.GeoVolumes.Collections)
+		result = append(result, geoVolumes...)
 	}
 	if c.OgcAPI.Tiles != nil {
-		result = append(result, c.OgcAPI.Tiles.Collections...)
+		tiles := types.ToInterfaceSlice[CollectionEntryTiles, GeoSpatialCollection](c.OgcAPI.Tiles.Collections)
+		result = append(result, tiles...)
 	}
 	if c.OgcAPI.Features != nil {
-		result = append(result, c.OgcAPI.Features.Collections...)
+		features := types.ToInterfaceSlice[CollectionEntryFeatures, GeoSpatialCollection](c.OgcAPI.Features.Collections)
+		result = append(result, features...)
 	}
 	if c.OgcAPI.FeaturesSearch != nil {
-		result = append(result, c.OgcAPI.FeaturesSearch.Collections...)
+		featuresSearch := types.ToInterfaceSlice[CollectionEntryFeaturesSearch, GeoSpatialCollection](c.OgcAPI.FeaturesSearch.Collections)
+		result = append(result, featuresSearch...)
 	}
 
 	// sort
@@ -211,10 +164,11 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 func (g GeoSpatialCollections) FeaturePropertiesByID() map[string]*FeatureProperties {
 	result := make(map[string]*FeatureProperties)
 	for _, collection := range g {
-		if collection.Features == nil {
+		featureCollection, ok := collection.(*CollectionEntryFeatures)
+		if !ok {
 			continue
 		}
-		result[collection.ID] = collection.Features.FeatureProperties
+		result[featureCollection.ID] = featureCollection.FeatureProperties
 	}
 
 	return result
@@ -232,7 +186,7 @@ func (g GeoSpatialCollections) Unique() []GeoSpatialCollection {
 	return result
 }
 
-// ContainsID check if given collection - by ID - exists.
+// ContainsID check if a given collection - by ID - exists.
 // Don't use in the hot path (creates a map on every invocation).
 func (g GeoSpatialCollections) ContainsID(id string) bool {
 	collectionsByID := g.toMap()
@@ -244,15 +198,12 @@ func (g GeoSpatialCollections) ContainsID(id string) bool {
 func (g GeoSpatialCollections) toMap() orderedmap.OrderedMap[string, GeoSpatialCollection] {
 	collectionsByID := orderedmap.New[string, GeoSpatialCollection]()
 	for _, current := range g {
-		existing, ok := collectionsByID.Get(current.ID)
+		existing, ok := collectionsByID.Get(current.GetID())
 		if ok {
-			err := mergo.Merge(&existing, current)
-			if err != nil {
-				log.Fatalf("failed to merge 2 collections with the same name '%s': %v", current.ID, err)
-			}
-			collectionsByID.Set(current.ID, existing)
+			existing = existing.Merge(current)
+			collectionsByID.Set(current.GetID(), existing)
 		} else {
-			collectionsByID.Set(current.ID, current)
+			collectionsByID.Set(current.GetID(), current)
 		}
 	}
 
@@ -261,14 +212,14 @@ func (g GeoSpatialCollections) toMap() orderedmap.OrderedMap[string, GeoSpatialC
 
 func sortByAlphabet(collection []GeoSpatialCollection) {
 	sort.Slice(collection, func(i, j int) bool {
-		iName := collection[i].ID
-		jName := collection[j].ID
+		iName := collection[i].GetID()
+		jName := collection[j].GetID()
 		// prefer to sort by title when available, collection ID otherwise
-		if collection[i].Metadata != nil && collection[i].Metadata.Title != nil {
-			iName = *collection[i].Metadata.Title
+		if collection[i].GetMetadata() != nil && collection[i].GetMetadata().Title != nil {
+			iName = *collection[i].GetMetadata().Title
 		}
-		if collection[j].Metadata != nil && collection[j].Metadata.Title != nil {
-			jName = *collection[j].Metadata.Title
+		if collection[j].GetMetadata() != nil && collection[j].GetMetadata().Title != nil {
+			jName = *collection[j].GetMetadata().Title
 		}
 
 		return iName < jName
@@ -281,7 +232,35 @@ func sortByLiteralOrder(collections []GeoSpatialCollection, literalOrder []strin
 		collectionOrderIndex[id] = i
 	}
 	sort.Slice(collections, func(i, j int) bool {
-		// sort according to the explicit/literal order specified in OgcAPICollectionOrder
-		return collectionOrderIndex[collections[i].ID] < collectionOrderIndex[collections[j].ID]
+		// sort, according to the explicit/literal order specified in OgcAPICollectionOrder
+		return collectionOrderIndex[collections[i].GetID()] < collectionOrderIndex[collections[j].GetID()]
 	})
+}
+
+func mergeMetadata(this GeoSpatialCollection, other GeoSpatialCollection) *GeoSpatialCollectionMetadata {
+	return mergeField(this.GetID(), this.GetMetadata(), other.GetMetadata())
+}
+
+func mergeLinks(this GeoSpatialCollection, other GeoSpatialCollection) *CollectionLinks {
+	return mergeField(this.GetID(), this.GetLinks(), other.GetLinks())
+}
+
+func mergeField[T any](id string, this *T, other *T) *T {
+	switch {
+	case this == nil && other == nil:
+		return nil
+	case this == nil:
+		return other
+	case other == nil:
+		return this
+	}
+
+	existing := *this
+	err := mergo.Merge(&existing, other, mergo.WithAppendSlice)
+	if err != nil {
+		log.Fatalf("failed to merge fields from 2 collections "+
+			"with the same name '%s': %v", id, err)
+		return nil
+	}
+	return &existing
 }

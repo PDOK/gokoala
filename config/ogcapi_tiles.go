@@ -20,12 +20,12 @@ type OgcAPITiles struct {
 
 	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
-	Collections GeoSpatialCollections `yaml:"collections,omitempty" json:"collections,omitempty"`
+	Collections []CollectionEntryTiles `yaml:"collections,omitempty" json:"collections,omitempty"`
 }
 
 type OgcAPITilesJSON struct {
 	*Tiles      `json:",inline"`
-	Collections GeoSpatialCollections `json:"collections,omitempty"`
+	Collections []CollectionEntryTiles `json:"collections,omitempty"`
 }
 
 // MarshalJSON custom because inlining only works on embedded structs.
@@ -48,10 +48,10 @@ func (o *OgcAPITiles) Defaults() {
 		o.DatasetTiles.deriveHealthCheckTilePath()
 	} else if o.Collections != nil {
 		for _, coll := range o.Collections {
-			if coll.Tiles != nil && coll.Tiles.GeoDataTiles.HealthCheck.Srs == DefaultSrs &&
-				coll.Tiles.GeoDataTiles.HealthCheck.TilePath == nil &&
-				*coll.Tiles.GeoDataTiles.HealthCheck.Enabled {
-				coll.Tiles.GeoDataTiles.deriveHealthCheckTilePath()
+			if coll.GeoDataTiles.HealthCheck.Srs == DefaultSrs &&
+				coll.GeoDataTiles.HealthCheck.TilePath == nil &&
+				*coll.GeoDataTiles.HealthCheck.Enabled {
+				coll.GeoDataTiles.deriveHealthCheckTilePath()
 			}
 		}
 	}
@@ -59,6 +59,17 @@ func (o *OgcAPITiles) Defaults() {
 
 // +kubebuilder:object:generate=true
 type CollectionEntryTiles struct {
+	// Unique ID of the collection
+	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+
+	// Metadata describing the collection contents
+	// +optional
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
 
 	// Tiles specific to this collection. Called 'geodata tiles' in OGC spec.
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
@@ -70,15 +81,41 @@ type CollectionEntryTilesJSON struct {
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (c CollectionEntryTiles) MarshalJSON() ([]byte, error) {
+func (ct CollectionEntryTiles) MarshalJSON() ([]byte, error) {
 	return json.Marshal(CollectionEntryTilesJSON{
-		Tiles: c.GeoDataTiles,
+		Tiles: ct.GeoDataTiles,
 	})
 }
 
 // UnmarshalJSON parses a string to CollectionEntryTiles.
-func (c *CollectionEntryTiles) UnmarshalJSON(b []byte) error {
-	return yaml.Unmarshal(b, c)
+func (ct CollectionEntryTiles) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, ct)
+}
+
+func (ct CollectionEntryTiles) GetID() string {
+	return ct.ID
+}
+
+func (ct CollectionEntryTiles) GetMetadata() *GeoSpatialCollectionMetadata {
+	return ct.Metadata
+}
+
+func (ct CollectionEntryTiles) GetLinks() *CollectionLinks {
+	return ct.Links
+}
+
+func (ct CollectionEntryTiles) HasDateTime() bool {
+	return ct.Metadata != nil && ct.Metadata.TemporalProperties != nil
+}
+
+func (ct CollectionEntryTiles) HasTableName(_ string) bool {
+	return false
+}
+
+func (ct CollectionEntryTiles) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	ct.Metadata = mergeMetadata(ct, other)
+	ct.Links = mergeLinks(ct, other)
+	return ct
 }
 
 // +kubebuilder:validation:Enum=raster;vector
@@ -94,7 +131,7 @@ func (o *OgcAPITiles) HasType(t TilesType) bool {
 		return true
 	}
 	for _, coll := range o.Collections {
-		if coll.Tiles != nil && slices.Contains(coll.Tiles.GeoDataTiles.Types, t) {
+		if slices.Contains(coll.GeoDataTiles.Types, t) {
 			return true
 		}
 	}
@@ -130,10 +167,7 @@ func (o *OgcAPITiles) GetProjections() []SupportedSrs {
 		}
 	}
 	for _, coll := range o.Collections {
-		if coll.Tiles == nil {
-			continue
-		}
-		for _, supportedSrs := range coll.Tiles.GeoDataTiles.SupportedSrs {
+		for _, supportedSrs := range coll.GeoDataTiles.SupportedSrs {
 			supportedSrsSet[supportedSrs] = struct{}{}
 		}
 	}
@@ -258,11 +292,9 @@ func validateTileProjections(tiles *OgcAPITiles) error {
 		}
 	}
 	for _, collection := range tiles.Collections {
-		if collection.Tiles != nil {
-			for _, srs := range collection.Tiles.GeoDataTiles.SupportedSrs {
-				if _, ok := AllTileProjections[srs.Srs]; !ok {
-					errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
-				}
+		for _, srs := range collection.GeoDataTiles.SupportedSrs {
+			if _, ok := AllTileProjections[srs.Srs]; !ok {
+				errMessages = append(errMessages, fmt.Sprintf("validation failed for srs '%s'; srs is not supported", srs.Srs))
 			}
 		}
 	}

@@ -6,7 +6,7 @@ type OgcAPI3dGeoVolumes struct {
 	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
 
 	// Collections to be served as 3D GeoVolumes
-	Collections GeoSpatialCollections `yaml:"collections" json:"collections"`
+	Collections []CollectionEntry3dGeoVolumes `yaml:"collections" json:"collections"`
 
 	// Whether JSON responses will be validated against the OpenAPI spec
 	// since it has a significant performance impact when dealing with large JSON payloads.
@@ -18,6 +18,18 @@ type OgcAPI3dGeoVolumes struct {
 
 // +kubebuilder:object:generate=true
 type CollectionEntry3dGeoVolumes struct {
+	// Unique ID of the collection
+	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+
+	// Metadata describing the collection contents
+	// +optional
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
 	// Optional basepath to 3D tiles on the tileserver. Defaults to the collection ID.
 	// +optional
 	TileServerPath *string `yaml:"tileServerPath,omitempty" json:"tileServerPath,omitempty"`
@@ -34,4 +46,30 @@ type CollectionEntry3dGeoVolumes struct {
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
 	// +optional
 	URL3DViewer *URL `yaml:"3dViewerUrl,omitempty" json:"3dViewerUrl,omitempty"`
+}
+
+func (cgv CollectionEntry3dGeoVolumes) GetID() string {
+	return cgv.ID
+}
+
+func (cgv CollectionEntry3dGeoVolumes) GetMetadata() *GeoSpatialCollectionMetadata {
+	return cgv.Metadata
+}
+
+func (cgv CollectionEntry3dGeoVolumes) GetLinks() *CollectionLinks {
+	return cgv.Links
+}
+
+func (cgv CollectionEntry3dGeoVolumes) HasDateTime() bool {
+	return cgv.Metadata != nil && cgv.Metadata.TemporalProperties != nil
+}
+
+func (cgv CollectionEntry3dGeoVolumes) HasTableName(_ string) bool {
+	return false
+}
+
+func (cgv CollectionEntry3dGeoVolumes) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	cgv.Metadata = mergeMetadata(cgv, other)
+	cgv.Links = mergeLinks(cgv, other)
+	return cgv
 }

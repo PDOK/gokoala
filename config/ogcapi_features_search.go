@@ -7,6 +7,9 @@ type OgcAPIFeaturesSearch struct {
 	// Builds on top of the OGC API Features configuration.
 	OgcAPIFeatures `yaml:",inline" json:",inline"`
 
+	// Collections available for search through this API
+	Collections []CollectionEntryFeaturesSearch `yaml:"collections" json:"collections" validate:"required,dive"`
+
 	// Settings related to the search API/index.
 	// +optional
 	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings"`
@@ -52,25 +55,56 @@ type SearchSettings struct {
 
 // +kubebuilder:object:generate=true
 type CollectionEntryFeaturesSearch struct {
-	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
-	// TODO: remove optional marker once collections are refactored
+	// Unique ID of the collection
+	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+
+	// Metadata describing the collection contents
 	// +optional
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
+	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
 
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
-	// TODO: remove optional marker once collections are refactored
-	// +optional
 	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
 
 	// Version of the collection exposed through the API.
-	// TODO: remove optional marker once collections are refactored
-	// +optional
+	// +kubebuilder:default=1
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
 
 	// Links to the individual OGC API (feature) collections that are searchable in this collection.
-	// TODO: remove optional marker once collections are refactored
-	// +optional
 	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
+}
+
+func (cfs CollectionEntryFeaturesSearch) GetID() string {
+	return cfs.ID
+}
+
+func (cfs CollectionEntryFeaturesSearch) GetMetadata() *GeoSpatialCollectionMetadata {
+	return cfs.Metadata
+}
+
+func (cfs CollectionEntryFeaturesSearch) GetLinks() *CollectionLinks {
+	return cfs.Links
+}
+
+func (cfs CollectionEntryFeaturesSearch) HasDateTime() bool {
+	return cfs.Metadata != nil && cfs.Metadata.TemporalProperties != nil
+}
+
+func (cfs CollectionEntryFeaturesSearch) HasTableName(_ string) bool {
+	return false
+}
+
+func (cfs CollectionEntryFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	cfs.Metadata = mergeMetadata(cfs, other)
+	cfs.Links = mergeLinks(cfs, other)
+	return cfs
 }
 
 // IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.

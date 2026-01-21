@@ -18,7 +18,7 @@ type OgcAPIFeatures struct {
 	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
 
 	// Collections to be served as features through this API
-	Collections GeoSpatialCollections `yaml:"collections" json:"collections" validate:"required,dive"`
+	Collections []CollectionEntryFeatures `yaml:"collections" json:"collections" validate:"required,dive"`
 
 	// Limits the number of features to retrieve with a single call
 	// +optional
@@ -65,13 +65,13 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 		}
 	}
 	for _, coll := range oaf.Collections {
-		if (coll.ID == collectionID || collectionID == "") && coll.Features != nil && coll.Features.Datasources != nil {
-			for _, d := range coll.Features.Datasources.OnTheFly {
+		if (coll.ID == collectionID || collectionID == "") && coll.Datasources != nil {
+			for _, d := range coll.Datasources.OnTheFly {
 				for _, srs := range d.SupportedSrs {
 					uniqueSRSs[srs.Srs] = struct{}{}
 				}
 			}
-			for _, d := range coll.Features.Datasources.Additional {
+			for _, d := range coll.Datasources.Additional {
 				uniqueSRSs[d.Srs] = struct{}{}
 			}
 
@@ -86,6 +86,18 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 
 // +kubebuilder:object:generate=true
 type CollectionEntryFeatures struct {
+	// Unique ID of the collection
+	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+
+	// Metadata describing the collection contents
+	// +optional
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
 	// Optional way to explicitly map a collection ID to the underlying table in the datasource.
 	// +optional
 	TableName *string `yaml:"tableName,omitempty" json:"tableName,omitempty"`
@@ -118,13 +130,39 @@ type CollectionEntryFeatures struct {
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (c CollectionEntryFeatures) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c)
+func (cf CollectionEntryFeatures) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cf)
 }
 
 // UnmarshalJSON parses a string to CollectionEntryFeatures.
-func (c *CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
-	return yaml.Unmarshal(b, c)
+func (cf CollectionEntryFeatures) UnmarshalJSON(b []byte) error {
+	return yaml.Unmarshal(b, cf)
+}
+
+func (cf CollectionEntryFeatures) GetID() string {
+	return cf.ID
+}
+
+func (cf CollectionEntryFeatures) GetMetadata() *GeoSpatialCollectionMetadata {
+	return cf.Metadata
+}
+
+func (cf CollectionEntryFeatures) GetLinks() *CollectionLinks {
+	return cf.Links
+}
+
+func (cf CollectionEntryFeatures) HasDateTime() bool {
+	return cf.Metadata != nil && cf.Metadata.TemporalProperties != nil
+}
+
+func (cf CollectionEntryFeatures) HasTableName(table string) bool {
+	return cf.TableName != nil && table == *cf.TableName
+}
+
+func (cf CollectionEntryFeatures) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	cf.Metadata = mergeMetadata(cf, other)
+	cf.Links = mergeLinks(cf, other)
+	return cf
 }
 
 // +kubebuilder:object:generate=true
@@ -266,7 +304,7 @@ type TemporalProperties struct {
 	EndDate string `yaml:"endDate" json:"endDate" validate:"required"`
 }
 
-func validateFeatureCollections(collections GeoSpatialCollections) error {
+func validateFeatureCollections(collections []CollectionEntryFeatures) error {
 	var errMessages []string
 	for _, collection := range collections {
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&
@@ -274,8 +312,8 @@ func validateFeatureCollections(collections GeoSpatialCollections) error {
 			errMessages = append(errMessages, fmt.Sprintf("validation failed for collection '%s'; "+
 				"field 'Extent.Interval' is required with field 'TemporalProperties'\n", collection.ID))
 		}
-		if collection.Features != nil && collection.Features.Filters.Properties != nil {
-			for _, pf := range collection.Features.Filters.Properties {
+		if collection.Filters.Properties != nil {
+			for _, pf := range collection.Filters.Properties {
 				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
 					errMessages = append(errMessages, fmt.Sprintf("validation failed for property filter '%s'; "+
 						"field 'AllowedValues' and field 'DeriveAllowedValuesFromDatasource' are mutually exclusive\n", pf.Name))
