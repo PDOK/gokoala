@@ -172,7 +172,7 @@ func (p *Postgres) PostLoad(collectionID string, index string, revision string) 
         insert into %[1]s_metadata (collection_id, revision)
         values ('%[2]s', '%[3]s')
         on conflict (collection_id)
-        do update set revision = '%[3]s';`, index, collectionID, revision)
+        do update set revision = '%[3]s', revision_date = now();`, index, collectionID, revision)
 	_, err = p.db.Exec(context.Background(), metadata)
 	if err != nil {
 		return fmt.Errorf("error updating metadata table of index %s. Error: %w", index, err)
