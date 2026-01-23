@@ -18,7 +18,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the GeoPackage. Terminates on failure.
-func readMetadata(db *sqlx.DB, collections config.GeoSpatialCollections, fidColumn, externalFidColumn string) (
+func readMetadata(db *sqlx.DB, collections config.CollectionsFeatures, fidColumn, externalFidColumn string) (
 	tableByCollectionID map[string]*common.Table,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
@@ -74,7 +74,7 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'table_name' column. Also, in case there's no exact match between 'collection ID' and 'table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readGeoPackageTables(collections config.GeoSpatialCollections, db *sqlx.DB,
+func readGeoPackageTables(collections config.CollectionsFeatures, db *sqlx.DB,
 	fidColumn, externalFidColumn string) (map[string]*common.Table, error) {
 
 	query := `
@@ -147,17 +147,14 @@ func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
 }
 
 func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.GeoSpatialCollections, db *sqlx.DB) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+	collections config.CollectionsFeatures, db *sqlx.DB) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
 	for _, collection := range collections {
-		if collection.Features == nil {
-			continue
-		}
 		result[collection.ID] = make(map[string]ds.PropertyFilterWithAllowedValues)
 		featTable := featTableByCollection[collection.ID]
 
-		for _, pf := range collection.Features.Filters.Properties {
+		for _, pf := range collection.Filters.Properties {
 			// the result should contain ALL configured property filters, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
 			result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
@@ -196,7 +193,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 }
 
 func readSchema(db *sqlx.DB, table common.Table, fidColumn, externalFidColumn string,
-	collections config.GeoSpatialCollections) (*d.Schema, error) {
+	collections config.CollectionsFeatures) (*d.Schema, error) {
 
 	// if table "gpkg_data_columns" is included in geopackage, use its description field to supplement the schema.
 	schemaExtension, err := hasSchemaExtension(db)

@@ -23,6 +23,18 @@ type OgcAPITiles struct {
 	Collections []CollectionTiles `yaml:"collections,omitempty" json:"collections,omitempty"`
 }
 
+type CollectionsTiles []CollectionTiles
+
+// ContainsID check if a given collection - by ID - exists.
+func (cst CollectionsTiles) ContainsID(id string) bool {
+	for _, coll := range cst {
+		if coll.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
 type OgcAPITilesJSON struct {
 	*Tiles      `json:",inline"`
 	Collections []CollectionTiles `json:"collections,omitempty"`
@@ -58,6 +70,8 @@ func (o *OgcAPITiles) Defaults() {
 }
 
 // +kubebuilder:object:generate=true
+//
+//nolint:recvcheck
 type CollectionTiles struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
@@ -73,6 +87,10 @@ type CollectionTiles struct {
 
 	// Tiles specific to this collection. Called 'geodata tiles' in OGC spec.
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
+}
+
+func (ct CollectionTiles) GetType() string {
+	return getGeoSpatialCollectionType(ct)
 }
 
 type CollectionEntryTilesJSON struct {

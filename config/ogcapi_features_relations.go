@@ -47,14 +47,10 @@ type ColumnRelation struct {
 
 // FeatureRelationsByID returns a map of collection IDs to their corresponding Relation.
 // Skips collections that do not have features defined.
-func (g GeoSpatialCollections) FeatureRelationsByID() map[string][]Relation {
+func (csf CollectionsFeatures) FeatureRelationsByID() map[string][]Relation {
 	result := make(map[string][]Relation)
-	for _, collection := range g {
-		featureCollection, ok := collection.(*CollectionFeatures)
-		if !ok {
-			continue
-		}
-		result[collection.GetID()] = featureCollection.Relations
+	for _, collection := range csf {
+		result[collection.ID] = collection.Relations
 	}
 
 	return result

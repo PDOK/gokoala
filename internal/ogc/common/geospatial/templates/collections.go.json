@@ -149,9 +149,9 @@
         {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections }}
           {{ if $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections.ContainsID $coll.ID }}
             {{/* collection reference is only required for remotely hosted collections */}}
-            {{ if not ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
+            {{ if not ($coll.IsLocalFeatureCollection $coll.ID) }}
               ,
-              {{ range $o, $collRef := $coll.FeaturesSearch.CollectionRefs -}}
+              {{ range $o, $collRef := $coll.CollectionRefs -}}
               {{ if $o }},{{ end }}
               {
                 "rel": "canonical",

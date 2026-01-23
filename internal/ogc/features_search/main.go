@@ -155,9 +155,9 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 		if collectionID == "" {
 			return fmt.Errorf("collection reference not found in feature %s", feat.ID)
 		}
-		var collection *config.GeoSpatialCollection
-		for _, coll := range s.engine.Config.AllCollections() {
-			if collectionID == coll.ID && coll.FeaturesSearch != nil {
+		var collection *config.CollectionFeaturesSearch
+		for _, coll := range s.engine.Config.OgcAPI.FeaturesSearch.Collections {
+			if collectionID == coll.GetID() {
 				collection = &coll
 				break
 			}
@@ -165,7 +165,7 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 		if collection == nil {
 			continue
 		}
-		for _, ogcColl := range collection.FeaturesSearch.CollectionRefs {
+		for _, ogcColl := range collection.CollectionRefs {
 			geomType := feat.Properties.Value(propGeomType)
 			if geomType == "" {
 				return fmt.Errorf("geometry type not found in feature %s", feat.ID)

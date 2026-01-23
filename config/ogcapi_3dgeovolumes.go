@@ -6,7 +6,7 @@ type OgcAPI3dGeoVolumes struct {
 	TileServer URL `yaml:"tileServer" json:"tileServer" validate:"required"`
 
 	// Collections to be served as 3D GeoVolumes
-	Collections []Collection3dGeoVolumes `yaml:"collections" json:"collections"`
+	Collections Collections3dGeoVolumes `yaml:"collections" json:"collections"`
 
 	// Whether JSON responses will be validated against the OpenAPI spec
 	// since it has a significant performance impact when dealing with large JSON payloads.
@@ -16,7 +16,21 @@ type OgcAPI3dGeoVolumes struct {
 	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
 }
 
+type Collections3dGeoVolumes []Collection3dGeoVolumes
+
+// ContainsID check if a given collection - by ID - exists.
+func (csg Collections3dGeoVolumes) ContainsID(id string) bool {
+	for _, coll := range csg {
+		if coll.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
 // +kubebuilder:object:generate=true
+//
+//nolint:recvcheck
 type Collection3dGeoVolumes struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
@@ -46,6 +60,10 @@ type Collection3dGeoVolumes struct {
 	// Optional URL to 3D viewer to visualize the given collection of 3D Tiles.
 	// +optional
 	URL3DViewer *URL `yaml:"3dViewerUrl,omitempty" json:"3dViewerUrl,omitempty"`
+}
+
+func (cgv Collection3dGeoVolumes) GetType() string {
+	return getGeoSpatialCollectionType(cgv)
 }
 
 func (cgv Collection3dGeoVolumes) GetID() string {

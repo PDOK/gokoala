@@ -10,23 +10,27 @@
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
-                {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
-                {{ if or (not $coll.FeaturesSearch) ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
-                    <h2 class="card-header h5">
-                        {{ if and $coll.Metadata $coll.Metadata.Title }}
-                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                {{ if and .Config.OgcAPI.FeaturesSearch .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections }}
+                    {{ if .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections.ContainsID $coll.ID }}
+                        {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
+                        {{ if $coll.IsLocalFeatureCollection $coll.ID }}
+                        <h2 class="card-header h5">
+                            {{ if and $coll.Metadata $coll.Metadata.Title }}
+                                <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                            {{ else }}
+                                <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                            {{ end }}
+                        </h2>
                         {{ else }}
-                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                        <h2 class="card-header h5">
+                            {{ if and $coll.Metadata $coll.Metadata.Title }}
+                                {{ $coll.Metadata.Title }}
+                            {{ else }}
+                                {{ $coll.ID }}
+                            {{ end }}
+                        </h2>
                         {{ end }}
-                    </h2>
-                {{ else }}
-                    <h2 class="card-header h5">
-                        {{ if and $coll.Metadata $coll.Metadata.Title }}
-                        {{ $coll.Metadata.Title }}
-                        {{ else }}
-                        {{ $coll.ID }}
-                        {{ end }}
-                    </h2>
+                    {{ end }}
                 {{ end }}
 
                 <div class="card-body">
@@ -100,22 +104,24 @@
                         {{ if not (contains "null" (last $coll.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last $coll.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
                     </li>
                     {{ end }}
-                    {{ if $coll.FeaturesSearch }}
+                    {{ if and .Config.OgcAPI.FeaturesSearch .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections }}
+                    {{ if .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections.ContainsID $coll.ID }}
                     <li class="list-group-item">
-                        <strong>{{ i18n "Version" }}</strong>: {{ $coll.FeaturesSearch.Version }}
+                        <strong>{{ i18n "Version" }}</strong>: {{ $coll.Version }}
                     </li>
                     <li class="list-group-item">
-                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $coll.FeaturesSearch.DisplayNameTemplate }}</code>
+                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $coll.DisplayNameTemplate }}</code>
                     </li>
                         {{/* collection reference is only required for remotely hosted collections */}}
-                        {{ if not ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
+                        {{ if not ($coll.IsLocalFeatureCollection $coll.ID) }}
                         <li class="list-group-item">
                             <strong>{{ i18n "OGCCollections" }}</strong>
-                            <ul>{{- range $o, $collRef := $coll.FeaturesSearch.CollectionRefs -}}
+                            <ul>{{- range $o, $collRef := $coll.CollectionRefs -}}
                             <li><a href="{{ $collRef.CollectionURL $baseUrl }}">{{ $collRef.CollectionID }}</a></li>
                             {{- end -}}</ul>
                         </li>
                         {{ end }}
+                    {{ end }}
                     {{ end }}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}

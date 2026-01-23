@@ -13,6 +13,11 @@ import (
 // +kubebuilder:object:generate:false
 type GeoSpatialCollections []GeoSpatialCollection
 
+// GeoSpatialCollection Configuration for a collection of geospatial data.
+//
+// Interface/abstraction for common collection properties regardless of the specific
+// collection type (e.g., tiles, features, 3dgeovolumes, etc.).
+//
 // +kubebuilder:object:generate:false
 type GeoSpatialCollection interface {
 
@@ -31,6 +36,10 @@ type GeoSpatialCollection interface {
 	// HasTableName true when collection uses the given table, false otherwise.
 	HasTableName(table string) bool
 
+	// TODO: remove?
+	GetType() string
+
+	// Merge the (metadata and links) of the given collection with this collection. Return the merged collection.
 	Merge(collection GeoSpatialCollection) GeoSpatialCollection
 }
 
@@ -123,12 +132,12 @@ type DownloadLink struct {
 	MediaType MediaType `yaml:"mediaType" json:"mediaType" validate:"required"`
 }
 
-// HasCollections does this API offer collections with for example features, tiles, 3d tiles, etc.
+// HasCollections does this API offer collections, for example, with features, tiles, 3d tiles, etc.
 func (c *Config) HasCollections() bool {
 	return c.AllCollections() != nil
 }
 
-// AllCollections get all collections - with for example features, tiles, 3d tiles - offered through this OGC API.
+// AllCollections get all collections - for example, with features, tiles, 3d tiles - offered through this OGC API.
 // Results are returned in alphabetic or literal order.
 func (c *Config) AllCollections() GeoSpatialCollections {
 	var result []GeoSpatialCollection
@@ -154,21 +163,6 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 		sortByLiteralOrder(result, c.OgcAPICollectionOrder)
 	} else {
 		sortByAlphabet(result)
-	}
-
-	return result
-}
-
-// FeaturePropertiesByID returns a map of collection IDs to their corresponding FeatureProperties.
-// Skips collections that do not have features defined.
-func (g GeoSpatialCollections) FeaturePropertiesByID() map[string]*FeatureProperties {
-	result := make(map[string]*FeatureProperties)
-	for _, collection := range g {
-		featureCollection, ok := collection.(*CollectionFeatures)
-		if !ok {
-			continue
-		}
-		result[featureCollection.ID] = featureCollection.FeatureProperties
 	}
 
 	return result
@@ -263,4 +257,19 @@ func mergeField[T any](id string, this *T, other *T) *T {
 		return nil
 	}
 	return &existing
+}
+
+func getGeoSpatialCollectionType(collection GeoSpatialCollection) string {
+	switch collection.(type) {
+	case Collection3dGeoVolumes:
+		return "3dgeovolumes"
+	case CollectionFeatures:
+		return "features"
+	case CollectionFeaturesSearch:
+		return "featuressearch"
+	case CollectionTiles:
+		return "tiles"
+	}
+	log.Println("unknown collection type")
+	return ""
 }

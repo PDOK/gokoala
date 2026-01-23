@@ -18,7 +18,7 @@ type OgcAPIFeatures struct {
 	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
 
 	// Collections to be served as features through this API
-	Collections []CollectionFeatures `yaml:"collections" json:"collections" validate:"required,dive"`
+	Collections CollectionsFeatures `yaml:"collections" json:"collections" validate:"required,dive"`
 
 	// Limits the number of features to retrieve with a single call
 	// +optional
@@ -84,7 +84,32 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 	return result
 }
 
+type CollectionsFeatures []CollectionFeatures
+
+// ContainsID check if a given collection - by ID - exists.
+func (csf CollectionsFeatures) ContainsID(id string) bool {
+	for _, coll := range csf {
+		if coll.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// FeaturePropertiesByID returns a map of collection IDs to their corresponding FeatureProperties.
+// Skips collections that do not have features defined.
+func (csf CollectionsFeatures) FeaturePropertiesByID() map[string]*FeatureProperties {
+	result := make(map[string]*FeatureProperties)
+	for _, collection := range csf {
+		result[collection.ID] = collection.FeatureProperties
+	}
+
+	return result
+}
+
 // +kubebuilder:object:generate=true
+//
+//nolint:recvcheck
 type CollectionFeatures struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
@@ -126,6 +151,10 @@ type CollectionFeatures struct {
 	// Configuration specifically related to HTML/Web representation
 	// +optional
 	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
+}
+
+func (cf CollectionFeatures) GetType() string {
+	return getGeoSpatialCollectionType(cf)
 }
 
 // MarshalJSON custom because inlining only works on embedded structs.

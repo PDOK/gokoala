@@ -821,7 +821,7 @@ func (in *OgcAPI3dGeoVolumes) DeepCopyInto(out *OgcAPI3dGeoVolumes) {
 	in.TileServer.DeepCopyInto(&out.TileServer)
 	if in.Collections != nil {
 		in, out := &in.Collections, &out.Collections
-		*out = make([]Collection3dGeoVolumes, len(*in))
+		*out = make(Collections3dGeoVolumes, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -848,7 +848,7 @@ func (in *OgcAPIFeatures) DeepCopyInto(out *OgcAPIFeatures) {
 	*out = *in
 	if in.Collections != nil {
 		in, out := &in.Collections, &out.Collections
-		*out = make([]CollectionFeatures, len(*in))
+		*out = make(CollectionsFeatures, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -882,7 +882,7 @@ func (in *OgcAPIFeaturesSearch) DeepCopyInto(out *OgcAPIFeaturesSearch) {
 	in.OgcAPIFeatures.DeepCopyInto(&out.OgcAPIFeatures)
 	if in.Collections != nil {
 		in, out := &in.Collections, &out.Collections
-		*out = make([]CollectionFeaturesSearch, len(*in))
+		*out = make(CollectionsFeaturesSearch, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}

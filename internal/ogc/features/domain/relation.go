@@ -27,13 +27,13 @@ type FeatureRelation struct {
 	IsDerivedFromConfig bool
 }
 
-func NewFeatureRelation(table string, name, externalFidColumn string, collections config.GeoSpatialCollections) *FeatureRelation {
+func NewFeatureRelation(table string, name, externalFidColumn string, collections config.CollectionsFeatures) *FeatureRelation {
 	// option 1: deal with relations configured in the config file
 	for _, collection := range collections {
-		if !collection.HasTableName(table) || collection.Features.Relations == nil {
+		if !collection.HasTableName(table) || collection.Relations == nil {
 			continue
 		}
-		for _, relation := range collection.Features.Relations {
+		for _, relation := range collection.Relations {
 			if relation.Columns.Source == name {
 				return &FeatureRelation{
 					Name:                relation.Name(),
@@ -48,7 +48,7 @@ func NewFeatureRelation(table string, name, externalFidColumn string, collection
 	// option 2: deal with relations configured in the datasource
 	collectionNames := make([]string, 0, len(collections))
 	for _, collection := range collections {
-		collectionNames = append(collectionNames, collection.ID)
+		collectionNames = append(collectionNames, collection.GetID())
 	}
 	if !IsFeatureRelation(name, externalFidColumn) {
 		return nil

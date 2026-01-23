@@ -15,7 +15,7 @@ import (
 
 // assertIndexesExist asserts required indexes in the GeoPackage exists.
 func assertIndexesExist(
-	configuredCollections config.GeoSpatialCollections,
+	configuredCollections config.CollectionsFeatures,
 	tableByCollectionID map[string]*common.Table,
 	db *sqlx.DB, fidColumn string) error {
 
@@ -27,7 +27,7 @@ func assertIndexesExist(
 			return errors.New("given table can't be nil")
 		}
 		for _, coll := range configuredCollections {
-			if coll.ID == collID && coll.Features != nil {
+			if coll.GetID() == collID {
 				err := assertIndexesExistsForTable(defaultSpatialBtreeColumns, coll, table, db)
 				if err != nil {
 					return err
@@ -41,13 +41,13 @@ func assertIndexesExist(
 	return nil
 }
 
-func assertIndexesExistsForTable(defaultSpatialBtreeColumns string, collection config.GeoSpatialCollection, table *common.Table, db *sqlx.DB) error {
+func assertIndexesExistsForTable(defaultSpatialBtreeColumns string, collection config.CollectionFeatures, table *common.Table, db *sqlx.DB) error {
 	spatialBtreeColumns := defaultSpatialBtreeColumns
 
 	// assert temporal columns are indexed if configured
-	if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil {
-		temporalBtreeColumns := strings.Join([]string{collection.Metadata.TemporalProperties.StartDate, collection.Metadata.TemporalProperties.EndDate}, ",")
-		spatialBtreeColumns = strings.Join([]string{defaultSpatialBtreeColumns, collection.Metadata.TemporalProperties.StartDate, collection.Metadata.TemporalProperties.EndDate}, ",")
+	if collection.GetMetadata() != nil && collection.GetMetadata().TemporalProperties != nil {
+		temporalBtreeColumns := strings.Join([]string{collection.GetMetadata().TemporalProperties.StartDate, collection.GetMetadata().TemporalProperties.EndDate}, ",")
+		spatialBtreeColumns = strings.Join([]string{defaultSpatialBtreeColumns, collection.GetMetadata().TemporalProperties.StartDate, collection.GetMetadata().TemporalProperties.EndDate}, ",")
 		if err := assertIndexExists(table.Name, db, temporalBtreeColumns, true, false); err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ func assertIndexesExistsForTable(defaultSpatialBtreeColumns string, collection c
 	}
 
 	// assert the column for each property filter is indexed.
-	for _, propertyFilter := range collection.Features.Filters.Properties {
+	for _, propertyFilter := range collection.Filters.Properties {
 		if err := assertIndexExists(table.Name, db, propertyFilter.Name, false, true); err != nil && *propertyFilter.IndexRequired {
 			return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
 		}

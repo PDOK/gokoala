@@ -1,6 +1,10 @@
 package config
 
-import "net/url"
+import (
+	"net/url"
+
+	"github.com/PDOK/gokoala/internal/engine/types"
+)
 
 // +kubebuilder:object:generate=true
 type OgcAPIFeaturesSearch struct {
@@ -8,11 +12,93 @@ type OgcAPIFeaturesSearch struct {
 	OgcAPIFeatures `yaml:",inline" json:",inline"`
 
 	// Collections available for search through this API
-	Collections []CollectionFeaturesSearch `yaml:"collections" json:"collections" validate:"required,dive"`
+	Collections CollectionsFeaturesSearch `yaml:"collections" json:"collections" validate:"required,dive"`
 
 	// Settings related to the search API/index.
 	// +optional
 	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings"`
+}
+
+type CollectionsFeaturesSearch []CollectionFeaturesSearch
+
+// ContainsID check if a given collection - by ID - exists.
+func (csfs CollectionsFeaturesSearch) ContainsID(id string) bool {
+	for _, coll := range csfs {
+		if coll.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// +kubebuilder:object:generate=true
+//
+//nolint:recvcheck
+type CollectionFeaturesSearch struct {
+	// Unique ID of the collection
+	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+
+	// Metadata describing the collection contents
+	// +optional
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
+	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
+	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
+
+	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
+	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
+
+	// Version of the collection exposed through the API.
+	// +kubebuilder:default=1
+	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
+
+	// Links to the individual OGC API (feature) collections that are searchable in this collection.
+	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
+}
+
+func (cfs CollectionFeaturesSearch) GetType() string {
+	return getGeoSpatialCollectionType(cfs)
+}
+
+func (cfs CollectionFeaturesSearch) GetID() string {
+	return cfs.ID
+}
+
+func (cfs CollectionFeaturesSearch) GetMetadata() *GeoSpatialCollectionMetadata {
+	return cfs.Metadata
+}
+
+func (cfs CollectionFeaturesSearch) GetLinks() *CollectionLinks {
+	return cfs.Links
+}
+
+func (cfs CollectionFeaturesSearch) HasDateTime() bool {
+	return cfs.Metadata != nil && cfs.Metadata.TemporalProperties != nil
+}
+
+func (cfs CollectionFeaturesSearch) HasTableName(_ string) bool {
+	return false
+}
+
+func (cfs CollectionFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	cfs.Metadata = mergeMetadata(cfs, other)
+	cfs.Links = mergeLinks(cfs, other)
+	return cfs
+}
+
+// IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.
+// In other words: it references a local feature collection and doesn't point to a remote one.
+func (cfs CollectionFeaturesSearch) IsLocalFeatureCollection(collID string) bool {
+	if len(cfs.CollectionRefs) == 1 {
+		collRef := cfs.CollectionRefs[0]
+		return collRef.CollectionID == collID && collRef.APIBaseURL.URL == nil
+	}
+	return false
 }
 
 // +kubebuilder:object:generate=true
@@ -54,70 +140,6 @@ type SearchSettings struct {
 }
 
 // +kubebuilder:object:generate=true
-type CollectionFeaturesSearch struct {
-	// Unique ID of the collection
-	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
-	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
-
-	// Metadata describing the collection contents
-	// +optional
-	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-
-	// Links pertaining to this collection (e.g., downloads, documentation)
-	// +optional
-	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
-
-	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
-	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
-
-	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
-	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
-
-	// Version of the collection exposed through the API.
-	// +kubebuilder:default=1
-	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
-
-	// Links to the individual OGC API (feature) collections that are searchable in this collection.
-	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
-}
-
-func (cfs CollectionFeaturesSearch) GetID() string {
-	return cfs.ID
-}
-
-func (cfs CollectionFeaturesSearch) GetMetadata() *GeoSpatialCollectionMetadata {
-	return cfs.Metadata
-}
-
-func (cfs CollectionFeaturesSearch) GetLinks() *CollectionLinks {
-	return cfs.Links
-}
-
-func (cfs CollectionFeaturesSearch) HasDateTime() bool {
-	return cfs.Metadata != nil && cfs.Metadata.TemporalProperties != nil
-}
-
-func (cfs CollectionFeaturesSearch) HasTableName(_ string) bool {
-	return false
-}
-
-func (cfs CollectionFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatialCollection {
-	cfs.Metadata = mergeMetadata(cfs, other)
-	cfs.Links = mergeLinks(cfs, other)
-	return cfs
-}
-
-// IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.
-// In other words: it references a local feature collection and doesn't point to a remote one.
-func (cfs *CollectionFeaturesSearch) IsLocalFeatureCollection(collID string) bool {
-	if len(cfs.CollectionRefs) == 1 {
-		collRef := cfs.CollectionRefs[0]
-		return collRef.CollectionID == collID && collRef.APIBaseURL.URL == nil
-	}
-	return false
-}
-
-// +kubebuilder:object:generate=true
 type RelatedOGCAPIFeaturesCollection struct {
 	// Base URL/Href to the OGC Features API.
 	//
@@ -140,13 +162,55 @@ type RelatedOGCAPIFeaturesCollection struct {
 	CollectionID string `yaml:"collection" json:"collection" validate:"required,lowercase_id"`
 }
 
-func (ogcColl *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {
-	if ogcColl.APIBaseURL.URL != nil && ogcColl.APIBaseURL.String() != "" {
-		baseURL = ogcColl.APIBaseURL
+func (rel *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {
+	if rel.APIBaseURL.URL != nil && rel.APIBaseURL.String() != "" {
+		baseURL = rel.APIBaseURL
 	}
-	result, err := url.JoinPath(baseURL.String(), "collections", ogcColl.CollectionID, "items")
+	result, err := url.JoinPath(baseURL.String(), "collections", rel.CollectionID, "items")
 	if err != nil {
 		return ""
 	}
 	return result
+}
+
+type FeaturesAndSearchConfig struct {
+	Features *OgcAPIFeatures
+	Search   *OgcAPIFeaturesSearch
+}
+
+func (fas FeaturesAndSearchConfig) Datasources() *Datasources {
+	if fas.Search != nil {
+		return fas.Search.Datasources
+	}
+	return fas.Features.Datasources
+}
+
+func (fas FeaturesAndSearchConfig) Collections() GeoSpatialCollections {
+	if fas.Search != nil {
+		result := types.ToInterfaceSlice[CollectionFeaturesSearch, GeoSpatialCollection](fas.Search.Collections)
+		return result
+	}
+	result := types.ToInterfaceSlice[CollectionFeatures, GeoSpatialCollection](fas.Features.Collections)
+	return result
+}
+
+func (fas FeaturesAndSearchConfig) FeatureCollections() CollectionsFeatures {
+	if fas.Features != nil {
+		return fas.Features.Collections
+	}
+	return nil
+}
+
+func (fas FeaturesAndSearchConfig) MaxDecimals() int {
+	if fas.Search != nil {
+		return fas.Search.MaxDecimals
+	}
+	return fas.Features.MaxDecimals
+}
+
+func (fas FeaturesAndSearchConfig) ForceUTC() bool {
+	if fas.Search != nil {
+		return fas.Search.ForceUTC
+	}
+	return fas.Features.ForceUTC
 }

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/stretchr/testify/require"
 
@@ -76,8 +75,7 @@ func TestNewGeoPackage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			featCollection := types.ToInterfaceSlice[config.CollectionFeatures, config.GeoSpatialCollection](tt.args.collection)
-			g, err := NewGeoPackage(featCollection, tt.args.config, false, 0, false)
+			g, err := NewGeoPackage(tt.args.collection, tt.args.config, false, 0, false)
 			require.NoError(t, err)
 			assert.Lenf(t, g.TableByCollectionID, tt.wantNrOfFeatureTablesInGpkg, "NewGeoPackage(%v)", tt.args.config)
 		})
@@ -489,8 +487,7 @@ func TestGeoPackage_Warmup(t *testing.T) {
 					ID: "ligplaatsen",
 				},
 			}
-		featCollection := types.ToInterfaceSlice[config.CollectionFeatures, config.GeoSpatialCollection](collections)
-		err := warmUpFeatureTables(featCollection, g.TableByCollectionID, g.backend.getDB())
+		err := warmUpFeatureTables(collections, g.TableByCollectionID, g.backend.getDB())
 		require.NoError(t, err)
 	})
 }

@@ -14,7 +14,7 @@ import (
 // warmUpFeatureTables executes a warmup query to speedup subsequent queries.
 // This encompasses traversing index(es) to fill the local cache.
 func warmUpFeatureTables(
-	configuredCollections config.GeoSpatialCollections,
+	configuredCollections config.CollectionsFeatures,
 	tableByCollectionID map[string]*common.Table,
 	db *sqlx.DB) error {
 
@@ -23,7 +23,7 @@ func warmUpFeatureTables(
 			return errors.New("given table can't be nil")
 		}
 		for _, coll := range configuredCollections {
-			if coll.ID == collID && coll.Features != nil {
+			if coll.ID == collID {
 				if err := warmUpFeatureTable(table.Name, db); err != nil {
 					return err
 				}
