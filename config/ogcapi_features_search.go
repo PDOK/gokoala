@@ -4,6 +4,7 @@ import (
 	"net/url"
 
 	"github.com/PDOK/gokoala/internal/engine/types"
+	"gopkg.in/yaml.v3"
 )
 
 // +kubebuilder:object:generate=true
@@ -17,6 +18,23 @@ type OgcAPIFeaturesSearch struct {
 	// Settings related to the search API/index.
 	// +optional
 	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings"`
+}
+
+// UnmarshalYAML Handles YAML unmarshalling conflict with the "collections" field
+// present in both OgcAPIFeaturesSearch and embedded OgcAPIFeatures.
+func (c *OgcAPIFeaturesSearch) UnmarshalYAML(value *yaml.Node) error {
+	type base OgcAPIFeatures // empty struct/copy to avoid a possible infinite loop
+	if err := value.Decode((*base)(&c.OgcAPIFeatures)); err != nil {
+		return err
+	}
+	// Favor the 'collections' field from OgcAPIFeaturesSearch
+	pairSize := 2
+	for i := 0; i < len(value.Content); i += pairSize {
+		if value.Content[i].Value == "collections" {
+			return value.Content[i+1].Decode(&c.Collections)
+		}
+	}
+	return nil
 }
 
 type CollectionsFeaturesSearch []CollectionFeaturesSearch

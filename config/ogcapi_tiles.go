@@ -20,7 +20,7 @@ type OgcAPITiles struct {
 
 	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
-	Collections []CollectionTiles `yaml:"collections,omitempty" json:"collections,omitempty"`
+	Collections CollectionsTiles `yaml:"collections,omitempty" json:"collections,omitempty"`
 }
 
 type CollectionsTiles []CollectionTiles
@@ -59,11 +59,11 @@ func (o *OgcAPITiles) Defaults() {
 		o.DatasetTiles.HealthCheck.TilePath == nil && *o.DatasetTiles.HealthCheck.Enabled {
 		o.DatasetTiles.deriveHealthCheckTilePath()
 	} else if o.Collections != nil {
-		for _, coll := range o.Collections {
-			if coll.GeoDataTiles.HealthCheck.Srs == DefaultSrs &&
-				coll.GeoDataTiles.HealthCheck.TilePath == nil &&
-				*coll.GeoDataTiles.HealthCheck.Enabled {
-				coll.GeoDataTiles.deriveHealthCheckTilePath()
+		for i := range o.Collections {
+			if o.Collections[i].GeoDataTiles.HealthCheck.Srs == DefaultSrs &&
+				o.Collections[i].GeoDataTiles.HealthCheck.TilePath == nil &&
+				*o.Collections[i].GeoDataTiles.HealthCheck.Enabled {
+				o.Collections[i].GeoDataTiles.deriveHealthCheckTilePath()
 			}
 		}
 	}

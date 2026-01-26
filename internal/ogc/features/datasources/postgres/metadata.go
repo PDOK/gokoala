@@ -29,6 +29,9 @@ func readMetadata(db *pgxpool.Pool, collections config.CollectionsFeatures, fidC
 	}
 	log.Println(metadata)
 
+	if len(collections) == 0 {
+		return
+	}
 	tableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
 	if err != nil {
 		log.Fatal(err)

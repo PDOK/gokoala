@@ -16,7 +16,7 @@ type GeoSpatialCollections []GeoSpatialCollection
 // GeoSpatialCollection Configuration for a collection of geospatial data.
 //
 // Interface/abstraction for common collection properties regardless of the specific
-// collection type (e.g., tiles, features, 3dgeovolumes, etc.).
+// type (e.g., tiles, features, 3dgeovolumes, etc.).
 //
 // +kubebuilder:object:generate:false
 type GeoSpatialCollection interface {
@@ -35,9 +35,6 @@ type GeoSpatialCollection interface {
 
 	// HasTableName true when collection uses the given table, false otherwise.
 	HasTableName(table string) bool
-
-	// TODO: remove?
-	GetType() string
 
 	// Merge the (metadata and links) of the given collection with this collection. Return the merged collection.
 	Merge(collection GeoSpatialCollection) GeoSpatialCollection
@@ -232,14 +229,14 @@ func sortByLiteralOrder(collections []GeoSpatialCollection, literalOrder []strin
 }
 
 func mergeMetadata(this GeoSpatialCollection, other GeoSpatialCollection) *GeoSpatialCollectionMetadata {
-	return mergeField(this.GetID(), this.GetMetadata(), other.GetMetadata())
+	return mergeField(this.GetID(), this.GetMetadata(), other.GetMetadata(), false)
 }
 
 func mergeLinks(this GeoSpatialCollection, other GeoSpatialCollection) *CollectionLinks {
-	return mergeField(this.GetID(), this.GetLinks(), other.GetLinks())
+	return mergeField(this.GetID(), this.GetLinks(), other.GetLinks(), true)
 }
 
-func mergeField[T any](id string, this *T, other *T) *T {
+func mergeField[T any](id string, this *T, other *T, shouldAppend bool) *T {
 	switch {
 	case this == nil && other == nil:
 		return nil
@@ -250,7 +247,12 @@ func mergeField[T any](id string, this *T, other *T) *T {
 	}
 
 	existing := *this
-	err := mergo.Merge(&existing, other, mergo.WithAppendSlice)
+	var err error
+	if shouldAppend {
+		err = mergo.Merge(&existing, other, mergo.WithAppendSlice)
+	} else {
+		err = mergo.Merge(&existing, other)
+	}
 	if err != nil {
 		log.Fatalf("failed to merge fields from 2 collections "+
 			"with the same name '%s': %v", id, err)

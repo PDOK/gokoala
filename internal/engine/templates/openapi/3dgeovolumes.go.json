@@ -12,13 +12,13 @@
   },
   "paths" : {
     {{- range $index, $coll := .Config.OgcAPI.GeoVolumes.Collections -}}
-    {{ if and $coll.GeoVolumes (not $coll.GeoVolumes.IsDtm) }}
+    {{ if not $coll.IsDtm }}
     {{- if $index -}},{{- end -}}
     "/collections/{{ $coll.ID }}/3dtiles" : {
       "get" : {
         "tags" : [ "3D Tiles" ],
         "summary" : "retrieve the root 3D Tiles tileset of the feature collection '{{ $coll.ID }}'",
-        {{- if and $coll.GeoVolumes $coll.GeoVolumes.IsImplicit -}}
+        {{- if $coll.IsImplicit -}}
         "description" : "Access a 3D Tiles 1.1 tileset with implicit quadtree tiling.",
         {{- else -}}
         "description" : "Access a 3D Tiles 1.1 tileset with explicit quadtree tiling.",
@@ -31,7 +31,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  {{- if and $coll.GeoVolumes $coll.GeoVolumes.IsImplicit -}}
+                  {{- if $coll.IsImplicit -}}
                   "$ref" : "#/components/schemas/Tileset3dTiles_Implicit"
                   {{- else -}}
                   "$ref" : "#/components/schemas/Tileset3dTiles_Explicit"
@@ -87,7 +87,7 @@
       }
     }
     {{ end }}
-    {{ if and $coll.GeoVolumes $coll.GeoVolumes.IsDtm }}
+    {{ if $coll.IsDtm }}
     ,
     "/collections/{{ $coll.ID }}/quantized-mesh/{path}" : {
       "get" : {
