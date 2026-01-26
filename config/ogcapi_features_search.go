@@ -79,10 +79,6 @@ type CollectionFeaturesSearch struct {
 	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
 }
 
-func (cfs CollectionFeaturesSearch) GetType() string {
-	return getGeoSpatialCollectionType(cfs)
-}
-
 func (cfs CollectionFeaturesSearch) GetID() string {
 	return cfs.ID
 }

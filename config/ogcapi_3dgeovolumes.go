@@ -62,10 +62,6 @@ type Collection3dGeoVolumes struct {
 	URL3DViewer *URL `yaml:"3dViewerUrl,omitempty" json:"3dViewerUrl,omitempty"`
 }
 
-func (cgv Collection3dGeoVolumes) GetType() string {
-	return getGeoSpatialCollectionType(cgv)
-}
-
 func (cgv Collection3dGeoVolumes) GetID() string {
 	return cgv.ID
 }

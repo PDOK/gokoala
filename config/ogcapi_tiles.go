@@ -89,10 +89,6 @@ type CollectionTiles struct {
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
 }
 
-func (ct CollectionTiles) GetType() string {
-	return getGeoSpatialCollectionType(ct)
-}
-
 type CollectionEntryTilesJSON struct {
 	Tiles `json:",inline"`
 }

@@ -153,10 +153,6 @@ type CollectionFeatures struct {
 	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
 }
 
-func (cf CollectionFeatures) GetType() string {
-	return getGeoSpatialCollectionType(cf)
-}
-
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
 func (cf CollectionFeatures) MarshalJSON() ([]byte, error) {

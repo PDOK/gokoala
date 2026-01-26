@@ -260,18 +260,3 @@ func mergeField[T any](id string, this *T, other *T, shouldAppend bool) *T {
 	}
 	return &existing
 }
-
-func getGeoSpatialCollectionType(collection GeoSpatialCollection) string {
-	switch collection.(type) {
-	case Collection3dGeoVolumes:
-		return "3dgeovolumes"
-	case CollectionFeatures:
-		return "features"
-	case CollectionFeaturesSearch:
-		return "featuressearch"
-	case CollectionTiles:
-		return "tiles"
-	}
-	log.Println("unknown collection type")
-	return ""
-}
