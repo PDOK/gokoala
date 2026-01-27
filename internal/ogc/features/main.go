@@ -36,9 +36,7 @@ type Features struct {
 
 // NewFeatures Bootstraps OGC API Features logic.
 func NewFeatures(e *engine.Engine) *Features {
-	datasources := CreateDatasources(
-		config.FeaturesAndSearchConfig{Features: e.Config.OgcAPI.Features},
-		e.RegisterShutdownHook)
+	datasources := CreateDatasources(config.NewFeaturesConfig(e.Config.OgcAPI.Features), e.RegisterShutdownHook)
 	axisOrderBySRID := DetermineAxisOrder(datasources)
 	configuredCollections := cacheConfiguredFeatureCollections(e)
 	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)

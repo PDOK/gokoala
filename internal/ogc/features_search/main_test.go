@@ -455,8 +455,7 @@ func newEngine(t *testing.T) (*engine.Engine, map[features.DatasourceKey]ds.Data
 	theEngine.Config.OgcAPI.FeaturesSearch.ForceUTC = true
 
 	datasources := features.CreateDatasources(
-		config.FeaturesAndSearchConfig{Search: theEngine.Config.OgcAPI.FeaturesSearch},
-		theEngine.RegisterShutdownHook)
+		config.NewSearchConfig(theEngine.Config.OgcAPI.FeaturesSearch), theEngine.RegisterShutdownHook)
 	axisOrderBySRID := features.DetermineAxisOrder(datasources)
 
 	return theEngine, datasources, axisOrderBySRID

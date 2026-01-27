@@ -179,44 +179,53 @@ func (rel *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {
 	return result
 }
 
+// FeaturesAndSearchConfig Convince wrapper for OGC API Features and/or Features Search
 type FeaturesAndSearchConfig struct {
-	Features *OgcAPIFeatures
-	Search   *OgcAPIFeaturesSearch
+	features *OgcAPIFeatures
+	search   *OgcAPIFeaturesSearch
+}
+
+func NewFeaturesConfig(features *OgcAPIFeatures) FeaturesAndSearchConfig {
+	return FeaturesAndSearchConfig{features, nil}
+}
+
+func NewSearchConfig(search *OgcAPIFeaturesSearch) FeaturesAndSearchConfig {
+	return FeaturesAndSearchConfig{nil, search}
 }
 
 func (fas FeaturesAndSearchConfig) Datasources() *Datasources {
-	if fas.Search != nil {
-		return fas.Search.Datasources
+	if fas.search != nil {
+		return fas.search.Datasources
 	}
-	return fas.Features.Datasources
+	return fas.features.Datasources
 }
 
 func (fas FeaturesAndSearchConfig) Collections() GeoSpatialCollections {
-	if fas.Search != nil {
-		result := types.ToInterfaceSlice[CollectionFeaturesSearch, GeoSpatialCollection](fas.Search.Collections)
+	if fas.search != nil {
+		result := types.ToInterfaceSlice[CollectionFeaturesSearch, GeoSpatialCollection](fas.search.Collections)
 		return result
 	}
-	result := types.ToInterfaceSlice[CollectionFeatures, GeoSpatialCollection](fas.Features.Collections)
+	result := types.ToInterfaceSlice[CollectionFeatures, GeoSpatialCollection](fas.features.Collections)
 	return result
 }
 
 func (fas FeaturesAndSearchConfig) FeatureCollections() CollectionsFeatures {
-	if fas.Features != nil {
-		return fas.Features.Collections
+	if fas.features != nil {
+		return fas.features.Collections
 	}
 	return nil
 }
 
 func (fas FeaturesAndSearchConfig) MaxDecimals() int {
-	if fas.Search != nil {
-		return fas.Search.MaxDecimals
+	if fas.search != nil {
+		return fas.search.MaxDecimals
 	}
-	return fas.Features.MaxDecimals
+	return fas.features.MaxDecimals
 }
 
 func (fas FeaturesAndSearchConfig) ForceUTC() bool {
-	if fas.Search != nil {
-		return fas.Search.ForceUTC
+	if fas.search != nil {
+		return fas.search.ForceUTC
 	}
-	return fas.Features.ForceUTC
+	return fas.features.ForceUTC
 }
