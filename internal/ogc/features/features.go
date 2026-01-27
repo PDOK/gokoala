@@ -47,7 +47,7 @@ func (f *Features) Features() http.HandlerFunc {
 			f.engine.Config.OgcAPI.Features.Limit,
 			f.configuredPropertyFilters[collection.GetID()],
 			f.schemas[collection.GetID()],
-			collection.HasDateTime(),
+			collection.Metadata != nil && collection.Metadata.TemporalProperties != nil,
 		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
 			referenceDate, propertyFilters, profile, err := url.parse()
@@ -166,7 +166,7 @@ func shouldQuerySingleDatasource(datasource ds.Datasource, input domain.SRID, ou
 
 func createTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {
 	var temporalCriteria ds.TemporalCriteria
-	if collection.HasDateTime() {
+	if collection.GetMetadata() != nil && collection.GetMetadata().TemporalProperties != nil {
 		temporalCriteria = ds.TemporalCriteria{
 			ReferenceDate:     referenceDate,
 			StartDateProperty: collection.GetMetadata().TemporalProperties.StartDate,

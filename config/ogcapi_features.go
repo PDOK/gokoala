@@ -176,10 +176,6 @@ func (cf CollectionFeatures) GetLinks() *CollectionLinks {
 	return cf.Links
 }
 
-func (cf CollectionFeatures) HasDateTime() bool {
-	return cf.Metadata != nil && cf.Metadata.TemporalProperties != nil
-}
-
 func (cf CollectionFeatures) HasTableName(table string) bool {
 	return cf.TableName != nil && table == *cf.TableName
 }

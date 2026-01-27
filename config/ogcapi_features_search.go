@@ -91,14 +91,6 @@ func (cfs CollectionFeaturesSearch) GetLinks() *CollectionLinks {
 	return cfs.Links
 }
 
-func (cfs CollectionFeaturesSearch) HasDateTime() bool {
-	return cfs.Metadata != nil && cfs.Metadata.TemporalProperties != nil
-}
-
-func (cfs CollectionFeaturesSearch) HasTableName(_ string) bool {
-	return false
-}
-
 func (cfs CollectionFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	cfs.Metadata = mergeMetadata(cfs, other)
 	cfs.Links = mergeLinks(cfs, other)

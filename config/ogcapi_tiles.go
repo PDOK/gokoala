@@ -118,14 +118,6 @@ func (ct CollectionTiles) GetLinks() *CollectionLinks {
 	return ct.Links
 }
 
-func (ct CollectionTiles) HasDateTime() bool {
-	return ct.Metadata != nil && ct.Metadata.TemporalProperties != nil
-}
-
-func (ct CollectionTiles) HasTableName(_ string) bool {
-	return false
-}
-
 func (ct CollectionTiles) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	ct.Metadata = mergeMetadata(ct, other)
 	ct.Links = mergeLinks(ct, other)

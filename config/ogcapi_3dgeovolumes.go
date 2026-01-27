@@ -74,14 +74,6 @@ func (cgv Collection3dGeoVolumes) GetLinks() *CollectionLinks {
 	return cgv.Links
 }
 
-func (cgv Collection3dGeoVolumes) HasDateTime() bool {
-	return cgv.Metadata != nil && cgv.Metadata.TemporalProperties != nil
-}
-
-func (cgv Collection3dGeoVolumes) HasTableName(_ string) bool {
-	return false
-}
-
 func (cgv Collection3dGeoVolumes) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	cgv.Metadata = mergeMetadata(cgv, other)
 	cgv.Links = mergeLinks(cgv, other)

@@ -30,12 +30,6 @@ type GeoSpatialCollection interface {
 	// GetLinks Links pertaining to this collection (e.g., downloads, documentation)
 	GetLinks() *CollectionLinks
 
-	// HasDateTime true when collection has temporal support, false otherwise.
-	HasDateTime() bool
-
-	// HasTableName true when collection uses the given table, false otherwise.
-	HasTableName(table string) bool
-
 	// Merge the (metadata and links) of the given collection with this collection. Return the merged collection.
 	Merge(collection GeoSpatialCollection) GeoSpatialCollection
 }
