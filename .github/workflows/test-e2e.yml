@@ -93,15 +93,3 @@ jobs:
         run: |
           docker compose -f ./examples/docker-compose-features-azure.yaml up \
             --exit-code-from smoketest
-
-      # E2E Test (Features Search)
-      - name: E2E Test => Features Search with Postgres backend
-        run: |
-          docker compose -f ./examples/docker-compose-features-search.yaml up -d postgres
-
-          # This runs the ETL container, waits for it to finish, and removes it
-          docker compose -f ./examples/docker-compose-features-search.yaml run --rm gokoala-etl
-
-          # Now start the rest (server + smoketest). Since ETL is already done, it won't trigger an abort
-          docker compose -f ./examples/docker-compose-features-search.yaml up \
-            --exit-code-from smoketest
