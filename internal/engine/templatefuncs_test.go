@@ -249,7 +249,7 @@ func TestHasField(t *testing.T) {
 		unexported int
 	}
 
-	var nilSamplePtr *sample = nil
+	var nilSamplePtr *sample
 
 	tests := []struct {
 		name      string

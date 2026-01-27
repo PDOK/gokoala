@@ -948,7 +948,7 @@ func (in *OgcAPITiles) DeepCopyInto(out *OgcAPITiles) {
 	}
 	if in.Collections != nil {
 		in, out := &in.Collections, &out.Collections
-		*out = make([]CollectionTiles, len(*in))
+		*out = make(CollectionsTiles, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
