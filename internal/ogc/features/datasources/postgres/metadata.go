@@ -19,7 +19,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the Postgres database. Terminates on failure.
-func readMetadata(db *pgxpool.Pool, collections config.CollectionsFeatures, fidColumn, externalFidColumn, schemaName string) (
+func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidColumn, externalFidColumn, schemaName string) (
 	tableByCollectionID map[string]*common.Table,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
@@ -60,7 +60,7 @@ func readDriverMetadata(db *pgxpool.Pool) (string, error) {
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'f_table_name' column. Also, in case there's no exact match between 'collection ID' and 'f_table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readFeatureTables(collections config.CollectionsFeatures, db *pgxpool.Pool,
+func readFeatureTables(collections config.FeaturesCollections, db *pgxpool.Pool,
 	fidColumn, externalFidColumn, schemaName string) (map[string]*common.Table, error) {
 
 	query := `
@@ -121,7 +121,7 @@ where
 }
 
 func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.CollectionsFeatures, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
 	for _, collection := range collections {
@@ -176,7 +176,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 }
 
 func readSchema(db *pgxpool.Pool, table common.Table, fidColumn, externalFidColumn, schemaName string,
-	collections config.CollectionsFeatures) (*d.Schema, error) {
+	collections config.FeaturesCollections) (*d.Schema, error) {
 
 	query := `
 select

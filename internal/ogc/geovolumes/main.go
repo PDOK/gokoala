@@ -135,7 +135,7 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 	t.engine.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, t.validateResponse)
 }
 
-func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*config.Collection3dGeoVolumes, error) {
+func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*config.GeoVolumesCollection, error) {
 	for _, collection := range t.engine.Config.OgcAPI.GeoVolumes.Collections {
 		if collection.ID == cid {
 			return &collection, nil

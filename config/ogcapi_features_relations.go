@@ -47,7 +47,7 @@ type ColumnRelation struct {
 
 // FeatureRelationsByID returns a map of collection IDs to their corresponding Relation.
 // Skips collections that do not have features defined.
-func (csf CollectionsFeatures) FeatureRelationsByID() map[string][]Relation {
+func (csf FeaturesCollections) FeatureRelationsByID() map[string][]Relation {
 	result := make(map[string][]Relation)
 	for _, collection := range csf {
 		result[collection.ID] = collection.Relations

@@ -25,7 +25,7 @@ type Features struct {
 
 	datasources               map[DatasourceKey]ds.Datasource
 	axisOrderBySRID           map[int]domain.AxisOrder
-	configuredCollections     map[string]config.CollectionFeatures
+	configuredCollections     map[string]config.FeaturesCollection
 	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
 	collectionTypes           geospatial.CollectionTypes
 	schemas                   map[string]domain.Schema
@@ -172,8 +172,8 @@ func determineCollectionTypes(datasources map[DatasourceKey]ds.Datasource) geosp
 	return geospatial.NewCollectionTypes(result)
 }
 
-func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.CollectionFeatures {
-	result := make(map[string]config.CollectionFeatures)
+func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.FeaturesCollection {
+	result := make(map[string]config.FeaturesCollection)
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		result[collection.ID] = collection
 	}
@@ -182,7 +182,7 @@ func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.Colle
 }
 
 func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource,
-	collections map[string]config.CollectionFeatures) map[string]ds.PropertyFiltersWithAllowedValues {
+	collections map[string]config.FeaturesCollection) map[string]ds.PropertyFiltersWithAllowedValues {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
 	for k, datasource := range datasources {

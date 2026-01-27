@@ -327,7 +327,7 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 	}
 }
 
-func renderTilesTemplates(e *engine.Engine, collection *config.CollectionTiles, data templateData) {
+func renderTilesTemplates(e *engine.Engine, collection *config.TilesCollection, data templateData) {
 	var breadcrumbs []engine.Breadcrumb
 	path := tilesPath
 	collectionID := ""

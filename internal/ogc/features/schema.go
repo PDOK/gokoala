@@ -136,7 +136,7 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 	return schemasByCollection
 }
 
-func requiresSpecificOrder(collection config.CollectionFeatures) bool {
+func requiresSpecificOrder(collection config.FeaturesCollection) bool {
 	if collection.FeatureProperties != nil {
 		return collection.PropertiesInSpecificOrder
 	}

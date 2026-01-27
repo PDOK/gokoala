@@ -155,7 +155,7 @@ func (s *Search) enrichFeaturesWithHref(fc *fd.FeatureCollection, contentCrs fd.
 		if collectionID == "" {
 			return fmt.Errorf("collection reference not found in feature %s", feat.ID)
 		}
-		var collection *config.CollectionFeaturesSearch
+		var collection *config.FeaturesSearchCollection
 		for _, coll := range s.engine.Config.OgcAPI.FeaturesSearch.Collections {
 			if collectionID == coll.GetID() {
 				collection = &coll

@@ -104,13 +104,13 @@ func TestAllCollections(t *testing.T) {
 			config: &Config{
 				OgcAPI: OgcAPI{
 					GeoVolumes: &OgcAPI3dGeoVolumes{
-						Collections: []Collection3dGeoVolumes{{ID: "volumes"}},
+						Collections: []GeoVolumesCollection{{ID: "volumes"}},
 					},
 					Tiles: &OgcAPITiles{
-						Collections: []CollectionTiles{{ID: "tiles"}},
+						Collections: []TilesCollection{{ID: "tiles"}},
 					},
 					Features: &OgcAPIFeatures{
-						Collections: []CollectionFeatures{{ID: "features"}},
+						Collections: []FeaturesCollection{{ID: "features"}},
 					},
 				},
 			},
@@ -122,13 +122,13 @@ func TestAllCollections(t *testing.T) {
 				OgcAPICollectionOrder: []string{"tiles", "volumes", "features"},
 				OgcAPI: OgcAPI{
 					GeoVolumes: &OgcAPI3dGeoVolumes{
-						Collections: []Collection3dGeoVolumes{{ID: "volumes"}},
+						Collections: []GeoVolumesCollection{{ID: "volumes"}},
 					},
 					Tiles: &OgcAPITiles{
-						Collections: []CollectionTiles{{ID: "tiles"}},
+						Collections: []TilesCollection{{ID: "tiles"}},
 					},
 					Features: &OgcAPIFeatures{
-						Collections: []CollectionFeatures{{ID: "features"}},
+						Collections: []FeaturesCollection{{ID: "features"}},
 					},
 				},
 			},
@@ -139,7 +139,7 @@ func TestAllCollections(t *testing.T) {
 			config: &Config{
 				OgcAPI: OgcAPI{
 					Features: &OgcAPIFeatures{
-						Collections: []CollectionFeatures{
+						Collections: []FeaturesCollection{
 							{ID: "b", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("Z Title")}},
 							{ID: "a", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("A Title")}},
 						},
@@ -269,13 +269,13 @@ func TestGeoSpatialCollections_Unique_WithMetadataAndMoreLinks(t *testing.T) {
 func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	tests := []struct {
 		name string
-		g    []CollectionFeatures
+		g    []FeaturesCollection
 		id   string
 		want bool
 	}{
 		{
 			name: "ID is present",
-			g: []CollectionFeatures{
+			g: []FeaturesCollection{
 				{
 					ID: "3",
 				},
@@ -291,7 +291,7 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 		},
 		{
 			name: "ID is not present",
-			g: []CollectionFeatures{
+			g: []FeaturesCollection{
 				{
 					ID: "3",
 				},
@@ -308,7 +308,7 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			collections := GeoSpatialCollections(types.ToInterfaceSlice[CollectionFeatures, GeoSpatialCollection](tt.g))
+			collections := GeoSpatialCollections(types.ToInterfaceSlice[FeaturesCollection, GeoSpatialCollection](tt.g))
 			assert.Equalf(t, tt.want, collections.ContainsID(tt.id), "ContainsID(%v)", tt.id)
 		})
 	}
@@ -322,7 +322,7 @@ func TestCollectionsSRS(t *testing.T) {
 				{Srs: "EPSG:4355"},
 			},
 		},
-		Collections: []CollectionFeatures{
+		Collections: []FeaturesCollection{
 			{
 				ID: "coll1",
 				Datasources: &Datasources{
@@ -387,7 +387,7 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			coll: &Collection3dGeoVolumes{
+			coll: &GeoVolumesCollection{
 				ID: "test i",
 				Metadata: &GeoSpatialCollectionMetadata{
 					Description: ptrTo("test d"),
@@ -444,7 +444,7 @@ func TestOgcAPITiles_HasType(t *testing.T) {
 		{
 			name: "Has type in Collections",
 			tiles: OgcAPITiles{
-				Collections: []CollectionTiles{
+				Collections: []TilesCollection{
 					{
 						GeoDataTiles: Tiles{
 							Types: []TilesType{"raster", "vector"},
@@ -458,7 +458,7 @@ func TestOgcAPITiles_HasType(t *testing.T) {
 		{
 			name: "Does not have type in Collections",
 			tiles: OgcAPITiles{
-				Collections: []CollectionTiles{
+				Collections: []TilesCollection{
 					{
 						GeoDataTiles: Tiles{
 							Types: []TilesType{"raster", "vector"},
@@ -501,7 +501,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 						{Srs: "EPSG:3857"},
 					},
 				},
-				Collections: []CollectionTiles{},
+				Collections: []TilesCollection{},
 			},
 			srs:      "EPSG:4326",
 			expected: true,
@@ -510,7 +510,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 			name: "SRS found in a Collection Tiles",
 			ogcAPITiles: OgcAPITiles{
 				DatasetTiles: nil,
-				Collections: []CollectionTiles{
+				Collections: []TilesCollection{
 					{
 						GeoDataTiles: Tiles{
 							SupportedSrs: []SupportedSrs{
@@ -531,7 +531,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 						{Srs: "EPSG:4326"},
 					},
 				},
-				Collections: []CollectionTiles{},
+				Collections: []TilesCollection{},
 			},
 			srs:      "EPSG:9999",
 			expected: false,
@@ -540,7 +540,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 			name: "Empty Top-level tiles and Collections",
 			ogcAPITiles: OgcAPITiles{
 				DatasetTiles: nil,
-				Collections:  []CollectionTiles{},
+				Collections:  []TilesCollection{},
 			},
 			srs:      "EPSG:4326",
 			expected: false,
@@ -549,7 +549,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 			name: "Handle nil",
 			ogcAPITiles: OgcAPITiles{
 				DatasetTiles: nil,
-				Collections: []CollectionTiles{
+				Collections: []TilesCollection{
 					{},
 				},
 			},

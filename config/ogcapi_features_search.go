@@ -13,7 +13,7 @@ type OgcAPIFeaturesSearch struct {
 	OgcAPIFeatures `yaml:",inline" json:",inline"`
 
 	// Collections available for search through this API
-	Collections CollectionsFeaturesSearch `yaml:"collections" json:"collections" validate:"required,dive"`
+	Collections FeaturesSearchCollections `yaml:"collections" json:"collections" validate:"required,dive"`
 
 	// Settings related to the search API/index.
 	// +optional
@@ -37,10 +37,10 @@ func (c *OgcAPIFeaturesSearch) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-type CollectionsFeaturesSearch []CollectionFeaturesSearch
+type FeaturesSearchCollections []FeaturesSearchCollection
 
 // ContainsID check if a given collection - by ID - exists.
-func (csfs CollectionsFeaturesSearch) ContainsID(id string) bool {
+func (csfs FeaturesSearchCollections) ContainsID(id string) bool {
 	for _, coll := range csfs {
 		if coll.ID == id {
 			return true
@@ -52,7 +52,7 @@ func (csfs CollectionsFeaturesSearch) ContainsID(id string) bool {
 // +kubebuilder:object:generate=true
 //
 //nolint:recvcheck
-type CollectionFeaturesSearch struct {
+type FeaturesSearchCollection struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
@@ -79,19 +79,19 @@ type CollectionFeaturesSearch struct {
 	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
 }
 
-func (cfs CollectionFeaturesSearch) GetID() string {
+func (cfs FeaturesSearchCollection) GetID() string {
 	return cfs.ID
 }
 
-func (cfs CollectionFeaturesSearch) GetMetadata() *GeoSpatialCollectionMetadata {
+func (cfs FeaturesSearchCollection) GetMetadata() *GeoSpatialCollectionMetadata {
 	return cfs.Metadata
 }
 
-func (cfs CollectionFeaturesSearch) GetLinks() *CollectionLinks {
+func (cfs FeaturesSearchCollection) GetLinks() *CollectionLinks {
 	return cfs.Links
 }
 
-func (cfs CollectionFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+func (cfs FeaturesSearchCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	cfs.Metadata = mergeMetadata(cfs, other)
 	cfs.Links = mergeLinks(cfs, other)
 	return cfs
@@ -99,7 +99,7 @@ func (cfs CollectionFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatial
 
 // IsRemoteFeatureCollection true when the given collection ID is defined as a feature collection outside this config.
 // In other words: it references a remote feature collection and doesn't point to a local one in this dataset.
-func (cfs CollectionFeaturesSearch) IsRemoteFeatureCollection(collID string) bool {
+func (cfs FeaturesSearchCollection) IsRemoteFeatureCollection(collID string) bool {
 	if len(cfs.CollectionRefs) == 1 {
 		collRef := cfs.CollectionRefs[0]
 		return collRef.CollectionID != collID || collRef.APIBaseURL.URL != nil
@@ -202,14 +202,14 @@ func (fas FeaturesAndSearchConfig) Datasources() *Datasources {
 
 func (fas FeaturesAndSearchConfig) Collections() GeoSpatialCollections {
 	if fas.search != nil {
-		result := types.ToInterfaceSlice[CollectionFeaturesSearch, GeoSpatialCollection](fas.search.Collections)
+		result := types.ToInterfaceSlice[FeaturesSearchCollection, GeoSpatialCollection](fas.search.Collections)
 		return result
 	}
-	result := types.ToInterfaceSlice[CollectionFeatures, GeoSpatialCollection](fas.features.Collections)
+	result := types.ToInterfaceSlice[FeaturesCollection, GeoSpatialCollection](fas.features.Collections)
 	return result
 }
 
-func (fas FeaturesAndSearchConfig) FeatureCollections() CollectionsFeatures {
+func (fas FeaturesAndSearchConfig) FeatureCollections() FeaturesCollections {
 	if fas.features != nil {
 		return fas.features.Collections
 	}

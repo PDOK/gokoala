@@ -27,7 +27,7 @@ type FeatureRelation struct {
 	IsDerivedFromConfig bool
 }
 
-func NewFeatureRelation(table string, name, externalFidColumn string, collections config.CollectionsFeatures) *FeatureRelation {
+func NewFeatureRelation(table string, name, externalFidColumn string, collections config.FeaturesCollections) *FeatureRelation {
 	// option 1: deal with relations configured in the config file
 	for _, collection := range collections {
 		if !collection.HasTableName(table) || collection.Relations == nil {

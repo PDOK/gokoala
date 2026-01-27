@@ -73,7 +73,7 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
-	collection config.CollectionFeatures, cursor domain.Cursors,
+	collection config.FeaturesCollection, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
 	propertyFilters map[string]string,
 	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
@@ -87,7 +87,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.CollectionFeatures,
+func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
 	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
@@ -101,7 +101,7 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, colle
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) toItemsPage(collection config.CollectionFeatures, referenceDate *time.Time,
+func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, referenceDate *time.Time,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
 	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues) ([]engine.Breadcrumb, *featureCollectionPage) {
 
@@ -147,7 +147,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.CollectionFeatures, refere
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
-	collection config.CollectionFeatures, feat *domain.Feature, outputFormats []engine.OutputFormat) {
+	collection config.FeaturesCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 
@@ -157,7 +157,7 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
 }
 
 func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request,
-	collection config.CollectionFeatures, feat *domain.Feature, outputFormats []engine.OutputFormat) {
+	collection config.FeaturesCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 	pageContent.ShowViewer = false // since items have no geometry
@@ -167,7 +167,7 @@ func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request,
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) toItemPage(collection config.CollectionFeatures, feat *domain.Feature) ([]engine.Breadcrumb, *featurePage) {
+func (hf *htmlFeatures) toItemPage(collection config.FeaturesCollection, feat *domain.Feature) ([]engine.Breadcrumb, *featurePage) {
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{

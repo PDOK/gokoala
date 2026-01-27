@@ -36,7 +36,7 @@ type Postgres struct {
 	schemaName string
 }
 
-func NewPostgres(collections config.CollectionsFeatures, pgConfig config.Postgres,
+func NewPostgres(collections config.FeaturesCollections, pgConfig config.Postgres,
 	transformOnTheFly bool, maxDecimals int, forceUTC bool) (*Postgres, error) {
 
 	if !transformOnTheFly {

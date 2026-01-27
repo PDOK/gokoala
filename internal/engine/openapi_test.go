@@ -104,9 +104,9 @@ func Test_newOpenAPI(t *testing.T) {
 					OgcAPI: gokoalaconfig.OgcAPI{
 						GeoVolumes: &gokoalaconfig.OgcAPI3dGeoVolumes{
 							TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: gokoalaconfig.Collections3dGeoVolumes{
-								gokoalaconfig.Collection3dGeoVolumes{ID: "feature1"},
-								gokoalaconfig.Collection3dGeoVolumes{ID: "feature2"},
+							Collections: gokoalaconfig.GeoVolumesCollections{
+								gokoalaconfig.GeoVolumesCollection{ID: "feature1"},
+								gokoalaconfig.GeoVolumesCollection{ID: "feature2"},
 							},
 						},
 					},
@@ -159,9 +159,9 @@ func Test_newOpenAPI(t *testing.T) {
 					OgcAPI: gokoalaconfig.OgcAPI{
 						GeoVolumes: &gokoalaconfig.OgcAPI3dGeoVolumes{
 							TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: gokoalaconfig.Collections3dGeoVolumes{
-								gokoalaconfig.Collection3dGeoVolumes{ID: "feature1"},
-								gokoalaconfig.Collection3dGeoVolumes{ID: "feature2"},
+							Collections: gokoalaconfig.GeoVolumesCollections{
+								gokoalaconfig.GeoVolumesCollection{ID: "feature1"},
+								gokoalaconfig.GeoVolumesCollection{ID: "feature2"},
 							},
 						},
 						Tiles: &gokoalaconfig.OgcAPITiles{
@@ -175,7 +175,7 @@ func Test_newOpenAPI(t *testing.T) {
 								Default: 20,
 								Max:     2000,
 							},
-							Collections: gokoalaconfig.CollectionsFeatures{
+							Collections: gokoalaconfig.FeaturesCollections{
 								{
 									ID: "foobar",
 									Datasources: &gokoalaconfig.Datasources{

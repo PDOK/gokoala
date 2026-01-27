@@ -20,13 +20,13 @@ type OgcAPITiles struct {
 
 	// Tiles per collection. When no collections are specified tiles should be hosted at the root of the API (/tiles endpoint).
 	// +optional
-	Collections CollectionsTiles `yaml:"collections,omitempty" json:"collections,omitempty"`
+	Collections TilesCollections `yaml:"collections,omitempty" json:"collections,omitempty"`
 }
 
-type CollectionsTiles []CollectionTiles
+type TilesCollections []TilesCollection
 
 // ContainsID check if a given collection - by ID - exists.
-func (cst CollectionsTiles) ContainsID(id string) bool {
+func (cst TilesCollections) ContainsID(id string) bool {
 	for _, coll := range cst {
 		if coll.ID == id {
 			return true
@@ -37,7 +37,7 @@ func (cst CollectionsTiles) ContainsID(id string) bool {
 
 type OgcAPITilesJSON struct {
 	*Tiles      `json:",inline"`
-	Collections []CollectionTiles `json:"collections,omitempty"`
+	Collections []TilesCollection `json:"collections,omitempty"`
 }
 
 // MarshalJSON custom because inlining only works on embedded structs.
@@ -72,7 +72,7 @@ func (o *OgcAPITiles) Defaults() {
 // +kubebuilder:object:generate=true
 //
 //nolint:recvcheck
-type CollectionTiles struct {
+type TilesCollection struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
@@ -95,30 +95,30 @@ type CollectionEntryTilesJSON struct {
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (ct CollectionTiles) MarshalJSON() ([]byte, error) {
+func (ct TilesCollection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(CollectionEntryTilesJSON{
 		Tiles: ct.GeoDataTiles,
 	})
 }
 
-// UnmarshalJSON parses a string to CollectionTiles.
-func (ct CollectionTiles) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON parses a string to TilesCollection.
+func (ct TilesCollection) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, ct)
 }
 
-func (ct CollectionTiles) GetID() string {
+func (ct TilesCollection) GetID() string {
 	return ct.ID
 }
 
-func (ct CollectionTiles) GetMetadata() *GeoSpatialCollectionMetadata {
+func (ct TilesCollection) GetMetadata() *GeoSpatialCollectionMetadata {
 	return ct.Metadata
 }
 
-func (ct CollectionTiles) GetLinks() *CollectionLinks {
+func (ct TilesCollection) GetLinks() *CollectionLinks {
 	return ct.Links
 }
 
-func (ct CollectionTiles) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+func (ct TilesCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	ct.Metadata = mergeMetadata(ct, other)
 	ct.Links = mergeLinks(ct, other)
 	return ct

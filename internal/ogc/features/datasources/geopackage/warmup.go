@@ -14,7 +14,7 @@ import (
 // warmUpFeatureTables executes a warmup query to speedup subsequent queries.
 // This encompasses traversing index(es) to fill the local cache.
 func warmUpFeatureTables(
-	configuredCollections config.CollectionsFeatures,
+	configuredCollections config.FeaturesCollections,
 	tableByCollectionID map[string]*common.Table,
 	db *sqlx.DB) error {
 

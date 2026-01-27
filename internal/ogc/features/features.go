@@ -47,7 +47,7 @@ func (f *Features) Features() http.HandlerFunc {
 			f.engine.Config.OgcAPI.Features.Limit,
 			f.configuredPropertyFilters[collection.GetID()],
 			f.schemas[collection.GetID()],
-			collection.Metadata != nil && collection.Metadata.TemporalProperties != nil,
+			hasDateTime(collection),
 		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
 			referenceDate, propertyFilters, profile, err := url.parse()
@@ -107,7 +107,7 @@ func (f *Features) Features() http.HandlerFunc {
 }
 
 func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, inputSRID, outputSRID domain.SRID,
-	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.CollectionFeatures,
+	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.FeaturesCollection,
 	referenceDate time.Time, propertyFilters map[string]string, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
 
 	var newCursor domain.Cursors
@@ -185,4 +185,8 @@ func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err er
 	}
 	log.Printf("%s, error: %v\n", msg, err)
 	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
+}
+
+func hasDateTime(collection config.FeaturesCollection) bool {
+	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }

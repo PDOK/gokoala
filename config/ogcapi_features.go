@@ -18,7 +18,7 @@ type OgcAPIFeatures struct {
 	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
 
 	// Collections to be served as features through this API
-	Collections CollectionsFeatures `yaml:"collections" json:"collections" validate:"required,dive"`
+	Collections FeaturesCollections `yaml:"collections" json:"collections" validate:"required,dive"`
 
 	// Limits the number of features to retrieve with a single call
 	// +optional
@@ -84,10 +84,10 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 	return result
 }
 
-type CollectionsFeatures []CollectionFeatures
+type FeaturesCollections []FeaturesCollection
 
 // ContainsID check if a given collection - by ID - exists.
-func (csf CollectionsFeatures) ContainsID(id string) bool {
+func (csf FeaturesCollections) ContainsID(id string) bool {
 	for _, coll := range csf {
 		if coll.ID == id {
 			return true
@@ -98,7 +98,7 @@ func (csf CollectionsFeatures) ContainsID(id string) bool {
 
 // FeaturePropertiesByID returns a map of collection IDs to their corresponding FeatureProperties.
 // Skips collections that do not have features defined.
-func (csf CollectionsFeatures) FeaturePropertiesByID() map[string]*FeatureProperties {
+func (csf FeaturesCollections) FeaturePropertiesByID() map[string]*FeatureProperties {
 	result := make(map[string]*FeatureProperties)
 	for _, collection := range csf {
 		result[collection.ID] = collection.FeatureProperties
@@ -110,7 +110,7 @@ func (csf CollectionsFeatures) FeaturePropertiesByID() map[string]*FeatureProper
 // +kubebuilder:object:generate=true
 //
 //nolint:recvcheck
-type CollectionFeatures struct {
+type FeaturesCollection struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
@@ -155,32 +155,32 @@ type CollectionFeatures struct {
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
-func (cf CollectionFeatures) MarshalJSON() ([]byte, error) {
+func (cf FeaturesCollection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(cf)
 }
 
-// UnmarshalJSON parses a string to CollectionFeatures.
-func (cf CollectionFeatures) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON parses a string to FeaturesCollection.
+func (cf FeaturesCollection) UnmarshalJSON(b []byte) error {
 	return yaml.Unmarshal(b, cf)
 }
 
-func (cf CollectionFeatures) GetID() string {
+func (cf FeaturesCollection) GetID() string {
 	return cf.ID
 }
 
-func (cf CollectionFeatures) GetMetadata() *GeoSpatialCollectionMetadata {
+func (cf FeaturesCollection) GetMetadata() *GeoSpatialCollectionMetadata {
 	return cf.Metadata
 }
 
-func (cf CollectionFeatures) GetLinks() *CollectionLinks {
+func (cf FeaturesCollection) GetLinks() *CollectionLinks {
 	return cf.Links
 }
 
-func (cf CollectionFeatures) HasTableName(table string) bool {
+func (cf FeaturesCollection) HasTableName(table string) bool {
 	return cf.TableName != nil && table == *cf.TableName
 }
 
-func (cf CollectionFeatures) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+func (cf FeaturesCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
 	cf.Metadata = mergeMetadata(cf, other)
 	cf.Links = mergeLinks(cf, other)
 	return cf
@@ -325,7 +325,7 @@ type TemporalProperties struct {
 	EndDate string `yaml:"endDate" json:"endDate" validate:"required"`
 }
 
-func validateFeatureCollections(collections []CollectionFeatures) error {
+func validateFeatureCollections(collections []FeaturesCollection) error {
 	var errMessages []string
 	for _, collection := range collections {
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil &&

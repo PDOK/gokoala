@@ -15,7 +15,7 @@ import (
 
 // assertIndexesExist asserts required indexes in the GeoPackage exists.
 func assertIndexesExist(
-	configuredCollections config.CollectionsFeatures,
+	configuredCollections config.FeaturesCollections,
 	tableByCollectionID map[string]*common.Table,
 	db *sqlx.DB, fidColumn string) error {
 
@@ -41,7 +41,7 @@ func assertIndexesExist(
 	return nil
 }
 
-func assertIndexesExistsForTable(defaultSpatialBtreeColumns string, collection config.CollectionFeatures, table *common.Table, db *sqlx.DB) error {
+func assertIndexesExistsForTable(defaultSpatialBtreeColumns string, collection config.FeaturesCollection, table *common.Table, db *sqlx.DB) error {
 	spatialBtreeColumns := defaultSpatialBtreeColumns
 
 	// assert temporal columns are indexed if configured
