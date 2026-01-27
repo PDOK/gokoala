@@ -30,7 +30,9 @@
         "collection_version": 1,
         "display_name": "Brânbuorren 2 9131EE Ie",
         "highlight": "<b>Brânbuorren</b> 2 9131EE",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/160?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/160?f=json"
+        ],
         "score": 0.23083121776580812
       },
       "geometry": {

@@ -30,7 +30,9 @@
         "collection_version": 1,
         "display_name": "A 10 2975BA Ottoland",
         "highlight": "<b>A</b> 10 2975BA <b>Ottoland</b>",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/153?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/153?f=json"
+        ],
         "score": 0.06677279472351075
       },
       "geometry": {
