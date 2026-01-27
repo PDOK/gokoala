@@ -85,16 +85,18 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --host value            bind host for OGC server (default: "0.0.0.0") [$HOST]
-   --port value            bind port for OGC server (default: 8080) [$PORT]
-   --debug-port value      bind port for debug server (disabled by default), do not expose this port publicly (default: -1) [$DEBUG_PORT]
-   --shutdown-delay value  delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
-   --config-file value     reference to YAML configuration file [$CONFIG_FILE]
-   --theme-file value      reference to a (customized) YAML configuration file for the theme [$THEME_FILE]
-   --openapi-file value    reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
-   --enable-trailing-slash allow API calls to URLs with a trailing slash. (default: false) [$ALLOW_TRAILING_SLASH]
-   --enable-cors           enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere. (default: false) [$ENABLE_CORS]
-   --help, -h              show help
+   --host value             bind host for OGC server (default: "0.0.0.0") [$HOST]
+   --port value             bind port for OGC server (default: 8080) [$PORT]
+   --debug-port value       bind port for debug server (disabled by default), do not expose this port publicly (default: -1) [$DEBUG_PORT]
+   --shutdown-delay value   delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
+   --config-file value      reference to YAML configuration file [$CONFIG_FILE]
+   --openapi-file value     reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
+   --enable-trailing-slash  allow API calls to URLs with a trailing slash. (default: false) [$ENABLE_TRAILING_SLASH]
+   --enable-cors            enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere. (default: false) [$ENABLE_CORS]
+   --theme-file value       reference to a (customized) YAML configuration file for the theme [$THEME_FILE]
+   --rewrites-file value    path to CSV file containing rewrites used to generate suggestions. Only for OGC API Features Search. [$REWRITES_FILE]
+   --synonyms-file value    path to CSV file containing synonyms used to generate suggestions. Only for OGC API Features Search. [$SYNONYMS_FILE]
+   --help, -h               show help
 ```
 
 Example (config-file is mandatory):

@@ -3,6 +3,7 @@ package engine
 import (
 	htmltemplate "html/template"
 	"log"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -37,6 +38,7 @@ func init() {
 		"islink":        isLink,
 		"isstringslice": isStringSlice,
 		"firstupper":    firstUpper,
+		"hasfield":      hasField,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	GlobalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -169,4 +171,20 @@ func isStringSlice(v any) bool {
 // firstUpper capitalize first char in the given string
 func firstUpper(s string) string {
 	return strings.ToUpper(s[0:1]) + s[1:]
+}
+
+// hasField returns true if the field exists on the given struct
+func hasField(structRef any, fieldName string) bool {
+	v := reflect.ValueOf(structRef)
+
+	// If it's a pointer, get the element it points to
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return false
+	}
+	field := v.FieldByName(fieldName)
+
+	return field.IsValid()
 }

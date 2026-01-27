@@ -22,16 +22,16 @@ type Config struct {
 	// Version of the API. When releasing a new version which contains backwards-incompatible changes, a new major version must be released.
 	Version string `yaml:"version" json:"version" validate:"required,semver" default:"1.0.0"`
 
-	// Human friendly title of the API. Don't include "OGC API" in the title, this is added automatically.
+	// Human-friendly title of the API. Don't include "OGC API" in the title, this is added automatically.
 	Title string `yaml:"title" json:"title"  validate:"required"`
 
 	// Shorted title / abbreviation describing the API.
 	ServiceIdentifier string `yaml:"serviceIdentifier"  json:"serviceIdentifier" validate:"required"`
 
-	// Human friendly description of the API and dataset.
+	// Human-friendly description of the API and dataset.
 	Abstract string `yaml:"abstract" json:"abstract" validate:"required"`
 
-	// Licensing term that apply to this API and dataset
+	// Licensing terms that apply to this API and dataset
 	License License `yaml:"license" json:"license" validate:"required"`
 
 	// The base URL - that's the part until the OGC API landing page - under which this API is served
@@ -41,7 +41,7 @@ type Config struct {
 	// +optional
 	DatasetCatalogURL URL `yaml:"datasetCatalogUrl,omitempty" json:"datasetCatalogUrl,omitempty"`
 
-	// The languages/translations to offer, valid options are Dutch (nl) and English (en). Dutch is the default.
+	// The languages/translations to offer. Valid options are Dutch (nl) and English (en). Dutch is the default.
 	// +optional
 	AvailableLanguages []Language `yaml:"availableLanguages,omitempty" json:"availableLanguages,omitempty"`
 
@@ -58,7 +58,7 @@ type Config struct {
 	// +optional
 	Thumbnail *string `yaml:"thumbnail,omitempty" json:"thumbnail,omitempty" validate:"omitempty"`
 
-	// Keywords to make this API beter discoverable
+	// Keywords to make this API better discoverable
 	// +optional
 	Keywords []string `yaml:"keywords,omitempty" json:"keywords,omitempty"`
 
@@ -296,8 +296,8 @@ func validateConfiguredResources(config *Config) error {
 		return errors.New("thumbnail cannot be used when 'resources' isn't specified")
 	}
 	for _, coll := range config.AllCollections() {
-		if coll.Metadata != nil && coll.Metadata.Thumbnail != nil {
-			return fmt.Errorf("thumbnail for collection %s cannot be used when 'resources' isn't specified", coll.ID)
+		if coll.GetMetadata() != nil && coll.GetMetadata().Thumbnail != nil {
+			return fmt.Errorf("thumbnail for collection %s cannot be used when 'resources' isn't specified", coll.GetID())
 		}
 	}
 	if config.OgcAPI.Styles != nil {

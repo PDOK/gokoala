@@ -106,20 +106,20 @@ func TestMapRelationUsingProfile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			url, err := neturl.Parse("http://example.com")
 			require.NoError(t, err)
-			collections := config.GeoSpatialCollections{
-				config.GeoSpatialCollection{
+			collections := config.FeaturesCollections{
+				config.FeaturesCollection{
 					ID: "some_collection",
-				}, config.GeoSpatialCollection{
+				}, config.FeaturesCollection{
 					ID: "another_collection",
-				}, config.GeoSpatialCollection{
+				}, config.FeaturesCollection{
 					ID: "foo",
-				}, config.GeoSpatialCollection{
+				}, config.FeaturesCollection{
 					ID: "bar",
-				}, config.GeoSpatialCollection{
+				}, config.FeaturesCollection{
 					ID: "baz_bazoo",
-				}, config.GeoSpatialCollection{
+				}, config.FeaturesCollection{
 					ID: "baz_bazoo_boo",
-				}, config.GeoSpatialCollection{
+				}, config.FeaturesCollection{
 					ID: "baz_bazoo_boo_foo",
 				},
 			}

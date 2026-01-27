@@ -473,7 +473,7 @@ func TestTiles_TileForCollection(t *testing.T) {
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
 			tiles := NewTiles(newEngine)
-			geoDataTiles := map[string]config.Tiles{newEngine.Config.OgcAPI.Tiles.Collections[0].ID: newEngine.Config.OgcAPI.Tiles.Collections[0].Tiles.GeoDataTiles}
+			geoDataTiles := map[string]config.Tiles{newEngine.Config.OgcAPI.Tiles.Collections[0].ID: newEngine.Config.OgcAPI.Tiles.Collections[0].GeoDataTiles}
 			handler := tiles.TileForCollection(geoDataTiles)
 			handler.ServeHTTP(rr, req)
 

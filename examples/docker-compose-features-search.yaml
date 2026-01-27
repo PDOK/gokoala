@@ -41,7 +41,7 @@ services:
       - ../internal/ogc/features_search/testdata/:/testdata
       - ./:/examples
 
-  gokoala:
+  gokoala-server:
     build:
       context: ../
       dockerfile: Dockerfile
@@ -65,3 +65,22 @@ services:
       test: /bin/curl --fail http://127.0.0.1:8080 || exit 1
       interval: 1s
       retries: 30
+
+  smoketest:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    image: gokoala:local
+    depends_on:
+      gokoala-server:
+        condition: service_healthy
+      gokoala-etl:
+        condition: service_completed_successfully
+    entrypoint: # language=bash
+      - sh
+      - -c
+      - |
+        set -e
+        echo "test search (query on 'acht', expected 10 results)"
+        curl "http://gokoala:8080/search?addresses%5Brelevance%5D=0.5&addresses%5Bversion%5D=1&q=acht&f=json" | \
+          jq -e '.numberReturned | select(. == 10)'

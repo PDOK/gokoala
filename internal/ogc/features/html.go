@@ -73,7 +73,7 @@ type featurePage struct {
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
-	collection config.GeoSpatialCollection, cursor domain.Cursors,
+	collection config.FeaturesCollection, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
 	propertyFilters map[string]string,
 	configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
@@ -87,7 +87,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.GeoSpatialCollection,
+func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
 	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
@@ -101,19 +101,19 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, colle
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) toItemsPage(collection config.GeoSpatialCollection, referenceDate *time.Time,
+func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, referenceDate *time.Time,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
 	propertyFilters map[string]string, configuredPropertyFilters datasources.PropertyFiltersWithAllowedValues) ([]engine.Breadcrumb, *featureCollectionPage) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collection.ID, collection.Metadata),
-			Path: collectionsCrumb + collection.ID,
+			Name: getCollectionTitle(collection.GetID(), collection.GetMetadata()),
+			Path: collectionsCrumb + collection.GetID(),
 		},
 		{
 			Name: "Items",
-			Path: collectionsCrumb + collection.ID + "/items",
+			Path: collectionsCrumb + collection.GetID() + "/items",
 		},
 	}...)
 
@@ -122,20 +122,18 @@ func (hf *htmlFeatures) toItemsPage(collection config.GeoSpatialCollection, refe
 	}
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
-	if collection.Features != nil {
-		if collection.Features.MapSheetDownloads != nil {
-			mapSheetProps = &collection.Features.MapSheetDownloads.Properties
-		}
-		wc = collection.Features.Web
+	if collection.MapSheetDownloads != nil {
+		mapSheetProps = &collection.MapSheetDownloads.Properties
 	}
+	wc = collection.Web
 
 	pageContent := &featureCollectionPage{
 		*fc,
-		collection.ID,
-		collection.Metadata,
+		collection.GetID(),
+		collection.GetMetadata(),
 		cursor,
-		featuresURL.toPrevNextURL(collection.ID, cursor.Prev, engine.FormatHTML),
-		featuresURL.toPrevNextURL(collection.ID, cursor.Next, engine.FormatHTML),
+		featuresURL.toPrevNextURL(collection.GetID(), cursor.Prev, engine.FormatHTML),
+		featuresURL.toPrevNextURL(collection.GetID(), cursor.Next, engine.FormatHTML),
 		limit,
 		referenceDate,
 		mapSheetProps,
@@ -149,7 +147,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.GeoSpatialCollection, refe
 }
 
 func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
-	collection config.GeoSpatialCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
+	collection config.FeaturesCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 
@@ -159,7 +157,7 @@ func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
 }
 
 func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request,
-	collection config.GeoSpatialCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
+	collection config.FeaturesCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 	pageContent.ShowViewer = false // since items have no geometry
@@ -169,37 +167,36 @@ func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request,
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) toItemPage(collection config.GeoSpatialCollection, feat *domain.Feature) ([]engine.Breadcrumb, *featurePage) {
+func (hf *htmlFeatures) toItemPage(collection config.FeaturesCollection, feat *domain.Feature) ([]engine.Breadcrumb, *featurePage) {
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 		{
-			Name: getCollectionTitle(collection.ID, collection.Metadata),
-			Path: collectionsCrumb + collection.ID,
+			Name: getCollectionTitle(collection.GetID(), collection.GetMetadata()),
+			Path: collectionsCrumb + collection.GetID(),
 		},
 		{
 			Name: "Items",
-			Path: collectionsCrumb + collection.ID + "/items",
+			Path: collectionsCrumb + collection.GetID() + "/items",
 		},
 		{
 			Name: feat.ID,
-			Path: collectionsCrumb + collection.ID + "/items/" + feat.ID,
+			Path: collectionsCrumb + collection.GetID() + "/items/" + feat.ID,
 		},
 	}...)
 
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
-	if collection.Features != nil {
-		if collection.Features.MapSheetDownloads != nil {
-			mapSheetProps = &collection.Features.MapSheetDownloads.Properties
-		}
-		wc = collection.Features.Web
+
+	if collection.MapSheetDownloads != nil {
+		mapSheetProps = &collection.MapSheetDownloads.Properties
 	}
+	wc = collection.Web
 
 	pageContent := &featurePage{
 		*feat,
-		collection.ID,
+		collection.GetID(),
 		feat.ID,
-		collection.Metadata,
+		collection.GetMetadata(),
 		mapSheetProps,
 		wc,
 		true,

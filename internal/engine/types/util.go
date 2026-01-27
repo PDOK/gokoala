@@ -1,4 +1,3 @@
-// Package types package contains generic types
 package types
 
 import (
@@ -27,4 +26,12 @@ func ToInt64(v any) (int64, error) {
 	default:
 		return 0, fmt.Errorf("unsupported type: %T", v)
 	}
+}
+
+func ToInterfaceSlice[IN any, OUT any](in []IN) []OUT {
+	out := make([]OUT, len(in))
+	for i, v := range in {
+		out[i] = any(v).(OUT)
+	}
+	return out
 }

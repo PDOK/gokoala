@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -92,6 +93,81 @@ func TestNewConfig(t *testing.T) {
 	}
 }
 
+func TestAllCollections(t *testing.T) {
+	tests := []struct {
+		name          string
+		config        *Config
+		expectedOrder []string
+	}{
+		{
+			name: "should return all collections from different OGC APIs",
+			config: &Config{
+				OgcAPI: OgcAPI{
+					GeoVolumes: &OgcAPI3dGeoVolumes{
+						Collections: []GeoVolumesCollection{{ID: "volumes"}},
+					},
+					Tiles: &OgcAPITiles{
+						Collections: []TilesCollection{{ID: "tiles"}},
+					},
+					Features: &OgcAPIFeatures{
+						Collections: []FeaturesCollection{{ID: "features"}},
+					},
+				},
+			},
+			expectedOrder: []string{"features", "tiles", "volumes"}, // Alphabetical default
+		},
+		{
+			name: "should respect literal order when OgcAPICollectionOrder is provided",
+			config: &Config{
+				OgcAPICollectionOrder: []string{"tiles", "volumes", "features"},
+				OgcAPI: OgcAPI{
+					GeoVolumes: &OgcAPI3dGeoVolumes{
+						Collections: []GeoVolumesCollection{{ID: "volumes"}},
+					},
+					Tiles: &OgcAPITiles{
+						Collections: []TilesCollection{{ID: "tiles"}},
+					},
+					Features: &OgcAPIFeatures{
+						Collections: []FeaturesCollection{{ID: "features"}},
+					},
+				},
+			},
+			expectedOrder: []string{"tiles", "volumes", "features"},
+		},
+		{
+			name: "should sort by title if available and no literal order",
+			config: &Config{
+				OgcAPI: OgcAPI{
+					Features: &OgcAPIFeatures{
+						Collections: []FeaturesCollection{
+							{ID: "b", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("Z Title")}},
+							{ID: "a", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("A Title")}},
+						},
+					},
+				},
+			},
+			expectedOrder: []string{"a", "b"}, // "A Title" < "Z Title"
+		},
+		{
+			name: "should handle empty config",
+			config: &Config{
+				OgcAPI: OgcAPI{},
+			},
+			expectedOrder: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			collections := tt.config.AllCollections()
+			actualIDs := Map(collections, func(c GeoSpatialCollection) string {
+				return c.GetID()
+			})
+			assert.Equal(t, tt.expectedOrder, actualIDs)
+		})
+	}
+}
+
 func TestGeoSpatialCollections_Ordering(t *testing.T) {
 	type args struct {
 		configFile     string
@@ -144,9 +220,9 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 			require.NoError(t, err)
 			var actual []string
 			if tt.args.expectedTitles {
-				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return *item.Metadata.Title })
+				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return *item.GetMetadata().Title })
 			} else {
-				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return item.ID })
+				actual = Map(config.AllCollections(), func(item GeoSpatialCollection) string { return item.GetID() })
 			}
 			assert.ElementsMatch(t, actual, tt.args.expectedOrder)
 		})
@@ -154,44 +230,52 @@ func TestGeoSpatialCollections_Ordering(t *testing.T) {
 }
 
 func TestGeoSpatialCollections_Unique(t *testing.T) {
-	type args struct {
-		configFile            string
-		nrOfCollections       int
-		nrOfUniqueCollections int
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "should filter duplicate collections when calling Unique()",
-			args: args{
-				configFile:            "internal/engine/testdata/config_collections_unique.yaml",
-				nrOfCollections:       3,
-				nrOfUniqueCollections: 2,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			config, err := NewConfig(tt.args.configFile)
-			require.NoError(t, err)
-			assert.Len(t, config.AllCollections(), tt.args.nrOfCollections)
-			assert.Len(t, config.AllCollections().Unique(), tt.args.nrOfUniqueCollections)
-		})
-	}
+	config, err := NewConfig("internal/engine/testdata/config_collections_unique.yaml")
+	require.NoError(t, err)
+
+	assert.Len(t, config.AllCollections(), 3)
+	assert.Len(t, config.AllCollections().Unique(), 2)
+}
+
+func TestGeoSpatialCollections_Unique_WithMetadata(t *testing.T) {
+	config, err := NewConfig("internal/engine/testdata/config_collections_unique_with_metadata.yaml")
+	require.NoError(t, err)
+
+	assert.Len(t, config.AllCollections(), 3)
+
+	unique := config.AllCollections().Unique()
+	assert.Len(t, unique, 2)
+
+	uniqueColl := unique[0]
+	assert.Equal(t, "Foo Collection", *uniqueColl.GetMetadata().Title)
+	assert.Equal(t, "https://example.com/awesome.zip", uniqueColl.GetLinks().Downloads[0].AssetURL.String())
+}
+
+func TestGeoSpatialCollections_Unique_WithMetadataAndMoreLinks(t *testing.T) {
+	config, err := NewConfig("internal/engine/testdata/config_collections_unique_with_links.yaml")
+	require.NoError(t, err)
+
+	assert.Len(t, config.AllCollections(), 3)
+
+	unique := config.AllCollections().Unique()
+	assert.Len(t, unique, 2)
+
+	uniqueColl := unique[0]
+	assert.Equal(t, "Foo Collection", *uniqueColl.GetMetadata().Title)
+	assert.Equal(t, "https://example.com/awesome.gpkg", uniqueColl.GetLinks().Downloads[0].AssetURL.String())
+	assert.Equal(t, "https://example.com/awesome.zip", uniqueColl.GetLinks().Downloads[1].AssetURL.String())
 }
 
 func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	tests := []struct {
 		name string
-		g    GeoSpatialCollections
+		g    []FeaturesCollection
 		id   string
 		want bool
 	}{
 		{
 			name: "ID is present",
-			g: []GeoSpatialCollection{
+			g: []FeaturesCollection{
 				{
 					ID: "3",
 				},
@@ -207,7 +291,7 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 		},
 		{
 			name: "ID is not present",
-			g: []GeoSpatialCollection{
+			g: []FeaturesCollection{
 				{
 					ID: "3",
 				},
@@ -224,7 +308,8 @@ func TestGeoSpatialCollections_ContainsID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, tt.g.ContainsID(tt.id), "ContainsID(%v)", tt.id)
+			collections := GeoSpatialCollections(types.ToInterfaceSlice[FeaturesCollection, GeoSpatialCollection](tt.g))
+			assert.Equalf(t, tt.want, collections.ContainsID(tt.id), "ContainsID(%v)", tt.id)
 		})
 	}
 }
@@ -237,17 +322,15 @@ func TestCollectionsSRS(t *testing.T) {
 				{Srs: "EPSG:4355"},
 			},
 		},
-		Collections: GeoSpatialCollections{
-			GeoSpatialCollection{
+		Collections: []FeaturesCollection{
+			{
 				ID: "coll1",
-				Features: &CollectionEntryFeatures{
-					Datasources: &Datasources{
-						DefaultWGS84: &Datasource{},
-						Additional: []AdditionalDatasource{
-							{Srs: "EPSG:4326"},
-							{Srs: "EPSG:3857"},
-							{Srs: "EPSG:3857"},
-						},
+				Datasources: &Datasources{
+					DefaultWGS84: &Datasource{},
+					Additional: []AdditionalDatasource{
+						{Srs: "EPSG:4326"},
+						{Srs: "EPSG:3857"},
+						{Srs: "EPSG:3857"},
 					},
 				},
 			},
@@ -304,14 +387,12 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			coll: GeoSpatialCollection{
+			coll: &GeoVolumesCollection{
 				ID: "test i",
 				Metadata: &GeoSpatialCollectionMetadata{
 					Description: ptrTo("test d"),
 				},
-				GeoVolumes: &CollectionEntry3dGeoVolumes{
-					TileServerPath: ptrTo("test p"),
-				},
+				TileServerPath: ptrTo("test p"),
 			},
 			// language=json
 			want:    `{"id": "test i", "metadata": {"description": "test d"}, "tileServerPath":  "test p"}`,
@@ -331,47 +412,6 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 
 type TestEmbeddedGeoSpatialCollection struct {
 	C GeoSpatialCollection `json:"c"`
-}
-
-func TestGeoSpatialCollection_Unmarshalling_JSON(t *testing.T) {
-	tests := []struct {
-		marshalled string
-		want       *GeoSpatialCollection
-		wantErr    assert.ErrorAssertionFunc
-	}{
-		{
-			// language=json
-			marshalled: `{"id": "test i", "metadata": {"description": "test d"}, "tileServerPath":  "test p"}`,
-			want: &GeoSpatialCollection{
-				ID: "test i",
-				Metadata: &GeoSpatialCollectionMetadata{
-					Description: ptrTo("test d"),
-				},
-				GeoVolumes: &CollectionEntry3dGeoVolumes{
-					TileServerPath: ptrTo("test p"),
-				},
-			},
-			wantErr: assert.NoError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run("", func(t *testing.T) {
-			unmarshalled := &GeoSpatialCollection{}
-			err := json.Unmarshal([]byte(tt.marshalled), unmarshalled)
-			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
-				return
-			}
-			assert.Equalf(t, tt.want, unmarshalled, "json.Unmarshal")
-
-			// non-pointer
-			unmarshalledEmbedded := &TestEmbeddedGeoSpatialCollection{}
-			err = json.Unmarshal([]byte(`{"C": `+tt.marshalled+`}`), unmarshalledEmbedded)
-			if !tt.wantErr(t, err, errors.New("json.Unmarshal")) {
-				return
-			}
-			assert.Equalf(t, &TestEmbeddedGeoSpatialCollection{C: *tt.want}, unmarshalledEmbedded, "json.Unmarshal")
-		})
-	}
 }
 
 func TestOgcAPITiles_HasType(t *testing.T) {
@@ -404,12 +444,10 @@ func TestOgcAPITiles_HasType(t *testing.T) {
 		{
 			name: "Has type in Collections",
 			tiles: OgcAPITiles{
-				Collections: GeoSpatialCollections{
-					GeoSpatialCollection{
-						Tiles: &CollectionEntryTiles{
-							GeoDataTiles: Tiles{
-								Types: []TilesType{"raster", "vector"},
-							},
+				Collections: []TilesCollection{
+					{
+						GeoDataTiles: Tiles{
+							Types: []TilesType{"raster", "vector"},
 						},
 					},
 				},
@@ -420,12 +458,10 @@ func TestOgcAPITiles_HasType(t *testing.T) {
 		{
 			name: "Does not have type in Collections",
 			tiles: OgcAPITiles{
-				Collections: GeoSpatialCollections{
-					GeoSpatialCollection{
-						Tiles: &CollectionEntryTiles{
-							GeoDataTiles: Tiles{
-								Types: []TilesType{"raster", "vector"},
-							},
+				Collections: []TilesCollection{
+					{
+						GeoDataTiles: Tiles{
+							Types: []TilesType{"raster", "vector"},
 						},
 					},
 				},
@@ -465,7 +501,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 						{Srs: "EPSG:3857"},
 					},
 				},
-				Collections: []GeoSpatialCollection{},
+				Collections: []TilesCollection{},
 			},
 			srs:      "EPSG:4326",
 			expected: true,
@@ -474,13 +510,11 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 			name: "SRS found in a Collection Tiles",
 			ogcAPITiles: OgcAPITiles{
 				DatasetTiles: nil,
-				Collections: []GeoSpatialCollection{
+				Collections: []TilesCollection{
 					{
-						Tiles: &CollectionEntryTiles{
-							GeoDataTiles: Tiles{
-								SupportedSrs: []SupportedSrs{
-									{Srs: "EPSG:28992"},
-								},
+						GeoDataTiles: Tiles{
+							SupportedSrs: []SupportedSrs{
+								{Srs: "EPSG:28992"},
 							},
 						},
 					},
@@ -497,7 +531,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 						{Srs: "EPSG:4326"},
 					},
 				},
-				Collections: []GeoSpatialCollection{},
+				Collections: []TilesCollection{},
 			},
 			srs:      "EPSG:9999",
 			expected: false,
@@ -506,7 +540,7 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 			name: "Empty Top-level tiles and Collections",
 			ogcAPITiles: OgcAPITiles{
 				DatasetTiles: nil,
-				Collections:  []GeoSpatialCollection{},
+				Collections:  []TilesCollection{},
 			},
 			srs:      "EPSG:4326",
 			expected: false,
@@ -515,10 +549,8 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 			name: "Handle nil",
 			ogcAPITiles: OgcAPITiles{
 				DatasetTiles: nil,
-				Collections: []GeoSpatialCollection{
-					{
-						Tiles: nil,
-					},
+				Collections: []TilesCollection{
+					{},
 				},
 			},
 			srs:      "EPSG:4326",

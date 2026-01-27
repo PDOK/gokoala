@@ -47,9 +47,6 @@ jobs:
             go test -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
           done
 
-      - name: Benchmark
-        run: go test -v ./... -bench=. -run=^# -benchmem -count=1
-
       - name: Fail when coverage below threshold
         # Pin 3rd party action to a specific version as security best-practice.
         # Version used: https://github.com/vladopajic/go-test-coverage/releases/tag/v2.17.0

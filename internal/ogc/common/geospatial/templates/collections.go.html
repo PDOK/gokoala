@@ -10,32 +10,41 @@
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
+                {{ $clickableHeader := true }}
+
                 {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
-                {{ if or (not $coll.FeaturesSearch) ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
-                    <h2 class="card-header h5">
-                        {{ if and $coll.Metadata $coll.Metadata.Title }}
-                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
-                        {{ else }}
-                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                {{ if and (and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections)
+                          ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID)}}
+                    {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+                        {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
+                            {{ $clickableHeader = false }}
                         {{ end }}
-                    </h2>
+                    {{ end }}
+                {{ end }}
+
+                {{ if $clickableHeader }}
+                <h2 class="card-header h5">
+                    {{ if and $coll.Metadata $coll.Metadata.Title }}
+                        <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                    {{ else }}
+                        <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                    {{ end }}
+                </h2>
                 {{ else }}
-                    <h2 class="card-header h5">
-                        {{ if and $coll.Metadata $coll.Metadata.Title }}
+                <h2 class="card-header h5">
+                    {{ if and $coll.Metadata $coll.Metadata.Title }}
                         {{ $coll.Metadata.Title }}
-                        {{ else }}
+                    {{ else }}
                         {{ $coll.ID }}
-                        {{ end }}
-                    </h2>
+                    {{ end }}
+                </h2>
                 {{ end }}
 
                 <div class="card-body">
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
                         {{ markdown (truncate $coll.Metadata.Description 400) }}
                     {{ end }}
-                    {{ if not $coll.FeaturesSearch }}
                     <small class="text-body-secondary">{{ i18n "ViewCollectionAs" }} <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json" target="_blank" aria-label="{{ i18n "Collection" }} {{ i18n "As" }} JSON">JSON</a></small>
-                    {{ end }}
                 </div>
                 <ul class="list-group list-group-flush">
                     {{ if and $coll.Links $coll.Links.Downloads }}
@@ -100,22 +109,28 @@
                         {{ if not (contains "null" (last $coll.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last $coll.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
                     </li>
                     {{ end }}
-                    {{ if $coll.FeaturesSearch }}
+                    {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections }}
+                    {{ if $cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID }}
+                    {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+                        {{ if eq $collSearch.ID $coll.ID }}
                     <li class="list-group-item">
-                        <strong>{{ i18n "Version" }}</strong>: {{ $coll.FeaturesSearch.Version }}
+                        <strong>{{ i18n "Version" }}</strong>: {{ $collSearch.Version }}
                     </li>
                     <li class="list-group-item">
-                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $coll.FeaturesSearch.DisplayNameTemplate }}</code>
+                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $collSearch.DisplayNameTemplate }}</code>
                     </li>
                         {{/* collection reference is only required for remotely hosted collections */}}
-                        {{ if not ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
+                        {{ if $collSearch.IsRemoteFeatureCollection $coll.ID }}
                         <li class="list-group-item">
                             <strong>{{ i18n "OGCCollections" }}</strong>
-                            <ul>{{- range $o, $collRef := $coll.FeaturesSearch.CollectionRefs -}}
+                            <ul>{{- range $o, $collRef := $collSearch.CollectionRefs -}}
                             <li><a href="{{ $collRef.CollectionURL $baseUrl }}">{{ $collRef.CollectionID }}</a></li>
                             {{- end -}}</ul>
                         </li>
                         {{ end }}
+                        {{ end }}
+                    {{ end }}
+                    {{ end }}
                     {{ end }}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}

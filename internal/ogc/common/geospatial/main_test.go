@@ -54,9 +54,9 @@ func TestNewCollections(t *testing.T) {
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: &config.OgcAPI3dGeoVolumes{
 							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: config.GeoSpatialCollections{
-								config.GeoSpatialCollection{ID: "buildings"},
-								config.GeoSpatialCollection{ID: "obstacles"},
+							Collections: config.GeoVolumesCollections{
+								config.GeoVolumesCollection{ID: "buildings"},
+								config.GeoVolumesCollection{ID: "obstacles"},
 							},
 						},
 					},

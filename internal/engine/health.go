@@ -14,9 +14,8 @@ func newHealthEndpoint(e *Engine) {
 		switch {
 		case tilesConfig.DatasetTiles != nil && *tilesConfig.DatasetTiles.HealthCheck.Enabled:
 			target, err = url.Parse(tilesConfig.DatasetTiles.TileServer.String() + *tilesConfig.DatasetTiles.HealthCheck.TilePath)
-		case len(tilesConfig.Collections) > 0 && tilesConfig.Collections[0].Tiles != nil &&
-			*tilesConfig.Collections[0].Tiles.GeoDataTiles.HealthCheck.Enabled:
-			target, err = url.Parse(tilesConfig.Collections[0].Tiles.GeoDataTiles.TileServer.String() + *tilesConfig.Collections[0].Tiles.GeoDataTiles.HealthCheck.TilePath)
+		case len(tilesConfig.Collections) > 0 && *tilesConfig.Collections[0].GeoDataTiles.HealthCheck.Enabled:
+			target, err = url.Parse(tilesConfig.Collections[0].GeoDataTiles.TileServer.String() + *tilesConfig.Collections[0].GeoDataTiles.HealthCheck.TilePath)
 		default:
 			log.Println("cannot determine health check tilepath or tiles health check is disabled, falling back to basic check")
 		}

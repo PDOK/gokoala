@@ -87,14 +87,14 @@ func (t *ThreeDimensionalGeoVolumes) Tile() http.HandlerFunc {
 		}
 
 		tileServerPath := collectionID
-		if collection.GeoVolumes != nil && collection.GeoVolumes.TileServerPath != nil {
-			tileServerPath = *collection.GeoVolumes.TileServerPath
+		if collection.TileServerPath != nil {
+			tileServerPath = *collection.TileServerPath
 		}
 
 		tilePath := chi.URLParam(r, "*")
 
 		contentType := ""
-		if collection.GeoVolumes != nil && collection.GeoVolumes.IsDtm {
+		if collection.IsDtm {
 			// DTM has a specialized mediatype, although application/octet-stream will also work with Cesium
 			contentType = engine.MediaTypeQuantizedMesh
 		}
@@ -114,8 +114,8 @@ func (t *ThreeDimensionalGeoVolumes) tileSet(w http.ResponseWriter, r *http.Requ
 	}
 
 	tileServerPath := collectionID
-	if collection.GeoVolumes != nil && collection.GeoVolumes.TileServerPath != nil {
-		tileServerPath = *collection.GeoVolumes.TileServerPath
+	if collection.TileServerPath != nil {
+		tileServerPath = *collection.TileServerPath
 	}
 
 	path, _ := url.JoinPath("/", tileServerPath, tileSet)
@@ -135,7 +135,7 @@ func (t *ThreeDimensionalGeoVolumes) reverseProxy(w http.ResponseWriter, r *http
 	t.engine.ReverseProxyAndValidate(w, r, target, prefer204, contentTypeOverwrite, t.validateResponse)
 }
 
-func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*config.GeoSpatialCollection, error) {
+func (t *ThreeDimensionalGeoVolumes) idToCollection(cid string) (*config.GeoVolumesCollection, error) {
 	for _, collection := range t.engine.Config.OgcAPI.GeoVolumes.Collections {
 		if collection.ID == cid {
 			return &collection, nil
