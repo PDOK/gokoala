@@ -53,7 +53,7 @@ type Collection3dGeoVolumes struct {
 	// +optional
 	IsDtm bool `yaml:"isDtm,omitempty" json:"isDtm,omitempty"`
 
-	// Optional flag to indicate that the collection is implicit.
+	// Optional flag to indicate that the collection uses implicit tiling.
 	// +optional
 	IsImplicit bool `yaml:"isImplicit,omitempty" json:"isImplicit,omitempty"`
 

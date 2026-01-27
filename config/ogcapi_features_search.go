@@ -105,14 +105,14 @@ func (cfs CollectionFeaturesSearch) Merge(other GeoSpatialCollection) GeoSpatial
 	return cfs
 }
 
-// IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.
-// In other words: it references a local feature collection and doesn't point to a remote one.
-func (cfs CollectionFeaturesSearch) IsLocalFeatureCollection(collID string) bool {
+// IsRemoteFeatureCollection true when the given collection ID is defined as a feature collection outside this config.
+// In other words: it references a remote feature collection and doesn't point to a local one in this dataset.
+func (cfs CollectionFeaturesSearch) IsRemoteFeatureCollection(collID string) bool {
 	if len(cfs.CollectionRefs) == 1 {
 		collRef := cfs.CollectionRefs[0]
-		return collRef.CollectionID == collID && collRef.APIBaseURL.URL == nil
+		return collRef.CollectionID != collID || collRef.APIBaseURL.URL != nil
 	}
-	return false
+	return true
 }
 
 // +kubebuilder:object:generate=true

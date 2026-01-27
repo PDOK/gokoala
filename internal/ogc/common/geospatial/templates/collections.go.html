@@ -10,11 +10,19 @@
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
+                {{ $clickableHeader := true }}
+
                 {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
                 {{ if and (and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections)
-                          ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID)
-                          ($coll.IsLocalFeatureCollection $coll.ID)
-                }}
+                          ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID)}}
+                    {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+                        {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
+                            {{ $clickableHeader = false }}
+                        {{ end }}
+                    {{ end }}
+                {{ end }}
+
+                {{ if $clickableHeader }}
                 <h2 class="card-header h5">
                     {{ if and $coll.Metadata $coll.Metadata.Title }}
                         <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
@@ -103,21 +111,25 @@
                     {{ end }}
                     {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections }}
                     {{ if $cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID }}
+                    {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+                        {{ if eq $collSearch.ID $coll.ID }}
                     <li class="list-group-item">
-                        <strong>{{ i18n "Version" }}</strong>: {{ $coll.Version }}
+                        <strong>{{ i18n "Version" }}</strong>: {{ $collSearch.Version }}
                     </li>
                     <li class="list-group-item">
-                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $coll.DisplayNameTemplate }}</code>
+                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $collSearch.DisplayNameTemplate }}</code>
                     </li>
                         {{/* collection reference is only required for remotely hosted collections */}}
-                        {{ if not ($coll.IsLocalFeatureCollection $coll.ID) }}
+                        {{ if $collSearch.IsRemoteFeatureCollection $coll.ID }}
                         <li class="list-group-item">
                             <strong>{{ i18n "OGCCollections" }}</strong>
-                            <ul>{{- range $o, $collRef := $coll.CollectionRefs -}}
+                            <ul>{{- range $o, $collRef := $collSearch.CollectionRefs -}}
                             <li><a href="{{ $collRef.CollectionURL $baseUrl }}">{{ $collRef.CollectionID }}</a></li>
                             {{- end -}}</ul>
                         </li>
                         {{ end }}
+                        {{ end }}
+                    {{ end }}
                     {{ end }}
                     {{ end }}
                 </ul>

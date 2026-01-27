@@ -243,6 +243,77 @@ func TestIsStringSlice(t *testing.T) {
 	}
 }
 
+func TestHasField(t *testing.T) {
+	type sample struct {
+		Exported   string
+		unexported int
+	}
+
+	var nilSamplePtr *sample = nil
+
+	tests := []struct {
+		name      string
+		structRef any
+		fieldName string
+		want      bool
+	}{
+		{
+			name:      "struct value - existing exported field",
+			structRef: sample{Exported: "x"},
+			fieldName: "Exported",
+			want:      true,
+		},
+		{
+			name:      "struct value - existing unexported field",
+			structRef: sample{unexported: 1},
+			fieldName: "unexported",
+			want:      true,
+		},
+		{
+			name:      "struct value - missing field",
+			structRef: sample{},
+			fieldName: "DoesNotExist",
+			want:      false,
+		},
+		{
+			name:      "pointer to struct - existing field",
+			structRef: &sample{Exported: "x"},
+			fieldName: "Exported",
+			want:      true,
+		},
+		{
+			name:      "pointer to struct (nil)",
+			structRef: nilSamplePtr,
+			fieldName: "Exported",
+			want:      false,
+		},
+		{
+			name:      "non-struct (int)",
+			structRef: 123,
+			fieldName: "Anything",
+			want:      false,
+		},
+		{
+			name:      "pointer to non-struct",
+			structRef: func() any { x := 1; return &x }(),
+			fieldName: "Anything",
+			want:      false,
+		},
+		{
+			name:      "nil interface",
+			structRef: nil,
+			fieldName: "Anything",
+			want:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, hasField(tt.structRef, tt.fieldName))
+		})
+	}
+}
+
 func ptrTo(s string) *string {
 	return &s
 }

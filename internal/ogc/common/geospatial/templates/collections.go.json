@@ -150,10 +150,11 @@
             }
           {{end}}
         {{end}}
-        {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections }}
-          {{ if $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections.ContainsID $coll.ID }}
+        {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections }}
+          {{ if $cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID }}
+            {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+            {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
             {{/* collection reference is only required for remotely hosted collections */}}
-            {{ if not ($coll.IsLocalFeatureCollection $coll.ID) }}
               ,
               {{ range $o, $collRef := $coll.CollectionRefs -}}
               {{ if $o }},{{ end }}
@@ -164,6 +165,7 @@
                 "href": "{{ $collRef.APIBaseURL }}/collections/{{ $collRef.CollectionID }}"
               }
               {{- end }}
+            {{- end }}
             {{- end }}
           {{end}}
         {{end}}

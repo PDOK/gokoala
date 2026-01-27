@@ -81,7 +81,7 @@
     }
     {{ end }}
     {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-      {{ with getfield .Params.Collection "IsDtm" }}
+      {{ if hasfield .Params.Collection "IsDtm" }}
       {{ if not .Params.Collection.IsDtm }}
       ,
       {
@@ -183,7 +183,7 @@
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   ,
   "content" : [
-      {{ with getfield .Params.Collection "IsDtm" }}
+      {{ if hasfield .Params.Collection "IsDtm" }}
       {{ if not .Params.Collection.IsDtm }}
       {
         "rel" : "original",

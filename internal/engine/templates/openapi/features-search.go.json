@@ -32,10 +32,10 @@
             "$ref": "#/components/parameters/bbox"
           },
           {
-            "$ref": "#/components/parameters/bbox-crs"
+            "$ref": "#/components/parameters/bbox-crs-search"
           },
           {
-            "$ref": "#/components/parameters/crs"
+            "$ref": "#/components/parameters/crs-search"
           },
           {
             "$ref": "#/components/parameters/f-features"
@@ -632,7 +632,7 @@
 {{/*          }*/}}
 {{/*        }*/}}
       },
-      "bbox-crs": {
+      "bbox-crs-search": {
         "name": "bbox-crs",
         "in": "query",
         "description": "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude.",
@@ -651,7 +651,7 @@
         "style": "form",
         "explode": false
       },
-      "crs": {
+      "crs-search": {
         "name": "crs",
         "in": "query",
         "description": "The coordinate reference system of the geometries in the response. Default is WGS84 longitude/latitude",

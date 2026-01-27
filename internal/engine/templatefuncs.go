@@ -38,7 +38,7 @@ func init() {
 		"islink":        isLink,
 		"isstringslice": isStringSlice,
 		"firstupper":    firstUpper,
-		"getfield":      getField,
+		"hasfield":      hasField,
 	}
 	sprigFuncs := sprig.FuncMap() // we also support https://github.com/go-task/slim-sprig functions
 	GlobalTemplateFuncs = combineFuncMaps(customFuncs, sprigFuncs)
@@ -173,20 +173,18 @@ func firstUpper(s string) string {
 	return strings.ToUpper(s[0:1]) + s[1:]
 }
 
-// getField returns the value of a field in a struct
-func getField(data any, fieldName string) any {
-	v := reflect.ValueOf(data)
+// hasField returns true if the field exists on the given struct
+func hasField(structRef any, fieldName string) bool {
+	v := reflect.ValueOf(structRef)
 
 	// If it's a pointer, get the element it points to
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
 	if v.Kind() != reflect.Struct {
-		return nil
+		return false
 	}
 	field := v.FieldByName(fieldName)
-	if field.IsValid() {
-		return field.Interface()
-	}
-	return nil
+
+	return field.IsValid()
 }
