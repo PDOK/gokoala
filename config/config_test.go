@@ -12,6 +12,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func init() {
@@ -563,6 +564,75 @@ func TestOgcAPITiles_HasProjection(t *testing.T) {
 			assert.Equal(t, tt.expected, tt.ogcAPITiles.HasProjection(tt.srs))
 		})
 	}
+}
+
+func TestFeaturesCollection_MarshalUnmarshal_JSON(t *testing.T) {
+	in := FeaturesCollection{
+		ID: "buildings",
+		FeatureProperties: &FeatureProperties{
+			Properties:                []string{"id", "name"},
+			PropertiesExcludeUnknown:  true,
+			PropertiesInSpecificOrder: true,
+		},
+		Filters: FeatureFilters{
+			Properties: []PropertyFilter{
+				{Name: "status"},
+			},
+		},
+	}
+
+	b, err := json.Marshal(in)
+	require.NoError(t, err)
+
+	// language=json
+	assert.JSONEq(t, `{
+		"id": "buildings",
+		"filters": { "properties": [ { "name": "status" } ] },
+		"properties": ["id", "name"],
+		"propertiesExcludeUnknown": true,
+		"propertiesInSpecificOrder": true
+	}`, string(b))
+
+	var out FeaturesCollection
+	require.NoError(t, json.Unmarshal(b, &out))
+
+	require.NotNil(t, out.FeatureProperties, "embedded FeatureProperties should be allocated when fields are present")
+	assert.Equal(t, in.ID, out.ID)
+	assert.Equal(t, in.Properties, out.Properties)
+	assert.Equal(t, in.PropertiesExcludeUnknown, out.PropertiesExcludeUnknown)
+	assert.Equal(t, in.PropertiesInSpecificOrder, out.PropertiesInSpecificOrder)
+
+	require.Len(t, out.Filters.Properties, 1)
+	assert.Equal(t, "status", out.Filters.Properties[0].Name)
+}
+
+func TestFeaturesCollection_MarshalUnmarshal_YAML(t *testing.T) {
+	in := FeaturesCollection{
+		ID: "roads",
+		FeatureProperties: &FeatureProperties{
+			Properties:                []string{"id", "type"},
+			PropertiesExcludeUnknown:  true,
+			PropertiesInSpecificOrder: true,
+		},
+	}
+
+	yamlBytes, err := yaml.Marshal(in)
+	require.NoError(t, err)
+
+	yamlText := string(yamlBytes)
+	assert.Contains(t, yamlText, "id: roads")
+	assert.Contains(t, yamlText, "properties:\n    - id\n    - type")
+	assert.Contains(t, yamlText, "propertiesExcludeUnknown: true")
+	assert.Contains(t, yamlText, "propertiesInSpecificOrder: true")
+
+	var out FeaturesCollection
+	require.NoError(t, yaml.Unmarshal(yamlBytes, &out))
+
+	require.NotNil(t, out.FeatureProperties, "embedded FeatureProperties should be allocated when fields are present")
+	assert.Equal(t, in.ID, out.ID)
+	assert.Equal(t, in.Properties, out.Properties)
+	assert.Equal(t, in.PropertiesExcludeUnknown, out.PropertiesExcludeUnknown)
+	assert.Equal(t, in.PropertiesInSpecificOrder, out.PropertiesInSpecificOrder)
 }
 
 func ptrTo[T any](val T) *T {
