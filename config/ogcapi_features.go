@@ -1,12 +1,10 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"slices"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
-	"gopkg.in/yaml.v3"
 )
 
 // +kubebuilder:object:generate=true
@@ -151,17 +149,6 @@ type FeaturesCollection struct {
 	// Configuration specifically related to HTML/Web representation
 	// +optional
 	Web *WebConfig `yaml:"web,omitempty" json:"web,omitempty"`
-}
-
-// MarshalJSON custom because inlining only works on embedded structs.
-// Value instead of pointer receiver because only that way it can be used for both.
-func (cf FeaturesCollection) MarshalJSON() ([]byte, error) {
-	return json.Marshal(cf)
-}
-
-// UnmarshalJSON parses a string to FeaturesCollection.
-func (cf FeaturesCollection) UnmarshalJSON(b []byte) error {
-	return yaml.Unmarshal(b, cf)
 }
 
 func (cf FeaturesCollection) GetID() string {
