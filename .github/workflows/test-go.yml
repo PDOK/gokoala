@@ -40,7 +40,7 @@ jobs:
       - name: Test generating example CRD
         run: hack/generate-crd.sh
 
-      - name: Fuzz
+      - name: Fuzz Testing
         run: |
           for pkg in $(go list ./...); do
             echo "Fuzzing $pkg"

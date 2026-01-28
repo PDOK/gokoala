@@ -2,39 +2,71 @@ package config
 
 import (
 	"net/url"
+	"slices"
 
 	"github.com/PDOK/gokoala/internal/engine/types"
-	"gopkg.in/yaml.v3"
+	"github.com/PDOK/gokoala/internal/engine/util"
 )
 
 // +kubebuilder:object:generate=true
 type OgcAPIFeaturesSearch struct {
-	// Builds on top of the OGC API Features configuration.
-	OgcAPIFeatures `yaml:",inline" json:",inline"`
+	// Basemap to use in embedded viewer on the HTML pages.
+	// +kubebuilder:default="OSM"
+	// +kubebuilder:validation:Enum=OSM;BRT
+	// +optional
+	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
 
 	// Collections available for search through this API
 	Collections FeaturesSearchCollections `yaml:"collections" json:"collections" validate:"required,dive"`
+
+	// One or more datasources to get the features from (geopackages, postgres, etc).
+	// Optional since you can also define datasources at the collection level
+	// +optional
+	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
+
+	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
+	// since it has a significant performance impact when dealing with large JSON payloads.
+	//
+	// +kubebuilder:default=true
+	// +optional
+	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+
+	// Maximum number of decimals allowed in geometry coordinates. When not specified (default value of 0) no limit is enforced.
+	// +optional
+	// +kubebuilder:validation:Minimum=0
+	MaxDecimals int `yaml:"maxDecimals,omitempty" json:"maxDecimals,omitempty" default:"0"`
+
+	// Force timestamps in features to the UTC timezone.
+	//
+	// +kubebuilder:default=false
+	// +optional
+	ForceUTC bool `yaml:"forceUtc,omitempty" json:"forceUtc,omitempty"`
 
 	// Settings related to the search API/index.
 	// +optional
 	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings"`
 }
 
-// UnmarshalYAML Handles YAML unmarshalling conflict with the "collections" field
-// present in both OgcAPIFeaturesSearch and embedded OgcAPIFeatures.
-func (c *OgcAPIFeaturesSearch) UnmarshalYAML(value *yaml.Node) error {
-	type base OgcAPIFeatures // empty struct/copy to avoid a possible infinite loop
-	if err := value.Decode((*base)(&c.OgcAPIFeatures)); err != nil {
-		return err
-	}
-	// Favor the 'collections' field from OgcAPIFeaturesSearch
-	pairSize := 2
-	for i := 0; i < len(value.Content); i += pairSize {
-		if value.Content[i].Value == "collections" {
-			return value.Content[i+1].Decode(&c.Collections)
+func (fs *OgcAPIFeaturesSearch) CollectionsSRS() []string {
+	return fs.CollectionSRS("")
+}
+
+func (fs *OgcAPIFeaturesSearch) CollectionSRS(_ string) []string {
+	uniqueSRSs := make(map[string]struct{})
+	if fs.Datasources != nil {
+		for _, d := range fs.Datasources.OnTheFly {
+			for _, srs := range d.SupportedSrs {
+				uniqueSRSs[srs.Srs] = struct{}{}
+			}
+		}
+		for _, d := range fs.Datasources.Additional {
+			uniqueSRSs[d.Srs] = struct{}{}
 		}
 	}
-	return nil
+	result := util.Keys(uniqueSRSs)
+	slices.Sort(result)
+
+	return result
 }
 
 type FeaturesSearchCollections []FeaturesSearchCollection
