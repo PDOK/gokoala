@@ -111,6 +111,28 @@ func TestNewCollections_Collections(t *testing.T) {
 				statusCode:   http.StatusOK,
 			},
 		},
+		{
+			name: "search config, check references to related collections",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=json",
+			},
+			want: want{
+				bodyContains: "Related OGC API Features collection 'buildings' in HTML representation",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "search config, check version",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=json",
+			},
+			want: want{
+				bodyContains: "\"version\": 1,",
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
