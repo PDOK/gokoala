@@ -135,6 +135,7 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      - internal/ogc/features/cql/parser$
   settings:
     cyclop:
       # The maximal code complexity to report.

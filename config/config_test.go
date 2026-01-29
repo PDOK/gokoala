@@ -411,10 +411,6 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 	}
 }
 
-type TestEmbeddedGeoSpatialCollection struct {
-	C GeoSpatialCollection `json:"c"`
-}
-
 func TestOgcAPITiles_HasType(t *testing.T) {
 	tests := []struct {
 		name      string
