@@ -36,7 +36,10 @@ ogcApi:
         # reference to common metadata
         metadata: *collectionMetadata
         tileServerPath: "NewYork/3DTiles"
-        uriTemplate3dTiles: "3DTiles/{level}/{x}/{y}.b3m"
+      - id: newyork-dtm
+        # reference to common metadata
+        metadata: *collectionMetadata
+        tileServerPath: "NewYork/QuantizedMesh"
   features:
     datasources:
       defaultWGS84:

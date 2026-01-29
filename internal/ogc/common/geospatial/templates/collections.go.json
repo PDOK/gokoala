@@ -265,7 +265,7 @@
                     "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json",
                     "collectionType": "3d-container"
                   }
-                  {{ else if and $coll.GeoVolumes $coll.GeoVolumes.IsDtm }}
+                  {{ else if $coll3d.IsDtm }}
                   {
                     "rel" : "original",
                     "type" : "application/json",

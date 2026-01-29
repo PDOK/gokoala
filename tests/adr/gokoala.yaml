@@ -107,7 +107,6 @@ ogcApi:
     collections:
       - id: addresses  # same collection as the tiles/features
         tileServerPath: "gebouwen"
-        uriTemplate3dTiles: "t/{level}/{x}/{y}.glb"
 
   styles:
     default: dummy-style
