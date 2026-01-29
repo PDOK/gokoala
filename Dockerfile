@@ -23,7 +23,7 @@ RUN set -eux && \
       libcurl4-openssl-dev=*  \
       libssl-dev=*  \
       libsqlite3-mod-spatialite=* \
-      openjdk-21-jre=* && \
+      openjdk-17-jre-headless=* && \
     rm -rf /var/lib/apt/lists/*
 
 # install controller-gen (used by go generate)

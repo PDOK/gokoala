@@ -16,14 +16,14 @@ java_version_raw=$(java -version 2>&1 | head -n 1)
 # extract major version number (first integer).
 java_major=$(echo "$java_version_raw" | grep -oE '[0-9]+' | head -n 1)
 
-if [[ "$java_major" =~ ^[0-9]+$ ]] && (( java_major >= 21 )); then
-  echo "Java 21 or newer detected (version $java_major). Using ANTLR directly without Docker"
+if [[ "$java_major" =~ ^[0-9]+$ ]] && (( java_major >= 17 )); then
+  echo "Java 17 or newer detected (version $java_major). Using ANTLR directly without Docker"
 
   # Run against CQL grammar (note: when updating this command also change it below for the Docker variant)
   cd internal/ogc/features/cql/parser
   java -Xmx256M -jar ../../../../../hack/antlr/antlr-${ANTLR_VERSION}-complete.jar -Dlanguage=Go -no-visitor -package parser CqlLexer.g4 CqlParser.g4
 else
-  echo "Java 21+ not found, using Docker to run ANTLR"
+  echo "Java 17+ not found, using Docker to run ANTLR"
 
   # Build ANTLR container
   echo "build ANTLR container"
