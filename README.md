@@ -267,10 +267,13 @@ Design principles:
   `engine`.
   > :warning: The other way around is not allowed!
 - Document public APIs with [godoc](https://go.dev/blog/godoc)
-- Geospatial related configuration is done through the config file, technical
+- Code generation should be hidden behind the `go generate ./...` command.
+- Geospatial-related configuration is done through the config file, technical
   configuration (host/port/etc) is done through CLI flags/env variables.
 - Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
+- It should be possible to fully build GoKoala through Docker without having to
+  install Go/Node/Java/etc locally.
 
 ### Build/run as Go application
 
