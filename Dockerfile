@@ -16,7 +16,7 @@ COPY . /go/src/service
 ENV CGO_ENABLED=1
 ENV GOOS=linux
 
-# install compile-time dependencies
+# install compile-time dependencies (Java is required for ANTLR).
 RUN set -eux && \
     apt-get update && \
     apt-get install --no-install-recommends -y  \

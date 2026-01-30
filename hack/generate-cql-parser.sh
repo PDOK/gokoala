@@ -8,8 +8,9 @@ GOKOALA_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 cd "${GOKOALA_ROOT}"
 
 # ANTLR version used, should match version of github.com/antlr4-go/antlr in go.mod
-# Tip: grab new versions from https://www.antlr.org/download/antlr-${ANTLR_VERSION}-complete.jar.
 ANTLR_VERSION=4.13.1
+
+ANTLR_PARAMS="-Dlanguage=Go -no-visitor -package parser CqlLexer.g4 CqlParser.g4"
 
 # store output of `java -version`
 java_version_raw=$(java -version 2>&1 | head -n 1)
@@ -21,7 +22,7 @@ if [[ "$java_major" =~ ^[0-9]+$ ]] && (( java_major >= 17 )); then
 
   # Run against CQL grammar (note: when updating this command also change it below for the Docker variant)
   cd internal/ogc/features/cql/parser
-  java -Xmx256M -jar ../../../../../hack/antlr/antlr-${ANTLR_VERSION}-complete.jar -Dlanguage=Go -no-visitor -package parser CqlLexer.g4 CqlParser.g4
+  java -Xmx256M -jar ../../../../../hack/antlr/antlr-${ANTLR_VERSION}-complete.jar "${ANTLR_PARAMS}"
 else
   echo "Java 17+ not found, using Docker to run ANTLR"
 
@@ -32,7 +33,7 @@ else
   # Run against CQL grammar (note: when updating this command also change it above for the plain Java variant)
   echo "running ANTLR to generate CQL parser"
   cd internal/ogc/features/cql/parser
-  docker run --rm -v `pwd`/:/work -w /work antlr:local -Dlanguage=Go -no-visitor -package parser CqlLexer.g4 CqlParser.g4
+  docker run --rm -v `pwd`/:/work -w /work antlr:local "${ANTLR_PARAMS}"
 fi
 echo "finished generating CQL parser"
 

@@ -1,4 +1,4 @@
-// Code generated from /work/CqlParser.g4 by ANTLR 4.13.1. DO NOT EDIT.
+// Code generated from CqlParser.g4 by ANTLR 4.13.1. DO NOT EDIT.
 
 package parser // CqlParser
 import (
