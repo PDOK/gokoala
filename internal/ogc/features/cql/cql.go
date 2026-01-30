@@ -22,4 +22,6 @@ func ParseToSQL(cql string) string {
 	// result
 	tree := cqlParser.CqlFilter()
 	return tree.ToStringTree(nil, cqlParser)
+
+	// TODO: implement listener to translate parse tree to SQL (either via AST or directly).
 }
