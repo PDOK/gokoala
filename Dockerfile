@@ -16,13 +16,14 @@ COPY . /go/src/service
 ENV CGO_ENABLED=1
 ENV GOOS=linux
 
-# install sqlite-related compile-time dependencies
+# install compile-time dependencies (Java is required for ANTLR).
 RUN set -eux && \
     apt-get update && \
     apt-get install --no-install-recommends -y  \
       libcurl4-openssl-dev=*  \
       libssl-dev=*  \
-      libsqlite3-mod-spatialite=* && \
+      libsqlite3-mod-spatialite=* \
+      openjdk-17-jre-headless=* && \
     rm -rf /var/lib/apt/lists/*
 
 # install controller-gen (used by go generate)
