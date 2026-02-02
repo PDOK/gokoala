@@ -33,14 +33,14 @@ export function intercept(geofix: string, realmaps: boolean = Cypress.env('realm
 }
 
 interface Prop {
-  [key: string]: string | number
+  [key: string]: string | number | string[]
 }
 
 export function mountFeatureComponent(
   aprojection: string,
   abackground: 'OSM' | 'BRT' | undefined = 'OSM',
   amode: 'auto' | 'default' | undefined = 'default',
-  aprop: Prop = { itemsUrl: 'https://test/items' }
+  aprop: Prop = { itemUrls: ['https://test/items'] }
 ) {
   const prop: Prop = {
     box: createOutputSpy('boxSpy'),
@@ -67,7 +67,7 @@ export function mountFeatureComponent(
     const viewport = map.getViewport()
     const position = viewport.getBoundingClientRect()
     cy.log(`left: ${position.left}, top: ${position.top}, width: ${position.width}, height: ${position.height}`)
-    cy.log(JSON.stringify(comp1.component.itemsUrl))
+    cy.log(JSON.stringify(comp1.component.itemUrls))
   })
 
   cy.wait('@geo')

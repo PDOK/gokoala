@@ -1,5 +1,15 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
-import { Feature, Map as OLMap, MapBrowserEvent, Overlay, View } from 'ol'
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+} from '@angular/core'
+import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { defaults as defaultControls } from 'ol/control'
 
@@ -14,7 +24,7 @@ import { get as getProjection, getPointResolution, Projection, transform } from 
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
-import { take } from 'rxjs/operators'
+import { mergeMap } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { DataUrl, defaultMapping, FeatureService, ProjectionMapping } from '../shared/services/feature.service'
 import { getRijksdriehoek } from '../shared/model/map-projection'
@@ -24,6 +34,7 @@ import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { NGXLogger } from 'ngx-logger'
+import { from, Subject, takeUntil } from 'rxjs'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,7 +59,7 @@ export enum InitialView {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
-export class FeatureViewComponent implements OnChanges, AfterViewInit {
+export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy {
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
 
@@ -67,7 +78,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   get showFillExtentButton() {
     return this._showFillExtentButton
   }
-  @Input() itemsUrl!: string
+  @Input() itemUrls: string[] = []
   private _projection: ProjectionMapping = defaultMapping
 
   @Input() backgroundMap: BackgroundMap = 'OSM'
@@ -97,6 +108,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   })
   features: FeatureLike[] = []
 
+  private _destroy$ = new Subject<void>()
+
   constructor(
     private el: ElementRef,
     private featureService: FeatureService,
@@ -115,12 +128,14 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapElm: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
     this.map.setTarget(mapElm)
-    const featuresUrl: DataUrl = { url: this.itemsUrl, dataMapping: this._projection }
-    this.featureService
-      .getFeatures(featuresUrl)
-      .pipe(take(1))
+    const featuresUrls: DataUrl[] = this.itemUrls.map(itemUrl => ({ url: itemUrl, dataMapping: this._projection }))
+    from(featuresUrls)
+      .pipe(
+        mergeMap(dataUrl => this.featureService.getFeatures(dataUrl)),
+        takeUntil(this._destroy$)
+      )
       .subscribe(data => {
-        this.features = data
+        this.features = [...this.features, ...data]
         this.map.getLayers().clear()
         this.changeView()
         this.loadFeatures(this.features)
@@ -175,10 +190,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
 
   ngOnChanges(changes: NgChanges<FeatureViewComponent>) {
     if (
-      changes.itemsUrl?.previousValue !== changes.itemsUrl?.currentValue ||
+      changes.itemUrls?.previousValue !== changes.itemUrls?.currentValue ||
       changes.projection?.previousValue !== changes.projection?.currentValue
     ) {
-      if (changes.itemsUrl?.currentValue) {
+      if (changes.itemUrls?.currentValue) {
         this.init()
       } else if (changes.projection?.currentValue) {
         this.changeView()
@@ -364,7 +379,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
             const featureId = feature.getId()
             if (featureId) {
               const items = 'items'
-              const itemsUrl = this.itemsUrl
+              const itemsUrl = feature.getProperties()['href']
               const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
               const link = currentUrl.protocol + '//' + currentUrl.host + currentUrl.pathname + '/' + featureId
               tooltipContent.innerHTML = '<a href="' + link + '">' + featureId + '</a>'
@@ -405,5 +420,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     const pointResolution = getPointResolution(view.getProjection(), 1, center)
     const resolution = scale / (pointResolution * inchesPerMeter * dpi)
     return parseFloat(resolution.toFixed(6))
+  }
+
+  ngOnDestroy() {
+    this._destroy$.next()
+    this._destroy$.complete()
   }
 }

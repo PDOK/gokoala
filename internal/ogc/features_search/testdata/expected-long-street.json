@@ -30,7 +30,9 @@
         "collection_version": 1,
         "display_name": "Ir. Mr. Dr. van Waterschoot van der Grachtstraat 29-GB01 1234 AB Heerlen",
         "highlight": "<b>Ir</b>. <b>Mr</b>. <b>Dr</b>. <b>van</b> <b>Waterschoot</b> <b>van</b> <b>der</b> <b>Grachtstraat</b> 29-GB01 1234 AB",
-        "href": "https://example.com/ogc/v1/collections/addresses/items/159?f=json",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/159?f=json"
+        ],
         "score": 0.12475880384445191
       },
       "geometry": {
