@@ -1,4 +1,14 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, Output } from '@angular/core'
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+} from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
 import { defaults as defaultControls } from 'ol/control'
@@ -25,7 +35,7 @@ import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { getPointResolution, get as getProjection, transform } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
-import { from } from 'rxjs'
+import { from, Subject, takeUntil } from 'rxjs'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,7 +60,7 @@ export enum InitialView {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
-export class FeatureViewComponent implements OnChanges, AfterViewInit {
+export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy {
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
 
@@ -99,6 +109,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
   })
   features: FeatureLike[] = []
 
+  private _destroy$ = new Subject<void>()
+
   constructor(
     private el: ElementRef,
     private featureService: FeatureService,
@@ -121,7 +133,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     from(featuresUrls)
       .pipe(
         mergeMap(dataUrl => this.featureService.getFeatures(dataUrl)),
-        take(1)
+        takeUntil(this._destroy$)
       )
       .subscribe(data => {
         this.features = [...this.features, ...data]
@@ -409,5 +421,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit {
     const pointResolution = getPointResolution(view.getProjection(), 1, center)
     const resolution = scale / (pointResolution * inchesPerMeter * dpi)
     return parseFloat(resolution.toFixed(6))
+  }
+
+  ngOnDestroy() {
+    this._destroy$.next()
+    this._destroy$.complete()
   }
 }
