@@ -45,7 +45,7 @@ projectenTests
           labelField: 'label',
           labelOptions: optionstring,
           fillColor: 'rgba(0,0,255,0)',
-          itemsUrl: 'https://test/items',
+          itemUrls: ['https://test/items'],
         }
         mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
         cy.get('.innersvg').should('not.exist')
@@ -73,7 +73,7 @@ projectenTests
             labelField: 'label',
             labelOptions: optionstring,
             fillColor: 'rgba(0,0,255,0)',
-            itemsUrl: 'https://test/items',
+            itemUrls: ['https://test/items'],
           }
           mountFeatureComponent(i.projection, 'OSM', 'auto', prop)
           cy.get('.innersvg').should('not.exist')
@@ -102,7 +102,7 @@ projectenTests
           labelField: 'label',
           labelOptions: optionstring,
           fillColor: 'rgba(0,0,255,0)',
-          itemsUrl: 'https://test/items',
+          itemUrls: ['https://test/items'],
           maxFitScale: 3000,
         }
         mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
