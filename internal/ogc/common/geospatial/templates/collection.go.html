@@ -132,14 +132,19 @@
                     </h2>
                     <div class="card-body">
                         <ul>
-                            {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.Has3DTiles }}
+                            {{ if hasfield .Params.Collection "IsDtm" }}
+                            {{ if not .Params.Collection.IsDtm }}
                                 <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/3dtiles" aria-label="{{ i18n "GoTo"}} 3D Tiles">3D Tiles</a></li>
                             {{ end }}
-                            {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.HasDTM }}
+                            {{ if .Params.Collection.IsDtm }}
                                 <li>{{ i18n "GoTo" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/quantized-mesh" aria-label="{{ i18n "GoTo"}} Quantized Mesh DTM">Quantized Mesh DTM</a></li>
                             {{ end }}
-                            {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.URL3DViewer }}
-                                <li>{{ i18n "ViewIn" }} <a href="{{ .Params.Collection.GeoVolumes.URL3DViewer }}" target="_blank" aria-label="{{ i18n "ViewIn" }} 3D Viewer">3D Viewer</a></li>
+                            {{ end }}
+
+                            {{ if hasfield .Params.Collection "URL3DViewer" }}
+                            {{ if .Params.Collection.URL3DViewer }}
+                                <li>{{ i18n "ViewIn" }} <a href="{{ .Params.Collection.URL3DViewer }}" target="_blank" aria-label="{{ i18n "ViewIn" }} 3D Viewer">3D Viewer</a></li>
+                            {{ end }}
                             {{ end }}
                         </ul>
                     </div>

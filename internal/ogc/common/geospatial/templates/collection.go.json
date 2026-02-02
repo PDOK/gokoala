@@ -81,7 +81,8 @@
     }
     {{ end }}
     {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
-      {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.Has3DTiles }}
+      {{ if hasfield .Params.Collection "IsDtm" }}
+      {{ if not .Params.Collection.IsDtm }}
       ,
       {
         "rel" : "items",
@@ -90,7 +91,7 @@
         "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/3dtiles?f=json"
       }
       {{ end }}
-      {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.HasDTM }}
+      {{ if .Params.Collection.IsDtm }}
       ,
       {
         "rel" : "items",
@@ -98,6 +99,7 @@
         "title" : "Digital Terrain Model '{{ .Params.Collection.ID }}' in Quantized Mesh format",
         "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/quantized-mesh?f=json"
       }
+      {{ end }}
       {{ end }}
     {{ end }}
     {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.Collections }}
@@ -181,7 +183,8 @@
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   ,
   "content" : [
-      {{ if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.Has3DTiles }}
+      {{ if hasfield .Params.Collection "IsDtm" }}
+      {{ if not .Params.Collection.IsDtm }}
       {
         "rel" : "original",
         "type" : "application/json+3dtiles",
@@ -189,7 +192,7 @@
         "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/3dtiles?f=json",
         "collectionType": "3d-container"
       }
-      {{ else if and .Params.Collection.GeoVolumes .Params.Collection.GeoVolumes.HasDTM }}
+      {{ else if .Params.Collection.IsDtm }}
       {
         "rel" : "original",
         "type" : "application/json",
@@ -197,6 +200,7 @@
         "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/quantized-mesh?f=json",
         "collectionType": "3d-container"
       }
+      {{ end }}
       {{ end }}
   ]
   {{ end }}

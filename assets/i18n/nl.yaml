@@ -73,7 +73,7 @@ Searching: Zoeken...
 NoResultsFound: Geen resultaten gevonden
 RelevanceHeader: Relevantie
 CollectionsHeader: Collecties
-SearchHelpText: Zoekterm moet minimaal drie tekens lang zijn.
+SearchHelpText: Zoekterm moet minimaal twee tekens lang zijn.
 NoCollectionSelectedText: Er moet minimaal één collectie geselecteerd zijn.
 
 # Tile/TileMatrixSet page

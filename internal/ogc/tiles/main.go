@@ -102,15 +102,12 @@ func NewTiles(e *engine.Engine) *Tiles {
 	// Collection-level tiles (geodata tiles in OGC spec)
 	geoDataTiles := map[string]config.Tiles{}
 	for _, coll := range e.Config.OgcAPI.Tiles.Collections {
-		if coll.Tiles == nil {
-			continue
-		}
 		renderTilesTemplates(e, &coll, templateData{
-			coll.Tiles.GeoDataTiles,
+			coll.GeoDataTiles,
 			e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
 			util.Cast(config.AllTileProjections),
 		})
-		geoDataTiles[coll.ID] = coll.Tiles.GeoDataTiles
+		geoDataTiles[coll.ID] = coll.GeoDataTiles
 	}
 	if len(geoDataTiles) != 0 {
 		e.Router.Get(g.CollectionsPath+"/{collectionId}"+tilesPath, tiles.TilesetsListForCollection())
@@ -330,18 +327,18 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 	}
 }
 
-func renderTilesTemplates(e *engine.Engine, collection *config.GeoSpatialCollection, data templateData) {
+func renderTilesTemplates(e *engine.Engine, collection *config.TilesCollection, data templateData) {
 	var breadcrumbs []engine.Breadcrumb
 	path := tilesPath
 	collectionID := ""
 	if collection != nil {
-		collectionID = collection.ID
+		collectionID = collection.GetID()
 		path = g.CollectionsPath + "/" + collectionID + tilesPath
 
 		breadcrumbs = collectionsBreadcrumb
 		breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
 			{
-				Name: getCollectionTitle(collectionID, collection.Metadata),
+				Name: getCollectionTitle(collectionID, collection.GetMetadata()),
 				Path: collectionsCrumb + collectionID,
 			},
 			{

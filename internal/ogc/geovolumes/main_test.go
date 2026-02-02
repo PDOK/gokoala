@@ -30,13 +30,9 @@ func init() {
 
 func TestThreeDimensionalGeoVolume_Tile(t *testing.T) {
 	type fields struct {
-		configFile       string
-		url              string
-		containerID      string
-		tilePathPrefix   string
-		tileMatrix       string
-		tileRow          string
-		tileColAndSuffix string
+		configFile  string
+		url         string
+		containerID string
 	}
 	type want struct {
 		body       string
@@ -48,57 +44,45 @@ func TestThreeDimensionalGeoVolume_Tile(t *testing.T) {
 		want   want
 	}{
 		{
-			name: "container_1/0/0/0/0",
+			name: "container_1",
 			fields: fields{
-				configFile:       "internal/ogc/geovolumes/testdata/config_minimal_3d.yaml",
-				url:              "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
-				containerID:      "container_1",
-				tilePathPrefix:   "0",
-				tileMatrix:       "0",
-				tileRow:          "0",
-				tileColAndSuffix: "0",
+				configFile:  "internal/ogc/geovolumes/testdata/config_minimal_3d.yaml",
+				url:         "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				containerID: "container_1",
 			},
 			want: want{
-				body:       "/container_1/0/0/0/0",
+				body:       "/container_1",
 				statusCode: http.StatusOK,
 			},
 		},
 		{
-			name: "container_1/0/0/0/0 - DTM",
+			name: "container_1 - DTM",
 			fields: fields{
-				configFile:       "internal/ogc/geovolumes/testdata/config_dtm.yaml",
-				url:              "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
-				containerID:      "container_1",
-				tilePathPrefix:   "0",
-				tileMatrix:       "0",
-				tileRow:          "0",
-				tileColAndSuffix: "0",
+				configFile:  "internal/ogc/geovolumes/testdata/config_dtm.yaml",
+				url:         "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				containerID: "container_1",
 			},
 			want: want{
-				body:       "/container_1/0/0/0/0",
+				body:       "/container_1",
 				statusCode: http.StatusOK,
 			},
 		},
 		{
-			name: "container_2/1/2/3/4",
+			name: "container_2",
 			fields: fields{
-				configFile:       "internal/ogc/geovolumes/testdata/config_minimal_3d.yaml",
-				url:              "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
-				containerID:      "container_2",
-				tilePathPrefix:   "1",
-				tileMatrix:       "2",
-				tileRow:          "3",
-				tileColAndSuffix: "4",
+				configFile:  "internal/ogc/geovolumes/testdata/config_minimal_3d.yaml",
+				url:         "http://localhost:8080/collections/:3dContainerId/:tileMatrixSetId/:tileMatrix/:tileRow/:tileCol",
+				containerID: "container_2",
 			},
 			want: want{
-				body:       "/container_2/1/2/3/4",
+				body:       "/container_2",
 				statusCode: http.StatusOK,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := createTileRequest(tt.fields.url, tt.fields.containerID, tt.fields.tilePathPrefix, tt.fields.tileMatrix, tt.fields.tileRow, tt.fields.tileColAndSuffix)
+			req, err := createTileRequest(tt.fields.url, tt.fields.containerID)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -260,15 +244,11 @@ func createMockServer() (*httptest.ResponseRecorder, *httptest.Server) {
 	return rr, ts
 }
 
-func createTileRequest(url string, containerID string, tilePathPrefix string, tileMatrix string, tileRow string, tileColAndSuffix string) (*http.Request, error) {
+func createTileRequest(url string, containerID string) (*http.Request, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	rctx := chi.NewRouteContext()
 
 	rctx.URLParams.Add("3dContainerId", containerID)
-	rctx.URLParams.Add("tilePathPrefix", tilePathPrefix)
-	rctx.URLParams.Add("tileMatrix", tileMatrix)
-	rctx.URLParams.Add("tileRow", tileRow)
-	rctx.URLParams.Add("tileColAndSuffix", tileColAndSuffix)
 
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 

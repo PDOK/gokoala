@@ -1,12 +1,12 @@
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { get as getProj, ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
-import { initProj4 } from '../../map-projection'
+import { initProj4 } from '../model/map-projection'
 import { FeatureLike } from 'ol/Feature'
-import { Link } from '../../link'
+import { Link } from '../model/link'
 
 export type PointGeoJSON = {
   coordinates: Array<number>
@@ -82,18 +82,18 @@ export class FeatureService {
   ) {}
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string): Observable<FeatureGeoJSON[]> {
-    const url = new URL('search', window.location.origin)
-    url.searchParams.append('q', q)
-    if (crs) url.searchParams.append('crs', crs)
-    for (const key in searchParams) {
-      url.searchParams.append(`${key}[relevance]`, searchParams[key].toString())
-      url.searchParams.append(`${key}[version]`, '1')
+    let params = new HttpParams().set('q', q)
+    if (crs) {
+      params = params.set('crs', crs)
     }
-    return this.http.get<FeatureCollectionGeoJSON>(url.toString()).pipe(map(res => res.features))
+    for (const key in searchParams) {
+      params = params.append(`${key}[relevance]`, searchParams[key].toString())
+      params = params.append(`${key}[version]`, '1')
+    }
+    return this.http.get<FeatureCollectionGeoJSON>('search', { params }).pipe(map(res => res.features))
   }
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
-    this.logger.debug('Getfeatures')
     this.logger.debug(JSON.stringify(url))
     const dataproj = getProj(url.dataMapping.dataProjection)!
     this.logger.debug(dataproj.getAxisOrientation()) // Ensure the projection is initialized

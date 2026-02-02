@@ -104,9 +104,9 @@ func Test_newOpenAPI(t *testing.T) {
 					OgcAPI: gokoalaconfig.OgcAPI{
 						GeoVolumes: &gokoalaconfig.OgcAPI3dGeoVolumes{
 							TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: gokoalaconfig.GeoSpatialCollections{
-								gokoalaconfig.GeoSpatialCollection{ID: "feature1"},
-								gokoalaconfig.GeoSpatialCollection{ID: "feature2"},
+							Collections: gokoalaconfig.GeoVolumesCollections{
+								gokoalaconfig.GeoVolumesCollection{ID: "feature1"},
+								gokoalaconfig.GeoVolumesCollection{ID: "feature2"},
 							},
 						},
 					},
@@ -159,9 +159,9 @@ func Test_newOpenAPI(t *testing.T) {
 					OgcAPI: gokoalaconfig.OgcAPI{
 						GeoVolumes: &gokoalaconfig.OgcAPI3dGeoVolumes{
 							TileServer: gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: gokoalaconfig.GeoSpatialCollections{
-								gokoalaconfig.GeoSpatialCollection{ID: "feature1"},
-								gokoalaconfig.GeoSpatialCollection{ID: "feature2"},
+							Collections: gokoalaconfig.GeoVolumesCollections{
+								gokoalaconfig.GeoVolumesCollection{ID: "feature1"},
+								gokoalaconfig.GeoVolumesCollection{ID: "feature2"},
 							},
 						},
 						Tiles: &gokoalaconfig.OgcAPITiles{
@@ -175,16 +175,14 @@ func Test_newOpenAPI(t *testing.T) {
 								Default: 20,
 								Max:     2000,
 							},
-							Collections: []gokoalaconfig.GeoSpatialCollection{
+							Collections: gokoalaconfig.FeaturesCollections{
 								{
 									ID: "foobar",
-									Features: &gokoalaconfig.CollectionEntryFeatures{
-										Datasources: &gokoalaconfig.Datasources{
-											DefaultWGS84: &gokoalaconfig.Datasource{
-												GeoPackage: &gokoalaconfig.GeoPackage{
-													Local: &gokoalaconfig.GeoPackageLocal{
-														File: "./examples/resources/addresses-crs84.gpkg",
-													},
+									Datasources: &gokoalaconfig.Datasources{
+										DefaultWGS84: &gokoalaconfig.Datasource{
+											GeoPackage: &gokoalaconfig.GeoPackage{
+												Local: &gokoalaconfig.GeoPackageLocal{
+													File: "./examples/resources/addresses-crs84.gpkg",
 												},
 											},
 										},

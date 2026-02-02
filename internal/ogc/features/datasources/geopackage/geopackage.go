@@ -61,7 +61,7 @@ type GeoPackage struct {
 	maxBBoxSizeToUseWithRTree int
 }
 
-func NewGeoPackage(collections config.GeoSpatialCollections, gpkgConfig config.GeoPackage,
+func NewGeoPackage(collections config.FeaturesCollections, gpkgConfig config.GeoPackage,
 	transformOnTheFly bool, maxDecimals int, forceUTC bool) (*GeoPackage, error) {
 
 	loadDriver()

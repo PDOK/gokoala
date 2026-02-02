@@ -12,6 +12,4 @@ ogcApi:
     tileServer: http://localhost:9091
     collections:
       - id: container_1
-        uriTemplate3dTiles: "tiles/{level}/{x}/{y}.glb"
       - id: container_2
-        uriTemplate3dTiles: "tiles2/{level}/{x}/{y}.i3d"

@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
@@ -453,7 +454,8 @@ func newEngine(t *testing.T) (*engine.Engine, map[features.DatasourceKey]ds.Data
 	theEngine.Config.OgcAPI.FeaturesSearch.MaxDecimals = 5
 	theEngine.Config.OgcAPI.FeaturesSearch.ForceUTC = true
 
-	datasources := features.CreateDatasources(theEngine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, theEngine.RegisterShutdownHook)
+	datasources := features.CreateDatasources(
+		config.NewSearchConfig(theEngine.Config.OgcAPI.FeaturesSearch), theEngine.RegisterShutdownHook)
 	axisOrderBySRID := features.DetermineAxisOrder(datasources)
 
 	return theEngine, datasources, axisOrderBySRID

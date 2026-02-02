@@ -73,7 +73,7 @@ Searching: Searching...
 NoResultsFound: No results found
 RelevanceHeader: Relevance
 CollectionsHeader: Collections
-SearchHelpText: Search query must be at least three characters long.
+SearchHelpText: Search query must be at least two characters long.
 NoCollectionSelectedText: A minimum of one collection must be selected.
 
 # Tile/TileMatrixSet page

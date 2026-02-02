@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// In case you need to debug, it might be helpful to disable parallel
+// test execution by *temporality* removing all t.Parallel() calls.
 func TestFeatures(t *testing.T) {
 	t.Parallel()
 

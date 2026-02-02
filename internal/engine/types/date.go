@@ -1,4 +1,3 @@
-// Package types package contains generic types
 package types
 
 import (

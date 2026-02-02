@@ -54,9 +54,9 @@ func TestNewCollections(t *testing.T) {
 					OgcAPI: config.OgcAPI{
 						GeoVolumes: &config.OgcAPI3dGeoVolumes{
 							TileServer: config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
-							Collections: config.GeoSpatialCollections{
-								config.GeoSpatialCollection{ID: "buildings"},
-								config.GeoSpatialCollection{ID: "obstacles"},
+							Collections: config.GeoVolumesCollections{
+								config.GeoVolumesCollection{ID: "buildings"},
+								config.GeoVolumesCollection{ID: "obstacles"},
 							},
 						},
 					},
@@ -108,6 +108,28 @@ func TestNewCollections_Collections(t *testing.T) {
 			},
 			want: want{
 				bodyContains: "\"title\": \"container_2\"",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "search config, check references to related collections",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=json",
+			},
+			want: want{
+				bodyContains: "Related OGC API Features collection 'buildings' in HTML representation",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "search config, check version",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=json",
+			},
+			want: want{
+				bodyContains: "\"version\": 1,",
 				statusCode:   http.StatusOK,
 			},
 		},

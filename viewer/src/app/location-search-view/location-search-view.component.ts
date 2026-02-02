@@ -49,7 +49,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   features$?: Observable<FeatureGeoJSON[]>
 
   query: string = ''
-  readonly MIN_QUERY_LENGTH = 3
+  readonly MIN_QUERY_LENGTH = 2
   searchParams: { [key: string]: number } = {}
 
   searchOpen = signal(false)
@@ -75,7 +75,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (!changes['projection'].isFirstChange() && changes['projection'].currentValue !== changes['projection'].previousValue) {
+    if (!changes['projection']?.isFirstChange() && changes['projection']?.currentValue !== changes['projection']?.previousValue) {
       this.form.controls.location.patchValue('', { emitEvent: true })
     }
   }
