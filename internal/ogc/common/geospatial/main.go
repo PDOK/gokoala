@@ -3,7 +3,6 @@ package geospatial
 import (
 	"net/http"
 
-	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/go-chi/chi/v5"
 )
@@ -19,7 +18,7 @@ type Collections struct {
 
 // Wrapper around collection+type to make it easier to access in the "collection" template.
 type collectionWithType struct {
-	Collection config.GeoSpatialCollection
+	Collection any
 	Type       CollectionType
 }
 
@@ -40,22 +39,23 @@ func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 			engine.NewTemplateKey(templatesDir+"collections.go.html"))
 
 		for _, coll := range e.Config.AllCollections().Unique() {
-			title := coll.ID
-			if coll.Metadata != nil && coll.Metadata.Title != nil {
-				title = *coll.Metadata.Title
+			title := coll.GetID()
+			if coll.GetMetadata() != nil && coll.GetMetadata().Title != nil {
+				title = *coll.GetMetadata().Title
 			}
 			collectionBreadcrumbs := collectionsBreadcrumbs
 			collectionBreadcrumbs = append(collectionBreadcrumbs, []engine.Breadcrumb{
 				{
 					Name: title,
-					Path: "collections/" + coll.ID,
+					Path: "collections/" + coll.GetID(),
 				},
 			}...)
-			collWithType := collectionWithType{coll, types.Get(coll.ID)}
-			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, nil,
-				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.ID)))
-			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.ID, collWithType, collectionBreadcrumbs,
-				engine.NewTemplateKey(templatesDir+"collection.go.html", engine.WithInstanceName(coll.ID)))
+
+			collWithType := collectionWithType{coll, types.Get(coll.GetID())}
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, nil,
+				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.GetID())))
+			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, collectionBreadcrumbs,
+				engine.NewTemplateKey(templatesDir+"collection.go.html", engine.WithInstanceName(coll.GetID())))
 		}
 	}
 

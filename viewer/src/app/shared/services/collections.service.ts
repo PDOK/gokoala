@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http'
 import { map, Observable } from 'rxjs'
-import { Link } from '../../link'
+import { Link } from '../model/link'
 
 export interface Collection {
   id: string
@@ -22,8 +22,7 @@ export class CollectionsService {
   private _http = inject(HttpClient)
 
   getCollections(): Observable<Collection[]> {
-    const url = new URL('collections', window.location.origin)
-    url.searchParams.append('f', 'json')
-    return this._http.get<CollectionResponse>(url.toString()).pipe(map(res => res.collections))
+    const params = new HttpParams().set('f', 'json')
+    return this._http.get<CollectionResponse>('collections', { params }).pipe(map(res => res.collections))
   }
 }

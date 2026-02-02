@@ -1,14 +1,142 @@
 package config
 
-import "net/url"
+import (
+	"net/url"
+	"slices"
+
+	"github.com/PDOK/gokoala/internal/engine/types"
+	"github.com/PDOK/gokoala/internal/engine/util"
+)
 
 // +kubebuilder:object:generate=true
 type OgcAPIFeaturesSearch struct {
-	// Builds on top of the OGC API Features configuration.
-	OgcAPIFeatures `yaml:",inline" json:",inline"`
+	// Basemap to use in embedded viewer on the HTML pages.
+	// +kubebuilder:default="OSM"
+	// +kubebuilder:validation:Enum=OSM;BRT
+	// +optional
+	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
+
+	// Collections available for search through this API
+	Collections FeaturesSearchCollections `yaml:"collections" json:"collections" validate:"required,dive"`
+
+	// One or more datasources to get the features from (geopackages, postgres, etc).
+	// Optional since you can also define datasources at the collection level
+	// +optional
+	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
+
+	// Whether GeoJSON/JSON-FG responses will be validated against the OpenAPI spec
+	// since it has a significant performance impact when dealing with large JSON payloads.
+	//
+	// +kubebuilder:default=true
+	// +optional
+	ValidateResponses *bool `yaml:"validateResponses,omitempty" json:"validateResponses,omitempty" default:"true"` // ptr due to https://github.com/creasty/defaults/issues/49
+
+	// Maximum number of decimals allowed in geometry coordinates. When not specified (default value of 0) no limit is enforced.
+	// +optional
+	// +kubebuilder:validation:Minimum=0
+	MaxDecimals int `yaml:"maxDecimals,omitempty" json:"maxDecimals,omitempty" default:"0"`
+
+	// Force timestamps in features to the UTC timezone.
+	//
+	// +kubebuilder:default=false
+	// +optional
+	ForceUTC bool `yaml:"forceUtc,omitempty" json:"forceUtc,omitempty"`
 
 	// Settings related to the search API/index.
-	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings" validate:"required"`
+	// +optional
+	SearchSettings SearchSettings `yaml:"searchSettings" json:"searchSettings"`
+}
+
+func (fs *OgcAPIFeaturesSearch) CollectionsSRS() []string {
+	return fs.CollectionSRS("")
+}
+
+func (fs *OgcAPIFeaturesSearch) CollectionSRS(_ string) []string {
+	uniqueSRSs := make(map[string]struct{})
+	if fs.Datasources != nil {
+		for _, d := range fs.Datasources.OnTheFly {
+			for _, srs := range d.SupportedSrs {
+				uniqueSRSs[srs.Srs] = struct{}{}
+			}
+		}
+		for _, d := range fs.Datasources.Additional {
+			uniqueSRSs[d.Srs] = struct{}{}
+		}
+	}
+	result := util.Keys(uniqueSRSs)
+	slices.Sort(result)
+
+	return result
+}
+
+type FeaturesSearchCollections []FeaturesSearchCollection
+
+// ContainsID check if a given collection - by ID - exists.
+func (csfs FeaturesSearchCollections) ContainsID(id string) bool {
+	for _, coll := range csfs {
+		if coll.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// +kubebuilder:object:generate=true
+//
+//nolint:recvcheck
+type FeaturesSearchCollection struct {
+	// Unique ID of the collection
+	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
+	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+
+	// Metadata describing the collection contents
+	// +optional
+	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+
+	// Links pertaining to this collection (e.g., downloads, documentation)
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
+	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
+	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
+
+	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
+	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
+
+	// Version of the collection exposed through the API.
+	// +kubebuilder:default=1
+	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
+
+	// Links to the individual OGC API (feature) collections that are searchable in this collection.
+	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
+}
+
+func (cfs FeaturesSearchCollection) GetID() string {
+	return cfs.ID
+}
+
+func (cfs FeaturesSearchCollection) GetMetadata() *GeoSpatialCollectionMetadata {
+	return cfs.Metadata
+}
+
+func (cfs FeaturesSearchCollection) GetLinks() *CollectionLinks {
+	return cfs.Links
+}
+
+func (cfs FeaturesSearchCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	cfs.Metadata = mergeMetadata(cfs, other)
+	cfs.Links = mergeLinks(cfs, other)
+	return cfs
+}
+
+// IsRemoteFeatureCollection true when the given collection ID is defined as a feature collection outside this config.
+// In other words: it references a remote feature collection and doesn't point to a local one in this dataset.
+func (cfs FeaturesSearchCollection) IsRemoteFeatureCollection(collID string) bool {
+	if len(cfs.CollectionRefs) == 1 {
+		collRef := cfs.CollectionRefs[0]
+		return collRef.CollectionID != collID || collRef.APIBaseURL.URL != nil
+	}
+	return true
 }
 
 // +kubebuilder:object:generate=true
@@ -50,39 +178,6 @@ type SearchSettings struct {
 }
 
 // +kubebuilder:object:generate=true
-type CollectionEntryFeaturesSearch struct {
-	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
-	// TODO: remove optional marker once collections are refactored
-	// +optional
-	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
-
-	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
-	// TODO: remove optional marker once collections are refactored
-	// +optional
-	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
-
-	// Version of the collection exposed through the API.
-	// TODO: remove optional marker once collections are refactored
-	// +optional
-	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
-
-	// Links to the individual OGC API (feature) collections that are searchable in this collection.
-	// TODO: remove optional marker once collections are refactored
-	// +optional
-	CollectionRefs []RelatedOGCAPIFeaturesCollection `yaml:"collectionRefs,omitempty" json:"collectionRefs,omitempty"`
-}
-
-// IsLocalFeatureCollection true when the given collection ID is defined as a feature collection in this config.
-// In other words: it references a local feature collection and doesn't point to a remote one.
-func (cfs *CollectionEntryFeaturesSearch) IsLocalFeatureCollection(collID string) bool {
-	if len(cfs.CollectionRefs) == 1 {
-		collRef := cfs.CollectionRefs[0]
-		return collRef.CollectionID == collID && collRef.APIBaseURL.URL == nil
-	}
-	return false
-}
-
-// +kubebuilder:object:generate=true
 type RelatedOGCAPIFeaturesCollection struct {
 	// Base URL/Href to the OGC Features API.
 	//
@@ -105,13 +200,64 @@ type RelatedOGCAPIFeaturesCollection struct {
 	CollectionID string `yaml:"collection" json:"collection" validate:"required,lowercase_id"`
 }
 
-func (ogcColl *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {
-	if ogcColl.APIBaseURL.URL != nil && ogcColl.APIBaseURL.String() != "" {
-		baseURL = ogcColl.APIBaseURL
+func (rel *RelatedOGCAPIFeaturesCollection) CollectionURL(baseURL URL) string {
+	if rel.APIBaseURL.URL != nil && rel.APIBaseURL.String() != "" {
+		baseURL = rel.APIBaseURL
 	}
-	result, err := url.JoinPath(baseURL.String(), "collections", ogcColl.CollectionID, "items")
+	result, err := url.JoinPath(baseURL.String(), "collections", rel.CollectionID, "items")
 	if err != nil {
 		return ""
 	}
 	return result
+}
+
+// FeaturesAndSearchConfig Convince wrapper for OGC API Features and/or Features Search
+type FeaturesAndSearchConfig struct {
+	features *OgcAPIFeatures
+	search   *OgcAPIFeaturesSearch
+}
+
+func NewFeaturesConfig(features *OgcAPIFeatures) FeaturesAndSearchConfig {
+	return FeaturesAndSearchConfig{features, nil}
+}
+
+func NewSearchConfig(search *OgcAPIFeaturesSearch) FeaturesAndSearchConfig {
+	return FeaturesAndSearchConfig{nil, search}
+}
+
+func (fas FeaturesAndSearchConfig) Datasources() *Datasources {
+	if fas.search != nil {
+		return fas.search.Datasources
+	}
+	return fas.features.Datasources
+}
+
+func (fas FeaturesAndSearchConfig) Collections() GeoSpatialCollections {
+	if fas.search != nil {
+		result := types.ToInterfaceSlice[FeaturesSearchCollection, GeoSpatialCollection](fas.search.Collections)
+		return result
+	}
+	result := types.ToInterfaceSlice[FeaturesCollection, GeoSpatialCollection](fas.features.Collections)
+	return result
+}
+
+func (fas FeaturesAndSearchConfig) FeatureCollections() FeaturesCollections {
+	if fas.features != nil {
+		return fas.features.Collections
+	}
+	return nil
+}
+
+func (fas FeaturesAndSearchConfig) MaxDecimals() int {
+	if fas.search != nil {
+		return fas.search.MaxDecimals
+	}
+	return fas.features.MaxDecimals
+}
+
+func (fas FeaturesAndSearchConfig) ForceUTC() bool {
+	if fas.search != nil {
+		return fas.search.ForceUTC
+	}
+	return fas.features.ForceUTC
 }

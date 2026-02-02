@@ -1,6 +1,7 @@
 package ogc
 
 import (
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/common/core"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -33,7 +34,8 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	}
 	// Features Search API, build on top of the OGC Features API
 	if engine.Config.OgcAPI.FeaturesSearch != nil {
-		ds := features.CreateDatasources(engine.Config.OgcAPI.FeaturesSearch.OgcAPIFeatures, engine.RegisterShutdownHook)
+		ds := features.CreateDatasources(
+			config.NewSearchConfig(engine.Config.OgcAPI.FeaturesSearch), engine.RegisterShutdownHook)
 		ao := features.DetermineAxisOrder(ds)
 		_, err := features_search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile)
 		if err != nil {

@@ -19,7 +19,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // readMetadata reads metadata such as available feature tables, the schema of each table,
 // available filters, etc. from the Postgres database. Terminates on failure.
-func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fidColumn, externalFidColumn, schemaName string) (
+func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidColumn, externalFidColumn, schemaName string) (
 	tableByCollectionID map[string]*common.Table,
 	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
 
@@ -29,21 +29,14 @@ func readMetadata(db *pgxpool.Pool, collections config.GeoSpatialCollections, fi
 	}
 	log.Println(metadata)
 
-	var collectionsWithoutSearch config.GeoSpatialCollections
-	for i := range collections {
-		if collections[i].FeaturesSearch == nil {
-			collectionsWithoutSearch = append(collectionsWithoutSearch, collections[i])
-		}
-	}
-	if len(collectionsWithoutSearch) == 0 {
+	if len(collections) == 0 {
 		return
 	}
-
-	tableByCollectionID, err = readFeatureTables(collectionsWithoutSearch, db, fidColumn, externalFidColumn, schemaName)
+	tableByCollectionID, err = readFeatureTables(collections, db, fidColumn, externalFidColumn, schemaName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collectionsWithoutSearch, db)
+	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +60,7 @@ func readDriverMetadata(db *pgxpool.Pool) (string, error) {
 // collection ID -> feature table metadata. We match each feature table to the collection ID by looking at the
 // 'f_table_name' column. Also, in case there's no exact match between 'collection ID' and 'f_table_name' we use
 // the explicitly configured table name (from the YAML config).
-func readFeatureTables(collections config.GeoSpatialCollections, db *pgxpool.Pool,
+func readFeatureTables(collections config.FeaturesCollections, db *pgxpool.Pool,
 	fidColumn, externalFidColumn, schemaName string) (map[string]*common.Table, error) {
 
 	query := `
@@ -99,11 +92,11 @@ where
 		}
 		hasCollection := false
 		for _, collection := range collections {
-			if table.Name == collection.ID {
-				result[collection.ID] = &table
+			if table.Name == collection.GetID() {
+				result[collection.GetID()] = &table
 				hasCollection = true
 			} else if collection.HasTableName(table.Name) {
-				result[collection.ID] = &table
+				result[collection.GetID()] = &table
 				hasCollection = true
 			}
 		}
@@ -128,22 +121,19 @@ where
 }
 
 func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.GeoSpatialCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
 
 	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
 	for _, collection := range collections {
-		if collection.Features == nil {
-			continue
-		}
-		result[collection.ID] = make(map[string]ds.PropertyFilterWithAllowedValues)
-		featTable := featTableByCollection[collection.ID]
+		result[collection.GetID()] = make(map[string]ds.PropertyFilterWithAllowedValues)
+		featTable := featTableByCollection[collection.GetID()]
 
-		for _, pf := range collection.Features.Filters.Properties {
+		for _, pf := range collection.Filters.Properties {
 			// the result should contain ALL configured property filters, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
-			result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
+			result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
 			if pf.AllowedValues != nil {
-				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
+				result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
 
 				continue
 			}
@@ -175,7 +165,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 							"newline which isn't a valid (OpenAPI) enum value. The value is: %s", v)
 					}
 				}
-				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
+				result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
 
 				continue
 			}
@@ -186,7 +176,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 }
 
 func readSchema(db *pgxpool.Pool, table common.Table, fidColumn, externalFidColumn, schemaName string,
-	collections config.GeoSpatialCollections) (*d.Schema, error) {
+	collections config.FeaturesCollections) (*d.Schema, error) {
 
 	query := `
 select

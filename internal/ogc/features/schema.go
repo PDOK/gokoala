@@ -41,11 +41,11 @@ func (f *Features) Schema() http.HandlerFunc {
 		switch format {
 		case engine.FormatHTML:
 			key = engine.NewTemplateKey(schemaHTML,
-				engine.WithInstanceName(collection.ID),
+				engine.WithInstanceName(collection.GetID()),
 				f.engine.WithNegotiatedLanguage(w, r))
 		case engine.FormatJSON:
 			key = engine.NewTemplateKey(schemaJSON,
-				engine.WithInstanceName(collection.ID),
+				engine.WithInstanceName(collection.GetID()),
 				f.engine.WithNegotiatedLanguage(w, r),
 				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema)) // JSON format, but specific mediatype.
 		default:
@@ -136,9 +136,9 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 	return schemasByCollection
 }
 
-func requiresSpecificOrder(collection config.GeoSpatialCollection) bool {
-	if collection.Features != nil && collection.Features.FeatureProperties != nil {
-		return collection.Features.PropertiesInSpecificOrder
+func requiresSpecificOrder(collection config.FeaturesCollection) bool {
+	if collection.FeatureProperties != nil {
+		return collection.PropertiesInSpecificOrder
 	}
 
 	return false
@@ -146,9 +146,9 @@ func requiresSpecificOrder(collection config.GeoSpatialCollection) bool {
 
 func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, *string) {
 	var description *string
-	if collection.Metadata != nil {
-		description = collection.Metadata.Description
+	if collection.GetMetadata() != nil {
+		description = collection.GetMetadata().Description
 	}
 
-	return getCollectionTitle(collection.ID, collection.Metadata), description
+	return getCollectionTitle(collection.GetID(), collection.GetMetadata()), description
 }

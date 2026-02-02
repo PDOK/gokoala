@@ -43,7 +43,7 @@ func newTestGeoPackage(file string) geoPackageBackend {
 func TestNewGeoPackage(t *testing.T) {
 	type args struct {
 		config     config.GeoPackage
-		collection config.GeoSpatialCollections
+		collection []config.FeaturesCollection
 	}
 	tests := []struct {
 		name                        string
@@ -64,10 +64,9 @@ func TestNewGeoPackage(t *testing.T) {
 						File: pwd + "/testdata/bag.gpkg",
 					},
 				},
-				collection: []config.GeoSpatialCollection{
+				collection: []config.FeaturesCollection{
 					{
-						ID:       "ligplaatsen",
-						Features: &config.CollectionEntryFeatures{},
+						ID: "ligplaatsen",
 					},
 				},
 			},
@@ -483,10 +482,9 @@ func TestGeoPackage_Warmup(t *testing.T) {
 			},
 		}
 		collections :=
-			[]config.GeoSpatialCollection{
+			[]config.FeaturesCollection{
 				{
-					ID:       "ligplaatsen",
-					Features: &config.CollectionEntryFeatures{},
+					ID: "ligplaatsen",
 				},
 			}
 		err := warmUpFeatureTables(collections, g.TableByCollectionID, g.backend.getDB())

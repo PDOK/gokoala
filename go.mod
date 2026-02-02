@@ -5,6 +5,7 @@ go 1.25.5
 require (
 	dario.cat/mergo v1.0.2
 	github.com/PDOK/go-cloud-sqlite-vfs v0.3.0
+	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/go-connections v0.6.0
 	github.com/docker/go-units v0.5.0
@@ -236,6 +237,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect

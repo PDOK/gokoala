@@ -28,7 +28,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		collectionID := chi.URLParam(r, "collectionId")
 		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
-			handleCollectionNotFound(w, collection.ID)
+			handleCollectionNotFound(w, collection.GetID())
 
 			return
 		}
@@ -40,7 +40,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		}
 		url := featureURL{*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
-			f.schemas[collection.ID],
+			f.schemas[collection.GetID()],
 		}
 		outputSRID, contentCrs, profile, err := url.parse()
 		if err != nil {
@@ -51,32 +51,32 @@ func (f *Features) Feature() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		// validation completed, now get the feature
-		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
-		feat, err := datasource.GetFeature(r.Context(), collection.ID, featureID,
+		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.GetID()}]
+		feat, err := datasource.GetFeature(r.Context(), collection.GetID(), featureID,
 			outputSRID, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 		if err != nil {
-			handleFeatureQueryError(w, collection.ID, featureID, err)
+			handleFeatureQueryError(w, collection.GetID(), featureID, err)
 
 			return
 		}
 		if feat == nil {
-			handleFeatureNotFound(w, collection.ID, featureID)
+			handleFeatureNotFound(w, collection.GetID(), featureID)
 
 			return
 		}
 
 		// render output
 		format := f.engine.CN.NegotiateFormat(r)
-		collectionType := f.collectionTypes.Get(collection.ID)
+		collectionType := f.collectionTypes.Get(collection.GetID())
 		switch collectionType {
 		case geospatial.Features:
 			switch format {
 			case engine.FormatHTML:
 				f.html.feature(w, r, collection, feat, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
-				f.json.featureAsGeoJSON(w, r, collectionID, collection.Features, feat, url)
+				f.json.featureAsGeoJSON(w, r, collectionID, &collection, feat, url)
 			case engine.FormatJSONFG:
-				f.json.featureAsJSONFG(w, r, collectionID, collection.Features, feat, url, contentCrs)
+				f.json.featureAsJSONFG(w, r, collectionID, &collection, feat, url, contentCrs)
 			default:
 				handleFormatNotSupported(w, format)
 			}

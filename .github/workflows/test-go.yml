@@ -33,22 +33,28 @@ jobs:
 
       - name: Unit Test
         run: |
-          go test -v -race -shuffle=on -coverpkg "$(go list || go list -m | head -1)/..." -coverprofile cover.out.tmp ./...
+          go test -v -race -shuffle=on \
+            -coverpkg "$(go list || go list -m | head -1)/..." \
+            -coverprofile cover.out.tmp ./...
+
           echo "remove generate code from coverage results"
-          grep -v "zz_generated" cover.out.tmp > cover.out
+          grep -v \
+            -e "zz_generated" \
+            -e "cql_lexer" \
+            -e "cql_parser" \
+            -e "cqlparser_base_listener" \
+            -e "cqlparser_listener" \
+            cover.out.tmp > cover.out
 
       - name: Test generating example CRD
         run: hack/generate-crd.sh
 
-      - name: Fuzz
+      - name: Fuzz Testing
         run: |
           for pkg in $(go list ./...); do
             echo "Fuzzing $pkg"
             go test -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
           done
-
-      - name: Benchmark
-        run: go test -v ./... -bench=. -run=^# -benchmem -count=1
 
       - name: Fail when coverage below threshold
         # Pin 3rd party action to a specific version as security best-practice.

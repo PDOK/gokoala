@@ -69,8 +69,7 @@ type FeaturesCriteria struct {
 	PropertyFilters map[string]string
 
 	// filtering by CQL (OAF part 3)
-	Filter     string
-	FilterLang string
+	Filter string
 }
 
 // TemporalCriteria criteria to filter based on date/time.

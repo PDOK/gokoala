@@ -50,7 +50,13 @@ func (u URL) MarshalJSON() ([]byte, error) {
 		return json.Marshal("")
 	}
 
-	return json.Marshal(u.String())
+	// Unescape URL in case it contains env vars
+	unescapedURL, err := url.PathUnescape(u.String())
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return json.Marshal(unescapedURL)
 }
 
 // UnmarshalJSON parses a string to URL and also removes trailing slash if present,
@@ -66,7 +72,13 @@ func (u URL) MarshalYAML() (any, error) {
 		return "", nil
 	}
 
-	return u.String(), nil
+	// Unescape URL in case it contains env vars
+	unescapedURL, err := url.PathUnescape(u.String())
+	if err != nil {
+		return "", err
+	}
+
+	return unescapedURL, nil
 }
 
 // DeepCopyInto copies the receiver, writes into out.

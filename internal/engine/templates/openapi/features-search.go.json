@@ -18,7 +18,7 @@
           {
             "$ref": "#/components/parameters/q"
           },
-          {{- range $index, $coll := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections -}}
+          {{- range $index, $coll := .Config.OgcAPI.FeaturesSearch.Collections -}}
           {{- if $index -}},{{- end -}}
           {
             "$ref": "#/components/parameters/{{ $coll.ID }}-collection-search"
@@ -32,10 +32,10 @@
             "$ref": "#/components/parameters/bbox"
           },
           {
-            "$ref": "#/components/parameters/bbox-crs"
+            "$ref": "#/components/parameters/bbox-crs-search"
           },
           {
-            "$ref": "#/components/parameters/crs"
+            "$ref": "#/components/parameters/crs-search"
           },
           {
             "$ref": "#/components/parameters/f-features"
@@ -570,7 +570,7 @@
           "maxLength": 200
         }
       },
-      {{- range $index, $coll := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections -}}
+      {{- range $index, $coll := .Config.OgcAPI.FeaturesSearch.Collections -}}
       {{- if $index -}},{{- end -}}
       "{{ $coll.ID }}-collection-search": {
         "name": "{{ $coll.ID }}",
@@ -636,7 +636,7 @@
 {{/*          }*/}}
 {{/*        }*/}}
       },
-      "bbox-crs": {
+      "bbox-crs-search": {
         "name": "bbox-crs",
         "in": "query",
         "description": "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude.",
@@ -647,7 +647,7 @@
           "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
           "enum": [
             "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-            {{ range $index, $srs := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.CollectionsSRS }}
+            {{ range $index, $srs := .Config.OgcAPI.FeaturesSearch.CollectionsSRS }}
             ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
             {{ end }}
           ]
@@ -655,7 +655,7 @@
         "style": "form",
         "explode": false
       },
-      "crs": {
+      "crs-search": {
         "name": "crs",
         "in": "query",
         "description": "The coordinate reference system of the geometries in the response. Default is WGS84 longitude/latitude",
@@ -666,7 +666,7 @@
           "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
           "enum": [
             "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
-            {{ range $index, $srs := .Config.OgcAPI.FeaturesSearch.OgcAPIFeatures.CollectionsSRS }}
+            {{ range $index, $srs := .Config.OgcAPI.FeaturesSearch.CollectionsSRS }}
             ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
             {{ end }}
           ]

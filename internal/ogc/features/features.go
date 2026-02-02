@@ -45,9 +45,9 @@ func (f *Features) Features() http.HandlerFunc {
 			*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
 			f.engine.Config.OgcAPI.Features.Limit,
-			f.configuredPropertyFilters[collection.ID],
-			f.schemas[collection.ID],
-			collection.HasDateTime(),
+			f.configuredPropertyFilters[collection.GetID()],
+			f.schemas[collection.GetID()],
+			hasDateTime(collection),
 		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
 			referenceDate, propertyFilters, profile, err := url.parse()
@@ -58,8 +58,8 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
-		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.ID}]
-		collectionType := f.collectionTypes.Get(collection.ID)
+		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.GetID()}]
+		collectionType := f.collectionTypes.Get(collection.GetID())
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
 			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
 
@@ -70,7 +70,7 @@ func (f *Features) Features() http.HandlerFunc {
 		newCursor, fc, err := f.queryFeatures(r.Context(), datasource, inputSRID, outputSRID, bbox,
 			encodedCursor.Decode(url.checksum()), limit, collection, referenceDate, propertyFilters, profile)
 		if err != nil {
-			handleFeaturesQueryError(w, collection.ID, err)
+			handleFeaturesQueryError(w, collection.GetID(), err)
 
 			return
 		}
@@ -85,9 +85,9 @@ func (f *Features) Features() http.HandlerFunc {
 					propertyFilters, f.configuredPropertyFilters[collection.ID],
 					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
-				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, collection.Features, fc)
+				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, &collection, fc)
 			case engine.FormatJSONFG:
-				f.json.featuresAsJSONFG(w, r, collection.ID, newCursor, url, collection.Features, fc, contentCrs)
+				f.json.featuresAsJSONFG(w, r, collection.ID, newCursor, url, &collection, fc, contentCrs)
 			default:
 				handleFormatNotSupported(w, format)
 			}
@@ -107,7 +107,7 @@ func (f *Features) Features() http.HandlerFunc {
 }
 
 func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, inputSRID, outputSRID domain.SRID,
-	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.GeoSpatialCollection,
+	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.FeaturesCollection,
 	referenceDate time.Time, propertyFilters map[string]string, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
 
 	var newCursor domain.Cursors
@@ -166,11 +166,11 @@ func shouldQuerySingleDatasource(datasource ds.Datasource, input domain.SRID, ou
 
 func createTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {
 	var temporalCriteria ds.TemporalCriteria
-	if collection.HasDateTime() {
+	if collection.GetMetadata() != nil && collection.GetMetadata().TemporalProperties != nil {
 		temporalCriteria = ds.TemporalCriteria{
 			ReferenceDate:     referenceDate,
-			StartDateProperty: collection.Metadata.TemporalProperties.StartDate,
-			EndDateProperty:   collection.Metadata.TemporalProperties.EndDate}
+			StartDateProperty: collection.GetMetadata().TemporalProperties.StartDate,
+			EndDateProperty:   collection.GetMetadata().TemporalProperties.EndDate}
 	}
 
 	return temporalCriteria
@@ -185,4 +185,8 @@ func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err er
 	}
 	log.Printf("%s, error: %v\n", msg, err)
 	engine.RenderProblem(engine.ProblemServerError, w, msg) // don't include sensitive information in details msg
+}
+
+func hasDateTime(collection config.FeaturesCollection) bool {
+	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }

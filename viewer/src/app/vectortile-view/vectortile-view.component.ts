@@ -14,7 +14,7 @@ import TileDebug from 'ol/source/TileDebug.js'
 import VectorTileSource from 'ol/source/VectorTile.js'
 import View from 'ol/View'
 import { Subject } from 'rxjs'
-import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../map-projection'
+import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../shared/model/map-projection'
 
 import { CommonModule } from '@angular/common'
 import { NGXLogger } from 'ngx-logger'
@@ -34,8 +34,8 @@ import { useGeographic } from 'ol/proj'
 import Projection from 'ol/proj/Projection'
 import { Fill, Stroke, Style } from 'ol/style'
 import TileGrid from 'ol/tilegrid/TileGrid'
-import { Matrix, MatrixSetService } from '../matrix-set.service'
-import { Link } from '../link'
+import { Matrix, MatrixSetService } from '../shared/services/matrix-set.service'
+import { Link } from '../shared/model/link'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -34,7 +34,7 @@ func newJSONFeatures(e *engine.Engine) *jsonFeatures {
 
 // GeoJSON.
 func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection) {
+	featuresURL featureCollectionURL, configuredFC *config.FeaturesCollection, fc *domain.FeatureCollection) {
 
 	fc.Timestamp = now().Format(time.RFC3339)
 	fc.Links = jf.createFeatureCollectionLinks(engine.FormatGeoJSON, collectionID, cursor, featuresURL)
@@ -46,7 +46,7 @@ func (jf *jsonFeatures) featuresAsGeoJSON(w http.ResponseWriter, r *http.Request
 
 // GeoJSON.
 func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
-	configuredFC *config.CollectionEntryFeatures, feat *domain.Feature, url featureURL) {
+	configuredFC *config.FeaturesCollection, feat *domain.Feature, url featureURL) {
 
 	feat.Links = jf.createFeatureLinks(engine.FormatGeoJSON, url, collectionID, feat.ID)
 	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
@@ -101,7 +101,7 @@ func (jf *jsonFeatures) featureAsAttributeJSON(w http.ResponseWriter, r *http.Re
 
 // JSON-FG.
 func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
-	featuresURL featureCollectionURL, configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection, crs domain.ContentCrs) {
+	featuresURL featureCollectionURL, configuredFC *config.FeaturesCollection, fc *domain.FeatureCollection, crs domain.ContentCrs) {
 
 	fgFC := domain.FeatureCollectionToJSONFG(*fc, crs)
 	fgFC.Timestamp = now().Format(time.RFC3339)
@@ -114,7 +114,7 @@ func (jf *jsonFeatures) featuresAsJSONFG(w http.ResponseWriter, r *http.Request,
 
 // JSON-FG.
 func (jf *jsonFeatures) featureAsJSONFG(w http.ResponseWriter, r *http.Request, collectionID string,
-	configuredFC *config.CollectionEntryFeatures, f *domain.Feature, url featureURL, crs domain.ContentCrs) {
+	configuredFC *config.FeaturesCollection, f *domain.Feature, url featureURL, crs domain.ContentCrs) {
 
 	fgF := domain.JSONFGFeature{
 		ID:          f.ID,
@@ -280,7 +280,7 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 	return links
 }
 
-func (jf *jsonFeatures) createFeatureDownloadLinks(configuredFC *config.CollectionEntryFeatures, fc *domain.FeatureCollection) {
+func (jf *jsonFeatures) createFeatureDownloadLinks(configuredFC *config.FeaturesCollection, fc *domain.FeatureCollection) {
 	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		for _, feature := range fc.Features {
 			links := make([]domain.Link, 0)
@@ -295,7 +295,7 @@ func (jf *jsonFeatures) createFeatureDownloadLinks(configuredFC *config.Collecti
 	}
 }
 
-func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(configuredFC *config.CollectionEntryFeatures, fc *domain.JSONFGFeatureCollection) {
+func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(configuredFC *config.FeaturesCollection, fc *domain.JSONFGFeatureCollection) {
 	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		for _, feature := range fc.Features {
 			links := make([]domain.Link, 0)
@@ -317,7 +317,7 @@ func (jf *jsonFeatures) serve(input any, contentType string, r *http.Request, w 
 		engine.ServeContentType(contentType))
 }
 
-func getMapSheetProperties(configuredFC *config.CollectionEntryFeatures) *config.MapSheetDownloadProperties {
+func getMapSheetProperties(configuredFC *config.FeaturesCollection) *config.MapSheetDownloadProperties {
 	if configuredFC != nil && configuredFC.MapSheetDownloads != nil {
 		return &configuredFC.MapSheetDownloads.Properties
 	}

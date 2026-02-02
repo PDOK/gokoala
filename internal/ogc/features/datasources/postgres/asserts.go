@@ -14,17 +14,17 @@ import (
 // assertIndexesExist asserts required indexes in Postgres exists
 //
 //nolint:nestif
-func assertIndexesExist(configuredCollections config.GeoSpatialCollections, tableByCollectionID map[string]*common.Table, db *pgxpool.Pool, spatialIndexRequired bool) error {
+func assertIndexesExist(configuredCollections config.FeaturesCollections, tableByCollectionID map[string]*common.Table, db *pgxpool.Pool, spatialIndexRequired bool) error {
 
 	for collID, table := range tableByCollectionID {
 		if table == nil {
 			return errors.New("given table can't be nil")
 		}
 		for _, coll := range configuredCollections {
-			if coll.ID == collID && coll.Features != nil {
+			if coll.GetID() == collID {
 				// assert temporal columns are indexed if configured
-				if coll.Metadata != nil && coll.Metadata.TemporalProperties != nil {
-					temporalColumns := strings.Join([]string{coll.Metadata.TemporalProperties.StartDate, coll.Metadata.TemporalProperties.EndDate}, ",")
+				if coll.GetMetadata() != nil && coll.GetMetadata().TemporalProperties != nil {
+					temporalColumns := strings.Join([]string{coll.GetMetadata().TemporalProperties.StartDate, coll.GetMetadata().TemporalProperties.EndDate}, ",")
 					if err := assertIndexExists(table.Name, db, temporalColumns, true, false); err != nil {
 						return err
 					}
@@ -38,7 +38,7 @@ func assertIndexesExist(configuredCollections config.GeoSpatialCollections, tabl
 				}
 
 				// assert the column for each property filter is indexed
-				for _, propertyFilter := range coll.Features.Filters.Properties {
+				for _, propertyFilter := range coll.Filters.Properties {
 					if err := assertIndexExists(table.Name, db, propertyFilter.Name, false, true); err != nil && *propertyFilter.IndexRequired {
 						return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)
 					}

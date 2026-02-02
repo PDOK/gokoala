@@ -83,6 +83,16 @@
       ,"storageCrs" : "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
       {{ end }}
       {{ end }}
+      {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections }}
+        {{ if $cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID }}
+          {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+            {{ if eq $collSearch.ID $coll.ID }}
+            ,"version" : {{ $collSearch.Version }}
+            ,"displayNameTemplate" : {{ mustToRawJson $collSearch.DisplayNameTemplate }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
       ,"links" : [
         {
           "rel" : "self",
@@ -112,21 +122,25 @@
         {{ end }}
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
-            {{ if and $coll.GeoVolumes $coll.GeoVolumes.Has3DTiles }}
-            ,{
-              "rel" : "items",
-              "type" : "application/json+3dtiles",
-              "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
-            }
-            {{end}}
-            {{ if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
-            ,{
-              "rel" : "items",
-              "type" : "application/json",
-              "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/quantized-mesh?f=json"
-            }
+            {{ range $idx3d, $coll3d := $cfg.OgcAPI.GeoVolumes.Collections }}
+              {{ if eq $coll3d.ID $coll.ID }}
+                {{ if not $coll3d.IsDtm }}
+                ,{
+                  "rel" : "items",
+                  "type" : "application/json+3dtiles",
+                  "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
+                  "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json"
+                }
+                {{end}}
+                {{ if $coll3d.IsDtm }}
+                ,{
+                  "rel" : "items",
+                  "type" : "application/json",
+                  "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
+                  "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/quantized-mesh?f=json"
+                }
+                {{end}}
+              {{end}}
             {{end}}
           {{end}}
         {{end}}
@@ -146,20 +160,30 @@
             }
           {{end}}
         {{end}}
-        {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections }}
-          {{ if $cfg.OgcAPI.FeaturesSearch.OgcAPIFeatures.Collections.ContainsID $coll.ID }}
+        {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections }}
+          {{ if $cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID }}
+            {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+            {{ if eq $collSearch.ID $coll.ID }}
             {{/* collection reference is only required for remotely hosted collections */}}
-            {{ if not ($coll.FeaturesSearch.IsLocalFeatureCollection $coll.ID) }}
+            {{ if $collSearch.IsRemoteFeatureCollection $coll.ID }}
               ,
-              {{ range $o, $collRef := $coll.FeaturesSearch.CollectionRefs -}}
+              {{ range $o, $collRef := $coll.CollectionRefs -}}
               {{ if $o }},{{ end }}
               {
-                "rel": "canonical",
+                "rel": "source", {{/* not an offical IANA link relation */}}
                 "type": "text/html",
-                "title": "{{ $collRef.CollectionID }}",
-                "href": "{{ $collRef.APIBaseURL }}/collections/{{ $collRef.CollectionID }}"
+                "title": "Related OGC API Features collection '{{ $collRef.CollectionID }}' in HTML representation",
+                "href": "{{ $collRef.APIBaseURL }}/collections/{{ $collRef.CollectionID }}?f=html"
+              },
+              {
+                "rel": "source", {{/* not an offical IANA link relation */}}
+                "type": "application/json",
+                "title": "Related OGC API Features collection '{{ $collRef.CollectionID }}' in JSON representation",
+                "href": "{{ $collRef.APIBaseURL }}/collections/{{ $collRef.CollectionID }}?f=json"
               }
               {{- end }}
+            {{- end }}
+            {{- end }}
             {{- end }}
           {{end}}
         {{end}}
@@ -231,22 +255,26 @@
       "content" : [
         {{ if and $cfg.OgcAPI.GeoVolumes $cfg.OgcAPI.GeoVolumes.Collections }}
           {{ if $cfg.OgcAPI.GeoVolumes.Collections.ContainsID $coll.ID }}
-            {{ if and $coll.GeoVolumes $coll.GeoVolumes.Has3DTiles }}
-            {
-              "rel" : "original",
-              "type" : "application/json+3dtiles",
-              "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json",
-              "collectionType": "3d-container"
-            }
-            {{ else if and $coll.GeoVolumes $coll.GeoVolumes.HasDTM }}
-            {
-              "rel" : "original",
-              "type" : "application/json",
-              "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json",
-              "collectionType": "3d-container"
-            }
+            {{ range $idx3d, $coll3d := $cfg.OgcAPI.GeoVolumes.Collections }}
+              {{ if eq $coll3d.ID $coll.ID }}
+                {{ if not $coll3d.IsDtm }}
+                  {
+                    "rel" : "original",
+                    "type" : "application/json+3dtiles",
+                    "title" : "Tileset definition of collection {{ $coll.ID }} according to the OGC 3D Tiles specification",
+                    "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/3dtiles?f=json",
+                    "collectionType": "3d-container"
+                  }
+                  {{ else if $coll3d.IsDtm }}
+                  {
+                    "rel" : "original",
+                    "type" : "application/json",
+                    "title" : "Digital Terrain Model '{{ $coll.ID }}' in Quantized Mesh format",
+                    "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json",
+                    "collectionType": "3d-container"
+                  }
+                {{end}}
+              {{end}}
             {{end}}
           {{end}}
         {{end}}

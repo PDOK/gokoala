@@ -85,16 +85,18 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --host value            bind host for OGC server (default: "0.0.0.0") [$HOST]
-   --port value            bind port for OGC server (default: 8080) [$PORT]
-   --debug-port value      bind port for debug server (disabled by default), do not expose this port publicly (default: -1) [$DEBUG_PORT]
-   --shutdown-delay value  delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
-   --config-file value     reference to YAML configuration file [$CONFIG_FILE]
-   --theme-file value      reference to a (customized) YAML configuration file for the theme [$THEME_FILE]
-   --openapi-file value    reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
-   --enable-trailing-slash allow API calls to URLs with a trailing slash. (default: false) [$ALLOW_TRAILING_SLASH]
-   --enable-cors           enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere. (default: false) [$ENABLE_CORS]
-   --help, -h              show help
+   --host value             bind host for OGC server (default: "0.0.0.0") [$HOST]
+   --port value             bind port for OGC server (default: 8080) [$PORT]
+   --debug-port value       bind port for debug server (disabled by default), do not expose this port publicly (default: -1) [$DEBUG_PORT]
+   --shutdown-delay value   delay (in seconds) before initiating graceful shutdown (e.g. useful in k8s to allow ingress controller to update their endpoints list) (default: 0) [$SHUTDOWN_DELAY]
+   --config-file value      reference to YAML configuration file [$CONFIG_FILE]
+   --openapi-file value     reference to a (customized) OGC OpenAPI spec for the dynamic parts of your OGC API [$OPENAPI_FILE]
+   --enable-trailing-slash  allow API calls to URLs with a trailing slash. (default: false) [$ENABLE_TRAILING_SLASH]
+   --enable-cors            enable Cross-Origin Resource Sharing (CORS) as required by OGC API specs. Disable if you handle CORS elsewhere. (default: false) [$ENABLE_CORS]
+   --theme-file value       reference to a (customized) YAML configuration file for the theme [$THEME_FILE]
+   --rewrites-file value    path to CSV file containing rewrites used to generate suggestions. Only for OGC API Features Search. [$REWRITES_FILE]
+   --synonyms-file value    path to CSV file containing synonyms used to generate suggestions. Only for OGC API Features Search. [$SYNONYMS_FILE]
+   --help, -h               show help
 ```
 
 Example (config-file is mandatory):
@@ -265,20 +267,35 @@ Design principles:
   `engine`.
   > :warning: The other way around is not allowed!
 - Document public APIs with [godoc](https://go.dev/blog/godoc)
-- Geospatial related configuration is done through the config file, technical
+- Code generation should be hidden behind the `go generate ./...` command.
+- Geospatial-related configuration is done through the config file, technical
   configuration (host/port/etc) is done through CLI flags/env variables.
 - Assets/templates/etc should be explicitly included in the Docker image, see COPY
   commands in [Dockerfile](Dockerfile).
+- It should be possible to fully build GoKoala through Docker without having to
+  install Go/Node/Java/etc locally.
 
 ### Build/run as Go application
 
 Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), [PROJ](https://proj.org/en/stable/install.html), `openssl` and `curl` are installed.
 Also make sure `gcc` or similar is available since the application uses cgo.
 
+Run the following commands from the root of the project:
+
+#### `gokoala-server` (serving OGC APIs)
+
 ```bash
 go generate ./...
-go build -o gokoala cmd/gokoala-server/main.go
-./gokoala
+go build -o gokoala-server cmd/gokoala-server/main.go
+./gokoala-server
+```
+
+#### `gokoala-etl` (loading search-index for geocoding)
+
+```bash
+go generate ./...
+go build -o gokoala-etl cmd/gokoala-etl/main.go
+./gokoala-etl
 ```
 
 To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also happens there.
