@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/PDOK/go-cloud-sqlite-vfs v0.3.0
+	github.com/PDOK/go-cloud-sqlite-vfs v0.4.0
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/go-connections v0.6.0
@@ -21,9 +21,9 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/iancoleman/strcase v0.3.0
-	github.com/jackc/pgx/v5 v5.7.6
+	github.com/jackc/pgx/v5 v5.8.0
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/mattn/go-sqlite3 v1.14.32
+	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.11.1
