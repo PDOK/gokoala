@@ -22,7 +22,7 @@ if [[ "$java_major" =~ ^[0-9]+$ ]] && (( java_major >= 17 )); then
 
   # Run against CQL grammar (note: when updating this command also change it below for the Docker variant)
   cd internal/ogc/features/cql/parser
-  java -Xmx256M -jar ../../../../../hack/antlr/antlr-${ANTLR_VERSION}-complete.jar "${ANTLR_PARAMS}"
+  java -Xmx256M -jar ../../../../../hack/antlr/antlr-${ANTLR_VERSION}-complete.jar ${ANTLR_PARAMS}
 else
   echo "Java 17+ not found, using Docker to run ANTLR"
 
@@ -33,10 +33,10 @@ else
   # Run against CQL grammar (note: when updating this command also change it above for the plain Java variant)
   echo "running ANTLR to generate CQL parser"
   cd internal/ogc/features/cql/parser
-  docker run --rm -v `pwd`/:/work -w /work antlr:local "${ANTLR_PARAMS}"
+  docker run --rm -v `pwd`/:/work -w /work antlr:local ${ANTLR_PARAMS}
 fi
 echo "finished generating CQL parser"
 
 printf "formatting Go code including generated code\n\n"
-go fmt ./...
+go fmt ./..
 printf "DONE!\n"
