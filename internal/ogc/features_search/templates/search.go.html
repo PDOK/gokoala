@@ -64,7 +64,7 @@
             <app-feature-view
                     id="feature-view"
                     background-map="BRT"
-                    items-url=""
+                    items-urls=""
                     mode="auto"
                     class="card"
                     initial-view="VISIBLE"
@@ -79,7 +79,7 @@
         const currentUrl = document.getElementById("current-url");
         const locationSearch = document.getElementById("location-search");
         locationSearch.addEventListener("locationSelected", (event) => {
-            featureView.setAttribute("items-url", event?.detail || "");
+            featureView.itemUrls = event?.detail || [];
             currentUrl.value = event?.detail || "";
         })
 
