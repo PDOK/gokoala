@@ -202,7 +202,7 @@
           const url = new URL(window.location.href)
           url.searchParams.set('f', 'json')
           const viewer = document.getElementById('viewer')
-          viewer.setAttribute('items-url', url)
+          viewer.itemUrls = [url.toString()]
 
           if (url.searchParams.get('crs') !== null) {
             let crs = url.searchParams.get('crs')
@@ -221,7 +221,7 @@
             // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
             // on the page manually.
             newUrl.searchParams.set('f', 'json')
-            viewer.setAttribute('items-url', newUrl.toString())
+            viewer.itemUrls = [newUrl.toString()]
             {{ range $formatKey, $formatName := .AvailableFormats }}
             if (document.getElementById("format-{{ $formatKey }}")) {
               newUrl.searchParams.set('f', '{{ $formatKey }}')
