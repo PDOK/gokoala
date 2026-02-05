@@ -37,6 +37,7 @@ func TestParseFeatures(t *testing.T) {
 		wantRefDate       *time.Time
 		wantPropFilters   map[string]string
 		wantProfile       domain.Profile
+		wantCQL           string
 		wantErr           assert.ErrorAssertionFunc
 	}{
 		{
@@ -549,24 +550,6 @@ func TestParseFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on unimplemented filter",
-			fields: fields{
-				baseURL: *host,
-				params: url.Values{
-					"filter": []string{"some CQL expression"},
-				},
-				limit: config.Limit{
-					Default: 1,
-					Max:     2,
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.EqualError(t, err, "CQL filter param is currently not supported", "parse()")
-
-				return false
-			},
-		},
-		{
 			name: "Fail on unknown param",
 			fields: fields{
 				baseURL: *host,
@@ -604,7 +587,7 @@ func TestParseFeatures(t *testing.T) {
 				schema:           *s,
 				supportsDatetime: tt.fields.dtSupport,
 			}
-			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, gotProfile, err := fc.parse()
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, gotProfile, gotCQL, err := fc.parse()
 			if !tt.wantErr(t, err, "parse()") {
 				return
 			}
@@ -614,6 +597,7 @@ func TestParseFeatures(t *testing.T) {
 			assert.Equalf(t, tt.wantBbox, gotBbox, "parse()")
 			assert.Equalf(t, tt.wantInputCrs, gotInputCrs.GetOrDefault(), "parse()")
 			assert.Equalf(t, tt.wantProfile, gotProfile, "parse()")
+			assert.Equalf(t, tt.wantCQL, gotCQL, "parse()")
 			if tt.wantPropFilters != nil {
 				assert.Equalf(t, tt.wantPropFilters, gotPF, "parse()")
 			}

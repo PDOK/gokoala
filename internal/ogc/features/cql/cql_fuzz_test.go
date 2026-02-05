@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Test to make sure the parser doesn't crash on invalid input.
@@ -21,11 +22,13 @@ func FuzzParseToSQL(f *testing.F) {
 		f.Add(tc)
 	}
 	f.Fuzz(func(t *testing.T, input string) {
-		result := ParseToSQL(input, NewSqliteListener())
+		result, err := ParseToSQL(input, NewSqliteListener())
+		require.NoError(t, err)
 		assert.Truef(t, utf8.ValidString(result), "valid string")
 		assert.NotNil(t, result)
 
-		result2 := ParseToSQL(input, NewSqliteListener())
+		result2, err := ParseToSQL(input, NewSqliteListener())
+		require.NoError(t, err)
 		assert.Equal(t, result, result2)
 	})
 }
