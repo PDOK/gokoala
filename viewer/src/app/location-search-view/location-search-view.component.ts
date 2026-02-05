@@ -42,6 +42,14 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   @Input() collectionsText = 'Collections'
   @Input() searchHelpText = 'Search query must be at least three characters long.'
   @Input() noCollectionsSelectedText = 'A minimum of one collection must be selected.'
+  @Input() set bbox(val: string | undefined) {
+    this.setBboxUrlParam(val)
+    this._bbox = val
+  }
+
+  get bbox() {
+    return this._bbox
+  }
 
   @Output() locationSelected = new EventEmitter<string>()
 
@@ -60,6 +68,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   hasSearched$!: Observable<boolean>
 
   private _featureService = inject(FeatureService)
+  private _bbox?: string = undefined
   private _destroy$ = new Subject<void>()
 
   constructor(private host: ElementRef<HTMLElement>) {}
@@ -87,9 +96,11 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       tap(() => this.searching.set(true)),
       debounceTime(200),
       tap(val => (this.query = val || '')),
-      switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection)),
-      tap(() => this.storeQuery()),
-      tap(() => this.searching.set(false)),
+      switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox)),
+      tap(() => {
+        this.storeQuery()
+        this.searching.set(false)
+      }),
       takeUntil(this._destroy$)
     )
 
@@ -125,6 +136,13 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     const url = new URL(window.location.href)
     url.searchParams.set('q', this.query)
     history.pushState({}, '', url.toString())
+  }
+
+  private setBboxUrlParam(val: string | undefined) {
+    const url = new URL(window.location.href)
+    if (val) url.searchParams.set('bbox', val)
+    else url.searchParams.delete('bbox')
+    history.replaceState({}, '', url.toString())
   }
 
   @HostListener('document:mousedown', ['$event'])
