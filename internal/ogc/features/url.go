@@ -387,6 +387,9 @@ func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error
 	filterSRID, _ = ParseCrsToSRID(params, filterCrsParam)
 	filterLang := params.Get(filterLangParam)
 
+	if filterLang == "" {
+		filterLang = cqlText
+	}
 	if filterLang == cqlJSON {
 		return filter, filterSRID, fmt.Errorf("%s is not supported, only %s is supported", cqlJSON, cqlText)
 	}

@@ -1,5 +1,6 @@
 package types
 
+// Stack of strings. See https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
 type Stack struct {
 	stack []string
 }

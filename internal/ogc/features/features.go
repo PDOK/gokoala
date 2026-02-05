@@ -182,7 +182,7 @@ func createTemporalCriteria(collection config.GeoSpatialCollection, referenceDat
 	return temporalCriteria
 }
 
-// log error but send a generic message to the client to prevent possible information leakage from datasource.
+// log the error but send a generic message to the client to prevent possible information leakage from datasource.
 func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err error) {
 	msg := "failed to retrieve feature collection " + collectionID
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
@@ -201,6 +201,7 @@ func parseCQL(cqlFilter string, datasource ds.Datasource) (sqlFilter string, err
 	if cqlFilter == "" {
 		return "", nil
 	}
+
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
 		sqlFilter, err = cql.ParseToSQL(cqlFilter, cql.NewSqliteListener())
@@ -209,7 +210,9 @@ func parseCQL(cqlFilter string, datasource ds.Datasource) (sqlFilter string, err
 	default:
 		err = errors.New("unsupported datasource for CQL parsing")
 	}
+
 	if sqlFilter != "" {
+		// make SQL filter appendable to the existing WHERE clause
 		sqlFilter = "and " + sqlFilter
 	}
 	return sqlFilter, err
