@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http'
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
@@ -81,16 +81,24 @@ export class FeatureService {
     private http: HttpClient
   ) {}
 
-  queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string): Observable<FeatureGeoJSON[]> {
+  queryFeatures(
+    q: string,
+    searchParams: { [key: string]: number },
+    crs?: string,
+    bbox?: string
+  ): Observable<HttpResponse<FeatureCollectionGeoJSON>> {
     let params = new HttpParams().set('q', q)
     if (crs) {
       params = params.set('crs', crs)
     }
-    for (const key in searchParams) {
-      params = params.append(`${key}[relevance]`, searchParams[key].toString())
-      params = params.append(`${key}[version]`, '1')
+    if (bbox) {
+      params = params.set('bbox', bbox)
     }
-    return this.http.get<FeatureCollectionGeoJSON>('search', { params }).pipe(map(res => res.features))
+    for (const key in searchParams) {
+      params = params.append(`${key}[relevance]`, searchParams[key].toString()).append(`${key}[version]`, '1')
+    }
+    params = params.append('limit', '10')
+    return this.http.get<FeatureCollectionGeoJSON>('search', { params, observe: 'response' })
   }
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
@@ -147,7 +155,6 @@ export class FeatureService {
 
   getProjectionMapping(value: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
     initProj4()
-
     if (value) {
       if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
         //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)

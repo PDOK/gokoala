@@ -63,10 +63,9 @@
             <app-feature-view
                     id="feature-view"
                     background-map="BRT"
-                    items-urls=""
-                    mode="auto"
                     class="card"
                     initial-view="VISIBLE"
+                    show-bounding-box-button="true"
             > </app-feature-view>
         </div>
     </section>
@@ -75,10 +74,22 @@
         let projection = CRS84;
 
         const featureView = document.getElementById("feature-view");
+        featureView.setAttribute("projection", projection);
+
         const currentUrl = document.getElementById("current-url");
         const locationSearch = document.getElementById("location-search");
+
+        featureView.addEventListener("box", event => {
+            locationSearch.setAttribute("bbox", event.detail);
+            featureView.itemUrls.map((url) => {
+                const newUrl = new URL(url);
+                newUrl.searchParams.set("bbox", event.detail);
+                return newUrl.toString();
+            })
+        })
+
         locationSearch.addEventListener("locationSelected", (event) => {
-            featureView.itemUrls = event?.detail || [];
+            featureView.itemUrls = [event?.detail] || [];
             currentUrl.value = event?.detail || "";
         })
 
@@ -89,6 +100,6 @@
             featureView.setAttribute("projection", projection);
         })
     </script>
-    <script src="view-component/polyfills.js"></script>
-    <script type="module" src="view-component/main.js"></script>
+    <script src="http://localhost:4200/polyfills.js"></script>
+    <script type="module" src="http://localhost:4200/main.js"></script>
 {{ end }}
