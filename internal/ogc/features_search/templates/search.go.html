@@ -89,7 +89,7 @@
         })
 
         locationSearch.addEventListener("locationSelected", (event) => {
-            featureView.itemUrls = [event?.detail] || [];
+            featureView.itemUrls = event?.detail || [];
             currentUrl.value = event?.detail || "";
         })
 

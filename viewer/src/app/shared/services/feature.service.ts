@@ -81,12 +81,7 @@ export class FeatureService {
     private http: HttpClient
   ) {}
 
-  queryFeatures(
-    q: string,
-    searchParams: { [key: string]: number },
-    crs?: string,
-    bbox?: string
-  ): Observable<HttpResponse<FeatureCollectionGeoJSON>> {
+  queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string, bbox?: string): Observable<FeatureGeoJSON[]> {
     let params = new HttpParams().set('q', q)
     if (crs) {
       params = params.set('crs', crs)
@@ -98,7 +93,7 @@ export class FeatureService {
       params = params.append(`${key}[relevance]`, searchParams[key].toString()).append(`${key}[version]`, '1')
     }
     params = params.append('limit', '10')
-    return this.http.get<FeatureCollectionGeoJSON>('search', { params, observe: 'response' })
+    return this.http.get<FeatureCollectionGeoJSON>('search', { params }).pipe(map(res => res.features))
   }
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {

@@ -97,10 +97,6 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       debounceTime(200),
       tap(val => (this.query = val || '')),
       switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox)),
-      map(res => {
-        this.locationSelected.emit(res.url || '')
-        return res.body?.features || []
-      }),
       tap(() => {
         this.storeQuery()
         this.searching.set(false)
