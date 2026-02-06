@@ -1,13 +1,14 @@
 package cql
 
 import (
-	"strings"
 	"testing"
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
+// Test to make sure the parser doesn't crash on invalid input.
 // Run with: go test -fuzz=Fuzz -fuzztime=10s -run=^$
 func FuzzParseToSQL(f *testing.F) {
 	testcases := []string{
@@ -21,10 +22,13 @@ func FuzzParseToSQL(f *testing.F) {
 		f.Add(tc)
 	}
 	f.Fuzz(func(t *testing.T, input string) {
-		result := ParseToSQL(input)
+		result, err := ParseToSQL(input, NewSqliteListener())
+		require.NoError(t, err)
 		assert.Truef(t, utf8.ValidString(result), "valid string")
-		if strings.TrimSpace(input) != "" {
-			assert.NotEmpty(t, result)
-		}
+		assert.NotNil(t, result)
+
+		result2, err := ParseToSQL(input, NewSqliteListener())
+		require.NoError(t, err)
+		assert.Equal(t, result, result2)
 	})
 }

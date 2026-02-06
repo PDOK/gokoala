@@ -323,8 +323,8 @@ with
     prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s %[8]s order by %[2]s desc limit @limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
-select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
-`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
+select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s %[9]s limit @limit
+`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause, criteria.Filter)
 
 	namedParams := map[string]any{
 		"fid":        criteria.Cursor.FID,
