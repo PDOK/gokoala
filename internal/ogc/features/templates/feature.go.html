@@ -134,7 +134,7 @@
             const url = new URL(window.location.href)
             url.searchParams.set('f', 'json');
             const viewer = document.getElementById('viewer');
-            viewer.setAttribute('items-url', url);
+            viewer.itemUrls = [url.toString()];
 
             if (url.searchParams.get('crs') !== null) {
                 let crs = url.searchParams.get('crs');
