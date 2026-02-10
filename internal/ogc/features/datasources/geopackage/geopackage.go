@@ -28,8 +28,8 @@ import (
 const (
 	sqliteDriverName = "sqlite3_with_extensions"
 
-	// https://jmoiron.github.io/sqlx/#namedParams
-	sqlxNamedParamSymbol = ":"
+	// NamedParamSymbolSqlx https://jmoiron.github.io/sqlx/#namedParams
+	NamedParamSymbolSqlx = ":"
 )
 
 var once sync.Once
@@ -333,8 +333,8 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 }
 
 func (g *GeoPackage) makeDefaultQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlxNamedParamSymbol)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, NamedParamSymbolSqlx)
 
 	defaultQuery := fmt.Sprintf(`
 with
@@ -343,7 +343,8 @@ with
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as %[6]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[7]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s %[8]s limit :limit
-`, table.Name, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, criteria.Filter) // don't add user input here, use named params for user input!
+`, table.Name, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid,
+		criteria.Filter.SQL) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,
@@ -351,6 +352,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s %[8]s limit :li
 	}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
+	maps.Copy(namedParams, criteria.Filter.Params)
 
 	return defaultQuery, namedParams
 }
@@ -358,13 +360,13 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s %[8]s limit :li
 func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.Name)
 
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, sqlxNamedParamSymbol)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx)
 	if pfClause != "" {
 		// don't force btree index when using property filter, let SQLite decide
 		// whether to use the BTree index or the property filter index
 		btreeIndexHint = ""
 	}
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, sqlxNamedParamSymbol)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, NamedParamSymbolSqlx)
 
 	bboxQuery := fmt.Sprintf(`
 with
@@ -407,12 +409,14 @@ with
      nextprevfeat as (select *, lag("%[2]s", :limit) over (order by "%[2]s") as %[9]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[10]s from nextprev)
 select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s %[11]s limit :limit
 `, table.Name, g.FidColumn, g.maxBBoxSizeToUseWithRTree, table.GeometryColumnName,
-		selectClause, temporalClause, pfClause, btreeIndexHint, d.PrevFid, d.NextFid, criteria.Filter) // don't add user input here, use named params for user input!
+		selectClause, temporalClause, pfClause, btreeIndexHint, d.PrevFid, d.NextFid,
+		criteria.Filter.SQL) // don't add user input here, use named params for user input!
 
 	bboxAsWKT, err := wkt.Marshal(criteria.Bbox.Polygon())
 	if err != nil {
 		return "", nil, err
 	}
+
 	namedParams := map[string]any{
 		"fid":       criteria.Cursor.FID,
 		"limit":     criteria.Limit,
@@ -424,6 +428,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s %[11]s limit :l
 		"bboxSrid":  criteria.InputSRID}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
+	maps.Copy(namedParams, criteria.Filter.Params)
 
 	return bboxQuery, namedParams, nil
 }

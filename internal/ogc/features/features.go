@@ -9,6 +9,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
@@ -114,7 +115,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, inputSRID, outputSRID domain.SRID,
 	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.FeaturesCollection,
-	referenceDate time.Time, propertyFilters map[string]string, filter string, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
+	referenceDate time.Time, propertyFilters map[string]string, filter ds.Part3Filter, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
 
 	var newCursor domain.Cursors
 	var fc *domain.FeatureCollection
@@ -197,23 +198,25 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
 
-func parseCQL(cqlFilter string, datasource ds.Datasource) (sqlFilter string, err error) {
+func parseCQL(cqlFilter string, datasource ds.Datasource) (ds.Part3Filter, error) {
 	if cqlFilter == "" {
-		return "", nil
+		return ds.Part3Filter{}, nil
 	}
 
+	var listener cql.Listener
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		sqlFilter, err = cql.ParseToSQL(cqlFilter, cql.NewSqliteListener())
+		listener = cql.NewSqliteListener(util.DefaultRandomizer)
 	case *postgres.Postgres:
-		sqlFilter, err = cql.ParseToSQL(cqlFilter, cql.NewPostgresListener())
+		listener = cql.NewPostgresListener()
 	default:
-		err = errors.New("unsupported datasource for CQL parsing")
+		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}
 
+	sqlFilter, params, err := cql.ParseToSQL(cqlFilter, listener)
 	if sqlFilter != "" {
 		// make SQL filter appendable to the existing WHERE clause
 		sqlFilter = "and " + sqlFilter
 	}
-	return sqlFilter, err
+	return ds.Part3Filter{SQL: sqlFilter, Params: params}, err
 }

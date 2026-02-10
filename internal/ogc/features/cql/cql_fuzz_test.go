@@ -4,6 +4,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -22,12 +23,12 @@ func FuzzParseToSQL(f *testing.F) {
 		f.Add(tc)
 	}
 	f.Fuzz(func(t *testing.T, input string) {
-		result, err := ParseToSQL(input, NewSqliteListener())
+		result, _, err := ParseToSQL(input, NewSqliteListener(&util.MockRandomizer{}))
 		require.NoError(t, err)
 		assert.Truef(t, utf8.ValidString(result), "valid string")
 		assert.NotNil(t, result)
 
-		result2, err := ParseToSQL(input, NewSqliteListener())
+		result2, _, err := ParseToSQL(input, NewSqliteListener(&util.MockRandomizer{}))
 		require.NoError(t, err)
 		assert.Equal(t, result, result2)
 	})
