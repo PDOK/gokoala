@@ -18,7 +18,7 @@ type CommonListener struct {
 }
 
 // generateUniqueNamedParam generates a unique named parameter (e.g. :abc or @abc)
-// for parameter binding in prepared statements.
+// for parameter binding in SQL prepared statements.
 func (cl *CommonListener) generateUniqueNamedParam(symbol string) (withoutSymbol, withSymbol string) {
 RETRY:
 	chars := make([]byte, 4)
