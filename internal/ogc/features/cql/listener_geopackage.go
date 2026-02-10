@@ -15,7 +15,7 @@ type GeoPackageListener struct {
 	*CommonListener
 }
 
-func NewSqliteListener(random util.Randomizer) *GeoPackageListener {
+func NewGeoPackageListener(random util.Randomizer) *GeoPackageListener {
 	return &GeoPackageListener{&CommonListener{
 		stack:       types.NewStack(),
 		namedParams: make(map[string]any),

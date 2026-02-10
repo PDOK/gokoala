@@ -206,7 +206,7 @@ func parseCQL(cqlFilter string, datasource ds.Datasource) (ds.Part3Filter, error
 	var listener cql.Listener
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewSqliteListener(util.DefaultRandomizer)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer)
 	case *postgres.Postgres:
 		listener = cql.NewPostgresListener(util.DefaultRandomizer)
 	default:

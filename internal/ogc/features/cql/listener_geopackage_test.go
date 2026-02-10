@@ -14,7 +14,7 @@ func TestBooleanExpression(t *testing.T) {
 	expectedSQL := "(\"prop1\" = :cql_bcde AND \"prop2\" < :cql_fghi)"
 
 	// when
-	actualSQL, params, err := ParseToSQL(inputCQL, NewSqliteListener(&util.MockRandomizer{}))
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
 
 	// then
 	require.NoError(t, err)
@@ -28,7 +28,7 @@ func TestMultipleBooleanExpressions(t *testing.T) {
 	expectedSQL := "((\"prop1\" = :cql_bcde OR \"prop1\" = :cql_fghi) AND NOT (\"prop2\" = :cql_jklm))"
 
 	// when
-	actualSQL, params, err := ParseToSQL(inputCQL, NewSqliteListener(&util.MockRandomizer{}))
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
 
 	// then
 	require.NoError(t, err)
@@ -42,7 +42,7 @@ func TestMultipleBooleanExpressions2(t *testing.T) {
 	expectedSQL := "((\"prop1\" = \"foo\" AND \"prop2\" = \"bar\") OR \"prop3\" = \"abc\")"
 
 	// when
-	actualSQL, params, err := ParseToSQL(inputCQL, NewSqliteListener(&util.MockRandomizer{}))
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
 
 	// then
 	require.NoError(t, err)

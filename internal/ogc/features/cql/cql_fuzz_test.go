@@ -23,12 +23,12 @@ func FuzzParseToSQL(f *testing.F) {
 		f.Add(tc)
 	}
 	f.Fuzz(func(t *testing.T, input string) {
-		result, _, err := ParseToSQL(input, NewSqliteListener(&util.MockRandomizer{}))
+		result, _, err := ParseToSQL(input, NewGeoPackageListener(&util.MockRandomizer{}))
 		require.NoError(t, err)
 		assert.Truef(t, utf8.ValidString(result), "valid string")
 		assert.NotNil(t, result)
 
-		result2, _, err := ParseToSQL(input, NewSqliteListener(&util.MockRandomizer{}))
+		result2, _, err := ParseToSQL(input, NewGeoPackageListener(&util.MockRandomizer{}))
 		require.NoError(t, err)
 		assert.Equal(t, result, result2)
 	})
