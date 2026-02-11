@@ -20,6 +20,14 @@ type CommonListener struct {
 
 	// randomizer is used to generate unique named parameters.
 	randomizer util.Randomizer
+
+	// errorListener is used to collect parse errors.
+	errorListener *ErrorListener
+}
+
+// AddErrorListener adds an ErrorListener to this listener.
+func (cl *CommonListener) AddErrorListener(errorListener *ErrorListener) {
+	cl.errorListener = errorListener
 }
 
 // generateNamedParam generates a unique named parameter (e.g. :abc or @abc)

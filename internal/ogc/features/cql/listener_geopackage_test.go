@@ -8,6 +8,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestInvalidBooleanExpression(t *testing.T) {
+	// given
+	inputCQL := "prop1 ==== 1 AND prop2 !!= 5"
+
+	// when
+	_, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
+
+	// then
+	require.ErrorContains(t, err, "syntax error at column 7: mismatched input '=' expecting ")
+	require.ErrorContains(t, err, "syntax error at column 23: no viable alternative at input 'prop2!'")
+	assert.Empty(t, params)
+}
+
 func TestBooleanExpression(t *testing.T) {
 	// given
 	inputCQL := "prop1 = 10 AND prop2 < 5"
