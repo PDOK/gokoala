@@ -45,6 +45,8 @@ func (f *Features) Features() http.HandlerFunc {
 			handleCollectionNotFound(w, collectionID)
 			return
 		}
+
+		// parse URL query parameters
 		url := featureCollectionURL{
 			*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
@@ -113,9 +115,10 @@ func (f *Features) Features() http.HandlerFunc {
 	}
 }
 
-func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, inputSRID, outputSRID domain.SRID,
-	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.FeaturesCollection,
-	referenceDate time.Time, propertyFilters map[string]string, filter ds.Part3Filter, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
+func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
+	inputSRID, outputSRID domain.SRID, bbox *geom.Bounds, currentCursor domain.DecodedCursor,
+	limit int, collection config.FeaturesCollection, referenceDate time.Time, propertyFilters map[string]string,
+	filter ds.Part3Filter, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
 
 	var newCursor domain.Cursors
 	var fc *domain.FeatureCollection
@@ -204,6 +207,7 @@ func parseCQL(cqlFilter string, datasource ds.Datasource) (ds.Part3Filter, error
 	}
 
 	var listener cql.Listener
+
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
 		listener = cql.NewGeoPackageListener(util.DefaultRandomizer)
@@ -213,10 +217,10 @@ func parseCQL(cqlFilter string, datasource ds.Datasource) (ds.Part3Filter, error
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}
 
-	sqlFilter, params, err := cql.ParseToSQL(cqlFilter, listener)
-	if sqlFilter != "" {
+	sql, params, err := cql.ParseToSQL(cqlFilter, listener)
+	if sql != "" {
 		// make SQL filter appendable to the existing WHERE clause
-		sqlFilter = "and " + sqlFilter
+		sql = "and " + sql
 	}
-	return ds.Part3Filter{SQL: sqlFilter, Params: params}, err
+	return ds.Part3Filter{SQL: sql, Params: params}, err
 }

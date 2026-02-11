@@ -77,7 +77,7 @@ func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 // ExitCharacterLiteral Literals
 func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralContext) {
 	if ctx.GetText() != "" {
-		withoutSymbol, withSymbol := l.generateUniqueNamedParam(geopackage.NamedParamSymbolSqlx)
+		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
 
 		l.stack.Push(withSymbol)
 		l.namedParams[withoutSymbol] = ctx.GetText()
@@ -87,7 +87,7 @@ func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralCo
 // ExitNumericLiteral Literals
 func (l *GeoPackageListener) ExitNumericLiteral(ctx *parser.NumericLiteralContext) {
 	if ctx.GetText() != "" {
-		withoutSymbol, withSymbol := l.generateUniqueNamedParam(geopackage.NamedParamSymbolSqlx)
+		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
 
 		l.stack.Push(withSymbol)
 		l.namedParams[withoutSymbol] = ctx.GetText()

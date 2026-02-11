@@ -12,14 +12,19 @@ const alphabet = "abcdefghijklmnopqrstuvwxyz"
 type CommonListener struct {
 	*parser.BaseCqlParserListener
 
-	stack       *types.Stack
+	// stack holds the current SQL clause being built.
+	stack *types.Stack
+
+	// namedParams holds named parameters used in the SQL clause (to protect against SQL injection).
 	namedParams map[string]any
-	randomizer  util.Randomizer
+
+	// randomizer is used to generate unique named parameters.
+	randomizer util.Randomizer
 }
 
-// generateUniqueNamedParam generates a unique named parameter (e.g. :abc or @abc)
+// generateNamedParam generates a unique named parameter (e.g. :abc or @abc)
 // for parameter binding in SQL prepared statements.
-func (cl *CommonListener) generateUniqueNamedParam(symbol string) (withoutSymbol, withSymbol string) {
+func (cl *CommonListener) generateNamedParam(symbol string) (withoutSymbol, withSymbol string) {
 RETRY:
 	chars := make([]byte, 4)
 	for i := range chars {
