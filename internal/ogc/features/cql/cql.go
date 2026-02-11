@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -13,6 +14,9 @@ import (
 func ParseToSQL(cql string, listener Listener) (string, map[string]any, error) {
 	if cql == "" {
 		return "", nil, nil
+	}
+	if !types.IsValidString(cql) {
+		return "", nil, errors.New("invalid characters in CQL filter")
 	}
 	errorListener := newErrorListener()
 

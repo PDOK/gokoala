@@ -1,6 +1,8 @@
 package cql
 
 import (
+	"log"
+
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
@@ -43,6 +45,7 @@ RETRY:
 	withSymbol = symbol + withoutSymbol    // for example "@cql_xmzq" or ":cql_abri"
 	_, exists := cl.namedParams[withoutSymbol]
 	if exists {
+		log.Println("WARNING: generated duplicate named parameter, retrying...")
 		goto RETRY
 	}
 	return

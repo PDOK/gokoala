@@ -19,7 +19,10 @@ type MockRandomizer struct {
 	counter int
 }
 
-func (m *MockRandomizer) IntN(_ int) int {
+func (m *MockRandomizer) IntN(n int) int {
+	if n <= 0 {
+		return 0
+	}
 	m.counter++ // not so random, instead it's predictable for testing
-	return m.counter
+	return m.counter % n
 }
