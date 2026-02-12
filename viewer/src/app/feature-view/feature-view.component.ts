@@ -379,10 +379,14 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
             const featureId = feature.getId()
             if (featureId) {
               const items = 'items'
-              const itemsUrl = feature.getProperties()['href']
-              const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
-              const link = currentUrl.protocol + '//' + currentUrl.host + currentUrl.pathname + '/' + featureId
-              tooltipContent.innerHTML = '<a href="' + link + '">' + featureId + '</a>'
+              tooltipContent.innerHTML = this.itemUrls
+                .map((itemsUrl, i) => {
+                  const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
+                  const link = currentUrl.protocol + '//' + currentUrl.host + currentUrl.pathname + '/' + featureId
+                  const hasMany = this.itemUrls.length > 1
+                  return `<a href="${link}">${featureId}  ${hasMany ? `[${i + 1}]` : ''}</a>${hasMany ? '<br />' : ''}`
+                })
+                .join('')
               const f = feature.getGeometry()
               if (f) {
                 tooltip.setPosition(getCenter(f.getExtent()))

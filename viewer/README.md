@@ -27,7 +27,7 @@ The following values are emitted:
 
 The `<app-feature-view>` component has the following parameters
 
-- **itemsUrl**: A OGC API url as dataset for the features to show
+- **itemUrls**: An array of OGC API urls as dataset for the features to show
 - **backgroundMap**: Openstreetmap is used as default backgroundmap. Use value "BRT"to use Dutch "brt achtergrondkaart" as background
 - **fillColor**: fill color (hex or RBG) for the features If not specified is used 'rgba(0,0,255)' use e.g. "rgba(0,0,255,0)" for a transparent fill
 - **strokeColor**: Stroke color of the feature default color is '#3399CC'

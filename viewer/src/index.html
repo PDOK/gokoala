@@ -39,21 +39,18 @@
     <div>show map for:</div>
     <a id="showurl">placeholdertext</a>
     <div id="bbox"></div>
-    <app-location-search-view id="location-search" projection="" class="d-block"></app-location-search-view>
-    <app-feature-view id="featuresample" mode="default"></app-feature-view>
+    <app-feature-view id="featuresample" background-map="BRT" class="card"></app-feature-view>
   </body>
   <script>
     function load() {
       const showurl = 'https://api.pdok.nl/lv/bgt/ogc/v1/collections/pand/items?&limit=1000'
       const showprojection = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
-      const featureView = document.getElementById('featuresample')
-
       itemurl.value = showurl
       itemurl.title = showurl
       itemprojection.value = showprojection
       itemprojection.title = showprojection
 
-      featureView.addEventListener('box', selectbox => {
+      featuresample.addEventListener('box', selectbox => {
         console.log('box')
         console.log(JSON.stringify(selectbox.detail))
         bbox.innerHTML = selectbox.detail
@@ -65,12 +62,6 @@
         showMap()
       })
 
-      const locationSearch = document.getElementById('location-search')
-      locationSearch.addEventListener('locationSelected', event => {
-        console.log(event?.detail)
-        featureView.setAttribute('item-urls', event?.detail || '')
-      })
-
       showMap()
     }
     function showMap() {
@@ -80,7 +71,7 @@
       showurl.href = url
 
       const map = document.getElementById('featuresample')
-      map.setAttribute('items-url', url)
+      map.itemUrls = [url]
       map.setAttribute('projection', p)
       map.setAttribute('show-bounding-box-button', document.getElementById('selectCheck').checked)
       map.setAttribute('show-fill-extent-button', document.getElementById('fullSelectCheck').checked)
