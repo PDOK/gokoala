@@ -35,7 +35,7 @@ func ParseToSQL(cql string, listener Listener) (string, map[string]any, error) {
 	cqlParser.AddErrorListener(errorListener)
 	tree := cqlParser.CqlFilter()
 
-	// walker (walks the parse tree and calls the listener)
+	// walker (walks the parse tree and calls our listener)
 	listener.AddErrorListener(errorListener)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 

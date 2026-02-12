@@ -48,7 +48,7 @@ RETRY:
 	withSymbol = symbol + withoutSymbol    // for example "@cql_xmzq" or ":cql_abri"
 	_, exists := cl.namedParams[withoutSymbol]
 	if exists {
-		log.Println("WARNING: generated duplicate named parameter, retrying...")
+		log.Printf("WARNING: generated duplicate named parameter: '%s', retrying...", withoutSymbol)
 		goto RETRY
 	}
 	return
