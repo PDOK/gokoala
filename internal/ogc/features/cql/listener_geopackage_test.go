@@ -1,12 +1,36 @@
 package cql
 
 import (
+	"database/sql"
+	"os"
+	"path"
+	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/jmoiron/sqlx"
+	"github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var pwd string
+
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	pwd = path.Dir(filename)
+}
+
+var once sync.Once
+
+func loadExtensions() {
+	once.Do(func() {
+		spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
+		driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
+		sql.Register("sqlite_spatialite", driver)
+	})
+}
 
 func TestInvalidBooleanExpression(t *testing.T) {
 	// given
@@ -44,6 +68,7 @@ func TestBooleanExpressionWithNumbers(t *testing.T) {
 
 	// then
 	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actualSQL, params)
 	assert.Equal(t, map[string]any{"cql_bcde": "10", "cql_fghi": "5"}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
 }
@@ -59,6 +84,7 @@ func TestMultipleBooleanExpressions(t *testing.T) {
 
 	// then
 	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actualSQL, params)
 	assert.Equal(t, map[string]any{"cql_bcde": "10", "cql_fghi": "20", "cql_jklm": "'X'"}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
 }
@@ -74,6 +100,23 @@ func TestMultipleBooleanExpressionsWithStrings(t *testing.T) {
 
 	// then
 	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actualSQL, params)
 	assert.Equal(t, map[string]any{"cql_bcde": "'foo'", "cql_fghi": "'bar'", "cql_jklm": "'abc'"}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
+}
+
+func assertValidSQLiteQuery(t *testing.T, filter string, params map[string]any) {
+	t.Helper()
+
+	loadExtensions()
+
+	dbPath := pwd + "/testdata/cql.gpkg"
+	db, err := sqlx.Open("sqlite_spatialite", dbPath)
+	require.NoError(t, err)
+	defer db.Close()
+
+	query := "select * from cql where " + filter
+	rows, err := db.NamedQuery(query, params)
+	require.NoError(t, err)
+	defer rows.Close()
 }
