@@ -24,7 +24,7 @@ func TestInvalidBooleanExpression(t *testing.T) {
 func TestFailOnNonQueryablePropertyExpression(t *testing.T) {
 	// given
 	queryables := []string{"prop1"}
-	inputCQL := "prop1 = 10 AND prop2 < 5"
+	inputCQL := "prop1 = 30 AND prop2 > 77"
 
 	// when
 	_, _, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables))

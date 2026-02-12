@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"net/url"
+	"os"
 	"slices"
 	"sort"
 	"strconv"
@@ -386,6 +387,11 @@ func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error
 	filter = params.Get(filterParam)
 	filterSRID, _ = ParseCrsToSRID(params, filterCrsParam)
 	filterLang := params.Get(filterLangParam)
+
+	enableCQL := os.Getenv("ENABLE_CQL") == "true" // TODO: feature flag, remove once CQL is fully supported.
+	if filter != "" && !enableCQL {
+		return filter, filterSRID, errors.New("CQL filter param is currently not supported")
+	}
 
 	if filterLang == "" {
 		filterLang = cqlText
