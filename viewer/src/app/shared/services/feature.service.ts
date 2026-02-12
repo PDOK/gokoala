@@ -132,7 +132,7 @@ export class FeatureService {
           // Swap x/y in all features only if axis orientation differs
           processedData = {
             ...data,
-            features: data.features.map(f => ({
+            features: data.features?.map(f => ({
               ...f,
               geometry: swapXYCoords(f.geometry),
             })),
