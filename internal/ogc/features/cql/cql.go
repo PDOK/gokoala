@@ -20,6 +20,7 @@ func ParseToSQL(cql string, listener Listener) (string, map[string]any, error) {
 	if !types.IsValidString(cql) {
 		return "", nil, errInvalidCharsInCQL
 	}
+
 	errorListener := newErrorListener()
 
 	// lexer
@@ -38,6 +39,7 @@ func ParseToSQL(cql string, listener Listener) (string, map[string]any, error) {
 	listener.AddErrorListener(errorListener)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 
+	// result
 	sql, namedParams := listener.GetResult()
 	return sql, namedParams, errorListener.Summary()
 }
