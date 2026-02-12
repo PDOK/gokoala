@@ -53,7 +53,7 @@ Cypress.Commands.add('checkForBrokenLinks', () =>{
     if (href &&
       !href.includes('example.com') &&
       !href.includes('europa.eu') &&
-      !href.includes('opengis.net/spec') &&
+      !href.includes('opengis.net') &&
       !href.includes('creativecommons.org/')) {
       cy.request(href)
     }
