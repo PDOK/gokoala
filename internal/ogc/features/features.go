@@ -70,7 +70,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 
-		filter, err := parseCQL(cqlFilter, datasource)
+		filter, err := f.parseCQL(cqlFilter, datasource, f.schemas[collection.GetID()])
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -201,13 +201,17 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
 
-func parseCQL(cqlFilter string, datasource ds.Datasource) (ds.Part3Filter, error) {
+func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema) (ds.Part3Filter, error) {
 	if cqlFilter == "" {
 		return ds.Part3Filter{}, nil
 	}
 
 	var listener cql.Listener
-	var queryables []string // TODO: fill with properties that can be used in CQL query
+
+	queryables := make([]string, 0) // TODO: fill with properties that are allowed to be used in CQL query. For now add ALL properties.
+	for _, field := range schema.Fields {
+		queryables = append(queryables, field.Name)
+	}
 
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
