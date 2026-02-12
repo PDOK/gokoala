@@ -207,12 +207,13 @@ func parseCQL(cqlFilter string, datasource ds.Datasource) (ds.Part3Filter, error
 	}
 
 	var listener cql.Listener
+	var queryables []string // TODO: fill with properties that can be used in CQL query
 
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewGeoPackageListener(util.DefaultRandomizer)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables)
 	case *postgres.Postgres:
-		listener = cql.NewPostgresListener(util.DefaultRandomizer)
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables)
 	default:
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}

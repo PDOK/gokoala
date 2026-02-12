@@ -20,6 +20,9 @@ type CommonListener struct {
 	// namedParams holds named parameters used in the SQL clause (to protect against SQL injection).
 	namedParams map[string]any
 
+	// queryables the list of allowed columns in the datasource that can be queried.
+	queryables []string
+
 	// randomizer is used to generate unique named parameters.
 	randomizer util.Randomizer
 

@@ -13,7 +13,7 @@ func TestInvalidBooleanExpression(t *testing.T) {
 	inputCQL := "prop1 ==== 1 AND prop2 !!= 5"
 
 	// when
-	_, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
+	_, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []string{}))
 
 	// then
 	require.ErrorContains(t, err, "syntax error at column 7: mismatched input '=' expecting ")
@@ -21,13 +21,26 @@ func TestInvalidBooleanExpression(t *testing.T) {
 	assert.Empty(t, params)
 }
 
-func TestBooleanExpression(t *testing.T) {
+func TestFailOnNonQueryablePropertyExpression(t *testing.T) {
 	// given
+	queryables := []string{"prop1"}
+	inputCQL := "prop1 = 10 AND prop2 < 5"
+
+	// when
+	_, _, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables))
+
+	// then
+	assert.ErrorContains(t, err, "property 'prop2' cannot be used in CQL filter, is not a queryable property")
+}
+
+func TestBooleanExpressionWithNumbers(t *testing.T) {
+	// given
+	queryables := []string{"prop1", "prop2"}
 	inputCQL := "prop1 = 10 AND prop2 < 5"
 	expectedSQL := "(\"prop1\" = :cql_bcde AND \"prop2\" < :cql_fghi)"
 
 	// when
-	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables))
 
 	// then
 	require.NoError(t, err)
@@ -37,28 +50,30 @@ func TestBooleanExpression(t *testing.T) {
 
 func TestMultipleBooleanExpressions(t *testing.T) {
 	// given
+	queryables := []string{"prop1", "prop2"}
 	inputCQL := "(prop1 = 10 OR prop1 = 20) AND NOT (prop2 = 'X')"
 	expectedSQL := "((\"prop1\" = :cql_bcde OR \"prop1\" = :cql_fghi) AND NOT (\"prop2\" = :cql_jklm))"
 
 	// when
-	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables))
 
 	// then
 	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "10", "cql_fghi": "20", "cql_jklm": "'X'"}, params) // TODO: check spec for single quote handling
+	assert.Equal(t, map[string]any{"cql_bcde": "10", "cql_fghi": "20", "cql_jklm": "'X'"}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
 }
 
-func TestMultipleBooleanExpressions2(t *testing.T) {
+func TestMultipleBooleanExpressionsWithStrings(t *testing.T) {
 	// given
-	inputCQL := "(prop1 = foo AND prop2 = bar) OR prop3 = abc"
-	expectedSQL := "((\"prop1\" = \"foo\" AND \"prop2\" = \"bar\") OR \"prop3\" = \"abc\")"
+	queryables := []string{"prop1", "prop2", "prop3"}
+	inputCQL := "(prop1 = 'foo' AND prop2 = 'bar') OR prop3 = 'abc'"
+	expectedSQL := "((\"prop1\" = :cql_bcde AND \"prop2\" = :cql_fghi) OR \"prop3\" = :cql_jklm)"
 
 	// when
-	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}))
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables))
 
 	// then
 	require.NoError(t, err)
-	assert.Equal(t, map[string]any{}, params)
+	assert.Equal(t, map[string]any{"cql_bcde": "'foo'", "cql_fghi": "'bar'", "cql_jklm": "'abc'"}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
 }
