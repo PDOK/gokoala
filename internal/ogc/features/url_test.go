@@ -567,6 +567,24 @@ func TestParseFeatures(t *testing.T) {
 				return false
 			},
 		},
+		{
+			name: "Fail on unimplemented filter",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"filter": []string{"some CQL expression"},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
+				assert.EqualError(t, err, "CQL filter param is currently not supported", "parse()")
+
+				return false
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
