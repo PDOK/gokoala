@@ -53,3 +53,7 @@ RETRY:
 	}
 	return
 }
+
+func (cl *CommonListener) allowAllQueryables() bool {
+	return len(cl.queryables) == 1 && cl.queryables[0] == "*"
+}

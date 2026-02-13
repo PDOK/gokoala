@@ -1,0 +1,1 @@
+landsat:wrs_path IN ('153','154','15X')

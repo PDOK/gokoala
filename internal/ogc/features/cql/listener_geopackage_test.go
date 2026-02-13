@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"sync"
 	"testing"
 
@@ -103,6 +104,37 @@ func TestMultipleBooleanExpressionsWithStrings(t *testing.T) {
 	assertValidSQLiteQuery(t, actualSQL, params)
 	assert.Equal(t, map[string]any{"cql_bcde": "'foo'", "cql_fghi": "'bar'", "cql_jklm": "'abc'"}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
+}
+
+// TODO: enable once implementation is further completed!!
+func TestCQLExamplesProvidedByOGC(t *testing.T) {
+	ogcExamples := path.Join(pwd, "testdata", "ogc")
+
+	entries, err := os.ReadDir(ogcExamples)
+	require.NoError(t, err)
+
+	for _, entry := range entries {
+		t.Skip("DISABLED FOR NOW, enable once implementation is further completed") // TODO: enable.
+
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".txt") {
+			continue
+		}
+
+		t.Run(entry.Name(), func(t *testing.T) {
+			example, err := os.ReadFile(path.Join(ogcExamples, entry.Name()))
+			require.NoError(t, err)
+
+			inputCQL := strings.TrimSpace(string(example))
+			require.NotEmpty(t, inputCQL)
+
+			queryables := []string{"*"} // allow all
+			actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables))
+
+			require.NoError(t, err)
+			assert.NotEmpty(t, actualSQL)
+			assertValidSQLiteQuery(t, actualSQL, params)
+		})
+	}
 }
 
 func assertValidSQLiteQuery(t *testing.T, filter string, params map[string]any) {

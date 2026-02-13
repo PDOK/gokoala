@@ -67,7 +67,7 @@ func (l *GeoPackageListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryCom
 // ExitPropertyName Column names
 func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()
-	if !slices.Contains(l.queryables, name) {
+	if !l.allowAllQueryables() && !slices.Contains(l.queryables, name) {
 		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
 		l.errorListener.ListenerError(err)
 		return
