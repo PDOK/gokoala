@@ -13,6 +13,7 @@ import (
 var errInvalidCharsInCQL = errors.New("invalid characters in CQL filter")
 
 // ParseToSQL parses OGC CQL2 Text to SQL, as described in OGC API Features - Part 3.
+// Spec: https://docs.ogc.org/is/21-065r2/21-065r2.html
 func ParseToSQL(cql string, listener Listener) (string, map[string]any, error) {
 	if cql == "" {
 		return "", nil, nil
