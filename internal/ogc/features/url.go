@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"net/url"
+	"os"
 	"slices"
 	"sort"
 	"strconv"
@@ -21,15 +22,19 @@ import (
 )
 
 const (
-	LimitParam     = "limit"
-	CrsParam       = "crs"
-	BboxParam      = "bbox"
-	BboxCrsParam   = "bbox-crs"
-	cursorParam    = "cursor"
-	dateTimeParam  = "datetime"
-	filterParam    = "filter"
-	filterCrsParam = "filter-crs"
-	profileParam   = "profile"
+	LimitParam      = "limit"
+	CrsParam        = "crs"
+	BboxParam       = "bbox"
+	BboxCrsParam    = "bbox-crs"
+	cursorParam     = "cursor"
+	dateTimeParam   = "datetime"
+	filterParam     = "filter"
+	filterCrsParam  = "filter-crs"
+	filterLangParam = "filter-lang"
+	profileParam    = "profile"
+
+	cqlText = "cql2-text"
+	cqlJSON = "cql2-json"
 
 	propertyFilterMaxLength = 512
 	propertyFilterWildcard  = "*"
@@ -79,7 +84,7 @@ type featureCollectionURL struct {
 // parse the given URL to values required to delivery a set of Features.
 func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int, inputSRID d.SRID, outputSRID d.SRID,
 	contentCrs d.ContentCrs, bbox *geom.Bounds, referenceDate time.Time, propertyFilters map[string]string,
-	profile d.Profile, err error) {
+	profile d.Profile, cqlFilter string, err error) {
 
 	err = fc.validateNoUnknownParams()
 	if err != nil {
@@ -93,7 +98,7 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
 	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
-	_, filterSRID, filterErr := parseFilter(fc.params)
+	cqlFilter, filterSRID, filterErr := parseFilter(fc.params)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
 	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, referenceDateErr, filterErr, inputSRIDErr)
@@ -381,9 +386,18 @@ func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error)
 func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error) {
 	filter = params.Get(filterParam)
 	filterSRID, _ = ParseCrsToSRID(params, filterCrsParam)
+	filterLang := params.Get(filterLangParam)
 
-	if filter != "" {
+	enableCQL := os.Getenv("ENABLE_CQL") == "true" // TODO: feature flag, remove once CQL is fully supported.
+	if filter != "" && !enableCQL {
 		return filter, filterSRID, errors.New("CQL filter param is currently not supported")
+	}
+
+	if filterLang == "" {
+		filterLang = cqlText
+	}
+	if filterLang == cqlJSON {
+		return filter, filterSRID, fmt.Errorf("%s is not supported, only %s is supported", cqlJSON, cqlText)
 	}
 
 	return filter, filterSRID, nil

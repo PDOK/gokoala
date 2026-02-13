@@ -1,0 +1,1 @@
+(floors>5 AND material='brick') OR swimming_pool=true

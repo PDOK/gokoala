@@ -9,8 +9,12 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
+	"github.com/PDOK/gokoala/internal/ogc/features/cql"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 	"github.com/twpayne/go-geom"
@@ -26,11 +30,12 @@ var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.
 // BEWARE: this is one of the most performance-sensitive pieces of code in the system.
 // Try to do as much initialization work outside the hot path, only do essential
 // operations inside this method.
+//
+//nolint:cyclop
 func (f *Features) Features() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-
 			return
 		}
 
@@ -38,9 +43,10 @@ func (f *Features) Features() http.HandlerFunc {
 		collection, ok := f.configuredCollections[collectionID]
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
-
 			return
 		}
+
+		// parse URL query parameters
 		url := featureCollectionURL{
 			*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
@@ -50,10 +56,9 @@ func (f *Features) Features() http.HandlerFunc {
 			hasDateTime(collection),
 		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
-			referenceDate, propertyFilters, profile, err := url.parse()
+			referenceDate, propertyFilters, profile, cqlFilter, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
-
 			return
 		}
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
@@ -62,16 +67,20 @@ func (f *Features) Features() http.HandlerFunc {
 		collectionType := f.collectionTypes.Get(collection.GetID())
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
 			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
+			return
+		}
 
+		filter, err := f.parseCQL(cqlFilter, datasource, f.schemas[collection.GetID()])
+		if err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
 		// validation completed, now get the features
 		newCursor, fc, err := f.queryFeatures(r.Context(), datasource, inputSRID, outputSRID, bbox,
-			encodedCursor.Decode(url.checksum()), limit, collection, referenceDate, propertyFilters, profile)
+			encodedCursor.Decode(url.checksum()), limit, collection, referenceDate, propertyFilters, filter, profile)
 		if err != nil {
 			handleFeaturesQueryError(w, collection.GetID(), err)
-
 			return
 		}
 
@@ -106,9 +115,10 @@ func (f *Features) Features() http.HandlerFunc {
 	}
 }
 
-func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, inputSRID, outputSRID domain.SRID,
-	bbox *geom.Bounds, currentCursor domain.DecodedCursor, limit int, collection config.FeaturesCollection,
-	referenceDate time.Time, propertyFilters map[string]string, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
+func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
+	inputSRID, outputSRID domain.SRID, bbox *geom.Bounds, currentCursor domain.DecodedCursor,
+	limit int, collection config.FeaturesCollection, referenceDate time.Time, propertyFilters map[string]string,
+	filter ds.Part3Filter, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
 
 	var newCursor domain.Cursors
 	var fc *domain.FeatureCollection
@@ -123,7 +133,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, 
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 			PropertyFilters:  propertyFilters,
-			// Add filter, filter-lang
+			Filter:           filter,
 		}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
 	} else {
 		// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
@@ -137,7 +147,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource, 
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, referenceDate),
 			PropertyFilters:  propertyFilters,
-			// Add filter, filter-lang
+			Filter:           filter,
 		})
 		if err == nil && fids != nil {
 			// this is step 2: get the actual features in output CRS by feature ID
@@ -176,7 +186,7 @@ func createTemporalCriteria(collection config.GeoSpatialCollection, referenceDat
 	return temporalCriteria
 }
 
-// log error but send a generic message to the client to prevent possible information leakage from datasource.
+// log the error but send a generic message to the client to prevent possible information leakage from datasource.
 func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err error) {
 	msg := "failed to retrieve feature collection " + collectionID
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
@@ -189,4 +199,33 @@ func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err er
 
 func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
+}
+
+func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema) (ds.Part3Filter, error) {
+	if cqlFilter == "" {
+		return ds.Part3Filter{}, nil
+	}
+
+	var listener cql.Listener
+
+	queryables := make([]string, 0) // TODO: fill with properties that are allowed to be used in CQL query. For now add ALL properties.
+	for _, field := range schema.Fields {
+		queryables = append(queryables, field.Name)
+	}
+
+	switch datasource.(type) {
+	case *geopackage.GeoPackage:
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables)
+	case *postgres.Postgres:
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables)
+	default:
+		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
+	}
+
+	sql, params, err := cql.ParseToSQL(cqlFilter, listener)
+	if sql != "" {
+		// make SQL filter appendable to the existing WHERE clause
+		sql = "and " + sql
+	}
+	return ds.Part3Filter{SQL: sql, Params: params}, err
 }
