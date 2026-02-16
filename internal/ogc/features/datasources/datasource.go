@@ -69,7 +69,7 @@ type FeaturesCriteria struct {
 	PropertyFilters map[string]string
 
 	// filtering by CQL (OAF part 3)
-	Filter string
+	Filter Part3Filter
 }
 
 // TemporalCriteria criteria to filter based on date/time.
@@ -110,4 +110,10 @@ type FeaturesSearchCriteria struct {
 
 	// filtering by bounding box (OAF part 1)
 	Bbox *geom.Bounds
+}
+
+// Part3Filter OAF part 3 filter based on CQL
+type Part3Filter struct {
+	SQL    string
+	Params map[string]any
 }

@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	// https://github.com/jackc/pgx/issues/387#issuecomment-1107666716
-	pgxNamedParamSymbol = "@"
+	// NamedParamSymbolPgx https://github.com/jackc/pgx/issues/387#issuecomment-1107666716
+	NamedParamSymbolPgx = "@"
 
 	searchGeomColumn = "geometry"
 	searchBboxColumn = "bbox"
@@ -304,8 +304,8 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, pgxNamedParamSymbol)
-	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, pgxNamedParamSymbol)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolPgx)
+	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, NamedParamSymbolPgx)
 
 	var bboxClause string
 	var bboxNamedParams map[string]any
@@ -323,8 +323,9 @@ with
     prev as (select * from "%[1]s" where "%[2]s" < @fid %[3]s %[4]s %[8]s order by %[2]s desc limit @limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", @limit) over (order by %[2]s) as %[6]s, lead("%[2]s", @limit) over (order by "%[2]s") as %[7]s from nextprev)
-select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
-`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid, bboxClause)
+select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s %[9]s limit @limit
+`, table.Name, pg.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid,
+		bboxClause, criteria.Filter.SQL) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":        criteria.Cursor.FID,
@@ -336,6 +337,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= @fid %[3]s %[4]s limit @limit
 	}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
+	maps.Copy(namedParams, criteria.Filter.Params)
 
 	return query, namedParams, nil
 }
@@ -456,7 +458,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	ORDER BY -- use same "order by" clause everywhere
 	    rn.rank DESC,
 	    rn.display_name COLLATE "custom_numeric" ASC
-	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use $X params for user input!
+	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use named params for user input!
 }
 
 func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string, bboxColumn string) (string, map[string]any, error) {
@@ -506,7 +508,7 @@ func selectPostGISGeometry(axisOrder d.AxisOrder, table *common.Table) string {
 	return fmt.Sprintf(", st_transform(\"%[1]s\", @outputSrid::int) as \"%[1]s\"", table.GeometryColumnName)
 }
 
-// selectPostgresRelation Assemble Postgres specific query to select related features using a many-to-many table e.g.:
+// selectPostgresRelation Assemble a Postgres specific query to select related features using a many-to-many table e.g.:
 //
 //	select string_agg(other.external_fid, ',')
 //	from building_apartment junction join apartment other on other.id = junction.apartment_id

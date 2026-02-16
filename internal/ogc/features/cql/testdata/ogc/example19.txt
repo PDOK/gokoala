@@ -1,0 +1,1 @@
+(owner LIKE 'mike%' OR owner LIKE 'Mike%') AND floors<4
