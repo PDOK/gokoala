@@ -177,9 +177,20 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "Search exact match before should be ranked before wildcard match",
+			name: "Search exact match should be ranked before wildcard match",
 			fields: fields{
 				url:    "http://localhost:8080/search?q=Holland Den Burg&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-exact-match.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search with parentheses, exact match should be ranked before wildcard match",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Holland (Den Burg)&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 				format: "json",
 			},
 			want: want{
