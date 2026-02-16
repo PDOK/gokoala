@@ -45,7 +45,7 @@ func ParseToSQL(cql string, listener Listener) (string, map[string]any, error) {
 	return sql, namedParams, errorListener.Summary()
 }
 
-// Listener converts OGC CQL2 Text to SQL.
+// Listener converts OGC CQL2 Text parse tree to SQL.
 type Listener interface {
 	parser.CqlParserListener
 

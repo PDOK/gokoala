@@ -70,7 +70,7 @@ func TestBooleanExpressionWithNumbers(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actualSQL, params)
-	assert.Equal(t, map[string]any{"cql_bcde": "10", "cql_fghi": "5"}, params)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(5)}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
 }
 
@@ -86,7 +86,7 @@ func TestMultipleBooleanExpressions(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actualSQL, params)
-	assert.Equal(t, map[string]any{"cql_bcde": "10", "cql_fghi": "20", "cql_jklm": "'X'"}, params)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(20), "cql_jklm": "'X'"}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
 }
 

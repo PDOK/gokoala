@@ -1,7 +1,10 @@
 package cql
 
 import (
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
@@ -55,5 +58,18 @@ RETRY:
 }
 
 func (cl *CommonListener) allowAllQueryables() bool {
+	log.Println("WARNING: using '*' as queryable, this is not recommended")
 	return len(cl.queryables) == 1 && cl.queryables[0] == "*"
+}
+
+func parseNumber(s string) (any, error) {
+	s = strings.TrimSpace(s)
+
+	if i, err := strconv.ParseInt(s, 0, 64); err == nil {
+		return i, nil
+	}
+	if f, err := strconv.ParseFloat(s, 64); err == nil {
+		return f, nil
+	}
+	return nil, fmt.Errorf("%s is not a valid numeric type", s)
 }

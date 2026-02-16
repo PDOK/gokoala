@@ -64,7 +64,7 @@ func (l *GeoPackageListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryCom
 	l.stack.Push(fmt.Sprintf("%s %s %s", left, op, right))
 }
 
-// ExitPropertyName Column names
+// ExitPropertyName Handle column names
 func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()
 	if !l.allowAllQueryables() && !slices.Contains(l.queryables, name) {
@@ -80,7 +80,7 @@ func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	l.stack.Push(name)
 }
 
-// ExitCharacterLiteral Literals
+// ExitCharacterLiteral Handle literals
 func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralContext) {
 	if ctx.GetText() != "" {
 		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
@@ -90,17 +90,23 @@ func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralCo
 	}
 }
 
-// ExitNumericLiteral Literals
+// ExitNumericLiteral Handle literals
 func (l *GeoPackageListener) ExitNumericLiteral(ctx *parser.NumericLiteralContext) {
 	if ctx.GetText() != "" {
 		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
 
+		num, err := parseNumber(ctx.GetText())
+		if err != nil {
+			l.errorListener.ListenerError(err.Error())
+			return
+		}
+
 		l.stack.Push(withSymbol)
-		l.namedParams[withoutSymbol] = ctx.GetText()
+		l.namedParams[withoutSymbol] = num
 	}
 }
 
-// ExitBooleanLiteral Literals
+// ExitBooleanLiteral Handle literals
 func (l *GeoPackageListener) ExitBooleanLiteral(ctx *parser.BooleanLiteralContext) {
 	// From GeoPackage spec (https://www.geopackage.org/spec140/index.html):
 	// "A boolean value representing true or false. Stored as SQLite INTEGER with value 0 for false or 1 for true."

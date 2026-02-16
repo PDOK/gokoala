@@ -28,6 +28,5 @@ func (l *PostgresListener) GetResult() (string, map[string]any) {
 }
 
 func (l *PostgresListener) ExitEveryRule(_ antlr.ParserRuleContext) {
-	// TODO: implement!
 	log.Println("WARNING: CQL parser for Postgres isn't yet implemented")
 }
