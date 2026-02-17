@@ -109,7 +109,7 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	}
 
 	// add preamble first
-	openAPIFiles := []string{preamble}
+	openAPIFiles := []string{preamble} //nolint:prealloc
 	// add extra spec(s) thereafter, to allow it to override default openapi specs
 	openAPIFiles = append(openAPIFiles, extraOpenAPIFiles...)
 	openAPIFiles = append(openAPIFiles, defaultOpenAPIFiles...)

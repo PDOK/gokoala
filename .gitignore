@@ -12,3 +12,5 @@ viewer/dist
 viewer/node_modules
 viewer/cypress.env.json
 hack/tmp
+*.gpkg-shm
+*.gpkg-wal

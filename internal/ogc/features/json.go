@@ -283,7 +283,7 @@ func (jf *jsonFeatures) createFeatureLinks(currentFormat string, url featureURL,
 func (jf *jsonFeatures) createFeatureDownloadLinks(configuredFC *config.FeaturesCollection, fc *domain.FeatureCollection) {
 	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		for _, feature := range fc.Features {
-			links := make([]domain.Link, 0)
+			links := make([]domain.Link, 0, 1)
 			links = append(links, domain.Link{
 				Rel:   "enclosure",
 				Title: "Download feature",
@@ -298,7 +298,7 @@ func (jf *jsonFeatures) createFeatureDownloadLinks(configuredFC *config.Features
 func (jf *jsonFeatures) createJSONFGFeatureDownloadLinks(configuredFC *config.FeaturesCollection, fc *domain.JSONFGFeatureCollection) {
 	if mapSheetProperties := getMapSheetProperties(configuredFC); mapSheetProperties != nil {
 		for _, feature := range fc.Features {
-			links := make([]domain.Link, 0)
+			links := make([]domain.Link, 0, 1)
 			links = append(links, domain.Link{
 				Rel:   "enclosure",
 				Title: "Download feature",
