@@ -79,7 +79,9 @@ export class FeatureService {
   constructor(
     private logger: NGXLogger,
     private http: HttpClient
-  ) {}
+  ) {
+    initProj4()
+  }
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string, bbox?: string): Observable<FeatureGeoJSON[]> {
     let params = new HttpParams().set('q', q)
@@ -149,7 +151,6 @@ export class FeatureService {
   }
 
   getProjectionMapping(value: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
-    initProj4()
     if (value) {
       if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
         //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
