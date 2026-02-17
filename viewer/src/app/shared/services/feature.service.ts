@@ -46,6 +46,7 @@ export type GeometryGeoJSON =
   | geometrycollectionGeoJSON
 
 export type FeatureGeoJSON = {
+  type: string
   geometry: GeometryGeoJSON
   id?: string | number
   links?: Array<Link>
@@ -54,6 +55,7 @@ export type FeatureGeoJSON = {
 }
 
 export type FeatureCollectionGeoJSON = {
+  type: string
   features: Array<FeatureGeoJSON>
   links?: Array<Link>
   numberReturned?: number
@@ -127,17 +129,26 @@ export class FeatureService {
       return geom
     }
     if (url.url == '') return of([])
-    return this.http.get<FeatureCollectionGeoJSON>(url.url).pipe(
+    return this.http.get<FeatureCollectionGeoJSON | FeatureGeoJSON>(url.url).pipe(
       map(data => {
         let processedData = data
         if (url.dataMapping.swapAllowed && dataproj.getAxisOrientation() !== visualproj.getAxisOrientation()) {
-          // Swap x/y in all features only if axis orientation differs
-          processedData = {
-            ...data,
-            features: data.features?.map(f => ({
-              ...f,
-              geometry: swapXYCoords(f.geometry),
-            })),
+          if (data.type === 'FeatureCollection') {
+            // Swap x/y in all features only if axis orientation differs
+            const collection = data as FeatureCollectionGeoJSON
+            processedData = {
+              ...collection,
+              features: collection.features?.map(f => ({
+                ...f,
+                geometry: swapXYCoords(f.geometry),
+              })),
+            } as FeatureCollectionGeoJSON
+          } else {
+            const feature = data as FeatureGeoJSON
+            processedData = {
+              ...feature,
+              geometry: swapXYCoords(feature.geometry),
+            } as FeatureGeoJSON
           }
         }
         const features = new GeoJSON().readFeatures(processedData, {
