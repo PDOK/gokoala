@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http'
+import { provideHttpClient } from '@angular/common/http'
 import { createOutputSpy } from 'cypress/angular'
 import { Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
@@ -53,8 +53,8 @@ export function mountFeatureComponent(
   cy.log(JSON.stringify(allprop))
 
   cy.mount(FeatureViewComponent, {
+    providers: [provideHttpClient()],
     imports: [
-      HttpClientModule,
       LoggerModule.forRoot({
         level: NgxLoggerLevel.DEBUG,
       }),
