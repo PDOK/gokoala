@@ -357,14 +357,9 @@ export class VectortileViewComponent implements OnChanges {
 
   private setStyle(vectorTileLayer: VectorTileLayer<FeatureLike>) {
     if (this.styleUrl) {
-      const projection = vectorTileLayer.getSource()?.getProjection()
-      applyStyle(vectorTileLayer, this.styleUrl, undefined, undefined, this.calcResolutions(this.projection))
+      applyStyle(vectorTileLayer, this.styleUrl, undefined, { updateSource: false }, this.calcResolutions(this.projection))
         .then(() => {
-          //overrule source url and zoom from style
-          if (this.tileUrl !== NetherlandsRDNewQuadDefault) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            vectorTileLayer.setSource(this.getVectorTileSource(projection!, this.tileUrl))
-          }
+          this.logger.log('style applied for: ' + this.id)
         })
         .catch(err => this.logger.error('error loading: ' + this.id + ' ' + this.styleUrl + ' ' + err))
     } else {
