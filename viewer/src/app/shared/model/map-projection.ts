@@ -18,7 +18,37 @@ export function initProj4() {
 
   proj4.defs(
     'EPSG:4258',
-    'GEOGCRS["ETRS89",ENSEMBLE["European Terrestrial Reference System 1989 ensemble", MEMBER["European Terrestrial Reference Frame 1989", ID["EPSG",1178]], MEMBER["European Terrestrial Reference Frame 1990", ID["EPSG",1179]], MEMBER["European Terrestrial Reference Frame 1991", ID["EPSG",1180]], MEMBER["European Terrestrial Reference Frame 1992", ID["EPSG",1181]], MEMBER["European Terrestrial Reference Frame 1993", ID["EPSG",1182]], MEMBER["European Terrestrial Reference Frame 1994", ID["EPSG",1183]], MEMBER["European Terrestrial Reference Frame 1996", ID["EPSG",1184]], MEMBER["European Terrestrial Reference Frame 1997", ID["EPSG",1185]], MEMBER["European Terrestrial Reference Frame 2000", ID["EPSG",1186]], MEMBER["European Terrestrial Reference Frame 2005", ID["EPSG",1204]], MEMBER["European Terrestrial Reference Frame 2014", ID["EPSG",1206]], MEMBER["European Terrestrial Reference Frame 2020", ID["EPSG",1382]], ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1,ID["EPSG",9001]],ID["EPSG",7019]], ENSEMBLEACCURACY[0.1],ID["EPSG",6258]],CS[ellipsoidal,2,ID["EPSG",6422]],AXIS["Geodetic latitude (Lat)",north],AXIS["Geodetic longitude (Lon)",east],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9102]],ID["EPSG",4258]]'
+    `GEOGCRS["ETRS89",
+    ENSEMBLE["European Terrestrial Reference System 1989 ensemble",
+        MEMBER["European Terrestrial Reference Frame 1989"],
+        MEMBER["European Terrestrial Reference Frame 1990"],
+        MEMBER["European Terrestrial Reference Frame 1991"],
+        MEMBER["European Terrestrial Reference Frame 1992"],
+        MEMBER["European Terrestrial Reference Frame 1993"],
+        MEMBER["European Terrestrial Reference Frame 1994"],
+        MEMBER["European Terrestrial Reference Frame 1996"],
+        MEMBER["European Terrestrial Reference Frame 1997"],
+        MEMBER["European Terrestrial Reference Frame 2000"],
+        MEMBER["European Terrestrial Reference Frame 2005"],
+        MEMBER["European Terrestrial Reference Frame 2014"],
+        MEMBER["European Terrestrial Reference Frame 2020"],
+        ELLIPSOID["GRS 1980",6378137,298.257222101,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[0.1]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Spatial referencing."],
+        AREA["Europe - onshore and offshore: Albania; Andorra; Austria; Belgium; Bosnia and Herzegovina; Bulgaria; Croatia; Czechia; Denmark; Estonia; Faroe Islands; Finland; France; Germany; Gibraltar; Greece; Hungary; Ireland; Italy; Kosovo; Latvia; Liechtenstein; Lithuania; Luxembourg; Malta; Moldova; Monaco; Montenegro; Netherlands; North Macedonia; Norway including Svalbard and Jan Mayen; Poland; Portugal - mainland; Romania; San Marino; Serbia; Slovakia; Slovenia; Spain - mainland and Balearic islands; Sweden; Switzerland; United Kingdom (UK) including Channel Islands and Isle of Man; Vatican City State."],
+        BBOX[33.26,-16.1,84.73,38.01]],
+    ID["EPSG",4258]]`
   )
 
   proj4register(proj4)
