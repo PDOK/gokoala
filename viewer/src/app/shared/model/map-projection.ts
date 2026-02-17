@@ -16,7 +16,40 @@ export function initProj4() {
     '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs'
   )
 
-  proj4.defs('EPSG:4258', '+proj=longlat +ellps=GRS80 +no_defs')
+  proj4.defs(
+    'EPSG:4258',
+    `GEOGCRS["ETRS89",
+    ENSEMBLE["European Terrestrial Reference System 1989 ensemble",
+        MEMBER["European Terrestrial Reference Frame 1989"],
+        MEMBER["European Terrestrial Reference Frame 1990"],
+        MEMBER["European Terrestrial Reference Frame 1991"],
+        MEMBER["European Terrestrial Reference Frame 1992"],
+        MEMBER["European Terrestrial Reference Frame 1993"],
+        MEMBER["European Terrestrial Reference Frame 1994"],
+        MEMBER["European Terrestrial Reference Frame 1996"],
+        MEMBER["European Terrestrial Reference Frame 1997"],
+        MEMBER["European Terrestrial Reference Frame 2000"],
+        MEMBER["European Terrestrial Reference Frame 2005"],
+        MEMBER["European Terrestrial Reference Frame 2014"],
+        MEMBER["European Terrestrial Reference Frame 2020"],
+        ELLIPSOID["GRS 1980",6378137,298.257222101,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[0.1]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Spatial referencing."],
+        AREA["Europe - onshore and offshore: Albania; Andorra; Austria; Belgium; Bosnia and Herzegovina; Bulgaria; Croatia; Czechia; Denmark; Estonia; Faroe Islands; Finland; France; Germany; Gibraltar; Greece; Hungary; Ireland; Italy; Kosovo; Latvia; Liechtenstein; Lithuania; Luxembourg; Malta; Moldova; Monaco; Montenegro; Netherlands; North Macedonia; Norway including Svalbard and Jan Mayen; Poland; Portugal - mainland; Romania; San Marino; Serbia; Slovakia; Slovenia; Spain - mainland and Balearic islands; Sweden; Switzerland; United Kingdom (UK) including Channel Islands and Isle of Man; Vatican City State."],
+        BBOX[33.26,-16.1,84.73,38.01]],
+    ID["EPSG",4258]]`
+  )
 
   proj4register(proj4)
 }
