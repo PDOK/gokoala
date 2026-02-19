@@ -374,7 +374,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 				-- make a virtual table by creating tuples from the provided arrays.
 				SELECT * FROM unnest(@names::text[], @versions::int[])
 			)
-		%[4]s -- bounding box intersect filter
+		%[4]s -- optional bounding box intersect filter
 	),
 	results_count AS (
 	    SELECT
@@ -445,7 +445,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 					ORDER BY
 						array_length(string_to_array(r.suggest, ' '), 1) ASC,
 						r.display_name COLLATE "custom_numeric" ASC
-					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on scor
+					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on score
 				)
 			) u
 			LEFT JOIN

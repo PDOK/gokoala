@@ -216,9 +216,9 @@ func (f Field) ToTypeFormat() TypeFormat {
 }
 
 func prefixBeforeParenthesis(s string) string {
-	idx := strings.Index(s, "(")
-	if idx != -1 {
-		return s[:idx]
+	before, _, ok := strings.Cut(s, "(")
+	if ok {
+		return before
 	}
 
 	return s
