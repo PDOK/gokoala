@@ -442,6 +442,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 						-- pre-rank more than rank-threshold results by ordering on suggest length and display_name
 						CASE WHEN (SELECT c from results_count) >= @rt THEN 1 = 1 END
 					ORDER BY
+						-- order by the number of words in the suggest string, up to the limit given in @prwcc
 						(SELECT COUNT(*) FROM unnest(regexp_split_to_array(r.suggest, '\s+')) AS words LIMIT @prwcc) ASC,
 						r.display_name COLLATE "custom_numeric" ASC
 					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on score
