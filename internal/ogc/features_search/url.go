@@ -25,9 +25,9 @@ const (
 var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+\]`)
 
-	// matches & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
+	// matches `&` (AND), `|` (OR), `!` (NOT), and `<->` (FOLLOWED BY).
 	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
-	// matches ' (apostrophe), ( (left parenthesis), and ) (right parenthesis).
+	// matches `'` (apostrophe), `(` (left parenthesis), and `)` (right parenthesis).
 	searchDiscardCharactersRegex = regexp.MustCompile(`'|\(|\)`)
 
 	searchKnownParams = map[string]struct{}{
@@ -90,7 +90,7 @@ func parseCollections(query url.Values) (d.CollectionsWithParams, error) {
 }
 
 func parseSearchTerms(query url.Values) (string, error) {
-	searchTerms := searchDiscardCharactersRegex.ReplaceAllLiteralString(strings.TrimSpace(strings.ToLower(query.Get(queryParam))), "")
+	searchTerms := searchDiscardCharactersRegex.ReplaceAllLiteralString(strings.TrimSpace(strings.ToLower(query.Get(queryParam))), " ")
 	if searchTerms == "" {
 		return "", fmt.Errorf("no search terms provided, '%s' query parameter is required", queryParam)
 	}
