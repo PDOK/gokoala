@@ -1,4 +1,5 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "head"}}<link rel="stylesheet" type="text/css" href="view-component/styles.css">{{end}}
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
@@ -11,6 +12,8 @@
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
                 {{ $clickableHeader := true }}
+                {{ $amountOfRefs := 0 }}
+                {{ $singleRefURL := "" }}
 
                 {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
                 {{ if and (and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections)
@@ -18,6 +21,11 @@
                     {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
                         {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
                             {{ $clickableHeader = false }}
+                            {{ $amountOfRefs = len $collSearch.CollectionRefs}}
+                            {{ if eq $amountOfRefs 1 }}
+                                {{ $ref := index $collSearch.CollectionRefs 0 }}
+                                {{ $singleRefURL = $ref.CollectionURL $baseUrl }}
+                            {{ end }}
                         {{ end }}
                     {{ end }}
                 {{ end }}
@@ -31,13 +39,45 @@
                     {{ end }}
                 </h2>
                 {{ else }}
-                <h2 class="card-header h5">
-                    {{ if and $coll.Metadata $coll.Metadata.Title }}
-                        {{ $coll.Metadata.Title }}
-                    {{ else }}
-                        {{ $coll.ID }}
+                <div class="card-header">
+                    <h2 class="h5 mb-0">
+                        {{ if $singleRefURL }}
+                        <a target="_blank"
+                            {{ if and $coll.Metadata $coll.Metadata.Title }}
+                                 href="{{ $singleRefURL }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}
+                            {{ else }}
+                                 href="{{ $singleRefURL }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}
+                            {{ end }}
+                            <i class="bi bi-box-arrow-up-right ms-2 fs-6" aria-hidden="true"></i>
+                        </a>
+                        {{ else }}
+                            <a class="d-flex align-items-center justify-content-between"
+                               data-bs-toggle="collapse" href="#collapse-{{ $coll.ID }}" role="button" aria-expanded="false" aria-controls="collapse-{{ $coll.ID }}">
+                                <span>
+                                    {{ if and $coll.Metadata $coll.Metadata.Title }}
+                                        {{ $coll.Metadata.Title }}
+                                    {{ else }}
+                                        {{ $coll.ID }}
+                                    {{ end }}
+                                </span>
+                                <i class="bi bi-chevron-down ms-2 flex-shrink-0 collapse-chevron" aria-hidden="true"></i>
+                            </a>
+                        {{ end }}
+                    </h2>
+                    {{ if not $singleRefURL }}
+                    <div class="collapse mt-2" id="collapse-{{ $coll.ID }}">
+                        <ul class="list-unstyled mb-0">
+                            {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+                                {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
+                                    {{ range $ref := $collSearch.CollectionRefs }}
+                                    <li><a href="{{ $ref.CollectionURL $baseUrl }}" class="small">{{ $ref.CollectionID }}</a></li>
+                                    {{ end }}
+                                {{ end }}
+                            {{ end }}
+                        </ul>
+                    </div>
                     {{ end }}
-                </h2>
+                </div>
                 {{ end }}
 
                 <div class="card-body">
@@ -67,6 +107,7 @@
                             <li class="list-group-item"><b>Schema</b>: <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}/schema" aria-label="{{ i18n "View" }} Schema">{{ i18n "View" }} schema</a></li>
                         {{ end }}
                     {{ end }}
+                    {{ if and $coll.Metadata $coll.Metadata.LastUpdated }}
                     {{ if and $coll.Metadata $coll.Metadata.LastUpdated }}
                     <li class="list-group-item">
                         {{ if and $coll.Metadata $coll.Metadata.LastUpdatedBy }}
@@ -117,18 +158,10 @@
                         <strong>{{ i18n "Version" }}</strong>: {{ $collSearch.Version }}
                     </li>
                     <li class="list-group-item">
-                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $collSearch.DisplayNameTemplate }}</code>
+                        <strong>{{ i18n "Fields" }}</strong>: {{ join ", " $collSearch.Fields }}
                     </li>
-                        {{/* collection reference is only required for remotely hosted collections */}}
-                        {{ if $collSearch.IsRemoteFeatureCollection $coll.ID }}
-                        <li class="list-group-item">
-                            <strong>{{ i18n "OGCCollections" }}</strong>
-                            <ul>{{- range $o, $collRef := $collSearch.CollectionRefs -}}
-                            <li><a href="{{ $collRef.CollectionURL $baseUrl }}">{{ $collRef.CollectionID }}</a></li>
-                            {{- end -}}</ul>
-                        </li>
-                        {{ end }}
-                        {{ end }}
+                        {{end}}
+                        {{end}}
                     {{ end }}
                     {{ end }}
                     {{ end }}
