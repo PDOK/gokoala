@@ -54,7 +54,7 @@ func (jsr *jsonSearchResults) serve(input any, contentType string, r *http.Reque
 }
 
 func createLinks(baseURL url.URL) []domain.Link {
-	links := make([]domain.Link, 0)
+	links := make([]domain.Link, 0, 3)
 
 	links = append(links, domain.Link{
 		Rel:   "self",

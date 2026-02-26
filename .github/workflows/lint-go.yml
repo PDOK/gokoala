@@ -12,16 +12,16 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - name: setup cgo dependencies
+      - uses: actions/checkout@v4
+
+      - name: Setup cgo dependencies
         run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev libssl-dev libsqlite3-mod-spatialite proj-bin
 
-      - uses: actions/setup-go@v6
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
           check-latest: true
-          go-version: '1.25'
-          cache: false
-
-      - uses: actions/checkout@v4
+          go-version-file: 'go.mod'
 
       - name: Tidy
         # Pin 3rd party action to a specific version as security best-practice.
@@ -39,10 +39,10 @@ jobs:
         run: |
           GOPATH_BIN=$(go env GOPATH)/bin
           export PATH="${GOPATH_BIN}:${PATH}"
-          go install github.com/dkorunic/betteralign/cmd/betteralign@v0.8.3
+          go install github.com/dkorunic/betteralign/cmd/betteralign@v0.8.4
           betteralign ./internal/ogc/features/domain
 
       - name: Golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.5.0
+          version: v2.9.0

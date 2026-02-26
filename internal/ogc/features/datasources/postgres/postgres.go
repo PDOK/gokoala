@@ -374,7 +374,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 				-- make a virtual table by creating tuples from the provided arrays.
 				SELECT * FROM unnest(@names::text[], @versions::int[])
 			)
-		%[4]s -- bounding box intersect filter
+		%[4]s -- optional bounding box intersect filter
 	),
 	results_count AS (
 	    SELECT
