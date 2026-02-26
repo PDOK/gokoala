@@ -51,7 +51,7 @@ ogcApi:
             - srs: EPSG:4258
             - srs: EPSG:28992
           postgres:
-            host: postgres
+            host: localhost
             user: postgres
             databaseName: postgres
             externalFid: external_fid
@@ -61,7 +61,7 @@ ogcApi:
           - address_street
           - address_postal
           - address_place
-        displayNameExample: "Hoofdstraat 123 1234AB Amsterdam"
+        displayNameExample: "Lange Jansstraat 1, 3512 BA Utrecht"
         collectionFilter: "address_postal LIKE '1234%'"
         collectionRefs:
           - collection: addresses  # reference the locally hosted feature collection
@@ -80,7 +80,7 @@ ogcApi:
         fields:
           - street
           - place
-        displayNameExample: "Hoofdstraat 123 1234AB Amsterdam"
+        displayNameExample: "Domplein 9, 3512 JC Utrecht"
         collectionFilter: "address_postal LIKE '1234%'"
         collectionRefs:
           - api: https://example.com/ogc/v1  # reference a remote hosted feature collection

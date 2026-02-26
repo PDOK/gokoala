@@ -94,9 +94,7 @@ func (csfs FeaturesSearchCollections) GetCollectionRefsByCollectionID(collection
 	}
 
 	result := make([]RelatedOGCAPIFeaturesCollection, len(collection.CollectionRefs))
-	for i, collRef := range collection.CollectionRefs {
-		result[i] = collRef
-	}
+	copy(result, collection.CollectionRefs)
 
 	return result
 }
