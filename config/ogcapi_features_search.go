@@ -81,6 +81,26 @@ func (csfs FeaturesSearchCollections) ContainsID(id string) bool {
 	return false
 }
 
+func (csfs FeaturesSearchCollections) GetCollectionRefsByCollectionID(collectionID string) []RelatedOGCAPIFeaturesCollection {
+	var collection FeaturesSearchCollection
+	for _, coll := range csfs {
+		if coll.ID == collectionID {
+			collection = coll
+			break
+		}
+	}
+	if collection.CollectionRefs == nil {
+		return make([]RelatedOGCAPIFeaturesCollection, 0)
+	}
+
+	result := make([]RelatedOGCAPIFeaturesCollection, len(collection.CollectionRefs))
+	for i, collRef := range collection.CollectionRefs {
+		result[i] = collRef
+	}
+
+	return result
+}
+
 // +kubebuilder:object:generate=true
 //
 //nolint:recvcheck

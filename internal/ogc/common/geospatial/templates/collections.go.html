@@ -11,45 +11,19 @@
     {{ range $index, $coll := .Config.AllCollections.Unique }}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
-                {{ $clickableHeader := true }}
-                {{ $amountOfRefs := 0 }}
-                {{ $singleRefURL := "" }}
-
-                {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
-                {{ if and (and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections)
-                          ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID)}}
-                    {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
-                        {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
-                            {{ $clickableHeader = false }}
-                            {{ $amountOfRefs = len $collSearch.CollectionRefs}}
-                            {{ if eq $amountOfRefs 1 }}
-                                {{ $ref := index $collSearch.CollectionRefs 0 }}
-                                {{ $singleRefURL = $ref.CollectionURL $baseUrl }}
-                            {{ end }}
-                        {{ end }}
-                    {{ end }}
-                {{ end }}
-
-                {{ if $clickableHeader }}
-                <h2 class="card-header h5">
-                    {{ if and $coll.Metadata $coll.Metadata.Title }}
-                        <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
-                    {{ else }}
-                        <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
-                    {{ end }}
-                </h2>
-                {{ else }}
-                <div class="card-header">
-                    <h2 class="h5 mb-0">
-                        {{ if $singleRefURL }}
-                        <a target="_blank"
-                            {{ if and $coll.Metadata $coll.Metadata.Title }}
-                                 href="{{ $singleRefURL }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}
-                            {{ else }}
-                                 href="{{ $singleRefURL }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}
-                            {{ end }}
-                            <i class="bi bi-box-arrow-up-right ms-2 fs-6" aria-hidden="true"></i>
-                        </a>
+            {{ if and ($cfg.OgcAPI.FeaturesSearch) ($cfg.OgcAPI.FeaturesSearch.Collections) }}
+                {{ if and ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID) }}
+                    {{ $collRefs := $cfg.OgcAPI.FeaturesSearch.Collections.GetCollectionRefsByCollectionID $coll.ID }}
+                    <h2 class="card-header h5">
+                        {{ if eq (len $collRefs) 1 }}
+                            <a target="_blank"
+                                    {{ if and $coll.Metadata $coll.Metadata.Title }}
+                               href="{{(index $collRefs 0).CollectionURL $baseUrl}}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}
+                                {{ else }}
+                                    href="{{(index $collRefs 0).CollectionURL $baseUrl}}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}
+                                {{ end }}
+                                <i class="bi bi-box-arrow-up-right ms-2 fs-6" aria-hidden="true"></i>
+                            </a>
                         {{ else }}
                             <a class="d-flex align-items-center justify-content-between"
                                data-bs-toggle="collapse" href="#collapse-{{ $coll.ID }}" role="button" aria-expanded="false" aria-controls="collapse-{{ $coll.ID }}">
@@ -63,21 +37,29 @@
                                 <i class="bi bi-chevron-down ms-2 flex-shrink-0 collapse-chevron" aria-hidden="true"></i>
                             </a>
                         {{ end }}
-                    </h2>
-                    {{ if not $singleRefURL }}
-                    <div class="collapse mt-2" id="collapse-{{ $coll.ID }}">
-                        <ul class="list-unstyled mb-0">
-                            {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
-                                {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
-                                    {{ range $ref := $collSearch.CollectionRefs }}
-                                    <li><a href="{{ $ref.CollectionURL $baseUrl }}" class="small">{{ $ref.CollectionID }}</a></li>
-                                    {{ end }}
+                        <div class="collapse mt-2" id="collapse-{{ $coll.ID }}">
+                            <ul class="list-unstyled mb-0">
+                                {{ range $collRef := $collRefs }}
+                                    <li>
+                                        <a href="{{ $collRef.CollectionURL $baseUrl }}" class="small fs-6 fw-normal text-decoration-none" target="_blank">
+                                            <span class="text-decoration-underline">{{ $collRef.CollectionID }}</span>
+                                        <i class="bi bi-box-arrow-up-right small fs-6" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
                                 {{ end }}
-                            {{ end }}
-                        </ul>
-                    </div>
-                    {{ end }}
-                </div>
+                            </ul>
+                        </div>
+                    </h2>
+                {{ else }}
+
+                    <h2 class="card-header h5">
+                        {{ if and $coll.Metadata $coll.Metadata.Title }}
+                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                        {{ else }}
+                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                        {{ end }}
+                    </h2>
+                {{ end }}
                 {{ end }}
 
                 <div class="card-body">
@@ -158,7 +140,7 @@
                         <strong>{{ i18n "Version" }}</strong>: {{ $collSearch.Version }}
                     </li>
                     <li class="list-group-item">
-                        <strong>{{ i18n "Fields" }}</strong>: {{ join ", " $collSearch.Fields }}
+                        <strong>{{ i18n "Fields" }}</strong>: {{ $collSearch.Fields | join ", " }}
                     </li>
                         {{end}}
                         {{end}}
