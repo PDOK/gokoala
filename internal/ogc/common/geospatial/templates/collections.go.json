@@ -88,7 +88,7 @@
           {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
             {{ if eq $collSearch.ID $coll.ID }}
             ,"version" : {{ $collSearch.Version }}
-            ,"displayNameTemplate" : {{ mustToRawJson $collSearch.DisplayNameTemplate }}
+            ,"displayNameExample" : {{ mustToRawJson $collSearch.DisplayNameExample }}
             {{ end }}
           {{ end }}
         {{ end }}

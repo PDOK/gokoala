@@ -117,11 +117,14 @@ type FeaturesSearchCollection struct {
 	// +optional
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
 
-	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
+	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameExample.
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
 
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
-	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
+	DisplayNameExample string `yaml:"displayNameExample,omitempty" json:"displayNameExample,omitempty"`
+
+	// Filter that is applied to gather data from FeatureCollections.
+	CollectionFilter string `yaml:"collectionFilter,omitempty" json:"collectionFilter,omitempty"`
 
 	// Version of the collection exposed through the API.
 	// +kubebuilder:default=1

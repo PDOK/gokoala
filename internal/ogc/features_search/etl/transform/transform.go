@@ -55,7 +55,7 @@ func (t Transformer) Transform(records []RawRecord, collection config.Collection
 		if err != nil {
 			return nil, err
 		}
-		displayName, err := t.renderTemplate(collection.DisplayNameTemplate, fieldValuesByName)
+		displayName, err := t.renderTemplate(collection.DisplayNameExample, fieldValuesByName)
 		if err != nil {
 			return nil, err
 		}

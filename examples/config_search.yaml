@@ -61,7 +61,8 @@ ogcApi:
           - address_street
           - address_postal
           - address_place
-        displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
+        displayNameExample: "Hoofdstraat 123 1234AB Amsterdam"
+        collectionFilter: "address_postal LIKE '1234%'"
         collectionRefs:
           - collection: addresses  # reference the locally hosted feature collection
             geometryType: point
@@ -79,10 +80,14 @@ ogcApi:
         fields:
           - street
           - place
-        displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
+        displayNameExample: "Hoofdstraat 123 1234AB Amsterdam"
+        collectionFilter: "address_postal LIKE '1234%'"
         collectionRefs:
           - api: https://example.com/ogc/v1  # reference a remote hosted feature collection
             collection: buildings
+            geometryType: polygon
+          - api: https://example.com/ogc/v2  # reference a remote hosted feature collection
+            collection: buildings2
             geometryType: polygon
         tableName: buildings
         metadata:
