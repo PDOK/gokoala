@@ -96,11 +96,11 @@ type Collection struct {
 	// One or more feature tables backing this collection.
 	Tables []FeatureTable `yaml:"tables" json:"tables" validate:"required,dive"`
 
-	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameExample and SuggestTemplates.
+	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate and SuggestTemplates.
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty" validate:"required,unique"`
 
 	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
-	DisplayNameExample string `yaml:"displayNameExample,omitempty" json:"displayNameExample,omitempty" validate:"required"`
+	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty" validate:"required"`
 
 	// Version of this collection exposed through the API e.g., q=foo&thiscollection[version]=1&othercollection[version]=2
 	Version int `yaml:"version,omitempty" json:"version,omitempty" default:"1"`
