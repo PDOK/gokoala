@@ -183,7 +183,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-exact-match.json",
+				body:       "internal/ogc/features_search/testdata/expected-exact-match-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -194,7 +194,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-exact-match.json",
+				body:       "internal/ogc/features_search/testdata/expected-exact-match-2.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -271,7 +271,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -282,7 +282,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space-2.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -326,7 +326,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features_search/testdata/expected-frisian-street-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -337,7 +337,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features_search/testdata/expected-frisian-street-2.json",
 				statusCode: http.StatusOK,
 			},
 		},

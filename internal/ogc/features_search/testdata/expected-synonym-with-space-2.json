@@ -6,19 +6,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=1944"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=Spui+%27s-Gravenhage"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=1944"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=Spui+%27s-Gravenhage"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=1944"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=Spui+%27s-Gravenhage"
     }
   ],
   "features": [
@@ -28,21 +28,21 @@
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
         "collection_version": 1,
-        "display_name": "Plein 1944 1234 AB Nijmegen",
-        "highlight": "Plein <b>1944</b> 1234 AB",
+        "display_name": "Spui 70 2511 BT s-Gravenhage",
+        "highlight": "<b>Spui</b> 70 2511 BT <b>s</b>-<b>Gravenhage</b>",
         "href": [
-          "https://example.com/ogc/v1/collections/addresses/items/157?f=json"
+          "https://example.com/ogc/v1/collections/addresses/items/154?f=json"
         ],
-        "score": 0.19882718324661255
+        "score": 0.029046258330345156
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.79294,
-          53.05095
+          4.793,
+          53.05137
         ]
       },
-      "id": "157"
+      "id": "154"
     },
     {
       "type": "Feature",
@@ -50,21 +50,21 @@
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
         "collection_version": 1,
-        "display_name": "16 april 1944 Pad 1234 AB Velsen-Noord",
-        "highlight": "16 april <b>1944</b> Pad 1234 AB",
+        "display_name": "Spui 180 2511 BW 's-Gravenhage",
+        "highlight": "<b>Spui</b> 180 2511 BW '<b>s</b>-<b>Gravenhage</b>",
         "href": [
-          "https://example.com/ogc/v1/collections/addresses/items/158?f=json"
+          "https://example.com/ogc/v1/collections/addresses/items/155?f=json"
         ],
-        "score": 0.1644474744796753
+        "score": 0.029046258330345156
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.79287,
-          53.05093
+          4.79319,
+          53.05113
         ]
       },
-      "id": "158"
+      "id": "155"
     }
   ],
   "numberReturned": 2
