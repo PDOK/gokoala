@@ -133,6 +133,17 @@ func TestNewCollections_Collections(t *testing.T) {
 				statusCode:   http.StatusOK,
 			},
 		},
+		{
+			name: "search config, single collectionRef renders direct link in card header",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=html",
+			},
+			want: want{
+				bodyContains: "href=\"https://example.com/ogc/v1/collections/addresses/items\"",
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

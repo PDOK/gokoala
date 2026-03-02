@@ -9,7 +9,7 @@ collections:
       - component_thoroughfarename
       - component_postaldescriptor
       - component_addressareaname
-    displayNameTemplate: "{{ .component_thoroughfarename }} - {{ .component_addressareaname | firstupper }}"
+    displayNameExample: "Lange Jansstraat 1, 3512 BA Utrecht"
     suggestTemplates:
       - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
       - "{{ .component_thoroughfarename }} {{ .component_addressareaname }}"
