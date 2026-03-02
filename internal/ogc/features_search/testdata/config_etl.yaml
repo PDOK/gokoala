@@ -7,7 +7,7 @@ collections:
       - address_street
       - address_postal
       - address_place
-    displayNameExample: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
+    displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
     suggestTemplates:
       - "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}" # equal to display name
       - "{{ .address_street | firstupper  }} {{ .address_postal}}, {{ .address_place }}"
@@ -19,7 +19,7 @@ collections:
     fields:
       - street
       - place
-    displayNameExample: "{{ .street | firstupper  }} {{ .place }}"
+    displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
     suggestTemplates:
       - "{{ .street | firstupper  }} {{ .place }}" # equal to display name
       - "{{ .street | firstupper  }} - {{ .place }}"
