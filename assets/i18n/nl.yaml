@@ -130,7 +130,7 @@ CollectionTilesPlain: Deze collectie wordt beschikbaar gesteld als vector tiles 
 OGCCollections: Gerelateerde OGC API feature collecties
 DisplayedAs: Weergegeven als
 DisplayNameExample: Voorbeeldweergave
-CollectionFilter: Collectie filter
+CollectionFilter: Collectiefilter
 Details: Details
 # Features page
 Geometry: geometrie
