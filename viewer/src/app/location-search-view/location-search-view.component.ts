@@ -117,6 +117,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   selectFeature(feature: FeatureGeoJSON) {
     const propertyValuePipe = new PropertyValuePipe()
     this.locationSelected.emit(propertyValuePipe.transform(feature.properties, 'href'))
+    if (feature.properties?.['display_name'])
+      this.form.controls.location.setValue(feature.properties?.['display_name'], { emitEvent: false })
     this.searchOpen.set(false)
   }
 
