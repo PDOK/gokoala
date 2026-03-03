@@ -355,7 +355,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	query_exact AS (
 		SELECT to_tsquery('custom_dict', @exactmatchquery) query
 	),
-	results AS NOT MATERIALIZED ( -- the results query is called twice, materializing it results in a non optimal query plan for one of the calls
+	results AS NOT MATERIALIZED ( -- the results query is called multiple times, materializing it results in a non-optimal query plan for one of the calls
 		SELECT
 			r.display_name,
 			r.feature_id,
@@ -366,7 +366,8 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 			r.bbox,
 			r.geometry,
 			r.suggest,
-			r.ts
+			r.ts,
+			array_length(string_to_array(r.suggest, ' '), 1) AS suggest_word_count
 		FROM
 			%[1]s r
 		WHERE
@@ -376,16 +377,13 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 			)
 		%[4]s -- bounding box intersect filter
 	),
-	results_count AS (
-	    SELECT
-	    	COUNT(*) c
-	    FROM (
-	        SELECT
-				r.feature_id
-	        FROM
-				results r
-	        LIMIT @rt
-	    ) as rc
+    rank_threshold_exceed AS (
+		SELECT EXISTS (
+			SELECT 1 
+			FROM results r 
+			OFFSET @rt 
+			LIMIT 1
+		) AS is_exceeded
 	)
 	SELECT
 	    rn.display_name,
@@ -432,19 +430,32 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 						results r
 					WHERE
 						-- less than rank-threshold results don't need to be pre-ranked, they can be ranked based on score
-						CASE WHEN (SELECT c from results_count) < @rt THEN 1 = 1 END
+						CASE WHEN NOT (SELECT is_exceeded from rank_threshold_exceed) THEN 1 = 1 END
 				) UNION ALL (
 					SELECT
 						*
 					FROM
 						results r
 					WHERE
-						-- pre-rank more than rank-threshold results by ordering on suggest length and display_name
-						CASE WHEN (SELECT c from results_count) >= @rt THEN 1 = 1 END
+					    -- pre-rank results that exceed rank-threshold by ordering on suggest length and display_name.
+						-- this case is relevant with input below the limit given in the @prwcc param, such as 'amst' when searching for 'amsterdam'. 
+						CASE WHEN (SELECT is_exceeded from rank_threshold_exceed) THEN 1 = 1 END
+						AND r.suggest_word_count <= @prwcc
 					ORDER BY
 						-- order by the number of words in the suggest string, up to the limit given in @prwcc
-						(SELECT COUNT(*) FROM unnest(regexp_split_to_array(r.suggest, '\s+')) AS words LIMIT @prwcc) ASC,
+						r.suggest_word_count ASC,
 						r.display_name COLLATE "custom_numeric" ASC
+					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on score
+				) UNION ALL (
+					SELECT
+						*
+					FROM
+						results r
+					WHERE
+						-- handle remaining results.
+						-- this case is relevant with input such as 'mainstreet' which have lots of results but go beyond the limit given in the @prwcc param.
+						CASE WHEN (SELECT is_exceeded from rank_threshold_exceed) THEN 1 = 1 END
+						AND r.suggest_word_count >= @prwcc
 					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on score
 				)
 			) u

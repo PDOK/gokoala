@@ -33,6 +33,12 @@
 .card-header a:hover {
     color: var(--secondary-color);
 }
+.collapse-chevron {
+    transition: transform 0.2s ease-in-out;
+}
+a[data-bs-toggle="collapse"]:not([aria-expanded="false"]) .collapse-chevron {
+    transform: rotate(-180deg);
+}
 
 hgroup {
     margin-bottom: 0.5rem;
