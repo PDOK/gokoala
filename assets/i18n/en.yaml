@@ -67,7 +67,7 @@ Draft: Draft
 
 # Search page
 LocationAPI: Location API
-CurrentUrl: Current URL
+CurrentFeatures: Selected feature(s)
 SearchByLocation: Search by location
 Searching: Searching...
 NoResultsFound: No results found

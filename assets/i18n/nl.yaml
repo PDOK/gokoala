@@ -67,7 +67,7 @@ Draft: Concept
 
 # Search page
 LocationAPI: Locatie API
-CurrentUrl: Huidige URL
+CurrentFeatures: Geselecteerde feature(s)
 SearchByLocation: Zoeken op locatie
 Searching: Zoeken...
 NoResultsFound: Geen resultaten gevonden
