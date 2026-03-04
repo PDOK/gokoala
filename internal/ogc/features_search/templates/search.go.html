@@ -91,6 +91,7 @@
         locationSearch.addEventListener("locationSelected", (event) => {
             featureView.itemUrls = event?.detail || [];
             currentUrl.value = event?.detail || "";
+            updateNavbarOutputLinks()
         })
 
         const srsSelect = document.getElementById("srs-select");
@@ -98,7 +99,27 @@
             projection = event?.target?.value || CRS84;
             locationSearch.setAttribute("projection", projection);
             featureView.setAttribute("projection", projection);
+            updateNavbarOutputLinks()
         })
+
+        // ensure that on page load the urls are update according to the request
+        updateNavbarOutputLinks()
+
+        // the format links are pre-rendered, this ensures that the urls are updated according to the requests from the viewer
+        function updateNavbarOutputLinks() {
+            const currentQuery = window.location.search;
+            document.querySelectorAll(".navbar-outputs a").forEach(anchor => {
+                if (currentQuery) {
+                    const params = new URLSearchParams(currentQuery);
+                    const url = new URL(anchor.href);
+                    if (url.searchParams.has("f")) {
+                        const f = url.searchParams.get("f");
+                        params.set("f", f)
+                    }
+                    anchor.href = url.origin + url.pathname + "?" + params.toString()
+                }
+            })
+        }
     </script>
     <script src="view-component/polyfills.js"></script>
     <script type="module" src="view-component/main.js"></script>
