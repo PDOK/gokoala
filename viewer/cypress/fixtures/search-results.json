@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "numberReturned": 2,
+  "features": [
+    {
+      "type": "Feature",
+      "id": "103",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "dutch-addresses",
+        "collection_version": 1,
+        "display_name": "Amstel 3 1011PN Amsterdam",
+        "highlight": "<b>Amstel</b> 3 1011PN <b>Amsterdam</b>",
+        "href": ["http://localhost:8080/collections/dutch-addresses/items/103?f=json"],
+        "score": 0.92
+      },
+      "geometry": { "type": "Point", "coordinates": [4.8998, 52.3676] }
+    },
+    {
+      "type": "Feature",
+      "id": "104",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "dutch-addresses",
+        "collection_version": 1,
+        "display_name": "Amsteldijk 1 1074HP Amsterdam",
+        "highlight": "<b>Amstel</b>dijk 1 1074HP <b>Amsterdam</b>",
+        "href": ["http://localhost:8080/collections/dutch-addresses/items/104?f=json"],
+        "score": 0.87
+      },
+      "geometry": { "type": "Point", "coordinates": [4.9012, 52.3501] }
+    }
+  ]
+}

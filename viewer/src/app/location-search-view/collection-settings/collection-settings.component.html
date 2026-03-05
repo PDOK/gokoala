@@ -10,15 +10,15 @@
 
       @if (collection) {
         <div class="row mb-2" [formGroup]="collectionSetting">
-          <label [for]="collection.id" class="col col-form-label">
+          <label class="col col-form-label">
             <input type="checkbox" [formControl]="collectionSetting.controls.checked" class="d-inline-block me-1" />
             {{ collection.title }}
           </label>
           <div class="col-4 col-xxl-2">
             <input
-              [id]="collection.id"
               type="number"
               [formControl]="collectionSetting.controls.relevance"
+              [attr.aria-label]="relevanceText + ': ' + collection.title"
               class="form-control"
               step="0.1"
               min="0"
