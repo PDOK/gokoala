@@ -92,17 +92,20 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   initLocationListener() {
-    this.features$ = this.form.controls.location.valueChanges.pipe(
+    const featureTrigger$ = this.form.controls.location.valueChanges.pipe(
       startWith(this.query),
       distinctUntilChanged(),
+      tap(() => this.storeQuery()),
       filter(value => value !== null && value.length >= this.MIN_QUERY_LENGTH && this.hasSearchParams()),
       tap(() => this.searching.set(true)),
-      debounceTime(200),
+      debounceTime(200)
+    )
+
+    this.features$ = featureTrigger$.pipe(
       tap(val => (this.query = val || '')),
       switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox)),
       tap(features => {
         this._latestFeatures = features
-        this.storeQuery()
         this.searching.set(false)
       }),
       takeUntil(this._destroy$)
@@ -144,6 +147,19 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
 
   revertToConfirmed() {
     this.locationSelected.emit(this._confirmedHrefs)
+  }
+
+  focusResult(index: number, event: Event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const items = this.host.nativeElement.querySelectorAll<HTMLElement>('[role="option"] button')
+    items[index]?.focus()
+  }
+
+  focusInput(event: Event) {
+    event.preventDefault()
+    event.stopPropagation()
+    this.host.nativeElement.querySelector<HTMLElement>('#search-input')?.focus()
   }
 
   openSearchIfNot() {

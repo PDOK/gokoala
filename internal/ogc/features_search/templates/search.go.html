@@ -61,12 +61,12 @@
                     initial-view="VISIBLE"
                     show-bounding-box-button="true"
             > </app-feature-view>
-            <div>
-                <span class="col-sm-4">{{ i18n "CurrentFeatures" }}:</span>
-                <div id="current-url" class="col-sm-8 text-truncate">
+            <section aria-labelledby="current-features-label">
+                <p id="current-features-label" class="mb-1">{{ i18n "CurrentFeatures" }}:</p>
+                <div id="current-url" class="text-truncate">
                     -
                 </div>
-            </div>
+            </section>
         </div>
     </section>
     <script>

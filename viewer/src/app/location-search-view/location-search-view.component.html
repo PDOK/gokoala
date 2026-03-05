@@ -1,36 +1,49 @@
 @let features = features$ | async;
 @let hasFeatures = !!features?.length;
 @let hasSearched = hasSearched$ | async;
-<div class="dropdown" [attr.aria-expanded]="searchOpen()">
+<div class="dropdown">
   <div class="input-group">
     <input
       type="text"
+      role="combobox"
       [formControl]="form.controls.location"
       [placeholder]="placeholderText"
       class="form-control"
       [ngClass]="{ 'is-invalid': !hasSearchParams() }"
       id="search-input"
       autocomplete="off"
-      [attr.aria-expanded]="true"
+      [attr.aria-expanded]="searchOpen()"
+      aria-haspopup="listbox"
+      aria-autocomplete="list"
+      aria-controls="search-results"
+      aria-describedby="searchHelpBlock"
       (focus)="openSearchIfNot()"
       (click)="openSearchIfNot()"
       (keydown.enter)="confirmFirstFeature()"
-      aria-describedby="searchHelpBlock" />
-    <button class="btn btn-secondary" type="button" (click)="toggleCollectionSettings()">
-      <i class="bi bi-sliders"></i>
+      (keydown.arrowdown)="focusResult(0, $event)" />
+    <button
+      class="btn btn-secondary"
+      type="button"
+      [attr.aria-label]="collectionsText"
+      [attr.aria-expanded]="collectionSettingsOpen()"
+      (click)="toggleCollectionSettings()">
+      <i class="bi bi-sliders" aria-hidden="true"></i>
     </button>
   </div>
   <ul
+    id="search-results"
+    role="listbox"
     class="dropdown-menu w-100"
     [ngClass]="{ show: searchOpen() && hasSearchParams() && hasSearched }"
-    aria-labelledby="search-input"
     (mouseleave)="revertToConfirmed()">
     @if (hasFeatures && !searching()) {
       @for (feature of features; track $index) {
-        <li>
+        <li role="option">
           <button
             (mouseenter)="selectFeature(feature)"
             (click)="confirmFeature(feature)"
+            (keydown.arrowdown)="focusResult($index + 1, $event)"
+            (keydown.arrowup)="$index === 0 ? focusInput($event) : focusResult($index - 1, $event)"
             class="dropdown-item"
             [innerHTML]="feature.properties | propertyValue: 'highlight' : true"></button>
         </li>
