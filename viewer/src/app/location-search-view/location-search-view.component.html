@@ -38,7 +38,7 @@
     (mouseleave)="revertToConfirmed()">
     @if (hasFeatures && !searching()) {
       @for (feature of features; track $index) {
-        <li role="option">
+        <li role="option" [attr.aria-selected]="confirmedFeature()?.id === feature.id">
           <button
             (mouseenter)="selectFeature(feature)"
             (click)="confirmFeature(feature)"

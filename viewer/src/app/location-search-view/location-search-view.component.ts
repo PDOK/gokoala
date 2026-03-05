@@ -64,6 +64,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   searching = signal(false)
   collectionSettingsOpen = signal(false)
   hasSearchParams = signal(true)
+  confirmedFeature = signal<FeatureGeoJSON | null>(null)
 
   hasSearched$!: Observable<boolean>
 
@@ -130,6 +131,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
 
   confirmFeature(feature: FeatureGeoJSON) {
     this.selectFeature(feature)
+    this.confirmedFeature.set(feature)
     this._confirmedHrefs = feature.properties?.['href']
     if (feature.properties?.['display_name']) {
       this.form.controls.location.setValue(feature.properties?.['display_name'], { emitEvent: false })
