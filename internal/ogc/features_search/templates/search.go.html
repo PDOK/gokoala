@@ -94,6 +94,10 @@
             updateNavbarOutputLinks()
         })
 
+        locationSearch.addEventListener("queryUpdated", (_) => {
+            updateNavbarOutputLinks()
+        })
+
         const srsSelect = document.getElementById("srs-select");
         srsSelect.addEventListener("change", (event) => {
             projection = event?.target?.value || CRS84;
@@ -116,7 +120,7 @@
                         const f = url.searchParams.get("f");
                         params.set("f", f)
                     }
-                    anchor.href = url.origin + url.pathname + "?" + params.toString()
+                    anchor.href = url.pathname + "?" + params.toString()
                 }
             })
         }
