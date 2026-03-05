@@ -14,16 +14,25 @@
       [attr.aria-expanded]="true"
       (focus)="openSearchIfNot()"
       (click)="openSearchIfNot()"
+      (keydown.enter)="confirmFirstFeature()"
       aria-describedby="searchHelpBlock" />
     <button class="btn btn-secondary" type="button" (click)="toggleCollectionSettings()">
       <i class="bi bi-sliders"></i>
     </button>
   </div>
-  <ul class="dropdown-menu w-100" [ngClass]="{ show: searchOpen() && hasSearchParams() && hasSearched }" aria-labelledby="search-input">
+  <ul
+    class="dropdown-menu w-100"
+    [ngClass]="{ show: searchOpen() && hasSearchParams() && hasSearched }"
+    aria-labelledby="search-input"
+    (mouseleave)="revertToConfirmed()">
     @if (hasFeatures && !searching()) {
       @for (feature of features; track $index) {
-        <li class="dropdown-item">
-          <button (click)="selectFeature(feature)" class="dropdown-item">{{ feature.properties | propertyValue: 'display_name' }}</button>
+        <li>
+          <button
+            (mouseenter)="selectFeature(feature)"
+            (click)="confirmFeature(feature)"
+            class="dropdown-item"
+            [innerHTML]="feature.properties | propertyValue: 'highlight' : true"></button>
         </li>
       }
     } @else if (!hasFeatures && !searching() && hasSearched) {

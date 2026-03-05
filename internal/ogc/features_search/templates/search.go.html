@@ -53,13 +53,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-sm-12">
-            <div class="row mb-4">
-                <span class="col-sm-4">{{ i18n "CurrentFeatures" }}:</span>
-                <div id="current-url" class="col-sm-8 text-truncate">
-                    -
-                </div>
-            </div>
+        <div class="col-md-6 col-sm-12 d-flex flex-column gap-4">
             <app-feature-view
                     id="feature-view"
                     background-map="BRT"
@@ -67,6 +61,12 @@
                     initial-view="VISIBLE"
                     show-bounding-box-button="true"
             > </app-feature-view>
+            <div>
+                <span class="col-sm-4">{{ i18n "CurrentFeatures" }}:</span>
+                <div id="current-url" class="col-sm-8 text-truncate">
+                    -
+                </div>
+            </div>
         </div>
     </section>
     <script>

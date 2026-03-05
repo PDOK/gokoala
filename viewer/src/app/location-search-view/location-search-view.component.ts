@@ -14,7 +14,7 @@ import {
   SimpleChanges,
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
-import { debounceTime, distinctUntilChanged, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
+import { debounceTime, distinctUntilChanged, filter, map, Observable, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs'
 import { AsyncPipe, NgClass, NgIf } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
@@ -51,7 +51,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     return this._bbox
   }
 
-  @Output() locationSelected = new EventEmitter<string>()
+  @Output() locationSelected = new EventEmitter<string[]>()
 
   form!: FormGroup<LocationForm>
   features$?: Observable<FeatureGeoJSON[]>
@@ -70,6 +70,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   private _featureService = inject(FeatureService)
   private _bbox?: string = undefined
   private _destroy$ = new Subject<void>()
+  private _confirmedHrefs: string[] = []
+  private _latestFeatures: FeatureGeoJSON[] = []
 
   constructor(private host: ElementRef<HTMLElement>) {}
 
@@ -91,20 +93,25 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
 
   initLocationListener() {
     this.features$ = this.form.controls.location.valueChanges.pipe(
+      startWith(this.query),
       distinctUntilChanged(),
       filter(value => value !== null && value.length >= this.MIN_QUERY_LENGTH && this.hasSearchParams()),
       tap(() => this.searching.set(true)),
       debounceTime(200),
       tap(val => (this.query = val || '')),
       switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox)),
-      tap(() => {
+      tap(features => {
+        this._latestFeatures = features
         this.storeQuery()
         this.searching.set(false)
       }),
       takeUntil(this._destroy$)
     )
 
-    this.hasSearched$ = this.form.controls.location.valueChanges.pipe(map(value => value !== null && value.length >= this.MIN_QUERY_LENGTH))
+    this.hasSearched$ = this.form.controls.location.valueChanges.pipe(
+      startWith(this.query),
+      map(value => value !== null && value.length >= this.MIN_QUERY_LENGTH)
+    )
   }
 
   onFormChange($event: { [p: string]: number }) {
@@ -115,11 +122,28 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   selectFeature(feature: FeatureGeoJSON) {
-    const propertyValuePipe = new PropertyValuePipe()
-    this.locationSelected.emit(propertyValuePipe.transform(feature.properties, 'href'))
-    if (feature.properties?.['display_name'])
+    this.locationSelected.emit(feature.properties?.['href'] as string[])
+  }
+
+  confirmFeature(feature: FeatureGeoJSON) {
+    this.selectFeature(feature)
+    this._confirmedHrefs = feature.properties?.['href']
+    if (feature.properties?.['display_name']) {
       this.form.controls.location.setValue(feature.properties?.['display_name'], { emitEvent: false })
-    this.searchOpen.set(false)
+      this.query = feature.properties?.['display_name']
+    }
+    this.storeQuery()
+    this.closeSearch()
+  }
+
+  confirmFirstFeature() {
+    if (this._latestFeatures.length > 0) {
+      this.confirmFeature(this._latestFeatures[0])
+    }
+  }
+
+  revertToConfirmed() {
+    this.locationSelected.emit(this._confirmedHrefs)
   }
 
   openSearchIfNot() {

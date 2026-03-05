@@ -128,6 +128,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapElm: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
     this.map.setTarget(mapElm)
+    this.features = []
     const featuresUrls: DataUrl[] = this.itemUrls.map(itemUrl => ({ url: itemUrl, dataMapping: this._projection }))
     from(featuresUrls)
       .pipe(
