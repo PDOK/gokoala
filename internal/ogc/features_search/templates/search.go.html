@@ -51,15 +51,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="row mb-4">
-                    <label for="current-url" class="col-sm-4 col-form-label">{{ i18n "CurrentUrl" }}</label>
-                    <div class="col-sm-8">
-                        <input id="current-url" type="text" class="form-control" readonly/>
-                    </div>
-                </div>
             </div>
         </div>
-        <div class="col-md-6 col-sm-12">
+        <div class="col-md-6 col-sm-12 d-flex flex-column gap-4">
             <app-feature-view
                     id="feature-view"
                     background-map="BRT"
@@ -67,6 +61,12 @@
                     initial-view="VISIBLE"
                     show-bounding-box-button="true"
             > </app-feature-view>
+            <section aria-labelledby="current-features-label">
+                <p id="current-features-label" class="mb-1">{{ i18n "CurrentFeatures" }}:</p>
+                <div id="current-url" class="text-truncate">
+                    -
+                </div>
+            </section>
         </div>
     </section>
     <script>
@@ -90,7 +90,23 @@
 
         locationSearch.addEventListener("locationSelected", (event) => {
             featureView.itemUrls = event?.detail || [];
-            currentUrl.value = event?.detail || "";
+            currentUrl.innerHTML = '';
+            if(event?.detail?.length) {
+                const ul = document.createElement("ul");
+                ul.classList.add("list-unstyled");
+                event.detail.forEach(url => {
+                    const li = document.createElement("li");
+                    li.classList.add("text-truncate");
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.target = "_blank";
+                    a.textContent = url;
+                    a.classList.add("text-truncate");
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                })
+                currentUrl.appendChild(ul);
+            } else currentUrl.textContent = "-";
         })
 
         const srsSelect = document.getElementById("srs-select");
