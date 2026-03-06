@@ -82,7 +82,11 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
 
   private storeSettings(formValue: { [key: string]: number }) {
     const url = new URL(window.location.href)
-    url.search = ''
+    const toDelete: string[] = []
+    url.searchParams.forEach((_, k) => {
+      if (k.endsWith('[relevance]') || k.endsWith('[version]')) toDelete.push(k)
+    })
+    toDelete.forEach(k => url.searchParams.delete(k))
     for (const key in formValue) {
       url.searchParams.append(`${key}[relevance]`, formValue[key].toString())
       url.searchParams.append(`${key}[version]`, '1')
