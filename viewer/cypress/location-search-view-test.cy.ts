@@ -83,5 +83,4 @@ describe('location-search-view', () => {
 
     screenshot('search-result-selected')
   })
-
 })
