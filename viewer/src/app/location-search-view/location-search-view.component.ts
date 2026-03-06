@@ -52,6 +52,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   @Output() locationSelected = new EventEmitter<string[]>()
+  @Output() queryUpdated = new EventEmitter<string>()
 
   form!: FormGroup<LocationForm>
   features$?: Observable<FeatureGeoJSON[]>
@@ -125,6 +126,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       return Object.keys($event).length > 0
     })
     this.searchParams = $event
+    this.queryUpdated.emit()
   }
 
   selectFeature(feature: FeatureGeoJSON) {
@@ -182,6 +184,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     const url = new URL(window.location.href)
     url.searchParams.set('q', this.query)
     history.pushState({}, '', url.toString())
+    this.queryUpdated.emit()
   }
 
   private setBboxUrlParam(val: string | undefined) {

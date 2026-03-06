@@ -6,19 +6,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=A+Ottoland"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=Br%C3%A2nbuorren"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=A+Ottoland"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=Br%C3%A2nbuorren"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=A+Ottoland"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=Br%C3%A2nbuorren"
     }
   ],
   "features": [
@@ -28,21 +28,21 @@
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
         "collection_version": 1,
-        "display_name": "A 10 2975BA Ottoland",
-        "highlight": "<b>A</b> 10 2975BA <b>Ottoland</b>",
+        "display_name": "Brânbuorren 2 9131EE Ie",
+        "highlight": "<b>Brânbuorren</b> 2 9131EE",
         "href": [
-          "https://example.com/ogc/v1/collections/addresses/items/153?f=json"
+          "https://example.com/ogc/v1/collections/addresses/items/160?f=json"
         ],
-        "score": 0.06677279472351075
+        "score": 0.23083121776580812
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.79207,
-          53.05035
+          4.79281,
+          53.05091
         ]
       },
-      "id": "153"
+      "id": "160"
     }
   ],
   "numberReturned": 1

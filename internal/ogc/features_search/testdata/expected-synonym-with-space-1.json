@@ -6,19 +6,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/search?f=json"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=Spui+Den+Haag"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/search?f=jsonfg"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=Spui+Den+Haag"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/search?f=html"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=Spui+Den+Haag"
     }
   ],
   "features": [
@@ -28,21 +28,21 @@
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
         "collection_version": 1,
-        "display_name": "Ada van Holland 1791DG Den Burg",
-        "highlight": "Ada van <b>Holland</b> 1791DG <b>Den</b> <b>Burg</b>",
+        "display_name": "Spui 70 2511 BT s-Gravenhage",
+        "highlight": "<b>Spui</b> 70 2511 BT <b>s</b>-<b>Gravenhage</b>",
         "href": [
-          "https://example.com/ogc/v1/collections/addresses/items/11?f=json"
+          "https://example.com/ogc/v1/collections/addresses/items/154?f=json"
         ],
-        "score": 0.08284040689468385
+        "score": 0.029046258330345156
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.79641,
-          53.05223
+          4.793,
+          53.05137
         ]
       },
-      "id": "11"
+      "id": "154"
     },
     {
       "type": "Feature",
@@ -50,21 +50,21 @@
         "collection_geometry_type": "POINT",
         "collection_id": "addresses",
         "collection_version": 1,
-        "display_name": "Ada van Hollandstraat 1791DH Den Burg",
-        "highlight": "Ada van <b>Hollandstraat</b> 1791DH <b>Den</b> <b>Burg</b>",
+        "display_name": "Spui 180 2511 BW 's-Gravenhage",
+        "highlight": "<b>Spui</b> 180 2511 BW '<b>s</b>-<b>Gravenhage</b>",
         "href": [
-          "https://example.com/ogc/v1/collections/addresses/items/12?f=json"
+          "https://example.com/ogc/v1/collections/addresses/items/155?f=json"
         ],
-        "score": 0.020555934309959414
+        "score": 0.029046258330345156
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          4.79573,
-          53.05193
+          4.79319,
+          53.05113
         ]
       },
-      "id": "12"
+      "id": "155"
     }
   ],
   "numberReturned": 2
