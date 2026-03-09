@@ -15,10 +15,12 @@ import {
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs'
-import { AsyncPipe, NgClass, NgIf } from '@angular/common'
+import { AsyncPipe, NgClass, NgIf, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
+import { HighlightPipe } from './highlight.pipe'
+import { ReplacePipe } from './replace.pipe'
 
 interface LocationForm {
   location: FormControl<string | null>
@@ -27,7 +29,17 @@ interface LocationForm {
 @Component({
   selector: 'app-location-search-view',
   standalone: true,
-  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent, NgIf],
+  imports: [
+    ReactiveFormsModule,
+    AsyncPipe,
+    PropertyValuePipe,
+    NgClass,
+    CollectionSettingsComponent,
+    NgIf,
+    HighlightPipe,
+    UpperCasePipe,
+    ReplacePipe,
+  ],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

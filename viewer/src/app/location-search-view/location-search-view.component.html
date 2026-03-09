@@ -44,8 +44,12 @@
             (click)="confirmFeature(feature)"
             (keydown.arrowdown)="focusResult($index + 1, $event)"
             (keydown.arrowup)="$index === 0 ? focusInput($event) : focusResult($index - 1, $event)"
-            class="dropdown-item"
-            [innerHTML]="feature.properties | propertyValue: 'highlight' : true"></button>
+            class="dropdown-item d-flex justify-content-between align-items-center">
+            <span [innerHTML]="feature.properties | highlight"></span>
+            <span class="collection fw-bolder text-muted">{{
+              feature.properties | propertyValue: 'collection_id' | uppercase | replace: '_' : ' '
+            }}</span>
+          </button>
         </li>
       }
     } @else if (!hasFeatures && !searching() && hasSearched) {
