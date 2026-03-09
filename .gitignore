@@ -1,9 +1,14 @@
+# IDEs
 .idea/
 *.iml
 .vscode/
+
+# Binaries
 gokoala
 gokoala-etl
 gokoala-server
+
+# Frontend
 assets/view-component/
 viewer/.nx
 viewer/cypress/screenshots
@@ -11,4 +16,8 @@ viewer/.angular
 viewer/dist
 viewer/node_modules
 viewer/cypress.env.json
+
+# Temp files
 hack/tmp
+*.gpkg-shm
+*.gpkg-wal
