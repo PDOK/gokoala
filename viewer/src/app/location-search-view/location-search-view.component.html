@@ -40,13 +40,14 @@
       @for (feature of features; track $index) {
         <li role="option" [attr.aria-selected]="confirmedFeature()?.id === feature.id">
           <button
+            [title]="feature.properties | propertyValue: 'display_name'"
             (mouseenter)="selectFeature(feature)"
             (click)="confirmFeature(feature)"
             (keydown.arrowdown)="focusResult($index + 1, $event)"
             (keydown.arrowup)="$index === 0 ? focusInput($event) : focusResult($index - 1, $event)"
             class="dropdown-item d-flex justify-content-between align-items-center">
             <span [innerHTML]="feature.properties | highlight"></span>
-            <span class="collection fw-bolder text-muted">{{
+            <span class="collection fw-bolder text-muted text-break">{{
               feature.properties | propertyValue: 'collection_id' | uppercase | replace: '_' : ' '
             }}</span>
           </button>
