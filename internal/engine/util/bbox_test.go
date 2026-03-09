@@ -95,3 +95,51 @@ func TestEncodeBBox(t *testing.T) {
 		})
 	}
 }
+
+func TestPadBbox(t *testing.T) {
+	type args struct {
+		bbox *geom.Bounds
+	}
+	type want struct {
+		bbox *geom.Bounds
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "Vertical line bbox (X padding)",
+			args: args{
+				bbox: geom.NewBounds(geom.XY).Set(1, 1, 1, 2),
+			},
+			want: want{
+				bbox: geom.NewBounds(geom.XY).Set(1, 1, 2, 2),
+			},
+		},
+		{
+			name: "Horizontal line bbox (Y padding)",
+			args: args{
+				bbox: geom.NewBounds(geom.XY).Set(1, 1, 2, 1),
+			},
+			want: want{
+				bbox: geom.NewBounds(geom.XY).Set(1, 1, 2, 2),
+			},
+		},
+		{
+			name: "Diagonal line bbox (no padding)",
+			args: args{
+				bbox: geom.NewBounds(geom.XY).Set(1, 1, 2, 2),
+			},
+			want: want{
+				bbox: geom.NewBounds(geom.XY).Set(1, 1, 2, 2),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := PadBbox(tt.args.bbox)
+			assert.Equal(t, tt.want.bbox, got)
+		})
+	}
+}
