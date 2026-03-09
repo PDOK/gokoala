@@ -371,10 +371,13 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 		FROM
 			%[1]s r
 		WHERE
-			r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
-				-- make a virtual table by creating tuples from the provided arrays.
+			r.ts @@ (SELECT query FROM query_wildcard) 
+		    AND (r.collection_id, r.collection_version) IN (
+				-- match pairs of collection_id/version with the given names and versions.
 				SELECT * FROM unnest(@names::text[], @versions::int[])
 			)
+		    AND r.collection_id = ANY($3::text[])     -- only required to force partition pruning
+            AND r.collection_version = ANY($4::int[]) -- only required to force partition pruning
 		%[4]s -- bounding box intersect filter
 	),
     rank_threshold_exceed AS (
