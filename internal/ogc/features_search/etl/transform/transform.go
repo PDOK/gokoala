@@ -125,7 +125,7 @@ func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 		return nil, nil // No bbox for point geometries
 	}
 	if strings.EqualFold(r.GeometryType, "LINESTRING") {
-		r.Bbox = padBbox(r.Bbox) // Slightly pad bbox for exact north-south or east-west linestrings to avoid 0 area
+		r.Bbox = util.PadBbox(r.Bbox) // Slightly pad bbox for exact north-south or east-west linestrings to avoid 0 area
 	}
 	if util.SurfaceArea(r.Bbox) <= 0 {
 		return nil, errors.New("bbox area must be greater than zero")
@@ -163,19 +163,4 @@ func generateExternalFid(collectionID string, externalFid *config.ExternalFid, e
 		return &result, nil
 	}
 	return nil, nil
-}
-
-// For linestrings specifically, it is possible for the min and max values of a dimension
-// to be exactly equal, resulting in a bbox with 0 area. This function pads the max value
-// of the relevant dimension by 1 unit to avoid this.
-// Returns the original bbox if neither dimension has equal min and max values.
-func padBbox(bbox *geom.Bounds) *geom.Bounds {
-	if bbox.Max(0) == bbox.Min(0) {
-		// pad bbox.Max(0)
-		return geom.NewBounds(geom.XY).Set(bbox.Min(0), bbox.Min(1), bbox.Max(0)+1, bbox.Max(1))
-	} else if bbox.Max(1) == bbox.Min(1) {
-		// pad bbox.Max(1)
-		return geom.NewBounds(geom.XY).Set(bbox.Min(0), bbox.Min(1), bbox.Max(0), bbox.Max(1)+1)
-	}
-	return bbox
 }
