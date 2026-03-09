@@ -47,8 +47,8 @@
             (keydown.arrowdown)="focusResult($index + 1, $event)"
             (keydown.arrowup)="$index === 0 ? focusInput($event) : focusResult($index - 1, $event)"
             class="dropdown-item d-flex justify-content-between align-items-center">
-            <span [innerHTML]="feature.properties | highlight"></span>
-            <span class="collection fw-bolder text-muted text-break" [title]="feature.properties | propertyValue: 'collection_id'">
+            <span [innerHTML]="feature.properties | highlight" class="text-truncate"></span>
+            <span class="collection fw-bolder text-muted" [title]="feature.properties | propertyValue: 'collection_id'">
               {{ collectionTitles?.get(feature.properties | propertyValue: 'collection_id') | uppercase }}
             </span>
           </button>
