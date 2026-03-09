@@ -376,8 +376,8 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 				-- match pairs of collection_id/version with the given names and versions.
 				SELECT * FROM unnest(@names::text[], @versions::int[])
 			)
-		    AND r.collection_id = ANY($3::text[])     -- only required to force partition pruning
-            AND r.collection_version = ANY($4::int[]) -- only required to force partition pruning
+		    AND r.collection_id = ANY(@names::text[])        -- only required to force partition pruning
+            AND r.collection_version = ANY(@versions::int[]) -- only required to force partition pruning
 		%[4]s -- bounding box intersect filter
 	),
     rank_threshold_exceed AS (
