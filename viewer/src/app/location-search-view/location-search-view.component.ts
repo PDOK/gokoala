@@ -15,6 +15,7 @@ import {
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import { debounceTime, distinctUntilChanged, filter, map, Observable, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs'
+import { CollectionsService } from '../shared/services/collections.service'
 import { AsyncPipe, NgClass, NgIf, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
@@ -80,8 +81,10 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   confirmedFeature = signal<FeatureGeoJSON | null>(null)
 
   hasSearched$!: Observable<boolean>
+  collectionTitles$!: Observable<Map<string, string>>
 
   private _featureService = inject(FeatureService)
+  private _collectionsService = inject(CollectionsService)
   private _bbox?: string = undefined
   private _destroy$ = new Subject<void>()
   private _confirmedHrefs: string[] = []
@@ -96,6 +99,10 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       location: new FormControl(this.query),
     })
 
+    this.collectionTitles$ = this._collectionsService.getCollections().pipe(
+      map(collections => new Map(collections.map(c => [c.id, c.title]))),
+      takeUntil(this._destroy$)
+    )
     this.initLocationListener()
   }
 

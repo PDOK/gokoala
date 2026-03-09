@@ -1,6 +1,7 @@
 @let features = features$ | async;
 @let hasFeatures = !!features?.length;
 @let hasSearched = hasSearched$ | async;
+@let collectionTitles = collectionTitles$ | async;
 <div class="dropdown">
   <div class="input-group">
     <input
@@ -47,9 +48,9 @@
             (keydown.arrowup)="$index === 0 ? focusInput($event) : focusResult($index - 1, $event)"
             class="dropdown-item d-flex justify-content-between align-items-center">
             <span [innerHTML]="feature.properties | highlight"></span>
-            <span class="collection fw-bolder text-muted text-break">{{
-              feature.properties | propertyValue: 'collection_id' | uppercase | replace: '_' : ' '
-            }}</span>
+            <span class="collection fw-bolder text-muted text-break" [title]="feature.properties | propertyValue: 'collection_id'">
+              {{ collectionTitles?.get(feature.properties | propertyValue: 'collection_id') | uppercase }}
+            </span>
           </button>
         </li>
       }
