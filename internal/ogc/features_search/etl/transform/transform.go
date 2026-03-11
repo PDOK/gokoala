@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log"
 	"slices"
 	"strconv"
 	"strings"
@@ -68,6 +69,10 @@ func (t Transformer) Transform(records []RawRecord, collection config.Collection
 			suggestions = append(suggestions, suggestion)
 		}
 		suggestions = slices.Compact(suggestions)
+		if len(suggestions) > 4 {
+			log.Printf("WARNING: more than 4 suggestions for displayName '%s', "+
+				"too many suggestions may cause performance issues (index bloat)", displayName)
+		}
 
 		bbox, err := r.transformBbox()
 		if err != nil {
