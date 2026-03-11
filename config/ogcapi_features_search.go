@@ -115,13 +115,13 @@ type FeaturesSearchCollection struct {
 	// +optional
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
 
-	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameExample.
+	// Fields that make up the display name.
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
 
-	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
+	// Example in natural language that indicates how a search record is displayed.
 	DisplayNameExample string `yaml:"displayNameExample,omitempty" json:"displayNameExample,omitempty"`
 
-	// Filter that is applied to gather data from FeatureCollections.
+	// Describes in natural language the filter that is applied to gather data from FeatureCollections.
 	CollectionFilter string `yaml:"collectionFilter,omitempty" json:"collectionFilter,omitempty"`
 
 	// Version of the collection exposed through the API.
