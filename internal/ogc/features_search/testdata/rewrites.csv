@@ -1,4 +1,12 @@
 # The first column should contain the desired word, subsequent columns should contain alternatives
 # that will be rewritten to the desired word.
+#
+# Rewrites can also be regular expressions. In that case, the first column should contain the desired
+# replacement and subsequent columns should contain the regular expression prefixed with "regex:".
+
+# Rewrite Dutch city names
 Gravenhage,den Haag,'s-gravenhage,s-gravenhage
 hertogenbosch,den bosch,'s-hertogenbosch,s-hertogenbosch
+
+# Rewrite Dutch postal codes from "1234 AA" to "1234AA"
+${1}${2},regex:^([0-9]{4}) ([A-Za-z]{2})$

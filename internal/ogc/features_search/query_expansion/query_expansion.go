@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -13,6 +14,8 @@ import (
 
 	"github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 )
+
+const regexPrefix = "regex:"
 
 // QueryExpansion query expansion involves evaluating a user's input (what words were typed into the search query area)
 // and expanding the search query to match additional results, see https://en.wikipedia.org/wiki/Query_expansion
@@ -62,10 +65,30 @@ func (s QueryExpansion) Expand(ctx context.Context, searchTerms string) (*domain
 func rewrite(ctx context.Context, input string, mapping map[string][]string) (string, error) {
 	for original, alternatives := range mapping {
 		for _, alternative := range alternatives {
-			input = strings.ReplaceAll(input, alternative, original)
+			if strings.HasPrefix(alternative, regexPrefix) {
+				// the rewrites file can contain regex patterns, which need to be rewritten
+				regex, err := rewriteRegex(alternative)
+				if err != nil {
+					return "", err
+				}
+				input = regex.ReplaceAllString(input, original)
+			} else {
+				// rewrite all other alternatives
+				input = strings.ReplaceAll(input, alternative, original)
+			}
 		}
 	}
 	return input, ctx.Err()
+}
+
+func rewriteRegex(alternative string) (*regexp.Regexp, error) {
+	regexPattern := alternative[len(regexPrefix):]
+	regexPattern = regexPattern[1 : len(regexPattern)-1]
+	regex, err := regexp.Compile(regexPattern)
+	if err != nil {
+		return nil, fmt.Errorf("failed to compile regex %s from rewrites file: %w", regexPattern, err)
+	}
+	return regex, nil
 }
 
 // position is a substring match in the given search term
