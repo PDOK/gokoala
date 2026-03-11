@@ -42,6 +42,38 @@ func TestExpand(t *testing.T) {
 			want: `markt & hertogenbosch`,
 		},
 		{
+			name: "rewrite regex, postal codes with space",
+			args: args{
+				searchQuery: `dorpstraat 5 6784 GX Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
+		},
+		{
+			name: "rewrite regex, postal codes with space - case insensitive",
+			args: args{
+				searchQuery: `dorpstraat 5 6784 gx Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
+		},
+		{
+			name: "rewrite regex, postal codes without space",
+			args: args{
+				searchQuery: `dorpstraat 5 6784GX Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
+		},
+		{
+			name: "rewrite regex, postal codes without space - case insentivie",
+			args: args{
+				searchQuery: `dorpstraat 5 6784gx Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
+		},
+		{
 			name: "rewrite followed by synonym",
 			args: args{
 				searchQuery: `Spui 1 den Haag`,
