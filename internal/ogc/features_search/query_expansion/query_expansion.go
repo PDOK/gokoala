@@ -82,7 +82,7 @@ func rewrite(ctx context.Context, input string, mapping map[string][]string) (st
 }
 
 func rewriteRegex(alternative string) (*regexp.Regexp, error) {
-	regexPattern := alternative[6:]
+	regexPattern := alternative[len(regexPrefix):]
 	regexPattern = regexPattern[1 : len(regexPattern)-1]
 	regex, err := regexp.Compile(regexPattern)
 	if err != nil {
