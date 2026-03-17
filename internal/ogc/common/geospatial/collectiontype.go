@@ -14,18 +14,11 @@ const (
 )
 
 // ItemType indicator about the type of the items in a collection. The default value is 'feature'.
-// Other OGC-approved item types are e.g. 'record' and 'movingfeature'. We (PDOK) introduce 'attribute' as well.
+// Other OGC-approved item types are e.g. 'record' and 'movingfeature'.
 //
 // See https://docs.ogc.org/DRAFTS/20-024.html#collection-item-type-section
 func (ct CollectionType) ItemType() string {
-	switch ct {
-	case Attributes:
-		return "attribute"
-	case Features:
-		return "feature"
-	default:
-		return "feature"
-	}
+	return "feature"
 }
 
 // AvailableFormats returns the output formats available for the current page.
@@ -50,19 +43,24 @@ func (ct CollectionType) IsSpatialRequestAllowed(bbox *geom.Bounds) bool {
 
 // CollectionTypes one or more CollectionType.
 type CollectionTypes struct {
-	types map[string]CollectionType
+	Types     map[string]CollectionType
+	GeomTypes map[string]string
 }
 
-func NewCollectionTypes(types map[string]CollectionType) CollectionTypes {
-	return CollectionTypes{types}
+func NewCollectionTypes(types map[string]CollectionType, geomTypes map[string]string) CollectionTypes {
+	return CollectionTypes{types, geomTypes}
 }
 
-func (cts CollectionTypes) Get(collection string) CollectionType {
-	return cts.types[collection]
+func (cts CollectionTypes) GetCollectionType(collection string) CollectionType {
+	return cts.Types[collection]
+}
+
+func (cts CollectionTypes) GetGeometryType(collection string) string {
+	return cts.GeomTypes[collection]
 }
 
 func (cts CollectionTypes) HasAttributes() bool {
-	for _, ct := range cts.types {
+	for _, ct := range cts.Types {
 		if ct == Attributes {
 			return true
 		}

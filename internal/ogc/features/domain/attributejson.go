@@ -1,18 +1,18 @@
 package domain
 
 // -----
-// "Attribute JSON" is NOT a formal standard. It's defined by PDOK as a way to return non-spatial data from certain collections
-// alongside collections that do contain spatial data. Attribute JSON is modeled after GeoJSON but does NOT contain a geometry.
+// "NonGeo JSON" is NOT a formal standard. It's defined by PDOK as a way to return non-spatial data from certain collections
+// alongside collections that do contain spatial data. NonGeo JSON is modeled after GeoJSON but does NOT contain a geometry.
 // -----
 
-// AttributeCollection is a FeatureCollection with only attributes and NO geometries.
-type AttributeCollection struct {
-	Features []*Attribute `json:"features"`
+// NonGeoCollection is a FeatureCollection with only attributes and NO geometries.
+type NonGeoCollection struct {
+	Features []*NonGeo `json:"features"`
 	FeatureCollection
 }
 
-// Attribute is a Feature with only attributes and NO geometry.
-type Attribute struct {
+// NonGeo is a Feature with only attributes and NO geometry.
+type NonGeo struct {
 	Type       featureType       `json:"type"`
 	Properties FeatureProperties `json:"properties"`
 	// We expect ids to be auto-incrementing integers (which is the default in geopackages)
@@ -21,7 +21,7 @@ type Attribute struct {
 	Links []Link `json:"links,omitempty"`
 }
 
-// Keys of the Attribute properties.
-func (f *Attribute) Keys() []string {
+// Keys of the NonGeo properties.
+func (f *NonGeo) Keys() []string {
 	return f.Properties.Keys()
 }

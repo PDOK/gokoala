@@ -17,7 +17,8 @@ import (
 )
 
 const (
-	templatesDir = "internal/ogc/features/templates/"
+	templatesDir    = "internal/ogc/features/templates/"
+	nonGeometryType = "none"
 )
 
 type Features struct {
@@ -160,16 +161,22 @@ func DetermineAxisOrder(datasources map[DatasourceKey]ds.Datasource) map[int]dom
 }
 
 func determineCollectionTypes(datasources map[DatasourceKey]ds.Datasource) geospatial.CollectionTypes {
-	result := make(map[string]geospatial.CollectionType)
+	types := make(map[string]geospatial.CollectionType)
+	geomTypes := make(map[string]string)
 	for key, datasource := range datasources {
-		collectionType, err := datasource.GetCollectionType(key.collectionID)
+		collectionType, geomType, err := datasource.GetCollectionType(key.collectionID)
 		if err != nil {
 			continue
 		}
-		result[key.collectionID] = collectionType
+		// geomType is empty string "" when the collection comes from a non geo table and should be value "none".
+		if geomType == "" {
+			geomType = nonGeometryType
+		}
+		geomTypes[key.collectionID] = geomType
+		types[key.collectionID] = collectionType
 	}
 
-	return geospatial.NewCollectionTypes(result)
+	return geospatial.NewCollectionTypes(types, geomTypes)
 }
 
 func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.FeaturesCollection {

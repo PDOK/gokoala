@@ -27,7 +27,7 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 		styles.NewStyles(engine)
 	}
 	// OGC Features API
-	collectionTypes := geospatial.NewCollectionTypes(nil)
+	collectionTypes := geospatial.NewCollectionTypes(nil, nil)
 	if engine.Config.OgcAPI.Features != nil {
 		f := features.NewFeatures(engine)
 		collectionTypes = f.GetCollectionTypes()

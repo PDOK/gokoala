@@ -10,11 +10,12 @@ license:
 ogcApi:
   features:
     basemap: OSM
+    supportsNonGeoData: true
     datasources:
       defaultWGS84:
         geopackage:
           local:
-            file: ./internal/ogc/features/datasources/geopackage/testdata/attributes.gpkg
+            file: ./internal/ogc/features/datasources/geopackage/testdata/nongeo.gpkg
             queryTimeout: 5s
     collections:
       - id: roads

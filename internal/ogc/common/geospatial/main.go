@@ -20,6 +20,7 @@ type Collections struct {
 type collectionWithType struct {
 	Collection any
 	Type       CollectionType
+	GeomType   string
 }
 
 // NewCollections enables support for OGC APIs that organize data in the concept of collections.
@@ -51,7 +52,7 @@ func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 				},
 			}...)
 
-			collWithType := collectionWithType{coll, types.Get(coll.GetID())}
+			collWithType := collectionWithType{coll, types.GetCollectionType(coll.GetID()), types.GetGeometryType(coll.GetID())}
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.GetID())))
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, collectionBreadcrumbs,
