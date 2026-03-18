@@ -25,8 +25,9 @@ const (
 var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+\]`)
 
-	// matches `&` (AND), `|` (OR), `!` (NOT), and `<->` (FOLLOWED BY).
-	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
+	// matches `|` (OR), `!` (NOT), and `<->` (FOLLOWED BY).
+	// Note: we do allow `&` (AND) since it can actually be part of a streetname, but ignore it later on.
+	searchOperatorsRegex = regexp.MustCompile(`\||!|<->`)
 	// matches `'` (apostrophe), `(` (left parenthesis), and `)` (right parenthesis).
 	searchDiscardCharactersRegex = regexp.MustCompile(`'|\(|\)`)
 
@@ -95,8 +96,7 @@ func parseSearchTerms(query url.Values) (string, error) {
 		return "", fmt.Errorf("no search terms provided, '%s' query parameter is required", queryParam)
 	}
 	if searchOperatorsRegex.MatchString(searchTerms) {
-		return "", errors.New("provided search terms contain one ore more boolean operators " +
-			"such as & (AND), | (OR), ! (NOT) which aren't allowed")
+		return "", errors.New("provided search terms contain one ore more boolean operators which aren't allowed")
 	}
 	return searchTerms, nil
 }
