@@ -38,7 +38,7 @@ func FuzzExpand(f *testing.F) {
 		query := expanded.ToExactMatchQuery(true)
 
 		assert.Truef(t, utf8.ValidString(query), "valid string")
-		if strings.TrimSpace(input) != "" {
+		if strings.TrimSpace(input) != "" && !strings.Contains(input, "&") {
 			assert.NotEmpty(t, query)
 		}
 	})

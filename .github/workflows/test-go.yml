@@ -31,6 +31,9 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+      - name: Test generating example CRD
+        run: hack/generate-crd.sh
+
       - name: Unit Test
         run: |
           go test -v -race -shuffle=on \
@@ -46,9 +49,6 @@ jobs:
             -e "cqlparser_listener" \
             cover.out.tmp > cover.out
 
-      - name: Test generating example CRD
-        run: hack/generate-crd.sh
-
       - name: Fuzz Testing
         run: |
           for pkg in $(go list ./...); do
@@ -56,7 +56,16 @@ jobs:
             go test -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
           done
 
-      - name: Fail when coverage below threshold
+      - name: Fuzz Testing - upload reports on failure
+        uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: fuzz-reports
+          path: |
+            **/testdata/fuzz/**/*
+          retention-days: 5
+
+      - name: Unit Test - Fail when coverage below threshold
         # Pin 3rd party action to a specific version as security best-practice.
         # Version used: https://github.com/vladopajic/go-test-coverage/releases/tag/v2.17.0
         uses: vladopajic/go-test-coverage@cc5012c2cfa84542e02b079141958a885861d326
@@ -65,7 +74,7 @@ jobs:
           local-prefix: github.com/PDOK/gokoala
           threshold-total: 80  # 80% overall coverage is the minimum
 
-      - name: Update coverage report
+      - name: Unit Test - Update coverage report
         # Pin 3rd party action to a specific version as security best-practice.
         # Version used: https://github.com/ncruces/go-coverage-report/releases/tag/v0.3.1
         uses: ncruces/go-coverage-report@aa507d98fb11c2b4dffa1b731e0786f50fd8ec93

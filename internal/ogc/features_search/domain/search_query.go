@@ -35,7 +35,9 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 
 	sb := &strings.Builder{}
 	for i, word := range q.words {
-		if i > 0 {
+		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS).
+		word = strings.ReplaceAll(word, "&", "")
+		if len(word) > 0 && i > 0 {
 			sb.WriteString(" & ")
 		}
 		if _, ok := q.withoutSynonyms[word]; ok {
