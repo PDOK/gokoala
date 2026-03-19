@@ -122,6 +122,22 @@ func TestExpand(t *testing.T) {
 			want: `(eerste | 1ste) & (2de | tweede)`,
 		},
 		{
+			name: "AND operator only",
+			args: args{
+				searchQuery: `&`,
+				useSynonyms: true,
+			},
+			want: ``,
+		},
+		{
+			name: "AND operator with terms",
+			args: args{
+				searchQuery: `foo & bar`,
+				useSynonyms: true,
+			},
+			want: `(foo | foobar | foos) & bar`,
+		},
+		{
 			name: "nesting",
 			args: args{
 				searchQuery: `oudwesterlijke-goeverneur`,
