@@ -200,13 +200,13 @@ type FeatureProperties struct {
 	// unlisted properties are also included in API responses.
 	// +optional
 	// +kubebuilder:default=false
-	PropertiesExcludeUnknown bool `yaml:"propertiesExcludeUnknown,omitempty" json:"propertiesExcludeUnknown,omitempty" default:"false"`
+	PropertiesExcludeUnknown *bool `yaml:"propertiesExcludeUnknown,omitempty" json:"propertiesExcludeUnknown,omitempty" default:"false"`
 
 	// When true properties are returned according to the ordering specified under 'properties'. When false
 	// properties are returned in alphabetical order.
 	// +optional
 	// +kubebuilder:default=false
-	PropertiesInSpecificOrder bool `yaml:"propertiesInSpecificOrder,omitempty" json:"propertiesInSpecificOrder,omitempty" default:"false"`
+	PropertiesInSpecificOrder *bool `yaml:"propertiesInSpecificOrder,omitempty" json:"propertiesInSpecificOrder,omitempty" default:"false"`
 }
 
 // +kubebuilder:object:generate=true
