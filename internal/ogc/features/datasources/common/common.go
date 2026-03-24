@@ -100,7 +100,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 				columns.Set(prop, struct{}{})
 			}
 		}
-		if propConfig.PropertiesExcludeUnknown == nil || (propConfig.PropertiesExcludeUnknown != nil && !*propConfig.PropertiesExcludeUnknown) {
+		if ptrDeref(propConfig.PropertiesExcludeUnknown, false) {
 			// select missing columns according to the table schema
 			for _, field := range table.Schema.Fields {
 				if field.Name != table.GeometryColumnName {
@@ -229,4 +229,12 @@ func ValidateUniqueness(result map[string]*Table) {
 		log.Printf("Warning: found %d unique table names for %d collections, "+
 			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
 	}
+}
+
+func ptrDeref[T any](ptr *T, def T) T {
+	if ptr == nil {
+		return def
+	}
+
+	return *ptr
 }
