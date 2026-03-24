@@ -10,7 +10,6 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/google/uuid"
 	"github.com/twpayne/go-geom"
-	"k8s.io/utils/ptr"
 )
 
 // MapRelation function signature to map feature relations.
@@ -73,7 +72,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows,
 		return result, nil, err
 	}
 
-	propertiesOrder := propConfig != nil && ptr.Deref(propConfig.PropertiesInSpecificOrder, false)
+	propertiesOrder := propConfig != nil && propConfig.PropertiesInSpecificOrder != nil && *propConfig.PropertiesInSpecificOrder
 	firstRow := true
 	var prevNextID *domain.PrevNextFID
 	for rows.Next() {

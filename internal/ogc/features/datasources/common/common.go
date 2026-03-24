@@ -13,7 +13,6 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
-	"k8s.io/utils/ptr"
 )
 
 const (
@@ -101,7 +100,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 				columns.Set(prop, struct{}{})
 			}
 		}
-		if !ptr.Deref(propConfig.PropertiesExcludeUnknown, false) {
+		if propConfig.PropertiesExcludeUnknown == nil || (propConfig.PropertiesExcludeUnknown != nil && !*propConfig.PropertiesExcludeUnknown) {
 			// select missing columns according to the table schema
 			for _, field := range table.Schema.Fields {
 				if field.Name != table.GeometryColumnName {

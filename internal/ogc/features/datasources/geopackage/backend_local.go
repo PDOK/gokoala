@@ -8,7 +8,6 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/jmoiron/sqlx"
-	"k8s.io/utils/ptr"
 )
 
 // GeoPackage on local disk.
@@ -33,7 +32,13 @@ func newLocalGeoPackage(gpkg *config.GeoPackageLocal) geoPackageBackend {
 func downloadGeoPackage(gpkg *config.GeoPackageLocal) {
 	url := *gpkg.Download.From.URL
 	log.Printf("start download of GeoPackage: %s", url.String())
-	downloadTime, err := engine.Download(url, gpkg.File, gpkg.Download.Parallelism, ptr.Deref(gpkg.Download.TLSSkipVerify, false),
+
+	tlsSkipVerify := false
+	if gpkg.Download.TLSSkipVerify != nil {
+		tlsSkipVerify = *gpkg.Download.TLSSkipVerify
+	}
+
+	downloadTime, err := engine.Download(url, gpkg.File, gpkg.Download.Parallelism, tlsSkipVerify,
 		gpkg.Download.Timeout.Duration, gpkg.Download.RetryDelay.Duration, gpkg.Download.RetryMaxDelay.Duration, gpkg.Download.MaxRetries)
 	if err != nil {
 		log.Fatalf("failed to download GeoPackage: %v", err)

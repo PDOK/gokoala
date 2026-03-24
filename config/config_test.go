@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
-	"k8s.io/utils/ptr"
 )
 
 func init() {
@@ -568,8 +567,8 @@ func TestFeaturesCollection_MarshalUnmarshal_JSON(t *testing.T) {
 		ID: "buildings",
 		FeatureProperties: &FeatureProperties{
 			Properties:                []string{"id", "name"},
-			PropertiesExcludeUnknown:  ptr.To(true),
-			PropertiesInSpecificOrder: ptr.To(true),
+			PropertiesExcludeUnknown:  ptrTo(true),
+			PropertiesInSpecificOrder: ptrTo(true),
 		},
 		Filters: FeatureFilters{
 			Properties: []PropertyFilter{
@@ -608,8 +607,8 @@ func TestFeaturesCollection_MarshalUnmarshal_YAML(t *testing.T) {
 		ID: "roads",
 		FeatureProperties: &FeatureProperties{
 			Properties:                []string{"id", "type"},
-			PropertiesExcludeUnknown:  ptr.To(true),
-			PropertiesInSpecificOrder: ptr.To(true),
+			PropertiesExcludeUnknown:  ptrTo(true),
+			PropertiesInSpecificOrder: ptrTo(true),
 		},
 	}
 
