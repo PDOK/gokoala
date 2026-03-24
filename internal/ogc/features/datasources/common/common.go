@@ -100,7 +100,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 				columns.Set(prop, struct{}{})
 			}
 		}
-		if ptrDeref(propConfig.PropertiesExcludeUnknown, false) {
+		if !ptrDeref(propConfig.PropertiesExcludeUnknown, false) {
 			// select missing columns according to the table schema
 			for _, field := range table.Schema.Fields {
 				if field.Name != table.GeometryColumnName {
