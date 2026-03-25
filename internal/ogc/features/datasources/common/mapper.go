@@ -72,7 +72,7 @@ func MapRowsToFeatures(ctx context.Context, rows DatasourceRows,
 		return result, nil, err
 	}
 
-	propertiesOrder := propConfig != nil && propConfig.PropertiesInSpecificOrder
+	propertiesOrder := propConfig != nil && propConfig.PropertiesInSpecificOrder != nil && *propConfig.PropertiesInSpecificOrder
 	firstRow := true
 	var prevNextID *domain.PrevNextFID
 	for rows.Next() {

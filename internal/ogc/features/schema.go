@@ -137,8 +137,8 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 }
 
 func requiresSpecificOrder(collection config.FeaturesCollection) bool {
-	if collection.FeatureProperties != nil {
-		return collection.PropertiesInSpecificOrder
+	if collection.FeatureProperties != nil && collection.PropertiesInSpecificOrder != nil {
+		return *collection.PropertiesInSpecificOrder
 	}
 
 	return false
