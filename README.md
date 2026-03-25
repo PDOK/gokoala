@@ -253,6 +253,14 @@ Set `LOG_SQL=true` environment variable to enable logging of all SQL queries to
 stdout for debug purposes. Only applies to OGC API Features with
 GeoPackage and/or PostgreSQL data source.
 
+#### PostgreSQL shared_buffers
+
+This only applies when Features Search (geocoding) is enabled: You can inspect the PostgreSQL buffercache for the search
+index by invoking `select * from gokoala_inspect_buffercache();` in the PostgreSQL database. The search index is
+automatically prewarmed after ETL is done. But in case you want to invoke it manually (one example would be after a
+restart of the database) you can invoke `select gokoala_prewarm_partitions();`. This function defaults to the current
+search index, but this can be overridden when desired.
+
 ## Develop
 
 Design principles:
