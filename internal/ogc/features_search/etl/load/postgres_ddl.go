@@ -52,6 +52,28 @@ var (
 func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	log.Printf("initializing search index %s", index)
 
+	if err := p.createGeomType(); err != nil {
+		return err
+	}
+	if err := p.createTextConfig(); err != nil {
+		return err
+	}
+	if err := p.createTables(index, srid); err != nil {
+		return err
+	}
+	if err := p.createCollation(lang); err != nil {
+		return err
+	}
+	if err := p.createIndexes(index, false); err != nil {
+		return err
+	}
+	if err := p.createFunctions(index); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Postgres) createGeomType() error {
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
@@ -62,14 +84,17 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	if err != nil {
 		return fmt.Errorf("error creating geometry type: %w", err)
 	}
+	return nil
+}
 
+func (p *Postgres) createTextConfig() error {
 	textSearchConfig := `
 		do $$ begin
 		    create text search configuration custom_dict (copy = simple);
 		exception
 		    when unique_violation then null;
 		end $$;`
-	_, err = p.db.Exec(context.Background(), textSearchConfig)
+	_, err := p.db.Exec(context.Background(), textSearchConfig)
 	if err != nil {
 		return fmt.Errorf("error creating text search configuration: %w", err)
 	}
@@ -87,9 +112,12 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	if err != nil {
 		return fmt.Errorf("error altering text search configuration: %w", err)
 	}
+	return nil
+}
 
+func (p *Postgres) createTables(index string, srid int) error {
 	// create search index table
-	_, err = p.db.Exec(context.Background(), fmt.Sprintf(tableDefinition, index, srid, "partition by list(collection_id)"))
+	_, err := p.db.Exec(context.Background(), fmt.Sprintf(tableDefinition, index, srid, "partition by list(collection_id)"))
 	if err != nil {
 		return fmt.Errorf("error creating search index table: %w", err)
 	}
@@ -141,23 +169,18 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	if err != nil {
 		return fmt.Errorf("error creating metadata primary key: %w", err)
 	}
+	return nil
+}
 
-	// create custom collation to correctly handle "numbers in strings" when sorting results
-	// see https://www.postgresql.org/docs/12/collation.html#id-1.6.10.4.5.7.5
+// create custom collation to correctly handle "numbers in strings" when sorting results
+// see https://www.postgresql.org/docs/12/collation.html#id-1.6.10.4.5.7.5
+func (p *Postgres) createCollation(lang language.Tag) error {
 	collation := fmt.Sprintf(`create collation if not exists custom_numeric (provider = icu, locale = '%s-u-kn-true');`, lang.String())
-	_, err = p.db.Exec(context.Background(), collation)
+	_, err := p.db.Exec(context.Background(), collation)
 	if err != nil {
 		return fmt.Errorf("error creating numeric collation: %w", err)
 	}
-
-	if err = p.createIndexes(index, false); err != nil {
-		return err
-	}
-
-	if err = p.createFunctions(index); err != nil {
-		return err
-	}
-	return err
+	return nil
 }
 
 func createExtensions(ctx context.Context, db *pgx.Conn) error {
