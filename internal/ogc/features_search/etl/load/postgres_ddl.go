@@ -19,7 +19,8 @@ const (
 var (
 	postgresExtensions = []string{"postgis", "unaccent", "pg_prewarm", "pg_buffercache"}
 
-	indexNames = []string{indexNameFullText, indexNameGeometry, indexNameBbox, indexNamePreRank}
+	indexNames       = []string{indexNameFullText, indexNameGeometry, indexNameBbox, indexNamePreRank}
+	indexesToPreWarm = []string{indexNameFullText, indexNamePreRank} // should fit in shared_buffers
 
 	//nolint:dupword
 	tableDefinition = `
@@ -298,7 +299,7 @@ begin
             join pg_class ci on ci.oid = i.indexrelid
             where i.indrelid = part_oid
               and ci.relname = any (
-                    select part_name || suffix
+                    select part_name || '_' || suffix
                     from unnest(idx_suffixes) as suffix
               )
         loop

@@ -70,6 +70,35 @@ func TestCreateSearchIndexIdempotent(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestPreWarmPartitionFunction(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+	ctx := context.Background()
+
+	// given existing populated search index
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	err = CreateSearchIndex(dbConn, "search_index", 28992, language.Dutch)
+	require.NoError(t, err)
+	err = insertTestData(ctx, dbConn)
+	require.NoError(t, err)
+
+	db, err := pgx.Connect(ctx, dbConn)
+	require.NoError(t, err)
+	defer db.Close(ctx)
+
+	// when/then
+	rows, err := db.Query(ctx, `SELECT * FROM gokoala_prewarm_partitions(idx_suffixes := array['ts_idx'])`)
+	require.NoError(t, err)
+	defer rows.Close()
+}
+
 func TestInspectBufferCacheFunction(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")

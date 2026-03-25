@@ -146,7 +146,7 @@ func (p *Postgres) PostLoad(collectionID string, index string, revision string) 
 }
 
 func (p *Postgres) Optimize(index string) error {
-	// Perform targeted VACUUM + ANALYZE
+	log.Println("perform targeted VACUUM + ANALYZE on loaded partition")
 	_, err := p.db.Exec(context.Background(), fmt.Sprintf(`vacuum analyze %s;`, p.partitionToLoad))
 	if err != nil {
 		return fmt.Errorf("failed optimizing: error performing vacuum analyze on loaded partition: %w", err)
@@ -154,6 +154,15 @@ func (p *Postgres) Optimize(index string) error {
 	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`analyze %s;`, index))
 	if err != nil {
 		return fmt.Errorf("failed optimizing: error performing analyze on search index: %w", err)
+	}
+
+	// Execute pg_prewarm on all partitions and important indexes (forcing these into Postgres shared_buffers memory)
+	log.Println("prewarming partitions")
+	preWarmCall := fmt.Sprintf(
+		`select gokoala_prewarm_partitions(idx_suffixes := array['%s'])`, strings.Join(indexesToPreWarm, "','"))
+	_, err = p.db.Exec(context.Background(), preWarmCall)
+	if err != nil {
+		return fmt.Errorf("failed optimizing: prewarm function failed: %w", err)
 	}
 	return nil
 }
