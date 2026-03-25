@@ -94,7 +94,7 @@ func TestInspectBufferCacheFunction(t *testing.T) {
 	defer db.Close(ctx)
 
 	// when
-	rows, err := db.Query(ctx, `SELECT * FROM inspect_search_index_buffercache()`)
+	rows, err := db.Query(ctx, `SELECT * FROM gokoala_inspect_buffercache()`)
 	require.NoError(t, err)
 	defer rows.Close()
 

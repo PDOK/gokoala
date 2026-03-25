@@ -257,10 +257,66 @@ func (p *Postgres) createCheck(collectionID string) error {
 }
 
 // create (utility) pl/pgsql functions
+//
+//nolint:funlen
 func (p *Postgres) createFunctions(index string) error {
+	preWarmFunc := fmt.Sprintf(`
+-- function to prewarm all partitions of a table into the shared_buffers, including the given indexes
+create or replace function gokoala_prewarm_partitions(
+    idx_suffixes  	 text[],
+    search_idx_table regclass default '%s'::regclass
+)
+returns void
+language plpgsql
+as $func$
+declare
+    part_oid   oid;
+    part_name  text;
+    idx_name   text;
+begin
+    for part_oid in
+        select relid
+        from pg_partition_tree(search_idx_table)
+        where isleaf
+    loop
+        -- resolve partition name
+        select relname into part_name
+        from pg_class
+        where oid = part_oid;
+
+        -- prewarm table
+        raise notice 'prewarming partition: %%', part_name;
+        perform pg_prewarm(part_oid, 'buffer');
+
+        -- prewarm matching index
+        for idx_name in
+            select ci.relname
+            from pg_index i
+            join pg_class ci on ci.oid = i.indexrelid
+            where i.indrelid = part_oid
+              and ci.relname = any (
+                    select part_name || suffix
+                    from unnest(idx_suffixes) as suffix
+              )
+        loop
+            raise notice 'prewarming index: %%', idx_name;
+            perform pg_prewarm(idx_name, 'buffer');
+        end loop;
+
+    end loop;
+end;
+$func$;
+`, index)
+	_, err := p.db.Exec(context.Background(), preWarmFunc)
+	if err != nil {
+		return fmt.Errorf("error creating pre-warm function: %w", err)
+	}
+
 	checkBufferCacheFunc := fmt.Sprintf(`
 -- function to check shared_buffer cache, which is critical for performance
-create or replace function inspect_%[1]s_buffercache()
+create or replace function gokoala_inspect_buffercache(
+    search_idx_table regclass default '%s'::regclass
+)
 returns table (
     object_name text,
     kind text,
@@ -272,16 +328,13 @@ language plpgsql stable as
 $$
 begin
     return query
-    with parent as (
-        select '%[1]s'::regclass as oid
-    ),
-    parts as (
+    with parts as (
         -- all partitions of this table
         select
             c.oid,
             c.relname,
             n.nspname as schema
-        from pg_partition_tree((select oid from parent)) p
+        from pg_partition_tree(search_idx_table) p
         join pg_class c      on c.oid = p.relid
         join pg_namespace n  on n.oid = c.relnamespace
         where p.isleaf
@@ -316,14 +369,15 @@ begin
             pg_relation_filenode(o.oid) as filenode
         from objects o
     ),
-    cache as (
-        select
-            b.relfilenode,
-            count(*) as buffers,
-            count(*) * 8192 as cached_bytes
-        from pg_buffercache b
-        group by b.relfilenode
-    )
+	cache as (
+		select
+			b.relfilenode,
+			b.relforknumber,
+			count(*) * 8192 as cached_bytes
+		from pg_buffercache b
+		where b.relforknumber = 0
+		group by b.relfilenode, b.relforknumber
+	)
     select
         s.relname::text as object_name,
         s.kind::text,
@@ -334,14 +388,14 @@ begin
             2
         ) as percentage_cached
     from sizes s
-    left join cache c on c.relfilenode = s.filenode
+    left join cache c on c.relfilenode = s.filenode and c.relforknumber = 0
     order by s.relname, percentage_cached desc;
 end;
 $$;
 `, index)
-	_, err := p.db.Exec(context.Background(), checkBufferCacheFunc)
+	_, err = p.db.Exec(context.Background(), checkBufferCacheFunc)
 	if err != nil {
-		return fmt.Errorf("error creating function: %w", err)
+		return fmt.Errorf("error creating inspect buffercache function: %w", err)
 	}
 
 	return nil
