@@ -14,7 +14,20 @@ import {
   SimpleChanges,
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
-import { debounceTime, distinctUntilChanged, filter, map, Observable, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs'
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs'
 import { CollectionsService } from '../shared/services/collections.service'
 import { AsyncPipe, NgClass, NgIf, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
@@ -22,6 +35,7 @@ import { CollectionSettingsComponent } from './collection-settings/collection-se
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
 import { HighlightPipe } from './highlight.pipe'
 import { ReplacePipe } from './replace.pipe'
+import { HttpErrorResponse } from '@angular/common/http'
 
 interface LocationForm {
   location: FormControl<string | null>
@@ -80,6 +94,9 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   hasSearchParams = signal(true)
   confirmedFeature = signal<FeatureGeoJSON | null>(null)
 
+  hasError = signal(false)
+  errorMessage = signal('')
+
   hasSearched$!: Observable<boolean>
   collectionTitles$!: Observable<Map<string, string>>
 
@@ -100,6 +117,13 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     })
 
     this.collectionTitles$ = this._collectionsService.getCollections().pipe(
+      catchError((e: unknown) => {
+        const res = e as HttpErrorResponse
+        this.hasError.set(true)
+        this.errorMessage.set(res.error.detail)
+        this.hasSearchParams.set(false)
+        return of([])
+      }),
       map(collections => new Map(collections.map(c => [c.id, c.title]))),
       takeUntil(this._destroy$)
     )
@@ -118,6 +142,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       distinctUntilChanged(),
       tap(val => {
         this.query = val || ''
+        this.hasError.set(false)
+        this.errorMessage.set('')
         this.storeQuery()
       }),
       filter(value => value !== null && value.length >= this.MIN_QUERY_LENGTH && this.hasSearchParams()),
@@ -126,7 +152,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     )
 
     this.features$ = featureTrigger$.pipe(
-      switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox)),
+      switchMap(val => this.searchFeatures(val)),
       tap(features => {
         this._latestFeatures = features
         this.searching.set(false)
@@ -230,5 +256,17 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
 
   ngOnDestroy() {
     this._destroy$.next()
+  }
+
+  private searchFeatures(val: string | null): Observable<FeatureGeoJSON[]> {
+    return this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox).pipe(
+      catchError((err: unknown) => {
+        const res = err as HttpErrorResponse
+        this.searching.set(false)
+        this.hasError.set(true)
+        this.errorMessage.set(res.error.detail)
+        return of([])
+      })
+    )
   }
 }
