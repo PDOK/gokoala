@@ -19,8 +19,7 @@ const (
 var (
 	postgresExtensions = []string{"postgis", "unaccent", "pg_prewarm", "pg_buffercache"}
 
-	indexNames       = []string{indexNameFullText, indexNameGeometry, indexNameBbox, indexNamePreRank}
-	indexesToPreWarm = []string{indexNameFullText, indexNamePreRank} // should fit in shared_buffers
+	indexNames = []string{indexNameFullText, indexNameGeometry, indexNameBbox, indexNamePreRank}
 
 	//nolint:dupword
 	tableDefinition = `
