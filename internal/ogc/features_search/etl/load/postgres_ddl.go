@@ -267,8 +267,8 @@ func (p *Postgres) createFunctions(index string) error {
 	preWarmFunc := fmt.Sprintf(`
 -- function to prewarm all partitions of a table into the shared_buffers, including the given indexes
 create or replace function gokoala_prewarm_partitions(
-    idx_suffixes  	 text[],
-    search_idx_table regclass default '%s'::regclass
+    idx_suffixes  	 text[]   default array['%[2]s', '%[3]s'],
+    search_idx_table regclass default '%[1]s'::regclass
 )
 returns void
 language plpgsql
@@ -310,7 +310,7 @@ begin
     end loop;
 end;
 $func$;
-`, index)
+`, index, indexNameFullText, indexNamePreRank)
 	_, err := p.db.Exec(context.Background(), preWarmFunc)
 	if err != nil {
 		return fmt.Errorf("error creating pre-warm function: %w", err)

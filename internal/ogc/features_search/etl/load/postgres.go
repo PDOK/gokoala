@@ -158,9 +158,7 @@ func (p *Postgres) Optimize(index string) error {
 
 	// Execute pg_prewarm on all partitions and important indexes (forcing these into Postgres shared_buffers memory)
 	log.Println("prewarming partitions")
-	preWarmCall := fmt.Sprintf(
-		`select gokoala_prewarm_partitions(idx_suffixes := array['%s'])`, strings.Join(indexesToPreWarm, "','"))
-	_, err = p.db.Exec(context.Background(), preWarmCall)
+	_, err = p.db.Exec(context.Background(), `select gokoala_prewarm_partitions()`)
 	if err != nil {
 		return fmt.Errorf("failed optimizing: prewarm function failed: %w", err)
 	}
