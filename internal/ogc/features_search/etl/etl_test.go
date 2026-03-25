@@ -151,7 +151,7 @@ func TestInspectBufferCacheFunction(t *testing.T) {
 
 	// then
 	require.NoError(t, rows.Err())
-	require.NotEmpty(t, got, "expected at least one row from inspect_search_index_buffercache()")
+	require.NotEmpty(t, got)
 	require.NotEmpty(t, got[0].ObjectName)
 }
 
