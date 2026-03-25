@@ -27,6 +27,11 @@ func (q *SearchQuery) ToExactMatchQuery(useSynonyms bool) string {
 	return q.toString(false, useSynonyms)
 }
 
+// returns the full search term with SQL wildcard at the end
+func (q *SearchQuery) ToUntokenizedQuery() string {
+	return strings.Join(q.words, " ") + "%"
+}
+
 func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 	wildcard := ""
 	if useWildcard {
@@ -37,6 +42,8 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 	for i, word := range q.words {
 		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS).
 		word = strings.ReplaceAll(word, "&", "")
+		// remove ' from search input since it causes issues in Postgres to_tsquery.
+		word = strings.ReplaceAll(word, "'", "")
 		if len(word) > 0 && i > 0 {
 			sb.WriteString(" & ")
 		}
