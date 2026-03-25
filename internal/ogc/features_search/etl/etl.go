@@ -54,7 +54,7 @@ type Load interface {
 	PostLoad(collectionID string, index string, revision string) error
 
 	// Optimize once ETL is completed (optional)
-	Optimize() error
+	Optimize(index string) error
 
 	// Close connection to the target database
 	Close()
@@ -154,7 +154,7 @@ func ImportFile(collection config.Collection, searchIndex string, revision strin
 
 	if !skipOptimize {
 		log.Println("start optimizing")
-		if err = target.Optimize(); err != nil {
+		if err = target.Optimize(searchIndex); err != nil {
 			return err
 		}
 		log.Println("completed optimizing")

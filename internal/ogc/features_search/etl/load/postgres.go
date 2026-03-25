@@ -145,10 +145,15 @@ func (p *Postgres) PostLoad(collectionID string, index string, revision string) 
 	return nil
 }
 
-func (p *Postgres) Optimize() error {
-	_, err := p.db.Exec(context.Background(), `vacuum analyze;`)
+func (p *Postgres) Optimize(index string) error {
+	// Perform targeted VACUUM + ANALYZE
+	_, err := p.db.Exec(context.Background(), fmt.Sprintf(`vacuum analyze %s;`, p.partitionToLoad))
 	if err != nil {
-		return fmt.Errorf("failed optimizing: error performing vacuum analyze: %w", err)
+		return fmt.Errorf("failed optimizing: error performing vacuum analyze on loaded partition: %w", err)
+	}
+	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`analyze %s;`, index))
+	if err != nil {
+		return fmt.Errorf("failed optimizing: error performing analyze on search index: %w", err)
 	}
 	return nil
 }

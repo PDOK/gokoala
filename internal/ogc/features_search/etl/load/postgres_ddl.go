@@ -75,7 +75,8 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 
 func (p *Postgres) createGeomType() error {
 	geometryType := `
-		do $$ begin
+		do $$ 
+		begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
 		exception
 		    when duplicate_object then null;
@@ -89,7 +90,8 @@ func (p *Postgres) createGeomType() error {
 
 func (p *Postgres) createTextConfig() error {
 	textSearchConfig := `
-		do $$ begin
+		do $$ 
+		begin
 		    create text search configuration custom_dict (copy = simple);
 		exception
 		    when unique_violation then null;
@@ -101,7 +103,8 @@ func (p *Postgres) createTextConfig() error {
 
 	// This adds the 'unaccent' extension to allow searching with/without diacritics. Must happen in separate transaction.
 	alterTextSearchConfig := `
-		do $$ begin
+		do $$ 
+		begin
 			alter text search configuration custom_dict
 			  alter mapping for hword, hword_part, word
 			  with unaccent, simple;
