@@ -3,6 +3,7 @@ package load
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/text/language"
@@ -16,7 +17,7 @@ const (
 )
 
 var (
-	postgresExtensions = []string{"postgis", "unaccent"}
+	postgresExtensions = []string{"postgis", "unaccent", "pg_prewarm", "pg_buffercache"}
 
 	indexNames = []string{indexNameFullText, indexNameGeometry, indexNameBbox, indexNamePreRank}
 
@@ -49,6 +50,8 @@ var (
 // Since not all DDL in Postgres support the "if not exists" syntax we use a bit
 // of pl/pgsql to make it idempotent.
 func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
+	log.Printf("initializing search index %s", index)
+
 	geometryType := `
 		do $$ begin
 		    create type geometry_type as enum ('POINT', 'MULTIPOINT', 'LINESTRING', 'MULTILINESTRING', 'POLYGON', 'MULTIPOLYGON');
@@ -150,6 +153,10 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	if err = p.createIndexes(index, false); err != nil {
 		return err
 	}
+
+	if err = p.createFunctions(index); err != nil {
+		return err
+	}
 	return err
 }
 
@@ -223,5 +230,96 @@ func (p *Postgres) createCheck(collectionID string) error {
 	if err != nil {
 		return fmt.Errorf("error creating CHECK constraint: %w", err)
 	}
+	return nil
+}
+
+// create (utility) pl/pgsql functions
+func (p *Postgres) createFunctions(index string) error {
+	checkBufferCacheFunc := fmt.Sprintf(`
+-- function to check shared_buffer cache, which is critical for performance
+create or replace function inspect_%[1]s_buffercache()
+returns table (
+    object_name text,
+    kind text,
+    total_size text,
+    cached_size text,
+    percentage_cached numeric
+)
+language plpgsql stable as
+$$
+begin
+    return query
+    with parent as (
+        select '%[1]s'::regclass as oid
+    ),
+    parts as (
+        -- all partitions of this table
+        select
+            c.oid,
+            c.relname,
+            n.nspname as schema
+        from pg_partition_tree((select oid from parent)) p
+        join pg_class c      on c.oid = p.relid
+        join pg_namespace n  on n.oid = c.relnamespace
+        where p.isleaf
+    ),
+    objects as (
+        -- each partition + all its indexes
+        select
+            p.schema,
+            p.relname,
+            p.oid,
+            'table' as kind
+        from parts p
+
+        union all
+
+        select
+            p.schema,
+            ci.relname,
+            ci.oid,
+            'index' as kind
+        from parts p
+        join pg_index i  on i.indrelid = p.oid
+        join pg_class ci on ci.oid = i.indexrelid
+    ),
+    sizes as (
+        select
+            o.schema,
+            o.relname,
+            o.kind,
+            o.oid,
+            pg_relation_size(o.oid) as total_bytes,
+            pg_relation_filenode(o.oid) as filenode
+        from objects o
+    ),
+    cache as (
+        select
+            b.relfilenode,
+            count(*) as buffers,
+            count(*) * 8192 as cached_bytes
+        from pg_buffercache b
+        group by b.relfilenode
+    )
+    select
+        s.relname::text as object_name,
+        s.kind::text,
+        pg_size_pretty(s.total_bytes) as total_size,
+        pg_size_pretty(coalesce(c.cached_bytes, 0)) as cached_size,
+        round(
+            100.0 * coalesce(c.cached_bytes, 0) / nullif(s.total_bytes, 0),
+            2
+        ) as percentage_cached
+    from sizes s
+    left join cache c on c.relfilenode = s.filenode
+    order by s.relname, percentage_cached desc;
+end;
+$$;
+`, index)
+	_, err := p.db.Exec(context.Background(), checkBufferCacheFunc)
+	if err != nil {
+		return fmt.Errorf("error creating function: %w", err)
+	}
+
 	return nil
 }
