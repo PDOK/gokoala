@@ -243,24 +243,26 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 	sql := makeSearchQuery(criteria.Settings.IndexName, bboxFilter, axisOrder)
 	wildcardQuery := criteria.SearchQuery.ToWildcardQuery()
 	exactMatchQuery := criteria.SearchQuery.ToExactMatchQuery(criteria.Settings.SynonymsExactMatch)
+	untokenizedQuery := criteria.SearchQuery.ToUntokenizedQuery()
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
 	log.Printf("\nSEARCH QUERY (wildcard): %s\n", wildcardQuery)
 
 	// Create query params
 	namedParams := map[string]any{
-		"lm":              criteria.Limit,
-		"wildcardquery":   wildcardQuery,
-		"exactmatchquery": exactMatchQuery,
-		"names":           names,
-		"versions":        versions,
-		"relevance":       relevance,
-		"rn":              criteria.Settings.RankNormalization,
-		"emm":             criteria.Settings.ExactMatchMultiplier,
-		"psm":             criteria.Settings.PrimarySuggestMultiplier,
-		"rt":              criteria.Settings.RankThreshold,
-		"prlm":            criteria.Settings.PreRankLimitMultiplier,
-		"prwcc":           criteria.Settings.PreRankWordCountCutoff,
-		"outputSrid":      criteria.OutputSRID.GetOrDefault(),
+		"lm":               criteria.Limit,
+		"wildcardquery":    wildcardQuery,
+		"exactmatchquery":  exactMatchQuery,
+		"untokenizedquery": untokenizedQuery,
+		"names":            names,
+		"versions":         versions,
+		"relevance":        relevance,
+		"rn":               criteria.Settings.RankNormalization,
+		"emm":              criteria.Settings.ExactMatchMultiplier,
+		"psm":              criteria.Settings.PrimarySuggestMultiplier,
+		"rt":               criteria.Settings.RankThreshold,
+		"prlm":             criteria.Settings.PreRankLimitMultiplier,
+		"prwcc":            criteria.Settings.PreRankWordCountCutoff,
+		"outputSrid":       criteria.OutputSRID.GetOrDefault(),
 	}
 	maps.Copy(namedParams, bboxQueryArgs)
 
@@ -355,6 +357,9 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	query_exact AS (
 		SELECT to_tsquery('custom_dict', @exactmatchquery) query
 	),
+	query_untokenized AS (
+		SELECT @untokenizedquery query
+	),
 	results AS NOT MATERIALIZED ( -- the results query is called multiple times, materializing it results in a non-optimal query plan for one of the calls
 		SELECT
 			r.display_name,
@@ -417,7 +422,15 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 			SELECT
 				u.*,
 				CASE WHEN u.display_name = u.suggest THEN (
-					ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm * @psm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)
+					-- if display_name starts with exact search query string, rank it higher to emphasize word order.
+					-- rank shorter display_name higher ('Road 1' should be ranked before 'Road 1A')
+					CASE WHEN lower(unaccent(u.display_name)) like (SELECT query||'%%' from query_untokenized) THEN (
+						1 + (1.0 / length(u.display_name))
+					)
+					ELSE (
+						ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm * @psm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)
+					)
+					END	
 				) * rel.relevance
 				ELSE (
 					ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)

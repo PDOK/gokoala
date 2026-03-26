@@ -28,8 +28,8 @@ var (
 	// matches `|` (OR), `!` (NOT), and `<->` (FOLLOWED BY).
 	// Note: we do allow `&` (AND) since it can actually be part of a streetname, but ignore it later on.
 	searchOperatorsRegex = regexp.MustCompile(`\||!|<->`)
-	// matches `'` (apostrophe), `(` (left parenthesis), and `)` (right parenthesis).
-	searchDiscardCharactersRegex = regexp.MustCompile(`'|\(|\)`)
+	// matches `(` (left parenthesis), and `)` (right parenthesis).
+	searchDiscardCharactersRegex = regexp.MustCompile(`\(|\)`)
 
 	searchKnownParams = map[string]struct{}{
 		queryParam:            {},
