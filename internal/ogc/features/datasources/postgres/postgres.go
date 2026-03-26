@@ -422,7 +422,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 			SELECT
 				u.*,
 				CASE WHEN u.display_name = u.suggest THEN (
-					-- if display_name starts with exact search query string, rank it higher to emphasize word order
+					-- if display_name starts with exact search query string, rank it higher to emphasize word order.
 					-- rank shorter display_name higher ('Road 1' should be ranked before 'Road 1A')
 					CASE WHEN lower(unaccent(u.display_name)) like (SELECT query||'%%' from query_untokenized) THEN (
 						1 + (1.0 / length(u.display_name))
