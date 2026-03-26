@@ -42,8 +42,6 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 	for i, word := range q.words {
 		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS).
 		word = strings.ReplaceAll(word, "&", "")
-		// remove ' from search input since it causes issues in Postgres to_tsquery.
-		word = strings.ReplaceAll(word, "'", "")
 		if len(word) > 0 && i > 0 {
 			sb.WriteString(" & ")
 		}
@@ -65,5 +63,7 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 			sb.WriteByte(')')
 		}
 	}
-	return sb.String()
+	// remove ' from search input since it causes issues in Postgres to_tsquery.
+	// remove at the end because otherwise the word no longer matches one contained in q.
+	return strings.ReplaceAll(sb.String(), "'", "")
 }
