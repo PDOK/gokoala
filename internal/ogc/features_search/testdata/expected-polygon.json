@@ -33,7 +33,7 @@
         "href": [
           "https://example.com/ogc/v1/collections/buildings/items/4e2d75f6-4200-5759-8d2c-8d161a761f80?f=json"
         ],
-        "score": 0.20031838417053224
+        "score": 0.8399999618530274
       },
       "geometry": {
         "type": "Point",
