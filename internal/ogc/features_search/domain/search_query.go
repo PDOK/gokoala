@@ -29,7 +29,7 @@ func (q *SearchQuery) ToExactMatchQuery(useSynonyms bool) string {
 
 // returns the full search term with SQL wildcard at the end
 func (q *SearchQuery) ToUntokenizedQuery() string {
-	return strings.Join(q.words, " ") + "%"
+	return strings.Join(q.words, " ")
 }
 
 func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
