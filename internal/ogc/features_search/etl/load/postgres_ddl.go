@@ -12,14 +12,13 @@ import (
 const (
 	indexNameFullText = "ts_idx"
 	indexNameGeometry = "geometry_idx"
-	indexNameBbox     = "bbox_idx"
 	indexNamePreRank  = "pre_rank_idx"
 )
 
 var (
 	postgresExtensions = []string{"postgis", "unaccent", "pg_prewarm", "pg_buffercache"}
 
-	indexNames = []string{indexNameFullText, indexNameGeometry, indexNameBbox, indexNamePreRank}
+	indexNames = []string{indexNameFullText, indexNameGeometry, indexNamePreRank}
 
 	//nolint:dupword
 	tableDefinition = `
@@ -215,16 +214,6 @@ func (p *Postgres) createIndexes(table string, usePrefix bool) error {
 	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(geometry);`, table, indexName))
 	if err != nil {
 		return fmt.Errorf("error creating geometry GIST index: %w", err)
-	}
-
-	// GIST indexes for bbox column to support search within a bounding box
-	indexName = indexNameBbox
-	if usePrefix {
-		indexName = fmt.Sprintf("%s_%s", table, indexNameBbox)
-	}
-	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(bbox);`, table, indexName))
-	if err != nil {
-		return fmt.Errorf("error creating bbox GIST index: %w", err)
 	}
 
 	// index used to pre-rank results when generic search terms are used
