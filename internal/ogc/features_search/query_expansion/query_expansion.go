@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"slices"
@@ -20,17 +21,19 @@ const regexPrefix = "regex:"
 // QueryExpansion query expansion involves evaluating a user's input (what words were typed into the search query area)
 // and expanding the search query to match additional results, see https://en.wikipedia.org/wiki/Query_expansion
 type QueryExpansion struct {
-	rewrites []rewrite
-	synonyms map[string][]string
+	rewrites    []rewrite
+	synonyms    map[string][]string
+	maxSynonyms int
 }
 
-func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, error) {
+func NewQueryExpansion(rewritesFile, synonymsFile string, maxSynonyms int) (*QueryExpansion, error) {
 	rewrites, rewErr := readRewrites(rewritesFile)
 	synonyms, synErr := readSynonyms(synonymsFile)
 
 	return &QueryExpansion{
-		rewrites: rewrites,
-		synonyms: synonyms,
+		rewrites:    rewrites,
+		synonyms:    synonyms,
+		maxSynonyms: maxSynonyms,
 	}, errors.Join(rewErr, synErr)
 }
 
@@ -43,7 +46,7 @@ func (s QueryExpansion) Expand(ctx context.Context, searchTerms string) (*domain
 	if err != nil {
 		return nil, err
 	}
-	words, wordsWithoutSynonyms, wordsWithSynonyms, err := expandSynonyms(expandCtx, rewritten, s.synonyms)
+	words, wordsWithoutSynonyms, wordsWithSynonyms, err := expandSynonyms(expandCtx, rewritten, s.synonyms, s.maxSynonyms)
 	if err != nil {
 		return nil, err
 	}
@@ -61,15 +64,17 @@ func performRewrites(ctx context.Context, input string, rewrites []rewrite) (str
 	return input, ctx.Err()
 }
 
-func expandSynonyms(ctx context.Context, input string, mapping map[string][]string) ([]string, map[string]struct{},
-	map[string][]string, error) {
+func expandSynonyms(ctx context.Context, input string, mapping map[string][]string,
+	maxSynonyms int) ([]string, map[string]struct{}, map[string][]string, error) {
 
 	words := uniqueSlice(strings.Fields(input))
 
 	wordsWithSynonyms := make(map[string][]string)
 	for _, word := range words {
 		variants := []string{word}
-		for i := 0; i < len(variants); i++ {
+		maxSynonymsReached := false
+
+		for i := 0; i < len(variants) && !maxSynonymsReached; i++ {
 			existingVariant := variants[i]
 			positions := mapPositions(existingVariant, mapping)
 
@@ -86,6 +91,12 @@ func expandSynonyms(ctx context.Context, input string, mapping map[string][]stri
 					return nil, nil, nil, err // timeout encountered
 				}
 				if !slices.Contains(variants, newVariant) {
+					if len(variants) > maxSynonyms {
+						log.Printf("max synonyms (%d) exceeded, skipping "+
+							"further expansion for word: %s", maxSynonyms, word)
+						maxSynonymsReached = true
+						break
+					}
 					variants = append(variants, newVariant) // continue for-loop by appending to slice
 					wordsWithSynonyms[word] = append(wordsWithSynonyms[word], newVariant)
 				}

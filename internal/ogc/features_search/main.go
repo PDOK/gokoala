@@ -38,7 +38,7 @@ type Search struct {
 }
 
 func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datasource,
-	axisOrderBySRID map[int]fd.AxisOrder, rewritesFile, synonymsFile string) (*Search, error) {
+	axisOrderBySRID map[int]fd.AxisOrder, rewritesFile, synonymsFile string, maxSynonyms int) (*Search, error) {
 
 	if synonymsFile == "" {
 		return nil, errors.New("synonyms.csv file not configured, this is required for features search")
@@ -46,7 +46,7 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 	if rewritesFile == "" {
 		return nil, errors.New("rewrites.csv file not configured, this is required for features search")
 	}
-	queryExpansion, err := query_expansion.NewQueryExpansion(rewritesFile, synonymsFile)
+	queryExpansion, err := query_expansion.NewQueryExpansion(rewritesFile, synonymsFile, maxSynonyms)
 	if err != nil {
 		return nil, err
 	}

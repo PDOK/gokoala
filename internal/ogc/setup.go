@@ -34,10 +34,11 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	}
 	// Features Search API, build on top of the OGC Features API
 	if engine.Config.OgcAPI.FeaturesSearch != nil {
-		ds := features.CreateDatasources(
-			config.NewSearchConfig(engine.Config.OgcAPI.FeaturesSearch), engine.RegisterShutdownHook)
+		fs := engine.Config.OgcAPI.FeaturesSearch
+		ds := features.CreateDatasources(config.NewSearchConfig(fs), engine.RegisterShutdownHook)
 		ao := features.DetermineAxisOrder(ds)
-		_, err := features_search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile)
+
+		_, err := features_search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile, fs.SearchSettings.MaxSynonyms)
 		if err != nil {
 			return err
 		}
