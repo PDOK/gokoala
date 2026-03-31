@@ -25,7 +25,10 @@ func (ct CollectionType) ItemType() string {
 func (ct CollectionType) AvailableFormats() []engine.OutputFormat {
 	switch ct {
 	case Attributes:
-		return engine.OutputFormatDefault
+		return []engine.OutputFormat{
+			// not strickly GeoJSON since geometry field is missing but since we use GeoJSON as the mediatype also mention it as GeoJSON in GUI.
+			{Key: engine.FormatJSON, Name: "GeoJSON"},
+		}
 	case Features:
 		return []engine.OutputFormat{
 			{Key: engine.FormatJSON, Name: "GeoJSON"},
