@@ -25,7 +25,10 @@ func init() {
 
 // Run with: go test -fuzz=Fuzz -fuzztime=10s -run=^$
 func FuzzExpand(f *testing.F) {
-	queryExpansion, err := NewQueryExpansion("internal/ogc/features_search/testdata/rewrites.csv", "internal/ogc/features_search/testdata/synonyms.csv")
+	queryExpansion, err := NewQueryExpansion(
+		"internal/ogc/features_search/testdata/rewrites.csv",
+		"internal/ogc/features_search/testdata/synonyms.csv",
+		30)
 	require.NoError(f, err)
 
 	testcases := []string{"Foo", "Bar", "Baz", "Den Haag", "Fryslân", "Gouverneurstraat", "West", "1e", "tweede", "Oud", "Oude"}

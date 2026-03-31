@@ -196,6 +196,10 @@ type SearchSettings struct {
 	// ADVANCED SETTING. When true synonyms are taken into account during exact match calculation.
 	// +kubebuilder:default=false
 	SynonymsExactMatch bool `yaml:"synonymsExactMatch,omitempty" json:"synonymsExactMatch,omitempty" default:"false"`
+
+	// ADVANCED SETTING. The maximum number of synonyms that will be generated for a search term.
+	// +kubebuilder:default=10
+	MaxSynonyms int `yaml:"maxSynonyms,omitempty" json:"maxSynonyms,omitempty" default:"10" validate:"gt=0"`
 }
 
 // +kubebuilder:object:generate=true

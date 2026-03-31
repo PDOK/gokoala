@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"slices"
@@ -20,29 +21,19 @@ const regexPrefix = "regex:"
 // QueryExpansion query expansion involves evaluating a user's input (what words were typed into the search query area)
 // and expanding the search query to match additional results, see https://en.wikipedia.org/wiki/Query_expansion
 type QueryExpansion struct {
-	rewrites map[string][]string
-	synonyms map[string][]string
+	rewrites    []rewrite
+	synonyms    map[string][]string
+	maxSynonyms int
 }
 
-func NewQueryExpansion(rewritesFile, synonymsFile string) (*QueryExpansion, error) {
-	rewrites, rewErr := readCsvFile(rewritesFile, false)
-	synonyms, synErr := readCsvFile(synonymsFile, true)
-
-	// avoid too short synonyms to prevent to many invalid synonym/combinations
-	for k, v := range synonyms {
-		if err := assertSynonymLength(k); err != nil {
-			return nil, err
-		}
-		for _, variant := range v {
-			if err := assertSynonymLength(variant); err != nil {
-				return nil, err
-			}
-		}
-	}
+func NewQueryExpansion(rewritesFile, synonymsFile string, maxSynonyms int) (*QueryExpansion, error) {
+	rewrites, rewErr := readRewrites(rewritesFile)
+	synonyms, synErr := readSynonyms(synonymsFile)
 
 	return &QueryExpansion{
-		rewrites: rewrites,
-		synonyms: synonyms,
+		rewrites:    rewrites,
+		synonyms:    synonyms,
+		maxSynonyms: maxSynonyms,
 	}, errors.Join(rewErr, synErr)
 }
 
@@ -51,70 +42,39 @@ func (s QueryExpansion) Expand(ctx context.Context, searchTerms string) (*domain
 	expandCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	rewritten, err := rewrite(expandCtx, strings.ToLower(searchTerms), s.rewrites)
+	rewritten, err := performRewrites(expandCtx, strings.ToLower(searchTerms), s.rewrites)
 	if err != nil {
 		return nil, err
 	}
-	words, wordsWithoutSynonyms, wordsWithSynonyms, err := expandSynonyms(expandCtx, rewritten, s.synonyms)
+	words, wordsWithoutSynonyms, wordsWithSynonyms, err := expandSynonyms(expandCtx, rewritten, s.synonyms, s.maxSynonyms)
 	if err != nil {
 		return nil, err
 	}
 	return domain.NewSearchQuery(words, wordsWithoutSynonyms, wordsWithSynonyms), expandCtx.Err()
 }
 
-func rewrite(ctx context.Context, input string, mapping map[string][]string) (string, error) {
-	for original, alternatives := range mapping {
-		for _, alternative := range alternatives {
-			if strings.HasPrefix(alternative, regexPrefix) {
-				// the rewrites file can contain regex patterns, which need to be rewritten
-				regex, err := rewriteRegex(alternative)
-				if err != nil {
-					return "", err
-				}
-				input = regex.ReplaceAllString(input, original)
-			} else {
-				// rewrite all other alternatives
-				input = strings.ReplaceAll(input, alternative, original)
-			}
+func performRewrites(ctx context.Context, input string, rewrites []rewrite) (string, error) {
+	for _, r := range rewrites {
+		if r.regex != nil {
+			input = r.regex.ReplaceAllString(input, r.original)
+		} else {
+			input = strings.ReplaceAll(input, r.alternative, r.original)
 		}
 	}
 	return input, ctx.Err()
 }
 
-func rewriteRegex(alternative string) (*regexp.Regexp, error) {
-	regexPattern := alternative[len(regexPrefix):]
-	regexPattern = regexPattern[1 : len(regexPattern)-1]
-	regex, err := regexp.Compile(regexPattern)
-	if err != nil {
-		return nil, fmt.Errorf("failed to compile regex %s from rewrites file: %w", regexPattern, err)
-	}
-	return regex, nil
-}
-
-// position is a substring match in the given search term
-type position struct {
-	start       int
-	length      int
-	alternative string
-}
-
-func (p position) end() int {
-	return p.start + p.length
-}
-
-func (p position) replace(input string) string {
-	return input[:p.start] + p.alternative + input[p.end():]
-}
-
-func expandSynonyms(ctx context.Context, input string, mapping map[string][]string) ([]string, map[string]struct{},
-	map[string][]string, error) {
+func expandSynonyms(ctx context.Context, input string, mapping map[string][]string,
+	maxSynonyms int) ([]string, map[string]struct{}, map[string][]string, error) {
 
 	words := uniqueSlice(strings.Fields(input))
 
 	wordsWithSynonyms := make(map[string][]string)
 	for _, word := range words {
 		variants := []string{word}
-		for i := 0; i < len(variants); i++ {
+		maxSynonymsReached := false
+
+		for i := 0; i < len(variants) && !maxSynonymsReached; i++ {
 			existingVariant := variants[i]
 			positions := mapPositions(existingVariant, mapping)
 
@@ -131,6 +91,12 @@ func expandSynonyms(ctx context.Context, input string, mapping map[string][]stri
 					return nil, nil, nil, err // timeout encountered
 				}
 				if !slices.Contains(variants, newVariant) {
+					if len(variants) > maxSynonyms {
+						log.Printf("max synonyms (%d) exceeded, skipping "+
+							"further expansion for word: %s", maxSynonyms, word)
+						maxSynonymsReached = true
+						break
+					}
 					variants = append(variants, newVariant) // continue for-loop by appending to slice
 					wordsWithSynonyms[word] = append(wordsWithSynonyms[word], newVariant)
 				}
@@ -159,6 +125,21 @@ func uniqueSlice(s []string) []string {
 		}
 	}
 	return results
+}
+
+// position is a substring match in the given search term
+type position struct {
+	start       int
+	length      int
+	alternative string
+}
+
+func (p position) end() int {
+	return p.start + p.length
+}
+
+func (p position) replace(input string) string {
+	return input[:p.start] + p.alternative + input[p.end():]
 }
 
 func mapPositions(input string, mapping map[string][]string) []position {
@@ -213,7 +194,90 @@ func hasOverlap(current position, all []position) bool {
 	return false
 }
 
-func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
+type rewrite struct {
+	original    string
+	alternative string
+	regex       *regexp.Regexp
+}
+
+func readRewrites(filepath string) ([]rewrite, error) {
+	records, err := readCsvFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	var rewrites []rewrite
+	for _, row := range records {
+		original := strings.ToLower(row[0])
+		for i := 1; i < len(row); i++ {
+			alternative := strings.ToLower(row[i])
+			r := rewrite{
+				original:    original,
+				alternative: alternative,
+			}
+			if strings.HasPrefix(alternative, regexPrefix) {
+				regexPattern := alternative[len(regexPrefix):]
+				regexPattern = regexPattern[1 : len(regexPattern)-1]
+				r.regex, err = regexp.Compile(regexPattern)
+				if err != nil {
+					return nil, fmt.Errorf("failed to compile regex %s from rewrites file: %w", regexPattern, err)
+				}
+			}
+			rewrites = append(rewrites, r)
+		}
+	}
+	return rewrites, nil
+}
+
+func readSynonyms(filepath string) (map[string][]string, error) {
+	records, err := readCsvFile(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string][]string)
+	for _, row := range records {
+		key := strings.ToLower(row[0])
+
+		// add all alternatives
+		result[key] = make([]string, 0)
+		for i := 1; i < len(row); i++ {
+			result[key] = append(result[key], strings.ToLower(row[i]))
+		}
+
+		// make result map bidirectional, so:
+		// 1e => one,first | 2e => second
+		// becomes:
+		// 1e => one,first | 2e => second | one => 1e,first | first => 1e,one | second => 2e
+		for _, alt := range result[key] {
+			if _, ok := result[alt]; !ok {
+				result[alt] = make([]string, 0)
+			}
+			result[alt] = append(result[alt], key)
+			for _, other := range result[key] {
+				if other != alt { // skip self
+					result[alt] = append(result[alt], other)
+				}
+			}
+		}
+	}
+
+	// avoid too short synonyms to prevent to many invalid synonym/combinations
+	for k, v := range result {
+		if err = assertSynonymLength(k); err != nil {
+			return nil, err
+		}
+		for _, variant := range v {
+			if err = assertSynonymLength(variant); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return result, nil
+}
+
+func readCsvFile(filepath string) ([][]string, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
@@ -228,36 +292,7 @@ func readCsvFile(filepath string, bidi bool) (map[string][]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse CSV file: %w", err)
 	}
-
-	result := make(map[string][]string)
-	for _, row := range records {
-		key := strings.ToLower(row[0])
-
-		// add all alternatives
-		result[key] = make([]string, 0)
-		for i := 1; i < len(row); i++ {
-			result[key] = append(result[key], strings.ToLower(row[i]))
-		}
-
-		if bidi {
-			// make result map bidirectional, so:
-			// 1e => one,first | 2e => second
-			// becomes:
-			// 1e => one,first | 2e => second | one => 1e,first | first => 1e,one | second => 2e
-			for _, alt := range result[key] {
-				if _, ok := result[alt]; !ok {
-					result[alt] = make([]string, 0)
-				}
-				result[alt] = append(result[alt], key)
-				for _, other := range result[key] {
-					if other != alt { // skip self
-						result[alt] = append(result[alt], other)
-					}
-				}
-			}
-		}
-	}
-	return result, nil
+	return records, nil
 }
 
 func assertSynonymLength(syn string) error {

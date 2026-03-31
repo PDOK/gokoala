@@ -83,7 +83,8 @@ func TestSearch(t *testing.T) {
 	// given search endpoint
 	searchEndpoint, err := NewSearch(theEngine, datasources, axisOrderBySRID,
 		"internal/ogc/features_search/testdata/rewrites.csv",
-		"internal/ogc/features_search/testdata/synonyms.csv")
+		"internal/ogc/features_search/testdata/synonyms.csv",
+		theEngine.Config.OgcAPI.FeaturesSearch.SearchSettings.MaxSynonyms)
 	require.NoError(t, err)
 
 	// run test cases
