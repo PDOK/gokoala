@@ -72,6 +72,7 @@ func (jf *jsonFeatures) featuresAsNonGeoJSON(w http.ResponseWriter, r *http.Requ
 		for _, f := range fc.Features {
 			fgF := domain.NonGeo{
 				ID:         f.ID,
+				Geometry:   nil,
 				Links:      f.Links,
 				Properties: f.Properties,
 			}
@@ -91,6 +92,7 @@ func (jf *jsonFeatures) featureAsNonGeoJSON(w http.ResponseWriter, r *http.Reque
 
 	fgF := domain.NonGeo{
 		ID:         f.ID,
+		Geometry:   nil,
 		Links:      f.Links,
 		Properties: f.Properties,
 	}

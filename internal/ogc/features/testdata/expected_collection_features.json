@@ -25,7 +25,7 @@
     }
   },
   "itemType": "feature",
-  "geometryType": "POLYGON",
+  "geometryType": "polygon",
   "crs": [
     "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
   ],

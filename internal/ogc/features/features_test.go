@@ -912,12 +912,12 @@ func TestFeatures(t *testing.T) {
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=jsonfg",
 				collectionID: "road_extras",
-				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				contentCrs:   "",
 				format:       "json",
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{

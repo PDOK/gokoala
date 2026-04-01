@@ -25,14 +25,14 @@
     },
     {
       "rel": "items",
-      "type": "application/json",
-      "title": "The JSON representation of the road_extras attributes served from this endpoint",
+      "type": "application/geo+json",
+      "title": "The JSON representation of the road_extras features served from this endpoint",
       "href": "http://localhost:8080/collections/road_extras/items?f=json"
     },
     {
       "rel": "items",
       "type": "text/html",
-      "title": "The HTML representation of the road_extras attributes served from this endpoint",
+      "title": "The HTML representation of the road_extras features served from this endpoint",
       "href": "http://localhost:8080/collections/road_extras/items?f=html"
     },
     {

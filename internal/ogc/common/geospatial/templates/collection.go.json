@@ -121,41 +121,26 @@
     }
     {{ end }}
     {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
-    ,
-        {{ if eq $.Params.Type "features" }}
-    {
+    ,{
       "rel" : "items",
       "type" : "application/geo+json",
       "title" : "The JSON representation of the {{ .Params.Collection.ID }} features served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items?f=json"
     },
+    {{ if ne $.Params.GeomType "none" }}
     {
       "rel" : "items",
       "type" : "application/vnd.ogc.fg+json",
       "title" : "The JSON-FG representation of the {{ .Params.Collection.ID }} features served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items?f=jsonfg"
     },
+    {{ end }}
     {
       "rel" : "items",
       "type" : "text/html",
       "title" : "The HTML representation of the {{ .Params.Collection.ID }} features served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items?f=html"
     },
-    {{ end }}
-    {{ if eq $.Params.Type "attributes" }}
-    {
-      "rel" : "items",
-      "type" : "application/json",
-      "title" : "The JSON representation of the {{ .Params.Collection.ID }} attributes served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items?f=json"
-    },
-    {
-      "rel" : "items",
-      "type" : "text/html",
-      "title" : "The HTML representation of the {{ .Params.Collection.ID }} attributes served from this endpoint",
-      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items?f=html"
-    },
-    {{ end }}
     {
       "rel" : "http://www.opengis.net/def/rel/ogc/1.0/schema",
       "type" : "application/schema+json",

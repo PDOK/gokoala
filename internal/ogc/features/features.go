@@ -84,13 +84,13 @@ func (f *Features) Features() http.HandlerFunc {
 		// render output
 		geometryType := f.collectionTypes.GetGeometryType(collection.GetID())
 		format := f.engine.CN.NegotiateFormat(r)
-		if geometryType == nonGeometryType {
+		if geometryType == geometryTypeNone {
 			switch format {
 			case engine.FormatHTML:
 				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
 					propertyFilters, f.configuredPropertyFilters[collection.ID],
 					fc, collectionType.AvailableFormats())
-			case engine.FormatJSON:
+			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsNonGeoJSON(w, r, collection.ID, newCursor, url, fc)
 			default:
 				handleFormatNotSupported(w, format)

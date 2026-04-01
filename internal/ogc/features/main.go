@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/PDOK/gokoala/config"
@@ -17,8 +18,8 @@ import (
 )
 
 const (
-	templatesDir    = "internal/ogc/features/templates/"
-	nonGeometryType = "none"
+	templatesDir     = "internal/ogc/features/templates/"
+	geometryTypeNone = "none"
 )
 
 type Features struct {
@@ -170,9 +171,9 @@ func determineCollectionTypes(datasources map[DatasourceKey]ds.Datasource) geosp
 		}
 		// geomType is empty string "" when the collection comes from a non geo table and should be value "none".
 		if geomType == "" {
-			geomType = nonGeometryType
+			geomType = geometryTypeNone
 		}
-		geomTypes[key.collectionID] = geomType
+		geomTypes[key.collectionID] = strings.ToLower(geomType)
 		types[key.collectionID] = collectionType
 	}
 

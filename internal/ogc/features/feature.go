@@ -66,7 +66,7 @@ func (f *Features) Feature() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		collectionType := f.collectionTypes.GetCollectionType(collection.GetID())
 		geometryType := f.collectionTypes.GetGeometryType(collection.GetID())
-		if geometryType == nonGeometryType {
+		if geometryType == geometryTypeNone {
 			switch format {
 			case engine.FormatHTML:
 				f.html.attribute(w, r, collection, feat, collectionType.AvailableFormats())

@@ -193,40 +193,26 @@
         {{end}}
         {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
           {{ if $cfg.OgcAPI.Features.Collections.ContainsID $coll.ID }}
-            {{ if ne $geomType "none" }}
             ,{
               "rel" : "items",
               "type" : "application/geo+json",
               "title" : "The JSON representation of the {{ $coll.ID }} features served from this endpoint",
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=json"
             },
+            {{ if ne $geomType "none" }}
             {
               "rel" : "items",
               "type" : "application/vnd.ogc.fg+json",
               "title" : "The JSON-FG representation of the {{ $coll.ID }} features served from this endpoint",
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=jsonfg"
             },
+            {{ end }}
             {
               "rel" : "items",
               "type" : "text/html",
               "title" : "The HTML representation of the {{ $coll.ID }} features served from this endpoint",
               "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
             }
-            {{ end }}
-            {{ if eq $geomType "none" }}
-            ,{
-              "rel" : "items",
-              "type" : "application/geo+json",
-              "title" : "The JSON representation of the {{ $coll.ID }} attributes served from this endpoint",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=json"
-            },
-            {
-              "rel" : "items",
-              "type" : "text/html",
-              "title" : "The HTML representation of the {{ $coll.ID }} attributes served from this endpoint",
-              "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}/items?f=html"
-            }
-            {{ end }}
             ,{
               "rel" : "http://www.opengis.net/def/rel/ogc/1.0/schema",
               "type" : "application/schema+json",

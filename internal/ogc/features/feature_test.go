@@ -388,7 +388,7 @@ func TestFeature(t *testing.T) {
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 	}
