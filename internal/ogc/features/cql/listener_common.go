@@ -62,6 +62,21 @@ func (cl *CommonListener) allowAllQueryables() bool {
 	return len(cl.queryables) == 1 && cl.queryables[0] == "*"
 }
 
+// hasWildcard checks if a pattern contains a SQL wildcard: % or _.
+func (cl *CommonListener) hasWildcard(pattern string, symbol string) bool {
+	namedParam := pattern
+	if strings.HasPrefix(pattern, symbol) {
+		namedParam = pattern[len(symbol):] // remove symbol
+	}
+	patternValue, ok := cl.namedParams[namedParam]
+	if !ok {
+		return false
+	}
+	patternValueStr := fmt.Sprintf("%v", patternValue)
+	return strings.Contains(patternValueStr, "%") ||
+		strings.Contains(patternValueStr, "_")
+}
+
 func parseNumber(s string) (any, error) {
 	s = strings.TrimSpace(s)
 

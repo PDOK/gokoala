@@ -60,8 +60,66 @@ func (l *GeoPackageListener) ExitBooleanFactor(ctx *parser.BooleanFactorContext)
 func (l *GeoPackageListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryComparisonPredicateContext) {
 	right := l.stack.Pop()
 	left := l.stack.Pop()
-	op := ctx.ComparisonOperator().GetText()
-	l.stack.Push(fmt.Sprintf("%s %s %s", left, op, right))
+	operator := ctx.ComparisonOperator().GetText()
+	l.stack.Push(fmt.Sprintf("%s %s %s", left, operator, right))
+}
+
+// ExitIsLikePredicate Comparison expressions (LIKE, NOT LIKE)
+func (l *GeoPackageListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateContext) {
+	pattern := l.stack.Pop()
+	expr := l.stack.Pop()
+
+	if !l.hasWildcard(pattern, geopackage.NamedParamSymbolSqlx) {
+		l.errorListener.Error("LIKE pattern is missing wildcard symbol. " +
+			"Either percentage '%' to match multiple characters or underscore '_' to " +
+			"match a single character can be used as a wildcard symbol. For example: LIKE 'foo%'.")
+		return
+	}
+
+	operator := "LIKE"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+	l.stack.Push(fmt.Sprintf("%s %s %s", expr, operator, pattern))
+}
+
+// ExitIsBetweenPredicate Comparison expressions (BETWEEN, NOT BETWEEN)
+func (l *GeoPackageListener) ExitIsBetweenPredicate(ctx *parser.IsBetweenPredicateContext) {
+	high := l.stack.Pop()
+	low := l.stack.Pop()
+	expr := l.stack.Pop()
+
+	operator := "BETWEEN"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+	l.stack.Push(fmt.Sprintf("%s %s %s AND %s", expr, operator, low, high))
+}
+
+// ExitIsInListPredicate Comparison expressions (IN, NOT IN)
+func (l *GeoPackageListener) ExitIsInListPredicate(ctx *parser.IsInListPredicateContext) {
+	count := len(ctx.AllScalarExpression())
+	if count > 1 {
+		items := l.stack.PopMany(count - 1)
+		expr := l.stack.Pop()
+
+		operator := "IN"
+		if ctx.NOT() != nil {
+			operator = "NOT " + operator
+		}
+		l.stack.Push(fmt.Sprintf("%s %s (%s)", expr, operator, strings.Join(items, ", ")))
+	}
+}
+
+// ExitIsNullPredicate Comparison expressions (IS NULL, IS NOT NULL)
+func (l *GeoPackageListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateContext) {
+	expr := l.stack.Pop()
+
+	operator := "IS NULL"
+	if ctx.NOT() != nil {
+		operator = "IS NOT NULL"
+	}
+	l.stack.Push(fmt.Sprintf("%s %s", expr, operator))
 }
 
 // ExitPropertyName Handle column names
@@ -69,9 +127,12 @@ func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()
 	if !l.allowAllQueryables() && !slices.Contains(l.queryables, name) {
 		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
-		l.errorListener.ListenerError(err)
+		l.errorListener.Error(err)
 		return
 	}
+
+	// escape named param symbol, since it can also appear in property names
+	name = strings.ReplaceAll(name, geopackage.NamedParamSymbolSqlx, geopackage.NamedParamSymbolSqlxEscaped)
 
 	// add quotes around column names if not already present
 	if !strings.HasPrefix(name, "\"") {
@@ -97,7 +158,7 @@ func (l *GeoPackageListener) ExitNumericLiteral(ctx *parser.NumericLiteralContex
 
 		num, err := parseNumber(ctx.GetText())
 		if err != nil {
-			l.errorListener.ListenerError(err.Error())
+			l.errorListener.Error(err.Error())
 			return
 		}
 

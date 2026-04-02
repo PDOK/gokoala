@@ -72,8 +72,8 @@ func (c *ErrorListener) SyntaxError(_ antlr.Recognizer, _ any, _, column int, ms
 	c.parseErrors = append(c.parseErrors, fmt.Errorf("syntax error at column %d: %s", column, msg))
 }
 
-// ListenerError is called by our own CQL-to-SQL listeners when an error occurs.
-func (c *ErrorListener) ListenerError(msg string) {
+// Error is called by our own CQL-to-SQL listeners when an error occurs.
+func (c *ErrorListener) Error(msg string) {
 	c.parseErrors = append(c.parseErrors, fmt.Errorf("error: %s", msg))
 }
 

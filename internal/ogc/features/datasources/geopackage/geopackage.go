@@ -29,7 +29,8 @@ const (
 	sqliteDriverName = "sqlite3_with_extensions"
 
 	// NamedParamSymbolSqlx https://jmoiron.github.io/sqlx/#namedParams
-	NamedParamSymbolSqlx = ":"
+	NamedParamSymbolSqlx        = ":"
+	NamedParamSymbolSqlxEscaped = "::"
 )
 
 var once sync.Once

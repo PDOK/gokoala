@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
@@ -224,5 +225,5 @@ func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema d
 		// make SQL filter appendable to the existing WHERE clause
 		sql = "and " + sql
 	}
-	return ds.Part3Filter{SQL: sql, Params: params}, err
+	return ds.Part3Filter{SQL: strings.ToLower(sql), Params: params}, err
 }
