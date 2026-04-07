@@ -61,13 +61,3 @@ func (cts CollectionTypes) GetCollectionType(collection string) CollectionType {
 func (cts CollectionTypes) GetGeometryType(collection string) string {
 	return cts.GeomTypes[collection]
 }
-
-func (cts CollectionTypes) HasAttributes() bool {
-	for _, ct := range cts.Types {
-		if ct == Attributes {
-			return true
-		}
-	}
-
-	return false
-}

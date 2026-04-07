@@ -48,7 +48,7 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	}
 
 	// OGC Common Part 1, this will always be started
-	core.NewCommonCore(engine, core.ExtraConformanceClasses{AttributesConformance: collectionTypes.HasAttributes()})
+	core.NewCommonCore(engine, core.ExtraConformanceClasses{})
 	// OGC Common part 2
 	if engine.Config.HasCollections() {
 		geospatial.NewCollections(engine, collectionTypes)
