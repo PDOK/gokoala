@@ -55,13 +55,13 @@ func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error)
 	return table.Schema, nil
 }
 
-func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.CollectionType, error) {
+func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.CollectionType, string, error) {
 	table, err := dc.CollectionToTable(collection)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return table.Type, nil
+	return table.Type, table.GeometryType, nil
 }
 
 func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {

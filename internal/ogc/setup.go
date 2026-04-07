@@ -27,7 +27,7 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 		styles.NewStyles(engine)
 	}
 	// OGC Features API
-	collectionTypes := geospatial.NewCollectionTypes(nil)
+	collectionTypes := geospatial.NewCollectionTypes(nil, nil)
 	if engine.Config.OgcAPI.Features != nil {
 		f := features.NewFeatures(engine)
 		collectionTypes = f.GetCollectionTypes()
@@ -49,7 +49,7 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	}
 
 	// OGC Common Part 1, this will always be started
-	core.NewCommonCore(engine, core.ExtraConformanceClasses{AttributesConformance: collectionTypes.HasAttributes()})
+	core.NewCommonCore(engine, core.ExtraConformanceClasses{})
 	// OGC Common part 2
 	if engine.Config.HasCollections() {
 		geospatial.NewCollections(engine, collectionTypes)

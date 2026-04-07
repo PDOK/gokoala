@@ -15,7 +15,7 @@ const (
 )
 
 type ExtraConformanceClasses struct {
-	AttributesConformance bool
+	// Add options here to enable extra conformance classes. For example: `EnableFooBar: bool`
 }
 
 type CommonCore struct {

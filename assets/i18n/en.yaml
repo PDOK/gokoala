@@ -125,6 +125,7 @@ BrowseSchema: View the
 BrowseSchemaFeaturesSuffix: of the features for more details
 BrowseSchemaAttributesSuffix: of the attributes for more details
 FeaturesExplanation: GeoJSON is an open and widely accepted format for feature data and the first choice for many (web) applications. However, it formally only supports the WGS84 projection. JSON-FG is an extension of GeoJSON and does offer official support for other projections. Since JSON-FG is a recent development, from a compatibility point of view GeoJSON is also offered in other projections for the time being.
+AttributesExplanation: This collection contains only attribute data, meaning its items lack geometry and cannot be used for spatial queries (e.g., bounding box selection). This data is used to complement collections that include geometries.
 CollectionTilesHTML: This collection is available as vector tiles in one or multiple projections.
 CollectionTilesPlain: This collection is available as vector tiles in one or multiple projections.
 OGCCollections: Related OGC API feature collections

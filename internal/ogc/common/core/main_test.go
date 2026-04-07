@@ -98,7 +98,7 @@ func TestCommonCore_LandingPage(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
-			core := NewCommonCore(newEngine, ExtraConformanceClasses{false})
+			core := NewCommonCore(newEngine, ExtraConformanceClasses{})
 			handler := core.LandingPage()
 			handler.ServeHTTP(rr, req)
 
@@ -136,18 +136,6 @@ func TestCommonCore_Conformance(t *testing.T) {
 			},
 		},
 		{
-			name: "conformance as JSON with non-OGC conformance class for 'attributes'",
-			fields: fields{
-				configFile:         "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
-				url:                "http://localhost:8080/conformance?f=json",
-				supportsAttributes: true,
-			},
-			want: want{
-				body:       "http://www.pdok.nl/spec/attribute-json/0.1",
-				statusCode: http.StatusOK,
-			},
-		},
-		{
 			name: "conformance as HTML",
 			fields: fields{
 				configFile:         "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
@@ -156,18 +144,6 @@ func TestCommonCore_Conformance(t *testing.T) {
 			},
 			want: want{
 				body:       "conformiteitsklassen",
-				statusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "conformance as HTML with non-OGC conformance class for 'attributes'",
-			fields: fields{
-				configFile:         "internal/ogc/features/testdata/geopackage/config_attributes.yaml",
-				url:                "http://localhost:8080/conformance?f=html",
-				supportsAttributes: true,
-			},
-			want: want{
-				body:       "<td class=\"small\">http://www.pdok.nl/spec/attribute-json/0.1",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -183,7 +159,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
-			core := NewCommonCore(newEngine, ExtraConformanceClasses{tt.fields.supportsAttributes})
+			core := NewCommonCore(newEngine, ExtraConformanceClasses{})
 			handler := core.Conformance()
 			handler.ServeHTTP(rr, req)
 
@@ -241,7 +217,7 @@ func TestCommonCore_API(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
-			core := NewCommonCore(newEngine, ExtraConformanceClasses{false})
+			core := NewCommonCore(newEngine, ExtraConformanceClasses{})
 			handler := core.API()
 			handler.ServeHTTP(rr, req)
 

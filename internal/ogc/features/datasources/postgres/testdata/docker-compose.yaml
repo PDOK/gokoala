@@ -18,6 +18,8 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 5s
       retries: 30
+    networks:
+      - postgres-network
 
   # import geopackages into postgres, and execute extra SQL (note: we do this in one 'init' container
   # since testcontainers currently doesn't handle multiple short-lived containers well).
@@ -116,3 +118,9 @@ services:
     volumes:
       - ../../geopackage/testdata:/testdata
       - ../../../../../../examples:/examples
+    networks:
+      - postgres-network
+
+networks:
+  postgres-network:
+    driver: bridge

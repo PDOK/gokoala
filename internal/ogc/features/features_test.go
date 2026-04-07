@@ -873,7 +873,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request non-spatial data (Attribute JSON)",
+			name: "Request non-spatial data (NonGeo JSON)",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_attributes.yaml",
@@ -889,7 +889,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on request for non-spatial data (Attribute JSON) with bbox spatial filter",
+			name: "Fail on request for non-spatial data (NonGeo JSON) with bbox spatial filter",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_attributes.yaml",
@@ -905,19 +905,19 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on request for non-spatial data (Attribute JSON) in geo format (e.g JSON-FG)",
+			name: "Fail on request for non-spatial data (NonGeo JSON) in geo format (e.g JSON-FG)",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_attributes.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=jsonfg",
 				collectionID: "road_extras",
-				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				contentCrs:   "",
 				format:       "json",
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 		{
