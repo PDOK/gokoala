@@ -3,12 +3,14 @@
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
+{{ $collTypes := .Params }}
 <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Collections" }}</h1>
 </hgroup>
 
 <section class="row row-cols-md-4 g-4 py-3">
     {{ range $index, $coll := .Config.AllCollections.Unique }}
+        {{ $geomType := $collTypes.GetGeometryType $coll.ID -}}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
                 {{ if and ($cfg.OgcAPI.FeaturesSearch) ($cfg.OgcAPI.FeaturesSearch.Collections) ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID) }}
@@ -136,7 +138,7 @@
                             {{ toDate "2006-01-02T15:04:05Z07:00" $cfg.LastUpdated | date "2006-01-02" }}
                         </li>
                     {{ end }}
-                    {{ if and $coll.Metadata $coll.Metadata.Extent }}
+                    {{ if and $coll.Metadata $coll.Metadata.Extent (ne $geomType "none")  }}
                         <li class="list-group-item">
                             <strong>{{ i18n "GeographicExtent" }}</strong>
                             {{ if $coll.Metadata.Extent.Srs }}

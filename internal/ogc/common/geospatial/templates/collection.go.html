@@ -82,7 +82,7 @@
                     </td>
                 </tr>
                 {{ end }}
-                {{ if and .Params.Collection.Metadata .Params.Collection.Metadata.Extent }}
+                {{ if and .Params.Collection.Metadata .Params.Collection.Metadata.Extent (ne $.Params.GeomType "none") }}
                 <tr>
                     <td class="w-25 text-nowrap fw-bold">
                         {{ i18n "GeographicExtent" }}

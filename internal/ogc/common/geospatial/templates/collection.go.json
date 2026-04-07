@@ -22,6 +22,7 @@
   {{ end }}
   {{ if and .Params.Collection.Metadata .Params.Collection.Metadata.Extent }}
   "extent" : {
+    {{ if ne $.Params.GeomType "none" }}
     "spatial": {
       "bbox": [ [ {{ .Params.Collection.Metadata.Extent.Bbox | join "," }} ] ],
       {{- if .Params.Collection.Metadata.Extent.Srs -}}
@@ -30,8 +31,10 @@
       "crs" : "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
       {{- end -}}
     }
+    {{ end }}
     {{- if and .Params.Collection.Metadata .Params.Collection.Metadata.Extent.Interval -}}
-    ,"temporal": {
+      {{ if ne $.Params.GeomType "none" }},{{ end }}
+    "temporal": {
       "interval": [ [ {{ .Params.Collection.Metadata.Extent.Interval | join ", " }} ] ],
       "trs" : "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian"
     }
