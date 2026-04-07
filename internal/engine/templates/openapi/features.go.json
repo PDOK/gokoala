@@ -108,7 +108,11 @@
             "content": {
               "application/geo+json": {
                 "schema": {
+                  {{- if ne $geomType "none" -}}
                   "$ref": "#/components/schemas/featureCollectionGeoJSON_{{ $coll.ID }}"
+                  {{- else -}}
+                  "$ref": "#/components/schemas/featureCollectionNonGeoJSON_{{ $coll.ID }}"
+                  {{- end -}}
                 }
               },
               {{- if ne $geomType "none" -}}
@@ -179,7 +183,11 @@
             "content": {
               "application/geo+json": {
                 "schema": {
+                  {{- if ne $geomType "none" -}}
                   "$ref": "#/components/schemas/featureGeoJSON_{{ $coll.ID }}"
+                  {{- else -}}
+                  "$ref": "#/components/schemas/featureNonGeoJSON_{{ $coll.ID }}"
+                  {{- end -}}
                 }
               },
               {{- if ne $geomType "none" -}}
@@ -338,7 +346,7 @@
       ,
       {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
       {{- if $index -}},{{- end -}}
-      "featureCollectionJSON_{{ $coll.ID }}": {
+      "featureCollectionNonGeoJSON_{{ $coll.ID }}": {
         "required": [
           "features",
           "type"
@@ -354,7 +362,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureJSON_{{ $coll.ID }}"
+              "$ref": "#/components/schemas/featureNonGeoJSON_{{ $coll.ID }}"
             }
           },
           "links": {
@@ -500,7 +508,7 @@
       ,
       {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
       {{- if $index -}},{{- end -}}
-      "featureJSON_{{ $coll.ID }}": {
+      "featureNonGeoJSON_{{ $coll.ID }}": {
         "required": [
           "properties",
           "type"

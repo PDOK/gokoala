@@ -1,7 +1,5 @@
 package domain
 
-import "github.com/twpayne/go-geom/encoding/geojson"
-
 // -----
 // "NonGeo JSON" is NOT a formal standard. It's defined by PDOK as a way to return non-spatial data from certain collections
 // alongside collections that do contain spatial data. NonGeo JSON is modeled after GeoJSON but does NOT contain a geometry.
@@ -17,8 +15,6 @@ type NonGeoCollection struct {
 type NonGeo struct {
 	Type       featureType       `json:"type"`
 	Properties FeatureProperties `json:"properties"`
-	// We support 'null' geometries, don't add an 'omitempty' tag here.
-	Geometry *geojson.Geometry `json:"geometry"`
 	// We expect ids to be auto-incrementing integers (which is the default in geopackages)
 	// since we use it for cursor-based pagination.
 	ID    string `json:"id"`

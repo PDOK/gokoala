@@ -7,8 +7,7 @@
         "surface": "rock",
         "width": 2
       },
-      "id": "1",
-      "geometry": null
+      "id": "1"
     },
     {
       "type": "Feature",
@@ -17,8 +16,7 @@
         "surface": "rock",
         "width": null
       },
-      "id": "2",
-      "geometry": null
+      "id": "2"
     },
     {
       "type": "Feature",
@@ -27,8 +25,7 @@
         "surface": "rock",
         "width": 333
       },
-      "id": "3",
-      "geometry": null
+      "id": "3"
     },
     {
       "type": "Feature",
@@ -37,8 +34,7 @@
         "surface": "rock",
         "width": 2
       },
-      "id": "4",
-      "geometry": null
+      "id": "4"
     },
     {
       "type": "Feature",
@@ -47,8 +43,7 @@
         "surface": "dirt",
         "width": 2
       },
-      "id": "5",
-      "geometry": null
+      "id": "5"
     },
     {
       "type": "Feature",
@@ -57,8 +52,7 @@
         "surface": "dirt",
         "width": 8
       },
-      "id": "6",
-      "geometry": null
+      "id": "6"
     },
     {
       "type": "Feature",
@@ -67,8 +61,7 @@
         "surface": "dirt",
         "width": 6
       },
-      "id": "7",
-      "geometry": null
+      "id": "7"
     },
     {
       "type": "Feature",
@@ -77,8 +70,7 @@
         "surface": null,
         "width": 5
       },
-      "id": "8",
-      "geometry": null
+      "id": "8"
     },
     {
       "type": "Feature",
@@ -87,8 +79,7 @@
         "surface": "unknown",
         "width": 5
       },
-      "id": "9",
-      "geometry": null
+      "id": "9"
     },
     {
       "type": "Feature",
@@ -97,8 +88,7 @@
         "surface": null,
         "width": 5
       },
-      "id": "10",
-      "geometry": null
+      "id": "10"
     }
   ],
   "type": "FeatureCollection",
