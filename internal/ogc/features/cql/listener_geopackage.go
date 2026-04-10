@@ -11,6 +11,18 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
 )
 
+// CQL-to-SpatiaLite function mapping.
+var spatialFunctions = map[string]string{
+	"S_INTERSECTS": "ST_Intersects",
+	"S_DISJOINT":   "ST_Disjoint",
+	"S_TOUCHES":    "ST_Touches",
+	"S_WITHIN":     "ST_Within",
+	"S_OVERLAPS":   "ST_Overlaps",
+	"S_CROSSES":    "ST_Crosses",
+	"S_CONTAINS":   "ST_Contains",
+	"S_EQUALS":     "ST_Equals",
+}
+
 // GeoPackageListener converts OGC CQL2 Text to GeoPackage-compatible SQL (= SQLite/Spatialite compatible).
 type GeoPackageListener struct {
 	*CommonListener
@@ -120,6 +132,126 @@ func (l *GeoPackageListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateCont
 		operator = "IS NOT NULL"
 	}
 	l.stack.Push(fmt.Sprintf("%s %s", expr, operator))
+}
+
+// ExitSpatialPredicate Spatial expression (S_INTERSECTS, S_CONTAINS, etc.)
+func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateContext) {
+	right := l.stack.Pop()
+	left := l.stack.Pop()
+
+	cqlFunction := strings.ToUpper(ctx.SpatialFunction().GetText())
+	sqlFunction, ok := spatialFunctions[cqlFunction]
+	if !ok {
+		l.errorListener.Error(fmt.Sprintf("spatial function '%s' is not supported", cqlFunction))
+		return
+	}
+
+	l.stack.Push(fmt.Sprintf("%s(%s, %s)", sqlFunction, left, right))
+}
+
+// ExitSpatialInstance Spatial instances other than bounding boxes
+func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceContext) {
+	if ctx.Bbox() != nil {
+		return // handled by ExitBbox()
+	}
+	l.stack.Push(fmt.Sprintf("ST_GeomFromText('%s', 4326)", l.stack.Pop())) // TODO remove hard-coded SRID
+}
+
+// ExitBbox Bounding box (BBOX) spatial instance
+func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
+	west := ctx.WestBoundLon().GetText()
+	south := ctx.SouthBoundLat().GetText()
+	east := ctx.EastBoundLon().GetText()
+	north := ctx.NorthBoundLat().GetText()
+	l.stack.Push(fmt.Sprintf("BuildMbr(%s, %s, %s, %s, 4326)", west, south, east, north)) // TODO remove hard-coded SRID
+}
+
+// ExitCoordinate Spatial coordinate
+func (l *GeoPackageListener) ExitCoordinate(ctx *parser.CoordinateContext) {
+	y := ctx.YCoord().GetText()
+	x := ctx.XCoord().GetText()
+	coordinate := x + " " + y
+
+	if ctx.ZCoord() != nil {
+		coordinate += " " + ctx.ZCoord().GetText()
+	}
+	l.stack.Push(coordinate)
+}
+
+// ExitPoint Handle POINT Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitPoint(ctx *parser.PointContext) {
+	wktType := ctx.POINT().GetText()
+	coordinate := l.stack.Pop()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, coordinate))
+}
+
+// ExitLinestring Handle LINESTRING Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitLinestring(ctx *parser.LinestringContext) {
+	wktType := ctx.LINESTRING().GetText()
+	coordinates := l.stack.Pop()
+	l.stack.Push(wktType + coordinates)
+}
+
+// ExitLinestringDef Handle LINESTRING coordinates
+func (l *GeoPackageListener) ExitLinestringDef(ctx *parser.LinestringDefContext) {
+	count := len(ctx.AllCoordinate())
+	coordinates := l.stack.PopMany(count)
+	l.stack.Push("(" + strings.Join(coordinates, ", ") + ")")
+}
+
+// ExitPolygon Handle POLYGON Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitPolygon(ctx *parser.PolygonContext) {
+	wktType := ctx.POLYGON().GetText()
+	coordinates := l.stack.Pop()
+	l.stack.Push(wktType + coordinates)
+}
+
+// ExitPolygonDef Handle POLYGON coordinates
+func (l *GeoPackageListener) ExitPolygonDef(ctx *parser.PolygonDefContext) {
+	count := len(ctx.AllLinestringDef())
+	coordinates := l.stack.PopMany(count)
+	l.stack.Push("(" + strings.Join(coordinates, ", ") + ")")
+}
+
+// ExitMultiPoint Handle MULTIPOINT Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitMultiPoint(ctx *parser.MultiPointContext) {
+	count := len(ctx.AllMultiPointDef())
+	coordinates := l.stack.PopMany(count)
+	wktType := ctx.MULTIPOINT().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitMultiPointDef Handle MULTIPOINT coordinates
+func (l *GeoPackageListener) ExitMultiPointDef(ctx *parser.MultiPointDefContext) {
+	if ctx.LEFTPAREN() != nil {
+		// handle alternative notation for MULTIPOINT. The one with extra parentheses.
+		coordinate := l.stack.Pop()
+		l.stack.Push("(" + coordinate + ")")
+	}
+}
+
+// ExitMultiLinestring Handle MULTILINESTRING Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitMultiLinestring(ctx *parser.MultiLinestringContext) {
+	count := len(ctx.AllLinestringDef())
+	coordinates := l.stack.PopMany(count)
+	wktType := ctx.MULTILINESTRING().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitMultiPolygon Handle MULTIPOLYGON Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitMultiPolygon(ctx *parser.MultiPolygonContext) {
+	count := len(ctx.AllPolygonDef())
+	coordinates := l.stack.PopMany(count)
+	wktType := ctx.MULTIPOLYGON().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitGeometryCollection Handle GEOMETRYCOLLECTION Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitGeometryCollection(ctx *parser.GeometryCollectionContext) {
+	count := len(ctx.AllGeometryLiteral())
+	literals := l.stack.PopMany(count)
+	wktType := ctx.GEOMETRYCOLLECTION().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(literals, ", ")))
 }
 
 // ExitPropertyName Handle column names

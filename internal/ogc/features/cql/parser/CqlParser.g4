@@ -189,7 +189,10 @@ polygon : POLYGON polygonDef;
 
 polygonDef : LEFTPAREN linestringDef (COMMA linestringDef)* RIGHTPAREN;
 
-multiPoint : MULTIPOINT LEFTPAREN coordinate (COMMA coordinate)* RIGHTPAREN;
+multiPoint : MULTIPOINT LEFTPAREN multiPointDef (COMMA multiPointDef)* RIGHTPAREN;
+
+multiPointDef : LEFTPAREN coordinate RIGHTPAREN
+              | coordinate;
 
 multiLinestring : MULTILINESTRING LEFTPAREN linestringDef (COMMA linestringDef)* RIGHTPAREN;
 

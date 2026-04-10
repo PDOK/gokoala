@@ -214,6 +214,12 @@ func (s *BaseCqlParserListener) EnterMultiPoint(ctx *MultiPointContext) {}
 // ExitMultiPoint is called when production multiPoint is exited.
 func (s *BaseCqlParserListener) ExitMultiPoint(ctx *MultiPointContext) {}
 
+// EnterMultiPointDef is called when production multiPointDef is entered.
+func (s *BaseCqlParserListener) EnterMultiPointDef(ctx *MultiPointDefContext) {}
+
+// ExitMultiPointDef is called when production multiPointDef is exited.
+func (s *BaseCqlParserListener) ExitMultiPointDef(ctx *MultiPointDefContext) {}
+
 // EnterMultiLinestring is called when production multiLinestring is entered.
 func (s *BaseCqlParserListener) EnterMultiLinestring(ctx *MultiLinestringContext) {}
 
