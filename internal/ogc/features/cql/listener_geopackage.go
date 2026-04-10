@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 // CQL-to-SpatiaLite function mapping.
@@ -28,10 +29,11 @@ type GeoPackageListener struct {
 	*CommonListener
 }
 
-func NewGeoPackageListener(randomizer util.Randomizer, queryables []string) *GeoPackageListener {
+func NewGeoPackageListener(randomizer util.Randomizer, queryables []string, srid domain.SRID) *GeoPackageListener {
 	return &GeoPackageListener{&CommonListener{
 		stack:       types.NewStack(),
 		namedParams: make(map[string]any),
+		srid:        srid,
 		randomizer:  randomizer,
 		queryables:  queryables,
 	}}
@@ -154,7 +156,7 @@ func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceCont
 	if ctx.Bbox() != nil {
 		return // handled by ExitBbox()
 	}
-	l.stack.Push(fmt.Sprintf("ST_GeomFromText('%s', 4326)", l.stack.Pop())) // TODO remove hard-coded SRID
+	l.stack.Push(fmt.Sprintf("ST_GeomFromText('%s', %d)", l.stack.Pop(), l.srid.GetOrDefault()))
 }
 
 // ExitBbox Bounding box (BBOX) spatial instance
@@ -163,7 +165,7 @@ func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
 	south := ctx.SouthBoundLat().GetText()
 	east := ctx.EastBoundLon().GetText()
 	north := ctx.NorthBoundLat().GetText()
-	l.stack.Push(fmt.Sprintf("BuildMbr(%s, %s, %s, %s, 4326)", west, south, east, north)) // TODO remove hard-coded SRID
+	l.stack.Push(fmt.Sprintf("BuildMbr(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault()))
 }
 
 // ExitCoordinate Spatial coordinate
