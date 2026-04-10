@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -25,6 +26,9 @@ type CommonListener struct {
 
 	// queryables the list of allowed columns in the datasource that can be queried.
 	queryables []string
+
+	// srid the filter spatial reference identifier (SRID).
+	srid domain.SRID
 
 	// randomizer is used to generate unique named parameters.
 	randomizer util.Randomizer

@@ -5,6 +5,7 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/antlr4-go/antlr/v4"
 )
 
@@ -13,10 +14,11 @@ type PostgresListener struct {
 	*CommonListener
 }
 
-func NewPostgresListener(randomizer util.Randomizer, queryables []string) *PostgresListener {
+func NewPostgresListener(randomizer util.Randomizer, queryables []string, srid domain.SRID) *PostgresListener {
 	return &PostgresListener{&CommonListener{
 		stack:       types.NewStack(),
 		namedParams: make(map[string]any),
+		srid:        srid,
 		randomizer:  randomizer,
 		queryables:  queryables,
 	}}
