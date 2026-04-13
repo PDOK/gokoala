@@ -24,7 +24,7 @@ func (s *Stack) Pop() string {
 }
 
 func (s *Stack) PopMany(count int) []string {
-	if count <= 1 {
+	if count <= 0 {
 		return nil
 	}
 	if count > len(s.stack) {

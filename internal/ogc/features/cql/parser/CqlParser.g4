@@ -2,6 +2,7 @@
  * ------------------
  * Note: This file is based on https://github.com/ldproxy/xtraplatform-spatial/blob/482b607f6709389fcd43ebea7dd0434389b8011b/
  * xtraplatform-cql/src/main/antlr/de/ii/xtraplatform/cql/infra/CqlParser.g4
+ * But modified by PDOK.
  *
  * Keep the following license header intact:
  * ------------------
