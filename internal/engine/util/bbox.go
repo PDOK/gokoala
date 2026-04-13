@@ -23,7 +23,7 @@ func EncodeBBox(bbox geom.T) (*[]float64, error) {
 	}
 }
 
-// For linestrings specifically, it is possible for the min and max values of a dimension
+// PadBbox For linestrings specifically, it is possible for the min and max values of a dimension
 // to be exactly equal, resulting in a bbox with 0 area. This function pads the max value
 // of the relevant dimension by 1 unit to avoid this.
 // Returns the original bbox if neither dimension has equal min and max values.
