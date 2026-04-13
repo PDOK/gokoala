@@ -156,15 +156,29 @@ func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceCont
 	if ctx.Bbox() != nil {
 		return // handled by ExitBbox()
 	}
-	l.stack.Push(fmt.Sprintf("ST_GeomFromText('%s', %d)", l.stack.Pop(), l.srid.GetOrDefault()))
+
+	wkt := l.stack.Pop()
+	if wkt != "" {
+		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+
+		l.namedParams[withoutSymbol] = wkt
+		l.stack.Push(fmt.Sprintf("ST_GeomFromText(%s, %d)", withSymbol, l.srid.GetOrDefault()))
+	}
 }
 
 // ExitBbox Bounding box (BBOX) spatial instance
 func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
-	west := ctx.WestBoundLon().GetText()
-	south := ctx.SouthBoundLat().GetText()
-	east := ctx.EastBoundLon().GetText()
-	north := ctx.NorthBoundLat().GetText()
+	toNamedParam := func(coord string) string {
+		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+		l.namedParams[withoutSymbol] = coord
+		return withSymbol
+	}
+
+	west := toNamedParam(ctx.WestBoundLon().GetText())
+	south := toNamedParam(ctx.SouthBoundLat().GetText())
+	east := toNamedParam(ctx.EastBoundLon().GetText())
+	north := toNamedParam(ctx.NorthBoundLat().GetText())
+
 	l.stack.Push(fmt.Sprintf("BuildMbr(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault()))
 }
 
