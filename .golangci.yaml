@@ -127,6 +127,7 @@ linters:
           - cyclop
           - containedctx
           - maintidx
+          - goconst
         path: _test\.go
       - linters:
           - cyclop
