@@ -15,7 +15,7 @@ import (
 // In case you need to debug, it might be helpful to disable parallel
 // test execution by *temporality* removing all t.Parallel() calls.
 func TestFeatures(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 
 	type fields struct {
 		configFiles  []string
@@ -937,10 +937,27 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request features with basic CQL filter",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=10&f=json&filter=prop1 = 5 AND prop2 = 6",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_basic.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			//t.Parallel()
 
 			for _, configFile := range tt.fields.configFiles {
 				dir := filepath.Dir(configFile)
@@ -949,7 +966,10 @@ func TestFeatures(t *testing.T) {
 				// nested subtest for each config-file/datasource
 				// tip: in JetBrains IDEs you can still jump to failed tests by explicitly selecting "jump to source"
 				t.Run(datasourceName, func(t *testing.T) {
-					t.Parallel()
+					//t.Parallel()
+
+					// enable CQL feature flag.
+					os.Setenv("ENABLE_CQL", "true") //nolint:usetesting // we would rather use t.Setenv() but this isn't possible with t.Parallel enabled.
 
 					req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
 					require.NoError(t, err)

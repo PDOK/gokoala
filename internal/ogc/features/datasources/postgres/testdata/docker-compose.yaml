@@ -99,6 +99,12 @@ services:
           -lco FID=fid \
           /testdata/roads.gpkg
 
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=cql \
+          -lco FID=fid \
+          /cql/cql.gpkg
+
         echo "DONE import GeoPackages in Postgres"
         echo "START creating indexes"
 
@@ -118,6 +124,7 @@ services:
     volumes:
       - ../../geopackage/testdata:/testdata
       - ../../../../../../examples:/examples
+      - ../../../cql/testdata:/cql
     networks:
       - postgres-network
 

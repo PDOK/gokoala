@@ -44,6 +44,8 @@ func (cl *CommonListener) AddErrorListener(errorListener *ErrorListener) {
 
 // generateNamedParam generates a unique named parameter (e.g. :abc or @abc)
 // for parameter binding in SQL prepared statements.
+//
+//nolint:unparam // can be removed once we've implemented the Postgres cql listener
 func (cl *CommonListener) generateNamedParam(symbol string) (withoutSymbol, withSymbol string) {
 RETRY:
 	chars := make([]byte, 4)
