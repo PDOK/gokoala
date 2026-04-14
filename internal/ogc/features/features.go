@@ -68,7 +68,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 
-		filter, err := f.parseCQL(cqlFilter, datasource, f.schemas[collection.GetID()])
+		filter, err := f.parseCQL(cqlFilter, datasource, f.schemas[collection.GetID()], inputSRID)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -199,7 +199,7 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
 
-func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema) (ds.Part3Filter, error) {
+func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema, srid domain.SRID) (ds.Part3Filter, error) {
 	if cqlFilter == "" {
 		return ds.Part3Filter{}, nil
 	}
@@ -213,9 +213,9 @@ func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema d
 
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables, srid)
 	case *postgres.Postgres:
-		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables)
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables, srid)
 	default:
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}

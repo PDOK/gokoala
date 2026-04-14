@@ -34,7 +34,7 @@ func FuzzParseToSQL(f *testing.F) {
 	}
 	f.Fuzz(func(t *testing.T, input string) {
 		// when
-		result, _, err := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables))
+		result, _, err := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
 
 		// then
 		assert.Truef(t, utf8.ValidString(result), "valid string")
@@ -42,7 +42,7 @@ func FuzzParseToSQL(f *testing.F) {
 			assert.NotNil(t, result)
 
 			// validate idempotency
-			result2, _, err2 := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables))
+			result2, _, err2 := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
 			if err2 != nil {
 				assert.NotNil(t, result)
 				assert.Equal(t, result, result2)
