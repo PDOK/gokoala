@@ -91,11 +91,27 @@ func TestMultipleBooleanQueries(t *testing.T) {
 	assert.Equal(t, expectedSQL, actualSQL)
 }
 
-func TestBooleanLiterals(t *testing.T) {
+func TestBooleanTrueLiteral(t *testing.T) {
 	// given
 	queryables := []string{"prop1", "prop2"}
-	inputCQL := "(prop1 = true OR prop2 = 20)"
-	expectedSQL := "(\"prop1\" = 1 OR \"prop2\" = :cql_bcde)"
+	inputCQL := "(prop1 = true AND prop2 = 20)"
+	expectedSQL := "(\"prop1\" = 1 AND \"prop2\" = :cql_bcde)"
+
+	// when
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actualSQL, params)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(20)}, params)
+	assert.Equal(t, expectedSQL, actualSQL)
+}
+
+func TestBooleanFalseLiteral(t *testing.T) {
+	// given
+	queryables := []string{"prop1", "prop2"}
+	inputCQL := "(prop1 = false AND prop2 = 20)"
+	expectedSQL := "(\"prop1\" = 0 AND \"prop2\" = :cql_bcde)"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
