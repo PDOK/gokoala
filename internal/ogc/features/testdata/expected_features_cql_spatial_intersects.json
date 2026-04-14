@@ -1,0 +1,70 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=S_INTERSECTS%28geometry%2C+POINT%285.0403692+52.1017868%29%29"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=S_INTERSECTS%28geometry%2C+POINT%285.0403692+52.1017868%29%29"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=S_INTERSECTS%28geometry%2C+POINT%285.0403692+52.1017868%29%29"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 2,
+        "prop10": "2026-02-12T23:00:00Z",
+        "prop2": 3,
+        "prop3": "Doctor",
+        "prop4": "Foobar",
+        "prop5": "2026-02-13",
+        "prop6": null,
+        "prop7": false,
+        "prop8": true,
+        "prop9": "2026-02-13"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.03983,
+              52.10207
+            ],
+            [
+              5.03986,
+              52.10147
+            ],
+            [
+              5.04072,
+              52.10147
+            ],
+            [
+              5.0407,
+              52.10205
+            ],
+            [
+              5.03983,
+              52.10207
+            ]
+          ]
+        ]
+      },
+      "id": "2"
+    }
+  ],
+  "numberReturned": 1
+}

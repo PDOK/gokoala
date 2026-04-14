@@ -148,7 +148,7 @@ func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCo
 		return
 	}
 
-	l.stack.Push(fmt.Sprintf("%s(%s, %s)", sqlFunction, left, right))
+	l.stack.Push(fmt.Sprintf("%s(CastAutomagic(%s), %s)", sqlFunction, left, right))
 }
 
 // ExitSpatialInstance Spatial instances other than bounding boxes
