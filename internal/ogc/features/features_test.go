@@ -955,6 +955,40 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request features with comparison CQL filter",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 >= 5 AND prop2 <= 6 AND (prop7 = true OR prop9 IS NULL) AND prop2 <> 8",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_comparison.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features with advanced comparison CQL filter",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 BETWEEN 9 AND 10 AND (prop5 IN (1, 2, 3) OR prop5 IS NULL)",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_comparison_advanced.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request features with spatial CQL filter: intersects on point",
 			fields: fields{
 				configFiles: []string{

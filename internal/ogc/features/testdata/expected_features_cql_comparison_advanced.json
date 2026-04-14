@@ -1,0 +1,70 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=prop1+BETWEEN+9+AND+10+AND+%28prop5+IN+%281%2C+2%2C+3%29+OR+prop5+IS+NULL%29"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=prop1+BETWEEN+9+AND+10+AND+%28prop5+IN+%281%2C+2%2C+3%29+OR+prop5+IS+NULL%29"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=prop1+BETWEEN+9+AND+10+AND+%28prop5+IN+%281%2C+2%2C+3%29+OR+prop5+IS+NULL%29"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 10,
+        "prop10": null,
+        "prop2": 11,
+        "prop3": "Square",
+        "prop4": "Touch",
+        "prop5": null,
+        "prop6": null,
+        "prop7": false,
+        "prop8": false,
+        "prop9": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.04286,
+              52.10119
+            ],
+            [
+              5.04288,
+              52.10107
+            ],
+            [
+              5.043,
+              52.10108
+            ],
+            [
+              5.04296,
+              52.10122
+            ],
+            [
+              5.04286,
+              52.10119
+            ]
+          ]
+        ]
+      },
+      "id": "7"
+    }
+  ],
+  "numberReturned": 1
+}
