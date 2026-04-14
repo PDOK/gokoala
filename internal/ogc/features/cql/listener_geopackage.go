@@ -170,7 +170,12 @@ func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceCont
 func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
 	toNamedParam := func(coord string) string {
 		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
-		l.namedParams[withoutSymbol] = coord
+		parsedCoord, err := parseNumber(coord)
+		if err != nil {
+			l.errorListener.Error(err.Error())
+			return ""
+		}
+		l.namedParams[withoutSymbol] = parsedCoord
 		return withSymbol
 	}
 

@@ -415,7 +415,7 @@ func TestSpatialQueryWithGeometryCollection(t *testing.T) {
 func TestSpatialQueryWithBbox(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, BBOX(10.0, 20.0, 30.0, 40.0))"
+	inputCQL := "S_INTERSECTS(geom, BBOX(10.0, 20.1, 30.0, 40.0))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))"
 
 	// when
@@ -423,7 +423,7 @@ func TestSpatialQueryWithBbox(t *testing.T) {
 
 	// then
 	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "10.0", "cql_fghi": "20.0", "cql_jklm": "30.0", "cql_nopq": "40.0"}, params)
+	assert.Equal(t, map[string]any{"cql_bcde": 10.0, "cql_fghi": 20.1, "cql_jklm": 30.0, "cql_nopq": 40.0}, params)
 	assert.Equal(t, expectedSQL, actualSQL)
 }
 
