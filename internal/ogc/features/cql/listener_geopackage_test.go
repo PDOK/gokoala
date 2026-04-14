@@ -59,6 +59,34 @@ func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
 	assert.ErrorContains(t, err, "property 'prop2' cannot be used in CQL filter, is not a queryable property")
 }
 
+func TestPreventSQLInjectionAttack(t *testing.T) {
+	// given
+	queryables := []string{"prop1"}
+	inputCQL := "prop1 > 5 OR 1 = 1"
+	expectedSQL := "(\"prop1\" > :cql_bcde OR :cql_fghi = :cql_jklm)"
+
+	// when
+	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actualSQL, params)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(5), "cql_fghi": int64(1), "cql_jklm": int64(1)}, params)
+	assert.Equal(t, expectedSQL, actualSQL)
+}
+
+func TestPreventSQLInjectionAttackAdvanced(t *testing.T) {
+	// given
+	queryables := []string{"prop5"}
+	inputCQL := "prop5 = 'Square';DROP TABLE cql"
+
+	// when
+	_, _, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	assert.ErrorContains(t, err, "syntax error at column 16")
+}
+
 func TestBooleanQueryWithNumbers(t *testing.T) {
 	// given
 	queryables := []string{"prop1", "prop2"}
