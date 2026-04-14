@@ -75,6 +75,26 @@ func TestBooleanQueryWithNumbers(t *testing.T) {
 	assert.Equal(t, expectedSQL, actualSQL)
 }
 
+func TestAllSimpleComparisionOperators(t *testing.T) {
+	// given
+	operators := []string{"=", "<", ">", "<=", ">=", "<>"} // note '!=' is not valid CQL, but '<>' is used by CQL.
+	queryables := []string{"prop1", "prop2"}
+
+	for _, operator := range operators {
+		t.Run(operator, func(t *testing.T) {
+			// when
+			expectedSQL := "\"prop1\" " + operator + " :cql_bcde"
+			actualSQL, params, err := ParseToSQL("prop1 "+operator+" 10", NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+			// then
+			require.NoError(t, err)
+			assertValidSQLiteQuery(t, actualSQL, params)
+			assert.Equal(t, map[string]any{"cql_bcde": int64(10)}, params)
+			assert.Equal(t, expectedSQL, actualSQL)
+		})
+	}
+}
+
 func TestMultipleBooleanQueries(t *testing.T) {
 	// given
 	queryables := []string{"prop1", "prop2"}
