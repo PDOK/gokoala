@@ -971,6 +971,40 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request features with spatial CQL filter: overlaps with polygon",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_OVERLAPS(geometry, POLYGON ((5.04159320426761948 52.10166749777908279, 5.04167924265552791 52.1017530555056041, 5.04168789456045729 52.10174392293929202, 5.04159320426761948 52.10166749777908279)))",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_spatial_overlaps.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features with spatial CQL filter: overlaps with bbox literal",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_OVERLAPS(geometry, BBOX(5.04159320426761948,52.10166749777908279,5.04168789456045729,52.10174392293929202))",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_spatial_overlaps_bbox.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
