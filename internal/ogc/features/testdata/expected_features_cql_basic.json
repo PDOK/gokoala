@@ -6,19 +6,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/cql/items?f=json&filter=prop1+%3D+5+AND+prop2+%3D+6&limit=10"
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=prop1+%3D+5+AND+prop2+%3D+6"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=prop1+%3D+5+AND+prop2+%3D+6&limit=10"
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=prop1+%3D+5+AND+prop2+%3D+6"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/cql/items?f=html&filter=prop1+%3D+5+AND+prop2+%3D+6&limit=10"
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=prop1+%3D+5+AND+prop2+%3D+6"
     }
   ],
   "features": [

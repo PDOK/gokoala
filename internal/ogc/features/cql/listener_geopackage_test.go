@@ -281,7 +281,7 @@ func TestSpatialQueryWithPoint(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, POINT(4.897 52.377))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -296,7 +296,7 @@ func TestSpatialQueryWithPoint3D(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, POINTZ(4.897 52.377 10.0))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -311,7 +311,7 @@ func TestSpatialQueryWithLinestring(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, LINESTRING(0.0 0.0, 1.0 1.0, 2.0 0.0))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -326,7 +326,7 @@ func TestSpatialQueryWithPolygon(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, POLYGON((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 28992))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 28992))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 28992))
@@ -341,7 +341,7 @@ func TestSpatialQueryWithPolygonWithHole(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, POLYGON((0.0 0.0, 10.0 0.0, 10.0 10.0, 0.0 10.0, 0.0 0.0),(2.0 2.0, 8.0 2.0, 8.0 8.0, 2.0 8.0, 2.0 2.0)))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -356,7 +356,7 @@ func TestSpatialQueryWithMultiPoint(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, MULTIPOINT(0.0 0.0, 1.0 1.0))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -371,7 +371,7 @@ func TestSpatialQueryWithMultiLinestring(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, MULTILINESTRING((0.0 0.0, 1.0 1.0),(2.0 2.0, 3.0 3.0)))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -386,7 +386,7 @@ func TestSpatialQueryWithMultiPolygon(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)),((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -401,7 +401,7 @@ func TestSpatialQueryWithGeometryCollection(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
-	expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -416,7 +416,7 @@ func TestSpatialQueryWithBbox(t *testing.T) {
 	// given
 	queryables := []string{"geom"}
 	inputCQL := "S_INTERSECTS(geom, BBOX(10.0, 20.0, 30.0, 40.0))"
-	expectedSQL := "ST_Intersects(\"geom\", BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))"
+	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -431,7 +431,7 @@ func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
 	// given
 	queryables := []string{"geom", "prop1"}
 	inputCQL := "prop1 = 'foo' AND S_INTERSECTS(geom, POINT(4.897 52.377))"
-	expectedSQL := "(\"prop1\" = :cql_bcde AND ST_Intersects(\"geom\", ST_GeomFromText(:cql_fghi, 4326)))"
+	expectedSQL := "(\"prop1\" = :cql_bcde AND ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_fghi, 4326)))"
 
 	// when
 	actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -448,7 +448,7 @@ func TestSpatialQueryWithAllSpatialFunctions(t *testing.T) {
 	for cqlFunc, sqlFunc := range spatialFunctions {
 		t.Run(cqlFunc, func(t *testing.T) {
 			inputCQL := cqlFunc + "(geom, POINT(4.897 52.377))"
-			expectedSQL := sqlFunc + "(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+			expectedSQL := sqlFunc + "(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 			actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
 
@@ -503,7 +503,7 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 	for _, wkt := range wkts {
 		t.Run(wkt, func(t *testing.T) {
 			inputCQL := "S_INTERSECTS(geom, " + wkt + ")"
-			expectedSQL := "ST_Intersects(\"geom\", ST_GeomFromText(:cql_bcde, 4326))"
+			expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 			actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
 
