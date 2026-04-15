@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
+	"github.com/moby/moby/api/types/network"
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -74,11 +74,11 @@ func teardown(ctx context.Context, stack *compose.DockerCompose) {
 // setupPostgres start PostgreSQL and fill with testdata derived from GeoPackages.
 //
 // Tip: when troubleshooting, try starting the docker-compose stack manually in your terminal (without Testcontainers).
-func setupPostgres(ctx context.Context) (nat.Port, *compose.DockerCompose, error) {
+func setupPostgres(ctx context.Context) (*network.Port, *compose.DockerCompose, error) {
 	log.Println("Setting up postgres")
 	stack, err := compose.NewDockerComposeWith(compose.WithStackFiles(postgresCompose))
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 
 	err = stack.
@@ -86,23 +86,23 @@ func setupPostgres(ctx context.Context) (nat.Port, *compose.DockerCompose, error
 		WaitForService("postgres-init-data", wait.ForExit()).
 		Up(ctx, compose.Wait(true))
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 
 	container, err := stack.ServiceContainer(ctx, "postgres")
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 	port, err := container.MappedPort(ctx, "5432/tcp")
 	if err != nil {
-		return "", nil, err
+		return nil, nil, err
 	}
 
 	log.Println("Giving postgres a few extra seconds to fully start")
 	time.Sleep(2 * time.Second)
 	log.Printf("Postgres running at port %s", port.Port())
 
-	return port, stack, err
+	return &port, stack, err
 }
 
 func terminateStack(ctx context.Context, stack *compose.DockerCompose) error {

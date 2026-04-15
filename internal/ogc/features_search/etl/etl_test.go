@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/internal/ogc/features_search/etl/config"
-	"github.com/docker/go-connections/nat"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/moby/moby/api/types/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -155,8 +155,8 @@ func TestInspectBufferCacheFunction(t *testing.T) {
 	require.NotEmpty(t, got[0].ObjectName)
 }
 
-func makeDbConnection(dbPort nat.Port) string {
-	return fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "search_db")
+func makeDbConnection(dbPort network.Port) string {
+	return fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Num(), "search_db")
 }
 
 func TestGetVersion(t *testing.T) {
@@ -403,7 +403,7 @@ func TestImportGeoPackageNoDuplicates(t *testing.T) {
 	require.ErrorContains(t, err, "ERROR: partition \"search_index_addresses_alpha\" would overlap partition \"search_index_addresses_beta\"")
 }
 
-func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
+func setupPostgis(ctx context.Context, t *testing.T) (network.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
 		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments). Also use multi-arch image (AMD64 and ARM).
