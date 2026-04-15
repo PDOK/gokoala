@@ -22,9 +22,9 @@ import (
 	fd "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/PDOK/gokoala/internal/ogc/features_search/etl"
 	etlconfig "github.com/PDOK/gokoala/internal/ogc/features_search/etl/config"
-	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/moby/moby/api/types/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -65,7 +65,7 @@ func TestSearch(t *testing.T) {
 	t.Cleanup(func() {
 		terminateContainer(ctx, t, postgisContainer)
 	})
-	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "search_db")
+	dbConn := fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Num(), "search_db")
 
 	// given empty search index in postgres
 	err = etl.CreateSearchIndex(dbConn, testSearchIndex, fd.WGS84SRIDPostgis, language.Dutch)
@@ -498,7 +498,7 @@ func importGpkg(collectionName string, dbConn string) error {
 	return etl.ImportFile(*collection, testSearchIndex, collectionVersion, "internal/ogc/features_search/testdata/fake-addresses-crs84.gpkg", 5000, false, dbConn)
 }
 
-func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.Container, error) {
+func setupPostgis(ctx context.Context, t *testing.T) (network.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
 		Image: "docker.io/imresamu/postgis:16-3.5-bookworm", // use debian, not alpine (proj issues between environments). Also use multi-arch image (AMD64 and ARM).
@@ -530,7 +530,7 @@ func setupPostgis(ctx context.Context, t *testing.T) (nat.Port, testcontainers.C
 	if err != nil {
 		t.Error(err)
 	}
-	if port.Int() == 0 {
+	if port.IsZero() {
 		t.Error("port is 0")
 	}
 	if err = os.Setenv(postgresPortEnv, port.Port()); err != nil {
