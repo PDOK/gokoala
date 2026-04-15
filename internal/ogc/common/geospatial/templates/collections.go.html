@@ -1,45 +1,93 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "head"}}<link rel="stylesheet" type="text/css" href="view-component/styles.css">{{end}}
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
+{{ $collTypes := .Params }}
 <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Collections" }}</h1>
 </hgroup>
 
 <section class="row row-cols-md-4 g-4 py-3">
     {{ range $index, $coll := .Config.AllCollections.Unique }}
+        {{ $geomType := $collTypes.GetGeometryType $coll.ID -}}
         <div class="col-md-4 col-sm-12">
             <div class="card h-100">
-                {{ $clickableHeader := true }}
-
-                {{/* collections used for search aren't clickable, unless it's also a regular features collection */}}
-                {{ if and (and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections)
-                          ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID)}}
-                    {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
-                        {{ if and (eq $collSearch.ID $coll.ID) ($collSearch.IsRemoteFeatureCollection $coll.ID) }}
-                            {{ $clickableHeader = false }}
+                {{ if and ($cfg.OgcAPI.FeaturesSearch) ($cfg.OgcAPI.FeaturesSearch.Collections) ($cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID) }}
+                    {{ $isRemote := false }}
+                    {{ range $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+                        {{ if eq $collSearch.ID $coll.ID }}
+                            {{ $isRemote = $collSearch.IsRemoteFeatureCollection $coll.ID }}
                         {{ end }}
                     {{ end }}
-                {{ end }}
-
-                {{ if $clickableHeader }}
-                <h2 class="card-header h5">
-                    {{ if and $coll.Metadata $coll.Metadata.Title }}
-                        <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                    {{ if $isRemote }}
+                        {{ $collRefs := $cfg.OgcAPI.FeaturesSearch.Collections.GetCollectionRefsByCollectionID $coll.ID }}
+                        {{ if eq (len $collRefs) 1 }}
+                            <h2 class="card-header h5">
+                                {{ if and $coll.Metadata $coll.Metadata.Title }}
+                                    <a target="_blank" class="text-decoration-none"
+                                       href="{{(index $collRefs 0).CollectionURL $baseUrl}}"
+                                       aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">
+                                        <span class="text-decoration-underline">{{ $coll.Metadata.Title }}</span>
+                                        <i class="bi bi-box-arrow-up-right ms-1 fs-6" aria-hidden="true"></i>
+                                    </a>
+                                {{ else }}
+                                    <a target="_blank" class="text-decoration-none"
+                                       href="{{(index $collRefs 0).CollectionURL $baseUrl}}"
+                                       aria-label="{{ i18n "To" }} {{ $coll.ID }}">
+                                        <span class="text-decoration-underline">{{ $coll.ID }}</span>
+                                        <i class="bi bi-box-arrow-up-right ms-1 fs-6" aria-hidden="true"></i>
+                                    </a>
+                                {{ end }}
+                            </h2>
+                        {{ else }}
+                            <h2 class="card-header h5">
+                                <a class="d-flex align-items-center"
+                                   data-bs-toggle="collapse"
+                                   href="#collapse-{{ $coll.ID }}"
+                                   role="button" aria-expanded="false"
+                                   aria-controls="collapse-{{ $coll.ID }}">
+                                    <span>
+                                        {{ if and $coll.Metadata $coll.Metadata.Title }}
+                                            {{ $coll.Metadata.Title }}
+                                        {{ else }}
+                                            {{ $coll.ID }}
+                                        {{ end }}
+                                    </span>
+                                    <i class="bi bi-chevron-down ms-1 flex-shrink-0 collapse-chevron" aria-hidden="true"></i>
+                                </a>
+                                <div class="collapse mt-2" id="collapse-{{ $coll.ID }}">
+                                    <ul class="list-unstyled mb-0">
+                                        {{ range $collRef := $collRefs }}
+                                            <li>
+                                                <a href="{{ $collRef.CollectionURL $baseUrl }}" class="small fs-6 fw-normal text-decoration-none" target="_blank">
+                                                    <span class="text-decoration-underline">{{ $collRef.CollectionID }}</span>
+                                                    <i class="bi bi-box-arrow-up-right small fs-6" aria-hidden="true"></i>
+                                                </a>
+                                            </li>
+                                        {{ end }}
+                                    </ul>
+                                </div>
+                            </h2>
+                        {{ end }}
                     {{ else }}
-                        <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                        <h2 class="card-header h5">
+                            {{ if and $coll.Metadata $coll.Metadata.Title }}
+                                <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                            {{ else }}
+                                <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                            {{ end }}
+                        </h2>
                     {{ end }}
-                </h2>
                 {{ else }}
-                <h2 class="card-header h5">
-                    {{ if and $coll.Metadata $coll.Metadata.Title }}
-                        {{ $coll.Metadata.Title }}
-                    {{ else }}
-                        {{ $coll.ID }}
-                    {{ end }}
-                </h2>
+                    <h2 class="card-header h5">
+                        {{ if and $coll.Metadata $coll.Metadata.Title }}
+                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.Metadata.Title }}">{{ $coll.Metadata.Title }}</a>
+                        {{ else }}
+                            <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}" aria-label="{{ i18n "To" }} {{ $coll.ID }}">{{ $coll.ID }}</a>
+                        {{ end }}
+                    </h2>
                 {{ end }}
-
                 <div class="card-body">
                     {{ if and $coll.Metadata $coll.Metadata.Description }}
                         {{ markdown (truncate $coll.Metadata.Description 500) }}
@@ -48,96 +96,113 @@
                 </div>
                 <ul class="list-group list-group-flush">
                     {{ if and $coll.Links $coll.Links.Downloads }}
-                    <li class="list-group-item">
-                        <h3 class="card-title h5">Downloads</h3>
-                        <ul>
-                        {{- range $link := $coll.Links.Downloads -}}
-                            <li><a href="{{ $link.AssetURL }}" target="_blank" aria-label="{{ $link.Name }}">{{ $link.Name }}{{ if $link.Size }} ({{ $link.Size }}){{ end }}</a></li>
-                        {{ end }}
-                        </ul>
-                    </li>
+                        <li class="list-group-item">
+                            <h3 class="card-title h5">Downloads</h3>
+                            <ul>
+                            {{- range $link := $coll.Links.Downloads -}}
+                                <li><a href="{{ $link.AssetURL }}" target="_blank" aria-label="{{ $link.Name }}">{{ $link.Name }}{{ if $link.Size }} ({{ $link.Size }}){{ end }}</a></li>
+                            {{ end }}
+                            </ul>
+                        </li>
                     {{ end }}
                     {{ if and $coll.Metadata $coll.Metadata.Keywords }}
-                    <li class="list-group-item">
-                        <strong>{{ i18n "Keywords" }}</strong>: {{ truncateslice ($coll.Metadata.Keywords | join ", ") 400 }}
-                    </li>
+                        <li class="list-group-item">
+                            <strong>{{ i18n "Keywords" }}</strong>: {{ truncateslice ($coll.Metadata.Keywords | join ", ") 400 }}
+                        </li>
                     {{ end }}
                     {{ if and $cfg.OgcAPI.Features $cfg.OgcAPI.Features.Collections }}
                         {{ if $cfg.OgcAPI.Features.Collections.ContainsID $coll.ID }}
-                            <li class="list-group-item"><b>Schema</b>: <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}/schema" aria-label="{{ i18n "View" }} Schema">{{ i18n "View" }} schema</a></li>
+                            <li class="list-group-item">
+                                <b>Schema</b>: <a href="{{ $baseUrl }}/collections/{{ $coll.ID }}/schema" aria-label="{{ i18n "View" }} Schema">{{ i18n "View" }} schema</a>
+                            </li>
                         {{ end }}
                     {{ end }}
                     {{ if and $coll.Metadata $coll.Metadata.LastUpdated }}
-                    <li class="list-group-item">
-                        {{ if and $coll.Metadata $coll.Metadata.LastUpdatedBy }}
-                        <strong>{{ i18n "UpdatedBy" }} {{ $coll.Metadata.LastUpdatedBy }} {{ i18n "On" }}</strong>:
-                        {{ else if $cfg.LastUpdatedBy }}
-                        <strong>{{ i18n "UpdatedBy" }} {{ $cfg.LastUpdatedBy }} {{ i18n "On" }}</strong>:
-                        {{ else }}
-                        <strong>{{ i18n "LastUpdated" }}</strong>:
-                        {{ end }}
-                        {{ toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated | date "2006-01-02" }}
-                    </li>
+                        <li class="list-group-item">
+                            {{ if and $coll.Metadata $coll.Metadata.LastUpdatedBy }}
+                                <strong>{{ i18n "UpdatedBy" }} {{ $coll.Metadata.LastUpdatedBy }} {{ i18n "On" }}</strong>:
+                            {{ else if $cfg.LastUpdatedBy }}
+                                <strong>{{ i18n "UpdatedBy" }} {{ $cfg.LastUpdatedBy }} {{ i18n "On" }}</strong>:
+                            {{ else }}
+                                <strong>{{ i18n "LastUpdated" }}</strong>:
+                            {{ end }}
+                            {{ toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated | date "2006-01-02" }}
+                        </li>
                     {{ else if $cfg.LastUpdated }}
-                    <li class="list-group-item">
-                        {{ if $cfg.LastUpdatedBy }}
-                        <strong>{{ i18n "UpdatedBy" }} {{ $cfg.LastUpdatedBy }} {{ i18n "On" }}</strong>:
-                        {{ else }}
-                        <strong>{{ i18n "LastUpdated" }}</strong>:
-                        {{ end }}
-                        {{ toDate "2006-01-02T15:04:05Z07:00" $cfg.LastUpdated | date "2006-01-02" }}
-                    </li>
+                        <li class="list-group-item">
+                            {{ if $cfg.LastUpdatedBy }}
+                                <strong>{{ i18n "UpdatedBy" }} {{ $cfg.LastUpdatedBy }} {{ i18n "On" }}</strong>:
+                            {{ else }}
+                                <strong>{{ i18n "LastUpdated" }}</strong>:
+                            {{ end }}
+                            {{ toDate "2006-01-02T15:04:05Z07:00" $cfg.LastUpdated | date "2006-01-02" }}
+                        </li>
                     {{ end }}
-                    {{ if and $coll.Metadata $coll.Metadata.Extent }}
-                    <li class="list-group-item">
-                        <strong>{{ i18n "GeographicExtent" }}</strong>
-                        {{ if $coll.Metadata.Extent.Srs }}
-                        (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}" target="_blank"
-                            aria-label="{{ i18n "To" }} {{ $coll.Metadata.Extent.Srs }} {{ i18n "Definition" }}">{{ $coll.Metadata.Extent.Srs }}</a>):
-                        {{ else }}
-                        (<a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84" target="_blank"
-                            aria-label="{{ i18n "To" }} CRS84 {{ i18n "Definition" }}">CRS84</a>):
-                        {{ end }}
-                        {{ $coll.Metadata.Extent.Bbox | join ", " }}
-                    </li>
+                    {{ if and $coll.Metadata $coll.Metadata.Extent (ne $geomType "none")  }}
+                        <li class="list-group-item">
+                            <strong>{{ i18n "GeographicExtent" }}</strong>
+                            {{ if $coll.Metadata.Extent.Srs }}
+                                (<a href="http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $coll.Metadata.Extent.Srs }}" target="_blank"
+                                    aria-label="{{ i18n "To" }} {{ $coll.Metadata.Extent.Srs }} {{ i18n "Definition" }}">{{ $coll.Metadata.Extent.Srs }}</a>):
+                            {{ else }}
+                                (<a href="http://www.opengis.net/def/crs/OGC/1.3/CRS84" target="_blank"
+                                    aria-label="{{ i18n "To" }} CRS84 {{ i18n "Definition" }}">CRS84</a>):
+                            {{ end }}
+                            {{ $coll.Metadata.Extent.Bbox | join ", " }}
+                        </li>
                     {{ end }}
                     {{ if and $coll.Metadata $coll.Metadata.Extent $coll.Metadata.Extent.Interval }}
-                    <li class="list-group-item">
-                        <strong>{{ i18n "TemporalExtent" }}</strong>
-                        (<a href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian" target="_blank" aria-label="{{ i18n "To" }} ISO-8601 {{ i18n "Definition" }}">ISO-8601</a>):
-                        {{ toDate "2006-01-02T15:04:05Z" ((first $coll.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }} /
-                        {{ if not (contains "null" (last $coll.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last $coll.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
-                    </li>
+                        <li class="list-group-item">
+                            <strong>{{ i18n "TemporalExtent" }}</strong>
+                            (<a href="http://www.opengis.net/def/uom/ISO-8601/0/Gregorian" target="_blank" aria-label="{{ i18n "To" }} ISO-8601 {{ i18n "Definition" }}">ISO-8601</a>):
+                            {{ toDate "2006-01-02T15:04:05Z" ((first $coll.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }} /
+                            {{ if not (contains "null" (last $coll.Metadata.Extent.Interval)) }}{{ toDate "2006-01-02T15:04:05Z" ((last $coll.Metadata.Extent.Interval) | replace "\"" "") | date "2006-01-02" }}{{ else }}..{{ end }}
+                        </li>
                     {{ end }}
                     {{ if and $cfg.OgcAPI.FeaturesSearch $cfg.OgcAPI.FeaturesSearch.Collections }}
-                    {{ if $cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID }}
-                    {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
-                        {{ if eq $collSearch.ID $coll.ID }}
-                    <li class="list-group-item">
-                        <strong>{{ i18n "Version" }}</strong>: {{ $collSearch.Version }}
-                    </li>
-                    <li class="list-group-item">
-                        <strong>{{ i18n "DisplayNameTemplate" }}</strong>: <code>{{ $collSearch.DisplayNameTemplate }}</code>
-                    </li>
-                        {{/* collection reference is only required for remotely hosted collections */}}
-                        {{ if $collSearch.IsRemoteFeatureCollection $coll.ID }}
-                        <li class="list-group-item">
-                            <strong>{{ i18n "OGCCollections" }}</strong>
-                            <ul>{{- range $o, $collRef := $collSearch.CollectionRefs -}}
-                            <li><a href="{{ $collRef.CollectionURL $baseUrl }}">{{ $collRef.CollectionID }}</a></li>
-                            {{- end -}}</ul>
-                        </li>
+                        {{ if $cfg.OgcAPI.FeaturesSearch.Collections.ContainsID $coll.ID }}
+                            {{ range $idxSearch, $collSearch := $cfg.OgcAPI.FeaturesSearch.Collections }}
+                                {{ if eq $collSearch.ID $coll.ID }}
+                                    <li class="list-group-item">
+                                        <a data-bs-toggle="collapse"
+                                           href="#details-{{$coll.ID}}"
+                                           role="button" aria-expanded="false"
+                                           aria-controls="details-{{$coll.ID}}"
+                                           class="text-reset"
+                                        >
+                                            <strong>{{ i18n "Details" }}</strong>
+                                            <i class="bi bi-chevron-down ms-1 flex-shrink-0 collapse-chevron d-inline-block" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                    <ul class="list-group list-group-flush collapse" id="details-{{$coll.ID}}">
+                                        <li class="list-group-item">
+                                            <strong>{{ i18n "Version" }}</strong>: {{ $collSearch.Version }}
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>{{ i18n "DisplayedAs" }}</strong>:
+                                            <ul>
+                                                {{ range $field := $collSearch.Fields }}
+                                                    <li>{{ $field }}</li>
+                                                {{ end }}
+                                            </ul>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>{{ i18n "DisplayNameExample" }}</strong>: {{ $collSearch.DisplayNameExample }}
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>{{ i18n "CollectionFilter" }}</strong>: {{ $collSearch.CollectionFilter }}
+                                        </li>
+                                    </ul>
+                                {{ end }}
+                            {{ end }}
                         {{ end }}
-                        {{ end }}
-                    {{ end }}
-                    {{ end }}
                     {{ end }}
                 </ul>
                 {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}
-                <img src="resources/{{ $coll.Metadata.Thumbnail }}" class="card-img-bottom" alt="{{ $coll.ID }} Thumbnail">
+                    <img src="resources/{{ $coll.Metadata.Thumbnail }}" class="card-img-bottom" alt="{{ $coll.ID }} Thumbnail">
                 {{ end }}
             </div>
         </div>
-    {{end}}
+    {{ end }}
 </section>
 {{end}}

@@ -107,6 +107,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     zoom: 4,
   })
   features: FeatureLike[] = []
+  private _featureProjection: Projection | undefined
 
   private _destroy$ = new Subject<void>()
 
@@ -128,7 +129,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapElm: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
     this.map.setTarget(mapElm)
-    const featuresUrls: DataUrl[] = this.itemUrls.map(itemUrl => ({ url: itemUrl, dataMapping: this._projection }))
+    this.features = []
+    // Capture projection at call-time to avoid race conditions with CRS switches
+    const dataMapping = this._projection
+    const featuresUrls: DataUrl[] = this.itemUrls.map(itemUrl => ({ url: itemUrl, dataMapping }))
     from(featuresUrls)
       .pipe(
         mergeMap(dataUrl => this.featureService.getFeatures(dataUrl)),
@@ -137,6 +141,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
       .subscribe(data => {
         this.features = [...this.features, ...data]
         this.map.getLayers().clear()
+        this._featureProjection = getProjection(dataMapping.visualProjection as string) ?? undefined
         this.changeView()
         this.loadFeatures(this.features)
         this.loadBackground()
@@ -294,6 +299,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   changeView() {
     const currentProjection = this._view.getProjection()
     const newProjection = getProjection(this._projection.visualProjection)
+    if (this._featureProjection && this._featureProjection.getCode() !== newProjection?.getCode()) {
+      this.features.forEach(f => (f as Feature<Geometry>).getGeometry()?.transform(this._featureProjection!, newProjection!))
+      this._featureProjection = newProjection ?? undefined
+    }
     if (!newProjection) {
       throw new Error('New projection is not defined')
     }

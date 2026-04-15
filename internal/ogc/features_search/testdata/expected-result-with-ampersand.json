@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=Jan+%26+Pietstraat"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=Jan+%26+Pietstraat"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=Jan+%26+Pietstraat"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Jan & Pietstraat 1794AG Oosterend",
+        "highlight": "<b>Jan</b> & <b>Pietstraat</b> 1794AG Oosterend",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/1000?f=json"
+        ],
+        "score": 0.8242424011230469
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.87608,
+          53.08622
+        ]
+      },
+      "id": "1000"
+    }
+  ],
+  "numberReturned": 1
+}

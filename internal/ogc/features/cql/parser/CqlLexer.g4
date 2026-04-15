@@ -2,7 +2,8 @@
  * ------------------
  * Note: This file is based on https://github.com/ldproxy/xtraplatform-spatial/blob/482b607f6709389fcd43ebea7dd0434389b8011b/
  * xtraplatform-cql/src/main/antlr/de/ii/xtraplatform/cql/infra/CqlLexer.g4
- *
+ * But modified by PDOK.
+  *
  * Keep the following license header intact:
  * ------------------
  *
@@ -165,19 +166,19 @@ IN: I N;
 #=============================================================================#
 */
 
-POINT: P O I N T (Whitespace)* (Z)?;
+POINT: P O I N T (Whitespace)* (Z (Whitespace)*)?;
 
-LINESTRING: L I N E S T R I N G (Whitespace)* (Z)?;
+LINESTRING: L I N E S T R I N G (Whitespace)* (Z (Whitespace)*)?;
 
-POLYGON: P O L Y G O N (Whitespace)* (Z)?;
+POLYGON: P O L Y G O N (Whitespace)* (Z (Whitespace)*)?;
 
-MULTIPOINT: M U L T I P O I N T (Whitespace)* (Z)?;
+MULTIPOINT: M U L T I P O I N T (Whitespace)* (Z (Whitespace)*)?;
 
-MULTILINESTRING: M U L T I L I N E S T R I N G (Whitespace)* (Z)?;
+MULTILINESTRING: M U L T I L I N E S T R I N G (Whitespace)* (Z (Whitespace)*)?;
 
-MULTIPOLYGON: M U L T I P O L Y G O N (Whitespace)* (Z)?;
+MULTIPOLYGON: M U L T I P O L Y G O N (Whitespace)* (Z (Whitespace)*)?;
 
-GEOMETRYCOLLECTION: G E O M E T R Y C O L L E C T I O N (Whitespace)* (Z)?;
+GEOMETRYCOLLECTION: G E O M E T R Y C O L L E C T I O N (Whitespace)* (Z (Whitespace)*)?;
 
 BBOX: B B O X;
 

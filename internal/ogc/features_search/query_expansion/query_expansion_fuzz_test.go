@@ -25,7 +25,10 @@ func init() {
 
 // Run with: go test -fuzz=Fuzz -fuzztime=10s -run=^$
 func FuzzExpand(f *testing.F) {
-	queryExpansion, err := NewQueryExpansion("internal/ogc/features_search/testdata/rewrites.csv", "internal/ogc/features_search/testdata/synonyms.csv")
+	queryExpansion, err := NewQueryExpansion(
+		"internal/ogc/features_search/testdata/rewrites.csv",
+		"internal/ogc/features_search/testdata/synonyms.csv",
+		30)
 	require.NoError(f, err)
 
 	testcases := []string{"Foo", "Bar", "Baz", "Den Haag", "Fryslân", "Gouverneurstraat", "West", "1e", "tweede", "Oud", "Oude"}
@@ -38,7 +41,7 @@ func FuzzExpand(f *testing.F) {
 		query := expanded.ToExactMatchQuery(true)
 
 		assert.Truef(t, utf8.ValidString(query), "valid string")
-		if strings.TrimSpace(input) != "" {
+		if strings.TrimSpace(input) != "" && !strings.Contains(input, "&") && !strings.Contains(input, "'") {
 			assert.NotEmpty(t, query)
 		}
 	})

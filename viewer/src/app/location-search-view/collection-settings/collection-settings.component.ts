@@ -1,6 +1,6 @@
 import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core'
 import { AsyncPipe, NgClass } from '@angular/common'
-import { map, Observable, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
+import { map, Observable, shareReplay, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
 import { Collection, CollectionsService } from '../../shared/services/collections.service'
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 
@@ -32,8 +32,9 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.form = new FormArray<FormGroup<CollectionSetting>>([])
-    this.collections$ = this._collectionsService.getCollections().pipe(takeUntil(this._destroy$))
-    this.emitFormChanges()
+    this.collections$ = this._collectionsService
+      .getCollections()
+      .pipe(shareReplay({ bufferSize: 1, refCount: true }), takeUntil(this._destroy$))
     this.buildForm()
   }
 
@@ -57,6 +58,7 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
       })
 
       if (!hasAnyParam) this.form.controls.forEach(control => control.patchValue({ checked: true }))
+      this.emitFormChanges()
     })
   }
 
@@ -82,7 +84,11 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
 
   private storeSettings(formValue: { [key: string]: number }) {
     const url = new URL(window.location.href)
-    url.search = ''
+    const toDelete: string[] = []
+    url.searchParams.forEach((_, k) => {
+      if (k.endsWith('[relevance]') || k.endsWith('[version]')) toDelete.push(k)
+    })
+    toDelete.forEach(k => url.searchParams.delete(k))
     for (const key in formValue) {
       url.searchParams.append(`${key}[relevance]`, formValue[key].toString())
       url.searchParams.append(`${key}[version]`, '1')

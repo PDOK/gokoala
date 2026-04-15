@@ -212,7 +212,7 @@ type GeoPackageDownload struct {
 	// ADVANCED SETTING. When true TLS certs are NOT validated, false otherwise. Only use true for your own self-signed certificates!
 	// +kubebuilder:default=false
 	// +optional
-	TLSSkipVerify bool `yaml:"tlsSkipVerify,omitempty" json:"tlsSkipVerify,omitempty" default:"false"`
+	TLSSkipVerify *bool `yaml:"tlsSkipVerify,omitempty" json:"tlsSkipVerify,omitempty" default:"false"`
 
 	// ADVANCED SETTING. HTTP request timeout when downloading (part of) GeoPackage.
 	// +kubebuilder:default="2m"

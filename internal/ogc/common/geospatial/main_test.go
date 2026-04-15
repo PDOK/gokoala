@@ -66,7 +66,7 @@ func TestNewCollections(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			collections := NewCollections(test.args.e, NewCollectionTypes(nil))
+			collections := NewCollections(test.args.e, NewCollectionTypes(nil, nil))
 			assert.NotEmpty(t, collections.engine.Templates.RenderedTemplates)
 		})
 	}
@@ -133,6 +133,17 @@ func TestNewCollections_Collections(t *testing.T) {
 				statusCode:   http.StatusOK,
 			},
 		},
+		{
+			name: "search config, single collectionRef renders direct link in card header",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=html",
+			},
+			want: want{
+				bodyContains: "href=\"https://example.com/ogc/v1/collections/addresses/items\"",
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -145,7 +156,7 @@ func TestNewCollections_Collections(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
-			collections := NewCollections(newEngine, NewCollectionTypes(nil))
+			collections := NewCollections(newEngine, NewCollectionTypes(nil, nil))
 			handler := collections.Collections()
 			handler.ServeHTTP(rr, req)
 
@@ -218,7 +229,7 @@ func TestNewCollections_Collection(t *testing.T) {
 
 			newEngine, err := engine.NewEngine(tt.fields.configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
-			collections := NewCollections(newEngine, NewCollectionTypes(nil))
+			collections := NewCollections(newEngine, NewCollectionTypes(nil, nil))
 			handler := collections.Collection()
 			handler.ServeHTTP(rr, req)
 

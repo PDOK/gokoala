@@ -31,11 +31,15 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+      - name: Test generating example CRD
+        run: hack/generate-crd.sh
+
       - name: Unit Test
         run: |
           go test -v -race -shuffle=on \
             -coverpkg "$(go list || go list -m | head -1)/..." \
-            -coverprofile cover.out.tmp ./...
+            -coverprofile cover.out.tmp \
+            -json ./... | tee unittest-report.json
 
           echo "remove generate code from coverage results"
           grep -v \
@@ -46,26 +50,14 @@ jobs:
             -e "cqlparser_listener" \
             cover.out.tmp > cover.out
 
-      - name: Test generating example CRD
-        run: hack/generate-crd.sh
-
-      - name: Fuzz Testing
-        run: |
-          for pkg in $(go list ./...); do
-            echo "Fuzzing $pkg"
-            go test -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
-          done
-
-      - name: Fail when coverage below threshold
+      - name: Unit Test Report
         # Pin 3rd party action to a specific version as security best-practice.
-        # Version used: https://github.com/vladopajic/go-test-coverage/releases/tag/v2.17.0
-        uses: vladopajic/go-test-coverage@cc5012c2cfa84542e02b079141958a885861d326
+        # Version used: https://github.com/becheran/go-testreport/releases/tag/v0.3.2
+        uses: becheran/go-testreport@90efc1ce13c872f23d6bc8a069527c26288b8f9c
         with:
-          profile: cover.out
-          local-prefix: github.com/PDOK/gokoala
-          threshold-total: 80  # 80% overall coverage is the minimum
+          input: unittest-report.json
 
-      - name: Update coverage report
+      - name: Unit Test Coverage Report
         # Pin 3rd party action to a specific version as security best-practice.
         # Version used: https://github.com/ncruces/go-coverage-report/releases/tag/v0.3.1
         uses: ncruces/go-coverage-report@aa507d98fb11c2b4dffa1b731e0786f50fd8ec93
@@ -78,3 +70,30 @@ jobs:
         if: |
           github.event_name == 'push'
         continue-on-error: false
+
+      - name: Unit Test Quality Gate (fail when coverage below threshold)
+        # Pin 3rd party action to a specific version as security best-practice.
+        # Version used: https://github.com/vladopajic/go-test-coverage/releases/tag/v2.17.0
+        uses: vladopajic/go-test-coverage@cc5012c2cfa84542e02b079141958a885861d326
+        with:
+          profile: cover.out
+          local-prefix: github.com/PDOK/gokoala
+          threshold-total: 80  # 80% overall coverage is the minimum
+
+      - name: Fuzz Test
+        run: |
+          for pkg in $(go list ./...); do
+            echo "Fuzzing $pkg"
+            go test -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
+          done
+
+      - name: Fuzz Test Report (uploads failed fuzz cases)
+        uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: fuzz-reports
+          path: |
+            **/testdata/fuzz/**/*
+          retention-days: 5
+
+

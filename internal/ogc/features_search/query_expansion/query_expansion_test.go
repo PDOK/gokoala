@@ -27,6 +27,7 @@ func TestExpand(t *testing.T) {
 		searchQuery string
 		useWildcard bool
 		useSynonyms bool
+		maxSynonyms int
 	}
 	tests := []struct {
 		name string
@@ -40,6 +41,38 @@ func TestExpand(t *testing.T) {
 				useSynonyms: true,
 			},
 			want: `markt & hertogenbosch`,
+		},
+		{
+			name: "rewrite regex, postal codes with space",
+			args: args{
+				searchQuery: `dorpstraat 5 6784 GX Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
+		},
+		{
+			name: "rewrite regex, postal codes with space - case insensitive",
+			args: args{
+				searchQuery: `dorpstraat 5 6784 gx Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
+		},
+		{
+			name: "rewrite regex, postal codes without space",
+			args: args{
+				searchQuery: `dorpstraat 5 6784GX Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
+		},
+		{
+			name: "rewrite regex, postal codes without space - case insentivie",
+			args: args{
+				searchQuery: `dorpstraat 5 6784gx Village`,
+				useSynonyms: true,
+			},
+			want: `dorpstraat & 5 & 6784gx & village`,
 		},
 		{
 			name: "rewrite followed by synonym",
@@ -88,6 +121,22 @@ func TestExpand(t *testing.T) {
 				useSynonyms: true,
 			},
 			want: `(eerste | 1ste) & (2de | tweede)`,
+		},
+		{
+			name: "AND operator only",
+			args: args{
+				searchQuery: `&`,
+				useSynonyms: true,
+			},
+			want: ``,
+		},
+		{
+			name: "AND operator with terms",
+			args: args{
+				searchQuery: `foo & bar`,
+				useSynonyms: true,
+			},
+			want: `(foo | foobar | foos) & bar`,
 		},
 		{
 			name: "nesting",
@@ -205,13 +254,34 @@ westgoeverneurstraat | westgoevstraat | westgouvstraat) & 1800
 (oud | oude) & (gouv | goev | goeverneur | gouverneur) & (2de | tweede) & (gravenhage | den <-> haag | s-gravenhage) & (fryslân | friesland) & nederland
 `,
 		},
+		{
+			name: "max synonyms limit",
+			args: args{
+				searchQuery: `oudwesterlijke-goeverneur`,
+				useSynonyms: true,
+				maxSynonyms: 3,
+			},
+			want: `(oudwesterlijke-goeverneur | oudwesterlijke-goev | oudwesterlijke-gouv | oudwesterlijke-gouverneur)`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			queryExpansion, err := NewQueryExpansion("internal/ogc/features_search/testdata/rewrites.csv", "internal/ogc/features_search/testdata/synonyms.csv")
+			// given
+			if tt.args.maxSynonyms == 0 {
+				tt.args.maxSynonyms = 100 // no limit
+			}
+			queryExpansion, err := NewQueryExpansion(
+				"internal/ogc/features_search/testdata/rewrites.csv",
+				"internal/ogc/features_search/testdata/synonyms.csv",
+				tt.args.maxSynonyms)
 			require.NoError(t, err)
+
+			// when
 			actual, err := queryExpansion.Expand(context.Background(), tt.args.searchQuery)
+
+			// then
 			require.NoError(t, err)
+
 			var query string
 			if tt.args.useWildcard {
 				query = actual.ToWildcardQuery()

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
@@ -30,8 +30,6 @@ var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.
 // BEWARE: this is one of the most performance-sensitive pieces of code in the system.
 // Try to do as much initialization work outside the hot path, only do essential
 // operations inside this method.
-//
-//nolint:cyclop
 func (f *Features) Features() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
@@ -64,13 +62,13 @@ func (f *Features) Features() http.HandlerFunc {
 		w.Header().Add(engine.HeaderContentCrs, contentCrs.ToLink())
 
 		datasource := f.datasources[DatasourceKey{srid: outputSRID.GetOrDefault(), collectionID: collection.GetID()}]
-		collectionType := f.collectionTypes.Get(collection.GetID())
+		collectionType := f.collectionTypes.GetCollectionType(collection.GetID())
 		if !collectionType.IsSpatialRequestAllowed(bbox) {
 			engine.RenderProblem(engine.ProblemBadRequest, w, errBBoxRequestDisallowed.Error())
 			return
 		}
 
-		filter, err := f.parseCQL(cqlFilter, datasource, f.schemas[collection.GetID()])
+		filter, err := f.parseCQL(cqlFilter, datasource, f.schemas[collection.GetID()], inputSRID)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -85,9 +83,20 @@ func (f *Features) Features() http.HandlerFunc {
 		}
 
 		// render output
+		geometryType := f.collectionTypes.GetGeometryType(collection.GetID())
 		format := f.engine.CN.NegotiateFormat(r)
-		switch collectionType {
-		case geospatial.Features:
+		if geometryType == geometryTypeNone {
+			switch format {
+			case engine.FormatHTML:
+				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
+					propertyFilters, f.configuredPropertyFilters[collection.ID],
+					fc, collectionType.AvailableFormats())
+			case engine.FormatGeoJSON, engine.FormatJSON:
+				f.json.featuresAsNonGeoJSON(w, r, collection.ID, newCursor, url, fc)
+			default:
+				handleFormatNotSupported(w, format)
+			}
+		} else {
 			switch format {
 			case engine.FormatHTML:
 				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
@@ -97,17 +106,6 @@ func (f *Features) Features() http.HandlerFunc {
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, &collection, fc)
 			case engine.FormatJSONFG:
 				f.json.featuresAsJSONFG(w, r, collection.ID, newCursor, url, &collection, fc, contentCrs)
-			default:
-				handleFormatNotSupported(w, format)
-			}
-		case geospatial.Attributes:
-			switch format {
-			case engine.FormatHTML:
-				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredPropertyFilters[collection.ID],
-					fc, collectionType.AvailableFormats())
-			case engine.FormatJSON:
-				f.json.featuresAsAttributeJSON(w, r, collection.ID, newCursor, url, fc)
 			default:
 				handleFormatNotSupported(w, format)
 			}
@@ -201,7 +199,7 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
 
-func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema) (ds.Part3Filter, error) {
+func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema, srid domain.SRID) (ds.Part3Filter, error) {
 	if cqlFilter == "" {
 		return ds.Part3Filter{}, nil
 	}
@@ -215,9 +213,9 @@ func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema d
 
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables, srid)
 	case *postgres.Postgres:
-		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables)
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables, srid)
 	default:
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}
@@ -227,5 +225,5 @@ func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema d
 		// make SQL filter appendable to the existing WHERE clause
 		sql = "and " + sql
 	}
-	return ds.Part3Filter{SQL: sql, Params: params}, err
+	return ds.Part3Filter{SQL: strings.ToLower(sql), Params: params}, err
 }

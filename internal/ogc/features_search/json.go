@@ -30,7 +30,7 @@ func (jsr *jsonSearchResults) asGeoJSON(w http.ResponseWriter, r *http.Request, 
 	fc *domain.FeatureCollection) {
 
 	fc.Timestamp = now().Format(time.RFC3339)
-	fc.Links = createLinks(baseURL)
+	fc.Links = createLinks(baseURL, *r.URL)
 
 	jsr.serve(&fc, engine.MediaTypeGeoJSON, r, w)
 }
@@ -41,7 +41,7 @@ func (jsr *jsonSearchResults) asJSONFG(w http.ResponseWriter, r *http.Request, b
 
 	fgFC := domain.FeatureCollectionToJSONFG(*fc, crs)
 	fgFC.Timestamp = now().Format(time.RFC3339)
-	fgFC.Links = createLinks(baseURL)
+	fgFC.Links = createLinks(baseURL, *r.URL)
 
 	jsr.serve(&fgFC, engine.MediaTypeJSONFG, r, w)
 }
@@ -53,33 +53,33 @@ func (jsr *jsonSearchResults) serve(input any, contentType string, r *http.Reque
 		engine.ServeContentType(contentType))
 }
 
-func createLinks(baseURL url.URL) []domain.Link {
+func createLinks(baseURL url.URL, requestURL url.URL) []domain.Link {
 	links := make([]domain.Link, 0, 3)
 
 	links = append(links, domain.Link{
 		Rel:   "self",
 		Title: "This document as GeoJSON",
 		Type:  engine.MediaTypeGeoJSON,
-		Href:  toSelfURL(baseURL, engine.FormatJSON),
+		Href:  toSelfURL(baseURL, requestURL, engine.FormatJSON),
 	})
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as JSON-FG",
 		Type:  engine.MediaTypeJSONFG,
-		Href:  toSelfURL(baseURL, engine.FormatJSONFG),
+		Href:  toSelfURL(baseURL, requestURL, engine.FormatJSONFG),
 	})
 	links = append(links, domain.Link{
 		Rel:   "alternate",
 		Title: "This document as HTML",
 		Type:  engine.MediaTypeHTML,
-		Href:  toSelfURL(baseURL, engine.FormatHTML),
+		Href:  toSelfURL(baseURL, requestURL, engine.FormatHTML),
 	})
 	return links
 }
 
-func toSelfURL(baseURL url.URL, format string) string {
+func toSelfURL(baseURL url.URL, requestURL url.URL, format string) string {
 	href := baseURL.JoinPath("search")
-	query := href.Query()
+	query := requestURL.Query()
 	query.Set(engine.FormatParam, format)
 	href.RawQuery = query.Encode()
 	return href.String()

@@ -14,11 +14,28 @@ import {
   SimpleChanges,
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
-import { debounceTime, distinctUntilChanged, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs'
-import { AsyncPipe, NgClass, NgIf } from '@angular/common'
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs'
+import { CollectionsService } from '../shared/services/collections.service'
+import { AsyncPipe, NgClass, NgIf, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
+import { HighlightPipe } from './highlight.pipe'
+import { ReplacePipe } from './replace.pipe'
+import { HttpErrorResponse } from '@angular/common/http'
 
 interface LocationForm {
   location: FormControl<string | null>
@@ -27,7 +44,17 @@ interface LocationForm {
 @Component({
   selector: 'app-location-search-view',
   standalone: true,
-  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent, NgIf],
+  imports: [
+    ReactiveFormsModule,
+    AsyncPipe,
+    PropertyValuePipe,
+    NgClass,
+    CollectionSettingsComponent,
+    NgIf,
+    HighlightPipe,
+    UpperCasePipe,
+    ReplacePipe,
+  ],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,7 +78,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     return this._bbox
   }
 
-  @Output() locationSelected = new EventEmitter<string>()
+  @Output() locationSelected = new EventEmitter<string[]>()
+  @Output() queryUpdated = new EventEmitter<string>()
 
   form!: FormGroup<LocationForm>
   features$?: Observable<FeatureGeoJSON[]>
@@ -64,12 +92,20 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   searching = signal(false)
   collectionSettingsOpen = signal(false)
   hasSearchParams = signal(true)
+  confirmedFeature = signal<FeatureGeoJSON | null>(null)
+
+  hasError = signal(false)
+  errorMessage = signal('')
 
   hasSearched$!: Observable<boolean>
+  collectionTitles$!: Observable<Map<string, string>>
 
   private _featureService = inject(FeatureService)
+  private _collectionsService = inject(CollectionsService)
   private _bbox?: string = undefined
   private _destroy$ = new Subject<void>()
+  private _confirmedHrefs: string[] = []
+  private _latestFeatures: FeatureGeoJSON[] = []
 
   constructor(private host: ElementRef<HTMLElement>) {}
 
@@ -80,6 +116,17 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       location: new FormControl(this.query),
     })
 
+    this.collectionTitles$ = this._collectionsService.getCollections().pipe(
+      catchError((e: unknown) => {
+        const res = e as HttpErrorResponse
+        this.hasError.set(true)
+        this.errorMessage.set(res.error.detail)
+        this.hasSearchParams.set(false)
+        return of([])
+      }),
+      map(collections => new Map(collections.map(c => [c.id, c.title]))),
+      takeUntil(this._destroy$)
+    )
     this.initLocationListener()
   }
 
@@ -90,21 +137,33 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   }
 
   initLocationListener() {
-    this.features$ = this.form.controls.location.valueChanges.pipe(
+    const featureTrigger$ = this.form.controls.location.valueChanges.pipe(
+      startWith(this.query),
       distinctUntilChanged(),
+      tap(val => {
+        this.query = val || ''
+        this.hasError.set(false)
+        this.errorMessage.set('')
+        this.storeQuery()
+      }),
       filter(value => value !== null && value.length >= this.MIN_QUERY_LENGTH && this.hasSearchParams()),
       tap(() => this.searching.set(true)),
-      debounceTime(200),
-      tap(val => (this.query = val || '')),
-      switchMap(val => this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox)),
-      tap(() => {
-        this.storeQuery()
+      debounceTime(200)
+    )
+
+    this.features$ = featureTrigger$.pipe(
+      switchMap(val => this.searchFeatures(val)),
+      tap(features => {
+        this._latestFeatures = features
         this.searching.set(false)
       }),
       takeUntil(this._destroy$)
     )
 
-    this.hasSearched$ = this.form.controls.location.valueChanges.pipe(map(value => value !== null && value.length >= this.MIN_QUERY_LENGTH))
+    this.hasSearched$ = this.form.controls.location.valueChanges.pipe(
+      startWith(this.query),
+      map(value => value !== null && value.length >= this.MIN_QUERY_LENGTH)
+    )
   }
 
   onFormChange($event: { [p: string]: number }) {
@@ -112,12 +171,46 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
       return Object.keys($event).length > 0
     })
     this.searchParams = $event
+    this.queryUpdated.emit()
   }
 
   selectFeature(feature: FeatureGeoJSON) {
-    const propertyValuePipe = new PropertyValuePipe()
-    this.locationSelected.emit(propertyValuePipe.transform(feature.properties, 'href'))
-    this.searchOpen.set(false)
+    this.locationSelected.emit(feature.properties?.['href'] as string[])
+  }
+
+  confirmFeature(feature: FeatureGeoJSON) {
+    this.selectFeature(feature)
+    this.confirmedFeature.set(feature)
+    this._confirmedHrefs = feature.properties?.['href']
+    if (feature.properties?.['display_name']) {
+      this.form.controls.location.setValue(feature.properties?.['display_name'], { emitEvent: false })
+      this.query = feature.properties?.['display_name']
+    }
+    this.storeQuery()
+    this.closeSearch()
+  }
+
+  confirmFirstFeature() {
+    if (this._latestFeatures.length > 0) {
+      this.confirmFeature(this._latestFeatures[0])
+    }
+  }
+
+  revertToConfirmed() {
+    this.locationSelected.emit(this._confirmedHrefs)
+  }
+
+  focusResult(index: number, event: Event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const items = this.host.nativeElement.querySelectorAll<HTMLElement>('[role="option"] button')
+    items[index]?.focus()
+  }
+
+  focusInput(event: Event) {
+    event.preventDefault()
+    event.stopPropagation()
+    this.host.nativeElement.querySelector<HTMLElement>('#search-input')?.focus()
   }
 
   openSearchIfNot() {
@@ -136,6 +229,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     const url = new URL(window.location.href)
     url.searchParams.set('q', this.query)
     history.pushState({}, '', url.toString())
+    this.queryUpdated.emit()
   }
 
   private setBboxUrlParam(val: string | undefined) {
@@ -162,5 +256,17 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
 
   ngOnDestroy() {
     this._destroy$.next()
+  }
+
+  private searchFeatures(val: string | null): Observable<FeatureGeoJSON[]> {
+    return this._featureService.queryFeatures(val || '', this.searchParams, this.projection, this.bbox).pipe(
+      catchError((err: unknown) => {
+        const res = err as HttpErrorResponse
+        this.searching.set(false)
+        this.hasError.set(true)
+        this.errorMessage.set(res.error.detail)
+        return of([])
+      })
+    )
   }
 }

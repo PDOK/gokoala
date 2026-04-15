@@ -40,7 +40,7 @@ type Datasource interface {
 	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
 
 	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
-	GetCollectionType(collection string) (geospatial.CollectionType, error)
+	GetCollectionType(collection string) (geospatial.CollectionType, string, error)
 
 	// SupportsOnTheFlyTransformation returns whether the datasource supports coordinate transformation/reprojection on-the-fly
 	SupportsOnTheFlyTransformation() bool

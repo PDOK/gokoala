@@ -567,8 +567,8 @@ func TestFeaturesCollection_MarshalUnmarshal_JSON(t *testing.T) {
 		ID: "buildings",
 		FeatureProperties: &FeatureProperties{
 			Properties:                []string{"id", "name"},
-			PropertiesExcludeUnknown:  true,
-			PropertiesInSpecificOrder: true,
+			PropertiesExcludeUnknown:  ptrTo(true),
+			PropertiesInSpecificOrder: ptrTo(true),
 		},
 		Filters: FeatureFilters{
 			Properties: []PropertyFilter{
@@ -607,8 +607,8 @@ func TestFeaturesCollection_MarshalUnmarshal_YAML(t *testing.T) {
 		ID: "roads",
 		FeatureProperties: &FeatureProperties{
 			Properties:                []string{"id", "type"},
-			PropertiesExcludeUnknown:  true,
-			PropertiesInSpecificOrder: true,
+			PropertiesExcludeUnknown:  ptrTo(true),
+			PropertiesInSpecificOrder: ptrTo(true),
 		},
 	}
 

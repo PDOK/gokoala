@@ -22,3 +22,18 @@ func EncodeBBox(bbox geom.T) (*[]float64, error) {
 		return nil, fmt.Errorf("unsupported type: %d", rune(l))
 	}
 }
+
+// PadBbox For linestrings specifically, it is possible for the min and max values of a dimension
+// to be exactly equal, resulting in a bbox with 0 area. This function pads the max value
+// of the relevant dimension by 1 unit to avoid this.
+// Returns the original bbox if neither dimension has equal min and max values.
+func PadBbox(bbox *geom.Bounds) *geom.Bounds {
+	if bbox.Max(0) == bbox.Min(0) {
+		// pad bbox.Max(0)
+		return geom.NewBounds(geom.XY).Set(bbox.Min(0), bbox.Min(1), bbox.Max(0)+1, bbox.Max(1))
+	} else if bbox.Max(1) == bbox.Min(1) {
+		// pad bbox.Max(1)
+		return geom.NewBounds(geom.XY).Set(bbox.Min(0), bbox.Min(1), bbox.Max(0), bbox.Max(1)+1)
+	}
+	return bbox
+}

@@ -70,6 +70,91 @@ func TestCreateSearchIndexIdempotent(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestPreWarmPartitionFunction(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+	ctx := context.Background()
+
+	// given existing populated search index
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	err = CreateSearchIndex(dbConn, "search_index", 28992, language.Dutch)
+	require.NoError(t, err)
+	err = insertTestData(ctx, dbConn)
+	require.NoError(t, err)
+
+	db, err := pgx.Connect(ctx, dbConn)
+	require.NoError(t, err)
+	defer db.Close(ctx)
+
+	// when/then
+	rows, err := db.Query(ctx, `SELECT * FROM gokoala_prewarm_partitions(idx_suffixes := array['ts_idx'])`)
+	require.NoError(t, err)
+	defer rows.Close()
+}
+
+func TestInspectBufferCacheFunction(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+	ctx := context.Background()
+
+	// given existing populated search index
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	err = CreateSearchIndex(dbConn, "search_index", 28992, language.Dutch)
+	require.NoError(t, err)
+	err = insertTestData(ctx, dbConn)
+	require.NoError(t, err)
+
+	db, err := pgx.Connect(ctx, dbConn)
+	require.NoError(t, err)
+	defer db.Close(ctx)
+
+	// when
+	rows, err := db.Query(ctx, `SELECT * FROM gokoala_inspect_buffercache()`)
+	require.NoError(t, err)
+	defer rows.Close()
+
+	type result struct {
+		ObjectName       string
+		Kind             string
+		TotalSize        string
+		CachedSize       string
+		PercentageCached *float64
+	}
+
+	var got []result
+	for rows.Next() {
+		var r result
+		err := rows.Scan(
+			&r.ObjectName,
+			&r.Kind,
+			&r.TotalSize,
+			&r.CachedSize,
+			&r.PercentageCached,
+		)
+		require.NoError(t, err)
+		got = append(got, r)
+	}
+
+	// then
+	require.NoError(t, rows.Err())
+	require.NotEmpty(t, got)
+	require.NotEmpty(t, got[0].ObjectName)
+}
+
 func makeDbConnection(dbPort nat.Port) string {
 	return fmt.Sprintf("postgres://postgres:postgres@127.0.0.1:%d/%s?sslmode=disable", dbPort.Int(), "search_db")
 }

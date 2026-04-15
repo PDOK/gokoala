@@ -81,6 +81,24 @@ func (csfs FeaturesSearchCollections) ContainsID(id string) bool {
 	return false
 }
 
+func (csfs FeaturesSearchCollections) GetCollectionRefsByCollectionID(collectionID string) []RelatedOGCAPIFeaturesCollection {
+	var collection FeaturesSearchCollection
+	for _, coll := range csfs {
+		if coll.ID == collectionID {
+			collection = coll
+			break
+		}
+	}
+	if collection.CollectionRefs == nil {
+		return make([]RelatedOGCAPIFeaturesCollection, 0)
+	}
+
+	result := make([]RelatedOGCAPIFeaturesCollection, len(collection.CollectionRefs))
+	copy(result, collection.CollectionRefs)
+
+	return result
+}
+
 // +kubebuilder:object:generate=true
 //
 //nolint:recvcheck
@@ -97,11 +115,14 @@ type FeaturesSearchCollection struct {
 	// +optional
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
 
-	// Fields that make up the display name and/or suggestions. These fields can be used as variables in the DisplayNameTemplate.
+	// Fields that make up the display name.
 	Fields []string `yaml:"fields,omitempty" json:"fields,omitempty"`
 
-	// Template that indicates how a search record is displayed. Uses Go text/template syntax to reference fields.
-	DisplayNameTemplate string `yaml:"displayNameTemplate,omitempty" json:"displayNameTemplate,omitempty"`
+	// Example in natural language that indicates how a search record is displayed.
+	DisplayNameExample string `yaml:"displayNameExample,omitempty" json:"displayNameExample,omitempty"`
+
+	// Describes in natural language the filter that is applied to gather data from FeatureCollections.
+	CollectionFilter string `yaml:"collectionFilter,omitempty" json:"collectionFilter,omitempty"`
 
 	// Version of the collection exposed through the API.
 	// +kubebuilder:default=1
@@ -175,6 +196,10 @@ type SearchSettings struct {
 	// ADVANCED SETTING. When true synonyms are taken into account during exact match calculation.
 	// +kubebuilder:default=false
 	SynonymsExactMatch bool `yaml:"synonymsExactMatch,omitempty" json:"synonymsExactMatch,omitempty" default:"false"`
+
+	// ADVANCED SETTING. The maximum number of synonyms that will be generated for a search term.
+	// +kubebuilder:default=10
+	MaxSynonyms int `yaml:"maxSynonyms,omitempty" json:"maxSynonyms,omitempty" default:"10" validate:"gt=0"`
 }
 
 // +kubebuilder:object:generate=true

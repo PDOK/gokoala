@@ -62,15 +62,15 @@ func (jf *jsonFeatures) featureAsGeoJSON(w http.ResponseWriter, r *http.Request,
 }
 
 // GeoJSON for non-spatial data ("attribute JSON").
-func (jf *jsonFeatures) featuresAsAttributeJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
+func (jf *jsonFeatures) featuresAsNonGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string, cursor domain.Cursors,
 	featuresURL featureCollectionURL, fc *domain.FeatureCollection) {
 
-	fgFC := domain.AttributeCollection{}
+	fgFC := domain.NonGeoCollection{}
 	if len(fc.Features) == 0 {
-		fgFC.Features = make([]*domain.Attribute, 0)
+		fgFC.Features = make([]*domain.NonGeo, 0)
 	} else {
 		for _, f := range fc.Features {
-			fgF := domain.Attribute{
+			fgF := domain.NonGeo{
 				ID:         f.ID,
 				Links:      f.Links,
 				Properties: f.Properties,
@@ -82,21 +82,21 @@ func (jf *jsonFeatures) featuresAsAttributeJSON(w http.ResponseWriter, r *http.R
 	fgFC.Timestamp = now().Format(time.RFC3339)
 	fgFC.Links = jf.createFeatureCollectionLinks(engine.FormatJSON, collectionID, cursor, featuresURL)
 
-	jf.serve(&fgFC, engine.MediaTypeJSON, r, w)
+	jf.serve(&fgFC, engine.MediaTypeGeoJSON, r, w)
 }
 
 // GeoJSON for non-spatial data ("attribute JSON").
-func (jf *jsonFeatures) featureAsAttributeJSON(w http.ResponseWriter, r *http.Request, collectionID string,
+func (jf *jsonFeatures) featureAsNonGeoJSON(w http.ResponseWriter, r *http.Request, collectionID string,
 	f *domain.Feature, url featureURL) {
 
-	fgF := domain.Attribute{
+	fgF := domain.NonGeo{
 		ID:         f.ID,
 		Links:      f.Links,
 		Properties: f.Properties,
 	}
 	fgF.Links = jf.createFeatureLinks(engine.FormatJSON, url, collectionID, fgF.ID)
 
-	jf.serve(&fgF, engine.MediaTypeJSON, r, w)
+	jf.serve(&fgF, engine.MediaTypeGeoJSON, r, w)
 }
 
 // JSON-FG.

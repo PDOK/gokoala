@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -26,6 +27,9 @@ type CommonListener struct {
 	// queryables the list of allowed columns in the datasource that can be queried.
 	queryables []string
 
+	// srid the filter spatial reference identifier (SRID).
+	srid domain.SRID
+
 	// randomizer is used to generate unique named parameters.
 	randomizer util.Randomizer
 
@@ -40,6 +44,8 @@ func (cl *CommonListener) AddErrorListener(errorListener *ErrorListener) {
 
 // generateNamedParam generates a unique named parameter (e.g. :abc or @abc)
 // for parameter binding in SQL prepared statements.
+//
+//nolint:unparam // can be removed once we've implemented the Postgres cql listener
 func (cl *CommonListener) generateNamedParam(symbol string) (withoutSymbol, withSymbol string) {
 RETRY:
 	chars := make([]byte, 4)
@@ -60,6 +66,21 @@ RETRY:
 func (cl *CommonListener) allowAllQueryables() bool {
 	log.Println("WARNING: using '*' as queryable, this is not recommended")
 	return len(cl.queryables) == 1 && cl.queryables[0] == "*"
+}
+
+// hasWildcard checks if a pattern contains a SQL wildcard: % or _.
+func (cl *CommonListener) hasWildcard(pattern string, symbol string) bool {
+	namedParam := pattern
+	if strings.HasPrefix(pattern, symbol) {
+		namedParam = pattern[len(symbol):] // remove symbol
+	}
+	patternValue, ok := cl.namedParams[namedParam]
+	if !ok {
+		return false
+	}
+	patternValueStr := fmt.Sprintf("%v", patternValue)
+	return strings.Contains(patternValueStr, "%") ||
+		strings.Contains(patternValueStr, "_")
 }
 
 func parseNumber(s string) (any, error) {

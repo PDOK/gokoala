@@ -9,14 +9,11 @@ import (
 	"strconv"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 // Feature endpoint serves a single Feature by ID
-//
-//nolint:cyclop
 func (f *Features) Feature() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
@@ -67,9 +64,18 @@ func (f *Features) Feature() http.HandlerFunc {
 
 		// render output
 		format := f.engine.CN.NegotiateFormat(r)
-		collectionType := f.collectionTypes.Get(collection.GetID())
-		switch collectionType {
-		case geospatial.Features:
+		collectionType := f.collectionTypes.GetCollectionType(collection.GetID())
+		geometryType := f.collectionTypes.GetGeometryType(collection.GetID())
+		if geometryType == geometryTypeNone {
+			switch format {
+			case engine.FormatHTML:
+				f.html.attribute(w, r, collection, feat, collectionType.AvailableFormats())
+			case engine.FormatJSON:
+				f.json.featureAsNonGeoJSON(w, r, collectionID, feat, url)
+			default:
+				handleFormatNotSupported(w, format)
+			}
+		} else {
 			switch format {
 			case engine.FormatHTML:
 				f.html.feature(w, r, collection, feat, collectionType.AvailableFormats())
@@ -77,15 +83,6 @@ func (f *Features) Feature() http.HandlerFunc {
 				f.json.featureAsGeoJSON(w, r, collectionID, &collection, feat, url)
 			case engine.FormatJSONFG:
 				f.json.featureAsJSONFG(w, r, collectionID, &collection, feat, url, contentCrs)
-			default:
-				handleFormatNotSupported(w, format)
-			}
-		case geospatial.Attributes:
-			switch format {
-			case engine.FormatHTML:
-				f.html.attribute(w, r, collection, feat, collectionType.AvailableFormats())
-			case engine.FormatJSON:
-				f.json.featureAsAttributeJSON(w, r, collectionID, feat, url)
 			default:
 				handleFormatNotSupported(w, format)
 			}

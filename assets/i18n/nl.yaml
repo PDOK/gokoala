@@ -67,7 +67,7 @@ Draft: Concept
 
 # Search page
 LocationAPI: Locatie API
-CurrentUrl: Huidige URL
+CurrentFeatures: Geselecteerde feature(s)
 SearchByLocation: Zoeken op locatie
 Searching: Zoeken...
 NoResultsFound: Geen resultaten gevonden
@@ -75,6 +75,7 @@ RelevanceHeader: Relevantie
 CollectionsHeader: Collecties
 SearchHelpText: Zoekterm moet minimaal twee tekens lang zijn.
 NoCollectionSelectedText: Er moet minimaal één collectie geselecteerd zijn.
+
 
 # Tile/TileMatrixSet page
 NetherlandsRDNewQuadAbstract: |-
@@ -124,11 +125,14 @@ BrowseSchema: Bekijk het
 BrowseSchemaFeaturesSuffix: van de features voor meer details
 BrowseSchemaAttributesSuffix: van de attributes voor meer details
 FeaturesExplanation: GeoJSON is een open en breed geaccepteerd formaat voor feature data en voor veel (web)toepassingen de eerste keus. Formeel ondersteunt het echter alleen de WGS84 projectie. JSON-FG is een uitbreiding op GeoJSON en biedt officiële ondersteuning voor andere projecties. Aangezien JSON-FG een recente ontwikkeling is wordt er vanuit compatibiliteit oogpunt vooralsnog ook GeoJSON in andere projecties aangeboden.
+AttributesExplanation: Deze collection bevat alleen attribuutdata. Dit betekent dat de items niet over een geometrie beschikken en het ook niet mogelijk is om een ruimtelijke bevraging te doen (bijv. een “bounding box” selectie). De data kan worden gebruikt ter ondersteuning van en in combinatie met andere collections binnen deze dataset die wél geometrieën bevatten.
 CollectionTilesHTML: Deze collectie wordt beschikbaar gesteld als vector tiles in &eacute;&eacute;n of meerdere projecties.
 CollectionTilesPlain: Deze collectie wordt beschikbaar gesteld als vector tiles in één of meerdere projecties.
-DisplayNameTemplate: Weergavesjabloon
 OGCCollections: Gerelateerde OGC API feature collecties
-
+DisplayedAs: Weergegeven als
+DisplayNameExample: Voorbeeldweergave
+CollectionFilter: Collectiefilter
+Details: Details
 # Features page
 Geometry: geometrie
 Prev: Vorige

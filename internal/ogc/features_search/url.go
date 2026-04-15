@@ -25,10 +25,11 @@ const (
 var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+\]`)
 
-	// matches & (AND), | (OR), ! (NOT), and <-> (FOLLOWED BY).
-	searchOperatorsRegex = regexp.MustCompile(`&|\||!|<->`)
-	// matches ' (apostrophe), ( (left parenthesis), and ) (right parenthesis).
-	searchDiscardCharactersRegex = regexp.MustCompile(`'|\(|\)`)
+	// matches `|` (OR), `!` (NOT), and `<->` (FOLLOWED BY).
+	// Note: we do allow `&` (AND) since it can actually be part of a streetname, but ignore it later on.
+	searchOperatorsRegex = regexp.MustCompile(`\||!|<->`)
+	// matches `(` (left parenthesis), and `)` (right parenthesis).
+	searchDiscardCharactersRegex = regexp.MustCompile(`\(|\)`)
 
 	searchKnownParams = map[string]struct{}{
 		queryParam:            {},
@@ -90,13 +91,12 @@ func parseCollections(query url.Values) (d.CollectionsWithParams, error) {
 }
 
 func parseSearchTerms(query url.Values) (string, error) {
-	searchTerms := searchDiscardCharactersRegex.ReplaceAllLiteralString(strings.TrimSpace(strings.ToLower(query.Get(queryParam))), "")
+	searchTerms := searchDiscardCharactersRegex.ReplaceAllLiteralString(strings.TrimSpace(strings.ToLower(query.Get(queryParam))), " ")
 	if searchTerms == "" {
 		return "", fmt.Errorf("no search terms provided, '%s' query parameter is required", queryParam)
 	}
 	if searchOperatorsRegex.MatchString(searchTerms) {
-		return "", errors.New("provided search terms contain one ore more boolean operators " +
-			"such as & (AND), | (OR), ! (NOT) which aren't allowed")
+		return "", errors.New("provided search terms contain one ore more boolean operators which aren't allowed")
 	}
 	return searchTerms, nil
 }

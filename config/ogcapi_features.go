@@ -44,6 +44,15 @@ type OgcAPIFeatures struct {
 	// +kubebuilder:default=false
 	// +optional
 	ForceUTC bool `yaml:"forceUtc,omitempty" json:"forceUtc,omitempty"`
+
+	// SupportsNonGeoData, when set to true, enables the API to advertise and handle collections
+	// that do not contain geometric data (i.e., non-geo collections). This is useful for APIs
+	// that need to serve tabular or attribute-only data alongside traditional geospatial collections.
+	// When enabled, the geometryType for such collections will be advertised as "none".
+	//
+	// +kubebuilder:default=false
+	// +optional
+	SupportsNonGeoData bool `yaml:"supportsNonGeoData,omitempty" json:"supportsNonGeoData,omitempty"`
 }
 
 func (oaf *OgcAPIFeatures) CollectionsSRS() []string {
@@ -200,13 +209,13 @@ type FeatureProperties struct {
 	// unlisted properties are also included in API responses.
 	// +optional
 	// +kubebuilder:default=false
-	PropertiesExcludeUnknown bool `yaml:"propertiesExcludeUnknown,omitempty" json:"propertiesExcludeUnknown,omitempty" default:"false"`
+	PropertiesExcludeUnknown *bool `yaml:"propertiesExcludeUnknown,omitempty" json:"propertiesExcludeUnknown,omitempty" default:"false"`
 
 	// When true properties are returned according to the ordering specified under 'properties'. When false
 	// properties are returned in alphabetical order.
 	// +optional
 	// +kubebuilder:default=false
-	PropertiesInSpecificOrder bool `yaml:"propertiesInSpecificOrder,omitempty" json:"propertiesInSpecificOrder,omitempty" default:"false"`
+	PropertiesInSpecificOrder *bool `yaml:"propertiesInSpecificOrder,omitempty" json:"propertiesInSpecificOrder,omitempty" default:"false"`
 }
 
 // +kubebuilder:object:generate=true

@@ -50,6 +50,7 @@ func init() {
 	}
 }
 
+// TestSearch uses fake testdata (= made up locations) from fake-addresses-crs84.gpkg
 func TestSearch(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -82,7 +83,8 @@ func TestSearch(t *testing.T) {
 	// given search endpoint
 	searchEndpoint, err := NewSearch(theEngine, datasources, axisOrderBySRID,
 		"internal/ogc/features_search/testdata/rewrites.csv",
-		"internal/ogc/features_search/testdata/synonyms.csv")
+		"internal/ogc/features_search/testdata/synonyms.csv",
+		theEngine.Config.OgcAPI.FeaturesSearch.SearchSettings.MaxSynonyms)
 	require.NoError(t, err)
 
 	// run test cases
@@ -183,7 +185,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-exact-match.json",
+				body:       "internal/ogc/features_search/testdata/expected-exact-match-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -194,7 +196,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-exact-match.json",
+				body:       "internal/ogc/features_search/testdata/expected-exact-match-2.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -265,13 +267,24 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
+			name: "Search with ampersand",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Jan%20%26%20Pietstraat&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-result-with-ampersand.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Search synonym with space",
 			fields: fields{
 				url:    "http://localhost:8080/search?q=Spui Den Haag&addresses[version]=1&addresses[relevance]=0.8&limit=10&f=json",
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -282,7 +295,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space.json",
+				body:       "internal/ogc/features_search/testdata/expected-synonym-with-space-2.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -326,7 +339,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features_search/testdata/expected-frisian-street-1.json",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -337,7 +350,7 @@ func TestSearch(t *testing.T) {
 				format: "json",
 			},
 			want: want{
-				body:       "internal/ogc/features_search/testdata/expected-frisian-street.json",
+				body:       "internal/ogc/features_search/testdata/expected-frisian-street-2.json",
 				statusCode: http.StatusOK,
 			},
 		},

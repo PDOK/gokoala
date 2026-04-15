@@ -22,6 +22,13 @@ func TestToWildcardQuery(t *testing.T) {
 			expectedWildcard: "",
 		},
 		{
+			name:             "filter ampersand",
+			words:            []string{"ampersand", "&", "input"},
+			withoutSynonyms:  map[string]struct{}{"ampersand": {}, "input": {}},
+			withSynonyms:     map[string][]string{},
+			expectedWildcard: "ampersand:* & input:*",
+		},
+		{
 			name:             "single word without synonym",
 			words:            []string{"foo"},
 			withoutSynonyms:  map[string]struct{}{"foo": {}},

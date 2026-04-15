@@ -7,3 +7,4 @@ create schema bag_temporal;
 create schema external_fid;
 create schema nullemptygeoms;
 create schema roads;
+create schema cql;

@@ -36,7 +36,7 @@ ogcApi:
           - address_street
           - address_postal
           - address_place
-        displayNameTemplate: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
+        displayNameExample: "{{ .address_street | firstupper  }} {{ .address_postal}} {{ .address_place }}"
         collectionRefs:
           - api: https://example.com/ogc/v1
             collection: addresses
@@ -55,7 +55,7 @@ ogcApi:
         fields:
           - street
           - place
-        displayNameTemplate: "{{ .street | firstupper  }} {{ .place }}"
+        displayNameExample: "{{ .street | firstupper  }} {{ .place }}"
         collectionRefs:
           - api: https://example.com/ogc/v1
             collection: buildings

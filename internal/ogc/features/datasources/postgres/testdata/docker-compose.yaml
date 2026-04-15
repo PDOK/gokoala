@@ -18,6 +18,8 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 5s
       retries: 30
+    networks:
+      - postgres-network
 
   # import geopackages into postgres, and execute extra SQL (note: we do this in one 'init' container
   # since testcontainers currently doesn't handle multiple short-lived containers well).
@@ -97,6 +99,12 @@ services:
           -lco FID=fid \
           /testdata/roads.gpkg
 
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=cql \
+          -lco FID=fid \
+          /cql/cql.gpkg
+
         echo "DONE import GeoPackages in Postgres"
         echo "START creating indexes"
 
@@ -116,3 +124,10 @@ services:
     volumes:
       - ../../geopackage/testdata:/testdata
       - ../../../../../../examples:/examples
+      - ../../../cql/testdata:/cql
+    networks:
+      - postgres-network
+
+networks:
+  postgres-network:
+    driver: bridge

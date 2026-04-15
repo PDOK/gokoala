@@ -9,17 +9,31 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
+
+// CQL-to-SpatiaLite function mapping.
+var spatialFunctions = map[string]string{
+	"S_INTERSECTS": "ST_Intersects",
+	"S_DISJOINT":   "ST_Disjoint",
+	"S_TOUCHES":    "ST_Touches",
+	"S_WITHIN":     "ST_Within",
+	"S_OVERLAPS":   "ST_Overlaps",
+	"S_CROSSES":    "ST_Crosses",
+	"S_CONTAINS":   "ST_Contains",
+	"S_EQUALS":     "ST_Equals",
+}
 
 // GeoPackageListener converts OGC CQL2 Text to GeoPackage-compatible SQL (= SQLite/Spatialite compatible).
 type GeoPackageListener struct {
 	*CommonListener
 }
 
-func NewGeoPackageListener(randomizer util.Randomizer, queryables []string) *GeoPackageListener {
+func NewGeoPackageListener(randomizer util.Randomizer, queryables []string, srid domain.SRID) *GeoPackageListener {
 	return &GeoPackageListener{&CommonListener{
 		stack:       types.NewStack(),
 		namedParams: make(map[string]any),
+		srid:        srid,
 		randomizer:  randomizer,
 		queryables:  queryables,
 	}}
@@ -60,8 +74,205 @@ func (l *GeoPackageListener) ExitBooleanFactor(ctx *parser.BooleanFactorContext)
 func (l *GeoPackageListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryComparisonPredicateContext) {
 	right := l.stack.Pop()
 	left := l.stack.Pop()
-	op := ctx.ComparisonOperator().GetText()
-	l.stack.Push(fmt.Sprintf("%s %s %s", left, op, right))
+	operator := ctx.ComparisonOperator().GetText()
+	l.stack.Push(fmt.Sprintf("%s %s %s", left, operator, right))
+}
+
+// ExitIsLikePredicate Comparison expressions (LIKE, NOT LIKE)
+func (l *GeoPackageListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateContext) {
+	pattern := l.stack.Pop()
+	expr := l.stack.Pop()
+
+	if !l.hasWildcard(pattern, geopackage.NamedParamSymbolSqlx) {
+		l.errorListener.Error("LIKE pattern is missing wildcard symbol. " +
+			"Either percentage '%' to match multiple characters or underscore '_' to " +
+			"match a single character can be used as a wildcard symbol. For example: LIKE 'foo%'.")
+		return
+	}
+
+	operator := "LIKE"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+	l.stack.Push(fmt.Sprintf("%s %s %s", expr, operator, pattern))
+}
+
+// ExitIsBetweenPredicate Comparison expressions (BETWEEN, NOT BETWEEN)
+func (l *GeoPackageListener) ExitIsBetweenPredicate(ctx *parser.IsBetweenPredicateContext) {
+	high := l.stack.Pop()
+	low := l.stack.Pop()
+	expr := l.stack.Pop()
+
+	operator := "BETWEEN"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+	l.stack.Push(fmt.Sprintf("%s %s %s AND %s", expr, operator, low, high))
+}
+
+// ExitIsInListPredicate Comparison expressions (IN, NOT IN)
+func (l *GeoPackageListener) ExitIsInListPredicate(ctx *parser.IsInListPredicateContext) {
+	count := len(ctx.AllScalarExpression())
+	if count > 1 {
+		items := l.stack.PopMany(count - 1)
+		expr := l.stack.Pop()
+
+		operator := "IN"
+		if ctx.NOT() != nil {
+			operator = "NOT " + operator
+		}
+		l.stack.Push(fmt.Sprintf("%s %s (%s)", expr, operator, strings.Join(items, ", ")))
+	}
+}
+
+// ExitIsNullPredicate Comparison expressions (IS NULL, IS NOT NULL)
+func (l *GeoPackageListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateContext) {
+	expr := l.stack.Pop()
+
+	operator := "IS NULL"
+	if ctx.NOT() != nil {
+		operator = "IS NOT NULL"
+	}
+	l.stack.Push(fmt.Sprintf("%s %s", expr, operator))
+}
+
+// ExitSpatialPredicate Spatial expression (S_INTERSECTS, S_CONTAINS, etc.)
+func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateContext) {
+	right := l.stack.Pop()
+	left := l.stack.Pop()
+
+	cqlFunction := strings.ToUpper(ctx.SpatialFunction().GetText())
+	sqlFunction, ok := spatialFunctions[cqlFunction]
+	if !ok {
+		l.errorListener.Error(fmt.Sprintf("spatial function '%s' is not supported", cqlFunction))
+		return
+	}
+
+	l.stack.Push(fmt.Sprintf("%s(CastAutomagic(%s), %s)", sqlFunction, left, right))
+}
+
+// ExitSpatialInstance Spatial instances other than bounding boxes
+func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceContext) {
+	if ctx.Bbox() != nil {
+		return // handled by ExitBbox()
+	}
+
+	wkt := l.stack.Pop()
+	if wkt != "" {
+		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+
+		l.namedParams[withoutSymbol] = wkt
+		l.stack.Push(fmt.Sprintf("ST_GeomFromText(%s, %d)", withSymbol, l.srid.GetOrDefault()))
+	}
+}
+
+// ExitBbox Bounding box (BBOX) spatial instance
+func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
+	toNamedParam := func(coord string) string {
+		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+		parsedCoord, err := parseNumber(coord)
+		if err != nil {
+			l.errorListener.Error(err.Error())
+			return ""
+		}
+		l.namedParams[withoutSymbol] = parsedCoord
+		return withSymbol
+	}
+
+	west := toNamedParam(ctx.WestBoundLon().GetText())
+	south := toNamedParam(ctx.SouthBoundLat().GetText())
+	east := toNamedParam(ctx.EastBoundLon().GetText())
+	north := toNamedParam(ctx.NorthBoundLat().GetText())
+
+	l.stack.Push(fmt.Sprintf("BuildMbr(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault()))
+}
+
+// ExitCoordinate Spatial coordinate
+func (l *GeoPackageListener) ExitCoordinate(ctx *parser.CoordinateContext) {
+	y := ctx.YCoord().GetText()
+	x := ctx.XCoord().GetText()
+	coordinate := x + " " + y
+
+	if ctx.ZCoord() != nil {
+		coordinate += " " + ctx.ZCoord().GetText()
+	}
+	l.stack.Push(coordinate)
+}
+
+// ExitPoint Handle POINT Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitPoint(ctx *parser.PointContext) {
+	wktType := ctx.POINT().GetText()
+	coordinate := l.stack.Pop()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, coordinate))
+}
+
+// ExitLinestring Handle LINESTRING Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitLinestring(ctx *parser.LinestringContext) {
+	wktType := ctx.LINESTRING().GetText()
+	coordinates := l.stack.Pop()
+	l.stack.Push(wktType + coordinates)
+}
+
+// ExitLinestringDef Handle LINESTRING coordinates
+func (l *GeoPackageListener) ExitLinestringDef(ctx *parser.LinestringDefContext) {
+	count := len(ctx.AllCoordinate())
+	coordinates := l.stack.PopMany(count)
+	l.stack.Push("(" + strings.Join(coordinates, ", ") + ")")
+}
+
+// ExitPolygon Handle POLYGON Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitPolygon(ctx *parser.PolygonContext) {
+	wktType := ctx.POLYGON().GetText()
+	coordinates := l.stack.Pop()
+	l.stack.Push(wktType + coordinates)
+}
+
+// ExitPolygonDef Handle POLYGON coordinates
+func (l *GeoPackageListener) ExitPolygonDef(ctx *parser.PolygonDefContext) {
+	count := len(ctx.AllLinestringDef())
+	coordinates := l.stack.PopMany(count)
+	l.stack.Push("(" + strings.Join(coordinates, ", ") + ")")
+}
+
+// ExitMultiPoint Handle MULTIPOINT Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitMultiPoint(ctx *parser.MultiPointContext) {
+	count := len(ctx.AllMultiPointDef())
+	coordinates := l.stack.PopMany(count)
+	wktType := ctx.MULTIPOINT().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitMultiPointDef Handle MULTIPOINT coordinates
+func (l *GeoPackageListener) ExitMultiPointDef(ctx *parser.MultiPointDefContext) {
+	if ctx.LEFTPAREN() != nil {
+		// handle alternative notation for MULTIPOINT. The one with extra parentheses.
+		coordinate := l.stack.Pop()
+		l.stack.Push("(" + coordinate + ")")
+	}
+}
+
+// ExitMultiLinestring Handle MULTILINESTRING Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitMultiLinestring(ctx *parser.MultiLinestringContext) {
+	count := len(ctx.AllLinestringDef())
+	coordinates := l.stack.PopMany(count)
+	wktType := ctx.MULTILINESTRING().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitMultiPolygon Handle MULTIPOLYGON Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitMultiPolygon(ctx *parser.MultiPolygonContext) {
+	count := len(ctx.AllPolygonDef())
+	coordinates := l.stack.PopMany(count)
+	wktType := ctx.MULTIPOLYGON().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitGeometryCollection Handle GEOMETRYCOLLECTION Well-Known Text (WKT) literal
+func (l *GeoPackageListener) ExitGeometryCollection(ctx *parser.GeometryCollectionContext) {
+	count := len(ctx.AllGeometryLiteral())
+	literals := l.stack.PopMany(count)
+	wktType := ctx.GEOMETRYCOLLECTION().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(literals, ", ")))
 }
 
 // ExitPropertyName Handle column names
@@ -69,9 +280,12 @@ func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()
 	if !l.allowAllQueryables() && !slices.Contains(l.queryables, name) {
 		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
-		l.errorListener.ListenerError(err)
+		l.errorListener.Error(err)
 		return
 	}
+
+	// escape named param symbol, since it can also appear in property names
+	name = strings.ReplaceAll(name, geopackage.NamedParamSymbolSqlx, geopackage.NamedParamSymbolSqlxEscaped)
 
 	// add quotes around column names if not already present
 	if !strings.HasPrefix(name, "\"") {
@@ -97,7 +311,7 @@ func (l *GeoPackageListener) ExitNumericLiteral(ctx *parser.NumericLiteralContex
 
 		num, err := parseNumber(ctx.GetText())
 		if err != nil {
-			l.errorListener.ListenerError(err.Error())
+			l.errorListener.Error(err.Error())
 			return
 		}
 

@@ -29,7 +29,8 @@ const (
 	sqliteDriverName = "sqlite3_with_extensions"
 
 	// NamedParamSymbolSqlx https://jmoiron.github.io/sqlx/#namedParams
-	NamedParamSymbolSqlx = ":"
+	NamedParamSymbolSqlx        = ":"
+	NamedParamSymbolSqlxEscaped = "::"
 )
 
 var once sync.Once
@@ -370,7 +371,7 @@ func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, cri
 
 	bboxQuery := fmt.Sprintf(`
 with
-     given_bbox as (select geomfromtext(:bboxWkt, :bboxSrid)),
+     given_bbox as (select st_geomfromtext(:bboxWkt, :bboxSrid)),
      bbox_size as (select iif(count(id) < %[3]d, 'small', 'big') as bbox_size
                      from (select id from rtree_%[1]s_%[4]s
                            where minx <= :maxx and maxx >= :minx and miny <= :maxy and maxy >= :miny

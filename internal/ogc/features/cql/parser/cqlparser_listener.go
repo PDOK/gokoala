@@ -103,6 +103,9 @@ type CqlParserListener interface {
 	// EnterMultiPoint is called when entering the multiPoint production.
 	EnterMultiPoint(c *MultiPointContext)
 
+	// EnterMultiPointDef is called when entering the multiPointDef production.
+	EnterMultiPointDef(c *MultiPointDefContext)
+
 	// EnterMultiLinestring is called when entering the multiLinestring production.
 	EnterMultiLinestring(c *MultiLinestringContext)
 
@@ -282,6 +285,9 @@ type CqlParserListener interface {
 
 	// ExitMultiPoint is called when exiting the multiPoint production.
 	ExitMultiPoint(c *MultiPointContext)
+
+	// ExitMultiPointDef is called when exiting the multiPointDef production.
+	ExitMultiPointDef(c *MultiPointDefContext)
 
 	// ExitMultiLinestring is called when exiting the multiLinestring production.
 	ExitMultiLinestring(c *MultiLinestringContext)

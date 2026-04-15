@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=Branbuorren"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=Branbuorren"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=Branbuorren"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "collection_geometry_type": "POINT",
+        "collection_id": "addresses",
+        "collection_version": 1,
+        "display_name": "Brânbuorren 2 9131EE Ie",
+        "highlight": "<b>Brânbuorren</b> 2 9131EE Ie",
+        "href": [
+          "https://example.com/ogc/v1/collections/addresses/items/160?f=json"
+        ],
+        "score": 0.834782600402832
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.79281,
+          53.05091
+        ]
+      },
+      "id": "160"
+    }
+  ],
+  "numberReturned": 1
+}

@@ -364,7 +364,7 @@ func TestFeature(t *testing.T) {
 			},
 		},
 		{
-			name: "Request non-spatial feature (Attribute JSON)",
+			name: "Request non-spatial feature (NonGeo JSON)",
 			fields: fields{
 				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_attributes.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
@@ -378,7 +378,7 @@ func TestFeature(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on request for non-spatial feature (Attribute JSON) in geo format (e.g JSON-FG)",
+			name: "Fail on request for non-spatial feature (NonGeo JSON) in geo format (e.g JSON-FG)",
 			fields: fields{
 				configFiles:  []string{"internal/ogc/features/testdata/geopackage/config_attributes.yaml"},
 				url:          "http://localhost:8080/collections/:collectionId/items/:featureId?f=jsonfg",
@@ -388,7 +388,7 @@ func TestFeature(t *testing.T) {
 			},
 			want: want{
 				body:       "",
-				statusCode: http.StatusNotAcceptable,
+				statusCode: http.StatusBadRequest,
 			},
 		},
 	}

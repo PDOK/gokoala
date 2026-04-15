@@ -6,19 +6,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/search?f=json"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=json&limit=10&q=Akenbuurt+1"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/search?f=jsonfg"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=jsonfg&limit=10&q=Akenbuurt+1"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/search?f=html"
+      "href": "http://localhost:8080/search?addresses%5Brelevance%5D=0.8&addresses%5Bversion%5D=1&f=html&limit=10&q=Akenbuurt+1"
     }
   ],
   "features": [
@@ -29,11 +29,11 @@
         "collection_id": "addresses",
         "collection_version": 1,
         "display_name": "Akenbuurt 1 1791PJ Den Burg",
-        "highlight": "<b>Akenbuurt</b> <b>1</b> <b>1791PJ</b>",
+        "highlight": "<b>Akenbuurt</b> <b>1</b> <b>1791PJ</b> Den Burg",
         "href": [
           "https://example.com/ogc/v1/collections/addresses/items/27?f=json"
         ],
-        "score": 0.23083121776580812
+        "score": 0.8296296119689942
       },
       "geometry": {
         "type": "Point",
@@ -51,11 +51,11 @@
         "collection_id": "addresses",
         "collection_version": 1,
         "display_name": "Akenbuurt 1a 1791PJ Den Burg",
-        "highlight": "<b>Akenbuurt</b> <b>1a</b> <b>1791PJ</b>",
+        "highlight": "<b>Akenbuurt</b> <b>1a</b> <b>1791PJ</b> Den Burg",
         "href": [
           "https://example.com/ogc/v1/collections/addresses/items/28?f=json"
         ],
-        "score": 0.05770780444145203
+        "score": 0.8285714149475099
       },
       "geometry": {
         "type": "Point",

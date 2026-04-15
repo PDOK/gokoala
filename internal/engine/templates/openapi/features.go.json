@@ -21,12 +21,23 @@
         "description": "Fetch features of the feature collection with id `{{ $coll.ID }}`.\n\nEvery feature in a dataset belongs to a collection. A dataset may\nconsist of multiple feature collections. A feature collection is often a\ncollection of features of a similar type, based on a common schema.\n\nUse content negotiation to request HTML or GeoJSON.",
         "operationId": "{{ $coll.ID }}.getFeatures",
         "parameters": [
+          {{- $geomType := "undefined" -}}
+          {{- if and $.Params $.Params.CollectionTypes -}}
+            {{- $geomType = $.Params.CollectionTypes.GetGeometryType $coll.ID -}}
+          {{- end -}}
+          {{- if eq $geomType "none" -}}
+          {
+            "$ref": "#/components/parameters/f-features_nongeo"
+          },
+          {{ else }}
           {
             "$ref": "#/components/parameters/f-features"
           },
+          {{ end }}
           {
             "$ref": "#/components/parameters/limit"
           },
+          {{- if ne $geomType "none" -}}
           {
             "$ref": "#/components/parameters/crs"
           },
@@ -36,6 +47,7 @@
           {
             "$ref": "#/components/parameters/bbox-crs"
           },
+          {{ end }}
           {{ if and $coll.Metadata $coll.Metadata.TemporalProperties}}
           {
             "$ref": "#/components/parameters/datetime"
@@ -81,10 +93,6 @@
           {{ end }}
         ],
         "responses": {
-          {{- $collType := "undefined" -}}
-          {{- if and $.Params $.Params.CollectionTypes -}}
-            {{- $collType = $.Params.CollectionTypes.Get $coll.ID -}}
-          {{- end -}}
           "200": {
             "description": "The response is a document consisting of features in the collection.\nThe features included in the response are determined by the server\nbased on the query parameters of the request. To support access to\nlarger collections without overloading the client, the API supports\npaged access with links to the next page, if more features are selected\nthat the page size.\n\nThe `bbox` and `datetime` parameter can be used to select only a\nsubset of the features in the collection (the features that are in the\nbounding box or time interval). The `bbox` parameter matches all features\nin the collection that are not associated with a location, too. The\n`datetime` parameter matches all features in the collection that are\nnot associated with a time stamp or interval, too.\n\nThe `limit` parameter may be used to control the subset of the\nselected features that should be returned in the response, the page size.\nEach page may include links to support paging (link relation `next`).",
             "headers": {
@@ -98,22 +106,19 @@
               {{block "headers" . }}{{end}}
             },
             "content": {
-              {{- if eq $collType "features" -}}
               "application/geo+json": {
                 "schema": {
+                  {{- if ne $geomType "none" -}}
                   "$ref": "#/components/schemas/featureCollectionGeoJSON_{{ $coll.ID }}"
+                  {{- else -}}
+                  "$ref": "#/components/schemas/featureCollectionNonGeoJSON_{{ $coll.ID }}"
+                  {{- end -}}
                 }
               },
+              {{- if ne $geomType "none" -}}
               "application/vnd.ogc.fg+json": {
                 "schema": {
                   "$ref": "#/components/schemas/featureCollectionJSONFG_{{ $coll.ID }}"
-                }
-              },
-              {{- end -}}
-              {{ if eq $collType "attributes" }}
-              "application/json": {
-                "schema": {
-                    "$ref": "#/components/schemas/featureCollectionJSON_{{ $coll.ID }}"
                 }
               },
               {{- end -}}
@@ -146,12 +151,18 @@
               "type": "string"
             }
           },
+          {{- if eq $geomType "none" -}}
+          {
+            "$ref": "#/components/parameters/f-features_nongeo"
+          },
+          {{ else }}
           {
             "$ref": "#/components/parameters/f-features"
           },
           {
             "$ref": "#/components/parameters/crs"
           },
+          {{ end }}
           {
             "$ref": "#/components/parameters/profile"
           }
@@ -170,23 +181,20 @@
               {{block "headers" . }}{{end}}
             },
             "content": {
-              {{- if eq $collType "features" -}}
               "application/geo+json": {
                 "schema": {
+                  {{- if ne $geomType "none" -}}
                   "$ref": "#/components/schemas/featureGeoJSON_{{ $coll.ID }}"
+                  {{- else -}}
+                  "$ref": "#/components/schemas/featureNonGeoJSON_{{ $coll.ID }}"
+                  {{- end -}}
                 }
               },
+              {{- if ne $geomType "none" -}}
               "application/vnd.ogc.fg+json": {
                 "schema": {
                   "$ref": "#/components/schemas/featureJSONFG_{{ $coll.ID }}"
                 }
-              },
-              {{- end -}}
-              {{ if eq $collType "attributes" }}
-              "application/json": {
-                "schema": {
-                   "$ref": "#/components/schemas/featureJSON_{{ $coll.ID }}"
-                 }
               },
               {{- end -}}
               "text/html": {
@@ -338,7 +346,7 @@
       ,
       {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
       {{- if $index -}},{{- end -}}
-      "featureCollectionJSON_{{ $coll.ID }}": {
+      "featureCollectionNonGeoJSON_{{ $coll.ID }}": {
         "required": [
           "features",
           "type"
@@ -354,7 +362,7 @@
           "features": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/featureJSON_{{ $coll.ID }}"
+              "$ref": "#/components/schemas/featureNonGeoJSON_{{ $coll.ID }}"
             }
           },
           "links": {
@@ -500,7 +508,7 @@
       ,
       {{- range $index, $coll := .Config.OgcAPI.Features.Collections -}}
       {{- if $index -}},{{- end -}}
-      "featureJSON_{{ $coll.ID }}": {
+      "featureNonGeoJSON_{{ $coll.ID }}": {
         "required": [
           "properties",
           "type"
@@ -1092,6 +1100,22 @@
           "enum": [
             "json",
             "jsonfg",
+            "html"
+          ],
+          "type": "string"
+        },
+        "style": "form"
+      },
+      "f-features_nongeo": {
+        "description": "The optional f parameter indicates the output format that the server shall provide as part of the response document.  The default format is JSON.",
+        "explode": false,
+        "in": "query",
+        "name": "f",
+        "required": false,
+        "schema": {
+          "default": "json",
+          "enum": [
+            "json",
             "html"
           ],
           "type": "string"

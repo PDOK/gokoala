@@ -236,31 +236,33 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r."+searchGeomColumn, "r."+searchBboxColumn)
+	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r."+searchGeomColumn)
 	if err != nil {
 		return nil, err
 	}
 	sql := makeSearchQuery(criteria.Settings.IndexName, bboxFilter, axisOrder)
 	wildcardQuery := criteria.SearchQuery.ToWildcardQuery()
 	exactMatchQuery := criteria.SearchQuery.ToExactMatchQuery(criteria.Settings.SynonymsExactMatch)
+	untokenizedQuery := criteria.SearchQuery.ToUntokenizedQuery()
 	names, versions, relevance := collections.NamesAndVersionsAndRelevance()
 	log.Printf("\nSEARCH QUERY (wildcard): %s\n", wildcardQuery)
 
 	// Create query params
 	namedParams := map[string]any{
-		"lm":              criteria.Limit,
-		"wildcardquery":   wildcardQuery,
-		"exactmatchquery": exactMatchQuery,
-		"names":           names,
-		"versions":        versions,
-		"relevance":       relevance,
-		"rn":              criteria.Settings.RankNormalization,
-		"emm":             criteria.Settings.ExactMatchMultiplier,
-		"psm":             criteria.Settings.PrimarySuggestMultiplier,
-		"rt":              criteria.Settings.RankThreshold,
-		"prlm":            criteria.Settings.PreRankLimitMultiplier,
-		"prwcc":           criteria.Settings.PreRankWordCountCutoff,
-		"outputSrid":      criteria.OutputSRID.GetOrDefault(),
+		"lm":               criteria.Limit,
+		"wildcardquery":    wildcardQuery,
+		"exactmatchquery":  exactMatchQuery,
+		"untokenizedquery": untokenizedQuery,
+		"names":            names,
+		"versions":         versions,
+		"relevance":        relevance,
+		"rn":               criteria.Settings.RankNormalization,
+		"emm":              criteria.Settings.ExactMatchMultiplier,
+		"psm":              criteria.Settings.PrimarySuggestMultiplier,
+		"rt":               criteria.Settings.RankThreshold,
+		"prlm":             criteria.Settings.PreRankLimitMultiplier,
+		"prwcc":            criteria.Settings.PreRankWordCountCutoff,
+		"outputSrid":       criteria.OutputSRID.GetOrDefault(),
 	}
 	maps.Copy(namedParams, bboxQueryArgs)
 
@@ -311,7 +313,7 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 	var bboxNamedParams map[string]any
 	if criteria.Bbox != nil {
 		var err error
-		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, "")
+		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)
 		if err != nil {
 			return "", nil, err
 		}
@@ -355,7 +357,10 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	query_exact AS (
 		SELECT to_tsquery('custom_dict', @exactmatchquery) query
 	),
-	results AS NOT MATERIALIZED ( -- the results query is called twice, materializing it results in a non optimal query plan for one of the calls
+	query_untokenized AS (
+		SELECT @untokenizedquery query
+	),
+	results AS NOT MATERIALIZED ( -- the results query is called multiple times, materializing it results in a non-optimal query plan for one of the calls
 		SELECT
 			r.display_name,
 			r.feature_id,
@@ -366,26 +371,27 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 			r.bbox,
 			r.geometry,
 			r.suggest,
-			r.ts
+			r.ts,
+			array_length(string_to_array(r.suggest, ' '), 1) AS suggest_word_count
 		FROM
 			%[1]s r
 		WHERE
-			r.ts @@ (SELECT query FROM query_wildcard) AND (r.collection_id, r.collection_version) IN (
-				-- make a virtual table by creating tuples from the provided arrays.
+			r.ts @@ (SELECT query FROM query_wildcard) 
+		    AND (r.collection_id, r.collection_version) IN (
+				-- match pairs of collection_id/version with the given names and versions.
 				SELECT * FROM unnest(@names::text[], @versions::int[])
 			)
+		    AND r.collection_id = ANY(@names::text[])        -- only required to force partition pruning
+            AND r.collection_version = ANY(@versions::int[]) -- only required to force partition pruning
 		%[4]s -- bounding box intersect filter
 	),
-	results_count AS (
-	    SELECT
-	    	COUNT(*) c
-	    FROM (
-	        SELECT
-				r.feature_id
-	        FROM
-				results r
-	        LIMIT @rt
-	    ) as rc
+    rank_threshold_exceed AS (
+		SELECT EXISTS (
+			SELECT 1 
+			FROM results r 
+			OFFSET @rt 
+			LIMIT 1
+		) AS is_exceeded
 	)
 	SELECT
 	    rn.display_name,
@@ -416,7 +422,15 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 			SELECT
 				u.*,
 				CASE WHEN u.display_name = u.suggest THEN (
-					ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm * @psm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)
+					-- if display_name starts with exact search query string, rank it higher to emphasize word order.
+					-- rank shorter display_name higher ('Road 1' should be ranked before 'Road 1A')
+					CASE WHEN lower(unaccent(u.display_name)) like (SELECT query||'%%' from query_untokenized) THEN (
+						1 + (1.0 / length(u.display_name))
+					)
+					ELSE (
+						ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm * @psm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)
+					)
+					END	
 				) * rel.relevance
 				ELSE (
 					ts_rank_cd(u.ts, (SELECT query FROM query_exact), @rn) * @emm + ts_rank_cd(u.ts, (SELECT query FROM query_wildcard), @rn)
@@ -431,21 +445,34 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 					FROM
 						results r
 					WHERE
-						-- less then rank threshold results don't need to be pre-ranked, they can be ranked based on score
-						CASE WHEN (SELECT c from results_count) < @rt THEN 1 = 1 END
+						-- less than rank-threshold results don't need to be pre-ranked, they can be ranked based on score
+						CASE WHEN NOT (SELECT is_exceeded from rank_threshold_exceed) THEN 1 = 1 END
 				) UNION ALL (
 					SELECT
 						*
 					FROM
 						results r
 					WHERE
-						-- pre-rank more then rank threshold results by ordering on suggest length and display_name
-						CASE WHEN (SELECT c from results_count) = @rt THEN 1 = 1 END AND
-						array_length(string_to_array(r.suggest, ' '), 1) <= @prwcc
+					    -- pre-rank results that exceed rank-threshold by ordering on suggest length and display_name.
+						-- this case is relevant with input below the limit given in the @prwcc param, such as 'amst' when searching for 'amsterdam'. 
+						CASE WHEN (SELECT is_exceeded from rank_threshold_exceed) THEN 1 = 1 END
+						AND r.suggest_word_count <= @prwcc
 					ORDER BY
-						array_length(string_to_array(r.suggest, ' '), 1) ASC,
+						-- order by the number of words in the suggest string, up to the limit given in @prwcc
+						r.suggest_word_count ASC,
 						r.display_name COLLATE "custom_numeric" ASC
-					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on scor
+					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on score
+				) UNION ALL (
+					SELECT
+						*
+					FROM
+						results r
+					WHERE
+						-- handle remaining results.
+						-- this case is relevant with input such as 'mainstreet' which have lots of results but go beyond the limit given in the @prwcc param.
+						CASE WHEN (SELECT is_exceeded from rank_threshold_exceed) THEN 1 = 1 END
+						AND r.suggest_word_count >= @prwcc
+					LIMIT (@lm::int * @prlm::int) -- return limited pre-ranked results for ranking based on score
 				)
 			) u
 			LEFT JOIN
@@ -461,21 +488,14 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use named params for user input!
 }
 
-func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string, bboxColumn string) (string, map[string]any, error) {
+func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, map[string]any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxNamedParams map[string]any
 	var err error
 	if bbox != nil {
-		if bboxColumn == "" {
-			bboxFilter = fmt.Sprintf(`and
+		bboxFilter = fmt.Sprintf(`and
 				st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int))
 			`, geomColumn)
-		} else {
-			bboxFilter = fmt.Sprintf(`and
-				(st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int)) or
-				st_intersects(st_transform(%[2]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int)))
-			`, geomColumn, bboxColumn)
-		}
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
 			return "", nil, err
