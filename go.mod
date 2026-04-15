@@ -1,6 +1,11 @@
 module github.com/PDOK/gokoala
 
-go 1.26.0
+// Ideally we use the latest version of Go. But since the 'config' package is also used as a library we
+// need to take downstream consumers in mind which may not yet be able to upgrade. In that case the go
+// and toolchain versions in go.mod may differ.
+go 1.25.5
+
+toolchain go1.26.1
 
 require (
 	dario.cat/mergo v1.0.2
