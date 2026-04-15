@@ -134,10 +134,12 @@ func DetermineAxisOrder(datasources map[DatasourceKey]ds.Datasource) map[int]dom
 		mu.Unlock()
 
 		if !exists {
+			wg.Add(1)
 
 			// use goroutine to avoid blocking on GetAxisOrder(). The mutex is necessary
 			// to avoid race conditions on the map.
-			wg.Go(func() {
+			go func() {
+				defer wg.Done()
 
 				axisOrder, err := proj.GetAxisOrder(domain.SRID(key.srid))
 				if err != nil {
@@ -149,7 +151,7 @@ func DetermineAxisOrder(datasources map[DatasourceKey]ds.Datasource) map[int]dom
 				mu.Lock()
 				order[key.srid] = axisOrder
 				mu.Unlock()
-			})
+			}()
 		}
 	}
 	wg.Wait()

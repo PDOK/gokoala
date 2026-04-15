@@ -141,8 +141,8 @@ func TestAllCollections(t *testing.T) {
 				OgcAPI: OgcAPI{
 					Features: &OgcAPIFeatures{
 						Collections: []FeaturesCollection{
-							{ID: "b", Metadata: &GeoSpatialCollectionMetadata{Title: new("Z Title")}},
-							{ID: "a", Metadata: &GeoSpatialCollectionMetadata{Title: new("A Title")}},
+							{ID: "b", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("Z Title")}},
+							{ID: "a", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("A Title")}},
 						},
 					},
 				},
@@ -353,7 +353,7 @@ func TestCacheDir(t *testing.T) {
 			gc: GeoPackageCloud{
 				File: "test.gpkg",
 				Cache: GeoPackageCloudCache{
-					Path: new("/tmp"),
+					Path: ptrTo("/tmp"),
 				},
 			},
 			wantErr: false,
@@ -391,9 +391,9 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 			coll: &GeoVolumesCollection{
 				ID: "test i",
 				Metadata: &GeoSpatialCollectionMetadata{
-					Description: new("test d"),
+					Description: ptrTo("test d"),
 				},
-				TileServerPath: new("test p"),
+				TileServerPath: ptrTo("test p"),
 			},
 			// language=json
 			want:    `{"id": "test i", "metadata": {"description": "test d"}, "tileServerPath":  "test p"}`,
@@ -629,6 +629,10 @@ func TestFeaturesCollection_MarshalUnmarshal_YAML(t *testing.T) {
 	assert.Equal(t, in.Properties, out.Properties)
 	assert.Equal(t, in.PropertiesExcludeUnknown, out.PropertiesExcludeUnknown)
 	assert.Equal(t, in.PropertiesInSpecificOrder, out.PropertiesInSpecificOrder)
+}
+
+func ptrTo[T any](val T) *T {
+	return &val
 }
 
 func Map[T, V any](collection []T, fn func(T) V) []V {

@@ -3,7 +3,6 @@ package engine
 import (
 	htmltemplate "html/template"
 	"log"
-	"maps"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -49,7 +48,9 @@ func init() {
 func combineFuncMaps(funcMaps ...map[string]any) map[string]any {
 	result := make(map[string]any)
 	for _, funcMap := range funcMaps {
-		maps.Copy(result, funcMap)
+		for k, v := range funcMap {
+			result[k] = v
+		}
 	}
 
 	return result
@@ -177,7 +178,7 @@ func hasField(structRef any, fieldName string) bool {
 	v := reflect.ValueOf(structRef)
 
 	// If it's a pointer, get the element it points to
-	if v.Kind() == reflect.Pointer {
+	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
 	if v.Kind() != reflect.Struct {

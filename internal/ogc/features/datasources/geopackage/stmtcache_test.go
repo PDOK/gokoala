@@ -50,15 +50,17 @@ func TestPreparedStatementCache(t *testing.T) {
 
 		// Run multiple goroutines that will access the cache concurrently.
 		for range 25 {
-			wg.Go(func() {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
 				stmt1, err := c.Lookup(t.Context(), db, "SELECT * FROM main.sqlite_master WHERE name = :n")
-				require.NoError(t, err)
+				assert.NoError(t, err)
 				assert.NotNil(t, stmt1)
 
 				stmt2, err := c.Lookup(t.Context(), db, "SELECT * FROM main.sqlite_master WHERE type = :t")
-				require.NoError(t, err)
+				assert.NoError(t, err)
 				assert.NotNil(t, stmt2)
-			})
+			}()
 		}
 		wg.Wait() // Wait for all goroutines to finish.
 
