@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"maps"
 	"net/url"
 	"os"
 	"slices"
@@ -233,9 +234,7 @@ func (f featureURL) validateNoUnknownParams() error {
 
 func clone(params url.Values) url.Values {
 	copyParams := url.Values{}
-	for k, v := range params {
-		copyParams[k] = v
-	}
+	maps.Copy(copyParams, params)
 
 	return copyParams
 }

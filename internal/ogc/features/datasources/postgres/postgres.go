@@ -383,7 +383,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 			)
 		    AND r.collection_id = ANY(@names::text[])        -- only required to force partition pruning
             AND r.collection_version = ANY(@versions::int[]) -- only required to force partition pruning
-		%[4]s -- bounding box intersect filter
+		%[4]s -- optional bounding box intersect filter
 	),
     rank_threshold_exceed AS (
 		SELECT EXISTS (
