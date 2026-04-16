@@ -206,10 +206,8 @@ func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema d
 
 	var listener cql.Listener
 
-	queryables := make([]string, 0) // TODO: fill with properties that are allowed to be used in CQL query. For now add ALL properties.
-	for _, field := range schema.Fields {
-		queryables = append(queryables, field.Name)
-	}
+	queryables := make([]domain.Field, 0, len(schema.Fields))
+	queryables = append(queryables, schema.Fields...) // TODO: fill with properties that are allowed to be used in CQL query. For now add ALL properties.
 
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:

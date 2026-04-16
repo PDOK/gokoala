@@ -5,18 +5,19 @@ import (
 	"unicode/utf8"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
 )
 
 // Test to make sure the parser doesn't crash on invalid input.
 // Run with: go test -fuzz=Fuzz -fuzztime=10s -run=^$
 func FuzzParseToSQL(f *testing.F) {
-	queryables := []string{
-		"floors",
-		"swimming_pool",
-		"updated",
-		"geometry",
-		"event_time",
+	queryables := []domain.Field{
+		{Name: "floors"},
+		{Name: "swimming_pool"},
+		{Name: "updated"},
+		{Name: "geometry", IsPrimaryGeometry: true},
+		{Name: "event_time"},
 		// 'created' is not a queryable
 	}
 

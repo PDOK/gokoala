@@ -2,7 +2,6 @@ package cql
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/PDOK/gokoala/internal/engine/types"
@@ -29,7 +28,7 @@ type GeoPackageListener struct {
 	*CommonListener
 }
 
-func NewGeoPackageListener(randomizer util.Randomizer, queryables []string, srid domain.SRID) *GeoPackageListener {
+func NewGeoPackageListener(randomizer util.Randomizer, queryables []domain.Field, srid domain.SRID) *GeoPackageListener {
 	return &GeoPackageListener{&CommonListener{
 		stack:       types.NewStack(),
 		namedParams: make(map[string]any),
@@ -140,6 +139,23 @@ func (l *GeoPackageListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateCont
 func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateContext) {
 	right := l.stack.Pop()
 	left := l.stack.Pop()
+	if left != fmt.Sprintf("\"%s\"", domain.GeomFieldName) {
+		l.errorListener.Error(fmt.Sprintf("spatial filtering is only supported on field '%s'", domain.GeomFieldName))
+		return
+	}
+
+	var geomColumn string
+	for _, q := range l.queryables {
+		if q.IsPrimaryGeometry {
+			geomColumn = q.Name
+			break
+		}
+	}
+	if geomColumn == "" {
+		l.errorListener.Error("spatial filtering is not supported for this " +
+			"collection since there is no geometry field available")
+		return
+	}
 
 	cqlFunction := strings.ToUpper(ctx.SpatialFunction().GetText())
 	sqlFunction, ok := spatialFunctions[cqlFunction]
@@ -148,7 +164,7 @@ func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCo
 		return
 	}
 
-	l.stack.Push(fmt.Sprintf("%s(CastAutomagic(%s), %s)", sqlFunction, left, right))
+	l.stack.Push(fmt.Sprintf("%s(CastAutomagic(\"%s\"), %s)", sqlFunction, geomColumn, right))
 }
 
 // ExitSpatialInstance Spatial instances other than bounding boxes
@@ -294,7 +310,7 @@ func (l *GeoPackageListener) ExitGeometryCollection(ctx *parser.GeometryCollecti
 // ExitPropertyName Handle column names
 func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()
-	if !l.allowAllQueryables() && !slices.Contains(l.queryables, name) {
+	if !l.allowAllQueryables() && !l.isQueryable(name) {
 		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
 		l.errorListener.Error(err)
 		return

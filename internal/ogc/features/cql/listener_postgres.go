@@ -14,7 +14,7 @@ type PostgresListener struct {
 	*CommonListener
 }
 
-func NewPostgresListener(randomizer util.Randomizer, queryables []string, srid domain.SRID) *PostgresListener {
+func NewPostgresListener(randomizer util.Randomizer, queryables []domain.Field, srid domain.SRID) *PostgresListener {
 	return &PostgresListener{&CommonListener{
 		stack:       types.NewStack(),
 		namedParams: make(map[string]any),
