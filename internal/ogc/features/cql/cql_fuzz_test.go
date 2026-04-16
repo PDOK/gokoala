@@ -7,6 +7,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Test to make sure the parser doesn't crash on invalid input.
@@ -35,18 +36,17 @@ func FuzzParseToSQL(f *testing.F) {
 	}
 	f.Fuzz(func(t *testing.T, input string) {
 		// when
-		result, _, err := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
+		result, err := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
 
 		// then
-		assert.Truef(t, utf8.ValidString(result), "valid string")
-		if err == nil {
-			assert.NotNil(t, result)
+		if err == nil && result != nil {
+			assert.Truef(t, utf8.ValidString(result.SQL), "valid string")
 
 			// validate idempotency
-			result2, _, err2 := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
+			result2, err2 := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
 			if err2 != nil {
-				assert.NotNil(t, result)
-				assert.Equal(t, result, result2)
+				require.NotNil(t, result)
+				assert.Equal(t, result.SQL, result2.SQL)
 			}
 		}
 	})

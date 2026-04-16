@@ -15,10 +15,11 @@ func TestNoop(t *testing.T) {
 	expectedSQL := ""
 
 	// when
-	actualSQL, params, err := ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, []domain.Field{}, 0))
+	actual, err := ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, []domain.Field{}, 0))
 
 	// then
 	require.NoError(t, err)
-	assert.Empty(t, params)
-	assert.Equal(t, expectedSQL, actualSQL)
+	require.NotNil(t, actual)
+	assert.Empty(t, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
 }
