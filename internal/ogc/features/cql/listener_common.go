@@ -25,7 +25,7 @@ type CommonListener struct {
 	namedParams map[string]any
 
 	// queryables the list of allowed columns in the datasource that can be queried.
-	queryables []string
+	queryables []domain.Field
 
 	// srid the filter spatial reference identifier (SRID).
 	srid domain.SRID
@@ -65,7 +65,16 @@ RETRY:
 
 func (cl *CommonListener) allowAllQueryables() bool {
 	log.Println("WARNING: using '*' as queryable, this is not recommended")
-	return len(cl.queryables) == 1 && cl.queryables[0] == "*"
+	return len(cl.queryables) == 1 && cl.queryables[0].Name == "*"
+}
+
+func (l *GeoPackageListener) isQueryable(name string) bool {
+	for _, q := range l.queryables {
+		if q.Name == name || q.IsPrimaryGeometry {
+			return true
+		}
+	}
+	return false
 }
 
 // hasWildcard checks if a pattern contains a SQL wildcard: % or _.

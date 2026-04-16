@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
@@ -39,7 +40,7 @@ func TestInvalidBooleanQuery(t *testing.T) {
 	inputCQL := "prop1 ==== 1 AND prop2 !!= 5"
 
 	// when
-	_, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []string{}, 0))
+	_, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []domain.Field{}, 0))
 
 	// then
 	require.ErrorContains(t, err, "syntax error at column 7: mismatched input '=' expecting ")
@@ -49,7 +50,7 @@ func TestInvalidBooleanQuery(t *testing.T) {
 
 func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
 	// given
-	queryables := []string{"prop1"}
+	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 = 30 AND prop2 > 77"
 
 	// when
@@ -61,7 +62,7 @@ func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
 
 func TestPreventSQLInjectionAttack(t *testing.T) {
 	// given
-	queryables := []string{"prop1"}
+	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 > 5 OR 1 = 1"
 	expectedSQL := "(\"prop1\" > :cql_bcde OR :cql_fghi = :cql_jklm)"
 
@@ -77,7 +78,7 @@ func TestPreventSQLInjectionAttack(t *testing.T) {
 
 func TestPreventSQLInjectionAttackAdvanced(t *testing.T) {
 	// given
-	queryables := []string{"prop5"}
+	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "prop5 = 'Square';DROP TABLE cql"
 
 	// when
@@ -89,7 +90,7 @@ func TestPreventSQLInjectionAttackAdvanced(t *testing.T) {
 
 func TestBooleanQueryWithNumbers(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 = 10 AND prop2 < 5"
 	expectedSQL := "(\"prop1\" = :cql_bcde AND \"prop2\" < :cql_fghi)"
 
@@ -106,7 +107,7 @@ func TestBooleanQueryWithNumbers(t *testing.T) {
 func TestAllSimpleComparisionOperators(t *testing.T) {
 	// given
 	operators := []string{"=", "<", ">", "<=", ">=", "<>"} // note '!=' is not valid CQL, but '<>' is used by CQL.
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 
 	for _, operator := range operators {
 		t.Run(operator, func(t *testing.T) {
@@ -125,7 +126,7 @@ func TestAllSimpleComparisionOperators(t *testing.T) {
 
 func TestMultipleBooleanQueries(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = 10 OR prop1 = 20) AND NOT (prop2 = 'X')"
 	expectedSQL := "((\"prop1\" = :cql_bcde OR \"prop1\" = :cql_fghi) AND NOT (\"prop2\" = :cql_jklm))"
 
@@ -141,7 +142,7 @@ func TestMultipleBooleanQueries(t *testing.T) {
 
 func TestBooleanTrueLiteral(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = true AND prop2 = 20)"
 	expectedSQL := "(\"prop1\" = 1 AND \"prop2\" = :cql_bcde)"
 
@@ -157,7 +158,7 @@ func TestBooleanTrueLiteral(t *testing.T) {
 
 func TestBooleanFalseLiteral(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = false AND prop2 = 20)"
 	expectedSQL := "(\"prop1\" = 0 AND \"prop2\" = :cql_bcde)"
 
@@ -173,7 +174,7 @@ func TestBooleanFalseLiteral(t *testing.T) {
 
 func TestMultipleBooleanQueriesWithStrings(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2", "prop3"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "(prop1 = 'foo' AND prop2 = 'bar') OR prop3 = 'abc'"
 	expectedSQL := "((\"prop1\" = :cql_bcde AND \"prop2\" = :cql_fghi) OR \"prop3\" = :cql_jklm)"
 
@@ -189,7 +190,7 @@ func TestMultipleBooleanQueriesWithStrings(t *testing.T) {
 
 func TestLikeOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2", "prop3"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "prop1 LIKE 'foo%' AND prop2 LIKE 'bar_' OR prop3 LIKE '%abc'"
 	expectedSQL := "((\"prop1\" LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
 
@@ -205,7 +206,7 @@ func TestLikeOperator(t *testing.T) {
 
 func TestNotLikeOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2", "prop3"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "prop1 NOT LIKE 'foo%' AND prop2 LIKE 'bar_' OR prop3 LIKE '%abc'"
 	expectedSQL := "((\"prop1\" NOT LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
 
@@ -221,7 +222,7 @@ func TestNotLikeOperator(t *testing.T) {
 
 func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
 	// given
-	queryables := []string{"prop1"}
+	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 LIKE 'foo'"
 
 	// when
@@ -235,7 +236,7 @@ func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
 
 func TestBetweenOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 BETWEEN 4 AND 6 AND prop2 = 'bar'"
 	expectedSQL := "(\"prop1\" BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
 
@@ -251,7 +252,7 @@ func TestBetweenOperator(t *testing.T) {
 
 func TestNotBetweenOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 NOT BETWEEN 4 AND 6 AND prop2 = 'bar'"
 	expectedSQL := "(\"prop1\" NOT BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
 
@@ -267,7 +268,7 @@ func TestNotBetweenOperator(t *testing.T) {
 
 func TestInListOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IN ('foo', 'bar', 'baz') AND prop2 = 'baz'"
 	expectedSQL := "(\"prop1\" IN (:cql_bcde, :cql_fghi, :cql_jklm) AND \"prop2\" = :cql_nopq)"
 
@@ -283,7 +284,7 @@ func TestInListOperator(t *testing.T) {
 
 func TestNotInListOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 NOT IN ('foo', 'bar', 'baz') AND prop2 = 'baz'"
 	expectedSQL := "(\"prop1\" NOT IN (:cql_bcde, :cql_fghi, :cql_jklm) AND \"prop2\" = :cql_nopq)"
 
@@ -299,7 +300,7 @@ func TestNotInListOperator(t *testing.T) {
 
 func TestIsNullOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IS NULL AND prop2 = 'baz'"
 	expectedSQL := "(\"prop1\" IS NULL AND \"prop2\" = :cql_bcde)"
 
@@ -315,7 +316,7 @@ func TestIsNullOperator(t *testing.T) {
 
 func TestIsNotNullOperator(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IS NOT NULL AND prop2 = 'baz'"
 	expectedSQL := "(\"prop1\" IS NOT NULL AND \"prop2\" = :cql_bcde)"
 
@@ -331,7 +332,7 @@ func TestIsNotNullOperator(t *testing.T) {
 
 func TestFailOnInvalidInListQuery(t *testing.T) {
 	// given
-	queryables := []string{"prop1", "prop2"}
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IN ('foo', 'bar' 'baz')"
 
 	// when
@@ -343,8 +344,8 @@ func TestFailOnInvalidInListQuery(t *testing.T) {
 
 func TestSpatialQueryWithPoint(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, POINT(4.897 52.377))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, POINT(4.897 52.377))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -358,8 +359,8 @@ func TestSpatialQueryWithPoint(t *testing.T) {
 
 func TestSpatialQueryWithPoint3D(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, POINTZ(4.897 52.377 10.0))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, POINTZ(4.897 52.377 10.0))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -373,8 +374,8 @@ func TestSpatialQueryWithPoint3D(t *testing.T) {
 
 func TestSpatialQueryWithLinestring(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, LINESTRING(0.0 0.0, 1.0 1.0, 2.0 0.0))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, LINESTRING(0.0 0.0, 1.0 1.0, 2.0 0.0))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -388,8 +389,8 @@ func TestSpatialQueryWithLinestring(t *testing.T) {
 
 func TestSpatialQueryWithPolygon(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, POLYGON((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, POLYGON((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 28992))"
 
 	// when
@@ -403,8 +404,8 @@ func TestSpatialQueryWithPolygon(t *testing.T) {
 
 func TestSpatialQueryWithPolygonWithHole(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, POLYGON((0.0 0.0, 10.0 0.0, 10.0 10.0, 0.0 10.0, 0.0 0.0),(2.0 2.0, 8.0 2.0, 8.0 8.0, 2.0 8.0, 2.0 2.0)))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, POLYGON((0.0 0.0, 10.0 0.0, 10.0 10.0, 0.0 10.0, 0.0 0.0),(2.0 2.0, 8.0 2.0, 8.0 8.0, 2.0 8.0, 2.0 2.0)))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -418,8 +419,8 @@ func TestSpatialQueryWithPolygonWithHole(t *testing.T) {
 
 func TestSpatialQueryWithMultiPoint(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, MULTIPOINT(0.0 0.0, 1.0 1.0))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, MULTIPOINT(0.0 0.0, 1.0 1.0))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -433,8 +434,8 @@ func TestSpatialQueryWithMultiPoint(t *testing.T) {
 
 func TestSpatialQueryWithMultiLinestring(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, MULTILINESTRING((0.0 0.0, 1.0 1.0),(2.0 2.0, 3.0 3.0)))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, MULTILINESTRING((0.0 0.0, 1.0 1.0),(2.0 2.0, 3.0 3.0)))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -448,8 +449,8 @@ func TestSpatialQueryWithMultiLinestring(t *testing.T) {
 
 func TestSpatialQueryWithMultiPolygon(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)),((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)),((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -463,8 +464,8 @@ func TestSpatialQueryWithMultiPolygon(t *testing.T) {
 
 func TestSpatialQueryWithGeometryCollection(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 	// when
@@ -478,8 +479,8 @@ func TestSpatialQueryWithGeometryCollection(t *testing.T) {
 
 func TestSpatialQueryWithBbox(t *testing.T) {
 	// given
-	queryables := []string{"geom"}
-	inputCQL := "S_INTERSECTS(geom, BBOX(10.0, 20.1, 30.0, 40.0))"
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 20.1, 30.0, 40.0))"
 	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))"
 
 	// when
@@ -493,8 +494,8 @@ func TestSpatialQueryWithBbox(t *testing.T) {
 
 func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
 	// given
-	queryables := []string{"geom", "prop1"}
-	inputCQL := "prop1 = 'foo' AND S_INTERSECTS(geom, POINT(4.897 52.377))"
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "geom", IsPrimaryGeometry: true}}
+	inputCQL := "prop1 = 'foo' AND S_INTERSECTS(geometry, POINT(4.897 52.377))"
 	expectedSQL := "(\"prop1\" = :cql_bcde AND ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_fghi, 4326)))"
 
 	// when
@@ -507,11 +508,11 @@ func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
 }
 
 func TestSpatialQueryWithAllSpatialFunctions(t *testing.T) {
-	queryables := []string{"geom"}
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 
 	for cqlFunc, sqlFunc := range spatialFunctions {
 		t.Run(cqlFunc, func(t *testing.T) {
-			inputCQL := cqlFunc + "(geom, POINT(4.897 52.377))"
+			inputCQL := cqlFunc + "(geometry, POINT(4.897 52.377))"
 			expectedSQL := sqlFunc + "(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 			actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -524,7 +525,7 @@ func TestSpatialQueryWithAllSpatialFunctions(t *testing.T) {
 }
 
 func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
-	queryables := []string{"geom"}
+	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	wkts := []string{
 		"POINT(10 20)",
 		"POINT (10 20)",
@@ -566,7 +567,7 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 
 	for _, wkt := range wkts {
 		t.Run(wkt, func(t *testing.T) {
-			inputCQL := "S_INTERSECTS(geom, " + wkt + ")"
+			inputCQL := "S_INTERSECTS(geometry, " + wkt + ")"
 			expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 			actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
@@ -601,7 +602,7 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 			require.NotEmpty(t, inputCQL)
 			log.Printf("Parsing CQL: %s", inputCQL)
 
-			queryables := []string{"*"} // allow all
+			queryables := []domain.Field{{Name: "*"}} // allow all
 			actualSQL, params, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
 
 			require.NoError(t, err)
