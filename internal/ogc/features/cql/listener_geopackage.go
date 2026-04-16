@@ -179,9 +179,25 @@ func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
 		return withSymbol
 	}
 
+	if ctx.WestBoundLon() == nil {
+		l.errorListener.Error("missing west bound coordinate (minx) in bounding box")
+		return
+	}
 	west := toNamedParam(ctx.WestBoundLon().GetText())
+	if ctx.SouthBoundLat() == nil {
+		l.errorListener.Error("missing south bound coordinate (miny) in bounding box")
+		return
+	}
 	south := toNamedParam(ctx.SouthBoundLat().GetText())
+	if ctx.EastBoundLon() == nil {
+		l.errorListener.Error("missing east bound coordinate (maxx) in bounding box")
+		return
+	}
 	east := toNamedParam(ctx.EastBoundLon().GetText())
+	if ctx.NorthBoundLat() == nil {
+		l.errorListener.Error("missing north bound coordinate (maxy) in bounding box")
+		return
+	}
 	north := toNamedParam(ctx.NorthBoundLat().GetText())
 
 	l.stack.Push(fmt.Sprintf("BuildMbr(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault()))
