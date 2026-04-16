@@ -139,8 +139,8 @@ func (l *GeoPackageListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateCont
 func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateContext) {
 	right := l.stack.Pop()
 	left := l.stack.Pop()
-	if left != fmt.Sprintf("\"%s\"", domain.GeomFieldName) {
-		l.errorListener.Error(fmt.Sprintf("spatial filtering is only supported on field '%s'", domain.GeomFieldName))
+	if left != fmt.Sprintf("\"%s\"", domain.GeomPropertyName) {
+		l.errorListener.Error(fmt.Sprintf("spatial filtering is only supported on property '%s'", domain.GeomPropertyName))
 		return
 	}
 
