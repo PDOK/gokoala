@@ -75,9 +75,108 @@ var (
 			EnvVars:  []string{strcase.ToScreamingSnake(dbPasswordFlag)},
 		},
 	}
+
+	createIndexFlags = []cli.Flag{
+		commonDBFlags[dbHostFlag],
+		commonDBFlags[dbPortFlag],
+		commonDBFlags[dbNameFlag],
+		commonDBFlags[dbUsernameFlag],
+		commonDBFlags[dbPasswordFlag],
+		commonDBFlags[dbSslModeFlag],
+		&cli.PathFlag{
+			Name:     searchIndexFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+			Usage:    "Name of search index to create",
+			Required: false,
+			Value:    "search_index",
+		},
+		&cli.StringFlag{
+			Name:     languageFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(languageFlag)},
+			Usage:    "What language will predominantly be used in the search index. Specify as a BCP 47 tag, like 'en', 'nl', 'de'",
+			Required: false,
+			Value:    "nl",
+		},
+		&cli.IntFlag{
+			Name:     sridFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
+			Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage its bbox should be in the same SRID.",
+			Required: false,
+			Value:    28992,
+		},
+	}
+
+	getRevisionFlags = []cli.Flag{
+		commonDBFlags[dbHostFlag],
+		commonDBFlags[dbPortFlag],
+		commonDBFlags[dbNameFlag],
+		commonDBFlags[dbUsernameFlag],
+		commonDBFlags[dbPasswordFlag],
+		commonDBFlags[dbSslModeFlag],
+		&cli.PathFlag{
+			Name:     searchIndexFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+			Usage:    "Name of search index",
+			Required: false,
+			Value:    "search_index",
+		},
+		&cli.StringFlag{
+			Name:     collectionIDFlag,
+			Usage:    "ID/name of the collection in the search index to get the revision of",
+			Required: true,
+			EnvVars:  []string{strcase.ToScreamingSnake(collectionIDFlag)},
+		},
+	}
+
+	importFileFlags = []cli.Flag{
+		commonDBFlags[dbHostFlag],
+		commonDBFlags[dbPortFlag],
+		commonDBFlags[dbNameFlag],
+		commonDBFlags[dbUsernameFlag],
+		commonDBFlags[dbPasswordFlag],
+		commonDBFlags[dbSslModeFlag],
+		&cli.StringFlag{
+			Name:     configFileFlag,
+			Usage:    "Reference to YAML configuration file",
+			Required: true,
+			EnvVars:  []string{strcase.ToScreamingSnake(configFileFlag)},
+		},
+		&cli.StringFlag{
+			Name:     revisionFlag,
+			Usage:    "Revision number of the data in the collection, should be a UUID",
+			Required: true,
+			EnvVars:  []string{strcase.ToScreamingSnake(revisionFlag)},
+		},
+		&cli.PathFlag{
+			Name:     searchIndexFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
+			Usage:    "Name of search index in which to import the given file",
+			Required: false,
+			Value:    "search_index",
+		},
+		&cli.PathFlag{
+			Name:     fileFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(fileFlag)},
+			Usage:    "Path to (e.g GeoPackage) file to import",
+			Required: true,
+		},
+		&cli.IntFlag{
+			Name:     pageSizeFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(pageSizeFlag)},
+			Usage:    "Page/batch size to use when extracting records from file",
+			Required: false,
+			Value:    10000,
+		},
+		&cli.BoolFlag{
+			Name:     skipOptimizeFlag,
+			EnvVars:  []string{strcase.ToScreamingSnake(skipOptimizeFlag)},
+			Usage:    "Skip running VACUUM ANALYZE on the search index after import",
+			Required: false,
+			Value:    false,
+		},
+	}
 )
 
-//nolint:funlen
 func main() {
 	app := cli.NewApp()
 	app.Name = appName
@@ -87,35 +186,7 @@ func main() {
 		{
 			Name:  "create-search-index",
 			Usage: "Create an empty search index in the database",
-			Flags: []cli.Flag{
-				commonDBFlags[dbHostFlag],
-				commonDBFlags[dbPortFlag],
-				commonDBFlags[dbNameFlag],
-				commonDBFlags[dbUsernameFlag],
-				commonDBFlags[dbPasswordFlag],
-				commonDBFlags[dbSslModeFlag],
-				&cli.PathFlag{
-					Name:     searchIndexFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
-					Usage:    "Name of search index to create",
-					Required: false,
-					Value:    "search_index",
-				},
-				&cli.StringFlag{
-					Name:     languageFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(languageFlag)},
-					Usage:    "What language will predominantly be used in the search index. Specify as a BCP 47 tag, like 'en', 'nl', 'de'",
-					Required: false,
-					Value:    "nl",
-				},
-				&cli.IntFlag{
-					Name:     sridFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(sridFlag)},
-					Usage:    "SRID search-index bbox column, e.g. 28992 (RD) or 4326 (WSG84). The source geopackage its bbox should be in the same SRID.",
-					Required: false,
-					Value:    28992,
-				},
-			},
+			Flags: createIndexFlags,
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
 				lang, err := language.Parse(c.String(languageFlag))
@@ -128,27 +199,7 @@ func main() {
 		{
 			Name:  "get-revision",
 			Usage: "Get the revision (UUID) of a collection in the search index",
-			Flags: []cli.Flag{
-				commonDBFlags[dbHostFlag],
-				commonDBFlags[dbPortFlag],
-				commonDBFlags[dbNameFlag],
-				commonDBFlags[dbUsernameFlag],
-				commonDBFlags[dbPasswordFlag],
-				commonDBFlags[dbSslModeFlag],
-				&cli.PathFlag{
-					Name:     searchIndexFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
-					Usage:    "Name of search index",
-					Required: false,
-					Value:    "search_index",
-				},
-				&cli.StringFlag{
-					Name:     collectionIDFlag,
-					Usage:    "ID/name of the collection in the search index to get the revision of",
-					Required: true,
-					EnvVars:  []string{strcase.ToScreamingSnake(collectionIDFlag)},
-				},
-			},
+			Flags: getRevisionFlags,
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
 				revision, err := etl.GetRevision(dbConn, c.String(collectionIDFlag), c.String(searchIndexFlag))
@@ -159,53 +210,7 @@ func main() {
 		{
 			Name:  "import-file",
 			Usage: "Import a file (e.g. GeoPackage) into the search index",
-			Flags: []cli.Flag{
-				commonDBFlags[dbHostFlag],
-				commonDBFlags[dbPortFlag],
-				commonDBFlags[dbNameFlag],
-				commonDBFlags[dbUsernameFlag],
-				commonDBFlags[dbPasswordFlag],
-				commonDBFlags[dbSslModeFlag],
-				&cli.StringFlag{
-					Name:     configFileFlag,
-					Usage:    "Reference to YAML configuration file",
-					Required: true,
-					EnvVars:  []string{strcase.ToScreamingSnake(configFileFlag)},
-				},
-				&cli.StringFlag{
-					Name:     revisionFlag,
-					Usage:    "Revision number of the data in the collection, should be a UUID",
-					Required: true,
-					EnvVars:  []string{strcase.ToScreamingSnake(revisionFlag)},
-				},
-				&cli.PathFlag{
-					Name:     searchIndexFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(searchIndexFlag)},
-					Usage:    "Name of search index in which to import the given file",
-					Required: false,
-					Value:    "search_index",
-				},
-				&cli.PathFlag{
-					Name:     fileFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(fileFlag)},
-					Usage:    "Path to (e.g GeoPackage) file to import",
-					Required: true,
-				},
-				&cli.IntFlag{
-					Name:     pageSizeFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(pageSizeFlag)},
-					Usage:    "Page/batch size to use when extracting records from file",
-					Required: false,
-					Value:    10000,
-				},
-				&cli.BoolFlag{
-					Name:     skipOptimizeFlag,
-					EnvVars:  []string{strcase.ToScreamingSnake(skipOptimizeFlag)},
-					Usage:    "Skip running VACUUM ANALYZE on the search index after import",
-					Required: false,
-					Value:    false,
-				},
-			},
+			Flags: importFileFlags,
 			Action: func(c *cli.Context) error {
 				dbConn := flagsToDBConnStr(c)
 				cfg, err := config.NewConfig(c.Path(configFileFlag))
