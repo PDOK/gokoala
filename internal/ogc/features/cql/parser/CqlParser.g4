@@ -239,14 +239,14 @@ temporalClause: instantInstance | interval;
 
 instantInstance: DATE LEFTPAREN DateString RIGHTPAREN
                | TIMESTAMP LEFTPAREN TimestampString RIGHTPAREN
-               | NOW LEFTPAREN RIGHTPAREN; // NOW() is a CQL2 extension
+               | LEFTPAREN RIGHTPAREN;
 
 interval: INTERVAL LEFTPAREN intervalParameter COMMA intervalParameter RIGHTPAREN;
 
 intervalParameter: propertyName
                  | DateString
                  | TimestampString
-                 | NOW LEFTPAREN RIGHTPAREN // NOW() is a CQL2 extension
+                 | LEFTPAREN RIGHTPAREN
                  | DotDotString
                  | function;
 

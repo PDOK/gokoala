@@ -361,9 +361,6 @@ Sign : PLUS | MINUS;
 #=============================================================================#
 */
 
-
-NOW : N O W; // NOW is a CQL2 extension
-
 DATE : D A T E;
 
 TIMESTAMP : T I M E S T A M P;

@@ -325,6 +325,76 @@ func (l *GeoPackageListener) ExitGeometryCollection(ctx *parser.GeometryCollecti
 	l.stack.Push(fmt.Sprintf("%s(%s)", wktType, strings.Join(literals, ", ")))
 }
 
+// ExitTemporalPredicate Temporal predicates (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, etc)
+func (l *GeoPackageListener) ExitTemporalPredicate(ctx *parser.TemporalPredicateContext) {
+	second := l.stack.Pop()
+	first := l.stack.Pop()
+
+	splitTemporalInterval := func(s string) (start, end string) {
+		if idx := strings.Index(s, temporalIntervalSeparator); idx >= 0 {
+			// split into start and end
+			return s[:idx], s[idx+(len(temporalIntervalSeparator)):]
+		}
+		return s, s // not an interval but an instant
+	}
+	firstStart, firstEnd := splitTemporalInterval(first)
+	secondStart, secondEnd := splitTemporalInterval(second)
+
+	cqlFunction := strings.ToUpper(ctx.TemporalFunction().GetText())
+	switch cqlFunction {
+	case "T_AFTER":
+		l.temporalAfter(firstStart, secondEnd)
+	case "T_BEFORE":
+		l.temporalBefore(firstEnd, secondStart)
+	case "T_EQUALS":
+		l.temporalEquals(firstStart, firstEnd, secondStart, secondEnd)
+	// TODO: add more operators
+	default:
+		l.errorListener.Error(fmt.Sprintf("temporal function '%s' is not supported", cqlFunction))
+		return
+	}
+}
+
+// ExitInterval encodes INTERVAL(start, end) so ExitTemporalPredicate can split it.
+func (l *GeoPackageListener) ExitInterval(_ *parser.IntervalContext) {
+	end := l.stack.Pop()
+	start := l.stack.Pop()
+	l.stack.Push(start + temporalIntervalSeparator + end)
+}
+
+// ExitIntervalParameter handles INTERVAL().
+func (l *GeoPackageListener) ExitIntervalParameter(ctx *parser.IntervalParameterContext) {
+	if ctx.PropertyName() != nil || ctx.Function() != nil {
+		return
+	}
+
+	// two dots ".." represent an unbounded temporal interval (ISO 8601-2)
+	// See https://docs.ogc.org/is/21-065r2/21-065r2.html#_temporal_data_types_and_instances
+	if ctx.DotDotString() != nil {
+		l.stack.Push(temporalIntervalUnbounded)
+		return
+	}
+
+	// handle DATE() and TIMESTAMP(). Note we currently don't perform
+	// any type casts (https://docs.ogc.org/is/21-065r2/21-065r2.html#_type_casts)
+	if ctx.DateString() != nil {
+		l.addTemporalLiteral(ctx.DateString().GetText(), geopackage.NamedParamSymbolSqlx)
+	} else if ctx.TimestampString() != nil {
+		l.addTemporalLiteral(ctx.TimestampString().GetText(), geopackage.NamedParamSymbolSqlx)
+	}
+}
+
+// ExitInstantInstance handles DATE() and TIMESTAMP().
+func (l *GeoPackageListener) ExitInstantInstance(ctx *parser.InstantInstanceContext) {
+	// handle DATE() and TIMESTAMP(). Note we currently don't perform
+	// any type casts (https://docs.ogc.org/is/21-065r2/21-065r2.html#_type_casts)
+	if ctx.DATE() != nil {
+		l.addTemporalLiteral(ctx.DateString().GetText(), geopackage.NamedParamSymbolSqlx)
+	} else if ctx.TIMESTAMP() != nil {
+		l.addTemporalLiteral(ctx.TimestampString().GetText(), geopackage.NamedParamSymbolSqlx)
+	}
+}
+
 // ExitPropertyName Handle column names
 func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()
