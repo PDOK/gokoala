@@ -218,10 +218,17 @@ func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema d
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}
 
-	sql, params, err := cql.ParseToSQL(cqlFilter, listener)
-	if sql != "" {
-		// make SQL filter appendable to the existing WHERE clause
-		sql = "and " + sql
+	result, err := cql.ParseToSQL(cqlFilter, listener)
+	if err != nil || result == nil {
+		return ds.Part3Filter{Params: map[string]any{}}, err
 	}
-	return ds.Part3Filter{SQL: strings.ToLower(sql), Params: params}, err
+
+	// make SQL filter appendable to the existing WHERE clause
+	result.SQL = "and " + result.SQL
+
+	return ds.Part3Filter{
+		SQL:      strings.ToLower(result.SQL),
+		Params:   result.Params,
+		RtreeSQL: strings.ToLower(result.RtreeSQL),
+	}, err
 }

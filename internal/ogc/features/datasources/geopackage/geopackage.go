@@ -337,15 +337,20 @@ func (g *GeoPackage) makeDefaultQuery(table *common.Table, selectClause string, 
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, NamedParamSymbolSqlx)
 
+	if criteria.Filter.RtreeSQL != "" {
+		// when CQL filter is spatial (in other words hits the geometry column), we need to include the RTree index
+		criteria.Filter.RtreeSQL = fmt.Sprintf(criteria.Filter.RtreeSQL, table.Name, table.GeometryColumnName)
+	}
+
 	defaultQuery := fmt.Sprintf(`
 with
-    next as (select * from "%[1]s" where "%[2]s" >= :fid %[3]s %[4]s %[8]s order by %[2]s asc limit :limit + 1),
-    prev as (select * from "%[1]s" where "%[2]s" < :fid %[3]s %[4]s %[8]s order by %[2]s desc limit :limit),
+    next as (select * from "%[1]s" where "%[2]s" >= :fid %[3]s %[4]s %[8]s %[9]s order by %[2]s asc limit :limit + 1),
+    prev as (select * from "%[1]s" where "%[2]s" < :fid %[3]s %[4]s %[8]s %[9]s order by %[2]s desc limit :limit),
     nextprev as (select * from next union all select * from prev),
     nextprevfeat as (select *, lag("%[2]s", :limit) over (order by %[2]s) as %[6]s, lead("%[2]s", :limit) over (order by "%[2]s") as %[7]s from nextprev)
-select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s %[8]s limit :limit
+select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s %[8]s %[9]s limit :limit
 `, table.Name, g.FidColumn, temporalClause, pfClause, selectClause, d.PrevFid, d.NextFid,
-		criteria.Filter.SQL) // don't add user input here, use named params for user input!
+		criteria.Filter.RtreeSQL, criteria.Filter.SQL) // don't add user input here, use named params for user input!
 
 	namedParams := map[string]any{
 		"fid":   criteria.Cursor.FID,

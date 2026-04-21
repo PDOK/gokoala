@@ -3,6 +3,7 @@ package features
 import (
 	"math/rand/v2"
 	"net/url"
+	"os"
 	"testing"
 	"time"
 
@@ -588,6 +589,8 @@ func TestParseFeatures(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			_ = os.Unsetenv("ENABLE_CQL")
+
 			fc := featureCollectionURL{
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,

@@ -52,9 +52,9 @@ var geometryTypes = []string{
 
 const ArrayType = "array"
 
-// GeomFieldName for end-users the primary geometry is always called 'geometry', as per GeoJSON.
-// This field is also advertised in the schema as the primary geometry.
-const GeomFieldName = "geometry"
+// GeomPropertyName for end-users the property containing spatial data is always called 'geometry', as per GeoJSON.
+// This property is also advertised in the schema (see html/json templates) as the primary geometry.
+const GeomPropertyName = "geometry"
 
 // Schema derived from the data source schema.
 // Describes the schema of a single collection (table in the data source).

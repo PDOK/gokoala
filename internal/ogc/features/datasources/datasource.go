@@ -112,8 +112,9 @@ type FeaturesSearchCriteria struct {
 	Bbox *geom.Bounds
 }
 
-// Part3Filter OAF part 3 filter based on CQL
+// Part3Filter OAF part 3 filter based on CQL (Common Query Language).
 type Part3Filter struct {
-	SQL    string
-	Params map[string]any
+	SQL      string
+	Params   map[string]any
+	RtreeSQL string // optional
 }
