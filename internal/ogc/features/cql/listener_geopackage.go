@@ -388,9 +388,9 @@ func (l *GeoPackageListener) ExitIntervalParameter(ctx *parser.IntervalParameter
 func (l *GeoPackageListener) ExitInstantInstance(ctx *parser.InstantInstanceContext) {
 	// handle DATE() and TIMESTAMP(). Note we currently don't perform
 	// any type casts (https://docs.ogc.org/is/21-065r2/21-065r2.html#_type_casts)
-	if ctx.DATE() != nil {
+	if ctx.DateString() != nil {
 		l.addTemporalLiteral(ctx.DateString().GetText(), geopackage.NamedParamSymbolSqlx)
-	} else if ctx.TIMESTAMP() != nil {
+	} else if ctx.TimestampString() != nil {
 		l.addTemporalLiteral(ctx.TimestampString().GetText(), geopackage.NamedParamSymbolSqlx)
 	}
 }
