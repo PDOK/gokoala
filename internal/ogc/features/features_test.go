@@ -1039,6 +1039,23 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request features with temporal CQL filter: T_BEFORE and T_EQUALS",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=T_BEFORE(INTERVAL(prop5,prop9), INTERVAL('2026-03-01', '2026-03-15')) AND T_EQUALS(prop10, TIMESTAMP('2026-02-26T23:00:00Z'))",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_temporal_before_equals.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

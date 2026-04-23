@@ -640,6 +640,182 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 	}
 }
 
+func TestTemporalAfterWithDate(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_AFTER(prop5, DATE('2015-01-01'))"
+	expectedSQL := "\"prop5\" > :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2015-01-01"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalAfterWithTimestamp(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop6"}}
+	inputCQL := "T_AFTER(prop6, TIMESTAMP('2020-01-01T00:00:00Z'))"
+	expectedSQL := "\"prop6\" > :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalAfterWithInterval(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop6"}}
+	inputCQL := "T_AFTER(prop6, INTERVAL('..', '2020-01-01T00:00:00Z'))"
+	expectedSQL := "\"prop6\" > :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalAfterIntervalToInterval(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
+	inputCQL := "T_AFTER(INTERVAL(prop9, prop10), INTERVAL('2020-01-01', '2025-12-31'))"
+	expectedSQL := "\"prop9\" > :cql_fghi"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2025-12-31"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalBeforeWithDate(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_BEFORE(prop5, DATE('2027-01-01'))"
+	expectedSQL := "\"prop5\" < :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2027-01-01"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalBeforeWithTimestamp(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_BEFORE(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
+	expectedSQL := "\"prop5\" < :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalBeforeWithInterval(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_BEFORE(prop5, INTERVAL('2020-01-01T00:00:00Z', '..'))"
+	expectedSQL := "\"prop5\" < :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalEqualsWithDate(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_EQUALS(prop5, DATE('2026-02-12'))"
+	expectedSQL := "\"prop5\" = :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalEqualsWithTimestamp(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_EQUALS(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
+	expectedSQL := "\"prop5\" = :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalEqualsWithInterval(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_EQUALS(prop5, INTERVAL('2020-01-01T00:00:00Z', '2030-01-01T00:00:00Z'))"
+	expectedSQL := "(\"prop5\" = :cql_bcde AND \"prop5\" = :cql_fghi)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z", "cql_fghi": "2030-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalEqualsIntervalToInterval(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
+	inputCQL := "T_EQUALS(INTERVAL(prop9, prop10), INTERVAL('2026-02-13', '2026-02-28'))"
+	expectedSQL := "(\"prop9\" = :cql_bcde AND \"prop10\" = :cql_fghi)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-13", "cql_fghi": "2026-02-28"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
 // Test CQL examples provided by OGC.
 // See https://github.com/opengeospatial/ogcapi-features/tree/64ac2d892b877b711a4570336cb9d42e2afb4ef8/cql2/standard/schema/examples/text
 func TestCQLExamplesProvidedByOGC(t *testing.T) {

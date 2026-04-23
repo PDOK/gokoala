@@ -14,6 +14,7 @@ ogcApi:
         geopackage:
           local:
             file: ./internal/ogc/features/cql/testdata/cql.gpkg
+            queryTimeout: 10m
     collections:
       - id: cql
         metadata:
