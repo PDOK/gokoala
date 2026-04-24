@@ -816,6 +816,413 @@ func TestTemporalEqualsIntervalToInterval(t *testing.T) {
 	assertValidSQLiteQuery(t, actual)
 }
 
+func TestTemporalIntersectsWithDate(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_INTERSECTS(prop5, DATE('2026-02-12'))"
+	expectedSQL := "(\"prop5\" <= :cql_bcde AND \"prop5\" >= :cql_bcde)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalIntersectsWithTimestamp(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_INTERSECTS(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
+	expectedSQL := "(\"prop5\" <= :cql_bcde AND \"prop5\" >= :cql_bcde)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalIntersectsWithIntervalDate(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_INTERSECTS(prop5, INTERVAL('2020-01-01', '2030-01-01'))"
+	expectedSQL := "(\"prop5\" <= :cql_fghi AND \"prop5\" >= :cql_bcde)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2030-01-01"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalIntersectsWithIntervalTimestamp(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop6"}}
+	inputCQL := "T_INTERSECTS(prop6, INTERVAL('2017-06-10T07:30:00Z', '2017-06-11T10:30:00Z'))"
+	expectedSQL := "(\"prop6\" <= :cql_fghi AND \"prop6\" >= :cql_bcde)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2017-06-10T07:30:00Z", "cql_fghi": "2017-06-11T10:30:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalDisjointWithDate(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_DISJOINT(prop5, DATE('2026-02-12'))"
+	expectedSQL := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_bcde)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalDisjointWithTimestamp(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_DISJOINT(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
+	expectedSQL := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_bcde)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalDisjointWithIntervalDate(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_DISJOINT(prop5, INTERVAL('2020-01-01', '2030-01-01'))"
+	expectedSQL := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_fghi)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2030-01-01"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalIntersectsIntervalToInterval(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
+	inputCQL := "T_INTERSECTS(INTERVAL(prop9, prop10), INTERVAL('2026-01-01', '2026-12-31'))"
+	expectedSQL := "(\"prop9\" <= :cql_fghi AND \"prop10\" >= :cql_bcde)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2026-01-01", "cql_fghi": "2026-12-31"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalIntervalOperators(t *testing.T) {
+	tests := []struct {
+		name        string
+		inputCQL    string
+		expectedSQL string
+		params      map[string]any
+	}{
+		{
+			name:        "T_CONTAINS",
+			inputCQL:    "T_CONTAINS(INTERVAL(prop9, prop10), DATE('2026-02-20'))",
+			expectedSQL: "(\"prop9\" < :cql_bcde AND \"prop10\" > :cql_bcde)",
+			params:      map[string]any{"cql_bcde": "2026-02-20"},
+		},
+		{
+			name:        "T_DURING",
+			inputCQL:    "T_DURING(prop5, INTERVAL('2020-01-01', '2030-01-01'))",
+			expectedSQL: "(\"prop5\" > :cql_bcde AND \"prop5\" < :cql_fghi)",
+			params:      map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2030-01-01"},
+		},
+		{
+			name:        "T_FINISHEDBY",
+			inputCQL:    "T_FINISHEDBY(INTERVAL(prop9, prop10), INTERVAL('2026-01-01', '2026-02-28'))",
+			expectedSQL: "(\"prop9\" < :cql_bcde AND \"prop10\" = :cql_fghi)",
+			params:      map[string]any{"cql_bcde": "2026-01-01", "cql_fghi": "2026-02-28"},
+		},
+		{
+			name:        "T_FINISHES",
+			inputCQL:    "T_FINISHES(INTERVAL(prop9, prop10), INTERVAL('2026-01-01', '2026-02-28'))",
+			expectedSQL: "(\"prop9\" > :cql_bcde AND \"prop10\" = :cql_fghi)",
+			params:      map[string]any{"cql_bcde": "2026-01-01", "cql_fghi": "2026-02-28"},
+		},
+		{
+			name:        "T_MEETS",
+			inputCQL:    "T_MEETS(INTERVAL(prop9, prop10), INTERVAL('2026-03-01', '2026-12-31'))",
+			expectedSQL: "\"prop10\" = :cql_bcde",
+			params:      map[string]any{"cql_bcde": "2026-03-01", "cql_fghi": "2026-12-31"},
+		},
+		{
+			name:        "T_METBY",
+			inputCQL:    "T_METBY(INTERVAL(prop9, prop10), INTERVAL('2026-01-01', '2026-02-13'))",
+			expectedSQL: "\"prop9\" = :cql_fghi",
+			params:      map[string]any{"cql_bcde": "2026-01-01", "cql_fghi": "2026-02-13"},
+		},
+		{
+			name:        "T_OVERLAPS",
+			inputCQL:    "T_OVERLAPS(INTERVAL(prop9, prop10), INTERVAL('2026-02-20', '2026-12-31'))",
+			expectedSQL: "(\"prop9\" < :cql_bcde AND \"prop10\" > :cql_bcde AND \"prop10\" < :cql_fghi)",
+			params:      map[string]any{"cql_bcde": "2026-02-20", "cql_fghi": "2026-12-31"},
+		},
+		{
+			name:        "T_OVERLAPPEDBY",
+			inputCQL:    "T_OVERLAPPEDBY(INTERVAL(prop9, prop10), INTERVAL('2026-01-01', '2026-02-20'))",
+			expectedSQL: "(\"prop9\" > :cql_bcde AND \"prop9\" < :cql_fghi AND \"prop10\" > :cql_fghi)",
+			params:      map[string]any{"cql_bcde": "2026-01-01", "cql_fghi": "2026-02-20"},
+		},
+		{
+			name:        "T_STARTEDBY",
+			inputCQL:    "T_STARTEDBY(INTERVAL(prop9, prop10), INTERVAL('2026-02-13', '2026-02-20'))",
+			expectedSQL: "(\"prop9\" = :cql_bcde AND \"prop10\" > :cql_fghi)",
+			params:      map[string]any{"cql_bcde": "2026-02-13", "cql_fghi": "2026-02-20"},
+		},
+		{
+			name:        "T_STARTS",
+			inputCQL:    "T_STARTS(INTERVAL(prop9, prop10), INTERVAL('2026-02-13', '2026-12-31'))",
+			expectedSQL: "(\"prop9\" = :cql_bcde AND \"prop10\" < :cql_fghi)",
+			params:      map[string]any{"cql_bcde": "2026-02-13", "cql_fghi": "2026-12-31"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			queryables := []domain.Field{{Name: "prop5"}, {Name: "prop9"}, {Name: "prop10"}}
+
+			// when
+			actual, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+			// then
+			require.NoError(t, err)
+			assert.Equal(t, tt.params, actual.Params)
+			assert.Equal(t, tt.expectedSQL, actual.SQL)
+			assertValidSQLiteQuery(t, actual)
+		})
+	}
+}
+
+func TestTemporalIntervalOperatorsFailOnInstants(t *testing.T) {
+	tests := []struct {
+		name        string
+		inputCQL    string
+		expectedSQL string
+		params      map[string]any
+	}{
+		{
+			name:     "T_CONTAINS",
+			inputCQL: "T_CONTAINS(prop9, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_DURING",
+			inputCQL: "T_DURING(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_FINISHEDBY",
+			inputCQL: "T_FINISHEDBY(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_FINISHES",
+			inputCQL: "T_FINISHES(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_MEETS",
+			inputCQL: "T_MEETS(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_METBY",
+			inputCQL: "T_METBY(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_OVERLAPS",
+			inputCQL: "T_OVERLAPS(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_OVERLAPPEDBY",
+			inputCQL: "T_OVERLAPPEDBY(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_STARTEDBY",
+			inputCQL: "T_STARTEDBY(prop5, DATE('2026-02-20'))",
+		},
+		{
+			name:     "T_STARTS",
+			inputCQL: "T_STARTS(prop5, DATE('2026-02-20'))",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			queryables := []domain.Field{{Name: "prop5"}, {Name: "prop9"}, {Name: "prop10"}}
+
+			// when
+			_, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+			// then
+			assert.ErrorContains(t, err, "only allows intervals, not instants (timestamp/date)")
+		})
+	}
+}
+
+// Unbounded intervals (..) are supported, but each operator has
+// limitations on which part of the interval may be unbounded
+func TestTemporalOperatorsFailOnInvalidUnboundedIntervals(t *testing.T) {
+	tests := []struct {
+		name        string
+		inputCQL    string
+		expectedSQL string
+		params      map[string]any
+	}{
+		{
+			name:     "T_AFTER",
+			inputCQL: "T_AFTER(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_BEFORE",
+			inputCQL: "T_BEFORE(prop1, INTERVAL('..', '2026-02-13'))",
+		},
+		{
+			name:     "T_EQUALS",
+			inputCQL: "T_EQUALS(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_DISJOINT",
+			inputCQL: "T_DISJOINT(prop1, INTERVAL('..', '..'))",
+		},
+		{
+			name:     "T_INTERSECTS",
+			inputCQL: "T_INTERSECTS(prop1, INTERVAL('..', '..'))",
+		},
+		{
+			name:     "T_CONTAINS",
+			inputCQL: "T_CONTAINS(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_DURING",
+			inputCQL: "T_DURING(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_FINISHEDBY",
+			inputCQL: "T_FINISHEDBY(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_FINISHES",
+			inputCQL: "T_FINISHES(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_MEETS",
+			inputCQL: "T_MEETS(prop1, INTERVAL('..', '2026-02-13'))",
+		},
+		{
+			name:     "T_METBY",
+			inputCQL: "T_METBY(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_OVERLAPS",
+			inputCQL: "T_OVERLAPS(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_OVERLAPPEDBY",
+			inputCQL: "T_OVERLAPPEDBY(prop1, INTERVAL('2026-02-13', '..'))",
+		},
+		{
+			name:     "T_STARTEDBY",
+			inputCQL: "T_STARTEDBY(prop1, INTERVAL('..', '2026-02-13'))",
+		},
+		{
+			name:     "T_STARTS",
+			inputCQL: "T_STARTS(prop1, INTERVAL('..', '2026-02-13'))",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			queryables := []domain.Field{{Name: "prop1"}}
+
+			// when
+			_, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+			// then
+			assert.ErrorContains(t, err, "requires a second parameter, can't be unbounded")
+		})
+	}
+}
+
+func TestTemporalUnboundedIntervalAtBegin(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_INTERSECTS(prop5, INTERVAL('..', '2020-01-01'))"
+	expectedSQL := "\"prop5\" <= :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalUnboundedIntervalAtEnd(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop5"}}
+	inputCQL := "T_INTERSECTS(prop5, INTERVAL('2020-01-01', '..'))"
+	expectedSQL := "\"prop5\" >= :cql_bcde"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalAndBooleanQuery(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
+	inputCQL := "prop1 = 10 AND T_AFTER(prop5, DATE('2015-01-01'))"
+	expectedSQL := "(\"prop1\" = :cql_bcde AND \"prop5\" > :cql_fghi)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": "2015-01-01"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+	assertValidSQLiteQuery(t, actual)
+}
+
 // Test CQL examples provided by OGC.
 // See https://github.com/opengeospatial/ogcapi-features/tree/64ac2d892b877b711a4570336cb9d42e2afb4ef8/cql2/standard/schema/examples/text
 func TestCQLExamplesProvidedByOGC(t *testing.T) {
@@ -832,6 +1239,8 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 		}
 
 		t.Run(entry.Name(), func(t *testing.T) {
+			// given
+			queryables := []domain.Field{{Name: "*"}} // allow all
 			example, err := os.ReadFile(path.Join(ogcExamples, entry.Name()))
 			require.NoError(t, err)
 
@@ -839,9 +1248,10 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 			require.NotEmpty(t, inputCQL)
 			log.Printf("Parsing CQL: %s", inputCQL)
 
-			queryables := []domain.Field{{Name: "*"}} // allow all
+			// when
 			actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
 
+			// then
 			require.NoError(t, err)
 			require.NotNil(t, actual)
 			assert.NotEmpty(t, actual.SQL)

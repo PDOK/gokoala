@@ -144,8 +144,7 @@ func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCo
 	geomLiteral := l.stack.Pop()
 	geomProperty := l.stack.Pop()
 	if geomProperty != fmt.Sprintf("\"%s\"", d.GeomPropertyName) {
-		l.errorListener.Error(fmt.Sprintf(
-			"spatial filtering is only supported on property '%s'", d.GeomPropertyName))
+		l.errorListener.Errorf("spatial filtering is only supported on property '%s'", d.GeomPropertyName)
 		return
 	}
 
@@ -175,7 +174,7 @@ func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCo
 	cqlFunction := strings.ToUpper(ctx.SpatialFunction().GetText())
 	sqlFunction, ok := spatialFunctions[cqlFunction]
 	if !ok {
-		l.errorListener.Error(fmt.Sprintf("spatial function '%s' is not supported", cqlFunction))
+		l.errorListener.Errorf("spatial function '%s' is not supported", cqlFunction)
 		return
 	}
 
@@ -326,32 +325,45 @@ func (l *GeoPackageListener) ExitGeometryCollection(ctx *parser.GeometryCollecti
 }
 
 // ExitTemporalPredicate Temporal predicates (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, etc)
+//
+//nolint:cyclop
 func (l *GeoPackageListener) ExitTemporalPredicate(ctx *parser.TemporalPredicateContext) {
-	second := l.stack.Pop()
-	first := l.stack.Pop()
-
-	splitTemporalInterval := func(s string) (start, end string) {
-		if idx := strings.Index(s, temporalIntervalSeparator); idx >= 0 {
-			// split into start and end
-			return s[:idx], s[idx+(len(temporalIntervalSeparator)):]
-		}
-		return s, s // not an interval but an instant
-	}
-	firstStart, firstEnd := splitTemporalInterval(first)
-	secondStart, secondEnd := splitTemporalInterval(second)
+	firstStart, firstEnd, secondStart, secondEnd := l.popIntervalOrInstant()
 
 	cqlFunction := strings.ToUpper(ctx.TemporalFunction().GetText())
 	switch cqlFunction {
-	case "T_AFTER":
+	case T_AFTER:
 		l.temporalAfter(firstStart, secondEnd)
-	case "T_BEFORE":
+	case T_BEFORE:
 		l.temporalBefore(firstEnd, secondStart)
-	case "T_EQUALS":
+	case T_EQUALS:
 		l.temporalEquals(firstStart, firstEnd, secondStart, secondEnd)
-	// TODO: add more operators
+	case T_DISJOINT:
+		l.temporalDisjoint(firstStart, firstEnd, secondStart, secondEnd)
+	case T_INTERSECTS:
+		l.temporalIntersects(firstStart, firstEnd, secondStart, secondEnd)
+	case T_DURING:
+		l.temporalDuring(firstStart, firstEnd, secondStart, secondEnd)
+	case T_CONTAINS:
+		l.temporalContains(firstStart, firstEnd, secondStart, secondEnd)
+	case T_FINISHES:
+		l.temporalFinishes(firstStart, firstEnd, secondStart, secondEnd)
+	case T_FINISHEDBY:
+		l.temporalFinishedBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_MEETS:
+		l.temporalMeets(firstStart, firstEnd, secondStart, secondEnd)
+	case T_METBY:
+		l.temporalMetBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_OVERLAPS:
+		l.temporalOverlaps(firstStart, firstEnd, secondStart, secondEnd)
+	case T_OVERLAPPEDBY:
+		l.temporalOverlappedBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_STARTS:
+		l.temporalStarts(firstStart, firstEnd, secondStart, secondEnd)
+	case T_STARTEDBY:
+		l.temporalStartedBy(firstStart, firstEnd, secondStart, secondEnd)
 	default:
-		l.errorListener.Error(fmt.Sprintf("temporal function '%s' is not supported", cqlFunction))
-		return
+		l.errorListener.Errorf("temporal function '%s' is not supported", cqlFunction)
 	}
 }
 

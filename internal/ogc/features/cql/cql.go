@@ -76,6 +76,11 @@ func (c *ErrorListener) Error(msg string) {
 	c.parseErrors = append(c.parseErrors, fmt.Errorf("error: %s", msg))
 }
 
+// Errorf is called by our own CQL-to-SQL listeners when an error occurs.
+func (c *ErrorListener) Errorf(msg string, params ...any) {
+	c.parseErrors = append(c.parseErrors, fmt.Errorf("error: %s", fmt.Sprintf(msg, params...)))
+}
+
 // Summary returns a single error containing all encountered errors.
 func (c *ErrorListener) Summary() error {
 	err := errors.Join(c.parseErrors...)
