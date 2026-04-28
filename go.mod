@@ -9,7 +9,7 @@ toolchain go1.26.2
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/PDOK/go-cloud-sqlite-vfs v0.4.0
+	github.com/PDOK/go-cloud-sqlite-vfs v0.4.1
 	github.com/antlr4-go/antlr/v4 v4.13.1
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/go-units v0.5.0
