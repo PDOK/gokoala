@@ -36,6 +36,8 @@ jobs:
 
       - name: Unit Test
         run: |
+          set -o pipefail
+
           go test -v -race -shuffle=on \
             -coverpkg "$(go list || go list -m | head -1)/..." \
             -coverprofile cover.out.tmp \
