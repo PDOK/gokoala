@@ -396,6 +396,24 @@ func (l *GeoPackageListener) ExitIntervalParameter(ctx *parser.IntervalParameter
 	}
 }
 
+// ExitPatternExpression handles CASEI and ACCENTI.
+func (l *GeoPackageListener) ExitPatternExpression(ctx *parser.PatternExpressionContext) {
+	if ctx.CASEI() != nil {
+		l.stack.Push(l.stack.Pop() + " COLLATE NOCASE")
+	} else if ctx.ACCENTI() != nil {
+		l.stack.Push(l.stack.Pop() + " COLLATE " + geopackage.IgnoreAccentCollation)
+	}
+}
+
+// ExitCharacterClause handles CASEI and ACCENTI.
+func (l *GeoPackageListener) ExitCharacterClause(ctx *parser.CharacterClauseContext) {
+	if ctx.CASEI() != nil {
+		l.stack.Push(l.stack.Pop() + " COLLATE NOCASE")
+	} else if ctx.ACCENTI() != nil {
+		l.stack.Push(l.stack.Pop() + " COLLATE " + geopackage.IgnoreAccentCollation)
+	}
+}
+
 // ExitInstantInstance handles DATE() and TIMESTAMP().
 func (l *GeoPackageListener) ExitInstantInstance(ctx *parser.InstantInstanceContext) {
 	// handle DATE() and TIMESTAMP(). Note we currently don't perform
@@ -432,7 +450,7 @@ func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralCo
 		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
 
 		l.stack.Push(withSymbol)
-		l.namedParams[withoutSymbol] = ctx.GetText()
+		l.namedParams[withoutSymbol] = stripSingleQuotes(ctx.GetText())
 	}
 }
 
