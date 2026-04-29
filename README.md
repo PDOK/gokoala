@@ -285,16 +285,23 @@ Design principles:
 
 ### Build/run as Go application
 
-Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), [PROJ](https://proj.org/en/stable/install.html), `openssl` and `curl` are installed.
+Make sure the following native dependencies are installed on your system:
+
+- [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index)
+- [PROJ](https://proj.org/en/stable/install.html)
+- `openssl` (libssl-dev)
+- `curl` (libcurl-dev)
+- `icu` (libicu-dev)
+
 Also make sure `gcc` or similar is available since the application uses cgo.
 
-Run the following commands from the root of the project:
+Now, run the following commands from the root of the project:
 
 #### `gokoala-server` (serving OGC APIs)
 
 ```bash
 go generate ./...
-go build -o gokoala-server cmd/gokoala-server/main.go
+go build -tags "sqlite_icu sqlite_math_functions" -o gokoala-server cmd/gokoala-server/main.go
 ./gokoala-server
 ```
 
@@ -307,14 +314,16 @@ go build -o gokoala-etl cmd/gokoala-etl/main.go
 ```
 
 To troubleshoot, review the [Dockerfile](./Dockerfile) since compilation also happens there.
+
 Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn't found.
+In particular on macOS use `SPATIALITE_LIBRARY_PATH=/opt/homebrew/lib`.
 
 ### Testing
 
 To run all unit tests:
 
 ```
-go test -v -race -shuffle=on ./...
+go test -tags "sqlite_icu sqlite_math_functions" -v -race -shuffle=on ./...
 ```
 
 Optionally set `SPATIALITE_LIBRARY_PATH=/path/to/spatialite` when SpatiaLite isn't found.
@@ -334,9 +343,9 @@ build the viewer and add it to the GoKoala assets.
 Note this is only required for local development. When running GoKoala in a container this is
 already being taken care of when building the Docker container image.
 
-### IntelliJ / GoLand
+### JetBrains (IntelliJ / GoLand)
 
-- Install the [Go Template](https://plugins.jetbrains.com/plugin/10581-go-template) plugin
+- Install the [Go Template](https://plugins.jetbrains.com/plugin/10581-go-template) plugin (included in Go bundle).
 - Open `Preferences` > `Editor` > `File Types` select `Go Template files` and
   add the following file patterns:
   - `"*.go.html"`
@@ -351,6 +360,8 @@ Also:
 
 - Set import order in `Preferences` > `Editor` > `Code Style` > `Go` > `Imports`
   to `goimports` to align with VSCode and goimports usage in golangci-lint.
+- To prevent needing to specify Go build tags every time, set `Preferences` > `Go` > 
+  `Build Tags` > `Custom tags` to `sqlite_icu sqlite_math_functions`.
 
 ### VSCode
 

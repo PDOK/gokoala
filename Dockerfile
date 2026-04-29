@@ -22,6 +22,7 @@ RUN set -eux && \
     apt-get install --no-install-recommends -y  \
       libcurl4-openssl-dev=*  \
       libssl-dev=*  \
+      libicu-dev=* \
       libsqlite3-mod-spatialite=* \
       openjdk-17-jre-headless=* && \
     rm -rf /var/lib/apt/lists/*
@@ -35,12 +36,15 @@ RUN hack/build-controller-gen.sh
 # gokoala-etl
 RUN go mod download all && \
     go generate -v ./... && \
-    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala-etl github.com/PDOK/gokoala/cmd/gokoala-etl/
+    go build -v -ldflags '-w -s' -a -installsuffix cgo \
+       -o /gokoala-etl github.com/PDOK/gokoala/cmd/gokoala-etl/
 
 # gokoala-server
 RUN go mod download all && \
     go generate -v ./... && \
-    go build -v -ldflags '-w -s' -a -installsuffix cgo -o /gokoala-server github.com/PDOK/gokoala/cmd/gokoala-server/
+    go build -v -ldflags '-w -s' -a -installsuffix cgo \
+      -tags "sqlite_icu sqlite_math_functions" \
+      -o /gokoala-server github.com/PDOK/gokoala/cmd/gokoala-server/
 
 # delete all go files (and testdata dirs) so only assets/templates/etc remain, since in a later
 # stage we need to copy these remaining files including their subdirectories to the final docker image.
@@ -54,10 +58,11 @@ RUN set -eux && \
     apt-get update && \
     apt-get install --no-install-recommends -y  \
       jq=* \
+      libicu-dev=* \
       libcurl4=*  \
-      curl=*  \
-      openssl=*  \
-      ca-certificates=*  \
+      curl=* \
+      openssl=* \
+      ca-certificates=* \
       libsqlite3-mod-spatialite=* \
       proj-bin=* && \
     rm -rf /var/lib/apt/lists/*
