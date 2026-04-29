@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"slices"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -43,7 +44,8 @@ func readMetadata(db *sqlx.DB, collections config.FeaturesCollections, fidColumn
 // Read metadata about gpkg and sqlite driver.
 func readDriverMetadata(db *sqlx.DB) (string, error) {
 	type pragma struct {
-		UserVersion string `db:"user_version"`
+		UserVersion    string `db:"user_version"`
+		CompileOptions []string
 	}
 	type metadata struct {
 		Sqlite     string `db:"sqlite"`
@@ -60,14 +62,27 @@ spatialite_target_cpu() as arch`).StructScan(&m)
 		return "", fmt.Errorf("failed to connect with GeoPackage: %w", err)
 	}
 
-	var gpkgVersion pragma
-	_ = db.QueryRowx(`pragma user_version`).StructScan(&gpkgVersion)
-	if gpkgVersion.UserVersion == "" {
-		gpkgVersion.UserVersion = "unknown"
+	var p pragma
+	_ = db.QueryRowx(`pragma user_version`).StructScan(&p)
+	if p.UserVersion == "" {
+		p.UserVersion = "unknown"
+	}
+
+	_ = db.Select(&p.CompileOptions, `
+select compile_options 
+from pragma_compile_options 
+where compile_options like 'ENABLE_%'`)
+	if !slices.Contains(p.CompileOptions, "ENABLE_ICU") {
+		log.Fatal("ICU is not enabled in SQLite. The 'ACCENTI' CQL filter won't work properly. " +
+			"Rebuild with ICU build tag enabled")
+	}
+	if !slices.Contains(p.CompileOptions, "ENABLE_MATH_FUNCTIONS") {
+		log.Fatal("Math functions are not enabled in SQLite. Some arithmetic CQL filters won't work properly. " +
+			"Rebuild with Math build tag enabled")
 	}
 
 	return fmt.Sprintf("geopackage version: %s, sqlite version: %s, spatialite version: %s on %s",
-		gpkgVersion.UserVersion, m.Sqlite, m.Spatialite, m.Arch), nil
+		p.UserVersion, m.Sqlite, m.Spatialite, m.Arch), nil
 }
 
 // Read "gpkg_contents" table. This table contains metadata about feature tables. The result is a mapping from

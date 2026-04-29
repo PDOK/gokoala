@@ -29,7 +29,7 @@ jobs:
         run: go generate -v ./... && git diff --exit-code ':!go.sum'
 
       - name: Build
-        run: go build -v ./...
+        run: go build -tags "sqlite_icu sqlite_math_functions" -v ./...
 
       - name: Test generating example CRD
         run: hack/generate-crd.sh
@@ -39,6 +39,7 @@ jobs:
           set -o pipefail
 
           go test -v -race -shuffle=on \
+            -tags "sqlite_icu sqlite_math_functions" \
             -coverpkg "$(go list || go list -m | head -1)/..." \
             -coverprofile cover.out.tmp \
             -json ./... | tee unittest-report.json
@@ -86,7 +87,8 @@ jobs:
         run: |
           for pkg in $(go list ./...); do
             echo "Fuzzing $pkg"
-            go test -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
+            go test -tags "sqlite_icu sqlite_math_functions" \
+              -fuzz=Fuzz -fuzztime=10s -run=^$ "$pkg" || exit 1
           done
 
       - name: Fuzz Test Report (uploads failed fuzz cases)
