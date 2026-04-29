@@ -285,10 +285,17 @@ Design principles:
 
 ### Build/run as Go application
 
-Make sure [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index), [PROJ](https://proj.org/en/stable/install.html), `openssl` and `curl` are installed.
+Make sure the following native dependencies are installed on your system:
+
+- [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index)
+- [PROJ](https://proj.org/en/stable/install.html)
+- `openssl` (libssl-dev)
+- `curl` (libcurl-dev)
+- `icu` (libicu-dev)
+
 Also make sure `gcc` or similar is available since the application uses cgo.
 
-Run the following commands from the root of the project:
+Now, run the following commands from the root of the project:
 
 #### `gokoala-server` (serving OGC APIs)
 
