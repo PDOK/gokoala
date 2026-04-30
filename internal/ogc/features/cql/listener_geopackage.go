@@ -330,6 +330,13 @@ func (l *GeoPackageListener) ExitGeometryCollection(ctx *parser.GeometryCollecti
 func (l *GeoPackageListener) ExitTemporalPredicate(ctx *parser.TemporalPredicateContext) {
 	firstStart, firstEnd, secondStart, secondEnd := l.popIntervalOrInstant()
 
+	if firstStart == temporalIntervalUnbounded || firstEnd == temporalIntervalUnbounded {
+		l.errorListener.Error("the first interval should reference a property, not be an unbounded interval. " +
+			"For example T_FUNCTION(INTERVAL(starts, ends), INTERVAL('..', '1970-01-01')) is supported " +
+			"but T_FUNCTION(INTERVAL('..', '1970-01-01'), INTERVAL(starts, ends)) is not")
+		return
+	}
+
 	cqlFunction := strings.ToUpper(ctx.TemporalFunction().GetText())
 	switch cqlFunction {
 	case T_AFTER:

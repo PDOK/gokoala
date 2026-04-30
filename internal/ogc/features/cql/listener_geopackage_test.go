@@ -1292,8 +1292,6 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, entry := range entries {
-		t.Skip("DISABLED FOR NOW, enable once implementation is further completed") // TODO: enable.
-
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".txt") {
 			continue
 		}
@@ -1307,6 +1305,10 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 			inputCQL := strings.Map(removeNewlinesAndTabs, strings.TrimSpace(string(example)))
 			require.NotEmpty(t, inputCQL)
 			log.Printf("Parsing CQL: %s", inputCQL)
+
+			if strings.HasPrefix(entry.Name(), "SKIP_") {
+				t.Skipf("Skipping %s, since this example is not (yet) supported by our CQL implementation", entry.Name())
+			}
 
 			// when
 			actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
