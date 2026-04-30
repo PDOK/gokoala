@@ -66,6 +66,7 @@ func (cl *CommonListener) allowAllQueryables() bool {
 	return len(cl.queryables) == 1 && cl.queryables[0].Name == "*"
 }
 
+// isQueryable checks if a column name is allowed in the query.
 func (l *GeoPackageListener) isQueryable(name string) bool {
 	for _, q := range l.queryables {
 		if q.Name == name || q.IsPrimaryGeometry {
@@ -90,6 +91,7 @@ func (cl *CommonListener) hasWildcard(pattern string, symbol string) bool {
 		strings.Contains(patternValueStr, "_")
 }
 
+// parseNumber parses a number from a string, supports both integers and floats.
 func parseNumber(s string) (any, error) {
 	s = strings.TrimSpace(s)
 
@@ -100,4 +102,12 @@ func parseNumber(s string) (any, error) {
 		return f, nil
 	}
 	return nil, fmt.Errorf("%s is not a valid numeric type", s)
+}
+
+// stripSingleQuotes removes single quotes from a literal.
+func stripSingleQuotes(s string) string {
+	if len(s) >= 2 && s[0] == '\'' && s[len(s)-1] == '\'' {
+		return strings.ReplaceAll(s[1:len(s)-1], "''", "'")
+	}
+	return s
 }

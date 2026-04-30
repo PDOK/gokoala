@@ -37,14 +37,6 @@ booleanPrimary : predicate
 
 /*
 #=============================================================================#
-# Nested filters are an extension to CQL2
-#=============================================================================#
-*/
-
-//nestedCqlFilter: {isNotInsideNestedFilter($ctx)}? booleanExpression;
-
-/*
-#=============================================================================#
 #  CQL2 supports scalar, spatial, temporal and array predicates.
 #=============================================================================#
 */
@@ -108,17 +100,11 @@ characterExpression : characterClause
 
 patternExpression : characterLiteral
                   | CASEI LEFTPAREN patternExpression RIGHTPAREN
-                  | ACCENTI LEFTPAREN patternExpression RIGHTPAREN
-                  // UPPER() and LOWER() are extensions to CQL2
-                  | LOWER LEFTPAREN patternExpression RIGHTPAREN
-                  | UPPER LEFTPAREN patternExpression RIGHTPAREN;
+                  | ACCENTI LEFTPAREN patternExpression RIGHTPAREN;
 
 characterClause : characterLiteral
                 | CASEI LEFTPAREN characterExpression RIGHTPAREN
-                | ACCENTI LEFTPAREN characterExpression RIGHTPAREN
-                // UPPER() and LOWER() are extensions to CQL2
-                | LOWER LEFTPAREN characterExpression RIGHTPAREN
-                | UPPER LEFTPAREN characterExpression RIGHTPAREN;
+                | ACCENTI LEFTPAREN characterExpression RIGHTPAREN;
 
 characterLiteral : CharacterStringLiteral;
 
@@ -133,9 +119,6 @@ numericLiteral : NumericLiteral;
 
 booleanLiteral : BooleanLiteral;
 
-// Support for compound property names is a CQL2 extension
-// Support for nested filters is a CQL2 extension
-//propertyName : (Identifier (LEFTSQUAREBRACKET nestedCqlFilter RIGHTSQUAREBRACKET)? PERIOD)* Identifier;
 propertyName: Identifier;
 
 /*

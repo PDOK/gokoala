@@ -25,7 +25,7 @@ func init() {
 }
 
 func newTestGeoPackage(file string) geoPackageBackend {
-	loadDriver()
+	LoadDriver()
 
 	return newLocalGeoPackage(&config.GeoPackageLocal{
 		GeoPackageCommon: config.GeoPackageCommon{

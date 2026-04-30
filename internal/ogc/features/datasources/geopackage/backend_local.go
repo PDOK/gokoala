@@ -20,7 +20,7 @@ func newLocalGeoPackage(gpkg *config.GeoPackageLocal) geoPackageBackend {
 		downloadGeoPackage(gpkg)
 	}
 	conn := fmt.Sprintf("file:%s?mode=ro&_cache_size=%d", gpkg.File, gpkg.InMemoryCacheSize)
-	db, err := sqlx.Open(sqliteDriverName, conn)
+	db, err := sqlx.Open(SqliteDriverName, conn)
 	if err != nil {
 		log.Fatalf("failed to open GeoPackage: %v", err)
 	}

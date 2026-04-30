@@ -2,14 +2,10 @@ package geopackage
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"maps"
-	"os"
-	"path"
-	"sync"
 
 	"github.com/PDOK/gokoala/config"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
@@ -19,33 +15,15 @@ import (
 	search "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/mattn/go-sqlite3"
-	"github.com/qustavo/sqlhooks/v2"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/wkt"
 )
 
 const (
-	sqliteDriverName = "sqlite3_with_extensions"
-
 	// NamedParamSymbolSqlx https://jmoiron.github.io/sqlx/#namedParams
 	NamedParamSymbolSqlx        = ":"
 	NamedParamSymbolSqlxEscaped = "::"
 )
-
-var once sync.Once
-
-// Load sqlite (with extensions) once.
-//
-// Extensions are by default expected in /usr/lib. For spatialite you can
-// alternatively/optionally set SPATIALITE_LIBRARY_PATH.
-func loadDriver() {
-	once.Do(func() {
-		spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
-		driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
-		sql.Register(sqliteDriverName, sqlhooks.Wrap(driver, NewSQLLogFromEnv())) // add support for SQL logging
-	})
-}
 
 // geoPackageBackend abstraction over different kinds of GeoPackages, e.g. local file or cloud-backed sqlite.
 type geoPackageBackend interface {
@@ -65,7 +43,8 @@ type GeoPackage struct {
 func NewGeoPackage(collections config.FeaturesCollections, gpkgConfig config.GeoPackage,
 	transformOnTheFly bool, maxDecimals int, forceUTC bool) (*GeoPackage, error) {
 
-	loadDriver()
+	LoadDriver()
+
 	if transformOnTheFly {
 		return nil, errors.New("on the fly reprojection/transformation is currently not supported for GeoPackages")
 	}

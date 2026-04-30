@@ -360,8 +360,9 @@ Also:
 
 - Set import order in `Preferences` > `Editor` > `Code Style` > `Go` > `Imports`
   to `goimports` to align with VSCode and goimports usage in golangci-lint.
-- To prevent needing to specify Go build tags every time, set `Preferences` > `Go` > 
+- To prevent needing to specify Go build tags every time, set `Preferences` > `Go` >
   `Build Tags` > `Custom tags` to `sqlite_icu sqlite_math_functions`.
+  Now check `Use all custom tags` in your run config when running tests or builds.
 
 ### VSCode
 

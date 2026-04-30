@@ -15,6 +15,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+const (
+	errICUNotEnabled  = "ICU is not enabled in SQLite. For example the 'ACCENTI' CQL filter won't work properly. Rebuild with ICU build tag enabled"
+	errMathNotEnabled = "Math is not enabled in SQLite. For example some arithmetic CQL filters won't work properly. Rebuild with Math build tag enabled"
+)
+
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 
 // readMetadata reads metadata such as available feature tables, the schema of each table,
@@ -73,12 +78,10 @@ select compile_options
 from pragma_compile_options 
 where compile_options like 'ENABLE_%'`)
 	if !slices.Contains(p.CompileOptions, "ENABLE_ICU") {
-		log.Fatal("ICU is not enabled in SQLite. The 'ACCENTI' CQL filter won't work properly. " +
-			"Rebuild with ICU build tag enabled")
+		log.Fatal(errICUNotEnabled)
 	}
 	if !slices.Contains(p.CompileOptions, "ENABLE_MATH_FUNCTIONS") {
-		log.Fatal("Math functions are not enabled in SQLite. Some arithmetic CQL filters won't work properly. " +
-			"Rebuild with Math build tag enabled")
+		log.Fatal(errMathNotEnabled)
 	}
 
 	return fmt.Sprintf("geopackage version: %s, sqlite version: %s, spatialite version: %s on %s",

@@ -143,7 +143,7 @@ func (l *GeoPackageListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateCont
 func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateContext) {
 	geomLiteral := l.stack.Pop()
 	geomProperty := l.stack.Pop()
-	if geomProperty != fmt.Sprintf("\"%s\"", d.GeomPropertyName) {
+	if geomProperty != fmt.Sprintf("\"%s\"", d.GeomPropertyName) && !l.allowAllQueryables() {
 		l.errorListener.Errorf("spatial filtering is only supported on property '%s'", d.GeomPropertyName)
 		return
 	}
@@ -155,7 +155,7 @@ func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCo
 			break
 		}
 	}
-	if geomColumn == "" {
+	if geomColumn == "" && !l.allowAllQueryables() {
 		l.errorListener.Error("spatial filtering is not supported for this " +
 			"collection since there is no geometry field defined")
 		return
@@ -396,6 +396,24 @@ func (l *GeoPackageListener) ExitIntervalParameter(ctx *parser.IntervalParameter
 	}
 }
 
+// ExitPatternExpression handles CASEI and ACCENTI.
+func (l *GeoPackageListener) ExitPatternExpression(ctx *parser.PatternExpressionContext) {
+	if ctx.CASEI() != nil {
+		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreCaseCollation))
+	} else if ctx.ACCENTI() != nil {
+		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreAccentCollation))
+	}
+}
+
+// ExitCharacterClause handles CASEI and ACCENTI.
+func (l *GeoPackageListener) ExitCharacterClause(ctx *parser.CharacterClauseContext) {
+	if ctx.CASEI() != nil {
+		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreCaseCollation))
+	} else if ctx.ACCENTI() != nil {
+		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreAccentCollation))
+	}
+}
+
 // ExitInstantInstance handles DATE() and TIMESTAMP().
 func (l *GeoPackageListener) ExitInstantInstance(ctx *parser.InstantInstanceContext) {
 	// handle DATE() and TIMESTAMP(). Note we currently don't perform
@@ -432,7 +450,7 @@ func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralCo
 		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
 
 		l.stack.Push(withSymbol)
-		l.namedParams[withoutSymbol] = ctx.GetText()
+		l.namedParams[withoutSymbol] = stripSingleQuotes(ctx.GetText())
 	}
 }
 
@@ -460,5 +478,20 @@ func (l *GeoPackageListener) ExitBooleanLiteral(ctx *parser.BooleanLiteralContex
 		l.stack.Push("1")
 	} else {
 		l.stack.Push("0")
+	}
+}
+
+func addCollation(expr, collation string) string {
+	switch {
+	case strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreAccentAndCaseCollation):
+		return expr
+	case collation == geopackage.IgnoreCaseCollation && strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreAccentCollation):
+		return strings.TrimSuffix(expr, " COLLATE "+geopackage.IgnoreAccentCollation) +
+			" COLLATE " + geopackage.IgnoreAccentAndCaseCollation
+	case collation == geopackage.IgnoreAccentCollation && strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreCaseCollation):
+		return strings.TrimSuffix(expr, " COLLATE "+geopackage.IgnoreCaseCollation) +
+			" COLLATE " + geopackage.IgnoreAccentAndCaseCollation
+	default:
+		return expr + " COLLATE " + collation
 	}
 }

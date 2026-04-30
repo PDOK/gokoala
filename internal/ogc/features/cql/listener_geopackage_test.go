@@ -1,19 +1,17 @@
 package cql
 
 import (
-	"database/sql"
 	"log"
 	"os"
 	"path"
 	"runtime"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jmoiron/sqlx"
-	"github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,16 +21,6 @@ var pwd string
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	pwd = path.Dir(filename)
-}
-
-var once sync.Once
-
-func loadExtensions() {
-	once.Do(func() {
-		spatialite := path.Join(os.Getenv("SPATIALITE_LIBRARY_PATH"), "mod_spatialite")
-		driver := &sqlite3.SQLiteDriver{Extensions: []string{spatialite}}
-		sql.Register("sqlite_spatialite", driver)
-	})
 }
 
 func TestInvalidBooleanQuery(t *testing.T) {
@@ -135,7 +123,7 @@ func TestMultipleBooleanQueries(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(20), "cql_jklm": "'X'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(20), "cql_jklm": "X"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -183,7 +171,7 @@ func TestMultipleBooleanQueriesWithStrings(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "'foo'", "cql_fghi": "'bar'", "cql_jklm": "'abc'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "abc"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -199,7 +187,7 @@ func TestLikeOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "'foo%'", "cql_fghi": "'bar_'", "cql_jklm": "'%abc'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -215,8 +203,80 @@ func TestNotLikeOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "'foo%'", "cql_fghi": "'bar_'", "cql_jklm": "'%abc'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
+}
+
+func TestCaseInsensitiveOperator(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}}
+	inputCQL := "CASEI(prop1) = CASEI('Foo')"
+	expectedSQL := "\"prop1\" COLLATE NOCASE = :cql_bcde COLLATE NOCASE"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actual)
+	assert.Equal(t, map[string]any{"cql_bcde": "Foo"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+}
+
+func TestAccentInsensitiveOperator(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}}
+	inputCQL := "ACCENTI(prop1) = ACCENTI('fóo') OR ACCENTI(prop1) = ACCENTI('débárquér')"
+	expectedSQL := "(\"prop1\" COLLATE NOACCENT = :cql_bcde COLLATE NOACCENT OR \"prop1\" COLLATE NOACCENT = :cql_fghi COLLATE NOACCENT)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actual)
+	assert.Equal(t, map[string]any{"cql_bcde": "fóo", "cql_fghi": "débárquér"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+}
+
+func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
+	tests := []struct {
+		name        string
+		inputCQL    string
+		expectedSQL string
+	}{
+		{
+			name:        "CASEI around ACCENTI",
+			inputCQL:    "CASEI(ACCENTI(prop1)) = CASEI(ACCENTI('Fóo'))",
+			expectedSQL: "\"prop1\" COLLATE NOACCENT_NOCASE = :cql_bcde COLLATE NOACCENT_NOCASE",
+		},
+		{
+			name:        "ACCENTI around CASEI",
+			inputCQL:    "ACCENTI(CASEI(prop1)) = ACCENTI(CASEI('Fóo'))",
+			expectedSQL: "\"prop1\" COLLATE NOACCENT_NOCASE = :cql_bcde COLLATE NOACCENT_NOCASE",
+		},
+		{
+			name:        "Mixed up",
+			inputCQL:    "CASEI(ACCENTI(prop1)) = ACCENTI(CASEI('Fóo'))",
+			expectedSQL: "\"prop1\" COLLATE NOACCENT_NOCASE = :cql_bcde COLLATE NOACCENT_NOCASE",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			queryables := []domain.Field{{Name: "prop1"}}
+
+			// when
+			actual, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+			// then
+			require.NoError(t, err)
+			assertValidSQLiteQuery(t, actual)
+			assert.Equal(t, map[string]any{"cql_bcde": "Fóo"}, actual.Params)
+			assert.Equal(t, tt.expectedSQL, actual.SQL)
+		})
+	}
 }
 
 func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
@@ -245,7 +305,7 @@ func TestBetweenOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "'bar'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "bar"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -261,7 +321,7 @@ func TestNotBetweenOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "'bar'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "bar"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -277,7 +337,7 @@ func TestInListOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "'foo'", "cql_fghi": "'bar'", "cql_jklm": "'baz'", "cql_nopq": "'baz'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "baz", "cql_nopq": "baz"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -293,7 +353,7 @@ func TestNotInListOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "'foo'", "cql_fghi": "'bar'", "cql_jklm": "'baz'", "cql_nopq": "'baz'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "baz", "cql_nopq": "baz"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -309,7 +369,7 @@ func TestIsNullOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "'baz'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "baz"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -325,7 +385,7 @@ func TestIsNotNullOperator(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "'baz'"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "baz"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -564,7 +624,7 @@ func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
 
 	// then
 	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "'foo'", "cql_fghi": "POINT(4.897 52.377)"}, actual.Params)
+	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "POINT(4.897 52.377)"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
@@ -1240,7 +1300,7 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 
 		t.Run(entry.Name(), func(t *testing.T) {
 			// given
-			queryables := []domain.Field{{Name: "*"}} // allow all
+			queryables := []domain.Field{{Name: "*"}}
 			example, err := os.ReadFile(path.Join(ogcExamples, entry.Name()))
 			require.NoError(t, err)
 
@@ -1270,20 +1330,23 @@ func removeNewlinesAndTabs(r rune) rune {
 func assertValidSQLiteQuery(t *testing.T, result *SQLResult) {
 	t.Helper()
 
-	loadExtensions()
+	geopackage.LoadDriver()
 
 	require.NotNil(t, result)
 
 	dbPath := pwd + "/testdata/cql.gpkg"
-	db, err := sqlx.Open("sqlite_spatialite", dbPath)
+	db, err := sqlx.Open(geopackage.SqliteDriverName, dbPath)
 	require.NoError(t, err)
 	defer db.Close()
 
 	query := "select * from cql where " + result.SQL
-	rows, err := db.NamedQuery(query, result.Params)
-	require.NoError(t, err)
-
+	rows, err := db.NamedQuery(query, result.Params) //nolint:sqlclosecheck
+	if err != nil {
+		require.FailNow(t, "Failed to execute query", err)
+	}
 	defer rows.Close()
+
+	require.NoError(t, err)
 	for rows.Next() {
 		_ = rows.Scan()
 	}
