@@ -1,0 +1,70 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=prop4%3D%27FooBar%27+and+CASEI%28ACCENTI%28prop3%29%29+%3D+ACCENTI%28CASEI%28%27S%C3%B6CC%C3%AAR%27%29%29"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=prop4%3D%27FooBar%27+and+CASEI%28ACCENTI%28prop3%29%29+%3D+ACCENTI%28CASEI%28%27S%C3%B6CC%C3%AAR%27%29%29"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=prop4%3D%27FooBar%27+and+CASEI%28ACCENTI%28prop3%29%29+%3D+ACCENTI%28CASEI%28%27S%C3%B6CC%C3%AAR%27%29%29"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 4,
+        "prop10": "2026-02-26T23:00:00Z",
+        "prop2": 5,
+        "prop3": "Soccer",
+        "prop4": "FooBar",
+        "prop5": "2026-02-13",
+        "prop6": "2026-02-12T23:00:00Z",
+        "prop7": false,
+        "prop8": false,
+        "prop9": "2026-02-28"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0413,
+              52.10192
+            ],
+            [
+              5.04164,
+              52.10197
+            ],
+            [
+              5.04167,
+              52.10168
+            ],
+            [
+              5.0413,
+              52.10168
+            ],
+            [
+              5.0413,
+              52.10192
+            ]
+          ]
+        ]
+      },
+      "id": "4"
+    }
+  ],
+  "numberReturned": 1
+}

@@ -32,7 +32,7 @@ func TestInvalidBooleanQuery(t *testing.T) {
 
 	// then
 	require.ErrorContains(t, err, "syntax error at column 7: mismatched input '=' expecting ")
-	require.ErrorContains(t, err, "syntax error at column 23: no viable alternative at input 'prop2!")
+	require.ErrorContains(t, err, "syntax error at column 23: no viable alternative at input 'prop2!'")
 }
 
 func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
@@ -239,10 +239,50 @@ func TestAccentInsensitiveOperator(t *testing.T) {
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
+func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
+	tests := []struct {
+		name        string
+		inputCQL    string
+		expectedSQL string
+	}{
+		{
+			name:        "CASEI around ACCENTI",
+			inputCQL:    "CASEI(ACCENTI(prop1)) = CASEI(ACCENTI('Fóo'))",
+			expectedSQL: "\"prop1\" COLLATE NOACCENT_NOCASE = :cql_bcde COLLATE NOACCENT_NOCASE",
+		},
+		{
+			name:        "ACCENTI around CASEI",
+			inputCQL:    "ACCENTI(CASEI(prop1)) = ACCENTI(CASEI('Fóo'))",
+			expectedSQL: "\"prop1\" COLLATE NOACCENT_NOCASE = :cql_bcde COLLATE NOACCENT_NOCASE",
+		},
+		{
+			name:        "Mixed up",
+			inputCQL:    "CASEI(ACCENTI(prop1)) = ACCENTI(CASEI('Fóo'))",
+			expectedSQL: "\"prop1\" COLLATE NOACCENT_NOCASE = :cql_bcde COLLATE NOACCENT_NOCASE",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			queryables := []domain.Field{{Name: "prop1"}}
+
+			// when
+			actual, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+			// then
+			require.NoError(t, err)
+			assertValidSQLiteQuery(t, actual)
+			assert.Equal(t, map[string]any{"cql_bcde": "Fóo"}, actual.Params)
+			assert.Equal(t, tt.expectedSQL, actual.SQL)
+		})
+	}
+}
+
 func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
-	inputCQL := "prop1 LIKE 'foo"
+	inputCQL := "prop1 LIKE 'foo'"
 
 	// when
 	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
@@ -532,7 +572,7 @@ func TestSpatialQueryFailsOnInvalidBboxWithText(t *testing.T) {
 	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
 
 	// then
-	assert.ErrorContains(t, err, "bla' is not a valid numeric type")
+	assert.ErrorContains(t, err, "'bla' is not a valid numeric type")
 }
 
 func TestSpatialQueryFailsOnNonGeometryProperty(t *testing.T) {
@@ -544,7 +584,7 @@ func TestSpatialQueryFailsOnNonGeometryProperty(t *testing.T) {
 	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326))
 
 	// then
-	assert.ErrorContains(t, err, "spatial filtering is only supported on property 'geometry")
+	assert.ErrorContains(t, err, "spatial filtering is only supported on property 'geometry'")
 }
 
 func TestSpatialQueryFailsOnUndefinedGeometry(t *testing.T) {
@@ -1260,7 +1300,7 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 
 		t.Run(entry.Name(), func(t *testing.T) {
 			// given
-			queryables := []domain.Field{{Name: "*"}} // allow all
+			queryables := []domain.Field{{Name: "*"}}
 			example, err := os.ReadFile(path.Join(ogcExamples, entry.Name()))
 			require.NoError(t, err)
 

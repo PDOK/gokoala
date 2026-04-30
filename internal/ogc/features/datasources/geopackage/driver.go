@@ -15,8 +15,9 @@ import (
 const (
 	SqliteDriverName = "sqlite3_with_extensions"
 
-	// IgnoreAccentCollation custom collation
-	IgnoreAccentCollation = "NOACCENT"
+	IgnoreCaseCollation          = "NOCASE"   // default available in SQLite
+	IgnoreAccentCollation        = "NOACCENT" // custom collation
+	IgnoreAccentAndCaseCollation = IgnoreAccentCollation + "_" + IgnoreCaseCollation
 )
 
 var once sync.Once
@@ -33,10 +34,18 @@ func LoadDriver() {
 			Extensions: []string{spatialite},
 
 			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
-				// The 'und@colStrength=primary' Unicode collation allows accent/diacritics to be ignored.
+				// Unicode collation allows accent/diacritics to be ignored, but not casing.
 				// https://sqlite.org/src/dir/ext/icu
-				query := fmt.Sprintf("select icu_load_collation('und@colStrength=primary', '%s');", IgnoreAccentCollation)
+				query := fmt.Sprintf("select icu_load_collation('und-u-ks-level1-kc-true', '%s');", IgnoreAccentCollation)
 				_, err := conn.Exec(query, nil)
+				if err != nil {
+					log.Fatalf(errICUNotEnabled+" - %v", err)
+				}
+
+				// Unicode collation allows accent/diacritics AND casing to be ignored.
+				// https://sqlite.org/src/dir/ext/icu
+				query = fmt.Sprintf("select icu_load_collation('und-u-ks-level1', '%s');", IgnoreAccentAndCaseCollation)
+				_, err = conn.Exec(query, nil)
 				if err != nil {
 					log.Fatalf(errICUNotEnabled+" - %v", err)
 				}
