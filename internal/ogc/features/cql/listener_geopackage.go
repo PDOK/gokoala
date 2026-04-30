@@ -497,7 +497,7 @@ func addCollation(expr, collation string) string {
 	case strings.HasSuffix(expr, suffixAccentCase):
 		return expr
 	case collation == geopackage.IgnoreAccentCollation && strings.HasSuffix(expr, suffixCase):
-		// replace existing case with accent case + accent
+		// replace existing case with case + accent
 		return strings.Replace(expr, suffixCase, suffixAccentCase, 1)
 	case collation == geopackage.IgnoreCaseCollation && strings.HasSuffix(expr, suffixAccent):
 		// replace existing accent with accent + case
