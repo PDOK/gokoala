@@ -489,15 +489,19 @@ func (l *GeoPackageListener) ExitBooleanLiteral(ctx *parser.BooleanLiteralContex
 }
 
 func addCollation(expr, collation string) string {
+	suffixCase := " COLLATE " + geopackage.IgnoreCaseCollation
+	suffixAccent := " COLLATE " + geopackage.IgnoreAccentCollation
+	suffixAccentCase := " COLLATE " + geopackage.IgnoreAccentAndCaseCollation
+
 	switch {
-	case strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreAccentAndCaseCollation):
+	case strings.HasSuffix(expr, suffixAccentCase):
 		return expr
-	case collation == geopackage.IgnoreCaseCollation && strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreAccentCollation):
-		return strings.TrimSuffix(expr, " COLLATE "+geopackage.IgnoreAccentCollation) +
-			" COLLATE " + geopackage.IgnoreAccentAndCaseCollation
-	case collation == geopackage.IgnoreAccentCollation && strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreCaseCollation):
-		return strings.TrimSuffix(expr, " COLLATE "+geopackage.IgnoreCaseCollation) +
-			" COLLATE " + geopackage.IgnoreAccentAndCaseCollation
+	case collation == geopackage.IgnoreAccentCollation && strings.HasSuffix(expr, suffixCase):
+		// replace existing case with accent case + accent
+		return strings.Replace(expr, suffixCase, suffixAccentCase, 1)
+	case collation == geopackage.IgnoreCaseCollation && strings.HasSuffix(expr, suffixAccent):
+		// replace existing accent with accent + case
+		return strings.Replace(expr, suffixAccent, suffixAccentCase, 1)
 	default:
 		return expr + " COLLATE " + collation
 	}
