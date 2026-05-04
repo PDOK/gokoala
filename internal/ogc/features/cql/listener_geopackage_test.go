@@ -1267,6 +1267,18 @@ func TestTemporalUnboundedIntervalAtEnd(t *testing.T) {
 	assertValidSQLiteQuery(t, actual)
 }
 
+func TestFailOnTemporalLiteralAsFirstArgument(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "starts_at"}, {Name: "ends_at"}}
+	inputCQL := "T_DISJOINT(INTERVAL('..', '2005-01-10T01:01:01.393216Z'), INTERVAL(starts_at, ends_at))"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	assert.ErrorContains(t, err, "the first interval should reference a property, not be an unbounded interval")
+}
+
 func TestTemporalAndBooleanQuery(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
