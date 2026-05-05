@@ -330,6 +330,13 @@ func (l *GeoPackageListener) ExitGeometryCollection(ctx *parser.GeometryCollecti
 func (l *GeoPackageListener) ExitTemporalPredicate(ctx *parser.TemporalPredicateContext) {
 	firstStart, firstEnd, secondStart, secondEnd := l.popIntervalOrInstant()
 
+	if firstStart == temporalIntervalUnbounded || firstEnd == temporalIntervalUnbounded {
+		l.errorListener.Error("the first interval should reference a property, not be an unbounded interval. " +
+			"For example T_FUNCTION(INTERVAL(starts, ends), INTERVAL('..', '1970-01-01')) is supported " +
+			"but T_FUNCTION(INTERVAL('..', '1970-01-01'), INTERVAL(starts, ends)) is not")
+		return
+	}
+
 	cqlFunction := strings.ToUpper(ctx.TemporalFunction().GetText())
 	switch cqlFunction {
 	case T_AFTER:
@@ -482,15 +489,19 @@ func (l *GeoPackageListener) ExitBooleanLiteral(ctx *parser.BooleanLiteralContex
 }
 
 func addCollation(expr, collation string) string {
+	suffixCase := " COLLATE " + geopackage.IgnoreCaseCollation
+	suffixAccent := " COLLATE " + geopackage.IgnoreAccentCollation
+	suffixAccentCase := " COLLATE " + geopackage.IgnoreAccentAndCaseCollation
+
 	switch {
-	case strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreAccentAndCaseCollation):
+	case strings.HasSuffix(expr, suffixAccentCase):
 		return expr
-	case collation == geopackage.IgnoreCaseCollation && strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreAccentCollation):
-		return strings.TrimSuffix(expr, " COLLATE "+geopackage.IgnoreAccentCollation) +
-			" COLLATE " + geopackage.IgnoreAccentAndCaseCollation
-	case collation == geopackage.IgnoreAccentCollation && strings.HasSuffix(expr, " COLLATE "+geopackage.IgnoreCaseCollation):
-		return strings.TrimSuffix(expr, " COLLATE "+geopackage.IgnoreCaseCollation) +
-			" COLLATE " + geopackage.IgnoreAccentAndCaseCollation
+	case collation == geopackage.IgnoreAccentCollation && strings.HasSuffix(expr, suffixCase):
+		// replace existing case with case + accent
+		return strings.Replace(expr, suffixCase, suffixAccentCase, 1)
+	case collation == geopackage.IgnoreCaseCollation && strings.HasSuffix(expr, suffixAccent):
+		// replace existing accent with accent + case
+		return strings.Replace(expr, suffixAccent, suffixAccentCase, 1)
 	default:
 		return expr + " COLLATE " + collation
 	}

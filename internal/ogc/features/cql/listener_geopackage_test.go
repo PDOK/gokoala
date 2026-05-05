@@ -279,6 +279,22 @@ func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
 	}
 }
 
+func TestCaseAndAccentInsensitiveOperatorWithLike(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}}
+	inputCQL := "CASEI(prop1) LIKE CASEI('Foo%') AND ACCENTI(CASEI(prop1)) LIKE ACCENTI(CASEI('Fóo%'))"
+	expectedSQL := "(\"prop1\" COLLATE NOCASE LIKE :cql_bcde COLLATE NOCASE AND \"prop1\" COLLATE NOACCENT_NOCASE LIKE :cql_fghi COLLATE NOACCENT_NOCASE)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actual)
+	assert.Equal(t, map[string]any{"cql_bcde": "Foo%", "cql_fghi": "Fóo%"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+}
+
 func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
@@ -1267,6 +1283,18 @@ func TestTemporalUnboundedIntervalAtEnd(t *testing.T) {
 	assertValidSQLiteQuery(t, actual)
 }
 
+func TestFailOnTemporalLiteralAsFirstArgument(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "starts_at"}, {Name: "ends_at"}}
+	inputCQL := "T_DISJOINT(INTERVAL('..', '2005-01-10T01:01:01.393216Z'), INTERVAL(starts_at, ends_at))"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	assert.ErrorContains(t, err, "the first interval should reference a property, not be an unbounded interval")
+}
+
 func TestTemporalAndBooleanQuery(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
@@ -1292,8 +1320,6 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, entry := range entries {
-		t.Skip("DISABLED FOR NOW, enable once implementation is further completed") // TODO: enable.
-
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".txt") {
 			continue
 		}
@@ -1307,6 +1333,10 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 			inputCQL := strings.Map(removeNewlinesAndTabs, strings.TrimSpace(string(example)))
 			require.NotEmpty(t, inputCQL)
 			log.Printf("Parsing CQL: %s", inputCQL)
+
+			if strings.HasPrefix(entry.Name(), "SKIP_") {
+				t.Skipf("Skipping %s, since this example is not (yet) supported by our CQL implementation", entry.Name())
+			}
 
 			// when
 			actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))

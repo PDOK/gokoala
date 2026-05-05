@@ -78,10 +78,22 @@ func (l *GeoPackageListener) isQueryable(name string) bool {
 
 // hasWildcard checks if a pattern contains a SQL wildcard: % or _.
 func (cl *CommonListener) hasWildcard(pattern string, symbol string) bool {
-	namedParam := pattern
-	if strings.HasPrefix(pattern, symbol) {
-		namedParam = pattern[len(symbol):] // remove symbol
+	var namedParam string
+
+	// we're only interested in the named param part of the pattern
+	parts := strings.Fields(pattern)
+	if len(parts) > 0 {
+		namedParam = parts[0]
+	} else {
+		namedParam = pattern
 	}
+
+	// remove symbol
+	if strings.HasPrefix(pattern, symbol) {
+		namedParam = namedParam[len(symbol):]
+	}
+
+	// look up the actual value of the named parameter
 	patternValue, ok := cl.namedParams[namedParam]
 	if !ok {
 		return false
