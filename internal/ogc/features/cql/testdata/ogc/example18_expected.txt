@@ -1,0 +1,1 @@
+(NOT ("floors" < :cql_bcde) OR "swimming_pool" = 1)

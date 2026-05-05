@@ -1,7 +1,7 @@
     beamMode='ScanSAR Narrow'
 AND swathDirection='ascending'
 AND polarization='HH+VV+HV+VH'
-AND s_intersects(footprint,POLYGON((-77.117938 38.936860,
+AND s_intersects(geometry,POLYGON((-77.117938 38.936860,
                                     -77.040604 39.995648,
                                     -76.910536 38.892912,
                                     -77.039359 38.791753,

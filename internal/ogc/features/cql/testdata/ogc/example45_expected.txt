@@ -1,0 +1,1 @@
+ST_Intersects(CastAutomagic("geometry"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 100000))

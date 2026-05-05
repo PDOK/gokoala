@@ -1,0 +1,1 @@
+("eo::cloud_cover" < :cql_bcde AND "landsat::wrs_row" = :cql_fghi AND "landsat::wrs_path" = :cql_jklm)

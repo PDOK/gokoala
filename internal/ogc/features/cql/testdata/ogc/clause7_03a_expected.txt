@@ -1,0 +1,1 @@
+"cityName" IN (:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq)

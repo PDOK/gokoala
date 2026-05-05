@@ -1,0 +1,1 @@
+"etat_vol" COLLATE NOACCENT = :cql_bcde COLLATE NOACCENT
