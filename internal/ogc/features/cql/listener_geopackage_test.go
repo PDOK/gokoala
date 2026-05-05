@@ -279,6 +279,22 @@ func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
 	}
 }
 
+func TestCaseAndAccentInsensitiveOperatorWithLike(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}}
+	inputCQL := "CASEI(prop1) LIKE CASEI('Foo%') AND ACCENTI(CASEI(prop1)) LIKE ACCENTI(CASEI('Fóo%'))"
+	expectedSQL := "(\"prop1\" COLLATE NOCASE LIKE :cql_bcde COLLATE NOCASE AND \"prop1\" COLLATE NOACCENT_NOCASE LIKE :cql_fghi COLLATE NOACCENT_NOCASE)"
+
+	// when
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	require.NoError(t, err)
+	assertValidSQLiteQuery(t, actual)
+	assert.Equal(t, map[string]any{"cql_bcde": "Foo%", "cql_fghi": "Fóo%"}, actual.Params)
+	assert.Equal(t, expectedSQL, actual.SQL)
+}
+
 func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
