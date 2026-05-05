@@ -1,0 +1,1 @@
+(("floors" > :cql_bcde AND "material" = :cql_fghi) OR "swimming_pool" = 1)

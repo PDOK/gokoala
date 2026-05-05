@@ -1,0 +1,1 @@
+("event_time" <= :cql_fghi AND "event_time" >= :cql_bcde)

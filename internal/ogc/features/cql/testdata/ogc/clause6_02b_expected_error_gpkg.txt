@@ -1,0 +1,1 @@
+function avg is unsupported

@@ -1,0 +1,1 @@
+ST_Touches(CastAutomagic("geometry"), ST_GeomFromText(:cql_bcde, 100000))

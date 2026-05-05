@@ -1311,13 +1311,37 @@ func TestTemporalAndBooleanQuery(t *testing.T) {
 	assertValidSQLiteQuery(t, actual)
 }
 
+func TestFailOnNonSupportedCustomFunctions(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
+	inputCQL := "COOL_FUNCTION(prop9)"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	assert.ErrorContains(t, err, "function COOL_FUNCTION is unsupported")
+}
+
+func TestFailOnNonSupportedArrayOperators(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
+	inputCQL := "A_CONTAINS(prop9, ('foo', 'bar')"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	assert.ErrorContains(t, err, "array operators are not supported")
+}
+
 // Test CQL examples provided by OGC.
 // See https://github.com/opengeospatial/ogcapi-features/tree/64ac2d892b877b711a4570336cb9d42e2afb4ef8/cql2/standard/schema/examples/text
 func TestCQLExamplesProvidedByOGC(t *testing.T) {
 	const (
 		ext               = ".txt"
-		expectedSuffix    = "_expected" + ext
-		expectedErrSuffix = "_expected_error" + ext
+		expectedSuffix    = "_expected_gpkg" + ext
+		expectedErrSuffix = "_expected_error_gpkg" + ext
 	)
 
 	ogcExamples := path.Join(pwd, "testdata", "ogc")
@@ -1325,7 +1349,9 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ext) ||
+		if entry.IsDir() ||
+			strings.Contains(entry.Name(), "README.md") ||
+			strings.Contains(entry.Name(), "postgres"+ext) ||
 			strings.Contains(entry.Name(), expectedSuffix) ||
 			strings.Contains(entry.Name(), expectedErrSuffix) {
 			continue
@@ -1378,30 +1404,6 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestFailOnNonSupportedCustomFunctions(t *testing.T) {
-	// given
-	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
-	inputCQL := "COOL_FUNCTION(prop9)"
-
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
-
-	// then
-	assert.ErrorContains(t, err, "function COOL_FUNCTION is unknown")
-}
-
-func TestFailOnNonSupportedArrayOperators(t *testing.T) {
-	// given
-	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
-	inputCQL := "A_CONTAINS(prop9, ('foo', 'bar')"
-
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
-
-	// then
-	assert.ErrorContains(t, err, "array operators are not supported")
 }
 
 func removeNewlinesAndTabs(r rune) rune {
