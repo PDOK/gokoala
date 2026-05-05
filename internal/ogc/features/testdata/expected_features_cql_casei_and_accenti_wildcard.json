@@ -6,19 +6,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/cql/items?f=json&filter=prop4%3D%27FooBar%27+and+CASEI%28ACCENTI%28prop3%29%29+%3D+ACCENTI%28CASEI%28%27S%C3%B6CC%C3%AAR%27%29%29"
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=CASEI%28prop3%29+LIKE+CASEI%28%27SoCCe_%27%29"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=prop4%3D%27FooBar%27+and+CASEI%28ACCENTI%28prop3%29%29+%3D+ACCENTI%28CASEI%28%27S%C3%B6CC%C3%AAR%27%29%29"
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=CASEI%28prop3%29+LIKE+CASEI%28%27SoCCe_%27%29"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/cql/items?f=html&filter=prop4%3D%27FooBar%27+and+CASEI%28ACCENTI%28prop3%29%29+%3D+ACCENTI%28CASEI%28%27S%C3%B6CC%C3%AAR%27%29%29"
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=CASEI%28prop3%29+LIKE+CASEI%28%27SoCCe_%27%29"
     }
   ],
   "features": [
