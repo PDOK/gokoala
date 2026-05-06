@@ -1,0 +1,1 @@
+the first interval should reference a property, not be an unbounded interval.

@@ -1,0 +1,1 @@
+(:cql_bcde > :cql_jklm AND :cql_fghi < :cql_nopq)

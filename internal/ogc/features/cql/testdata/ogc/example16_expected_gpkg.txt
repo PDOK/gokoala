@@ -1,0 +1,1 @@
+("swimming_pool" = 1 AND ("floors" > :cql_bcde OR "material" LIKE :cql_fghi OR "material" LIKE :cql_jklm))

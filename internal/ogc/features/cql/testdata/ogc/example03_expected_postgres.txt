@@ -1,0 +1,1 @@
+"landsat::wrs_path" IN (:cql_bcde, :cql_fghi, :cql_jklm)

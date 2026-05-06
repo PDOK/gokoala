@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	errICUNotEnabled  = "ICU is not enabled in SQLite. For example the 'ACCENTI' CQL filter won't work properly. Rebuild with ICU build tag enabled"
-	errMathNotEnabled = "Math is not enabled in SQLite. For example some arithmetic CQL filters won't work properly. Rebuild with Math build tag enabled"
+	errICUNotEnabled  = "ICU is not enabled in SQLite. Rebuild with 'sqlite_icu' build tag enabled"
+	errMathNotEnabled = "Math is not enabled in SQLite. Rebuild with 'sqlite_math_functions' build tag enabled"
 )
 
 var newlineRegex = regexp.MustCompile(`[\r\n]+`)

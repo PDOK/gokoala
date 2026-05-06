@@ -1,0 +1,1 @@
+"name" NOT LIKE :cql_bcde

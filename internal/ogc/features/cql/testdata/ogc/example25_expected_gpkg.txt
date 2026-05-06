@@ -1,0 +1,1 @@
+("floors" > :cql_bcde AND ST_Within(CastAutomagic("geometry"), BuildMbr(:cql_fghi, :cql_jklm, :cql_nopq, :cql_rstu, 100000)))

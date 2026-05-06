@@ -387,3 +387,49 @@ func (s *BaseCqlParserListener) EnterArgument(ctx *ArgumentContext) {}
 
 // ExitArgument is called when production argument is exited.
 func (s *BaseCqlParserListener) ExitArgument(ctx *ArgumentContext) {}
+
+// EnterArithmeticExpression is called when production arithmeticExpression is entered.
+func (s *BaseCqlParserListener) EnterArithmeticExpression(ctx *ArithmeticExpressionContext) {}
+
+// ExitArithmeticExpression is called when production arithmeticExpression is exited.
+func (s *BaseCqlParserListener) ExitArithmeticExpression(ctx *ArithmeticExpressionContext) {}
+
+// EnterArithmeticOperatorPlusMinus is called when production arithmeticOperatorPlusMinus is entered.
+func (s *BaseCqlParserListener) EnterArithmeticOperatorPlusMinus(ctx *ArithmeticOperatorPlusMinusContext) {
+}
+
+// ExitArithmeticOperatorPlusMinus is called when production arithmeticOperatorPlusMinus is exited.
+func (s *BaseCqlParserListener) ExitArithmeticOperatorPlusMinus(ctx *ArithmeticOperatorPlusMinusContext) {
+}
+
+// EnterArithmeticTerm is called when production arithmeticTerm is entered.
+func (s *BaseCqlParserListener) EnterArithmeticTerm(ctx *ArithmeticTermContext) {}
+
+// ExitArithmeticTerm is called when production arithmeticTerm is exited.
+func (s *BaseCqlParserListener) ExitArithmeticTerm(ctx *ArithmeticTermContext) {}
+
+// EnterArithmeticOperatorMultDiv is called when production arithmeticOperatorMultDiv is entered.
+func (s *BaseCqlParserListener) EnterArithmeticOperatorMultDiv(ctx *ArithmeticOperatorMultDivContext) {
+}
+
+// ExitArithmeticOperatorMultDiv is called when production arithmeticOperatorMultDiv is exited.
+func (s *BaseCqlParserListener) ExitArithmeticOperatorMultDiv(ctx *ArithmeticOperatorMultDivContext) {
+}
+
+// EnterPowerTerm is called when production powerTerm is entered.
+func (s *BaseCqlParserListener) EnterPowerTerm(ctx *PowerTermContext) {}
+
+// ExitPowerTerm is called when production powerTerm is exited.
+func (s *BaseCqlParserListener) ExitPowerTerm(ctx *PowerTermContext) {}
+
+// EnterArithmeticFactor is called when production arithmeticFactor is entered.
+func (s *BaseCqlParserListener) EnterArithmeticFactor(ctx *ArithmeticFactorContext) {}
+
+// ExitArithmeticFactor is called when production arithmeticFactor is exited.
+func (s *BaseCqlParserListener) ExitArithmeticFactor(ctx *ArithmeticFactorContext) {}
+
+// EnterArithmeticOperand is called when production arithmeticOperand is entered.
+func (s *BaseCqlParserListener) EnterArithmeticOperand(ctx *ArithmeticOperandContext) {}
+
+// ExitArithmeticOperand is called when production arithmeticOperand is exited.
+func (s *BaseCqlParserListener) ExitArithmeticOperand(ctx *ArithmeticOperandContext) {}

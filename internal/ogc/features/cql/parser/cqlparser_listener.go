@@ -190,6 +190,27 @@ type CqlParserListener interface {
 	// EnterArgument is called when entering the argument production.
 	EnterArgument(c *ArgumentContext)
 
+	// EnterArithmeticExpression is called when entering the arithmeticExpression production.
+	EnterArithmeticExpression(c *ArithmeticExpressionContext)
+
+	// EnterArithmeticOperatorPlusMinus is called when entering the arithmeticOperatorPlusMinus production.
+	EnterArithmeticOperatorPlusMinus(c *ArithmeticOperatorPlusMinusContext)
+
+	// EnterArithmeticTerm is called when entering the arithmeticTerm production.
+	EnterArithmeticTerm(c *ArithmeticTermContext)
+
+	// EnterArithmeticOperatorMultDiv is called when entering the arithmeticOperatorMultDiv production.
+	EnterArithmeticOperatorMultDiv(c *ArithmeticOperatorMultDivContext)
+
+	// EnterPowerTerm is called when entering the powerTerm production.
+	EnterPowerTerm(c *PowerTermContext)
+
+	// EnterArithmeticFactor is called when entering the arithmeticFactor production.
+	EnterArithmeticFactor(c *ArithmeticFactorContext)
+
+	// EnterArithmeticOperand is called when entering the arithmeticOperand production.
+	EnterArithmeticOperand(c *ArithmeticOperandContext)
+
 	// ExitCqlFilter is called when exiting the cqlFilter production.
 	ExitCqlFilter(c *CqlFilterContext)
 
@@ -372,4 +393,25 @@ type CqlParserListener interface {
 
 	// ExitArgument is called when exiting the argument production.
 	ExitArgument(c *ArgumentContext)
+
+	// ExitArithmeticExpression is called when exiting the arithmeticExpression production.
+	ExitArithmeticExpression(c *ArithmeticExpressionContext)
+
+	// ExitArithmeticOperatorPlusMinus is called when exiting the arithmeticOperatorPlusMinus production.
+	ExitArithmeticOperatorPlusMinus(c *ArithmeticOperatorPlusMinusContext)
+
+	// ExitArithmeticTerm is called when exiting the arithmeticTerm production.
+	ExitArithmeticTerm(c *ArithmeticTermContext)
+
+	// ExitArithmeticOperatorMultDiv is called when exiting the arithmeticOperatorMultDiv production.
+	ExitArithmeticOperatorMultDiv(c *ArithmeticOperatorMultDivContext)
+
+	// ExitPowerTerm is called when exiting the powerTerm production.
+	ExitPowerTerm(c *PowerTermContext)
+
+	// ExitArithmeticFactor is called when exiting the arithmeticFactor production.
+	ExitArithmeticFactor(c *ArithmeticFactorContext)
+
+	// ExitArithmeticOperand is called when exiting the arithmeticOperand production.
+	ExitArithmeticOperand(c *ArithmeticOperandContext)
 }

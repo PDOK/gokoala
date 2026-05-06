@@ -1,0 +1,1 @@
+("beamMode" = :cql_bcde AND "swathDirection" = :cql_fghi AND "polarization" = :cql_jklm AND ST_Intersects(CastAutomagic("geometry"), ST_GeomFromText(:cql_nopq, 100000)))

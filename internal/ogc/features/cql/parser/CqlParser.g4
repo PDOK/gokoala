@@ -21,8 +21,6 @@ options { tokenVocab=CqlLexer; }
 # A CQL2 filter is a logically connected expression of one or more predicates.
 # Predicates include scalar or comparison predicates, spatial predicates or
 # temporal predicates.
-#
-# Arithmetic expressions are not implemented yet.
 #=============================================================================#
 */
 
@@ -87,9 +85,7 @@ isNullOperand : characterClause
 scalarExpression : characterClause
                  | numericLiteral
                  | instantInstance
-                 /*
                  | arithmeticExpression
-                 */
                  | booleanLiteral
                  | propertyName
                  | function;
@@ -111,9 +107,8 @@ characterLiteral : CharacterStringLiteral;
 numericExpression : numericLiteral
                   | propertyName
                   | function
-                  /*
                   | arithmeticExpression
-                  */;
+                  ;
 
 numericLiteral : NumericLiteral;
 
@@ -258,9 +253,8 @@ arrayElement: characterClause
             | arrayClause
             | propertyName
             | function
-            /*
             | arithmeticExpression
-            */;
+            ;
 
 /*
 #=============================================================================#
@@ -282,9 +276,8 @@ argument : characterClause
          | arrayClause
          | propertyName
          | function
-         /*
          | arithmeticExpression
-         */;
+         ;
 
 /*
 #=============================================================================#
@@ -293,7 +286,6 @@ argument : characterClause
 # an arithmetic operators (+,-,*,/) and another arithmetic operand.
 #=============================================================================#
 */
-/* Unsupported for now
 
 arithmeticExpression : arithmeticTerm (arithmeticOperatorPlusMinus arithmeticTerm)?;
 
@@ -311,4 +303,3 @@ arithmeticFactor : LEFTPAREN arithmeticExpression RIGHTPAREN
 arithmeticOperand : numericLiteral
                   | propertyName
                   | function;
-*/

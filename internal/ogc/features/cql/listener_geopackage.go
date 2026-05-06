@@ -432,6 +432,37 @@ func (l *GeoPackageListener) ExitInstantInstance(ctx *parser.InstantInstanceCont
 	}
 }
 
+func (l *GeoPackageListener) ExitFunction(ctx *parser.FunctionContext) {
+	function := ctx.Identifier()
+	if function != nil {
+		functionName := function.GetText()
+		if strings.HasPrefix(strings.ToUpper(functionName), "ST_") {
+			l.errorListener.Error("function " + functionName + " is unsupported. " +
+				"Do note that spatial functions in CQL start with 'S_' like S_INTERSECTS, S_WITHIN, etc.")
+		} else {
+			l.errorListener.Error("function " + functionName + " is unsupported")
+		}
+	}
+}
+
+func (l *GeoPackageListener) ExitArrayPredicate(ctx *parser.ArrayPredicateContext) {
+	if ctx.ArrayFunction() != nil {
+		l.errorListener.Error("array operators are not supported")
+	}
+}
+
+func (l *GeoPackageListener) ExitArithmeticExpression(ctx *parser.ArithmeticExpressionContext) {
+	if ctx.ArithmeticOperatorPlusMinus() != nil {
+		l.errorListener.Error("arithmetic operators are not supported")
+	}
+}
+
+func (l *GeoPackageListener) ExitArithmeticTerm(ctx *parser.ArithmeticTermContext) {
+	if ctx.ArithmeticOperatorMultDiv() != nil {
+		l.errorListener.Error("arithmetic operators are not supported")
+	}
+}
+
 // ExitPropertyName Handle column names
 func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()

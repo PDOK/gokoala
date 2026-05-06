@@ -1311,24 +1311,60 @@ func TestTemporalAndBooleanQuery(t *testing.T) {
 	assertValidSQLiteQuery(t, actual)
 }
 
+func TestFailOnNonSupportedCustomFunctions(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
+	inputCQL := "COOL_FUNCTION(prop9)"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	assert.ErrorContains(t, err, "function COOL_FUNCTION is unsupported")
+}
+
+func TestFailOnNonSupportedArrayOperators(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
+	inputCQL := "A_CONTAINS(prop9, ('foo', 'bar')"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+	// then
+	assert.ErrorContains(t, err, "array operators are not supported")
+}
+
 // Test CQL examples provided by OGC.
 // See https://github.com/opengeospatial/ogcapi-features/tree/64ac2d892b877b711a4570336cb9d42e2afb4ef8/cql2/standard/schema/examples/text
 func TestCQLExamplesProvidedByOGC(t *testing.T) {
-	ogcExamples := path.Join(pwd, "testdata", "ogc")
+	const (
+		ext               = ".txt"
+		expectedSuffix    = "_expected_gpkg" + ext
+		expectedErrSuffix = "_expected_error_gpkg" + ext
+	)
 
+	ogcExamples := path.Join(pwd, "testdata", "ogc")
 	entries, err := os.ReadDir(ogcExamples)
 	require.NoError(t, err)
 
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".txt") {
+		if entry.IsDir() ||
+			strings.Contains(entry.Name(), "postgres"+ext) ||
+			strings.Contains(entry.Name(), expectedSuffix) ||
+			strings.Contains(entry.Name(), expectedErrSuffix) {
 			continue
 		}
 
 		t.Run(entry.Name(), func(t *testing.T) {
 			// given
-			queryables := []domain.Field{{Name: "*"}}
+			queryables := []domain.Field{{Name: "*"}, {Name: "geometry", IsPrimaryGeometry: true}}
+
 			example, err := os.ReadFile(path.Join(ogcExamples, entry.Name()))
 			require.NoError(t, err)
+
+			expectedFile := path.Join(ogcExamples, strings.TrimSuffix(entry.Name(), ext)+expectedSuffix)
+			expectedErrFile := path.Join(ogcExamples, strings.TrimSuffix(entry.Name(), ext)+expectedErrSuffix)
 
 			inputCQL := strings.Map(removeNewlinesAndTabs, strings.TrimSpace(string(example)))
 			require.NotEmpty(t, inputCQL)
@@ -1338,14 +1374,33 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 				t.Skipf("Skipping %s, since this example is not (yet) supported by our CQL implementation", entry.Name())
 			}
 
-			// when
-			actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+			var expectedSQL, expectedErr []byte
+			expectedSQL, err = os.ReadFile(expectedFile)
+			if os.IsNotExist(err) {
+				// no exception file found, assume error is expected
+				expectedErr, err = os.ReadFile(expectedErrFile)
+				require.NoError(t, err, "file with expected error not found")
+			}
 
-			// then
-			require.NoError(t, err)
-			require.NotNil(t, actual)
-			assert.NotEmpty(t, actual.SQL)
-			assertValidSQLiteQuery(t, actual)
+			// when
+			switch {
+			case len(expectedSQL) > 0:
+				actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+				// then
+				require.NoError(t, err)
+				require.NotNil(t, actual)
+				assert.Equal(t, string(expectedSQL), actual.SQL)
+				assertValidSQLiteQuery(t, actual)
+			case len(expectedErr) > 0:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0))
+
+				// then
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), string(expectedErr))
+			default:
+				require.Fail(t, "expected either an expected SQL result or an expected error, but neither was found")
+			}
 		})
 	}
 }

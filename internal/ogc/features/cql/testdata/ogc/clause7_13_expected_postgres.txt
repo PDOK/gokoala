@@ -1,0 +1,1 @@
+("touchdown" > :cql_bcde AND "liftOff" < :cql_fghi)

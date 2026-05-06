@@ -1,0 +1,1 @@
+("starts_at" > :cql_bcde AND "ends_at" < :cql_fghi)

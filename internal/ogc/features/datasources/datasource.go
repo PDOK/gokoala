@@ -12,8 +12,14 @@ import (
 )
 
 // Datasource holds all Features for a single object type in a specific projection/CRS.
-// This abstraction allows the rest of the system to stay datastore agnostic.
+// This abstraction allows the rest of the system to stay datastore agnostic <== IMPORTANT.
 type Datasource interface {
+
+	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
+	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
+
+	// GetFeature returns a specific Feature, based on its feature id
+	GetFeature(ctx context.Context, collection string, featureID any, outputSRID domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
 
 	// GetFeatureIDs returns all IDs of Features matching the given criteria, as well as Cursors for pagination.
 	// To be used in concert with GetFeaturesByID
@@ -21,12 +27,6 @@ type Datasource interface {
 
 	// GetFeaturesByID returns a collection of Features with the given IDs. To be used in concert with GetFeatureIDs
 	GetFeaturesByID(ctx context.Context, collection string, featureIDs []int64, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, error)
-
-	// GetFeatures returns all Features matching the given criteria and Cursors for pagination
-	GetFeatures(ctx context.Context, collection string, criteria FeaturesCriteria, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.FeatureCollection, domain.Cursors, error)
-
-	// GetFeature returns a specific Feature, based on its feature id
-	GetFeature(ctx context.Context, collection string, featureID any, outputSRID domain.SRID, axisOrder domain.AxisOrder, profile domain.Profile) (*domain.Feature, error)
 
 	// SearchFeaturesAcrossCollections search features in one or more collections. Collections can be located
 	// in this dataset or in other datasets.
@@ -114,7 +114,12 @@ type FeaturesSearchCriteria struct {
 
 // Part3Filter OAF part 3 filter based on CQL (Common Query Language).
 type Part3Filter struct {
-	SQL      string
-	Params   map[string]any
-	RtreeSQL string // optional
+	// SQL after parsing the provided CQl.
+	SQL string
+
+	// Named parameters used in SQL
+	Params map[string]any
+
+	// Optional SQL to include/check the RTree index for optimal performance (only for gpkg).
+	RtreeSQL string
 }
