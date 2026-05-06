@@ -43,7 +43,6 @@ func TestCQLExamplesProvidedByOGC_Postgres(t *testing.T) {
 
 	for _, entry := range entries {
 		if entry.IsDir() ||
-			strings.Contains(entry.Name(), "README.md") ||
 			strings.Contains(entry.Name(), "gpkg"+ext) ||
 			strings.Contains(entry.Name(), expectedSuffix) ||
 			strings.Contains(entry.Name(), expectedErrSuffix) {
