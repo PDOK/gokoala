@@ -101,6 +101,83 @@ func (oaf *OgcAPIFeatures) SupportsPart3() bool {
 	return false
 }
 
+// SupportsBasicCQL2 true when basic CQL2 (boolean operators and simple comparisons) is enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsBasicCQL2() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicOperators != nil && *cql.EnableBasicOperators {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportsAdvancedComparisonOperators true when advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsAdvancedComparisonOperators() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableAdvancedComparisonOperators {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportsCaseInsensitiveComparison true when case-insensitive comparison (CASEI) is enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsCaseInsensitiveComparison() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableCaseInsensitiveComparison {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportsBasicSpatialFunctions true when basic spatial functions (S_INTERSECTS on POINT/BBOX) are enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctions() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicSpatialFunctions {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportsBasicSpatialFunctionsPlus true when basic spatial functions plus (S_INTERSECTS on all geometry types) are enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctionsPlus() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicSpatialFunctionsPlus {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportsSpatialFunctions true when all spatial operators are enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsSpatialFunctions() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableSpatialFunctions {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportsTemporalFunctions true when temporal operators are enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsTemporalFunctions() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableTemporalFunctions {
+			return true
+		}
+	}
+	return false
+}
+
 type FeaturesCollections []FeaturesCollection
 
 // ContainsID check if a given collection - by ID - exists.
@@ -348,7 +425,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableAdvancedComparisonOperators bool `yaml:"enableAdvancedComparisonOperators,omitempty" json:"enableAdvancedComparisonOperators,omitempty"`
+	EnableAdvancedComparisonOperators bool `yaml:"enableAdvancedComparisonOperators,omitempty" json:"enableAdvancedComparisonOperators,omitempty" default:"true"`
 
 	// Allow upper/lowercase insensitive filtering (CASEI).
 	//
@@ -356,7 +433,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableCaseInsensitiveComparison bool `yaml:"enableCaseInsensitiveComparison,omitempty" json:"enableCaseInsensitiveComparison,omitempty"`
+	EnableCaseInsensitiveComparison bool `yaml:"enableCaseInsensitiveComparison,omitempty" json:"enableCaseInsensitiveComparison,omitempty" default:"true"`
 
 	// Allow accent- / diacritics-insensitive filtering (ACCENTI).
 	//
@@ -364,7 +441,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableAccentInsensitiveComparison bool `yaml:"enableAccentInsensitiveComparison,omitempty" json:"enableAccentInsensitiveComparison,omitempty"`
+	EnableAccentInsensitiveComparison bool `yaml:"enableAccentInsensitiveComparison,omitempty" json:"enableAccentInsensitiveComparison,omitempty" default:"true"`
 
 	// Allow filtering using spatial intersection (S_INTERSECTS) on two types of geometries: POINT and BBOX.
 	//
@@ -372,7 +449,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableBasicSpatialFunctions bool `yaml:"enableBasicSpatialFunctions,omitempty" json:"enableBasicSpatialFunctions,omitempty"`
+	EnableBasicSpatialFunctions bool `yaml:"enableBasicSpatialFunctions,omitempty" json:"enableBasicSpatialFunctions,omitempty" default:"true"`
 
 	// Allow filtering using spatial intersection (S_INTERSECTS) on all types of geometries: POINT, BBOX, POLYGON,
 	// LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
@@ -381,7 +458,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableBasicSpatialFunctionsPlus bool `yaml:"enableBasicSpatialFunctionsPlus,omitempty" json:"enableBasicSpatialFunctionsPlus,omitempty"`
+	EnableBasicSpatialFunctionsPlus bool `yaml:"enableBasicSpatialFunctionsPlus,omitempty" json:"enableBasicSpatialFunctionsPlus,omitempty" default:"true"`
 
 	// Allow filtering using all spatial operators (S_INTERSECTS, S_CONTAINS, S_WITHIN, S_OVERLAPS, S_EQUALS, S_DISJOINT) on all
 	// types of geometries: POINT, BBOX, POLYGON, LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
@@ -390,7 +467,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableSpatialFunctions bool `yaml:"enableSpatialFunctions,omitempty" json:"enableSpatialFunctions,omitempty"`
+	EnableSpatialFunctions bool `yaml:"enableSpatialFunctions,omitempty" json:"enableSpatialFunctions,omitempty" default:"true"`
 
 	// Allow filtering using temporal operators (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, T_INTERSECTS, T_CONTAINS,
 	// T_DURING, T_FINISHEDBY, T_FINISHES, T_MEETS, T_METBY, T_OVERLAPPEDBY, T_OVERLAPS, T_STARTEDBY, T_STARTS) on
@@ -400,7 +477,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableTemporalFunctions bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty"`
+	EnableTemporalFunctions bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty" default:"true"`
 
 	// Concerning remaining CQL2 conformance classes:
 	// - Array functions are not supported, since we don't have arrays in the API/datasource
