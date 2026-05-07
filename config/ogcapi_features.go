@@ -112,7 +112,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicCQL2() bool {
 	return false
 }
 
-// SupportsAdvancedComparisonOperators true when advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are enabled for at least one collection.
+// SupportsAdvancedComparisonOperators true when advanced comparison operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsAdvancedComparisonOperators() bool {
 	for _, coll := range oaf.Collections {
 		cql := coll.Filters.CQL
@@ -123,7 +123,7 @@ func (oaf *OgcAPIFeatures) SupportsAdvancedComparisonOperators() bool {
 	return false
 }
 
-// SupportsCaseInsensitiveComparison true when case-insensitive comparison (CASEI) is enabled for at least one collection.
+// SupportsCaseInsensitiveComparison true when case-insensitive comparison is enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsCaseInsensitiveComparison() bool {
 	for _, coll := range oaf.Collections {
 		cql := coll.Filters.CQL
@@ -134,8 +134,22 @@ func (oaf *OgcAPIFeatures) SupportsCaseInsensitiveComparison() bool {
 	return false
 }
 
-// SupportsBasicSpatialFunctions true when basic spatial functions (S_INTERSECTS on POINT/BBOX) are enabled for at least one collection.
+// SupportsAccentInsensitiveComparison true when accent/diacritics-insensitive comparison is enabled for at least one collection.
+func (oaf *OgcAPIFeatures) SupportsAccentInsensitiveComparison() bool {
+	for _, coll := range oaf.Collections {
+		cql := coll.Filters.CQL
+		if cql.Enabled != nil && *cql.Enabled && cql.EnableAccentInsensitiveComparison {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportsBasicSpatialFunctions true when basic spatial functions are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctions() bool {
+	if oaf.SupportsSpatialFunctions() || oaf.SupportsBasicSpatialFunctionsPlus() {
+		return true
+	}
 	for _, coll := range oaf.Collections {
 		cql := coll.Filters.CQL
 		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicSpatialFunctions {
@@ -147,6 +161,9 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctions() bool {
 
 // SupportsBasicSpatialFunctionsPlus true when basic spatial functions plus (S_INTERSECTS on all geometry types) are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctionsPlus() bool {
+	if oaf.SupportsSpatialFunctions() {
+		return true
+	}
 	for _, coll := range oaf.Collections {
 		cql := coll.Filters.CQL
 		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicSpatialFunctionsPlus {
@@ -156,7 +173,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctionsPlus() bool {
 	return false
 }
 
-// SupportsSpatialFunctions true when all spatial operators are enabled for at least one collection.
+// SupportsSpatialFunctions true when ALL spatial operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsSpatialFunctions() bool {
 	for _, coll := range oaf.Collections {
 		cql := coll.Filters.CQL
