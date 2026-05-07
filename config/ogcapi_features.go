@@ -91,6 +91,16 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 	return result
 }
 
+// SupportsPart3 true when OGC API supports Part 3 is supported, this depends on whether any of the collections supports CQL.
+func (oaf *OgcAPIFeatures) SupportsPart3() bool {
+	for _, coll := range oaf.Collections {
+		if coll.Filters.CQL.Enabled != nil && *coll.Filters.CQL.Enabled {
+			return true
+		}
+	}
+	return false
+}
+
 type FeaturesCollections []FeaturesCollection
 
 // ContainsID check if a given collection - by ID - exists.

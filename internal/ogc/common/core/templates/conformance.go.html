@@ -89,23 +89,24 @@
                             <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs" target="_blank" aria-label="{{ i18n "To" }} conf/crs {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs</a></td>
                             <td class="small text-nowrap">{{ i18n "Standard" }}</td>
                         </tr>
-{{/*  Enable once we support Features part 3 */}}
-{{/*                    <tr>*/}}
-{{/*                        <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter" target="_blank" aria-label="{{ i18n "To" }} conf/filter {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter</a></td>*/}}
-{{/*                        <td class="small text-nowrap">{{ i18n "Draft" }}</td>*/}}
-{{/*                    </tr>*/}}
-{{/*                    <tr>*/}}
-{{/*                        <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter" target="_blank" aria-label="{{ i18n "To" }} conf/features-filter {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter</a></td>*/}}
-{{/*                        <td class="small text-nowrap">{{ i18n "Draft" }}</td>*/}}
-{{/*                    </tr>*/}}
-{{/*                    <tr>*/}}
-{{/*                        <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables" target="_blank" aria-label="{{ i18n "To" }} conf/queryables {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables</a></td>*/}}
-{{/*                        <td class="small text-nowrap">{{ i18n "Draft" }}</td>*/}}
-{{/*                    </tr>*/}}
-{{/*                    <tr>*/}}
-{{/*                        <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters" target="_blank" aria-label="{{ i18n "To" }} conf/queryables-query-parameters {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters</a></td>*/}}
-{{/*                        <td class="small text-nowrap">{{ i18n "Draft" }}</td>*/}}
-{{/*                    </tr>*/}}
+                        {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.SupportsPart3  }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter" target="_blank" aria-label="{{ i18n "To" }} conf/filter {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter" target="_blank" aria-label="{{ i18n "To" }} conf/features-filter {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables" target="_blank" aria-label="{{ i18n "To" }} conf/queryables {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters" target="_blank" aria-label="{{ i18n "To" }} conf/queryables-query-parameters {{ i18n "Definition" }}">http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                        {{ end }}
                         <tr>
                             <td class="small">http://www.opengis.net/spec/ogcapi-features-5/1.0/conf/schemas</td>
                             <td class="small text-nowrap">{{ i18n "Draft" }}</td>
