@@ -57,6 +57,17 @@
             "$ref": "#/components/parameters/datetime_notsupported"
           },
           {{ end }}
+          {{ if and $coll.Filters $coll.Filters.CQL $coll.Filters.CQL.Enabled }}
+          {
+            "$ref" : "#/components/parameters/filter"
+          },
+          {
+            "$ref" : "#/components/parameters/filter-crs"
+          },
+          {
+            "$ref": "#/components/parameters/filter-lang"
+          },
+          {{ end }}
           {
             "$ref": "#/components/parameters/profile"
           },
@@ -1088,6 +1099,49 @@
             ]
           }
         }
+      },
+      "filter": {
+        "name": "filter",
+        "in": "query",
+        "description": "Filter features using [CQL2](https://docs.ogc.org/is/21-065r2/21-065r2.html) (Common Query Language), which is comparable to SQL.\n\nExamples:\n\n* Comparison operators (`=`, `<>`, `<`, `>`, `<=`, `>=`):\n  * `name = 'FooBar'`\n  * `width > 5`\n  * `height <= 30`\n\n* Logical operators:\n  * `name = 'FooBar' AND (width > 5 OR height <= 30)`\n* Advanced comparison operators (`LIKE`, `BETWEEN`, `IN`, `IS NULL`):\n  * `name LIKE '%Foo%'`\n  * `width BETWEEN 30 AND 35`\n  * `city NOT IN ('Foo', 'Bar')`\n* Case/accent insensitive operators:\n\n  * `CASEI(name) LIKE 'foo%'`\n  * `CASEI(ACCENTI(name)) = CASEI('Bar')`\n\n* Spatial operators:\n  * `S_INTERSECTS(bbox, POLYGON((5.04 52.10, 5.04 52.10, 5.04 52.10, 5.04 52.10)))`\n  * Also `S_DISJOINT`, `S_TOUCHES`, `S_WITHIN`, `S_OVERLAPS`, `S_CROSSES`, `S_CONTAINS`, `S_EQUALS`\n\n* Temporal operators:\n  * `T_AFTER(start, DATE('2050-01-01'))`\n  * `T_BEFORE(end, TIMESTAMP('2050-01-0T00:00:00Z'))`\n  * `T_INTERSECTS(created, INTERVAL('2050-01-01','2050-12-31'))`\n  * `T_INTERSECTS(INTERVAL(start, end), INTERVAL('2050-01-01','2050-12-31'))`\n  * Also `T_EQUALS`, `T_DISJOINT`, `T_DURING`, `T_CONTAINS`, `T_FINISHES`, `T_FINISHEDBY`, `T_MEETS`, `T_METBY`,\n  * And `T_OVERLAPS`, `T_OVERLAPPEDBY`, `T_STARTS`, `T_STARTEDBY`\n\n *NOTE:* In your CQL filter you can reference features properties, but only those listed on the `/<collection>/queryables` endpoints. Also check the conformance classes (`/conformance` endpoint) to see which CQL operators are supported by this API.",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "style": "form",
+        "explode": false
+      },
+      "filter-crs": {
+        "name": "filter-crs",
+        "in": "query",
+        "description": "The coordinate reference system of the geometries in the CQL query. Default is WGS84 longitude/latitude.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+          "enum": [
+            "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+            {{ range $index, $srs := .Config.OgcAPI.Features.CollectionsSRS }}
+              ,"http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" $srs }}"
+            {{ end }}
+          ]
+        },
+        "style": "form",
+        "explode": false
+      },
+      "filter-lang": {
+        "name": "filter-lang",
+        "in": "query",
+        "description": "Language used in the 'filter' parameter.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "default": "cql2-text",
+          "enum": ["cql2-text"]
+        },
+        "style": "form",
+        "explode": false
       },
       "f-features": {
         "description": "The optional f parameter indicates the output format that the server shall provide as part of the response document.  The default format is JSON.",

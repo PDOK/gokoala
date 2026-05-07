@@ -3,7 +3,6 @@ package features
 import (
 	"math/rand/v2"
 	"net/url"
-	"os"
 	"testing"
 	"time"
 
@@ -581,7 +580,7 @@ func TestParseFeatures(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.EqualError(t, err, "CQL filter param is currently not supported", "parse()")
+				assert.EqualError(t, err, "CQL support is not enabled for this API", "parse()")
 
 				return false
 			},
@@ -589,8 +588,6 @@ func TestParseFeatures(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_ = os.Unsetenv("ENABLE_CQL")
-
 			fc := featureCollectionURL{
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,

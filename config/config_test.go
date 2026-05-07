@@ -583,7 +583,7 @@ func TestFeaturesCollection_MarshalUnmarshal_JSON(t *testing.T) {
 	// language=json
 	assert.JSONEq(t, `{
 		"id": "buildings",
-		"filters": { "properties": [ { "name": "status" } ] },
+		"filters": { "properties": [ { "name": "status" } ], "cql": {} },
 		"properties": ["id", "name"],
 		"propertiesExcludeUnknown": true,
 		"propertiesInSpecificOrder": true

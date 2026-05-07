@@ -190,8 +190,11 @@ type FeatureFilters struct {
 	// +optional
 	Properties []PropertyFilter `yaml:"properties,omitempty" json:"properties,omitempty" validate:"dive"`
 
-	// OAF Part 3: add config for complex/CQL filters here
-	// <placeholder>
+	// OAF Part 3: enhanced filtering capabilities expressed using "Common Query Language" (CQL2)
+	// https://docs.ogc.org/is/19-079r2/19-079r2.html
+	//
+	// +optional
+	CQL CQL `yaml:"cql,omitempty" json:"cql,omitempty"`
 }
 
 // +kubebuilder:object:generate=true
@@ -310,6 +313,90 @@ type PropertyFilter struct {
 	// +kubebuilder:default=false
 	// +optional
 	DeriveAllowedValuesFromDatasource *bool `yaml:"deriveAllowedValuesFromDatasource,omitempty" json:"deriveAllowedValuesFromDatasource,omitempty" default:"false"`
+}
+
+// CQL Enable/disable CQL2 conformance classes (https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-enhancements)
+// +kubebuilder:object:generate=true
+type CQL struct {
+	// Global setting to enable/disable CQL. When set to false, all other CQL settings are ignored.
+	//
+	// +kubebuilder:default=true
+	// +optionals
+	Enabled *bool `yaml:"enableCql,omitempty" json:"enableCql,omitempty" default:"true"`
+
+	// Allow filtering using boolean operators (AND, OR, NOT) and simple comparison predicates (=, <>, <, >, <=, >=).
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-core
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableBasicOperators *bool `yaml:"enableBasicOperators,omitempty" json:"enableBasicOperators,omitempty" default:"true"`
+
+	// Allow filtering using advanced operators (LIKE, BETWEEN, IN, IS NULL).
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#advanced-comparison-operators
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableAdvancedComparisonOperators bool `yaml:"enableAdvancedComparisonOperators,omitempty" json:"enableAdvancedComparisonOperators,omitempty"`
+
+	// Allow upper/lowercase insensitive filtering (CASEI).
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#case-insensitive-comparison
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableCaseInsensitiveComparison bool `yaml:"enableCaseInsensitiveComparison,omitempty" json:"enableCaseInsensitiveComparison,omitempty"`
+
+	// Allow accent- / diacritics-insensitive filtering (ACCENTI).
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#accent-insensitive-comparison
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableAccentInsensitiveComparison bool `yaml:"enableAccentInsensitiveComparison,omitempty" json:"enableAccentInsensitiveComparison,omitempty"`
+
+	// Allow filtering using spatial intersection (S_INTERSECTS) on two types of geometries: POINT and BBOX.
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#basic-spatial-functions
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableBasicSpatialFunctions bool `yaml:"enableBasicSpatialFunctions,omitempty" json:"enableBasicSpatialFunctions,omitempty"`
+
+	// Allow filtering using spatial intersection (S_INTERSECTS) on all types of geometries: POINT, BBOX, POLYGON,
+	// LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#basic-spatial-functions-plus
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableBasicSpatialFunctionsPlus bool `yaml:"enableBasicSpatialFunctionsPlus,omitempty" json:"enableBasicSpatialFunctionsPlus,omitempty"`
+
+	// Allow filtering using all spatial operators (S_INTERSECTS, S_CONTAINS, S_WITHIN, S_OVERLAPS, S_EQUALS, S_DISJOINT) on all
+	// types of geometries: POINT, BBOX, POLYGON, LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#spatial-functions
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableSpatialFunctions bool `yaml:"enableSpatialFunctions,omitempty" json:"enableSpatialFunctions,omitempty"`
+
+	// Allow filtering using temporal operators (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, T_INTERSECTS, T_CONTAINS,
+	// T_DURING, T_FINISHEDBY, T_FINISHES, T_MEETS, T_METBY, T_OVERLAPPEDBY, T_OVERLAPS, T_STARTEDBY, T_STARTS) on
+	// instants and intervals.
+	//
+	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#temporal-functions
+	//
+	// +kubebuilder:default=true
+	// +optional
+	EnableTemporalFunctions bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty"`
+
+	// Concerning remaining CQL2 conformance classes:
+	// - Array functions are not supported, since we don't have arrays in the API/datasource
+	// - Property-property is not supported (no need for currently)
+	// - Custom functions are not supported (no need for currently)
+	// - Arithmetic expressions are not supported (no need for currently)
 }
 
 // +kubebuilder:object:generate=true
