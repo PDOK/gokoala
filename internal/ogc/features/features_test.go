@@ -1115,9 +1115,6 @@ func TestFeatures(t *testing.T) {
 				// tip: in JetBrains IDEs you can still jump to failed tests by explicitly selecting "jump to source"
 				t.Run(datasourceName, func(t *testing.T) {
 
-					// enable CQL feature flag.
-					os.Setenv("ENABLE_CQL", "true") //nolint:usetesting // we would rather use t.Setenv() but this isn't possible with t.Parallel enabled.
-
 					req, err := createRequest(tt.fields.url, tt.fields.collectionID, "", tt.fields.format)
 					require.NoError(t, err)
 					rr, ts := createMockServer()

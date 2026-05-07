@@ -52,6 +52,7 @@ func (f *Features) Features() http.HandlerFunc {
 			f.configuredPropertyFilters[collection.GetID()],
 			f.schemas[collection.GetID()],
 			hasDateTime(collection),
+			hasCQLEnabled(collection),
 		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
 			referenceDate, propertyFilters, profile, cqlFilter, err := url.parse()
@@ -197,6 +198,10 @@ func handleFeaturesQueryError(w http.ResponseWriter, collectionID string, err er
 
 func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
+}
+
+func hasCQLEnabled(collection config.FeaturesCollection) bool {
+	return collection.Filters.CQL.Enabled != nil && *collection.Filters.CQL.Enabled
 }
 
 func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema, srid domain.SRID) (ds.Part3Filter, error) {
