@@ -201,6 +201,12 @@
                             <td class="small text-nowrap">{{ i18n "Standard" }}</td>
                         </tr>
                     {{ end }}
+                    {{ if .Config.OgcAPI.Features.SupportsAccentInsensitiveComparison }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/req/accent-insensitive-comparison" target="_blank" aria-label="{{ i18n "To" }} conf/accent-insensitive-comparison {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/accent-insensitive-comparison</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
                     {{ if .Config.OgcAPI.Features.SupportsBasicSpatialFunctions }}
                         <tr>
                             <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions" target="_blank" aria-label="{{ i18n "To" }} conf/basic-spatial-functions {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions</a></td>

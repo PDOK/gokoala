@@ -20,3 +20,14 @@ ogcApi:
         metadata:
           title: CQL
           description: Testdata specifically aimed at testing CQL filters.
+        filters:
+          cql:
+            enabled: true
+            enableBasicOperators: true
+            enableAdvancedComparisonOperators: true
+            enableCaseInsensitiveComparison: true
+            enableAccentInsensitiveComparison: true
+            enableBasicSpatialFunctions: true
+            enableBasicSpatialFunctionsPlus: true
+            enableSpatialFunctions: true
+            enableTemporalFunctions: true

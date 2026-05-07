@@ -48,6 +48,9 @@
      {{ if .Config.OgcAPI.Features.SupportsCaseInsensitiveComparison }}
      ,"http://www.opengis.net/spec/cql2/1.0/conf/case-insensitive-comparison"
      {{ end }}
+     {{ if .Config.OgcAPI.Features.SupportsAccentInsensitiveComparison }}
+     ,"http://www.opengis.net/spec/cql2/1.0/conf/accent-insensitive-comparison"
+     {{ end }}
      {{ if .Config.OgcAPI.Features.SupportsBasicSpatialFunctions }}
      ,"http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions"
      {{ end }}
