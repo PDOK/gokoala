@@ -51,6 +51,34 @@
         </div>
     </div>
 
+    {{ if .Config.OgcAPI.Styles }}
+        <div class="col-md-6 col-sm-12">
+            <div class="card">
+                <h2 class="card-header h5">Styles</h2>
+                <div class="card-body">
+                    <table class="table table-borderless table-sm">
+                        <thead>
+                        <tr>
+                            <th scope="col">Conformance</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="small">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core</td>
+                            <td class="small text-nowrap">{{ i18n "Draft" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="small">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles</td>
+                            <td class="small text-nowrap">{{ i18n "Draft" }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {{ end }}
+
     {{ if .Config.OgcAPI.Features }}
         <div class="col-md-6 col-sm-12">
             <div class="card">
@@ -142,10 +170,10 @@
         </div>
     {{ end }}
 
-    {{ if .Config.OgcAPI.Styles }}
+    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.SupportsPart3  }}
     <div class="col-md-6 col-sm-12">
         <div class="card">
-            <h2 class="card-header h5">Styles</h2>
+            <h2 class="card-header h5"><abbr title="Common Query Language">CQL</abbr></h2>
             <div class="card-body">
                 <table class="table table-borderless table-sm">
                     <thead>
@@ -155,14 +183,48 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td class="small">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core</td>
-                        <td class="small text-nowrap">{{ i18n "Draft" }}</td>
-                    </tr>
-                    <tr>
-                        <td class="small">http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles</td>
-                        <td class="small text-nowrap">{{ i18n "Draft" }}</td>
-                    </tr>
+                    {{ if .Config.OgcAPI.Features.SupportsBasicCQL2 }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2" target="_blank" aria-label="{{ i18n "To" }} conf/basic-cql2 {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Features.SupportsAdvancedComparisonOperators }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators" target="_blank" aria-label="{{ i18n "To" }} conf/advanced-comparison-operators {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Features.SupportsCaseInsensitiveComparison }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/case-insensitive-comparison" target="_blank" aria-label="{{ i18n "To" }} conf/case-insensitive-comparison {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/case-insensitive-comparison</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Features.SupportsBasicSpatialFunctions }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions" target="_blank" aria-label="{{ i18n "To" }} conf/basic-spatial-functions {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Features.SupportsBasicSpatialFunctionsPlus }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions-plus" target="_blank" aria-label="{{ i18n "To" }} conf/basic-spatial-functions-plus {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions-plus</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Features.SupportsSpatialFunctions }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/spatial-functions" target="_blank" aria-label="{{ i18n "To" }} conf/spatial-functions {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/spatial-functions</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
+                    {{ if .Config.OgcAPI.Features.SupportsTemporalFunctions }}
+                        <tr>
+                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/temporal-functions" target="_blank" aria-label="{{ i18n "To" }} conf/temporal-functions {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/temporal-functions</a></td>
+                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                        </tr>
+                    {{ end }}
                     </tbody>
                 </table>
             </div>
