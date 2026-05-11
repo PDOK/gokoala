@@ -283,6 +283,10 @@ type CQL struct {
 	// - Arithmetic expressions are not (yet) supported (no need for currently)
 }
 
+func (c *CQL) IsEnabled() bool {
+	return c.Enable != nil && *c.Enable
+}
+
 // +kubebuilder:object:generate=true
 type TemporalProperties struct {
 	// Name of field in datasource to be used in temporal queries as the start date
