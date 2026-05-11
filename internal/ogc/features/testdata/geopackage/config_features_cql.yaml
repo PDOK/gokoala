@@ -20,3 +20,6 @@ ogcApi:
         metadata:
           title: CQL
           description: Testdata specifically aimed at testing CQL filters.
+        filters:
+          cql:
+            enable: true

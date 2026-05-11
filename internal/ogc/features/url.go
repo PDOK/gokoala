@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"hash/fnv"
 	"net/url"
-	"os"
 	"slices"
 	"sort"
 	"strconv"
@@ -79,6 +78,7 @@ type featureCollectionURL struct {
 	configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
 	schema                    d.Schema
 	supportsDatetime          bool
+	supportsCql               bool
 }
 
 // parse the given URL to values required to delivery a set of Features.
@@ -98,7 +98,7 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
 	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
-	cqlFilter, filterSRID, filterErr := parseFilter(fc.params)
+	cqlFilter, filterSRID, filterErr := parseFilter(fc.params, fc.supportsCql)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
 	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, referenceDateErr, filterErr, inputSRIDErr)
@@ -383,14 +383,13 @@ func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error)
 	return time.Time{}, nil
 }
 
-func parseFilter(params url.Values) (filter string, filterSRID d.SRID, err error) {
+func parseFilter(params url.Values, cqlEnabled bool) (filter string, filterSRID d.SRID, err error) {
 	filter = params.Get(filterParam)
 	filterSRID, _ = ParseCrsToSRID(params, filterCrsParam)
 	filterLang := params.Get(filterLangParam)
 
-	enableCQL := os.Getenv("ENABLE_CQL") == "true" // TODO: feature flag, remove once CQL is fully supported.
-	if filter != "" && !enableCQL {
-		return filter, filterSRID, errors.New("CQL filter param is currently not supported")
+	if filter != "" && !cqlEnabled {
+		return filter, filterSRID, errors.New("CQL support is not enabled for this API")
 	}
 
 	if filterLang == "" {

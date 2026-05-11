@@ -111,6 +111,9 @@ ogcApi:
           properties:
             - name: locator_designator_addressnumberextension
               indexRequired: false
+          cql:
+            enable: true
+
       - id: addresses2
         tableName: addresses
         metadata:
