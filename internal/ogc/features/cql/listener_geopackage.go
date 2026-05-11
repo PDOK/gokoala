@@ -191,10 +191,10 @@ func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCo
 		// when querying a geometry, we need to include the RTree index for optimal performance
 		l.rtreeSQL = fmt.Sprintf(`AND 
 			EXISTS (SELECT 1 FROM rtree_%%[1]s_%%[2]s r WHERE
-				    r.minx <= MbrMaxX(%[1]s) AND 
-				    r.maxx >= MbrMinX(%[1]s) AND 
-                    r.miny <= MbrMaxY(%[1]s) AND 
-                    r.maxy >= MbrMinY(%[1]s))`, geomLiteral)
+				    r.minx <= ST_MaxX(%[1]s) AND 
+				    r.maxx >= ST_MinX(%[1]s) AND 
+                    r.miny <= ST_MaxY(%[1]s) AND 
+                    r.maxy >= ST_MinY(%[1]s))`, geomLiteral)
 	}
 
 	sqlFunction, ok := spatialFunctions[cqlFunction]
@@ -482,12 +482,7 @@ func (l *GeoPackageListener) ExitFunction(ctx *parser.FunctionContext) {
 	function := ctx.Identifier()
 	if function != nil {
 		functionName := function.GetText()
-		if strings.HasPrefix(strings.ToUpper(functionName), "ST_") {
-			l.errorListener.Error("function " + functionName + " is unsupported. " +
-				"Do note that spatial functions in CQL start with 'S_' like S_INTERSECTS, S_WITHIN, etc.")
-		} else {
-			l.errorListener.Error("function " + functionName + " is unsupported")
-		}
+		l.errorListener.Error("function " + functionName + " is unsupported")
 	}
 }
 

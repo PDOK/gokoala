@@ -236,6 +236,21 @@ func TestOperatorShouldWorkRegardlessOfCasing(t *testing.T) {
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
+func TestLikeOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableAdvancedComparisonOperators = false
+
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
+	inputCQL := "prop1 LIKE 'foo%' AND prop2 LIKE 'bar_' OR prop3 LIKE '%abc'"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+}
+
 func TestCaseInsensitiveOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
@@ -252,6 +267,21 @@ func TestCaseInsensitiveOperator(t *testing.T) {
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
+func TestCaseInsensitiveOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableCaseInsensitiveComparison = false
+
+	queryables := []domain.Field{{Name: "prop1"}}
+	inputCQL := "CASEI(prop1) = CASEI('Foo')"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "case-insensitive comparison (CASEI) is not enabled for this collection")
+}
+
 func TestAccentInsensitiveOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
@@ -266,6 +296,21 @@ func TestAccentInsensitiveOperator(t *testing.T) {
 	assertValidSQLiteQuery(t, actual)
 	assert.Equal(t, map[string]any{"cql_bcde": "fóo", "cql_fghi": "débárquér"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
+}
+
+func TestAccentInsensitiveOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableAccentInsensitiveComparison = false
+
+	queryables := []domain.Field{{Name: "prop1"}}
+	inputCQL := "ACCENTI(prop1) = ACCENTI('fóo') OR ACCENTI(prop1) = ACCENTI('débárquér')"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "accent-insensitive comparison (ACCENTI) is not enabled for this collection")
 }
 
 func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
@@ -370,6 +415,21 @@ func TestNotBetweenOperator(t *testing.T) {
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
+func TestBetweenOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableAdvancedComparisonOperators = false
+
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
+	inputCQL := "prop1 NOT BETWEEN 4 AND 6 AND prop2 = 'bar'"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+}
+
 func TestInListOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
@@ -402,6 +462,21 @@ func TestNotInListOperator(t *testing.T) {
 	assert.Equal(t, expectedSQL, actual.SQL)
 }
 
+func TestInOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableAdvancedComparisonOperators = false
+
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
+	inputCQL := "prop1 IN ('foo', 'bar', 'baz') AND prop2 = 'baz'"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+}
+
 func TestIsNullOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
@@ -432,6 +507,21 @@ func TestIsNotNullOperator(t *testing.T) {
 	assertValidSQLiteQuery(t, actual)
 	assert.Equal(t, map[string]any{"cql_bcde": "baz"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
+}
+
+func TestIsNullOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableAdvancedComparisonOperators = false
+
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
+	inputCQL := "prop1 IS NULL AND prop2 = 'baz'"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
 }
 
 func TestFailOnInvalidInListQuery(t *testing.T) {
@@ -687,7 +777,7 @@ func TestSpatialQueryUsesRtree(t *testing.T) {
 	// then
 	require.NoError(t, err)
 	normalizedRtreeClause := strings.Join(strings.Fields(strings.Map(removeNewlinesAndTabs, actual.RtreeSQL)), " ")
-	assert.Equal(t, "AND EXISTS (SELECT 1 FROM rtree_%[1]s_%[2]s r WHERE r.minx <= MbrMaxX(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.maxx >= MbrMinX(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.miny <= MbrMaxY(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.maxy >= MbrMinY(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)))", normalizedRtreeClause)
+	assert.Equal(t, "AND EXISTS (SELECT 1 FROM rtree_%[1]s_%[2]s r WHERE r.minx <= ST_MaxX(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.maxx >= ST_MinX(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.miny <= ST_MaxY(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.maxy >= ST_MinY(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)))", normalizedRtreeClause)
 }
 
 func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
@@ -775,6 +865,57 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 			assert.Equal(t, expectedSQL, actual.SQL)
 		})
 	}
+}
+
+func TestBasicSpatialOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableBasicSpatialFunctions = false
+	cqlConfig.EnableBasicSpatialFunctionsPlus = false
+	cqlConfig.EnableSpatialFunctions = false
+
+	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "spatial operators are not enabled for this collection")
+}
+
+func TestBasicSpatialPlusOperatorNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableBasicSpatialFunctions = true
+	cqlConfig.EnableBasicSpatialFunctionsPlus = false
+	cqlConfig.EnableSpatialFunctions = false
+
+	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
+	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "geometry type 'GEOMETRYCOLLECTION' is not allowed, only POINT and BBOX are allowed with basic spatial filtering")
+}
+
+func TestAllSpatialFunctionsNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableBasicSpatialFunctions = true
+	cqlConfig.EnableBasicSpatialFunctionsPlus = true
+	cqlConfig.EnableSpatialFunctions = false
+
+	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
+	inputCQL := "S_OVERLAPS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "spatial operator 'S_OVERLAPS' is not enabled for this collection, only S_INTERSECTS is allowed")
 }
 
 func TestTemporalAfterWithDate(t *testing.T) {
@@ -1370,6 +1511,21 @@ func TestTemporalAndBooleanQuery(t *testing.T) {
 	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": "2015-01-01"}, actual.Params)
 	assert.Equal(t, expectedSQL, actual.SQL)
 	assertValidSQLiteQuery(t, actual)
+}
+
+func TestTemporalOperatorsNotEnabled(t *testing.T) {
+	// given
+	cqlConfig := cqlConfigAllEnabled
+	cqlConfig.EnableTemporalFunctions = false
+
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
+	inputCQL := "prop1 = 10 AND T_AFTER(prop5, DATE('2015-01-01'))"
+
+	// when
+	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, cqlConfig))
+
+	// then
+	assert.ErrorContains(t, err, "temporal operators are not enabled for this collection")
 }
 
 func TestFailOnNonSupportedCustomFunctions(t *testing.T) {
