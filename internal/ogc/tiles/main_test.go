@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/PDOK/gokoala/internal/engine"
@@ -69,7 +70,7 @@ func TestNewTiles(t *testing.T) {
 										},
 									},
 								},
-								HealthCheck: config.HealthCheck{Enabled: ptrTo(true), Srs: "EPSG:28992", TilePath: &tilePath},
+								HealthCheck: config.HealthCheck{Enabled: types.PtrTo(true), Srs: "EPSG:28992", TilePath: &tilePath},
 							},
 						},
 						Styles: &config.OgcAPIStyles{
@@ -104,7 +105,7 @@ func TestNewTiles(t *testing.T) {
 										},
 									},
 								},
-								HealthCheck: config.HealthCheck{Enabled: ptrTo(false), Srs: "EPSG:28992", TilePath: &tilePath},
+								HealthCheck: config.HealthCheck{Enabled: types.PtrTo(false), Srs: "EPSG:28992", TilePath: &tilePath},
 							},
 						},
 						Styles: &config.OgcAPIStyles{
@@ -994,8 +995,4 @@ func createTilematrixSetsRequest(url string) (*http.Request, error) {
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 	return req, err
-}
-
-func ptrTo[T any](val T) *T {
-	return &val
 }

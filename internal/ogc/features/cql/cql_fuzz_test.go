@@ -36,14 +36,14 @@ func FuzzParseToSQL(f *testing.F) {
 	}
 	f.Fuzz(func(t *testing.T, input string) {
 		// when
-		result, err := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
+		result, err := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992, cqlConfigAllEnabled))
 
 		// then
 		if err == nil && result != nil {
 			assert.Truef(t, utf8.ValidString(result.SQL), "valid string")
 
 			// validate idempotency
-			result2, err2 := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992))
+			result2, err2 := ParseToSQL(input, NewGeoPackageListener(&util.DefaultRandomizer, queryables, 28992, cqlConfigAllEnabled))
 			if err2 != nil {
 				require.NotNil(t, result)
 				assert.Equal(t, result.SQL, result2.SQL)

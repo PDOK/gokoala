@@ -69,7 +69,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 
-		filter, err := f.parseCQL(cqlFilter, datasource, f.schemas[collection.GetID()], inputSRID)
+		filter, err := f.parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.schemas[collection.GetID()], inputSRID)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -204,21 +204,22 @@ func hasCQLEnabled(collection config.FeaturesCollection) bool {
 	return collection.Filters.CQL.Enable != nil && *collection.Filters.CQL.Enable
 }
 
-func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema, srid domain.SRID) (ds.Part3Filter, error) {
+func (f *Features) parseCQL(cqlFilter string, cqlConfig config.CQL,
+	datasource ds.Datasource, schema domain.Schema, srid domain.SRID) (ds.Part3Filter, error) {
+
 	if cqlFilter == "" {
 		return ds.Part3Filter{}, nil
 	}
 
-	var listener cql.Listener
-
 	queryables := make([]domain.Field, 0, len(schema.Fields))
 	queryables = append(queryables, schema.Fields...) // TODO: fill with properties that are allowed to be used in CQL query. For now add ALL properties.
 
+	var listener cql.Listener
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables, srid)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables, srid, cqlConfig)
 	case *postgres.Postgres:
-		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables, srid)
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables, srid, cqlConfig)
 	default:
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}

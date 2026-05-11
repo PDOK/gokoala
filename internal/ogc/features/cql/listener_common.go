@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
@@ -13,6 +14,14 @@ import (
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+const (
+	errAdvancedComparisonNotEnabled        = "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection"
+	errCaseInsensitiveOperatorNotEnabled   = "case-insensitive comparison (CASEI) is not enabled for this collection"
+	errAccentInsensitiveOperatorNotEnabled = "accent-insensitive comparison (ACCENTI) is not enabled for this collection"
+	errSpatialOperatorsNotEnabled          = "spatial operators are not enabled for this collection"
+	errTemporalOperatorsNotEnabled         = "temporal operators are not enabled for this collection"
+)
 
 // CommonListener shared logic between CQL listeners.
 type CommonListener struct {
@@ -23,6 +32,9 @@ type CommonListener struct {
 
 	// namedParams holds named parameters used in the SQL clause (to protect against SQL injection).
 	namedParams map[string]any
+
+	// cqlConfig settings that enable/disable CQL conformance classes.
+	cqlConfig config.CQL
 
 	// queryables the list of allowed columns in the datasource that can be queried.
 	queryables []domain.Field
@@ -35,6 +47,9 @@ type CommonListener struct {
 
 	// errorListener is used to collect parse errors.
 	errorListener *ErrorListener
+
+	// currentWktType is the current WKT type (POINT, POLYGON, etc.) being parsed.
+	currentWktType string
 }
 
 // AddErrorListener adds an ErrorListener to this listener.
