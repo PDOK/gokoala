@@ -58,6 +58,7 @@ var (
 		BboxCrsParam:       {},
 		filterParam:        {},
 		filterCrsParam:     {},
+		filterLangParam:    {},
 		profileParam:       {},
 	}
 
@@ -274,17 +275,13 @@ func ParseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 }
 
 func ParseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
-	if params.Get(BboxParam) == "" && params.Get(BboxCrsParam) != "" {
-		return nil, d.UndefinedSRID, errors.New("bbox-crs can't be used without bbox parameter")
-	}
-
 	bboxSRID, err := ParseCrsToSRID(params, BboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
 	}
 
 	if params.Get(BboxParam) == "" {
-		return nil, d.UndefinedSRID, nil
+		return nil, bboxSRID, nil
 	}
 	bboxValues := strings.Split(params.Get(BboxParam), ",")
 	if len(bboxValues) != 4 {

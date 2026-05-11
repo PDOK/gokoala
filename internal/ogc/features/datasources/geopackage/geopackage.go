@@ -410,7 +410,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s %[11]s limit :l
 		d.MinxField: criteria.Bbox.Min(0),
 		d.MaxyField: criteria.Bbox.Max(1),
 		d.MinyField: criteria.Bbox.Min(1),
-		"bboxSrid":  criteria.InputSRID}
+		"bboxSrid":  criteria.InputSRID.GetOrDefault()}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
 	maps.Copy(namedParams, criteria.Filter.Params)
