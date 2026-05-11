@@ -39,9 +39,7 @@
      ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
      ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables"
      ,"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters"
-     {{ if .Config.OgcAPI.Features.SupportsBasicCQL2 }}
      ,"http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2"
-     {{ end }}
      {{ if .Config.OgcAPI.Features.SupportsAdvancedComparisonOperators }}
      ,"http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators"
      {{ end }}

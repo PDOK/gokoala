@@ -112,15 +112,7 @@ ogcApi:
             - name: locator_designator_addressnumberextension
               indexRequired: false
           cql:
-            enabled: true
-            enableBasicOperators: true
-            enableAdvancedComparisonOperators: true
-            enableCaseInsensitiveComparison: true
-            enableAccentInsensitiveComparison: true
-            enableBasicSpatialFunctions: true
-            enableBasicSpatialFunctionsPlus: true
-            enableSpatialFunctions: true
-            enableTemporalFunctions: true
+            enable: true
 
       - id: addresses2
         tableName: addresses

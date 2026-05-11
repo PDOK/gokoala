@@ -204,85 +204,83 @@ type PropertyFilter struct {
 // CQL Enable/disable CQL2 conformance classes (https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-enhancements)
 // +kubebuilder:object:generate=true
 type CQL struct {
-	// Global setting to enable/disable CQL. When set to false, all other CQL settings are ignored.
-	//
-	// +kubebuilder:default=false
-	// +optionals
-	Enabled *bool `yaml:"enabled,omitempty" json:"enabled,omitempty" default:"false"`
-
 	// Allow filtering using boolean operators (AND, OR, NOT) and simple comparison predicates (=, <>, <, >, <=, >=).
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-core
+	// This is the core CQL conformance class and MUST be enabled to use any other CQL functionality.
+	// In other words: when set to false, all other CQL settings are ignored.
+	//
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/basic-cql2
 	//
 	// +kubebuilder:default=false
 	// +optional
-	EnableBasicOperators *bool `yaml:"enableBasicOperators,omitempty" json:"enableBasicOperators,omitempty" default:"false"`
+	Enable *bool `yaml:"enable,omitempty" json:"enable,omitempty" default:"false"` // TODO: make true in future, currently serves as feature flag.
 
 	// Allow filtering using advanced operators (LIKE, BETWEEN, IN, IS NULL).
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#advanced-comparison-operators
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/advanced-comparison-operators
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	EnableAdvancedComparisonOperators bool `yaml:"enableAdvancedComparisonOperators,omitempty" json:"enableAdvancedComparisonOperators,omitempty" default:"false"`
+	EnableAdvancedComparisonOperators bool `yaml:"enableAdvancedComparisonOperators,omitempty" json:"enableAdvancedComparisonOperators,omitempty" default:"true"`
 
 	// Allow upper/lowercase insensitive filtering (CASEI).
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#case-insensitive-comparison
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/case-insensitive-comparison
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	EnableCaseInsensitiveComparison bool `yaml:"enableCaseInsensitiveComparison,omitempty" json:"enableCaseInsensitiveComparison,omitempty" default:"false"`
+	EnableCaseInsensitiveComparison bool `yaml:"enableCaseInsensitiveComparison,omitempty" json:"enableCaseInsensitiveComparison,omitempty" default:"true"`
 
 	// Allow accent- / diacritics-insensitive filtering (ACCENTI).
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#accent-insensitive-comparison
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/accent-insensitive-comparison
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	EnableAccentInsensitiveComparison bool `yaml:"enableAccentInsensitiveComparison,omitempty" json:"enableAccentInsensitiveComparison,omitempty" default:"false"`
+	EnableAccentInsensitiveComparison bool `yaml:"enableAccentInsensitiveComparison,omitempty" json:"enableAccentInsensitiveComparison,omitempty" default:"true"`
 
 	// Allow filtering using spatial intersection (S_INTERSECTS) on two types of geometries: POINT and BBOX.
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#basic-spatial-functions
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/basic-spatial-functions
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	EnableBasicSpatialFunctions bool `yaml:"enableBasicSpatialFunctions,omitempty" json:"enableBasicSpatialFunctions,omitempty" default:"false"`
+	EnableBasicSpatialFunctions bool `yaml:"enableBasicSpatialFunctions,omitempty" json:"enableBasicSpatialFunctions,omitempty" default:"true"`
 
 	// Allow filtering using spatial intersection (S_INTERSECTS) on all types of geometries: POINT, BBOX, POLYGON,
 	// LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#basic-spatial-functions-plus
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/basic-spatial-functions-plus
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	EnableBasicSpatialFunctionsPlus bool `yaml:"enableBasicSpatialFunctionsPlus,omitempty" json:"enableBasicSpatialFunctionsPlus,omitempty" default:"false"`
+	EnableBasicSpatialFunctionsPlus bool `yaml:"enableBasicSpatialFunctionsPlus,omitempty" json:"enableBasicSpatialFunctionsPlus,omitempty" default:"true"`
 
 	// Allow filtering using all spatial operators (S_INTERSECTS, S_CONTAINS, S_WITHIN, S_OVERLAPS, S_EQUALS, S_DISJOINT) on all
 	// types of geometries: POINT, BBOX, POLYGON, LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#spatial-functions
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/spatial-functions
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	EnableSpatialFunctions bool `yaml:"enableSpatialFunctions,omitempty" json:"enableSpatialFunctions,omitempty" default:"false"`
+	EnableSpatialFunctions bool `yaml:"enableSpatialFunctions,omitempty" json:"enableSpatialFunctions,omitempty" default:"true"`
 
 	// Allow filtering using temporal operators (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, T_INTERSECTS, T_CONTAINS,
 	// T_DURING, T_FINISHEDBY, T_FINISHES, T_MEETS, T_METBY, T_OVERLAPPEDBY, T_OVERLAPS, T_STARTEDBY, T_STARTS) on
 	// instants and intervals.
 	//
-	// This setting enables conformance class: https://docs.ogc.org/is/21-065r2/21-065r2.html#temporal-functions
+	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/temporal-functions
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	EnableTemporalFunctions bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty" default:"false"`
+	EnableTemporalFunctions bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty" default:"true"`
 
 	// Concerning remaining CQL2 conformance classes:
+	//
 	// - Array functions are not supported, since we don't have arrays in the API/datasource
 	// - Property-property is not supported (no need for currently)
 	// - Custom functions are not supported (no need for currently)
-	// - Arithmetic expressions are not supported (no need for currently)
+	// - Arithmetic expressions are not (yet) supported (no need for currently)
 }
 
 // +kubebuilder:object:generate=true

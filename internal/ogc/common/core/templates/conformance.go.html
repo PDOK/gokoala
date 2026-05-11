@@ -183,12 +183,10 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {{ if .Config.OgcAPI.Features.SupportsBasicCQL2 }}
-                        <tr>
-                            <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2" target="_blank" aria-label="{{ i18n "To" }} conf/basic-cql2 {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2</a></td>
-                            <td class="small text-nowrap">{{ i18n "Standard" }}</td>
-                        </tr>
-                    {{ end }}
+                    <tr>
+                        <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2" target="_blank" aria-label="{{ i18n "To" }} conf/basic-cql2 {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2</a></td>
+                        <td class="small text-nowrap">{{ i18n "Standard" }}</td>
+                    </tr>
                     {{ if .Config.OgcAPI.Features.SupportsAdvancedComparisonOperators }}
                         <tr>
                             <td class="small"><a href="http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators" target="_blank" aria-label="{{ i18n "To" }} conf/advanced-comparison-operators {{ i18n "Definition" }}">http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators</a></td>

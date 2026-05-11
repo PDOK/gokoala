@@ -201,7 +201,7 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 }
 
 func hasCQLEnabled(collection config.FeaturesCollection) bool {
-	return collection.Filters.CQL.Enabled != nil && *collection.Filters.CQL.Enabled
+	return collection.Filters.CQL.Enable != nil && *collection.Filters.CQL.Enable
 }
 
 func (f *Features) parseCQL(cqlFilter string, datasource ds.Datasource, schema domain.Schema, srid domain.SRID) (ds.Part3Filter, error) {

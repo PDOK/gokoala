@@ -94,18 +94,8 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 // SupportsPart3 true when OGC API supports Part 3 is supported, this depends on whether any of the collections supports CQL.
 func (oaf *OgcAPIFeatures) SupportsPart3() bool {
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.Enabled != nil && *coll.Filters.CQL.Enabled {
-			return true
-		}
-	}
-	return false
-}
-
-// SupportsBasicCQL2 true when basic CQL2 (boolean operators and simple comparisons) is enabled for at least one collection.
-func (oaf *OgcAPIFeatures) SupportsBasicCQL2() bool {
-	for _, coll := range oaf.Collections {
 		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicOperators != nil && *cql.EnableBasicOperators {
+		if cql.Enable != nil && *cql.Enable {
 			return true
 		}
 	}
@@ -115,8 +105,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicCQL2() bool {
 // SupportsAdvancedComparisonOperators true when advanced comparison operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsAdvancedComparisonOperators() bool {
 	for _, coll := range oaf.Collections {
-		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableAdvancedComparisonOperators {
+		if coll.Filters.CQL.EnableAdvancedComparisonOperators {
 			return true
 		}
 	}
@@ -126,8 +115,7 @@ func (oaf *OgcAPIFeatures) SupportsAdvancedComparisonOperators() bool {
 // SupportsCaseInsensitiveComparison true when case-insensitive comparison is enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsCaseInsensitiveComparison() bool {
 	for _, coll := range oaf.Collections {
-		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableCaseInsensitiveComparison {
+		if coll.Filters.CQL.EnableCaseInsensitiveComparison {
 			return true
 		}
 	}
@@ -137,8 +125,7 @@ func (oaf *OgcAPIFeatures) SupportsCaseInsensitiveComparison() bool {
 // SupportsAccentInsensitiveComparison true when accent/diacritics-insensitive comparison is enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsAccentInsensitiveComparison() bool {
 	for _, coll := range oaf.Collections {
-		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableAccentInsensitiveComparison {
+		if coll.Filters.CQL.EnableAccentInsensitiveComparison {
 			return true
 		}
 	}
@@ -151,8 +138,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctions() bool {
 		return true
 	}
 	for _, coll := range oaf.Collections {
-		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicSpatialFunctions {
+		if coll.Filters.CQL.EnableBasicSpatialFunctions {
 			return true
 		}
 	}
@@ -165,8 +151,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctionsPlus() bool {
 		return true
 	}
 	for _, coll := range oaf.Collections {
-		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableBasicSpatialFunctionsPlus {
+		if coll.Filters.CQL.EnableBasicSpatialFunctionsPlus {
 			return true
 		}
 	}
@@ -176,8 +161,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctionsPlus() bool {
 // SupportsSpatialFunctions true when ALL spatial operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsSpatialFunctions() bool {
 	for _, coll := range oaf.Collections {
-		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableSpatialFunctions {
+		if coll.Filters.CQL.EnableSpatialFunctions {
 			return true
 		}
 	}
@@ -187,8 +171,7 @@ func (oaf *OgcAPIFeatures) SupportsSpatialFunctions() bool {
 // SupportsTemporalFunctions true when temporal operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsTemporalFunctions() bool {
 	for _, coll := range oaf.Collections {
-		cql := coll.Filters.CQL
-		if cql.Enabled != nil && *cql.Enabled && cql.EnableTemporalFunctions {
+		if coll.Filters.CQL.EnableTemporalFunctions {
 			return true
 		}
 	}
