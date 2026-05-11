@@ -502,7 +502,7 @@ func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, m
 		}
 		bboxNamedParams = map[string]any{
 			"bboxWkt":  bboxWkt,
-			"bboxSrid": bboxSRID,
+			"bboxSrid": bboxSRID.GetOrDefault(),
 		}
 	}
 

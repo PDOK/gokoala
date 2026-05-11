@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 
@@ -53,7 +54,7 @@ func TestNewStyles(t *testing.T) {
 					Title:    "Test API",
 					Abstract: "Test API description",
 					Resources: &config.Resources{
-						Directory: ptrTo("/fakedirectory"),
+						Directory: types.PtrTo("/fakedirectory"),
 					},
 					AvailableLanguages: []config.Language{{Tag: language.Dutch}},
 					BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
@@ -72,7 +73,7 @@ func TestNewStyles(t *testing.T) {
 										},
 									},
 								},
-								HealthCheck: config.HealthCheck{Enabled: ptrTo(true), Srs: "EPSG:28992", TilePath: &tilePath},
+								HealthCheck: config.HealthCheck{Enabled: types.PtrTo(true), Srs: "EPSG:28992", TilePath: &tilePath},
 							},
 						},
 						Styles: &config.OgcAPIStyles{
@@ -400,8 +401,4 @@ func createStylesRequest(url string) (*http.Request, error) {
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 	return req, err
-}
-
-func ptrTo[T any](val T) *T {
-	return &val
 }

@@ -141,8 +141,8 @@ func TestAllCollections(t *testing.T) {
 				OgcAPI: OgcAPI{
 					Features: &OgcAPIFeatures{
 						Collections: []FeaturesCollection{
-							{ID: "b", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("Z Title")}},
-							{ID: "a", Metadata: &GeoSpatialCollectionMetadata{Title: ptrTo("A Title")}},
+							{ID: "b", Metadata: &GeoSpatialCollectionMetadata{Title: types.PtrTo("Z Title")}},
+							{ID: "a", Metadata: &GeoSpatialCollectionMetadata{Title: types.PtrTo("A Title")}},
 						},
 					},
 				},
@@ -353,7 +353,7 @@ func TestCacheDir(t *testing.T) {
 			gc: GeoPackageCloud{
 				File: "test.gpkg",
 				Cache: GeoPackageCloudCache{
-					Path: ptrTo("/tmp"),
+					Path: types.PtrTo("/tmp"),
 				},
 			},
 			wantErr: false,
@@ -391,9 +391,9 @@ func TestGeoSpatialCollection_Marshalling_JSON(t *testing.T) {
 			coll: &GeoVolumesCollection{
 				ID: "test i",
 				Metadata: &GeoSpatialCollectionMetadata{
-					Description: ptrTo("test d"),
+					Description: types.PtrTo("test d"),
 				},
-				TileServerPath: ptrTo("test p"),
+				TileServerPath: types.PtrTo("test p"),
 			},
 			// language=json
 			want:    `{"id": "test i", "metadata": {"description": "test d"}, "tileServerPath":  "test p"}`,
@@ -567,8 +567,8 @@ func TestFeaturesCollection_MarshalUnmarshal_JSON(t *testing.T) {
 		ID: "buildings",
 		FeatureProperties: &FeatureProperties{
 			Properties:                []string{"id", "name"},
-			PropertiesExcludeUnknown:  ptrTo(true),
-			PropertiesInSpecificOrder: ptrTo(true),
+			PropertiesExcludeUnknown:  types.PtrTo(true),
+			PropertiesInSpecificOrder: types.PtrTo(true),
 		},
 		Filters: FeatureFilters{
 			Properties: []PropertyFilter{
@@ -607,8 +607,8 @@ func TestFeaturesCollection_MarshalUnmarshal_YAML(t *testing.T) {
 		ID: "roads",
 		FeatureProperties: &FeatureProperties{
 			Properties:                []string{"id", "type"},
-			PropertiesExcludeUnknown:  ptrTo(true),
-			PropertiesInSpecificOrder: ptrTo(true),
+			PropertiesExcludeUnknown:  types.PtrTo(true),
+			PropertiesInSpecificOrder: types.PtrTo(true),
 		},
 	}
 
@@ -629,10 +629,6 @@ func TestFeaturesCollection_MarshalUnmarshal_YAML(t *testing.T) {
 	assert.Equal(t, in.Properties, out.Properties)
 	assert.Equal(t, in.PropertiesExcludeUnknown, out.PropertiesExcludeUnknown)
 	assert.Equal(t, in.PropertiesInSpecificOrder, out.PropertiesInSpecificOrder)
-}
-
-func ptrTo[T any](val T) *T {
-	return &val
 }
 
 func Map[T, V any](collection []T, fn func(T) V) []V {

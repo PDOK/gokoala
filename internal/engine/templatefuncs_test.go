@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,9 +15,9 @@ func TestMarkdown(t *testing.T) {
 		expected template.HTML
 	}{
 		{nil, ""},
-		{ptrTo("**bold**"), "<p><strong>bold</strong></p>\n"},
-		{ptrTo("# Heading"), "<h1>Heading</h1>\n"},
-		{ptrTo("Some [link](https://example.com)"), "<p>Some <a href=\"https://example.com\" target=\"_blank\">link</a></p>\n"},
+		{types.PtrTo("**bold**"), "<p><strong>bold</strong></p>\n"},
+		{types.PtrTo("# Heading"), "<h1>Heading</h1>\n"},
+		{types.PtrTo("Some [link](https://example.com)"), "<p>Some <a href=\"https://example.com\" target=\"_blank\">link</a></p>\n"},
 	}
 
 	for _, tt := range tests {
@@ -32,9 +33,9 @@ func TestUnmarkdown(t *testing.T) {
 		expected string
 	}{
 		{nil, ""},
-		{ptrTo("**bold**"), "bold"},
-		{ptrTo("# Heading"), "Heading"},
-		{ptrTo("Some [link](https://example.com)"), "Some link"},
+		{types.PtrTo("**bold**"), "bold"},
+		{types.PtrTo("# Heading"), "Heading"},
+		{types.PtrTo("Some [link](https://example.com)"), "Some link"},
 	}
 
 	for _, tt := range tests {
@@ -312,8 +313,4 @@ func TestHasField(t *testing.T) {
 			assert.Equal(t, tt.want, hasField(tt.structRef, tt.fieldName))
 		})
 	}
-}
-
-func ptrTo(s string) *string {
-	return &s
 }

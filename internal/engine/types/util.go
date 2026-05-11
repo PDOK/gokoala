@@ -35,3 +35,7 @@ func ToInterfaceSlice[IN any, OUT any](in []IN) []OUT {
 	}
 	return out
 }
+
+func PtrTo[T any](val T) *T {
+	return &val
+}

@@ -58,6 +58,7 @@ var (
 		BboxCrsParam:       {},
 		filterParam:        {},
 		filterCrsParam:     {},
+		filterLangParam:    {},
 		profileParam:       {},
 	}
 
@@ -78,7 +79,7 @@ type featureCollectionURL struct {
 	configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
 	schema                    d.Schema
 	supportsDatetime          bool
-	supportsCql               bool
+	cqlConfig                 config.CQL
 }
 
 // parse the given URL to values required to delivery a set of Features.
@@ -94,11 +95,11 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	limit, limitErr := ParseLimit(fc.params, fc.limit)
 	outputSRID, outputSRIDErr := ParseCrsToSRID(fc.params, CrsParam)
 	contentCrs = ParseCrsToContentCrs(fc.params)
-	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params)
+	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params, fc.cqlConfig)
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
 	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
-	cqlFilter, filterSRID, filterErr := parseFilter(fc.params, fc.supportsCql)
+	cqlFilter, filterSRID, filterErr := parseFilter(fc.params, fc.cqlConfig)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
 	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, referenceDateErr, filterErr, inputSRIDErr)
@@ -274,17 +275,13 @@ func ParseLimit(params url.Values, limitCfg config.Limit) (int, error) {
 }
 
 func ParseBbox(params url.Values) (*geom.Bounds, d.SRID, error) {
-	if params.Get(BboxParam) == "" && params.Get(BboxCrsParam) != "" {
-		return nil, d.UndefinedSRID, errors.New("bbox-crs can't be used without bbox parameter")
-	}
-
 	bboxSRID, err := ParseCrsToSRID(params, BboxCrsParam)
 	if err != nil {
 		return nil, d.UndefinedSRID, err
 	}
 
 	if params.Get(BboxParam) == "" {
-		return nil, d.UndefinedSRID, nil
+		return nil, bboxSRID, nil
 	}
 	bboxValues := strings.Split(params.Get(BboxParam), ",")
 	if len(bboxValues) != 4 {
@@ -344,7 +341,9 @@ func ParseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 }
 
 // Support simple filtering on properties: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
-func parsePropertyFilters(configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues, params url.Values) (map[string]string, error) {
+func parsePropertyFilters(configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues,
+	params url.Values, cqlConfig config.CQL) (map[string]string, error) {
+
 	propertyFilters := make(map[string]string)
 	for name := range configuredPropertyFilters {
 		pf := params.Get(name)
@@ -354,10 +353,12 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Prope
 					"value is limited to %d characters", name, propertyFilterMaxLength)
 			}
 			if strings.Contains(pf, propertyFilterWildcard) {
-				// if/when we choose to support wildcards in the future, make sure wildcards are
-				// only allowed at the END (suffix) of the filter
-				return nil, fmt.Errorf("property filter %s contains a wildcard (%s), "+
-					"wildcard filtering is not allowed", name, propertyFilterWildcard)
+				// In case CQL advanced comparison operators (LIKE operator) are enabled, wildcard filtering is allowed.
+				// Otherwise, it's not.
+				if !cqlConfig.IsEnabled() || !cqlConfig.EnableAdvancedComparisonOperators {
+					return nil, fmt.Errorf("property filter %s contains a wildcard (%s), "+
+						"wildcard filtering is not allowed", name, propertyFilterWildcard)
+				}
 			}
 			propertyFilters[name] = pf
 		}
@@ -383,19 +384,19 @@ func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error)
 	return time.Time{}, nil
 }
 
-func parseFilter(params url.Values, cqlEnabled bool) (filter string, filterSRID d.SRID, err error) {
+func parseFilter(params url.Values, cqlConfig config.CQL) (filter string, filterSRID d.SRID, err error) {
 	filter = params.Get(filterParam)
 	filterSRID, _ = ParseCrsToSRID(params, filterCrsParam)
 	filterLang := params.Get(filterLangParam)
 
-	if filter != "" && !cqlEnabled {
+	if filter != "" && !cqlConfig.IsEnabled() {
 		return filter, filterSRID, errors.New("CQL support is not enabled for this API")
 	}
 
 	if filterLang == "" {
 		filterLang = cqlText
 	}
-	if filterLang == cqlJSON {
+	if strings.EqualFold(filterLang, cqlJSON) {
 		return filter, filterSRID, fmt.Errorf("%s is not supported, only %s is supported", cqlJSON, cqlText)
 	}
 
