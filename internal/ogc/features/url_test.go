@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/stretchr/testify/require"
 	"github.com/twpayne/go-geom"
@@ -21,6 +22,7 @@ func TestParseFeatures(t *testing.T) {
 		params    url.Values
 		limit     config.Limit
 		dtSupport bool
+		cqlConfig config.CQL
 	}
 	host, _ := url.Parse("http://ogc.example")
 	s, err := domain.NewSchema(nil, "fid", "")
@@ -401,24 +403,6 @@ func TestParseFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on bbox-crs without bbox",
-			fields: fields{
-				baseURL: *host,
-				params: url.Values{
-					"bbox-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
-				},
-				limit: config.Limit{
-					Default: 10,
-					Max:     20,
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.EqualError(t, err, "bbox-crs can't be used without bbox parameter", "parse()")
-
-				return false
-			},
-		},
-		{
 			name: "Fail on wrong bbox",
 			fields: fields{
 				baseURL: *host,
@@ -568,7 +552,7 @@ func TestParseFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on unimplemented filter",
+			name: "Fail on disabled CQL filter",
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
@@ -584,6 +568,27 @@ func TestParseFeatures(t *testing.T) {
 
 				return false
 			},
+		},
+		{
+			name: "Pass on enabled CQL filter",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"filter": []string{"some CQL expression"},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				cqlConfig: config.CQL{Enable: types.PtrTo(true)},
+			},
+			wantLimit:     1,
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantRefDate:   nil,
+			wantProfile:   defaultProfile,
+			wantCQL:       "some CQL expression",
+			wantErr:       success(),
 		},
 	}
 	for _, tt := range tests {
