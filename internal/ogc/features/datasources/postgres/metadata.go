@@ -21,7 +21,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // available filters, etc. from the Postgres database. Terminates on failure.
 func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidColumn, externalFidColumn, schemaName string) (
 	tableByCollectionID map[string]*common.Table,
-	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
+	queryablesByCollectionID map[string]ds.QueryablesWithAllowedValues) {
 
 	metadata, err := readDriverMetadata(db)
 	if err != nil {
@@ -36,7 +36,7 @@ func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidC
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
+	queryablesByCollectionID, err = readQueryablesWithAllowedValues(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -120,20 +120,20 @@ where
 	return result, nil
 }
 
-func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Table,
+	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.QueryablesWithAllowedValues, error) {
 
-	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
+	result := make(map[string]ds.QueryablesWithAllowedValues)
 	for _, collection := range collections {
-		result[collection.GetID()] = make(map[string]ds.PropertyFilterWithAllowedValues)
+		result[collection.GetID()] = make(map[string]ds.QueryableWithAllowedValues)
 		featTable := featTableByCollection[collection.GetID()]
 
 		for _, pf := range collection.Filters.Properties {
-			// the result should contain ALL configured property filters, with or without allowed values.
+			// the result should contain ALL configured queryables, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
-			result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
+			result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Queryable: pf}
 			if pf.AllowedValues != nil {
-				result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
+				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Queryable: pf, AllowedValues: pf.AllowedValues}
 
 				continue
 			}
@@ -165,7 +165,7 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 							"newline which isn't a valid (OpenAPI) enum value. The value is: %s", v)
 					}
 				}
-				result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
+				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Queryable: pf, AllowedValues: values}
 
 				continue
 			}

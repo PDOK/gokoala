@@ -597,14 +597,14 @@ func TestParseFeatures(t *testing.T) {
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
-				configuredPropertyFilters: map[string]datasources.PropertyFilterWithAllowedValues{
+				configuredPropertyFilters: map[string]datasources.QueryableWithAllowedValues{
 					"foo": {
-						PropertyFilter: config.PropertyFilter{Name: "foo", Description: "awesome foo property to filter on"},
-						AllowedValues:  nil,
+						Queryable:     config.Queryable{Name: "foo", Description: "awesome foo property to filter on"},
+						AllowedValues: nil,
 					},
 					"bar": {
-						PropertyFilter: config.PropertyFilter{Name: "bar", Description: "even more awesome bar property to filter on"},
-						AllowedValues:  nil,
+						Queryable:     config.Queryable{Name: "bar", Description: "even more awesome bar property to filter on"},
+						AllowedValues: nil,
 					},
 				},
 				schema:           *s,

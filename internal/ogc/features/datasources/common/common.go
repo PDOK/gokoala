@@ -30,10 +30,10 @@ type DatasourceCommon struct {
 	MaxDecimals       int
 	ForceUTC          bool
 
-	TableByCollectionID           map[string]*Table
-	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
-	PropertiesByCollectionID      map[string]*config.FeatureProperties
-	RelationsByCollectionID       map[string][]config.Relation
+	TableByCollectionID      map[string]*Table
+	QueryablesByCollectionID map[string]datasources.QueryablesWithAllowedValues
+	PropertiesByCollectionID map[string]*config.FeatureProperties
+	RelationsByCollectionID  map[string][]config.Relation
 }
 
 // Table metadata about a table containing features or attributes in a data source.
@@ -64,8 +64,8 @@ func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.Col
 	return table.Type, table.GeometryType, nil
 }
 
-func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
-	return dc.PropertyFiltersByCollectionID[collection]
+func (dc *DatasourceCommon) GetQueryablesWithAllowedValues(collection string) datasources.QueryablesWithAllowedValues {
+	return dc.QueryablesByCollectionID[collection]
 }
 
 func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {

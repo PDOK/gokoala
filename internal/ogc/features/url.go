@@ -76,7 +76,7 @@ type featureCollectionURL struct {
 	baseURL                   url.URL
 	params                    url.Values
 	limit                     config.Limit
-	configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues
+	configuredPropertyFilters map[string]datasources.QueryableWithAllowedValues
 	schema                    d.Schema
 	supportsDatetime          bool
 	cqlConfig                 config.CQL
@@ -341,7 +341,7 @@ func ParseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 }
 
 // Support simple filtering on properties: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
-func parsePropertyFilters(configuredPropertyFilters map[string]datasources.PropertyFilterWithAllowedValues,
+func parsePropertyFilters(configuredPropertyFilters map[string]datasources.QueryableWithAllowedValues,
 	params url.Values, cqlConfig config.CQL) (map[string]string, error) {
 
 	propertyFilters := make(map[string]string)
@@ -359,6 +359,8 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Prope
 					return nil, fmt.Errorf("property filter %s contains a wildcard (%s), "+
 						"wildcard filtering is not allowed", name, propertyFilterWildcard)
 				}
+				// replace wildcard with %, as this is the wildcard used in SQL.
+				pf = strings.ReplaceAll(pf, propertyFilterWildcard, "%")
 			}
 			propertyFilters[name] = pf
 		}

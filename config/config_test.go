@@ -571,7 +571,7 @@ func TestFeaturesCollection_MarshalUnmarshal_JSON(t *testing.T) {
 			PropertiesInSpecificOrder: types.PtrTo(true),
 		},
 		Filters: FeatureFilters{
-			Properties: []PropertyFilter{
+			Properties: []Queryable{
 				{Name: "status"},
 			},
 		},

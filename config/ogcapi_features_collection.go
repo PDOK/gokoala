@@ -24,7 +24,8 @@ type FeaturesCollection struct {
 	// +optional
 	Datasources *Datasources `yaml:"datasources,omitempty" json:"datasources,omitempty"`
 
-	// Filters available for this collection
+	// Filters available for this collection, both simple equality filters
+	// (OAF part 1) and advanced CQL filters (OAF part 3) are supported.
 	// +optional
 	Filters FeatureFilters `yaml:"filters,omitempty" json:"filters,omitempty"`
 
@@ -70,14 +71,19 @@ func (cf FeaturesCollection) Merge(other GeoSpatialCollection) GeoSpatialCollect
 
 // +kubebuilder:object:generate=true
 type FeatureFilters struct {
-	// OAF Part 1: filter on feature properties
-	// https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
+	// List of properties in each feature that can be used for filtering. These properties
+	// are also known as "queryables" since they can be used in a filter to query the API.
+	//
+	// Each property will be available as a simple property filter (OAF Part 1,
+	// see https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties)
+	// but can also be used in advanced CQL filters (OAF part 3. The latter requires CQL to be enabled.
 	//
 	// +optional
-	Properties []PropertyFilter `yaml:"properties,omitempty" json:"properties,omitempty" validate:"dive"`
+	Properties []Queryable `yaml:"properties,omitempty" json:"properties,omitempty" validate:"dive"`
 
 	// OAF Part 3: enhanced filtering capabilities expressed using "Common Query Language" (CQL2)
-	// https://docs.ogc.org/is/19-079r2/19-079r2.html
+	// https://docs.ogc.org/is/19-079r2/19-079r2.html. To be used in conjunction with the properties/queryables
+	// listed above.
 	//
 	// +optional
 	CQL CQL `yaml:"cql,omitempty" json:"cql,omitempty"`
@@ -172,18 +178,22 @@ type Limit struct {
 	Max int `yaml:"max,omitempty" json:"max,omitempty" validate:"gte=100" default:"1000"`
 }
 
+// Queryable a "queryable" represents a property/field of a datasource that can
+// be used in a filter (part 1 filter or part 3 CQL filter).
+//
 // +kubebuilder:object:generate=true
-type PropertyFilter struct {
+type Queryable struct {
 	// Needs to match with a column name in the feature table (in the configured datasource)
 	Name string `yaml:"name" json:"name" validate:"required"`
 
-	// Explains this property filter
+	// Explains this property which as user can use in a filter
 	// +kubebuilder:default="Filter features by this property"
 	// +optional
 	Description string `yaml:"description,omitempty" json:"description,omitempty" default:"Filter features by this property"`
 
 	// When true the property/column in the feature table needs to be indexed. Initialization will fail
-	// when no index is present, when false the index check is skipped. For large tables an index is recommended!
+	// when no index is present, when false the index check is skipped. For large tables an index is recommended.
+	// On the other hand, avoid indexing (almost) every column in a table, that defeats the purpose of an index!
 	//
 	// +kubebuilder:default=true
 	// +optional
@@ -194,7 +204,8 @@ type PropertyFilter struct {
 	AllowedValues []string `yaml:"allowedValues,omitempty" json:"allowedValues,omitempty"`
 
 	// Derive a list of allowed values for this property filter from the corresponding column in the datastore.
-	// Use with caution since it can increase startup time when used on large tables. Make sure an index in present.
+	// Use with caution since it can increase startup time when used on large tables. Make sure an index is present.
+	// Allowed values are enforced though the OpenAPI spec.
 	//
 	// +kubebuilder:default=false
 	// +optional
@@ -202,6 +213,7 @@ type PropertyFilter struct {
 }
 
 // CQL Enable/disable CQL2 conformance classes (https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-enhancements)
+//
 // +kubebuilder:object:generate=true
 type CQL struct {
 	// Allow filtering using boolean operators (AND, OR, NOT) and simple comparison predicates (=, <>, <, >, <=, >=).

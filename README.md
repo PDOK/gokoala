@@ -142,7 +142,7 @@ docker run -v `pwd`/examples:/examples -v `pwd`/mytheme:/mytheme -p 8080:8080 -i
 GoKoala has a few requirements regarding GeoPackages backing an OGC API Features:
 
 - Feature IDs (fid) in the GeoPackage should be auto-incrementing.
-- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the
+- Each column used for filtering should have an index, unless `indexRequired: false` is specified in the
   config.
 - Each feature table must contain a [RTree](https://www.geopackage.org/guidance/extensions/rtree_spatial_indexes.html) index.
 - Each feature table must contain a BTree spatial index:
@@ -175,7 +175,7 @@ a local cache that is able to hold the spatial index, see `maxSize` in the confi
 Likewise, GoKoala has a few requirements regarding PostgreSQL backing an OGC API Features:
 
 - Feature IDs (fid) in the table should be auto-incrementing.
-- Each column used for property filtering should have an index, unless `indexRequired: false` is specified in the
+- Each column used for filtering should have an index, unless `indexRequired: false` is specified in the
   config.
 - PostGIS extension needs to be installed and enabled.
 - The geometry field in the table must contain a [GIST index](https://postgis.net/documentation/faq/spatial-indexes/).

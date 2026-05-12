@@ -25,12 +25,12 @@ const (
 type Features struct {
 	engine *engine.Engine
 
-	datasources               map[DatasourceKey]ds.Datasource
-	axisOrderBySRID           map[int]domain.AxisOrder
-	configuredCollections     map[string]config.FeaturesCollection
-	configuredPropertyFilters map[string]ds.PropertyFiltersWithAllowedValues
-	collectionTypes           geospatial.CollectionTypes
-	schemas                   map[string]domain.Schema
+	datasources           map[DatasourceKey]ds.Datasource
+	axisOrderBySRID       map[int]domain.AxisOrder
+	configuredCollections map[string]config.FeaturesCollection
+	configuredQueryables  map[string]ds.QueryablesWithAllowedValues
+	collectionTypes       geospatial.CollectionTypes
+	schemas               map[string]domain.Schema
 
 	html *htmlFeatures
 	json *jsonFeatures
@@ -41,22 +41,22 @@ func NewFeatures(e *engine.Engine) *Features {
 	datasources := CreateDatasources(config.NewFeaturesConfig(e.Config.OgcAPI.Features), e.RegisterShutdownHook)
 	axisOrderBySRID := DetermineAxisOrder(datasources)
 	configuredCollections := cacheConfiguredFeatureCollections(e)
-	configuredPropertyFilters := configurePropertyFiltersWithAllowedValues(datasources, configuredCollections)
+	configuredQueryables := configureQueryablesWithAllowedValues(datasources, configuredCollections)
 	collectionTypes := determineCollectionTypes(datasources)
 
 	schemas := renderSchemas(e, datasources)
-	rebuildOpenAPI(e, datasources, configuredPropertyFilters, collectionTypes, schemas)
+	rebuildOpenAPI(e, datasources, configuredQueryables, collectionTypes, schemas)
 
 	f := &Features{
-		engine:                    e,
-		datasources:               datasources,
-		axisOrderBySRID:           axisOrderBySRID,
-		configuredCollections:     configuredCollections,
-		configuredPropertyFilters: configuredPropertyFilters,
-		collectionTypes:           collectionTypes,
-		schemas:                   schemas,
-		html:                      newHTMLFeatures(e),
-		json:                      newJSONFeatures(e),
+		engine:                e,
+		datasources:           datasources,
+		axisOrderBySRID:       axisOrderBySRID,
+		configuredCollections: configuredCollections,
+		configuredQueryables:  configuredQueryables,
+		collectionTypes:       collectionTypes,
+		schemas:               schemas,
+		html:                  newHTMLFeatures(e),
+		json:                  newJSONFeatures(e),
 	}
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
@@ -189,22 +189,22 @@ func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.Featu
 	return result
 }
 
-func configurePropertyFiltersWithAllowedValues(datasources map[DatasourceKey]ds.Datasource,
-	collections map[string]config.FeaturesCollection) map[string]ds.PropertyFiltersWithAllowedValues {
+func configureQueryablesWithAllowedValues(datasources map[DatasourceKey]ds.Datasource,
+	collections map[string]config.FeaturesCollection) map[string]ds.QueryablesWithAllowedValues {
 
-	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
+	result := make(map[string]ds.QueryablesWithAllowedValues)
 	for k, datasource := range datasources {
-		result[k.collectionID] = datasource.GetPropertyFiltersWithAllowedValues(k.collectionID)
+		result[k.collectionID] = datasource.GetQueryablesWithAllowedValues(k.collectionID)
 	}
 
-	// sanity check to make sure datasources return all configured property filters.
+	// sanity check to make sure datasources return all configured queryables.
 	for _, collection := range collections {
 		actual := len(result[collection.GetID()])
 		if collection.Filters.Properties != nil {
 			expected := len(collection.Filters.Properties)
 			if expected != actual {
-				log.Fatalf("number of property filters received from datasource for collection '%s' does not "+
-					"match the number of configured property filters. Expected filters: %d, got from datasource: %d",
+				log.Fatalf("number of queryables received from datasource for collection '%s' does not "+
+					"match the number of configured queryables (property filters). Expected queryables: %d, got from datasource: %d",
 					collection.GetID(), expected, actual)
 			}
 		}

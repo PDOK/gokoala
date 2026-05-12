@@ -37,7 +37,7 @@ func assertIndexesExist(configuredCollections config.FeaturesCollections, tableB
 					}
 				}
 
-				// assert the column for each property filter is indexed
+				// assert the column for each queryable is indexed
 				for _, propertyFilter := range coll.Filters.Properties {
 					if err := assertIndexExists(table.Name, db, propertyFilter.Name, false, true); err != nil && *propertyFilter.IndexRequired {
 						return fmt.Errorf("%w. To disable this check set 'indexRequired' to 'false'", err)

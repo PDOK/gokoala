@@ -49,7 +49,7 @@ func (f *Features) Features() http.HandlerFunc {
 			*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
 			f.engine.Config.OgcAPI.Features.Limit,
-			f.configuredPropertyFilters[collection.GetID()],
+			f.configuredQueryables[collection.GetID()],
 			f.schemas[collection.GetID()],
 			hasDateTime(collection),
 			collection.Filters.CQL,
@@ -90,7 +90,7 @@ func (f *Features) Features() http.HandlerFunc {
 			switch format {
 			case engine.FormatHTML:
 				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredPropertyFilters[collection.ID],
+					propertyFilters, f.configuredQueryables[collection.ID],
 					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsNonGeoJSON(w, r, collection.ID, newCursor, url, fc)
@@ -101,7 +101,7 @@ func (f *Features) Features() http.HandlerFunc {
 			switch format {
 			case engine.FormatHTML:
 				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredPropertyFilters[collection.ID],
+					propertyFilters, f.configuredQueryables[collection.ID],
 					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, &collection, fc)
