@@ -57,7 +57,7 @@
             "$ref": "#/components/parameters/datetime_notsupported"
           },
           {{ end }}
-          {{ if and $coll.Filters $coll.Filters.CQL $coll.Filters.CQL.Enable }}
+          {{ if and $coll.Filters $coll.Filters.CQL $coll.Filters.CQL.IsEnabled }}
           {
             "$ref" : "#/components/parameters/filter"
           },
