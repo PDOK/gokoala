@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"slices"
@@ -46,13 +47,13 @@ type Table struct {
 	Schema *domain.Schema // required
 }
 
-func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error) {
+func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, datasources.QueryablesWithAllowedValues, error) {
 	table, err := dc.CollectionToTable(collection)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return table.Schema, nil
+	return table.Schema, dc.QueryablesByCollectionID[collection], nil
 }
 
 func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.CollectionType, string, error) {
@@ -62,10 +63,6 @@ func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.Col
 	}
 
 	return table.Type, table.GeometryType, nil
-}
-
-func (dc *DatasourceCommon) GetQueryablesWithAllowedValues(collection string) datasources.QueryablesWithAllowedValues {
-	return dc.QueryablesByCollectionID[collection]
 }
 
 func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {
@@ -229,6 +226,23 @@ func ValidateUniqueness(result map[string]*Table) {
 		log.Printf("Warning: found %d unique table names for %d collections, "+
 			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
 	}
+}
+
+func GetFieldFromSchema(featureTable *Table, configuredQueryable config.Queryable) (domain.Field, error) {
+	if featureTable == nil || featureTable.Schema == nil {
+		return domain.Field{}, errors.New("no schema found")
+	}
+	for _, field := range featureTable.Schema.Fields {
+		if field.Name == configuredQueryable.Name {
+			if field.Description == "" {
+				field.Description = configuredQueryable.Description
+			}
+			field.Description = configuredQueryable.Description
+			return field, nil
+		}
+	}
+
+	return domain.Field{}, fmt.Errorf("property/field '%s' not found in schema", configuredQueryable.Name)
 }
 
 func ptrDeref[T any](ptr *T, def T) T {

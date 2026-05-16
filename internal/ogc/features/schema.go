@@ -85,7 +85,7 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 
 		// the schema should be the same regardless of CRS, so we use WGS84 as it's the default and always present
 		datasource := datasources[DatasourceKey{srid: domain.WGS84SRID, collectionID: collection.ID}]
-		schema, err := datasource.GetSchema(collection.ID)
+		schema, _, err := datasource.GetSchema(collection.ID)
 		if err != nil {
 			log.Printf("Failed to render OGC API Features part 5 Schema for collection %s: %v", collection.ID, err)
 

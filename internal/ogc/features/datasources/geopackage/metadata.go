@@ -173,11 +173,16 @@ func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Ta
 		featTable := featTableByCollection[collection.ID]
 
 		for _, p := range collection.Filters.Properties {
+			field, err := common.GetFieldFromSchema(featTable, p)
+			if err != nil {
+				return nil, err
+			}
+
 			// the result should contain ALL configured queryables, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
-			result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Queryable: p}
+			result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Field: field}
 			if p.AllowedValues != nil {
-				result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Queryable: p, AllowedValues: p.AllowedValues}
+				result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: p.AllowedValues}
 
 				continue
 			}
@@ -189,18 +194,17 @@ func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Ta
 				// select distinct values from given column
 				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", p.Name, featTable.Name)
 				var values []string
-				err := db.Select(&values, query)
-				if err != nil {
+				if err = db.Select(&values, query); err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
 				}
 				// make sure values are valid
 				for _, v := range values {
 					if newlineRegex.MatchString(v) {
 						return nil, fmt.Errorf("failed to derive allowed values, one value contains a "+
-							"newline which isn't a valid (OpenAPI) enum value. The value is: %s", v)
+							"newline which isn't a valid enum value. The value is: %s", v)
 					}
 				}
-				result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Queryable: p, AllowedValues: values}
+				result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
 
 				continue
 			}

@@ -1,8 +1,6 @@
 package features
 
 import (
-	"fmt"
-	"log"
 	"slices"
 	"strings"
 
@@ -27,15 +25,11 @@ type OpenAPIPropertyFilter struct {
 
 // rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
 func rebuildOpenAPI(e *engine.Engine,
-	datasources map[DatasourceKey]ds.Datasource,
 	filters map[string]ds.QueryablesWithAllowedValues,
 	collectionTypes geospatial.CollectionTypes,
 	schemas map[string]domain.Schema) {
 
-	propertyFiltersByCollection, err := createPropertyFiltersByCollection(datasources, filters)
-	if err != nil {
-		log.Fatal(err)
-	}
+	propertyFiltersByCollection := createPropertyFiltersByCollection(filters)
 	e.RebuildOpenAPI(openAPIParams{
 		PropertyFiltersByCollection: propertyFiltersByCollection,
 		CollectionTypes:             collectionTypes,
@@ -43,46 +37,26 @@ func rebuildOpenAPI(e *engine.Engine,
 	})
 }
 
-func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasource,
-	filters map[string]ds.QueryablesWithAllowedValues) (map[string][]OpenAPIPropertyFilter, error) {
-
+func createPropertyFiltersByCollection(filters map[string]ds.QueryablesWithAllowedValues) map[string][]OpenAPIPropertyFilter {
 	result := make(map[string][]OpenAPIPropertyFilter)
-	for k, datasource := range datasources {
-		configuredPropertyFilters := filters[k.collectionID]
-		if len(configuredPropertyFilters) == 0 {
+	for collectionID, filter := range filters {
+		if len(filter) == 0 {
 			continue
 		}
-		featTable, err := datasource.GetSchema(k.collectionID)
-		if err != nil {
-			continue
+		filtersForCollection := make([]OpenAPIPropertyFilter, 0, len(filter))
+		for _, fc := range filter {
+			filtersForCollection = append(filtersForCollection, OpenAPIPropertyFilter{
+				Name:          fc.Name,
+				Description:   fc.Description,
+				DataType:      fc.ToTypeFormat().Type,
+				AllowedValues: fc.AllowedValues,
+			})
 		}
-		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTable.Fields))
-		for _, fc := range configuredPropertyFilters {
-			match := false
-			for _, field := range featTable.Fields {
-				if fc.Name == field.Name {
-					// match found between property filter in config file and database column name
-					propertyFilters = append(propertyFilters, OpenAPIPropertyFilter{
-						Name:          field.Name,
-						Description:   fc.Description,
-						DataType:      field.ToTypeFormat().Type,
-						AllowedValues: fc.AllowedValues,
-					})
-					match = true
-
-					break
-				}
-			}
-			if !match {
-				return nil, fmt.Errorf("invalid property filter specified, "+
-					"column '%s' doesn't exist in datasource attached to collection '%s'", fc.Name, k.collectionID)
-			}
-		}
-		slices.SortFunc(propertyFilters, func(a, b OpenAPIPropertyFilter) int {
+		slices.SortFunc(filtersForCollection, func(a, b OpenAPIPropertyFilter) int {
 			return strings.Compare(a.Name, b.Name)
 		})
-		result[k.collectionID] = propertyFilters
+		result[collectionID] = filtersForCollection
 	}
 
-	return result, nil
+	return result
 }

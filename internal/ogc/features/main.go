@@ -45,7 +45,7 @@ func NewFeatures(e *engine.Engine) *Features {
 	collectionTypes := determineCollectionTypes(datasources)
 
 	schemas := renderSchemas(e, datasources)
-	rebuildOpenAPI(e, datasources, configuredQueryables, collectionTypes, schemas)
+	rebuildOpenAPI(e, configuredQueryables, collectionTypes, schemas)
 
 	f := &Features{
 		engine:                e,
@@ -194,7 +194,10 @@ func configureQueryablesWithAllowedValues(datasources map[DatasourceKey]ds.Datas
 
 	result := make(map[string]ds.QueryablesWithAllowedValues)
 	for k, datasource := range datasources {
-		result[k.collectionID] = datasource.GetQueryablesWithAllowedValues(k.collectionID)
+		_, queryables, err := datasource.GetSchema(k.collectionID)
+		if err == nil {
+			result[k.collectionID] = queryables
+		}
 	}
 
 	// sanity check to make sure datasources return all configured queryables.

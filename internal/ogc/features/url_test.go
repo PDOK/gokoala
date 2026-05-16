@@ -599,11 +599,11 @@ func TestParseFeatures(t *testing.T) {
 				limit:   tt.fields.limit,
 				configuredPropertyFilters: map[string]datasources.QueryableWithAllowedValues{
 					"foo": {
-						Queryable:     config.Queryable{Name: "foo", Description: "awesome foo property to filter on"},
+						Field:         domain.Field{Name: "foo", Description: "awesome foo property to filter on"},
 						AllowedValues: nil,
 					},
 					"bar": {
-						Queryable:     config.Queryable{Name: "bar", Description: "even more awesome bar property to filter on"},
+						Field:         domain.Field{Name: "bar", Description: "even more awesome bar property to filter on"},
 						AllowedValues: nil,
 					},
 				},

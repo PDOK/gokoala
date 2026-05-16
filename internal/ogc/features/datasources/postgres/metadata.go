@@ -129,11 +129,16 @@ func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Ta
 		featTable := featTableByCollection[collection.GetID()]
 
 		for _, pf := range collection.Filters.Properties {
+			field, err := common.GetFieldFromSchema(featTable, pf)
+			if err != nil {
+				return nil, err
+			}
+
 			// the result should contain ALL configured queryables, with or without allowed values.
-			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
-			result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Queryable: pf}
+			// when available, allowed values can be either static (from YAML config) or derived from postgres
+			result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Field: field}
 			if pf.AllowedValues != nil {
-				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Queryable: pf, AllowedValues: pf.AllowedValues}
+				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: pf.AllowedValues}
 
 				continue
 			}
@@ -162,10 +167,10 @@ func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Ta
 				for _, v := range values {
 					if newlineRegex.MatchString(v) {
 						return nil, fmt.Errorf("failed to derive allowed values, one value contains a "+
-							"newline which isn't a valid (OpenAPI) enum value. The value is: %s", v)
+							"newline which isn't a valid enum value. The value is: %s", v)
 					}
 				}
-				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Queryable: pf, AllowedValues: values}
+				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
 
 				continue
 			}
