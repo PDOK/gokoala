@@ -21,7 +21,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // available filters, etc. from the Postgres database. Terminates on failure.
 func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidColumn, externalFidColumn, schemaName string) (
 	tableByCollectionID map[string]*common.Table,
-	queryablesByCollectionID map[string]ds.QueryablesWithAllowedValues) {
+	queryablesByCollectionID map[string]ds.Queryables) {
 
 	metadata, err := readDriverMetadata(db)
 	if err != nil {
@@ -36,7 +36,7 @@ func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidC
 	if err != nil {
 		log.Fatal(err)
 	}
-	queryablesByCollectionID, err = readQueryablesWithAllowedValues(tableByCollectionID, collections, db)
+	queryablesByCollectionID, err = readQueryables(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -120,35 +120,37 @@ where
 	return result, nil
 }
 
-func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.QueryablesWithAllowedValues, error) {
+func readQueryables(featTableByCollection map[string]*common.Table,
+	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.Queryables, error) {
 
-	result := make(map[string]ds.QueryablesWithAllowedValues)
+	result := make(map[string]ds.Queryables)
 	for _, collection := range collections {
 		result[collection.GetID()] = make(map[string]ds.QueryableWithAllowedValues)
-		featTable := featTableByCollection[collection.GetID()]
+		featTable, ok := featTableByCollection[collection.GetID()]
+		if !ok {
+			continue
+		}
 
-		for _, pf := range collection.Filters.Properties {
-			field, err := common.GetFieldFromSchema(featTable, pf)
+		for _, queryable := range collection.Filters.Properties {
+			field, err := featTable.Field(queryable)
 			if err != nil {
 				return nil, err
 			}
 
 			// the result should contain ALL configured queryables, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from postgres
-			result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Field: field}
-			if pf.AllowedValues != nil {
-				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: pf.AllowedValues}
-
+			result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field}
+			if queryable.AllowedValues != nil {
+				result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: queryable.AllowedValues}
 				continue
 			}
-			if *pf.DeriveAllowedValuesFromDatasource {
-				if !*pf.IndexRequired {
+			if *queryable.DeriveAllowedValuesFromDatasource {
+				if !*queryable.IndexRequired {
 					log.Printf("Warning: index is disabled for column %s, deriving allowed values "+
-						"from may take a long time. Index on this column is recommended", pf.Name)
+						"from may take a long time. Index on this column is recommended", queryable.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", pf.Name, featTable.Name)
+				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", queryable.Name, featTable.Name)
 				rows, err := db.Query(context.Background(), query)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
@@ -170,8 +172,7 @@ func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Ta
 							"newline which isn't a valid enum value. The value is: %s", v)
 					}
 				}
-				result[collection.GetID()][pf.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
-
+				result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
 				continue
 			}
 		}

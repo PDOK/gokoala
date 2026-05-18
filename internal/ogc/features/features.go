@@ -49,7 +49,7 @@ func (f *Features) Features() http.HandlerFunc {
 			*f.engine.Config.BaseURL.URL,
 			r.URL.Query(),
 			f.engine.Config.OgcAPI.Features.Limit,
-			f.configuredQueryables[collection.GetID()],
+			f.queryables[collection.GetID()],
 			f.schemas[collection.GetID()],
 			hasDateTime(collection),
 			collection.Filters.CQL,
@@ -69,7 +69,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 
-		filter, err := f.parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.schemas[collection.GetID()], inputSRID)
+		filter, err := f.parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.queryables[collection.GetID()], inputSRID)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -90,7 +90,7 @@ func (f *Features) Features() http.HandlerFunc {
 			switch format {
 			case engine.FormatHTML:
 				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredQueryables[collection.ID],
+					propertyFilters, f.queryables[collection.ID],
 					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsNonGeoJSON(w, r, collection.ID, newCursor, url, fc)
@@ -101,7 +101,7 @@ func (f *Features) Features() http.HandlerFunc {
 			switch format {
 			case engine.FormatHTML:
 				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
-					propertyFilters, f.configuredQueryables[collection.ID],
+					propertyFilters, f.queryables[collection.ID],
 					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, &collection, fc)
@@ -201,21 +201,23 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 }
 
 func (f *Features) parseCQL(cqlFilter string, cqlConfig config.CQL,
-	datasource ds.Datasource, schema domain.Schema, srid domain.SRID) (ds.Part3Filter, error) {
+	datasource ds.Datasource, queryables ds.Queryables, srid domain.SRID) (ds.Part3Filter, error) {
 
 	if cqlFilter == "" {
 		return ds.Part3Filter{}, nil
 	}
 
-	queryables := make([]domain.Field, 0, len(schema.Fields))
-	queryables = append(queryables, schema.Fields...) // TODO: fill with properties that are allowed to be used in CQL query. For now add ALL properties.
+	queryableFields := make([]domain.Field, 0, len(queryables))
+	for _, q := range queryables {
+		queryableFields = append(queryableFields, q.Field)
+	}
 
 	var listener cql.Listener
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryables, srid, cqlConfig)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryableFields, srid, cqlConfig)
 	case *postgres.Postgres:
-		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryables, srid, cqlConfig)
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryableFields, srid, cqlConfig)
 	default:
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}

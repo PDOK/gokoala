@@ -23,3 +23,24 @@ ogcApi:
         filters:
           cql:
             enable: true
+          properties:
+            - name: prop1
+              indexRequired: false
+            - name: prop2
+              indexRequired: false
+            - name: prop3
+              indexRequired: false
+            - name: prop4
+              indexRequired: false
+            - name: prop5
+              indexRequired: false
+            - name: prop6
+              indexRequired: false
+            - name: prop7
+              indexRequired: false
+            - name: prop8
+              indexRequired: false
+            - name: prop9
+              indexRequired: false
+            - name: prop10
+              indexRequired: false

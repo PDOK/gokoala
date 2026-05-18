@@ -76,7 +76,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 	collection config.FeaturesCollection, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
 	propertyFilters map[string]string,
-	configuredPropertyFilters datasources.QueryablesWithAllowedValues,
+	configuredPropertyFilters datasources.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
@@ -89,7 +89,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 
 func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, configuredPropertyFilters datasources.QueryablesWithAllowedValues,
+	propertyFilters map[string]string, configuredPropertyFilters datasources.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
@@ -103,7 +103,7 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, colle
 
 func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, referenceDate *time.Time,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
-	propertyFilters map[string]string, configuredPropertyFilters datasources.QueryablesWithAllowedValues) ([]engine.Breadcrumb, *featureCollectionPage) {
+	propertyFilters map[string]string, configuredPropertyFilters datasources.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{

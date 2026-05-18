@@ -32,7 +32,7 @@ type DatasourceCommon struct {
 	ForceUTC          bool
 
 	TableByCollectionID      map[string]*Table
-	QueryablesByCollectionID map[string]datasources.QueryablesWithAllowedValues
+	QueryablesByCollectionID map[string]datasources.Queryables
 	PropertiesByCollectionID map[string]*config.FeatureProperties
 	RelationsByCollectionID  map[string][]config.Relation
 }
@@ -47,7 +47,23 @@ type Table struct {
 	Schema *domain.Schema // required
 }
 
-func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, datasources.QueryablesWithAllowedValues, error) {
+// Field returns the field with the given name from the table's schema.
+func (t *Table) Field(queryable config.Queryable) (domain.Field, error) {
+	if queryable.Name == "" {
+		return domain.Field{}, errors.New("no column name specified")
+	}
+	for _, field := range t.Schema.Fields {
+		if field.Name == queryable.Name {
+			if field.Description == "" {
+				field.Description = queryable.Description
+			}
+			return field, nil
+		}
+	}
+	return domain.Field{}, fmt.Errorf("queryable field '%s' not found in datastore schema", queryable.Name)
+}
+
+func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, datasources.Queryables, error) {
 	table, err := dc.CollectionToTable(collection)
 	if err != nil {
 		return nil, nil, err
@@ -226,23 +242,6 @@ func ValidateUniqueness(result map[string]*Table) {
 		log.Printf("Warning: found %d unique table names for %d collections, "+
 			"usually each collection is backed by its own unique table\n", len(uniqueTables), len(result))
 	}
-}
-
-func GetFieldFromSchema(featureTable *Table, configuredQueryable config.Queryable) (domain.Field, error) {
-	if featureTable == nil || featureTable.Schema == nil {
-		return domain.Field{}, errors.New("no schema found")
-	}
-	for _, field := range featureTable.Schema.Fields {
-		if field.Name == configuredQueryable.Name {
-			if field.Description == "" {
-				field.Description = configuredQueryable.Description
-			}
-			field.Description = configuredQueryable.Description
-			return field, nil
-		}
-	}
-
-	return domain.Field{}, fmt.Errorf("property/field '%s' not found in schema", configuredQueryable.Name)
 }
 
 func ptrDeref[T any](ptr *T, def T) T {

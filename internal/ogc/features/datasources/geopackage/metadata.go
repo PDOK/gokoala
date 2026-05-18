@@ -26,7 +26,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // available filters, etc. from the GeoPackage. Terminates on failure.
 func readMetadata(db *sqlx.DB, collections config.FeaturesCollections, fidColumn, externalFidColumn string) (
 	tableByCollectionID map[string]*common.Table,
-	queryablesByCollectionID map[string]ds.QueryablesWithAllowedValues) {
+	queryablesByCollectionID map[string]ds.Queryables) {
 
 	metadata, err := readDriverMetadata(db)
 	if err != nil {
@@ -38,7 +38,7 @@ func readMetadata(db *sqlx.DB, collections config.FeaturesCollections, fidColumn
 	if err != nil {
 		log.Fatal(err)
 	}
-	queryablesByCollectionID, err = readQueryablesWithAllowedValues(tableByCollectionID, collections, db)
+	queryablesByCollectionID, err = readQueryables(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -164,35 +164,38 @@ func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
 	return table, nil
 }
 
-func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.FeaturesCollections, db *sqlx.DB) (map[string]ds.QueryablesWithAllowedValues, error) {
+func readQueryables(featTableByCollection map[string]*common.Table,
+	collections config.FeaturesCollections, db *sqlx.DB) (map[string]ds.Queryables, error) {
 
-	result := make(map[string]ds.QueryablesWithAllowedValues)
+	result := make(map[string]ds.Queryables)
 	for _, collection := range collections {
 		result[collection.ID] = make(map[string]ds.QueryableWithAllowedValues)
-		featTable := featTableByCollection[collection.ID]
+		featTable, ok := featTableByCollection[collection.ID]
+		if !ok {
+			continue
+		}
 
-		for _, p := range collection.Filters.Properties {
-			field, err := common.GetFieldFromSchema(featTable, p)
+		for _, queryable := range collection.Filters.Properties {
+			field, err := featTable.Field(queryable)
 			if err != nil {
 				return nil, err
 			}
 
 			// the result should contain ALL configured queryables, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
-			result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Field: field}
-			if p.AllowedValues != nil {
-				result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: p.AllowedValues}
+			result[collection.ID][queryable.Name] = ds.QueryableWithAllowedValues{Field: field}
+			if queryable.AllowedValues != nil {
+				result[collection.ID][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: queryable.AllowedValues}
 
 				continue
 			}
-			if *p.DeriveAllowedValuesFromDatasource {
-				if !*p.IndexRequired {
+			if *queryable.DeriveAllowedValuesFromDatasource {
+				if !*queryable.IndexRequired {
 					log.Printf("Warning: index is disabled for column %s, deriving allowed values "+
-						"from may take a long time. Index on this column is recommended", p.Name)
+						"from may take a long time. Index on this column is recommended", queryable.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", p.Name, featTable.Name)
+				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", queryable.Name, featTable.Name)
 				var values []string
 				if err = db.Select(&values, query); err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
@@ -204,7 +207,7 @@ func readQueryablesWithAllowedValues(featTableByCollection map[string]*common.Ta
 							"newline which isn't a valid enum value. The value is: %s", v)
 					}
 				}
-				result[collection.ID][p.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
+				result[collection.ID][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
 
 				continue
 			}

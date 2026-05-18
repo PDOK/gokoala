@@ -25,11 +25,11 @@ type OpenAPIPropertyFilter struct {
 
 // rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
 func rebuildOpenAPI(e *engine.Engine,
-	filters map[string]ds.QueryablesWithAllowedValues,
+	queryablesByCollection map[string]ds.Queryables,
 	collectionTypes geospatial.CollectionTypes,
 	schemas map[string]domain.Schema) {
 
-	propertyFiltersByCollection := createPropertyFiltersByCollection(filters)
+	propertyFiltersByCollection := toOpenAPIFilters(queryablesByCollection)
 	e.RebuildOpenAPI(openAPIParams{
 		PropertyFiltersByCollection: propertyFiltersByCollection,
 		CollectionTypes:             collectionTypes,
@@ -37,25 +37,29 @@ func rebuildOpenAPI(e *engine.Engine,
 	})
 }
 
-func createPropertyFiltersByCollection(filters map[string]ds.QueryablesWithAllowedValues) map[string][]OpenAPIPropertyFilter {
+func toOpenAPIFilters(queryablesByCollection map[string]ds.Queryables) map[string][]OpenAPIPropertyFilter {
 	result := make(map[string][]OpenAPIPropertyFilter)
-	for collectionID, filter := range filters {
-		if len(filter) == 0 {
+	for collectionID, queryables := range queryablesByCollection {
+		if len(queryables) == 0 {
 			continue
 		}
-		filtersForCollection := make([]OpenAPIPropertyFilter, 0, len(filter))
-		for _, fc := range filter {
-			filtersForCollection = append(filtersForCollection, OpenAPIPropertyFilter{
-				Name:          fc.Name,
-				Description:   fc.Description,
-				DataType:      fc.ToTypeFormat().Type,
-				AllowedValues: fc.AllowedValues,
+		filters := make([]OpenAPIPropertyFilter, 0, len(queryables))
+		for _, queryable := range queryables {
+			if queryable.IsPrimaryGeometry {
+				// no need to expose geometry as a property filter (but can be used in CQL)
+				continue
+			}
+			filters = append(filters, OpenAPIPropertyFilter{
+				Name:          queryable.Name,
+				Description:   queryable.Description,
+				DataType:      queryable.ToTypeFormat().Type,
+				AllowedValues: queryable.AllowedValues,
 			})
 		}
-		slices.SortFunc(filtersForCollection, func(a, b OpenAPIPropertyFilter) int {
+		slices.SortFunc(filters, func(a, b OpenAPIPropertyFilter) int {
 			return strings.Compare(a.Name, b.Name)
 		})
-		result[collectionID] = filtersForCollection
+		result[collectionID] = filters
 	}
 
 	return result

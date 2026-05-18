@@ -183,17 +183,19 @@ type Limit struct {
 //
 // +kubebuilder:object:generate=true
 type Queryable struct {
-	// Needs to match with a column name in the feature table (in the configured datasource)
+	// Needs to match with a column name in the feature table (in the configured datasource).
 	Name string `yaml:"name" json:"name" validate:"required"`
 
-	// Explains this property which as user can use in a filter
+	// Explains this property. When a description for this field already exists in the
+	// schema of the datasource, that one takes precedence.
+	//
 	// +kubebuilder:default="Filter features by this property"
 	// +optional
 	Description string `yaml:"description,omitempty" json:"description,omitempty" default:"Filter features by this property"`
 
-	// When true the property/column in the feature table needs to be indexed. Initialization will fail
-	// when no index is present, when false the index check is skipped. For large tables an index is recommended.
-	// On the other hand, avoid indexing (almost) every column in a table, that defeats the purpose of an index!
+	// When true, the property/column in the feature table needs to be indexed. Initialization will fail
+	// when no index is present. When false, the index check is skipped. For large tables an index is recommended.
+	// On the other hand, avoid indexing (almost) every column in a table since that defeats the purpose of an index!
 	//
 	// +kubebuilder:default=true
 	// +optional
@@ -205,7 +207,9 @@ type Queryable struct {
 
 	// Derive a list of allowed values for this property filter from the corresponding column in the datastore.
 	// Use with caution since it can increase startup time when used on large tables. Make sure an index is present.
-	// Allowed values are enforced though the OpenAPI spec.
+	//
+	// The allowed values will be enforced though the OpenAPI spec. So be aware that the user will receive an
+	// error (not an empty result set) when an invalid value is provided.
 	//
 	// +kubebuilder:default=false
 	// +optional
@@ -287,7 +291,7 @@ type CQL struct {
 	// +optional
 	EnableTemporalFunctions bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty" default:"true"`
 
-	// Concerning remaining CQL2 conformance classes:
+	// NOTE: Concerning remaining CQL2 conformance classes:
 	//
 	// - Array functions are not supported, since we don't have arrays in the API/datasource
 	// - Property-property is not supported (no need for currently)

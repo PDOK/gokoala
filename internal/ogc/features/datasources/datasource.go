@@ -34,7 +34,7 @@ type Datasource interface {
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection,
 	// along with configured queryables (= fields that can be used in filters) enriched with allowed values.
-	GetSchema(collection string) (*domain.Schema, QueryablesWithAllowedValues, error)
+	GetSchema(collection string) (*domain.Schema, Queryables, error)
 
 	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
 	GetCollectionType(collection string) (geospatial.CollectionType, string, error)
@@ -79,8 +79,8 @@ type TemporalCriteria struct {
 	EndDateProperty   string
 }
 
-// QueryableWithAllowedValues a field from the datasource that can be used as a queryable (part 1 filter or part 3 CQL filter),
-// optionally enriched with allowed values.
+// QueryableWithAllowedValues a field from the datasource that can be used as a "queryable", optionally enriched
+// with allowed values. A "queryable" is a field that can be used in a filter (part 1 filter or part 3 CQL filter).
 type QueryableWithAllowedValues struct {
 	domain.Field
 
@@ -88,8 +88,8 @@ type QueryableWithAllowedValues struct {
 	AllowedValues []string
 }
 
-// QueryablesWithAllowedValues one or more QueryableWithAllowedValues indexed by queryable name.
-type QueryablesWithAllowedValues map[string]QueryableWithAllowedValues
+// Queryables one or more QueryableWithAllowedValues indexed by queryable name.
+type Queryables map[string]QueryableWithAllowedValues
 
 // FeaturesSearchCriteria to search features (geocoding).
 type FeaturesSearchCriteria struct {

@@ -11,18 +11,18 @@ import (
 
 func TestCreatePropertyFiltersByCollection(t *testing.T) {
 	tests := []struct {
-		name       string
-		pf         map[string]ds.QueryablesWithAllowedValues
-		wantResult map[string][]OpenAPIPropertyFilter
+		name                   string
+		queryablesByCollection map[string]ds.Queryables
+		wantResult             map[string][]OpenAPIPropertyFilter
 	}{
 		{
-			name:       "Empty input",
-			pf:         map[string]ds.QueryablesWithAllowedValues{"boo": map[string]ds.QueryableWithAllowedValues{}},
-			wantResult: map[string][]OpenAPIPropertyFilter{},
+			name:                   "Empty input",
+			queryablesByCollection: map[string]ds.Queryables{"boo": map[string]ds.QueryableWithAllowedValues{}},
+			wantResult:             map[string][]OpenAPIPropertyFilter{},
 		},
 		{
 			name: "Valid property filters",
-			pf: map[string]ds.QueryablesWithAllowedValues{
+			queryablesByCollection: map[string]ds.Queryables{
 				"foo": map[string]ds.QueryableWithAllowedValues{
 					"straatnaam": {
 						Field:         domain.Field{Name: "straatnaam", Type: "text", Description: "Filter features by this property"},
@@ -42,7 +42,7 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotResult := createPropertyFiltersByCollection(tt.pf)
+			gotResult := toOpenAPIFilters(tt.queryablesByCollection)
 			assert.Equal(t, tt.wantResult, gotResult)
 		})
 	}

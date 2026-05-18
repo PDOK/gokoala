@@ -28,8 +28,8 @@ type Features struct {
 	datasources           map[DatasourceKey]ds.Datasource
 	axisOrderBySRID       map[int]domain.AxisOrder
 	configuredCollections map[string]config.FeaturesCollection
-	configuredQueryables  map[string]ds.QueryablesWithAllowedValues
 	collectionTypes       geospatial.CollectionTypes
+	queryables            map[string]ds.Queryables
 	schemas               map[string]domain.Schema
 
 	html *htmlFeatures
@@ -41,18 +41,18 @@ func NewFeatures(e *engine.Engine) *Features {
 	datasources := CreateDatasources(config.NewFeaturesConfig(e.Config.OgcAPI.Features), e.RegisterShutdownHook)
 	axisOrderBySRID := DetermineAxisOrder(datasources)
 	configuredCollections := cacheConfiguredFeatureCollections(e)
-	configuredQueryables := configureQueryablesWithAllowedValues(datasources, configuredCollections)
 	collectionTypes := determineCollectionTypes(datasources)
+	schemas, queryables := schemasAndQueryablesByCollection(datasources, configuredCollections, collectionTypes)
 
-	schemas := renderSchemas(e, datasources)
-	rebuildOpenAPI(e, configuredQueryables, collectionTypes, schemas)
+	renderSchemas(e, schemas)
+	rebuildOpenAPI(e, queryables, collectionTypes, schemas)
 
 	f := &Features{
 		engine:                e,
 		datasources:           datasources,
 		axisOrderBySRID:       axisOrderBySRID,
 		configuredCollections: configuredCollections,
-		configuredQueryables:  configuredQueryables,
+		queryables:            queryables,
 		collectionTypes:       collectionTypes,
 		schemas:               schemas,
 		html:                  newHTMLFeatures(e),
@@ -83,7 +83,7 @@ type datasourceConfig struct {
 func CreateDatasources(cfg config.FeaturesAndSearchConfig, shutdownHook func(fn func())) map[DatasourceKey]ds.Datasource {
 	configured := make(map[DatasourceKey]*datasourceConfig)
 
-	// configure collection specific datasources first
+	// configure collection-specific datasources first
 	configureCollectionDatasources(cfg, configured)
 	// now configure top-level datasources, for the whole dataset. But only when
 	// there's no collection-specific datasource already configured
@@ -189,31 +189,55 @@ func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.Featu
 	return result
 }
 
-func configureQueryablesWithAllowedValues(datasources map[DatasourceKey]ds.Datasource,
-	collections map[string]config.FeaturesCollection) map[string]ds.QueryablesWithAllowedValues {
+func schemasAndQueryablesByCollection(
+	datasources map[DatasourceKey]ds.Datasource,
+	collections map[string]config.FeaturesCollection,
+	collectionTypes geospatial.CollectionTypes) (map[string]domain.Schema, map[string]ds.Queryables) {
 
-	result := make(map[string]ds.QueryablesWithAllowedValues)
-	for k, datasource := range datasources {
-		_, queryables, err := datasource.GetSchema(k.collectionID)
-		if err == nil {
-			result[k.collectionID] = queryables
-		}
-	}
+	schemaByCollection := make(map[string]domain.Schema)
+	queryablesByCollection := make(map[string]ds.Queryables)
 
-	// sanity check to make sure datasources return all configured queryables.
 	for _, collection := range collections {
-		actual := len(result[collection.GetID()])
-		if collection.Filters.Properties != nil {
-			expected := len(collection.Filters.Properties)
-			if expected != actual {
-				log.Fatalf("number of queryables received from datasource for collection '%s' does not "+
-					"match the number of configured queryables (property filters). Expected queryables: %d, got from datasource: %d",
-					collection.GetID(), expected, actual)
+		// the schema should be the same regardless of CRS, so we use WGS84 as it's the default and always present
+		datasource := datasources[DatasourceKey{srid: domain.WGS84SRID, collectionID: collection.ID}]
+		schema, queryables, err := datasource.GetSchema(collection.ID)
+		if err != nil {
+			log.Printf("failed to get schema for collection %s: %v", collection.ID, err)
+			continue
+		}
+
+		// expand the schema with details about temporal fields
+		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil {
+			for i := range schema.Fields {
+				// OAF part 5: If the features have multiple temporal properties, the roles "primary-interval-start"
+				// and "primary-interval-end" can be used to identify the primary temporal information of the features.
+				if collection.Metadata.TemporalProperties.StartDate == schema.Fields[i].Name {
+					schema.Fields[i].IsPrimaryIntervalStart = true
+				} else if collection.Metadata.TemporalProperties.EndDate == schema.Fields[i].Name {
+					schema.Fields[i].IsPrimaryIntervalEnd = true
+				}
 			}
 		}
-	}
 
-	return result
+		// the geometry field should always be queryable for a feature collection, so we add it when not already defined.
+		_, ok := queryables[domain.GeomPropertyName]
+		if !ok {
+			if collectionTypes.GetCollectionType(collection.ID) == geospatial.Features {
+				geometryField := schema.GetGeomField()
+				if geometryField == nil {
+					log.Printf("no geometry field found in schema for feature collection %s", collection.ID)
+					continue
+				}
+				queryables[domain.GeomPropertyName] = ds.QueryableWithAllowedValues{
+					Field: *geometryField,
+				}
+			}
+		}
+
+		schemaByCollection[collection.ID] = *schema
+		queryablesByCollection[collection.ID] = queryables
+	}
+	return schemaByCollection, queryablesByCollection
 }
 
 // configureTopLevelDatasources configures top-level datasources - in one or multiple CRS's - which can be
