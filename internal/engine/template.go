@@ -41,6 +41,9 @@ type TemplateKey struct {
 	// Optional. Only required when you want to render the same template multiple times (with different content).
 	// By specifying an 'instance name' you can refer to a certain instance of a rendered template later on.
 	InstanceName string
+
+	// Optional, path to another template file that is included in the template.
+	Include string
 }
 
 // TemplateKeyOption implements the functional option pattern for TemplateKey.
@@ -110,6 +113,13 @@ func WithInstanceName(instanceName string) TemplateKeyOption {
 func WithMediaTypeOverwrite(mediaType string) TemplateKeyOption {
 	return func(tk *TemplateKey) {
 		tk.MediaTypeOverwrite = mediaType
+	}
+}
+
+// WithInclude adds a path to another template file that is included in the current template.
+func WithInclude(filePath string) TemplateKeyOption {
+	return func(tk *TemplateKey) {
+		tk.Include = filePath
 	}
 }
 
@@ -209,12 +219,19 @@ func (t *Templates) renderAndSaveTemplate(key TemplateKey, breadcrumbs []Breadcr
 }
 
 func (t *Templates) parseHTMLTemplate(key TemplateKey, lang language.Tag) (string, *htmltemplate.Template) {
-	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
+	templateFile := filepath.Clean(filepath.Join(key.Directory, key.Name))
 	templateFuncs := t.createTemplateFuncs(lang)
-	parsed := htmltemplate.Must(htmltemplate.New(layoutFile).
-		Funcs(templateFuncs).ParseFiles(templatesDir+layoutFile, file))
 
-	return file, parsed
+	files := make([]string, 0, 2)
+	files = append(files, templatesDir+layoutFile, templateFile)
+	if key.Include != "" {
+		files = append(files, key.Include)
+	}
+
+	parsed := htmltemplate.Must(htmltemplate.New(layoutFile).
+		Funcs(templateFuncs).ParseFiles(files...))
+
+	return templateFile, parsed
 }
 func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.URL,
 	params any, breadcrumbs []Breadcrumb, file string, availableFormats []OutputFormat) []byte {
@@ -235,12 +252,24 @@ func (t *Templates) renderHTMLTemplate(parsed *htmltemplate.Template, url *url.U
 }
 
 func (t *Templates) parseNonHTMLTemplate(key TemplateKey, lang language.Tag) (string, *texttemplate.Template) {
-	file := filepath.Clean(filepath.Join(key.Directory, key.Name))
+	templateFile := filepath.Clean(filepath.Join(key.Directory, key.Name))
 	templateFuncs := t.createTemplateFuncs(lang)
-	parsed := texttemplate.Must(texttemplate.New(filepath.Base(file)).
-		Funcs(templateFuncs).Parse(util.ReadFile(file)))
 
-	return file, parsed
+	var parsed *texttemplate.Template
+	if key.Include != "" {
+		if strings.HasSuffix(templateFile, util.GZIP) {
+			log.Printf("cannot parse gzipped template %s, not supported when includes are defined", templateFile)
+			return "", nil
+		}
+		files := []string{templateFile, key.Include}
+		parsed = texttemplate.Must(texttemplate.New(filepath.Base(templateFile)).
+			Funcs(templateFuncs).ParseFiles(files...))
+	} else {
+		parsed = texttemplate.Must(texttemplate.New(filepath.Base(templateFile)).
+			Funcs(templateFuncs).Parse(util.ReadFile(templateFile)))
+	}
+
+	return templateFile, parsed
 }
 
 func (t *Templates) renderNonHTMLTemplate(parsed *texttemplate.Template, params any, key TemplateKey, file string) []byte {

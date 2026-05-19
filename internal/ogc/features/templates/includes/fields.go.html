@@ -1,0 +1,47 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "fields"}}
+    {{ range $feat := .Params.Fields }}
+        {{ $typeFormat := $feat.ToTypeFormat }}
+
+        {{/* Skip feature id and external feature id fields, since we don't include those directly. We always use an 'id' field (as required by GeoJSON / JSON-FG).*/}}
+        {{ if $feat.IsFid }}
+            {{ continue }}
+        {{ end }}
+        {{ if $feat.IsExternalFid }}
+            {{ continue }}
+        {{ end }}
+
+        {{ if $feat.IsPrimaryGeometry }}
+            {{/* Just like 'id', we call the geometry field always 'geometry' regardless of the column name in the data source */}}
+            <tr>
+                <td class="text-nowrap">geometry</td>
+                <td class="text-nowrap">{{ $typeFormat.Type }}</td>
+                <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
+                <td class="text-wrap">{{ $feat.Description }}</td>
+            </tr>
+        {{ else }}
+            <tr>
+                <td class="text-nowrap">
+                {{ if $feat.FeatureRelation }}
+                    {{ $feat.FeatureRelation.Name }}
+                {{ else }}
+                    {{ $feat.Name }}
+                {{ end }}
+                </td>
+                <td class="text-nowrap">{{ if $typeFormat.Format }}{{ $typeFormat.Format }}{{ else }}{{ $typeFormat.Type }}{{ end }}</td>
+                <td class="text-nowrap">{{ if $feat.IsRequired }}{{ i18n "RequiredYes"}}{{ else }}{{ i18n "RequiredNo" }}{{ end }}</td>
+                <td class="text-wrap">
+                    {{ if $feat.IsPrimaryIntervalStart }}
+                        {{ i18n "FeatureIntervalStartDescription"}}<br/>
+                    {{ else if $feat.IsPrimaryIntervalEnd }}
+                        {{ i18n "FeatureIntervalEndDescription"}}<br/>
+                    {{ else if $feat.FeatureRelation }}
+                        {{ i18n "FeatureRelationDescription"}}<br/>
+                    {{ end }}
+
+                    {{ $feat.Description }}
+                </td>
+            </tr>
+        {{ end }}
+    {{ end }}
+{{end}}
