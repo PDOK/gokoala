@@ -1,0 +1,14 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/queryables",
+  "title": "{{ .Params.CollectionTitle }}",
+  {{ if .Params.CollectionDescription }}
+  "description": "{{ unmarkdown .Params.CollectionDescription }}",
+  {{ end }}
+  "type": "object",
+  "properties": {
+    {{block "fields" .}}{{end}}
+  },
+  "additionalProperties": true {{/* The default in JSON Schema, just to make it explicit */}}
+}

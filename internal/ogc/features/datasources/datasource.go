@@ -32,8 +32,8 @@ type Datasource interface {
 	// in this dataset or in other datasets.
 	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, axisOrder domain.AxisOrder, collections searchdomain.CollectionsWithParams) (*domain.FeatureCollection, error)
 
-	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection,
-	// along with configured queryables (= fields that can be used in filters) enriched with allowed values.
+	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection.
+	// Along with configured queryables (= fields that can be used in filters), optionally enriched with allowed values.
 	GetSchema(collection string) (*domain.Schema, Queryables, error)
 
 	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
@@ -91,6 +91,15 @@ type QueryableWithAllowedValues struct {
 // Queryables one or more QueryableWithAllowedValues indexed by queryable name.
 type Queryables map[string]QueryableWithAllowedValues
 
+// Fields flatten queryables to a slice of fields.
+func (q Queryables) Fields() []domain.Field {
+	result := make([]domain.Field, 0, len(q))
+	for _, v := range q {
+		result = append(result, v.Field)
+	}
+	return result
+}
+
 // FeaturesSearchCriteria to search features (geocoding).
 type FeaturesSearchCriteria struct {
 	// the search query after query expansion
@@ -112,7 +121,7 @@ type FeaturesSearchCriteria struct {
 
 // Part3Filter OAF part 3 filter based on CQL (Common Query Language).
 type Part3Filter struct {
-	// SQL after parsing the provided CQl.
+	// SQL after parsing the provided CQL.
 	SQL string
 
 	// Named parameters used in SQL

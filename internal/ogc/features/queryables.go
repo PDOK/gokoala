@@ -6,28 +6,25 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	g "github.com/PDOK/gokoala/internal/ogc/common/geospatial"
+	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
 
-const schemasPath = "/schema"
+const queryablesPath = "/queryables"
 
 const (
-	schemaHTML = templatesDir + "schema.go.html"
-	schemaJSON = templatesDir + "schema.go.json"
-
-	fieldsIncludeHTML = templatesDir + "includes/fields.go.html"
-	fieldsIncludeJSON = templatesDir + "includes/fields.go.json"
+	queryablesHTML = templatesDir + "queryables.go.html"
+	queryablesJSON = templatesDir + "queryables.go.json"
 )
 
-// Schema endpoint serves a schema that describes the features in the collection, either as HTML
-// or as JSON schema (https://json-schema.org/)//
+// Queryables endpoint describes the properties of each feature that can be used for filtering, either as HTML
+// or as JSON schema (https://json-schema.org/)
 //
 //nolint:dupl
-func (f *Features) Schema() http.HandlerFunc {
+func (f *Features) Queryables() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
@@ -47,12 +44,12 @@ func (f *Features) Schema() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			key = engine.NewTemplateKey(schemaHTML,
+			key = engine.NewTemplateKey(queryablesHTML,
 				engine.WithInstanceName(collection.GetID()),
 				engine.WithInclude(fieldsIncludeHTML),
 				f.engine.WithNegotiatedLanguage(w, r))
 		case engine.FormatJSON:
-			key = engine.NewTemplateKey(schemaJSON,
+			key = engine.NewTemplateKey(queryablesJSON,
 				engine.WithInstanceName(collection.GetID()),
 				engine.WithInclude(fieldsIncludeJSON),
 				f.engine.WithNegotiatedLanguage(w, r),
@@ -66,16 +63,16 @@ func (f *Features) Schema() http.HandlerFunc {
 	}
 }
 
-type schemaTemplateData struct {
-	domain.Schema
+type queryablesTemplateData struct {
+	Fields []domain.Field
 
 	CollectionID          string
 	CollectionTitle       string
 	CollectionDescription *string
 }
 
-// renderSchemas pre-renders HTML and JSON schemas describing each feature collection.
-func renderSchemas(e *engine.Engine, schemas map[string]domain.Schema) {
+// renderQueryables pre-renders HTML and JSON queryables describing each feature collection.
+func renderQueryables(e *engine.Engine, queryablesByCollection map[string]ds.Queryables) {
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		title, description := getCollectionTitleAndDesc(collection)
 
@@ -86,59 +83,43 @@ func renderSchemas(e *engine.Engine, schemas map[string]domain.Schema) {
 				Path: collectionsCrumb + collection.ID,
 			},
 			{
-				Name: "Schema",
-				Path: collectionsCrumb + collection.ID + schemasPath,
+				Name: "Queryables",
+				Path: collectionsCrumb + collection.ID + queryablesPath,
 			},
 		}...)
 
-		schema, ok := schemas[collection.ID]
+		queryables, ok := queryablesByCollection[collection.ID]
 		if !ok {
-			log.Printf("Schema for collection %s not found, skipping rendering", collection.ID)
+			log.Printf("Queryables for collection %s not found, skipping rendering", collection.ID)
 			continue
 		}
+		queryableFields := queryables.Fields()
 
 		if !requiresSpecificOrder(collection) {
 			// stable field order
-			slices.SortFunc(schema.Fields, func(a, b domain.Field) int {
+			slices.SortFunc(queryableFields, func(a, b domain.Field) int {
 				return strings.Compare(a.Name, b.Name)
 			})
 		}
 
-		// pre-render the schema, catches issues early on during start-up.
-		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,
-			schemaTemplateData{
-				schema,
+		// pre-render the queryables, catches issues early on during start-up.
+		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+queryablesPath,
+			queryablesTemplateData{
+				queryableFields,
 				collection.ID,
 				title,
 				description,
 			},
 			breadcrumbs,
-			engine.NewTemplateKey(schemaJSON,
+			engine.NewTemplateKey(queryablesJSON,
 				engine.WithInstanceName(collection.ID),
 				engine.WithInclude(fieldsIncludeJSON),
 				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema),
 			),
-			engine.NewTemplateKey(schemaHTML,
+			engine.NewTemplateKey(queryablesHTML,
 				engine.WithInstanceName(collection.ID),
 				engine.WithInclude(fieldsIncludeHTML),
 			),
 		)
 	}
-}
-
-func requiresSpecificOrder(collection config.FeaturesCollection) bool {
-	if collection.FeatureProperties != nil && collection.PropertiesInSpecificOrder != nil {
-		return *collection.PropertiesInSpecificOrder
-	}
-
-	return false
-}
-
-func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, *string) {
-	var description *string
-	if collection.GetMetadata() != nil {
-		description = collection.GetMetadata().Description
-	}
-
-	return getCollectionTitle(collection.GetID(), collection.GetMetadata()), description
 }

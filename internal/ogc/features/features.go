@@ -207,9 +207,9 @@ func (f *Features) parseCQL(cqlFilter string, cqlConfig config.CQL,
 		return ds.Part3Filter{}, nil
 	}
 
-	queryableFields := make([]domain.Field, 0, len(queryables))
-	for _, q := range queryables {
-		queryableFields = append(queryableFields, q.Field)
+	var queryableFields []domain.Field
+	if queryables != nil {
+		queryableFields = queryables.Fields()
 	}
 
 	var listener cql.Listener

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://localhost:8080/collections/foo/queryables",
+  "title": "Foooo",
+  "description": "Foooo",
+  "type": "object",
+  "properties": {
+    "geometry": {
+      "x-ogc-role": "primary-geometry",
+      "format": "geometry-point"
+    },
+    "postcode": {
+      "description": "Filter features by this property",
+      "type": "string"
+    },
+    "straatnaam": {
+      "description": "Filter features by this property",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

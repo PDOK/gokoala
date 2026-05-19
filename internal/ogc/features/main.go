@@ -45,15 +45,16 @@ func NewFeatures(e *engine.Engine) *Features {
 	schemas, queryables := schemasAndQueryablesByCollection(datasources, configuredCollections, collectionTypes)
 
 	renderSchemas(e, schemas)
-	rebuildOpenAPI(e, queryables, collectionTypes, schemas)
+	renderQueryables(e, queryables)
+	rebuildOpenAPI(e, queryables, schemas, collectionTypes)
 
 	f := &Features{
 		engine:                e,
 		datasources:           datasources,
 		axisOrderBySRID:       axisOrderBySRID,
 		configuredCollections: configuredCollections,
-		queryables:            queryables,
 		collectionTypes:       collectionTypes,
+		queryables:            queryables,
 		schemas:               schemas,
 		html:                  newHTMLFeatures(e),
 		json:                  newJSONFeatures(e),
@@ -62,6 +63,7 @@ func NewFeatures(e *engine.Engine) *Features {
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items", f.Features())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/items/{featureId}", f.Feature())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/schema", f.Schema())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/queryables", f.Queryables())
 
 	return f
 }
