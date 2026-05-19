@@ -212,7 +212,7 @@ func validateFeatureCollections(collections []FeaturesCollection) error {
 		if collection.Filters.Properties != nil {
 			for _, pf := range collection.Filters.Properties {
 				if pf.AllowedValues != nil && *pf.DeriveAllowedValuesFromDatasource {
-					errMessages = append(errMessages, fmt.Sprintf("validation failed for property filter '%s'; "+
+					errMessages = append(errMessages, fmt.Sprintf("validation failed for queryable '%s'; "+
 						"field 'AllowedValues' and field 'DeriveAllowedValuesFromDatasource' are mutually exclusive\n", pf.Name))
 				}
 			}

@@ -32,12 +32,9 @@ type Datasource interface {
 	// in this dataset or in other datasets.
 	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, axisOrder domain.AxisOrder, collections searchdomain.CollectionsWithParams) (*domain.FeatureCollection, error)
 
-	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection
-	GetSchema(collection string) (*domain.Schema, error)
-
-	// GetPropertyFiltersWithAllowedValues returns configured property filters for the given collection enriched with allowed values.
-	// When enrichments don't apply, the returned result should still contain all property filters as specified in the (YAML) config.
-	GetPropertyFiltersWithAllowedValues(collection string) PropertyFiltersWithAllowedValues
+	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection,
+	// along with configured queryables (= fields that can be used in filters) enriched with allowed values.
+	GetSchema(collection string) (*domain.Schema, Queryables, error)
 
 	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
 	GetCollectionType(collection string) (geospatial.CollectionType, string, error)
@@ -82,16 +79,17 @@ type TemporalCriteria struct {
 	EndDateProperty   string
 }
 
-// PropertyFilterWithAllowedValues property filter as configured in the (YAML) config, but enriched with allowed values.
-type PropertyFilterWithAllowedValues struct {
-	config.PropertyFilter
+// QueryableWithAllowedValues a field from the datasource that can be used as a "queryable", optionally enriched
+// with allowed values. A "queryable" is a field that can be used in a filter (part 1 filter or part 3 CQL filter).
+type QueryableWithAllowedValues struct {
+	domain.Field
 
-	// static or dynamic values that are allowed to be used in this property filter
+	// static or dynamic values that are allowed to be used in this queryable
 	AllowedValues []string
 }
 
-// PropertyFiltersWithAllowedValues one or more PropertyFilterWithAllowedValues indexed by property filter name.
-type PropertyFiltersWithAllowedValues map[string]PropertyFilterWithAllowedValues
+// Queryables one or more QueryableWithAllowedValues indexed by queryable name.
+type Queryables map[string]QueryableWithAllowedValues
 
 // FeaturesSearchCriteria to search features (geocoding).
 type FeaturesSearchCriteria struct {

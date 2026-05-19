@@ -46,7 +46,10 @@ func (ct CollectionType) IsSpatialRequestAllowed(bbox *geom.Bounds) bool {
 
 // CollectionTypes one or more CollectionType.
 type CollectionTypes struct {
-	Types     map[string]CollectionType
+	// CollectionType by collection ID.
+	Types map[string]CollectionType
+
+	// Geometry type by collection ID.
 	GeomTypes map[string]string
 }
 

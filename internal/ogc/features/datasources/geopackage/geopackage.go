@@ -79,7 +79,7 @@ func NewGeoPackage(collections config.FeaturesCollections, gpkgConfig config.Geo
 		return nil, errors.New("unknown GeoPackage config encountered")
 	}
 
-	g.TableByCollectionID, g.PropertyFiltersByCollectionID = readMetadata(
+	g.TableByCollectionID, g.QueryablesByCollectionID = readMetadata(
 		g.backend.getDB(), collections, g.FidColumn, g.ExternalFidColumn)
 
 	if err := assertIndexesExist(collections, g.TableByCollectionID, g.backend.getDB(), g.FidColumn); err != nil {

@@ -26,7 +26,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // available filters, etc. from the GeoPackage. Terminates on failure.
 func readMetadata(db *sqlx.DB, collections config.FeaturesCollections, fidColumn, externalFidColumn string) (
 	tableByCollectionID map[string]*common.Table,
-	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
+	queryablesByCollectionID map[string]ds.Queryables) {
 
 	metadata, err := readDriverMetadata(db)
 	if err != nil {
@@ -38,7 +38,7 @@ func readMetadata(db *sqlx.DB, collections config.FeaturesCollections, fidColumn
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
+	queryablesByCollectionID, err = readQueryables(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -164,43 +164,50 @@ func readGeoPackageTable(rows *sqlx.Rows) (common.Table, error) {
 	return table, nil
 }
 
-func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.FeaturesCollections, db *sqlx.DB) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+func readQueryables(featTableByCollection map[string]*common.Table,
+	collections config.FeaturesCollections, db *sqlx.DB) (map[string]ds.Queryables, error) {
 
-	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
+	result := make(map[string]ds.Queryables)
 	for _, collection := range collections {
-		result[collection.ID] = make(map[string]ds.PropertyFilterWithAllowedValues)
-		featTable := featTableByCollection[collection.ID]
+		result[collection.ID] = make(map[string]ds.QueryableWithAllowedValues)
+		featTable, ok := featTableByCollection[collection.ID]
+		if !ok {
+			continue
+		}
 
-		for _, pf := range collection.Filters.Properties {
-			// the result should contain ALL configured property filters, with or without allowed values.
+		for _, queryable := range collection.Filters.Properties {
+			field, err := featTable.Field(queryable)
+			if err != nil {
+				return nil, err
+			}
+
+			// the result should contain ALL configured queryables, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
-			result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
-			if pf.AllowedValues != nil {
-				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
+			result[collection.ID][queryable.Name] = ds.QueryableWithAllowedValues{Field: field}
+			if queryable.AllowedValues != nil {
+				result[collection.ID][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: queryable.AllowedValues}
 
 				continue
 			}
-			if *pf.DeriveAllowedValuesFromDatasource {
-				if !*pf.IndexRequired {
+			if *queryable.DeriveAllowedValuesFromDatasource {
+				if !*queryable.IndexRequired {
 					log.Printf("Warning: index is disabled for column %s, deriving allowed values "+
-						"from may take a long time. Index on this column is recommended", pf.Name)
+						"from may take a long time. Index on this column is recommended", queryable.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", pf.Name, featTable.Name)
+				query := fmt.Sprintf("select distinct ft.%[1]s from %[2]s ft order by ft.%[1]s", queryable.Name, featTable.Name)
 				var values []string
-				err := db.Select(&values, query)
-				if err != nil {
+				if err = db.Select(&values, query); err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
 				}
 				// make sure values are valid
 				for _, v := range values {
 					if newlineRegex.MatchString(v) {
 						return nil, fmt.Errorf("failed to derive allowed values, one value contains a "+
-							"newline which isn't a valid (OpenAPI) enum value. The value is: %s", v)
+							"newline which isn't a valid enum value. The value is: %s", v)
 					}
 				}
-				result[collection.ID][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
+				result[collection.ID][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
 
 				continue
 			}

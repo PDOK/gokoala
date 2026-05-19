@@ -1,8 +1,6 @@
 package features
 
 import (
-	"fmt"
-	"log"
 	"slices"
 	"strings"
 
@@ -27,15 +25,11 @@ type OpenAPIPropertyFilter struct {
 
 // rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
 func rebuildOpenAPI(e *engine.Engine,
-	datasources map[DatasourceKey]ds.Datasource,
-	filters map[string]ds.PropertyFiltersWithAllowedValues,
+	queryablesByCollection map[string]ds.Queryables,
 	collectionTypes geospatial.CollectionTypes,
 	schemas map[string]domain.Schema) {
 
-	propertyFiltersByCollection, err := createPropertyFiltersByCollection(datasources, filters)
-	if err != nil {
-		log.Fatal(err)
-	}
+	propertyFiltersByCollection := toOpenAPIFilters(queryablesByCollection)
 	e.RebuildOpenAPI(openAPIParams{
 		PropertyFiltersByCollection: propertyFiltersByCollection,
 		CollectionTypes:             collectionTypes,
@@ -43,46 +37,30 @@ func rebuildOpenAPI(e *engine.Engine,
 	})
 }
 
-func createPropertyFiltersByCollection(datasources map[DatasourceKey]ds.Datasource,
-	filters map[string]ds.PropertyFiltersWithAllowedValues) (map[string][]OpenAPIPropertyFilter, error) {
-
+func toOpenAPIFilters(queryablesByCollection map[string]ds.Queryables) map[string][]OpenAPIPropertyFilter {
 	result := make(map[string][]OpenAPIPropertyFilter)
-	for k, datasource := range datasources {
-		configuredPropertyFilters := filters[k.collectionID]
-		if len(configuredPropertyFilters) == 0 {
+	for collectionID, queryables := range queryablesByCollection {
+		if len(queryables) == 0 {
 			continue
 		}
-		featTable, err := datasource.GetSchema(k.collectionID)
-		if err != nil {
-			continue
-		}
-		propertyFilters := make([]OpenAPIPropertyFilter, 0, len(featTable.Fields))
-		for _, fc := range configuredPropertyFilters {
-			match := false
-			for _, field := range featTable.Fields {
-				if fc.Name == field.Name {
-					// match found between property filter in config file and database column name
-					propertyFilters = append(propertyFilters, OpenAPIPropertyFilter{
-						Name:          field.Name,
-						Description:   fc.Description,
-						DataType:      field.ToTypeFormat().Type,
-						AllowedValues: fc.AllowedValues,
-					})
-					match = true
-
-					break
-				}
+		filters := make([]OpenAPIPropertyFilter, 0, len(queryables))
+		for _, queryable := range queryables {
+			if queryable.IsPrimaryGeometry {
+				// no need to expose geometry as a property filter (but can be used in CQL)
+				continue
 			}
-			if !match {
-				return nil, fmt.Errorf("invalid property filter specified, "+
-					"column '%s' doesn't exist in datasource attached to collection '%s'", fc.Name, k.collectionID)
-			}
+			filters = append(filters, OpenAPIPropertyFilter{
+				Name:          queryable.Name,
+				Description:   queryable.Description,
+				DataType:      queryable.ToTypeFormat().Type,
+				AllowedValues: queryable.AllowedValues,
+			})
 		}
-		slices.SortFunc(propertyFilters, func(a, b OpenAPIPropertyFilter) int {
+		slices.SortFunc(filters, func(a, b OpenAPIPropertyFilter) int {
 			return strings.Compare(a.Name, b.Name)
 		})
-		result[k.collectionID] = propertyFilters
+		result[collectionID] = filters
 	}
 
-	return result, nil
+	return result
 }

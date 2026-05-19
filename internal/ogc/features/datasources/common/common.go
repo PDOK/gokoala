@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"slices"
@@ -30,10 +31,10 @@ type DatasourceCommon struct {
 	MaxDecimals       int
 	ForceUTC          bool
 
-	TableByCollectionID           map[string]*Table
-	PropertyFiltersByCollectionID map[string]datasources.PropertyFiltersWithAllowedValues
-	PropertiesByCollectionID      map[string]*config.FeatureProperties
-	RelationsByCollectionID       map[string][]config.Relation
+	TableByCollectionID      map[string]*Table
+	QueryablesByCollectionID map[string]datasources.Queryables
+	PropertiesByCollectionID map[string]*config.FeatureProperties
+	RelationsByCollectionID  map[string][]config.Relation
 }
 
 // Table metadata about a table containing features or attributes in a data source.
@@ -46,13 +47,29 @@ type Table struct {
 	Schema *domain.Schema // required
 }
 
-func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, error) {
+// Field returns the field with the given name from the table's schema.
+func (t *Table) Field(queryable config.Queryable) (domain.Field, error) {
+	if queryable.Name == "" {
+		return domain.Field{}, errors.New("no column name specified")
+	}
+	for _, field := range t.Schema.Fields {
+		if field.Name == queryable.Name {
+			if field.Description == "" {
+				field.Description = queryable.Description
+			}
+			return field, nil
+		}
+	}
+	return domain.Field{}, fmt.Errorf("queryable field '%s' not found in datastore schema", queryable.Name)
+}
+
+func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, datasources.Queryables, error) {
 	table, err := dc.CollectionToTable(collection)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return table.Schema, nil
+	return table.Schema, dc.QueryablesByCollectionID[collection], nil
 }
 
 func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.CollectionType, string, error) {
@@ -62,10 +79,6 @@ func (dc *DatasourceCommon) GetCollectionType(collection string) (geospatial.Col
 	}
 
 	return table.Type, table.GeometryType, nil
-}
-
-func (dc *DatasourceCommon) GetPropertyFiltersWithAllowedValues(collection string) datasources.PropertyFiltersWithAllowedValues {
-	return dc.PropertyFiltersByCollectionID[collection]
 }
 
 func (dc *DatasourceCommon) SupportsOnTheFlyTransformation() bool {

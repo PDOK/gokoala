@@ -91,7 +91,7 @@ func NewPostgres(collections config.FeaturesCollections, pgConfig config.Postgre
 		schemaName: pgConfig.Schema,
 	}
 
-	pg.TableByCollectionID, pg.PropertyFiltersByCollectionID = readMetadata(
+	pg.TableByCollectionID, pg.QueryablesByCollectionID = readMetadata(
 		db, collections, pg.FidColumn, pg.ExternalFidColumn, pg.schemaName)
 
 	if err = assertIndexesExist(collections, pg.TableByCollectionID, db, *pgConfig.SpatialIndexRequired); err != nil {

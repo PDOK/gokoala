@@ -9,7 +9,6 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	g "github.com/PDOK/gokoala/internal/ogc/common/geospatial"
-	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
@@ -66,8 +65,7 @@ type schemaTemplateData struct {
 }
 
 // renderSchemas pre-renders HTML and JSON schemas describing each feature collection.
-func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource) map[string]domain.Schema {
-	schemasByCollection := make(map[string]domain.Schema)
+func renderSchemas(e *engine.Engine, schemas map[string]domain.Schema) {
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 		title, description := getCollectionTitleAndDesc(collection)
 
@@ -83,26 +81,10 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 			},
 		}...)
 
-		// the schema should be the same regardless of CRS, so we use WGS84 as it's the default and always present
-		datasource := datasources[DatasourceKey{srid: domain.WGS84SRID, collectionID: collection.ID}]
-		schema, err := datasource.GetSchema(collection.ID)
-		if err != nil {
-			log.Printf("Failed to render OGC API Features part 5 Schema for collection %s: %v", collection.ID, err)
-
+		schema, ok := schemas[collection.ID]
+		if !ok {
+			log.Printf("Schema for collection %s not found, skipping rendering", collection.ID)
 			continue
-		}
-
-		// expand the schema with details about temporal fields
-		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil {
-			for i := range schema.Fields {
-				// OAF part 5: If the features have multiple temporal properties, the roles "primary-interval-start"
-				// and "primary-interval-end" can be used to identify the primary temporal information of the features.
-				if collection.Metadata.TemporalProperties.StartDate == schema.Fields[i].Name {
-					schema.Fields[i].IsPrimaryIntervalStart = true
-				} else if collection.Metadata.TemporalProperties.EndDate == schema.Fields[i].Name {
-					schema.Fields[i].IsPrimaryIntervalEnd = true
-				}
-			}
 		}
 
 		if !requiresSpecificOrder(collection) {
@@ -115,7 +97,7 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 		// pre-render the schema, catches issues early on during start-up.
 		e.RenderTemplatesWithParams(g.CollectionsPath+"/"+collection.ID+schemasPath,
 			schemaTemplateData{
-				*schema,
+				schema,
 				collection.ID,
 				title,
 				description,
@@ -129,11 +111,7 @@ func renderSchemas(e *engine.Engine, datasources map[DatasourceKey]ds.Datasource
 				engine.WithInstanceName(collection.ID),
 			),
 		)
-
-		schemasByCollection[collection.ID] = *schema
 	}
-
-	return schemasByCollection
 }
 
 func requiresSpecificOrder(collection config.FeaturesCollection) bool {

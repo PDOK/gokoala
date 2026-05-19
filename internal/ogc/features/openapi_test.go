@@ -3,58 +3,34 @@ package features
 import (
 	"testing"
 
-	"github.com/PDOK/gokoala/config"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
-	"github.com/stretchr/testify/assert"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 func TestCreatePropertyFiltersByCollection(t *testing.T) {
-	eng, err := config.NewConfig("internal/ogc/features/testdata/geopackage/config_features_bag.yaml")
-	require.NoError(t, err)
-	oaf := eng.OgcAPI.Features
-
-	eng2, err := config.NewConfig("internal/ogc/features/testdata/geopackage/config_features_bag_invalid_filters.yaml")
-	require.NoError(t, err)
-	oafWithInvalidPropertyFilter := eng2.OgcAPI.Features
-
-	gpkg, err := geopackage.NewGeoPackage(oaf.Collections, *oaf.Datasources.DefaultWGS84.GeoPackage, false, 0, false)
-	require.NoError(t, err)
-
 	tests := []struct {
-		name        string
-		config      *config.OgcAPIFeatures
-		datasources map[DatasourceKey]ds.Datasource
-		pf          map[string]ds.PropertyFiltersWithAllowedValues
-		wantResult  map[string][]OpenAPIPropertyFilter
-		wantErr     bool
+		name                   string
+		queryablesByCollection map[string]ds.Queryables
+		wantResult             map[string][]OpenAPIPropertyFilter
 	}{
 		{
-			name:        "Empty input",
-			config:      &config.OgcAPIFeatures{},
-			datasources: nil,
-			pf:          map[string]ds.PropertyFiltersWithAllowedValues{"boo": map[string]ds.PropertyFilterWithAllowedValues{}},
-			wantResult:  map[string][]OpenAPIPropertyFilter{},
-			wantErr:     false,
+			name:                   "Empty input",
+			queryablesByCollection: map[string]ds.Queryables{"boo": map[string]ds.QueryableWithAllowedValues{}},
+			wantResult:             map[string][]OpenAPIPropertyFilter{},
 		},
 		{
-			name:   "Valid property filters",
-			config: oaf,
-			datasources: map[DatasourceKey]ds.Datasource{
-				{collectionID: "foo"}: gpkg,
-			},
-			// keep this in line with the filters in "internal/ogc/features/testdata/geopackage/config_features_bag.yaml"
-			pf: map[string]ds.PropertyFiltersWithAllowedValues{
-				"foo": map[string]ds.PropertyFilterWithAllowedValues{
+			name: "Valid property filters",
+			queryablesByCollection: map[string]ds.Queryables{
+				"foo": map[string]ds.QueryableWithAllowedValues{
 					"straatnaam": {
-						PropertyFilter: config.PropertyFilter{Name: "straatnaam", Description: "Filter features by this property"},
-						AllowedValues:  nil,
+						Field:         domain.Field{Name: "straatnaam", Type: "text", Description: "Filter features by this property"},
+						AllowedValues: nil,
 					},
 					"postcode": {
-						PropertyFilter: config.PropertyFilter{Name: "postcode", Description: "Filter features by this property"},
-						AllowedValues:  []string{"1234AB", "5678XY"},
+						Field:         domain.Field{Name: "postcode", Type: "text", Description: "Filter features by this property"},
+						AllowedValues: []string{"1234AB", "5678XY"},
 					},
 				},
 			},
@@ -62,42 +38,11 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 				{Name: "postcode", Description: "Filter features by this property", DataType: "string", AllowedValues: []string{"1234AB", "5678XY"}},
 				{Name: "straatnaam", Description: "Filter features by this property", DataType: "string"},
 			}},
-			wantErr: false,
-		},
-		{
-			name:   "Invalid property filter defined in config",
-			config: oafWithInvalidPropertyFilter,
-			datasources: map[DatasourceKey]ds.Datasource{
-				{collectionID: "foo"}: gpkg,
-			},
-			// keep this in line with the filters in "internal/ogc/features/testdata/geopackage/config_features_bag_invalid_filters.yaml"
-			pf: map[string]ds.PropertyFiltersWithAllowedValues{
-				"foo": map[string]ds.PropertyFilterWithAllowedValues{
-					"straatnaam": {
-						PropertyFilter: config.PropertyFilter{Name: "straatnaam", Description: "Filter features by this property"},
-						AllowedValues:  nil,
-					},
-					"invalid_this_does_not_exist_in_gpkg": {
-						PropertyFilter: config.PropertyFilter{Name: "invalid_this_does_not_exist_in_gpkg", Description: "Filter features by this property"},
-						AllowedValues:  nil,
-					},
-					"postcode": {
-						PropertyFilter: config.PropertyFilter{Name: "postcode", Description: "Filter features by this property"},
-						AllowedValues:  []string{"1234AB", "5678XY"},
-					},
-				},
-			},
-			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotResult, err := createPropertyFiltersByCollection(tt.datasources, tt.pf)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("createPropertyFiltersByCollection() error = %v, wantErr %v", err, tt.wantErr)
-
-				return
-			}
+			gotResult := toOpenAPIFilters(tt.queryablesByCollection)
 			assert.Equal(t, tt.wantResult, gotResult)
 		})
 	}

@@ -118,6 +118,17 @@ func (s Schema) HasExternalFid() bool {
 	return false
 }
 
+// GetGeomField convenience function to get the primary geometry field.
+func (s Schema) GetGeomField() *Field {
+	for _, f := range s.Fields {
+		if f.IsPrimaryGeometry {
+			return &f
+		}
+	}
+
+	return nil
+}
+
 func (s Schema) findField(name string) Field {
 	for _, f := range s.Fields {
 		if f.Name == name {

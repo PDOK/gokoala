@@ -21,7 +21,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // available filters, etc. from the Postgres database. Terminates on failure.
 func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidColumn, externalFidColumn, schemaName string) (
 	tableByCollectionID map[string]*common.Table,
-	propertyFiltersByCollectionID map[string]ds.PropertyFiltersWithAllowedValues) {
+	queryablesByCollectionID map[string]ds.Queryables) {
 
 	metadata, err := readDriverMetadata(db)
 	if err != nil {
@@ -36,7 +36,7 @@ func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidC
 	if err != nil {
 		log.Fatal(err)
 	}
-	propertyFiltersByCollectionID, err = readPropertyFiltersWithAllowedValues(tableByCollectionID, collections, db)
+	queryablesByCollectionID, err = readQueryables(tableByCollectionID, collections, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -120,30 +120,37 @@ where
 	return result, nil
 }
 
-func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*common.Table,
-	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.PropertyFiltersWithAllowedValues, error) {
+func readQueryables(featTableByCollection map[string]*common.Table,
+	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.Queryables, error) {
 
-	result := make(map[string]ds.PropertyFiltersWithAllowedValues)
+	result := make(map[string]ds.Queryables)
 	for _, collection := range collections {
-		result[collection.GetID()] = make(map[string]ds.PropertyFilterWithAllowedValues)
-		featTable := featTableByCollection[collection.GetID()]
+		result[collection.GetID()] = make(map[string]ds.QueryableWithAllowedValues)
+		featTable, ok := featTableByCollection[collection.GetID()]
+		if !ok {
+			continue
+		}
 
-		for _, pf := range collection.Filters.Properties {
-			// the result should contain ALL configured property filters, with or without allowed values.
-			// when available, allowed values can be either static (from YAML config) or derived from the geopackage
-			result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf}
-			if pf.AllowedValues != nil {
-				result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: pf.AllowedValues}
+		for _, queryable := range collection.Filters.Properties {
+			field, err := featTable.Field(queryable)
+			if err != nil {
+				return nil, err
+			}
 
+			// the result should contain ALL configured queryables, with or without allowed values.
+			// when available, allowed values can be either static (from YAML config) or derived from postgres
+			result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field}
+			if queryable.AllowedValues != nil {
+				result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: queryable.AllowedValues}
 				continue
 			}
-			if *pf.DeriveAllowedValuesFromDatasource {
-				if !*pf.IndexRequired {
+			if *queryable.DeriveAllowedValuesFromDatasource {
+				if !*queryable.IndexRequired {
 					log.Printf("Warning: index is disabled for column %s, deriving allowed values "+
-						"from may take a long time. Index on this column is recommended", pf.Name)
+						"from may take a long time. Index on this column is recommended", queryable.Name)
 				}
 				// select distinct values from given column
-				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", pf.Name, featTable.Name)
+				query := fmt.Sprintf("select distinct \"%[1]s\" from \"%[2]s\" order by \"%[1]s\"", queryable.Name, featTable.Name)
 				rows, err := db.Query(context.Background(), query)
 				if err != nil {
 					return nil, fmt.Errorf("failed to derive allowed values using query: %v\n, error: %w", query, err)
@@ -162,11 +169,10 @@ func readPropertyFiltersWithAllowedValues(featTableByCollection map[string]*comm
 				for _, v := range values {
 					if newlineRegex.MatchString(v) {
 						return nil, fmt.Errorf("failed to derive allowed values, one value contains a "+
-							"newline which isn't a valid (OpenAPI) enum value. The value is: %s", v)
+							"newline which isn't a valid enum value. The value is: %s", v)
 					}
 				}
-				result[collection.GetID()][pf.Name] = ds.PropertyFilterWithAllowedValues{PropertyFilter: pf, AllowedValues: values}
-
+				result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
 				continue
 			}
 		}
