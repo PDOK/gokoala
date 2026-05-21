@@ -106,7 +106,7 @@ func TestProxy(t *testing.T) {
 			log.SetOutput(&logOutput)
 
 			// when
-			proxyHandler := proxy(mockReverseProxy.Proxy, tt.resourcesURL)
+			proxyHandler := proxy(mockReverseProxy.Proxy, tt.resourcesURL, "")
 			proxyHandler(w, r)
 
 			// then
@@ -121,4 +121,129 @@ func TestProxy(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProxyWithResourceName(t *testing.T) {
+	tests := []struct {
+		name           string
+		resourcesURL   string
+		resourceName   string
+		expectedStatus int
+		expectProxy    bool
+	}{
+		{
+			name:           "proxy with specific resource name",
+			resourcesURL:   "http://example.com/resources",
+			resourceName:   "logo.png",
+			expectedStatus: http.StatusOK,
+			expectProxy:    true,
+		},
+		{
+			name:           "invalid url with resource name",
+			resourcesURL:   "foo bar",
+			resourceName:   "logo.png",
+			expectedStatus: http.StatusInternalServerError,
+			expectProxy:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			mockReverseProxy := MockReverseProxy{}
+			if tt.expectProxy {
+				mockReverseProxy.On("Proxy", mock.Anything, mock.Anything, mock.Anything, false, "").Return()
+			}
+			r := httptest.NewRequest(http.MethodGet, "/resources/dummy", nil)
+			w := httptest.NewRecorder()
+			var logOutput strings.Builder
+			log.SetOutput(&logOutput)
+
+			// when
+			proxyHandler := proxy(mockReverseProxy.Proxy, tt.resourcesURL, tt.resourceName)
+			proxyHandler(w, r)
+
+			// then
+			assert.Equal(t, tt.expectedStatus, w.Result().StatusCode)
+			if tt.expectProxy {
+				mockReverseProxy.AssertCalled(t, "Proxy", mock.Anything, mock.Anything, mock.MatchedBy(func(u *url.URL) bool {
+					return strings.Contains(u.String(), tt.resourceName)
+				}), false, "")
+			}
+		})
+	}
+}
+
+func TestRegisterAsset(t *testing.T) {
+	tests := []struct {
+		name           string
+		thumbnail      string
+		resourcesDir   string
+		shouldRegister bool
+		expectedValue  string
+	}{
+		{
+			name:           "local file with path",
+			thumbnail:      "assets/logo.png",
+			resourcesDir:   "",
+			shouldRegister: true,
+			expectedValue:  "logo.png",
+		},
+		{
+			name:           "remote http url",
+			thumbnail:      "http://example.com/assets/logo.png",
+			resourcesDir:   "",
+			shouldRegister: true,
+			expectedValue:  "logo.png",
+		},
+		{
+			name:           "remote https url",
+			thumbnail:      "https://example.com/assets/logo.png",
+			resourcesDir:   "",
+			shouldRegister: true,
+			expectedValue:  "logo.png",
+		},
+		{
+			name:           "file inside resources directory",
+			thumbnail:      "/resources/logo.png",
+			resourcesDir:   "/resources",
+			shouldRegister: false,
+			expectedValue:  "logo.png",
+		},
+		{
+			name:           "filename without path returns empty",
+			thumbnail:      "logo.png",
+			resourcesDir:   "",
+			shouldRegister: false,
+			expectedValue:  "logo.png",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// given
+			assets := make(map[string]struct{})
+			thumbnail := tt.thumbnail
+
+			// when
+			registerAsset(assets, &thumbnail, tt.resourcesDir)
+
+			// then
+			assert.Equal(t, tt.expectedValue, thumbnail)
+			if tt.shouldRegister {
+				assert.Contains(t, assets, tt.thumbnail)
+			} else {
+				assert.NotContains(t, assets, tt.thumbnail)
+			}
+		})
+	}
+}
+
+func TestRegisterAssetWithNil(t *testing.T) {
+	// given
+	assets := make(map[string]struct{})
+
+	// when
+	registerAsset(assets, nil, "")
+
+	// then
+	assert.Empty(t, assets)
 }

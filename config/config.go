@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
@@ -292,11 +293,12 @@ func validateLocalPaths(config *Config) error {
 
 // make sure resources dir/url is configured when config contains references to files like thumbnails or legends.
 func validateConfiguredResources(config *Config) error {
-	if config.Thumbnail != nil {
-		return errors.New("thumbnail cannot be used when 'resources' isn't specified")
+	if config.Thumbnail != nil && !strings.Contains(*config.Thumbnail, "/") {
+		return errors.New("when resources.directory is not set the thumbnail should contain a full path or URL to an image")
 	}
 	for _, coll := range config.AllCollections() {
-		if coll.GetMetadata() != nil && coll.GetMetadata().Thumbnail != nil {
+		if coll.GetMetadata() != nil && coll.GetMetadata().Thumbnail != nil &&
+			!strings.Contains(*coll.GetMetadata().Thumbnail, "/") {
 			return fmt.Errorf("thumbnail for collection %s cannot be used when 'resources' isn't specified", coll.GetID())
 		}
 	}
