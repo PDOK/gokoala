@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
@@ -44,6 +45,9 @@ type CommonListener struct {
 
 	// randomizer is used to generate unique named parameters.
 	randomizer util.Randomizer
+
+	// collectionType specifies if this collection contains features or attributes.
+	collectionType geospatial.CollectionType
 
 	// errorListener is used to collect parse errors.
 	errorListener *ErrorListener

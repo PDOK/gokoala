@@ -6,6 +6,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -15,15 +16,17 @@ type PostgresListener struct {
 	*CommonListener
 }
 
-func NewPostgresListener(randomizer util.Randomizer, queryables []domain.Field, srid domain.SRID, cqlConfig config.CQL) *PostgresListener {
+func NewPostgresListener(randomizer util.Randomizer, queryables []domain.Field,
+	srid domain.SRID, collectionType geospatial.CollectionType, cqlConfig config.CQL) *PostgresListener {
 	return &PostgresListener{
 		CommonListener: &CommonListener{
-			stack:       types.NewStack(),
-			namedParams: make(map[string]any),
-			cqlConfig:   cqlConfig,
-			srid:        srid,
-			randomizer:  randomizer,
-			queryables:  queryables,
+			stack:          types.NewStack(),
+			namedParams:    make(map[string]any),
+			cqlConfig:      cqlConfig,
+			srid:           srid,
+			collectionType: collectionType,
+			randomizer:     randomizer,
+			queryables:     queryables,
 		},
 	}
 }
