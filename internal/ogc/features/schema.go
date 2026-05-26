@@ -23,7 +23,7 @@ const (
 )
 
 // Schema endpoint serves a schema that describes the features in the collection, either as HTML
-// or as JSON schema (https://json-schema.org/)//
+// or as JSON schema (https://json-schema.org/)
 //
 //nolint:dupl
 func (f *Features) Schema() http.HandlerFunc {

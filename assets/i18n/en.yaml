@@ -156,7 +156,7 @@ FeatureIdStableOverTime: This ID should be stable over time and always refer tot
 FeatureIntervalStartDescription: This property acts as the start date when executing a temporal filter, e.g. ?datetime=2050-01-01T00:00:00Z.
 FeatureIntervalEndDescription: This property acts as the end date when executing a temporal filter, e.g. ?datetime=2050-01-01T00:00:00Z.
 FeatureRelationDescription: Represents a relation between this feature and the referenced feature.
-GoToQueryables: Want to know which of the fields below you can use for filtering? Check out the
+GoToQueryables: Want to know which of the fields below you can use for filtering? Check out the # <link will be inserted in HTML template>
 
 # Queryables page
 QueryablesDescription: The table below describes the fields available for filtering. This includes both simple filtering using query parameters as well as advanced filtering using CQL (Common Query Language). This information is also available as

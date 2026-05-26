@@ -155,7 +155,7 @@ FeatureIdStableOverTime: Dit ID zou stabiel moeten zijn door de tijd heen en alt
 FeatureIntervalStartDescription: Betreft startdatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z.
 FeatureIntervalEndDescription: Betreft einddatum die gebruikt wordt wanneer er op tijd wordt gefilterd, bijv. ?datetime=2050-01-01T00:00:00Z.
 FeatureRelationDescription: Representeert een relatie tussen dit feature en het gerefereerde feature.
-GoToQueryables: Weten op welke van onderstaande velden je kan filteren? Bekijk de
+GoToQueryables: Weten op welke van onderstaande velden je kan filteren? Bekijk de # <link will be inserted in HTML template>
 
 # Queryables page
 QueryablesDescription: Onderstaande tabel beschrijft de velden waarop filtering mogelijk is. Dit betreft zowel eenvoudig filteren via query parameters als geavanceerd filteren via CQL (Common Query Language). Deze informatie is ook beschikbaar als

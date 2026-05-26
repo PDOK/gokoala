@@ -11,7 +11,7 @@
         {{ if .Params.CQLEnabled }}
         <p>
             <div class="alert alert-primary" role="alert">
-                {{ i18n "GoToQueryables" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/queryables?" aria-label="Open queryables">queryables</a>.
+                {{ i18n "GoToQueryables" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/queryables?" aria-label="Open queryables" class="alert-link">queryables</a>.
             </div>
         </p>
         {{ end }}
