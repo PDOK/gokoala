@@ -11,6 +11,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql"
 	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
@@ -69,7 +70,8 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 
-		filter, err := f.parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.queryables[collection.GetID()], inputSRID)
+		filter, err := parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.queryables[collection.GetID()],
+			inputSRID, collectionType)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -200,8 +202,8 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
 
-func (f *Features) parseCQL(cqlFilter string, cqlConfig config.CQL,
-	datasource ds.Datasource, queryables ds.Queryables, srid domain.SRID) (ds.Part3Filter, error) {
+func parseCQL(cqlFilter string, cqlConfig config.CQL, datasource ds.Datasource, queryables ds.Queryables,
+	srid domain.SRID, collectionType geospatial.CollectionType) (ds.Part3Filter, error) {
 
 	if cqlFilter == "" {
 		return ds.Part3Filter{}, nil
@@ -215,9 +217,9 @@ func (f *Features) parseCQL(cqlFilter string, cqlConfig config.CQL,
 	var listener cql.Listener
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryableFields, srid, cqlConfig)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryableFields, srid, collectionType, cqlConfig)
 	case *postgres.Postgres:
-		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryableFields, srid, cqlConfig)
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryableFields, srid, collectionType, cqlConfig)
 	default:
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}

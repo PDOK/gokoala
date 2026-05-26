@@ -7,6 +7,7 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -33,15 +34,17 @@ type GeoPackageListener struct {
 	rtreeSQL string
 }
 
-func NewGeoPackageListener(randomizer util.Randomizer, queryables []d.Field, srid d.SRID, cqlConfig config.CQL) *GeoPackageListener {
+func NewGeoPackageListener(randomizer util.Randomizer, queryables []d.Field,
+	srid d.SRID, collectionType geospatial.CollectionType, cqlConfig config.CQL) *GeoPackageListener {
 	return &GeoPackageListener{
 		CommonListener: &CommonListener{
-			stack:       types.NewStack(),
-			namedParams: make(map[string]any),
-			cqlConfig:   cqlConfig,
-			srid:        srid,
-			randomizer:  randomizer,
-			queryables:  queryables,
+			stack:          types.NewStack(),
+			namedParams:    make(map[string]any),
+			cqlConfig:      cqlConfig,
+			srid:           srid,
+			collectionType: collectionType,
+			randomizer:     randomizer,
+			queryables:     queryables,
 		},
 	}
 }
@@ -565,6 +568,11 @@ func (l *GeoPackageListener) isSpatialFilterAllowed(cqlFunction string) bool {
 		return strings.ToUpper(l.currentWktType) == "BBOX" || strings.ToUpper(l.currentWktType) == "POINT"
 	}
 
+	if l.collectionType != geospatial.Features {
+		l.errorListener.Errorf("spatial filtering using '%s' is not allowed for this collection since it does not "+
+			"contain geospatial items (features), only non-geospatial items (attributes)", cqlFunction)
+		return false
+	}
 	if !l.cqlConfig.EnableBasicSpatialFunctions {
 		l.errorListener.Error(errSpatialOperatorsNotEnabled)
 		return false
