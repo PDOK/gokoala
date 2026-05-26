@@ -253,6 +253,43 @@
         }
       }
     }
+    {{ if and $coll.Filters $coll.Filters.CQL $coll.Filters.CQL.IsEnabled }}
+    ,
+    "/collections/{{ $coll.ID }}/queryables": {
+      "get": {
+        "tags" : [ "Features" ],
+        "summary": "fetch queryables properties of this collection",
+        "description": "Fetch the queryables of the collection with id `{{ $coll.ID }}`. Queryables are the properties that can be used to filters items in this collection.\nThe response is a JSON Schema of a object where each property is a queryable.",
+        "operationId": "{{ $coll.ID }}.getQueryables",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/f"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The queryable properties of this collection.",
+            "content": {
+              "application/schema+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jsonSchema"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers" : {
+              {{block "headers" . }}{{end}}
+            }
+          },
+          {{block "problems" . }}{{end}}
+        }
+      }
+    }
+    {{ end }}
     {{ end }}
   },
   "components": {

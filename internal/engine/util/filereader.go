@@ -10,9 +10,11 @@ import (
 	"os"
 )
 
+const GZIP = ".gz"
+
 // ReadFile read a plain or gzipped file and return contents as string.
 func ReadFile(filePath string) string {
-	gzipFile := filePath + ".gz"
+	gzipFile := filePath + GZIP
 	var fileContents string
 	if _, err := os.Stat(gzipFile); !errors.Is(err, fs.ErrNotExist) {
 		fileContents, err = readGzipContents(gzipFile)

@@ -109,6 +109,8 @@ ogcApi:
           urlAsHyperlink: true
         filters:
           properties:
+            - name: locator_designator_addressnumber
+              indexRequired: false
             - name: locator_designator_addressnumberextension
               indexRequired: false
           cql:

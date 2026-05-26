@@ -156,6 +156,20 @@
       "title" : "The HTML representation of the {{ .Params.Collection.ID }} schema",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/schema?f=html"
     }
+    {{ if .Params.CQLEnabled }}
+    ,{
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+      "type" : "application/schema+json",
+      "title" : "The JSON representation of the {{ .Params.Collection.ID }} queryable properties",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/queryables?f=json"
+    },
+    {
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+      "type" : "text/html",
+      "title" : "The HTML representation of the {{ .Params.Collection.ID }} queryable properties",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/queryables?f=html"
+    }
+    {{ end }}
     {{ if and .Params.Collection.Links .Params.Collection.Links.Downloads }}
     {{ range $link := .Params.Collection.Links.Downloads }}
     ,

@@ -95,7 +95,7 @@ func (oaf *OgcAPIFeatures) CollectionSRS(collectionID string) []string {
 func (oaf *OgcAPIFeatures) SupportsPart3() bool {
 	for _, coll := range oaf.Collections {
 		cql := coll.Filters.CQL
-		if cql.Enable != nil && *cql.Enable {
+		if cql.IsEnabled() {
 			return true
 		}
 	}

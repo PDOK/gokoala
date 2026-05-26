@@ -1,0 +1,15 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/queryables",
+  "title": "{{ .Params.CollectionTitle }}",
+  {{ if .Params.CollectionDescription }}
+  "description": "{{ unmarkdown .Params.CollectionDescription }}",
+  {{ end }}
+  "type": "object",
+  "properties": {
+    {{/* includes fields.go.json */}}
+    {{block "fields" .}}{{end}}
+  },
+  "additionalProperties": false {{/* OAF part 3: property references that are not explicitly declared in the queryables schema SHALL result in a 400 response. */}}
+}

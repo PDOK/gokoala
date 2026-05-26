@@ -24,10 +24,7 @@ type OpenAPIPropertyFilter struct {
 }
 
 // rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
-func rebuildOpenAPI(e *engine.Engine,
-	queryablesByCollection map[string]ds.Queryables,
-	collectionTypes geospatial.CollectionTypes,
-	schemas map[string]domain.Schema) {
+func rebuildOpenAPI(e *engine.Engine, queryablesByCollection map[string]ds.Queryables, schemas map[string]domain.Schema, collectionTypes geospatial.CollectionTypes) {
 
 	propertyFiltersByCollection := toOpenAPIFilters(queryablesByCollection)
 	e.RebuildOpenAPI(openAPIParams{

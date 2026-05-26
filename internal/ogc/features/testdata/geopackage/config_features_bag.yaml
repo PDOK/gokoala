@@ -23,6 +23,8 @@ ogcApi:
           properties:
             - name: straatnaam
             - name: postcode
+          cql:
+            enable: true
         metadata:
           title: Foooo
           description: Foooo
