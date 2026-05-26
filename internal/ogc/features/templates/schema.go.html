@@ -8,6 +8,13 @@
         <p>
             {{ i18n "SchemaDescription" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/schema?f=json" aria-label="Open JSON Schema">JSON Schema</a>.
         </p>
+        {{ if .Params.CQLEnabled }}
+        <p>
+            <div class="alert alert-primary" role="alert">
+                {{ i18n "GoToQueryables" }} <a href="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}/queryables?" aria-label="Open queryables">queryables</a>.
+            </div>
+        </p>
+        {{ end }}
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -28,6 +35,7 @@
                 <td class="text-nowrap">{{ i18n "RequiredYes"}}</td>
                 <td class="text-wrap">{{ i18n "FeatureIdDescription"}}{{ if .Params.HasExternalFid }} {{ i18n "FeatureIdStableOverTime"}}{{ end }}</td>
             </tr>
+            {{/* includes fields.go.html */}}
             {{block "fields" .}}{{end}}
             </tbody>
         </table>

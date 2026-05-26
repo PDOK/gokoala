@@ -212,3 +212,12 @@ func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollecti
 
 	return collectionID
 }
+
+func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, *string) {
+	var description *string
+	if collection.GetMetadata() != nil {
+		description = collection.GetMetadata().Description
+	}
+
+	return getCollectionTitle(collection.GetID(), collection.GetMetadata()), description
+}

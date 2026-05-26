@@ -8,7 +8,8 @@
   {{ end }}
   "type": "object",
   "properties": {
+    {{/* includes fields.go.json */}}
     {{block "fields" .}}{{end}}
   },
-  "additionalProperties": true {{/* The default in JSON Schema, just to make it explicit */}}
+  "additionalProperties": false {{/* OAF part 3: property references that are not explicitly declared in the queryables schema SHALL result in a 400 response. */}}
 }

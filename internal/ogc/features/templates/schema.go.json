@@ -40,6 +40,7 @@
       "minimum": 0
       {{ end }}
     },
+    {{/* includes fields.go.json */}}
     {{block "fields" .}}{{end}}
   },
   "additionalProperties": true {{/* The default in JSON Schema, just to make it explicit */}}

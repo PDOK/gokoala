@@ -69,6 +69,14 @@ func (cf FeaturesCollection) Merge(other GeoSpatialCollection) GeoSpatialCollect
 	return cf
 }
 
+func (cf FeaturesCollection) HasSpecificOrder() bool {
+	if cf.FeatureProperties != nil && cf.PropertiesInSpecificOrder != nil {
+		return *cf.PropertiesInSpecificOrder
+	}
+
+	return false
+}
+
 // +kubebuilder:object:generate=true
 type FeatureFilters struct {
 	// List of properties in each feature that can be used for filtering. These properties

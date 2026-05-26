@@ -116,10 +116,10 @@ func WithMediaTypeOverwrite(mediaType string) TemplateKeyOption {
 	}
 }
 
-// WithInclude adds a path to another template file that is included in the current template.
-func WithInclude(filePath string) TemplateKeyOption {
+// WithInclude adds a path to another template file (e.g., footer.go.html) that is included in the current template.
+func WithInclude(templatePath string) TemplateKeyOption {
 	return func(tk *TemplateKey) {
-		tk.Include = filePath
+		tk.Include = templatePath
 	}
 }
 

@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	g "github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
@@ -72,6 +71,8 @@ type schemaTemplateData struct {
 	CollectionID          string
 	CollectionTitle       string
 	CollectionDescription *string
+
+	CQLEnabled bool
 }
 
 // renderSchemas pre-renders HTML and JSON schemas describing each feature collection.
@@ -97,7 +98,7 @@ func renderSchemas(e *engine.Engine, schemas map[string]domain.Schema) {
 			continue
 		}
 
-		if !requiresSpecificOrder(collection) {
+		if !collection.HasSpecificOrder() {
 			// stable field order
 			slices.SortFunc(schema.Fields, func(a, b domain.Field) int {
 				return strings.Compare(a.Name, b.Name)
@@ -111,6 +112,7 @@ func renderSchemas(e *engine.Engine, schemas map[string]domain.Schema) {
 				collection.ID,
 				title,
 				description,
+				collection.Filters.CQL.IsEnabled(),
 			},
 			breadcrumbs,
 			engine.NewTemplateKey(schemaJSON,
@@ -124,21 +126,4 @@ func renderSchemas(e *engine.Engine, schemas map[string]domain.Schema) {
 			),
 		)
 	}
-}
-
-func requiresSpecificOrder(collection config.FeaturesCollection) bool {
-	if collection.FeatureProperties != nil && collection.PropertiesInSpecificOrder != nil {
-		return *collection.PropertiesInSpecificOrder
-	}
-
-	return false
-}
-
-func getCollectionTitleAndDesc(collection config.GeoSpatialCollection) (string, *string) {
-	var description *string
-	if collection.GetMetadata() != nil {
-		description = collection.GetMetadata().Description
-	}
-
-	return getCollectionTitle(collection.GetID(), collection.GetMetadata()), description
 }

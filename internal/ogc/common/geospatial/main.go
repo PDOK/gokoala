@@ -3,6 +3,7 @@ package geospatial
 import (
 	"net/http"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/go-chi/chi/v5"
 )
@@ -21,6 +22,8 @@ type collectionWithType struct {
 	Collection any
 	Type       CollectionType
 	GeomType   string
+
+	CQLEnabled bool
 }
 
 // NewCollections enables support for OGC APIs that organize data in the concept of collections.
@@ -52,7 +55,15 @@ func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 				},
 			}...)
 
-			collWithType := collectionWithType{coll, types.GetCollectionType(coll.GetID()), types.GetGeometryType(coll.GetID())}
+			cqlEnabled := isCQLEnabled(e, coll)
+
+			collWithType := collectionWithType{
+				coll,
+				types.GetCollectionType(coll.GetID()),
+				types.GetGeometryType(coll.GetID()),
+				cqlEnabled,
+			}
+
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.GetID())))
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, collectionBreadcrumbs,
@@ -96,4 +107,17 @@ func (c *Collections) Collection() http.HandlerFunc {
 		)
 		c.engine.Serve(w, r, engine.ServeTemplate(key))
 	}
+}
+
+func isCQLEnabled(e *engine.Engine, coll config.GeoSpatialCollection) bool {
+	if e.Config.OgcAPI.Features != nil {
+		for _, c := range e.Config.OgcAPI.Features.Collections {
+			if c.GetID() == coll.GetID() {
+				if c.Filters.CQL.IsEnabled() {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }

@@ -74,6 +74,11 @@ type queryablesTemplateData struct {
 // renderQueryables pre-renders HTML and JSON queryables describing each feature collection.
 func renderQueryables(e *engine.Engine, queryablesByCollection map[string]ds.Queryables) {
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
+
+		if !collection.Filters.CQL.IsEnabled() {
+			continue // no queryables for this collection
+		}
+
 		title, description := getCollectionTitleAndDesc(collection)
 
 		breadcrumbs := collectionsBreadcrumb
@@ -95,7 +100,7 @@ func renderQueryables(e *engine.Engine, queryablesByCollection map[string]ds.Que
 		}
 		queryableFields := queryables.Fields()
 
-		if !requiresSpecificOrder(collection) {
+		if !collection.HasSpecificOrder() {
 			// stable field order
 			slices.SortFunc(queryableFields, func(a, b domain.Field) int {
 				return strings.Compare(a.Name, b.Name)
