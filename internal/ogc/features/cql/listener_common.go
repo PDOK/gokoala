@@ -77,8 +77,11 @@ RETRY:
 }
 
 func (cl *CommonListener) allowAllQueryables() bool {
-	log.Println("WARNING: using '*' as queryable, this is not recommended")
-	return len(cl.queryables) == 1 && cl.queryables[0].Name == "*"
+	allowAll := len(cl.queryables) == 1 && cl.queryables[0].Name == "*"
+	if allowAll {
+		log.Println("WARNING: using '*' as queryable, this is not recommended")
+	}
+	return allowAll
 }
 
 // isQueryable checks if a column name is allowed in the query.
