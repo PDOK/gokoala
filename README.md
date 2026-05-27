@@ -16,14 +16,17 @@ _Cloud Native OGC APIs server, written in Go._
 
 ## Description
 
-This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Common, Tiles, Styles, Features and GeoVolumes
-in a cloud-native way. It contains a complete implementation of OGC API Features (part 1, 2 and 5). With respect to
-OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus, meaning complex logic is delegated to other
-implementations. For example, vector tile hosting may be delegated to a vector tile engine, 3D tile hosting 
-to object storage, raster map hosting to a WMS server, etc.
+This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Features, Tiles, Styles, Common and GeoVolumes
+in a cloud-native way. It contains a complete implementation of [OGC API Features](https://ogcapi.ogc.org/features/):
+part 1 (core), part 2 (crs), part 3 (cql) and part 5 (schema). Both for GeoPackage and PostgreSQL data sources.
+
+With respect to OGC API Tiles, Styles, GeoVolumes the goal is to keep a narrow focus and delegate to other
+backends. For example, vector tile hosting may be delegated to a vector tile engine, 3D tile hosting
+to object storage, raster map hosting to a WMS server.
 
 This application is deliberately not multi-tenant, it exposes an OGC API for _one_ dataset. Want to host multiple
-datasets? Spin up a separate instance/container.
+datasets? Spin up a separate instance (container). Optionally,
+a Kubernetes [operator](https://github.com/PDOK/ogcapi-operator) is available to manage a fleet of instances.
 
 ## Demo
 
@@ -34,8 +37,9 @@ See OGC APIs listed on https://api.pdok.nl. These are powered by GoKoala.
 GoKoala supports:
 
 - [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
-  OpenAPI specification and interactive Swagger UI. Multilingual support available.
-- [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs) and Part 5 (schema) of the spec.
+  OpenAPI specification and interactive Swagger UI. Multilingual support is available.
+- [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs), Part 3 (cql) and Part 5 (
+  schema) of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG.
   - Supported datastores:
     - [PostgreSQL](https://postgis.net/) with the PostGIS extension. Supports on-the-fly reprojection/transformation of
@@ -44,10 +48,25 @@ GoKoala supports:
       GeoPackages for each collection. No on-the-fly reprojection/transformation is applied, separate GeoPackages
       should be configured ahead-of-time in each CRS.
     - [Cloud-Backed GeoPackage](https://sqlite.org/cloudsqlite/doc/trunk/www/index.wiki). GeoPackages are SQLite
-      databases and this uses a SQLite extension to store the GeoPackages in cloud object storage
-      (like Azure Blob Storage). No on-the-fly reprojection/transformation is applied, separate GeoPackages
-      should be configured ahead-of-time in each CRS.
-  - Supports property filtering (`/items?<property>=<value>`) and temporal filtering (`/items?datetime=<timestamp>`).
+      databases. This uses an SQLite extension to store the GeoPackages in cloud object storage
+      (like Azure Blob Storage), effectively a "serverless" database. No on-the-fly reprojection/transformation is
+      applied, separate GeoPackages should be configured ahead-of-time in each CRS.
+  - Supports simple property filtering (`/items?<property>=<value>`)
+  - Supports temporal filtering (`/items?datetime=<timestamp>`).
+  - Supports advanced filtering using [CQL2](https://docs.ogc.org/is/21-065r2/21-065r2.html), specifically cql2-text:
+    - Filtering using simple comparison predicates (=, <>, <, >, <=, >=) e.g., `name=Foo`, `housenumber > 30`).
+    - Logical operators (`AND`, `OR`, `NOT`) for combining multiple conditions.
+    - `LIKE` for wildcard matching, `BETWEEN` for numeric ranges, `IN` for enumeration filtering.
+    - `IS NULL` and `IS NOT NULL` filters.
+    - Spatial operators (`S_INTERSECTS`, `S_CONTAINS`, `S_WITHIN`, `S_OVERLAPS`, `S_EQUALS`, `S_DISJOINT`)
+      on bounding boxes `BBOX()` and WKTs (`POINT`, `POLYGON`, `LINESTRING`, `MULTIPOINT`,`MULTILINESTRING`,
+      `MULTIPOLYGON` and `GEOMETRYCOLLECTION`).
+    - Temporal filtering (`T_AFTER`, `T_BEFORE`, `T_DISJOINT`, `T_EQUALS`, `T_INTERSECTS`, `T_CONTAINS`,
+      `T_DURING`, `T_FINISHEDBY`, `T_FINISHES`, `T_MEETS`, `T_METBY`, `T_OVERLAPPEDBY`, `T_OVERLAPS`, `T_STARTEDBY`,
+      `T_STARTS`) on instants and intervals.
+    - Upper/lowercase insensitive filtering (`CASEI`) and accent- / diacritics-insensitive filtering (`ACCENTI`).
+  - Serves a JSON Schema for each collection describing the available properties and their types.
+  - Support relations between features in different collections.
   - Implements _cursor_-based pagination (also known as _keyset_ pagination) to support browsing large datasets.
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
@@ -58,7 +77,7 @@ GoKoala supports:
   geodata tiles (= tiles per collection) are supported.
 - [OGC API Styles](https://ogcapi.ogc.org/styles/) serves HTML (including legends)
   and JSON representation of supported (Mapbox) styles.
-- [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and functions as a proxy
+- [OGC API 3D GeoVolumes](https://ogcapi.ogc.org/geovolumes/) serves HTML and JSON metadata and acts as a proxy
   in front of a [3D Tiles](https://www.ogc.org/standard/3dtiles/) server/storage of your choosing.
 
 Besides OGC APIs, GoKoala also offers an API for geocoding. This builds on top of OGC API Features and
@@ -200,6 +219,20 @@ For example:
 ```sql
 comment on column <table>.<field> is "Some description about this field for the end-user";
 ```
+
+### Feature filtering
+
+When serving OGC API Features, by default, only `bbox` filtering is available. The following additional filters can be
+enabled:
+
+- Temporal filtering using the `datetime` parameter based on `startDate` and `endDate` fields in the given datasource.
+  You'll need to configure these fields per collection in the config file.
+- Property filtering: simple equality filtering e.g., `?name=Foo` or `?name=Foo&size=400`. You'll need to configure
+  these properties per collection in the config file.
+- CQL: advanced filtering using `cql2-text`. This uses the same properties (queryables) configured in the config file
+  for _property filtering_. In addition, you need to
+  explicitly [enable CQL](https://github.com/PDOK/gokoala/blob/master/examples/config_all.yaml#L117) in the config file.
+  You can control which CQL conformance classes are enabled, such as basic spatial, advanced spatial, temporal, etc.
 
 ### OpenAPI spec
 
@@ -384,7 +417,7 @@ See our [end-to-end tests](tests/README.md) for details.
 
 ### How to Contribute
 
-Make a pull request...
+Make a pull request. Also see [CONTRIBUTING](CONTRIBUTING.md).
 
 ### Contact
 
