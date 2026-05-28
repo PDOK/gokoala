@@ -75,12 +75,11 @@ type featurePage struct {
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 	collection config.FeaturesCollection, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string,
-	configuredPropertyFilters datasources.Queryables,
+	propertyFilters map[string]string, queryables datasources.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
-		featuresURL, limit, propertyFilters, configuredPropertyFilters)
+		featuresURL, limit, propertyFilters, queryables)
 
 	hf.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
@@ -89,11 +88,11 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 
 func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, configuredPropertyFilters datasources.Queryables,
+	propertyFilters map[string]string, queryables datasources.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
-		featuresURL, limit, propertyFilters, configuredPropertyFilters)
+		featuresURL, limit, propertyFilters, queryables)
 	pageContent.ShowViewer = false // since items have no geometry
 
 	hf.engine.RenderAndServe(w, r,
@@ -103,7 +102,7 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, colle
 
 func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, referenceDate *time.Time,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
-	propertyFilters map[string]string, configuredPropertyFilters datasources.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
+	propertyFilters map[string]string, queryables datasources.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
@@ -126,6 +125,15 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 		mapSheetProps = &collection.MapSheetDownloads.Properties
 	}
 	wc = collection.Web
+
+	configuredPropertyFilters := make(map[string]datasources.QueryableWithAllowedValues, len(queryables))
+	for name, queryable := range queryables {
+		if queryable.IsPrimaryGeometry {
+			// no need to expose geometry as a property filter (but can be used in CQL)
+			continue
+		}
+		configuredPropertyFilters[name] = queryable
+	}
 
 	pageContent := &featureCollectionPage{
 		*fc,
