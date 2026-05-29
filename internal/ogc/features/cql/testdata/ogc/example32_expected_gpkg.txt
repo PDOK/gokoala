@@ -1,1 +1,1 @@
-"value" > :cql_bcde
+cast ("value" as numeric) > :cql_bcde

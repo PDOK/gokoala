@@ -46,3 +46,8 @@ func (d Date) String() string {
 
 	return d.time.Format(time.DateOnly)
 }
+
+// IsDate return true when time.Time doesn't contain a time component, false otherwise.
+func IsDate(t time.Time) bool {
+	return t.Hour() == 0 && t.Minute() == 0 && t.Second() == 0
+}

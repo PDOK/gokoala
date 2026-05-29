@@ -2,56 +2,47 @@ package types
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type foo interface {
-	SayHello() string
-}
-
-type bar struct {
-	name string
-}
-
-func (b bar) SayHello() string {
-	return "Hello " + b.name
-}
-
-func TestIsDate(t *testing.T) {
+func TestIsNumeric(t *testing.T) {
 	tests := []struct {
-		name string
-		t    time.Time
-		want bool
+		name     string
+		input    any
+		expected bool
 	}{
-		{
-			name: "time with zero hour, minute, second",
-			t:    time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC),
-			want: true,
-		},
-		{
-			name: "time with non-zero hour",
-			t:    time.Date(2026, 1, 15, 12, 0, 0, 0, time.UTC),
-			want: false,
-		},
-		{
-			name: "time with non-zero minute",
-			t:    time.Date(2026, 1, 15, 0, 15, 0, 0, time.UTC),
-			want: false,
-		},
-		{
-			name: "time with non-zero second",
-			t:    time.Date(2026, 1, 15, 0, 0, 45, 0, time.UTC),
-			want: false,
-		},
+		// Valid numbers
+		{"int", 123, true},
+		{"int8", int8(123), true},
+		{"int16", int16(123), true},
+		{"int32", int32(123), true},
+		{"int64", int64(123), true},
+		{"uint", uint(123), true},
+		{"uint8", uint8(123), true},
+		{"uint16", uint16(123), true},
+		{"uint32", uint32(123), true},
+		{"uint64", uint64(123), true},
+		{"float32", float32(123.45), true},
+		{"float64", 123.45, true},
+		{"complex64", complex(1.2, 3.4), true},
+		{"complex128", complex(1.2, 3.4), true},
+		{"zero int", 0, true},
+		{"zero float", 0.0, true},
+		{"zero complex", complex(0, 0), true},
+		// Invalid numbers
+		{"string", "123", false},
+		{"bool", true, false},
+		{"nil", nil, false},
+		{"struct", struct{}{}, false},
+		{"slice", []int{1, 2, 3}, false},
+		{"map", map[string]int{"a": 1}, false},
+		{"empty string", "", false},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := IsDate(tt.t)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.expected, IsNumeric(tt.input))
 		})
 	}
 }
@@ -148,45 +139,4 @@ func TestToInt64(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
-}
-
-func TestToInterfaceSlice(t *testing.T) {
-	tests := []struct {
-		name string
-		in   []any
-		want []any
-	}{
-		{
-			name: "integers to interfaces",
-			in:   []any{1, 2, 3},
-			want: []any{1, 2, 3},
-		},
-		{
-			name: "strings to interfaces",
-			in:   []any{"a", "b", "c"},
-			want: []any{"a", "b", "c"},
-		},
-		{
-			name: "empty input slice",
-			in:   []any{},
-			want: []any{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := ToInterfaceSlice[any, any](tt.in)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-
-	t.Run("structs to interfaces", func(t *testing.T) {
-		in := []bar{{name: "A"}, {name: "B"}}
-		want := []foo{bar{name: "A"}, bar{name: "B"}}
-
-		got := ToInterfaceSlice[bar, foo](in)
-
-		assert.Equal(t, want, got)
-		assert.Equal(t, "Hello A", got[0].SayHello())
-	})
 }

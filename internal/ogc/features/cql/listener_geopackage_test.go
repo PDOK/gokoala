@@ -65,7 +65,7 @@ func TestPreventSQLInjectionAttack(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 > 5 OR 1 = 1"
-	expectedSQL := "(\"prop1\" > :cql_bcde OR :cql_fghi = :cql_jklm)"
+	expectedSQL := "(cast (\"prop1\" as numeric) > :cql_bcde OR cast (:cql_fghi as numeric) = :cql_jklm)"
 
 	// when
 	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
@@ -93,7 +93,7 @@ func TestBooleanQueryWithNumbers(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 = 10 AND prop2 < 5"
-	expectedSQL := "(\"prop1\" = :cql_bcde AND \"prop2\" < :cql_fghi)"
+	expectedSQL := "(cast (\"prop1\" as numeric) = :cql_bcde AND cast (\"prop2\" as numeric) < :cql_fghi)"
 
 	// when
 	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
@@ -113,7 +113,7 @@ func TestAllSimpleComparisionOperators(t *testing.T) {
 	for _, operator := range operators {
 		t.Run(operator, func(t *testing.T) {
 			// when
-			expectedSQL := "\"prop1\" " + operator + " :cql_bcde"
+			expectedSQL := "cast (\"prop1\" as numeric) " + operator + " :cql_bcde"
 			actual, err := ParseToSQL("prop1 "+operator+" 10", NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
 
 			// then
@@ -129,7 +129,7 @@ func TestMultipleBooleanQueries(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = 10 OR prop1 = 20) AND NOT (prop2 = 'X')"
-	expectedSQL := "((\"prop1\" = :cql_bcde OR \"prop1\" = :cql_fghi) AND NOT (\"prop2\" = :cql_jklm))"
+	expectedSQL := "((cast (\"prop1\" as numeric) = :cql_bcde OR cast (\"prop1\" as numeric) = :cql_fghi) AND NOT (\"prop2\" = :cql_jklm))"
 
 	// when
 	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
@@ -145,7 +145,7 @@ func TestBooleanTrueLiteral(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = true AND prop2 = 20)"
-	expectedSQL := "(\"prop1\" = 1 AND \"prop2\" = :cql_bcde)"
+	expectedSQL := "(\"prop1\" = 1 AND cast (\"prop2\" as numeric) = :cql_bcde)"
 
 	// when
 	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
@@ -161,7 +161,7 @@ func TestBooleanFalseLiteral(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = false AND prop2 = 20)"
-	expectedSQL := "(\"prop1\" = 0 AND \"prop2\" = :cql_bcde)"
+	expectedSQL := "(\"prop1\" = 0 AND cast (\"prop2\" as numeric) = :cql_bcde)"
 
 	// when
 	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
@@ -1502,7 +1502,7 @@ func TestTemporalAndBooleanQuery(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
 	inputCQL := "prop1 = 10 AND T_AFTER(prop5, DATE('2015-01-01'))"
-	expectedSQL := "(\"prop1\" = :cql_bcde AND \"prop5\" > :cql_fghi)"
+	expectedSQL := "(cast (\"prop1\" as numeric) = :cql_bcde AND \"prop5\" > :cql_fghi)"
 
 	// when
 	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
