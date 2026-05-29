@@ -85,6 +85,13 @@ func (l *GeoPackageListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryCom
 	right := l.stack.Pop()
 	left := l.stack.Pop()
 	operator := ctx.ComparisonOperator().GetText()
+
+	// when comparing numbers, cast the column to numeric to avoid getting incorrect results.
+	// This can occur when a column with numeric values is incorrectly defined as a TEXT column.
+	if l.isNumericParam(right, geopackage.NamedParamSymbolSqlx) {
+		left = "cast (" + left + " as numeric)"
+	}
+
 	l.stack.Push(fmt.Sprintf("%s %s %s", left, operator, right))
 }
 

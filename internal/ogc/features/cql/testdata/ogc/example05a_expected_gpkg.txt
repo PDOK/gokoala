@@ -1,1 +1,1 @@
-("eo::cloud_cover" = :cql_bcde OR "eo::cloud_cover" = :cql_fghi)
+(cast ("eo::cloud_cover" as numeric) = :cql_bcde OR cast ("eo::cloud_cover" as numeric) = :cql_fghi)

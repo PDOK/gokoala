@@ -266,3 +266,39 @@ func TestDate_StructMarshaling(t *testing.T) {
 		})
 	}
 }
+
+func TestIsDate(t *testing.T) {
+	tests := []struct {
+		name string
+		t    time.Time
+		want bool
+	}{
+		{
+			name: "time with zero hour, minute, second",
+			t:    time.Date(2026, 1, 15, 0, 0, 0, 0, time.UTC),
+			want: true,
+		},
+		{
+			name: "time with non-zero hour",
+			t:    time.Date(2026, 1, 15, 12, 0, 0, 0, time.UTC),
+			want: false,
+		},
+		{
+			name: "time with non-zero minute",
+			t:    time.Date(2026, 1, 15, 0, 15, 0, 0, time.UTC),
+			want: false,
+		},
+		{
+			name: "time with non-zero second",
+			t:    time.Date(2026, 1, 15, 0, 0, 45, 0, time.UTC),
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IsDate(tt.t)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

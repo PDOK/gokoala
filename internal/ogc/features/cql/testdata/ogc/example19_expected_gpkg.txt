@@ -1,1 +1,1 @@
-(("owner" LIKE :cql_bcde OR "owner" LIKE :cql_fghi) AND "floors" < :cql_jklm)
+(("owner" LIKE :cql_bcde OR "owner" LIKE :cql_fghi) AND cast ("floors" as numeric) < :cql_jklm)

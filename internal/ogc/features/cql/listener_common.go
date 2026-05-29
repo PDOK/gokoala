@@ -98,6 +98,14 @@ func (l *GeoPackageListener) isQueryable(name string) bool {
 	return false
 }
 
+// lookupNamedParam looks up a named parameter value
+func (cl *CommonListener) lookupNamedParam(namedParam string, symbol string) (any, bool) {
+	// remove symbol before looking up the actual value
+	namedParam = strings.TrimPrefix(namedParam, symbol)
+	val, ok := cl.namedParams[namedParam]
+	return val, ok
+}
+
 // hasWildcard checks if a pattern contains a SQL wildcard: % or _.
 func (cl *CommonListener) hasWildcard(pattern string, symbol string) bool {
 	var namedParam string
@@ -110,19 +118,36 @@ func (cl *CommonListener) hasWildcard(pattern string, symbol string) bool {
 		namedParam = pattern
 	}
 
-	// remove symbol
-	if strings.HasPrefix(pattern, symbol) {
-		namedParam = namedParam[len(symbol):]
-	}
-
-	// look up the actual value of the named parameter
-	patternValue, ok := cl.namedParams[namedParam]
+	patternValue, ok := cl.lookupNamedParam(namedParam, symbol)
 	if !ok {
 		return false
 	}
-	patternValueStr := fmt.Sprintf("%v", patternValue)
-	return strings.Contains(patternValueStr, "%") ||
-		strings.Contains(patternValueStr, "_")
+	patternValueAsStr := fmt.Sprintf("%v", patternValue)
+	return strings.Contains(patternValueAsStr, "%") ||
+		strings.Contains(patternValueAsStr, "_")
+}
+
+// isNumericParam checks if a named parameter is a numeric value.
+func (cl *CommonListener) isNumericParam(namedParam string, symbol string) bool {
+	if namedParam == "" || len(namedParam) < 2 {
+		return false
+	}
+	val, ok := cl.lookupNamedParam(namedParam, symbol)
+	if !ok {
+		return false
+	}
+
+	if types.IsNumeric(val) {
+		return true
+	}
+
+	// not a number, but perhaps it's a number in a string.
+	valAsStr, ok := val.(string)
+	if !ok {
+		return false
+	}
+	_, err := parseNumber(valAsStr)
+	return err == nil
 }
 
 // parseNumber parses a number from a string, supports both integers and floats.
