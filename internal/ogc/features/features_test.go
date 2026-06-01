@@ -938,7 +938,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 = 5 AND prop2 = 6",
 				collectionID: "cql",
@@ -955,7 +955,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 >= 5 AND prop2 <= 6 AND (prop7 = true OR prop9 IS NULL) AND prop2 <> 8",
 				collectionID: "cql",
@@ -972,7 +972,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 BETWEEN 9 AND 10 AND (prop5 IN (1, 2, 3) OR prop5 IS NULL)",
 				collectionID: "cql",
@@ -989,7 +989,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_INTERSECTS(geometry, POINT(5.0403692 52.1017868))",
 				collectionID: "cql",
@@ -1006,7 +1006,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_OVERLAPS(geometry, POLYGON ((5.04159320426761948 52.10166749777908279, 5.04167924265552791 52.1017530555056041, 5.04168789456045729 52.10174392293929202, 5.04159320426761948 52.10166749777908279)))",
 				collectionID: "cql",
@@ -1023,7 +1023,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_OVERLAPS(geometry, BBOX(5.04159320426761948,52.10166749777908279,5.04168789456045729,52.10174392293929202))",
 				collectionID: "cql",
@@ -1040,7 +1040,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=T_BEFORE(INTERVAL(prop5,prop9), INTERVAL('2026-03-01', '2026-03-15')) AND T_EQUALS(prop10, TIMESTAMP('2026-02-26T23:00:00Z'))",
 				collectionID: "cql",
@@ -1057,7 +1057,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=CASEI(prop4) = CASEI('fOoBaR') and ACCENTI(prop3) = ACCENTI('Söccêr')",
 				collectionID: "cql",
@@ -1074,7 +1074,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop4='FooBar' and CASEI(ACCENTI(prop3)) = ACCENTI(CASEI('SöCCêR'))",
 				collectionID: "cql",
@@ -1091,7 +1091,7 @@ func TestFeatures(t *testing.T) {
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
-					// "internal/ogc/features/testdata/postgresql/config_features_cql.yaml", // enable once Postgres CQL support is implemented
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
 				},
 				url:          "http://localhost:8080/collections/:collectionId/items?filter=CASEI(prop3) LIKE CASEI('SoCCe_')&f=json",
 				collectionID: "cql",

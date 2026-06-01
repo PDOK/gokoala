@@ -126,6 +126,9 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 	if err != nil {
 		return nil, d.Cursors{}, err
 	}
+	if rows.Err() != nil {
+		return nil, d.Cursors{}, rows.Err()
+	}
 	if prevNext == nil {
 		return nil, d.Cursors{}, nil
 	}
@@ -193,6 +196,9 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 	if err != nil {
 		return nil, err
 	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
 	if len(features) != 1 {
 		return nil, nil
 	}
@@ -258,6 +264,9 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 		common.FormatOpts{MaxDecimals: pg.MaxDecimals, ForceUTC: pg.ForceUTC})
 	if err != nil {
 		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 	fc.NumberReturned = len(fc.Features)
 

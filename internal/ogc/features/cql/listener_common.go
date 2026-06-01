@@ -17,6 +17,8 @@ import (
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
+const collateKeyword = " COLLATE "
+
 const (
 	errAdvancedComparisonNotEnabled        = "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection"
 	errCaseInsensitiveOperatorNotEnabled   = "case-insensitive comparison (CASEI) is not enabled for this collection"
@@ -172,10 +174,11 @@ func stripSingleQuotes(s string) string {
 	return s
 }
 
+// addCollation adds a COLLATE to the SQL expression to make case and/or accent insensitive comparison possible.
 func addCollation(expr, collation string) string {
-	suffixCase := " COLLATE " + common.IgnoreCaseCollation
-	suffixAccent := " COLLATE " + common.IgnoreAccentCollation
-	suffixAccentCase := " COLLATE " + common.IgnoreAccentAndCaseCollation
+	suffixCase := collateKeyword + common.IgnoreCaseCollation
+	suffixAccent := collateKeyword + common.IgnoreAccentCollation
+	suffixAccentCase := collateKeyword + common.IgnoreAccentAndCaseCollation
 
 	switch {
 	case strings.HasSuffix(expr, suffixAccentCase):
@@ -187,6 +190,22 @@ func addCollation(expr, collation string) string {
 		// replace existing accent with accent + case
 		return strings.Replace(expr, suffixAccent, suffixAccentCase, 1)
 	default:
-		return expr + " COLLATE " + collation
+		return expr + collateKeyword + collation
 	}
+}
+
+// removeCollation removes COLLATE from the SQL expression.
+func removeCollation(expr string) string {
+	collations := []string{common.IgnoreCaseCollation, common.IgnoreAccentCollation, common.IgnoreAccentAndCaseCollation}
+	for _, c := range collations {
+		if hasCollation(expr, c) {
+			return strings.TrimSuffix(expr, collateKeyword+c)
+		}
+	}
+	return expr
+}
+
+// hasCollation checks if the SQL expression has a specific COLLATE suffix.
+func hasCollation(expr, collation string) bool {
+	return strings.HasSuffix(expr, collateKeyword+collation)
 }

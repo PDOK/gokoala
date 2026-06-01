@@ -230,6 +230,14 @@ func (f Field) ToTypeFormat() TypeFormat {
 	}
 }
 
+// IsNumeric returns true when field is numeric (integer, double, etc), false otherwise.
+func (f Field) IsNumeric() bool {
+	t := f.Type
+	return t == "int" || t == "integer" || t == "tinyint" || t == "smallint" || t == "mediumint" ||
+		t == "bigint" || t == "int2" || t == "int4" || t == "int8" || t == "real" ||
+		t == "float" || t == "double" || t == "doubleprecision" || t == "numeric" || t == "decimal"
+}
+
 func prefixBeforeParenthesis(s string) string {
 	idx := strings.Index(s, "(")
 	if idx != -1 {

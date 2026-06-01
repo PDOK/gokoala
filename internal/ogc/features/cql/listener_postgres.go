@@ -96,7 +96,29 @@ func (l *PostgresListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateContex
 		return
 	}
 
+	// postgres does not support COLLATE with LIKE. So use ILIKE for case-insensitivity and unaccent() for
+	// accent-insensitivity. We still use COLLATE for equality, so when LIKE isn't involved.
+	caseInsensitive := hasCollation(expr, common.IgnoreCaseCollation) ||
+		hasCollation(expr, common.IgnoreAccentAndCaseCollation) ||
+		hasCollation(pattern, common.IgnoreCaseCollation) ||
+		hasCollation(pattern, common.IgnoreAccentAndCaseCollation)
+	accentInsensitive := hasCollation(expr, common.IgnoreAccentCollation) ||
+		hasCollation(expr, common.IgnoreAccentAndCaseCollation) ||
+		hasCollation(pattern, common.IgnoreAccentCollation) ||
+		hasCollation(pattern, common.IgnoreAccentAndCaseCollation)
+
+	expr = removeCollation(expr)
+	pattern = removeCollation(pattern)
+
+	if accentInsensitive {
+		expr = "unaccent(" + expr + ")"
+		pattern = "unaccent(" + pattern + ")"
+	}
+
 	operator := "LIKE"
+	if caseInsensitive {
+		operator = "ILIKE" // postgres specific
+	}
 	if ctx.NOT() != nil {
 		operator = "NOT " + operator
 	}
@@ -130,6 +152,24 @@ func (l *PostgresListener) ExitIsInListPredicate(ctx *parser.IsInListPredicateCo
 	if count > 1 {
 		items := l.stack.PopMany(count - 1)
 		expr := l.stack.Pop()
+
+		// cast to text when numeric params are used with non-numeric columns (like DATE).
+		onlyNumeric := len(items) > 0
+		for _, item := range items {
+			if !l.isNumericParam(item, postgres.NamedParamSymbolPgx) {
+				onlyNumeric = false
+				break
+			}
+		}
+		if onlyNumeric && !l.isNumericColumn(expr) {
+			expr = "cast(" + expr + " as text)"
+			for _, item := range items {
+				paramName := strings.TrimPrefix(item, postgres.NamedParamSymbolPgx)
+				if val, ok := l.namedParams[paramName]; ok {
+					l.namedParams[paramName] = fmt.Sprintf("%v", val)
+				}
+			}
+		}
 
 		operator := "IN"
 		if ctx.NOT() != nil {
@@ -188,7 +228,8 @@ func (l *PostgresListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCont
 		return
 	}
 
-	l.stack.Push(fmt.Sprintf("%s(CastAutomagic(\"%s\"), %s)", sqlFunction, geomColumn, geomLiteral))
+	// Transform input geometry to match the column's SRID
+	l.stack.Push(fmt.Sprintf("%s(\"%s\", ST_Transform(%s, ST_SRID(\"%s\")))", sqlFunction, geomColumn, geomLiteral, geomColumn))
 }
 
 // ExitSpatialInstance Spatial instances other than bounding boxes
@@ -201,8 +242,14 @@ func (l *PostgresListener) ExitSpatialInstance(ctx *parser.SpatialInstanceContex
 	if wkt != "" {
 		withoutSymbol, withSymbol := l.generateNamedParam(postgres.NamedParamSymbolPgx)
 
+		// TODO: find better place for this srid logic
+		srid := l.srid.GetOrDefault()
+		if srid == d.UndefinedSRID || srid == d.WGS84SRID {
+			srid = d.WGS84SRIDPostgis
+		}
+
 		l.namedParams[withoutSymbol] = wkt
-		l.stack.Push(fmt.Sprintf("ST_GeomFromText(%s, %d)", withSymbol, l.srid.GetOrDefault()))
+		l.stack.Push(fmt.Sprintf("ST_GeomFromText(%s, %d)", withSymbol, srid))
 	}
 }
 
@@ -243,8 +290,14 @@ func (l *PostgresListener) ExitBbox(ctx *parser.BboxContext) {
 	}
 	north := toNamedParam(ctx.NorthBoundLat().GetText())
 
+	// TODO: find better place for this srid logic
+	srid := l.srid.GetOrDefault()
+	if srid == d.UndefinedSRID || srid == d.WGS84SRID {
+		srid = d.WGS84SRIDPostgis
+	}
+
 	l.currentWktType = "BBOX"
-	l.stack.Push(fmt.Sprintf("ST_MakeEnvelope(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault()))
+	l.stack.Push(fmt.Sprintf("ST_MakeEnvelope(%s, %s, %s, %s, %d)", west, south, east, north, srid))
 }
 
 // ExitCoordinate Spatial coordinate
@@ -533,12 +586,10 @@ func (l *PostgresListener) ExitNumericLiteral(ctx *parser.NumericLiteralContext)
 
 // ExitBooleanLiteral Handle literals
 func (l *PostgresListener) ExitBooleanLiteral(ctx *parser.BooleanLiteralContext) {
-	// From GeoPackage spec (https://www.geopackage.org/spec140/index.html):
-	// "A boolean value representing true or false. Stored as SQLite INTEGER with value 0 for false or 1 for true."
 	if strings.ToUpper(ctx.GetText()) == "TRUE" {
-		l.stack.Push("1")
+		l.stack.Push("true")
 	} else {
-		l.stack.Push("0")
+		l.stack.Push("false")
 	}
 }
 
@@ -565,4 +616,14 @@ func (l *PostgresListener) isSpatialFilterAllowed(cqlFunction string) bool {
 		return false
 	}
 	return true
+}
+
+func (l *PostgresListener) isNumericColumn(column string) bool {
+	name := strings.Trim(column, "\"")
+	for _, q := range l.queryables {
+		if q.Name == name {
+			return q.IsNumeric()
+		}
+	}
+	return false
 }

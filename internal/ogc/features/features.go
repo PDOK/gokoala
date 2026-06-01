@@ -70,6 +70,7 @@ func (f *Features) Features() http.HandlerFunc {
 			return
 		}
 
+		// parse CQL filter
 		filter, err := parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.queryables[collection.GetID()],
 			inputSRID, collectionType)
 		if err != nil {
