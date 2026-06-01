@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
@@ -450,13 +451,13 @@ func (l *GeoPackageListener) ExitPatternExpression(ctx *parser.PatternExpression
 			l.errorListener.Error(errCaseInsensitiveOperatorNotEnabled)
 			return
 		}
-		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreCaseCollation))
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreCaseCollation))
 	} else if ctx.ACCENTI() != nil {
 		if !l.cqlConfig.EnableAccentInsensitiveComparison {
 			l.errorListener.Error(errAccentInsensitiveOperatorNotEnabled)
 			return
 		}
-		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreAccentCollation))
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreAccentCollation))
 	}
 }
 
@@ -467,13 +468,13 @@ func (l *GeoPackageListener) ExitCharacterClause(ctx *parser.CharacterClauseCont
 			l.errorListener.Error(errCaseInsensitiveOperatorNotEnabled)
 			return
 		}
-		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreCaseCollation))
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreCaseCollation))
 	} else if ctx.ACCENTI() != nil {
 		if !l.cqlConfig.EnableAccentInsensitiveComparison {
 			l.errorListener.Error(errAccentInsensitiveOperatorNotEnabled)
 			return
 		}
-		l.stack.Push(addCollation(l.stack.Pop(), geopackage.IgnoreAccentCollation))
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreAccentCollation))
 	}
 }
 
@@ -593,23 +594,4 @@ func (l *GeoPackageListener) isSpatialFilterAllowed(cqlFunction string) bool {
 		return false
 	}
 	return true
-}
-
-func addCollation(expr, collation string) string {
-	suffixCase := " COLLATE " + geopackage.IgnoreCaseCollation
-	suffixAccent := " COLLATE " + geopackage.IgnoreAccentCollation
-	suffixAccentCase := " COLLATE " + geopackage.IgnoreAccentAndCaseCollation
-
-	switch {
-	case strings.HasSuffix(expr, suffixAccentCase):
-		return expr
-	case collation == geopackage.IgnoreAccentCollation && strings.HasSuffix(expr, suffixCase):
-		// replace existing case with case + accent
-		return strings.Replace(expr, suffixCase, suffixAccentCase, 1)
-	case collation == geopackage.IgnoreCaseCollation && strings.HasSuffix(expr, suffixAccent):
-		// replace existing accent with accent + case
-		return strings.Replace(expr, suffixAccent, suffixAccentCase, 1)
-	default:
-		return expr + " COLLATE " + collation
-	}
 }

@@ -7,27 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestNoop(t *testing.T) {
-	// given
-	inputCQL := "prop1 = 10 AND prop2 < 5"
-	expectedSQL := ""
-
-	// when
-	actual, err := ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	require.NotNil(t, actual)
-	assert.Empty(t, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-}
 
 // Test CQL examples provided by OGC.
 // See https://github.com/opengeospatial/ogcapi-features/tree/64ac2d892b877b711a4570336cb9d42e2afb4ef8/cql2/standard/schema/examples/text

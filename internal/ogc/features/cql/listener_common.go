@@ -11,6 +11,7 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
@@ -89,8 +90,8 @@ func (cl *CommonListener) allowAllQueryables() bool {
 }
 
 // isQueryable checks if a column name is allowed in the query.
-func (l *GeoPackageListener) isQueryable(name string) bool {
-	for _, q := range l.queryables {
+func (cl *CommonListener) isQueryable(name string) bool {
+	for _, q := range cl.queryables {
 		if q.Name == name || q.IsPrimaryGeometry {
 			return true
 		}
@@ -169,4 +170,23 @@ func stripSingleQuotes(s string) string {
 		return strings.ReplaceAll(s[1:len(s)-1], "''", "'")
 	}
 	return s
+}
+
+func addCollation(expr, collation string) string {
+	suffixCase := " COLLATE " + common.IgnoreCaseCollation
+	suffixAccent := " COLLATE " + common.IgnoreAccentCollation
+	suffixAccentCase := " COLLATE " + common.IgnoreAccentAndCaseCollation
+
+	switch {
+	case strings.HasSuffix(expr, suffixAccentCase):
+		return expr
+	case collation == common.IgnoreAccentCollation && strings.HasSuffix(expr, suffixCase):
+		// replace existing case with case + accent
+		return strings.Replace(expr, suffixCase, suffixAccentCase, 1)
+	case collation == common.IgnoreCaseCollation && strings.HasSuffix(expr, suffixAccent):
+		// replace existing accent with accent + case
+		return strings.Replace(expr, suffixAccent, suffixAccentCase, 1)
+	default:
+		return expr + " COLLATE " + collation
+	}
 }

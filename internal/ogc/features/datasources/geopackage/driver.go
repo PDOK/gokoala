@@ -8,16 +8,13 @@ import (
 	"path"
 	"sync"
 
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/mattn/go-sqlite3"
 	"github.com/qustavo/sqlhooks/v2"
 )
 
 const (
 	SqliteDriverName = "sqlite3_with_extensions"
-
-	IgnoreCaseCollation          = "NOCASE"   // default available in SQLite
-	IgnoreAccentCollation        = "NOACCENT" // custom collation
-	IgnoreAccentAndCaseCollation = IgnoreAccentCollation + "_" + IgnoreCaseCollation
 )
 
 var once sync.Once
@@ -36,7 +33,7 @@ func LoadDriver() {
 			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
 				// Unicode collation allows accent/diacritics to be ignored, but not casing.
 				// https://sqlite.org/src/dir/ext/icu
-				query := fmt.Sprintf("select icu_load_collation('und-u-ks-level1-kc-true', '%s');", IgnoreAccentCollation)
+				query := fmt.Sprintf("select icu_load_collation('und-u-ks-level1-kc-true', '%s');", common.IgnoreAccentCollation)
 				_, err := conn.Exec(query, nil)
 				if err != nil {
 					log.Fatalf(errICUNotEnabled+" - %v", err)
@@ -44,7 +41,7 @@ func LoadDriver() {
 
 				// Unicode collation allows accent/diacritics AND casing to be ignored.
 				// https://sqlite.org/src/dir/ext/icu
-				query = fmt.Sprintf("select icu_load_collation('und-u-ks-level1', '%s');", IgnoreAccentAndCaseCollation)
+				query = fmt.Sprintf("select icu_load_collation('und-u-ks-level1', '%s');", common.IgnoreAccentAndCaseCollation)
 				_, err = conn.Exec(query, nil)
 				if err != nil {
 					log.Fatalf(errICUNotEnabled+" - %v", err)

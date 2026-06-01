@@ -1,14 +1,17 @@
 package cql
 
 import (
-	"log"
+	"fmt"
+	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/antlr4-go/antlr/v4"
+	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
+	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 // PostgresListener converts OGC CQL2 Text to PostgreSQL-compatible SQL.
@@ -16,8 +19,8 @@ type PostgresListener struct {
 	*CommonListener
 }
 
-func NewPostgresListener(randomizer util.Randomizer, queryables []domain.Field,
-	srid domain.SRID, collectionType geospatial.CollectionType, cqlConfig config.CQL) *PostgresListener {
+func NewPostgresListener(randomizer util.Randomizer, queryables []d.Field,
+	srid d.SRID, collectionType geospatial.CollectionType, cqlConfig config.CQL) *PostgresListener {
 	return &PostgresListener{
 		CommonListener: &CommonListener{
 			stack:          types.NewStack(),
@@ -36,6 +39,530 @@ func (l *PostgresListener) GetResult() *SQLResult {
 	return &SQLResult{SQL: l.stack.Peek(), Params: l.namedParams}
 }
 
-func (l *PostgresListener) ExitEveryRule(_ antlr.ParserRuleContext) {
-	log.Println("WARNING: CQL parser for Postgres isn't yet implemented")
+// ExitBooleanExpression Boolean expression
+func (l *PostgresListener) ExitBooleanExpression(ctx *parser.BooleanExpressionContext) {
+	count := len(ctx.AllBooleanTerm())
+	if count > 1 {
+		items := l.stack.PopMany(count)
+		l.stack.Push("(" + strings.Join(items, " OR ") + ")")
+	}
+}
+
+// ExitBooleanTerm Boolean expression
+func (l *PostgresListener) ExitBooleanTerm(ctx *parser.BooleanTermContext) {
+	count := len(ctx.AllBooleanFactor())
+	if count > 1 {
+		items := l.stack.PopMany(count)
+		l.stack.Push("(" + strings.Join(items, " AND ") + ")")
+	}
+}
+
+// ExitBooleanFactor Boolean expression
+func (l *PostgresListener) ExitBooleanFactor(ctx *parser.BooleanFactorContext) {
+	if ctx.NOT() != nil {
+		expr := l.stack.Pop()
+		l.stack.Push("NOT (" + expr + ")")
+	}
+}
+
+// ExitBinaryComparisonPredicate Comparison expressions (=, <, >, <=, >=, <>)
+func (l *PostgresListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryComparisonPredicateContext) {
+	right := l.stack.Pop()
+	left := l.stack.Pop()
+	operator := ctx.ComparisonOperator().GetText()
+
+	// when comparing numbers, cast the column to numeric to avoid getting incorrect results.
+	// This can occur when a column with numeric values is incorrectly defined as a TEXT column.
+	if l.isNumericParam(right, postgres.NamedParamSymbolPgx) {
+		left = "cast (" + left + " as numeric)"
+	}
+
+	l.stack.Push(fmt.Sprintf("%s %s %s", left, operator, right))
+}
+
+// ExitIsLikePredicate Comparison expressions (LIKE, NOT LIKE)
+func (l *PostgresListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateContext) {
+	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+		l.errorListener.Error(errAdvancedComparisonNotEnabled)
+		return
+	}
+	pattern := l.stack.Pop()
+	expr := l.stack.Pop()
+
+	if !l.hasWildcard(pattern, postgres.NamedParamSymbolPgx) {
+		l.errorListener.Error("LIKE pattern is missing wildcard symbol. " +
+			"Either percentage '%' to match multiple characters or underscore '_' to " +
+			"match a single character can be used as a wildcard symbol. For example: LIKE 'foo%'.")
+		return
+	}
+
+	operator := "LIKE"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+	l.stack.Push(fmt.Sprintf("%s %s %s", expr, operator, pattern))
+}
+
+// ExitIsBetweenPredicate Comparison expressions (BETWEEN, NOT BETWEEN)
+func (l *PostgresListener) ExitIsBetweenPredicate(ctx *parser.IsBetweenPredicateContext) {
+	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+		l.errorListener.Error(errAdvancedComparisonNotEnabled)
+		return
+	}
+	high := l.stack.Pop()
+	low := l.stack.Pop()
+	expr := l.stack.Pop()
+
+	operator := "BETWEEN"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+	l.stack.Push(fmt.Sprintf("%s %s %s AND %s", expr, operator, low, high))
+}
+
+// ExitIsInListPredicate Comparison expressions (IN, NOT IN)
+func (l *PostgresListener) ExitIsInListPredicate(ctx *parser.IsInListPredicateContext) {
+	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+		l.errorListener.Error(errAdvancedComparisonNotEnabled)
+		return
+	}
+	count := len(ctx.AllScalarExpression())
+	if count > 1 {
+		items := l.stack.PopMany(count - 1)
+		expr := l.stack.Pop()
+
+		operator := "IN"
+		if ctx.NOT() != nil {
+			operator = "NOT " + operator
+		}
+		l.stack.Push(fmt.Sprintf("%s %s (%s)", expr, operator, strings.Join(items, ", ")))
+	}
+}
+
+// ExitIsNullPredicate Comparison expressions (IS NULL, IS NOT NULL)
+func (l *PostgresListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateContext) {
+	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+		l.errorListener.Error(errAdvancedComparisonNotEnabled)
+		return
+	}
+	expr := l.stack.Pop()
+
+	operator := "IS NULL"
+	if ctx.NOT() != nil {
+		operator = "IS NOT NULL"
+	}
+	l.stack.Push(fmt.Sprintf("%s %s", expr, operator))
+}
+
+// ExitSpatialPredicate Spatial expression (S_INTERSECTS, S_CONTAINS, etc.)
+func (l *PostgresListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateContext) {
+	cqlFunction := strings.ToUpper(ctx.SpatialFunction().GetText())
+
+	if !l.isSpatialFilterAllowed(cqlFunction) {
+		return
+	}
+
+	geomLiteral := l.stack.Pop()
+	geomProperty := l.stack.Pop()
+	if geomProperty != fmt.Sprintf("\"%s\"", d.GeomPropertyName) && !l.allowAllQueryables() {
+		l.errorListener.Errorf("spatial filtering is only supported on property '%s'", d.GeomPropertyName)
+		return
+	}
+
+	var geomColumn string
+	for _, q := range l.queryables {
+		if q.IsPrimaryGeometry {
+			geomColumn = q.Name
+			break
+		}
+	}
+	if geomColumn == "" && !l.allowAllQueryables() {
+		l.errorListener.Error("spatial filtering is not supported for this " +
+			"collection since there is no geometry field defined")
+		return
+	}
+
+	sqlFunction, ok := spatialFunctions[cqlFunction]
+	if !ok {
+		l.errorListener.Errorf("spatial function '%s' is not supported", cqlFunction)
+		return
+	}
+
+	l.stack.Push(fmt.Sprintf("%s(CastAutomagic(\"%s\"), %s)", sqlFunction, geomColumn, geomLiteral))
+}
+
+// ExitSpatialInstance Spatial instances other than bounding boxes
+func (l *PostgresListener) ExitSpatialInstance(ctx *parser.SpatialInstanceContext) {
+	if ctx.Bbox() != nil {
+		return // handled by ExitBbox()
+	}
+
+	wkt := l.stack.Pop()
+	if wkt != "" {
+		withoutSymbol, withSymbol := l.generateNamedParam(postgres.NamedParamSymbolPgx)
+
+		l.namedParams[withoutSymbol] = wkt
+		l.stack.Push(fmt.Sprintf("ST_GeomFromText(%s, %d)", withSymbol, l.srid.GetOrDefault()))
+	}
+}
+
+// ExitBbox Bounding box (BBOX) spatial instance
+func (l *PostgresListener) ExitBbox(ctx *parser.BboxContext) {
+	toNamedParam := func(coord string) string {
+		withoutSymbol, withSymbol := l.generateNamedParam(postgres.NamedParamSymbolPgx)
+		parsedCoord, err := parseNumber(coord)
+		if err != nil {
+			l.errorListener.Error(err.Error())
+			return ""
+		}
+		l.namedParams[withoutSymbol] = parsedCoord
+		return withSymbol
+	}
+
+	if ctx.WestBoundLon() == nil {
+		l.errorListener.Error("missing west bound coordinate (minx) in bounding box")
+		return
+	}
+	west := toNamedParam(ctx.WestBoundLon().GetText())
+
+	if ctx.SouthBoundLat() == nil {
+		l.errorListener.Error("missing south bound coordinate (miny) in bounding box")
+		return
+	}
+	south := toNamedParam(ctx.SouthBoundLat().GetText())
+
+	if ctx.EastBoundLon() == nil {
+		l.errorListener.Error("missing east bound coordinate (maxx) in bounding box")
+		return
+	}
+	east := toNamedParam(ctx.EastBoundLon().GetText())
+
+	if ctx.NorthBoundLat() == nil {
+		l.errorListener.Error("missing north bound coordinate (maxy) in bounding box")
+		return
+	}
+	north := toNamedParam(ctx.NorthBoundLat().GetText())
+
+	l.currentWktType = "BBOX"
+	l.stack.Push(fmt.Sprintf("ST_MakeEnvelope(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault()))
+}
+
+// ExitCoordinate Spatial coordinate
+func (l *PostgresListener) ExitCoordinate(ctx *parser.CoordinateContext) {
+	y := ctx.YCoord().GetText()
+	x := ctx.XCoord().GetText()
+	coordinate := x + " " + y
+
+	if ctx.ZCoord() != nil {
+		coordinate += " " + ctx.ZCoord().GetText()
+	}
+	l.stack.Push(coordinate)
+}
+
+// ExitPoint Handle POINT Well-Known Text (WKT) literal
+func (l *PostgresListener) ExitPoint(ctx *parser.PointContext) {
+	l.currentWktType = ctx.POINT().GetText()
+	coordinate := l.stack.Pop()
+	l.stack.Push(fmt.Sprintf("%s(%s)", l.currentWktType, coordinate))
+}
+
+// ExitLinestring Handle LINESTRING Well-Known Text (WKT) literal
+func (l *PostgresListener) ExitLinestring(ctx *parser.LinestringContext) {
+	l.currentWktType = ctx.LINESTRING().GetText()
+	coordinates := l.stack.Pop()
+	l.stack.Push(l.currentWktType + coordinates)
+}
+
+// ExitLinestringDef Handle LINESTRING coordinates
+func (l *PostgresListener) ExitLinestringDef(ctx *parser.LinestringDefContext) {
+	count := len(ctx.AllCoordinate())
+	coordinates := l.stack.PopMany(count)
+	l.stack.Push("(" + strings.Join(coordinates, ", ") + ")")
+}
+
+// ExitPolygon Handle POLYGON Well-Known Text (WKT) literal
+func (l *PostgresListener) ExitPolygon(ctx *parser.PolygonContext) {
+	l.currentWktType = ctx.POLYGON().GetText()
+	coordinates := l.stack.Pop()
+	l.stack.Push(l.currentWktType + coordinates)
+}
+
+// ExitPolygonDef Handle POLYGON coordinates
+func (l *PostgresListener) ExitPolygonDef(ctx *parser.PolygonDefContext) {
+	count := len(ctx.AllLinestringDef())
+	coordinates := l.stack.PopMany(count)
+	l.stack.Push("(" + strings.Join(coordinates, ", ") + ")")
+}
+
+// ExitMultiPoint Handle MULTIPOINT Well-Known Text (WKT) literal
+func (l *PostgresListener) ExitMultiPoint(ctx *parser.MultiPointContext) {
+	count := len(ctx.AllMultiPointDef())
+	coordinates := l.stack.PopMany(count)
+	l.currentWktType = ctx.MULTIPOINT().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", l.currentWktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitMultiPointDef Handle MULTIPOINT coordinates
+func (l *PostgresListener) ExitMultiPointDef(ctx *parser.MultiPointDefContext) {
+	if ctx.LEFTPAREN() != nil {
+		// handle alternative notation for MULTIPOINT. The one with extra parentheses.
+		coordinate := l.stack.Pop()
+		l.stack.Push("(" + coordinate + ")")
+	}
+}
+
+// ExitMultiLinestring Handle MULTILINESTRING Well-Known Text (WKT) literal
+func (l *PostgresListener) ExitMultiLinestring(ctx *parser.MultiLinestringContext) {
+	count := len(ctx.AllLinestringDef())
+	coordinates := l.stack.PopMany(count)
+	l.currentWktType = ctx.MULTILINESTRING().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", l.currentWktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitMultiPolygon Handle MULTIPOLYGON Well-Known Text (WKT) literal
+func (l *PostgresListener) ExitMultiPolygon(ctx *parser.MultiPolygonContext) {
+	count := len(ctx.AllPolygonDef())
+	coordinates := l.stack.PopMany(count)
+	l.currentWktType = ctx.MULTIPOLYGON().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", l.currentWktType, strings.Join(coordinates, ", ")))
+}
+
+// ExitGeometryCollection Handle GEOMETRYCOLLECTION Well-Known Text (WKT) literal
+func (l *PostgresListener) ExitGeometryCollection(ctx *parser.GeometryCollectionContext) {
+	count := len(ctx.AllGeometryLiteral())
+	literals := l.stack.PopMany(count)
+	l.currentWktType = ctx.GEOMETRYCOLLECTION().GetText()
+	l.stack.Push(fmt.Sprintf("%s(%s)", l.currentWktType, strings.Join(literals, ", ")))
+}
+
+// ExitTemporalPredicate Temporal predicates (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, etc)
+//
+//nolint:cyclop,funlen
+func (l *PostgresListener) ExitTemporalPredicate(ctx *parser.TemporalPredicateContext) {
+	if !l.cqlConfig.EnableTemporalFunctions {
+		l.errorListener.Error(errTemporalOperatorsNotEnabled)
+		return
+	}
+
+	firstStart, firstEnd, secondStart, secondEnd := l.popIntervalOrInstant()
+	if firstStart == temporalIntervalUnbounded || firstEnd == temporalIntervalUnbounded {
+		l.errorListener.Error("the first interval should reference a property, not be an unbounded interval. " +
+			"For example T_FUNCTION(INTERVAL(starts, ends), INTERVAL('..', '1970-01-01')) is supported " +
+			"but T_FUNCTION(INTERVAL('..', '1970-01-01'), INTERVAL(starts, ends)) is not")
+		return
+	}
+
+	cqlFunction := strings.ToUpper(ctx.TemporalFunction().GetText())
+	switch cqlFunction {
+	case T_AFTER:
+		l.temporalAfter(firstStart, secondEnd)
+	case T_BEFORE:
+		l.temporalBefore(firstEnd, secondStart)
+	case T_EQUALS:
+		l.temporalEquals(firstStart, firstEnd, secondStart, secondEnd)
+	case T_DISJOINT:
+		l.temporalDisjoint(firstStart, firstEnd, secondStart, secondEnd)
+	case T_INTERSECTS:
+		l.temporalIntersects(firstStart, firstEnd, secondStart, secondEnd)
+	case T_DURING:
+		l.temporalDuring(firstStart, firstEnd, secondStart, secondEnd)
+	case T_CONTAINS:
+		l.temporalContains(firstStart, firstEnd, secondStart, secondEnd)
+	case T_FINISHES:
+		l.temporalFinishes(firstStart, firstEnd, secondStart, secondEnd)
+	case T_FINISHEDBY:
+		l.temporalFinishedBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_MEETS:
+		l.temporalMeets(firstStart, firstEnd, secondStart, secondEnd)
+	case T_METBY:
+		l.temporalMetBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_OVERLAPS:
+		l.temporalOverlaps(firstStart, firstEnd, secondStart, secondEnd)
+	case T_OVERLAPPEDBY:
+		l.temporalOverlappedBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_STARTS:
+		l.temporalStarts(firstStart, firstEnd, secondStart, secondEnd)
+	case T_STARTEDBY:
+		l.temporalStartedBy(firstStart, firstEnd, secondStart, secondEnd)
+	default:
+		l.errorListener.Errorf("temporal function '%s' is not supported", cqlFunction)
+	}
+}
+
+// ExitInterval encodes INTERVAL(start, end) so ExitTemporalPredicate can split it.
+func (l *PostgresListener) ExitInterval(_ *parser.IntervalContext) {
+	end := l.stack.Pop()
+	start := l.stack.Pop()
+	l.stack.Push(start + temporalIntervalSeparator + end)
+}
+
+// ExitIntervalParameter handles INTERVAL().
+func (l *PostgresListener) ExitIntervalParameter(ctx *parser.IntervalParameterContext) {
+	if ctx.PropertyName() != nil || ctx.Function() != nil {
+		return
+	}
+
+	// two dots ".." represent an unbounded temporal interval (ISO 8601-2)
+	// See https://docs.ogc.org/is/21-065r2/21-065r2.html#_temporal_data_types_and_instances
+	if ctx.DotDotString() != nil {
+		l.stack.Push(temporalIntervalUnbounded)
+		return
+	}
+
+	// handle DATE() and TIMESTAMP(). Note we currently don't perform
+	// any type casts (https://docs.ogc.org/is/21-065r2/21-065r2.html#_type_casts)
+	if ctx.DateString() != nil {
+		l.addTemporalLiteral(ctx.DateString().GetText(), postgres.NamedParamSymbolPgx)
+	} else if ctx.TimestampString() != nil {
+		l.addTemporalLiteral(ctx.TimestampString().GetText(), postgres.NamedParamSymbolPgx)
+	}
+}
+
+// ExitPatternExpression handles CASEI and ACCENTI.
+func (l *PostgresListener) ExitPatternExpression(ctx *parser.PatternExpressionContext) {
+	if ctx.CASEI() != nil {
+		if !l.cqlConfig.EnableCaseInsensitiveComparison {
+			l.errorListener.Error(errCaseInsensitiveOperatorNotEnabled)
+			return
+		}
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreCaseCollation))
+	} else if ctx.ACCENTI() != nil {
+		if !l.cqlConfig.EnableAccentInsensitiveComparison {
+			l.errorListener.Error(errAccentInsensitiveOperatorNotEnabled)
+			return
+		}
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreAccentCollation))
+	}
+}
+
+// ExitCharacterClause handles CASEI and ACCENTI.
+func (l *PostgresListener) ExitCharacterClause(ctx *parser.CharacterClauseContext) {
+	if ctx.CASEI() != nil {
+		if !l.cqlConfig.EnableCaseInsensitiveComparison {
+			l.errorListener.Error(errCaseInsensitiveOperatorNotEnabled)
+			return
+		}
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreCaseCollation))
+	} else if ctx.ACCENTI() != nil {
+		if !l.cqlConfig.EnableAccentInsensitiveComparison {
+			l.errorListener.Error(errAccentInsensitiveOperatorNotEnabled)
+			return
+		}
+		l.stack.Push(addCollation(l.stack.Pop(), common.IgnoreAccentCollation))
+	}
+}
+
+// ExitInstantInstance handles DATE() and TIMESTAMP().
+func (l *PostgresListener) ExitInstantInstance(ctx *parser.InstantInstanceContext) {
+	// handle DATE() and TIMESTAMP(). Note we currently don't perform
+	// any type casts (https://docs.ogc.org/is/21-065r2/21-065r2.html#_type_casts)
+	if ctx.DateString() != nil {
+		l.addTemporalLiteral(ctx.DateString().GetText(), postgres.NamedParamSymbolPgx)
+	} else if ctx.TimestampString() != nil {
+		l.addTemporalLiteral(ctx.TimestampString().GetText(), postgres.NamedParamSymbolPgx)
+	}
+}
+
+func (l *PostgresListener) ExitFunction(ctx *parser.FunctionContext) {
+	function := ctx.Identifier()
+	if function != nil {
+		functionName := function.GetText()
+		l.errorListener.Error("function " + functionName + " is unsupported")
+	}
+}
+
+func (l *PostgresListener) ExitArrayPredicate(ctx *parser.ArrayPredicateContext) {
+	if ctx.ArrayFunction() != nil {
+		l.errorListener.Error("array operators are not supported")
+	}
+}
+
+func (l *PostgresListener) ExitArithmeticExpression(ctx *parser.ArithmeticExpressionContext) {
+	if ctx.ArithmeticOperatorPlusMinus() != nil {
+		l.errorListener.Error("arithmetic operators are not supported")
+	}
+}
+
+func (l *PostgresListener) ExitArithmeticTerm(ctx *parser.ArithmeticTermContext) {
+	if ctx.ArithmeticOperatorMultDiv() != nil {
+		l.errorListener.Error("arithmetic operators are not supported")
+	}
+}
+
+// ExitPropertyName Handle column names
+func (l *PostgresListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
+	name := ctx.GetText()
+	if !l.allowAllQueryables() && !l.isQueryable(name) {
+		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
+		l.errorListener.Error(err)
+		return
+	}
+
+	// add quotes around column names if not already present
+	if !strings.HasPrefix(name, "\"") {
+		name = "\"" + name + "\""
+	}
+	l.stack.Push(name)
+}
+
+// ExitCharacterLiteral Handle literals
+func (l *PostgresListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralContext) {
+	if ctx.GetText() != "" {
+		withoutSymbol, withSymbol := l.generateNamedParam(postgres.NamedParamSymbolPgx)
+
+		l.stack.Push(withSymbol)
+		l.namedParams[withoutSymbol] = stripSingleQuotes(ctx.GetText())
+	}
+}
+
+// ExitNumericLiteral Handle literals
+func (l *PostgresListener) ExitNumericLiteral(ctx *parser.NumericLiteralContext) {
+	if ctx.GetText() != "" {
+		withoutSymbol, withSymbol := l.generateNamedParam(postgres.NamedParamSymbolPgx)
+
+		num, err := parseNumber(ctx.GetText())
+		if err != nil {
+			l.errorListener.Error(err.Error())
+			return
+		}
+
+		l.stack.Push(withSymbol)
+		l.namedParams[withoutSymbol] = num
+	}
+}
+
+// ExitBooleanLiteral Handle literals
+func (l *PostgresListener) ExitBooleanLiteral(ctx *parser.BooleanLiteralContext) {
+	// From GeoPackage spec (https://www.geopackage.org/spec140/index.html):
+	// "A boolean value representing true or false. Stored as SQLite INTEGER with value 0 for false or 1 for true."
+	if strings.ToUpper(ctx.GetText()) == "TRUE" {
+		l.stack.Push("1")
+	} else {
+		l.stack.Push("0")
+	}
+}
+
+func (l *PostgresListener) isSpatialFilterAllowed(cqlFunction string) bool {
+	isBboxOrPoint := func() bool {
+		return strings.ToUpper(l.currentWktType) == "BBOX" || strings.ToUpper(l.currentWktType) == "POINT"
+	}
+
+	if l.collectionType != geospatial.Features {
+		l.errorListener.Errorf("spatial filtering using '%s' is not allowed for this collection since it does not "+
+			"contain geospatial items (features), only non-geospatial items (attributes)", cqlFunction)
+		return false
+	}
+	if !l.cqlConfig.EnableBasicSpatialFunctions {
+		l.errorListener.Error(errSpatialOperatorsNotEnabled)
+		return false
+	}
+	if !l.cqlConfig.EnableSpatialFunctions && strings.ToUpper(cqlFunction) != "S_INTERSECTS" {
+		l.errorListener.Errorf("spatial operator '%s' is not enabled for this collection, only S_INTERSECTS is allowed", cqlFunction)
+		return false
+	}
+	if !l.cqlConfig.EnableBasicSpatialFunctionsPlus && !l.cqlConfig.EnableSpatialFunctions && !isBboxOrPoint() {
+		l.errorListener.Errorf("geometry type '%s' is not allowed, only POINT and BBOX are allowed with basic spatial filtering", l.currentWktType)
+		return false
+	}
+	return true
 }

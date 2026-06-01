@@ -17,8 +17,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/wkt"
-	pgxgeom "github.com/twpayne/pgx-geom"
-	pgxuuid "github.com/vgarvardt/pgx-google-uuid/v5"
 )
 
 const (
@@ -44,28 +42,8 @@ func NewPostgres(collections config.FeaturesCollections, pgConfig config.Postgre
 			"supported for postgresql, reprojection/transformation is always applied")
 	}
 
-	pgxConfig, err := pgxpool.ParseConfig(pgConfig.ConnectionString())
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse database config: %w", err)
-	}
-
-	// enable SQL logging when appropriate environment variable (LOG_SQL=true) is set
-	if sl := NewSQLLogFromEnv(); sl.LogSQL {
-		pgxConfig.ConnConfig.Tracer = sl.Tracer
-	}
-
-	// set connection to read-only for safety since we (should) never write to Postgres.
-	pgxConfig.ConnConfig.RuntimeParams["default_transaction_read_only"] = "on"
-
-	pgxConfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		// add support for github.com/google/uuid <-> PostGIS conversions
-		pgxuuid.Register(conn.TypeMap())
-		// add support for Go <-> PostGIS conversions
-		return pgxgeom.Register(ctx, conn)
-	}
-
 	ctx := context.Background()
-	db, err := pgxpool.NewWithConfig(ctx, pgxConfig)
+	db, err := InitConnectionPool(ctx, pgConfig.ConnectionString())
 	if err != nil {
 		return nil, fmt.Errorf("unable to create connection pool: %w", err)
 	}
