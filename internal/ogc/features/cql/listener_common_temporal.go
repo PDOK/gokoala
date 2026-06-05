@@ -3,6 +3,8 @@ package cql
 import (
 	"fmt"
 	"strings"
+
+	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
 )
 
 //nolint:revive // keep these inline with spec.
@@ -36,15 +38,67 @@ const (
 	errInstantNotAllowed              = "temporal function %s only allows intervals, not instants (timestamp/date)"
 )
 
-func isInstant(firstStart string, firstEnd string, secondStart string, secondEnd string) bool {
-	return firstStart == firstEnd && secondStart == secondEnd
+// ExitTemporalPredicate Temporal predicates (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, etc)
+//
+//nolint:cyclop,funlen
+func (cl *CommonListener) ExitTemporalPredicate(ctx *parser.TemporalPredicateContext) {
+	if !cl.cqlConfig.EnableTemporalFunctions {
+		cl.errorListener.Error(errTemporalOperatorsNotEnabled)
+		return
+	}
+
+	firstStart, firstEnd, secondStart, secondEnd := cl.popIntervalOrInstant()
+	if firstStart == temporalIntervalUnbounded || firstEnd == temporalIntervalUnbounded {
+		cl.errorListener.Error("the first interval should reference a property, not be an unbounded interval. " +
+			"For example T_FUNCTION(INTERVAL(starts, ends), INTERVAL('..', '1970-01-01')) is supported " +
+			"but T_FUNCTION(INTERVAL('..', '1970-01-01'), INTERVAL(starts, ends)) is not")
+		return
+	}
+
+	cqlFunction := strings.ToUpper(ctx.TemporalFunction().GetText())
+	switch cqlFunction {
+	case T_AFTER:
+		cl.temporalAfter(firstStart, secondEnd)
+	case T_BEFORE:
+		cl.temporalBefore(firstEnd, secondStart)
+	case T_EQUALS:
+		cl.temporalEquals(firstStart, firstEnd, secondStart, secondEnd)
+	case T_DISJOINT:
+		cl.temporalDisjoint(firstStart, firstEnd, secondStart, secondEnd)
+	case T_INTERSECTS:
+		cl.temporalIntersects(firstStart, firstEnd, secondStart, secondEnd)
+	case T_DURING:
+		cl.temporalDuring(firstStart, firstEnd, secondStart, secondEnd)
+	case T_CONTAINS:
+		cl.temporalContains(firstStart, firstEnd, secondStart, secondEnd)
+	case T_FINISHES:
+		cl.temporalFinishes(firstStart, firstEnd, secondStart, secondEnd)
+	case T_FINISHEDBY:
+		cl.temporalFinishedBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_MEETS:
+		cl.temporalMeets(firstStart, firstEnd, secondStart, secondEnd)
+	case T_METBY:
+		cl.temporalMetBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_OVERLAPS:
+		cl.temporalOverlaps(firstStart, firstEnd, secondStart, secondEnd)
+	case T_OVERLAPPEDBY:
+		cl.temporalOverlappedBy(firstStart, firstEnd, secondStart, secondEnd)
+	case T_STARTS:
+		cl.temporalStarts(firstStart, firstEnd, secondStart, secondEnd)
+	case T_STARTEDBY:
+		cl.temporalStartedBy(firstStart, firstEnd, secondStart, secondEnd)
+	default:
+		cl.errorListener.Errorf("temporal function '%s' is not supported", cqlFunction)
+	}
 }
 
-func condition(first, comparisonOperator, second string) string {
-	return fmt.Sprintf("%s %s %s", first, comparisonOperator, second)
+// ExitInterval encodes INTERVAL(start, end) so ExitTemporalPredicate can split it.
+func (cl *CommonListener) ExitInterval(_ *parser.IntervalContext) {
+	end := cl.stack.Pop()
+	start := cl.stack.Pop()
+	cl.stack.Push(start + temporalIntervalSeparator + end)
 }
 
-//nolint:unparam // can be removed once we've implemented the Postgres cql listener
 func (cl *CommonListener) addTemporalLiteral(literal string, symbol string) {
 	withoutSymbol, withSymbol := cl.generateNamedParam(symbol)
 	cl.namedParams[withoutSymbol] = strings.Trim(literal, "'")
@@ -323,4 +377,12 @@ func (cl *CommonListener) temporalFinishedBy(firstStart string, firstEnd string,
 		condition(firstStart, "<", secondStart),
 		condition(firstEnd, "=", secondEnd),
 	)
+}
+
+func isInstant(firstStart string, firstEnd string, secondStart string, secondEnd string) bool {
+	return firstStart == firstEnd && secondStart == secondEnd
+}
+
+func condition(first, comparisonOperator, second string) string {
+	return fmt.Sprintf("%s %s %s", first, comparisonOperator, second)
 }
