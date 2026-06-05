@@ -5,7 +5,7 @@ module github.com/PDOK/gokoala
 // and toolchain versions in go.mod may differ.
 go 1.25.5
 
-toolchain go1.26.3
+toolchain go1.26.4
 
 require (
 	dario.cat/mergo v1.0.2
