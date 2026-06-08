@@ -105,7 +105,6 @@ func TestPreventSQLInjectionAttack(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				// when
 				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
@@ -113,7 +112,6 @@ func TestPreventSQLInjectionAttack(t *testing.T) {
 				assertValidSQLiteQuery(t, actual)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
-				// when
 				// when
 				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
 
