@@ -21,7 +21,7 @@ import (
 
 const (
 	gpkg       = "gpkg"
-	postgresql = "postgresql"
+	postgresql = "postgres"
 )
 
 var datasources = []string{gpkg, postgresql}
@@ -2402,70 +2402,86 @@ func TestFailOnNonSupportedArrayOperators(t *testing.T) {
 // Test CQL examples provided by OGC.
 // See https://github.com/opengeospatial/ogcapi-features/tree/64ac2d892b877b711a4570336cb9d42e2afb4ef8/cql2/standard/schema/examples/text
 func TestCQLExamplesProvidedByOGC(t *testing.T) {
-	const (
-		ext               = ".txt"
-		expectedSuffix    = "_expected_gpkg" + ext
-		expectedErrSuffix = "_expected_error_gpkg" + ext
-	)
+	const ext = ".txt"
 
 	ogcExamples := path.Join(pwd, "testdata", "ogc")
-	entries, err := os.ReadDir(ogcExamples)
+	testCases, err := os.ReadDir(ogcExamples)
 	require.NoError(t, err)
 
-	for _, entry := range entries {
-		if entry.IsDir() ||
-			strings.Contains(entry.Name(), "postgres"+ext) ||
-			strings.Contains(entry.Name(), expectedSuffix) ||
-			strings.Contains(entry.Name(), expectedErrSuffix) {
-			continue
+	for _, datasource := range datasources {
+		expectedSuffix := "_expected_" + datasource + ext
+		expectedErrSuffix := "_expected_error_" + datasource + ext
+
+		var excludeFilter string
+		switch datasource {
+		case gpkg:
+			excludeFilter = postgresql + ext
+		case postgresql:
+			excludeFilter = gpkg + ext
 		}
 
-		t.Run(entry.Name(), func(t *testing.T) {
-			// given
-			queryables := []domain.Field{{Name: "*"}, {Name: "geometry", IsPrimaryGeometry: true}}
-
-			example, err := os.ReadFile(path.Join(ogcExamples, entry.Name()))
-			require.NoError(t, err)
-
-			expectedFile := path.Join(ogcExamples, strings.TrimSuffix(entry.Name(), ext)+expectedSuffix)
-			expectedErrFile := path.Join(ogcExamples, strings.TrimSuffix(entry.Name(), ext)+expectedErrSuffix)
-
-			inputCQL := strings.Map(removeNewlinesAndTabs, strings.TrimSpace(string(example)))
-			require.NotEmpty(t, inputCQL)
-			log.Printf("Parsing CQL: %s", inputCQL)
-
-			if strings.HasPrefix(entry.Name(), "SKIP_") {
-				t.Skipf("Skipping %s, since this example is not (yet) supported by our CQL implementation", entry.Name())
+		for _, testCase := range testCases {
+			if testCase.IsDir() ||
+				strings.Contains(testCase.Name(), excludeFilter) ||
+				strings.Contains(testCase.Name(), expectedSuffix) ||
+				strings.Contains(testCase.Name(), expectedErrSuffix) {
+				continue
 			}
 
-			var expectedSQL, expectedErr []byte
-			expectedSQL, err = os.ReadFile(expectedFile)
-			if os.IsNotExist(err) {
-				// no exception file found, assume error is expected
-				expectedErr, err = os.ReadFile(expectedErrFile)
-				require.NoError(t, err, "file with expected error not found")
-			}
+			// actual test starts here!
+			t.Run(testCase.Name(), func(t *testing.T) {
+				// given
+				queryables := []domain.Field{{Name: "*"}, {Name: "geometry", IsPrimaryGeometry: true}}
 
-			// when
-			switch {
-			case len(expectedSQL) > 0:
-				actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-				// then
+				example, err := os.ReadFile(path.Join(ogcExamples, testCase.Name()))
 				require.NoError(t, err)
-				require.NotNil(t, actual)
-				assert.Equal(t, string(expectedSQL), actual.SQL)
-				assertValidSQLiteQuery(t, actual)
-			case len(expectedErr) > 0:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
 
-				// then
-				require.Error(t, err)
-				assert.Contains(t, err.Error(), string(expectedErr))
-			default:
-				require.Fail(t, "expected either an expected SQL result or an expected error, but neither was found")
-			}
-		})
+				expectedFile := path.Join(ogcExamples, strings.TrimSuffix(testCase.Name(), ext)+expectedSuffix)
+				expectedErrFile := path.Join(ogcExamples, strings.TrimSuffix(testCase.Name(), ext)+expectedErrSuffix)
+
+				inputCQL := strings.Map(removeNewlinesAndTabs, strings.TrimSpace(string(example)))
+				require.NotEmpty(t, inputCQL)
+				log.Printf("Parsing CQL: %s", inputCQL)
+
+				if strings.HasPrefix(testCase.Name(), "SKIP_") {
+					t.Skipf("Skipping %s, since this example is not (yet) supported by our CQL implementation", testCase.Name())
+				}
+
+				var expectedSQL, expectedErr []byte
+				expectedSQL, err = os.ReadFile(expectedFile)
+				if os.IsNotExist(err) {
+					// no exception file found, assume error is expected
+					expectedErr, err = os.ReadFile(expectedErrFile)
+					require.NoError(t, err, "file with expected error not found")
+				}
+
+				// when
+				var actual *SQLResult
+				switch datasource {
+				case gpkg:
+					actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				case postgresql:
+					actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				}
+
+				switch {
+				case len(expectedSQL) > 0:
+					// then
+					require.NoError(t, err)
+					require.NotNil(t, actual)
+					assert.Equal(t, string(expectedSQL), actual.SQL)
+					if datasource == gpkg {
+						assertValidSQLiteQuery(t, actual)
+					}
+				case len(expectedErr) > 0:
+					// then
+					require.Error(t, err)
+					assert.Contains(t, err.Error(), string(expectedErr))
+				default:
+					require.Fail(t, "expected either an expected SQL result or an expected error, but neither was found")
+				}
+			})
+		}
 	}
 }
 
