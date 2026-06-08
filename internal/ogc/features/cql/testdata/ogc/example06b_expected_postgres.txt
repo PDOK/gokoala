@@ -1,1 +1,1 @@
-("eo::cloud_cover" >= :cql_bcde AND "eo::cloud_cover" <= :cql_fghi AND "landsat::wrs_row" = :cql_jklm AND "landsat::wrs_path" = :cql_nopq)
+(cast ("eo:cloud_cover" as numeric) >= @cql_bcde AND cast ("eo:cloud_cover" as numeric) <= @cql_fghi AND cast ("landsat:wrs_row" as numeric) = @cql_jklm AND cast ("landsat:wrs_path" as numeric) = @cql_nopq)

@@ -1,1 +1,1 @@
-("touchdown" > :cql_bcde AND "liftOff" < :cql_fghi)
+("touchdown" > @cql_bcde AND "liftOff" < @cql_fghi)

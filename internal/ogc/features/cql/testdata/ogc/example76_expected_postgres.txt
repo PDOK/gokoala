@@ -1,1 +1,1 @@
-:cql_bcde <= "foo"
+@cql_bcde <= "foo"

@@ -1,1 +1,1 @@
-NOT ("name" LIKE :cql_bcde)
+NOT ("name" LIKE @cql_bcde)

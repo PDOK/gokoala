@@ -1,1 +1,1 @@
-"floors" > :cql_bcde
+cast ("floors" as numeric) > @cql_bcde

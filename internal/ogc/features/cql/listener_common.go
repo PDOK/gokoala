@@ -181,13 +181,13 @@ func addCollation(expr, collation string) string {
 	suffixAccentCase := collateKeyword + common.IgnoreAccentAndCaseCollation
 
 	switch {
-	case strings.HasSuffix(expr, suffixAccentCase):
+	case hasCollation(expr, common.IgnoreAccentAndCaseCollation):
 		return expr
-	case collation == common.IgnoreAccentCollation && strings.HasSuffix(expr, suffixCase):
+	case hasCollation(expr, common.IgnoreCaseCollation) && collation == common.IgnoreAccentCollation:
 		// replace existing case with case + accent
 		return strings.Replace(expr, suffixCase, suffixAccentCase, 1)
-	case collation == common.IgnoreCaseCollation && strings.HasSuffix(expr, suffixAccent):
-		// replace existing accent with accent + case
+	case hasCollation(expr, common.IgnoreAccentCollation) && collation == common.IgnoreCaseCollation:
+		// replace existing accent with case + accent
 		return strings.Replace(expr, suffixAccent, suffixAccentCase, 1)
 	default:
 		return expr + collateKeyword + collation
@@ -197,9 +197,9 @@ func addCollation(expr, collation string) string {
 // removeCollation removes COLLATE from the SQL expression.
 func removeCollation(expr string) string {
 	collations := []string{common.IgnoreCaseCollation, common.IgnoreAccentCollation, common.IgnoreAccentAndCaseCollation}
-	for _, c := range collations {
-		if hasCollation(expr, c) {
-			return strings.TrimSuffix(expr, collateKeyword+c)
+	for _, collation := range collations {
+		if hasCollation(expr, collation) {
+			return strings.TrimSuffix(expr, collateKeyword+collation)
 		}
 	}
 	return expr

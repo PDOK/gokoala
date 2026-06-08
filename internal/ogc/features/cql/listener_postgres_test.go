@@ -7,6 +7,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,6 +37,8 @@ func TestCQLExamplesProvidedByOGC_Postgres(t *testing.T) {
 
 		t.Run(entry.Name(), func(t *testing.T) {
 			// given
+			queryables := []domain.Field{{Name: "*"}, {Name: "geometry", IsPrimaryGeometry: true}}
+
 			example, err := os.ReadFile(path.Join(ogcExamples, entry.Name()))
 			require.NoError(t, err)
 
@@ -58,11 +64,18 @@ func TestCQLExamplesProvidedByOGC_Postgres(t *testing.T) {
 			// when
 			switch {
 			case len(expectedSQL) > 0:
-				t.Skip("TODO")
-				// TODO: test successful case
+				actual, err := ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+
+				// then
+				require.NoError(t, err)
+				require.NotNil(t, actual)
+				assert.Equal(t, string(expectedSQL), actual.SQL)
 			case len(expectedErr) > 0:
-				t.Skip("TODO")
-				// TODO: test error case
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+
+				// then
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), string(expectedErr))
 			default:
 				require.Fail(t, "expected either an expected SQL result or an expected error, but neither was found")
 			}

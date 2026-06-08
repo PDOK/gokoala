@@ -1,1 +1,1 @@
-(NOT ("name" LIKE :cql_bcde) AND "value" > :cql_fghi)
+(NOT ("name" LIKE @cql_bcde) AND cast ("value" as numeric) > @cql_fghi)

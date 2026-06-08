@@ -1,1 +1,1 @@
-"starts_at" = :cql_bcde
+"starts_at" = @cql_bcde

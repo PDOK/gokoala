@@ -1,1 +1,1 @@
-"value" IN (:cql_bcde, :cql_fghi, :cql_jklm)
+cast("value" as text) IN (@cql_bcde, @cql_fghi, @cql_jklm)

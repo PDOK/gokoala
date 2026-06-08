@@ -1,1 +1,1 @@
-"name" LIKE :cql_bcde COLLATE NOCASE
+"name" ILIKE @cql_bcde

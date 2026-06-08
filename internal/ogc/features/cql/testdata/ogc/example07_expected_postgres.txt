@@ -1,1 +1,1 @@
-("eo::instrument" LIKE :cql_bcde AND ST_Intersects(CastAutomagic("geometry"), ST_GeomFromText(:cql_fghi, 100000)))
+("eo:instrument" LIKE @cql_bcde AND ST_Intersects("geometry", ST_Transform(ST_GeomFromText(@cql_fghi, 4326), ST_SRID("geometry"))))

@@ -1,1 +1,1 @@
-"geophys::SURVEY_NAME" COLLATE NOCASE LIKE :cql_bcde COLLATE NOCASE
+"geophys:SURVEY_NAME" ILIKE @cql_bcde

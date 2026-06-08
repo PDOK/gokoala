@@ -1,1 +1,1 @@
-(("floors" > :cql_bcde AND "material" = :cql_fghi) OR "swimming_pool" = 1)
+((cast ("floors" as numeric) > @cql_bcde AND "material" = @cql_fghi) OR "swimming_pool" = true)

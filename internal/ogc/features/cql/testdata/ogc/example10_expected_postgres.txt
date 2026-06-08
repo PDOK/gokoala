@@ -1,1 +1,1 @@
-"taxes" <= :cql_bcde
+cast ("taxes" as numeric) <= @cql_bcde
