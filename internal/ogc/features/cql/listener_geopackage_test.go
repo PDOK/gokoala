@@ -19,6 +19,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	gpkg       = "gpkg"
+	postgresql = "postgresql"
+)
+
+var datasources = []string{gpkg, postgresql}
+
 var pwd string
 
 var cqlConfigAllEnabled = config.CQL{
@@ -41,12 +48,23 @@ func TestInvalidBooleanQuery(t *testing.T) {
 	// given
 	inputCQL := "prop1 ==== 1 AND prop2 !!= 5"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
 
-	// then
-	require.ErrorContains(t, err, "syntax error at column 7: mismatched input '=' expecting ")
-	require.ErrorContains(t, err, "syntax error at column 23: no viable alternative at input 'prop2!'")
+			// when
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+
+			// then
+			require.ErrorContains(t, err, "syntax error at column 7: mismatched input '=' expecting ")
+			require.ErrorContains(t, err, "syntax error at column 23: no viable alternative at input 'prop2!'")
+		})
+	}
 }
 
 func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
@@ -54,27 +72,58 @@ func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 = 30 AND prop2 > 77"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
 
-	// then
-	assert.ErrorContains(t, err, "property 'prop2' cannot be used in CQL filter, is not a queryable property")
+			// when
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+
+			// then
+			assert.ErrorContains(t, err, "property 'prop2' cannot be used in CQL filter, is not a queryable property")
+		})
+	}
 }
 
 func TestPreventSQLInjectionAttack(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 > 5 OR 1 = 1"
-	expectedSQL := "(cast (\"prop1\" as numeric) > :cql_bcde OR cast (:cql_fghi as numeric) = :cql_jklm)"
+	expectedSQLGeoPackage := "(cast (\"prop1\" as numeric) > :cql_bcde OR cast (:cql_fghi as numeric) = :cql_jklm)"
+	expectedSQLPostgres := "(cast (\"prop1\" as numeric) > @cql_bcde OR cast (@cql_fghi as numeric) = @cql_jklm)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
 
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(5), "cql_fghi": int64(1), "cql_jklm": int64(1)}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+			switch datasource {
+			case gpkg:
+				// when
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+
+				// then
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				// when
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+
+				// then
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+
+			// then
+			assert.Equal(t, map[string]any{"cql_bcde": int64(5), "cql_fghi": int64(1), "cql_jklm": int64(1)}, actual.Params)
+		})
+	}
 }
 
 func TestPreventSQLInjectionAttackAdvanced(t *testing.T) {
@@ -82,27 +131,47 @@ func TestPreventSQLInjectionAttackAdvanced(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "prop5 = 'Square';DROP TABLE cql"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "syntax error at column 16")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			// when
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+			// then
+			assert.ErrorContains(t, err, "syntax error at column 16")
+		})
+	}
 }
 
 func TestBooleanQueryWithNumbers(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 = 10 AND prop2 < 5"
-	expectedSQL := "(cast (\"prop1\" as numeric) = :cql_bcde AND cast (\"prop2\" as numeric) < :cql_fghi)"
+	expectedSQLGeoPackage := "(cast (\"prop1\" as numeric) = :cql_bcde AND cast (\"prop2\" as numeric) < :cql_fghi)"
+	expectedSQLPostgres := "(cast (\"prop1\" as numeric) = @cql_bcde AND cast (\"prop2\" as numeric) < @cql_fghi)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(5)}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(5)}, actual.Params)
+		})
+	}
 }
 
 func TestAllSimpleComparisionOperators(t *testing.T) {
@@ -112,15 +181,26 @@ func TestAllSimpleComparisionOperators(t *testing.T) {
 
 	for _, operator := range operators {
 		t.Run(operator, func(t *testing.T) {
-			// when
-			expectedSQL := "cast (\"prop1\" as numeric) " + operator + " :cql_bcde"
-			actual, err := ParseToSQL("prop1 "+operator+" 10", NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-			// then
-			require.NoError(t, err)
-			assertValidSQLiteQuery(t, actual)
-			assert.Equal(t, map[string]any{"cql_bcde": int64(10)}, actual.Params)
-			assert.Equal(t, expectedSQL, actual.SQL)
+			for _, datasource := range datasources {
+				t.Run(datasource, func(t *testing.T) {
+					var actual *SQLResult
+					var err error
+					switch datasource {
+					case gpkg:
+						expectedSQL := "cast (\"prop1\" as numeric) " + operator + " :cql_bcde"
+						actual, err = ParseToSQL("prop1 "+operator+" 10", NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assertValidSQLiteQuery(t, actual)
+						assert.Equal(t, expectedSQL, actual.SQL)
+					case postgresql:
+						expectedSQL := "cast (\"prop1\" as numeric) " + operator + " @cql_bcde"
+						actual, err = ParseToSQL("prop1 "+operator+" 10", NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assert.Equal(t, expectedSQL, actual.SQL)
+					}
+					assert.Equal(t, map[string]any{"cql_bcde": int64(10)}, actual.Params)
+				})
+			}
 		})
 	}
 }
@@ -129,112 +209,189 @@ func TestMultipleBooleanQueries(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = 10 OR prop1 = 20) AND NOT (prop2 = 'X')"
-	expectedSQL := "((cast (\"prop1\" as numeric) = :cql_bcde OR cast (\"prop1\" as numeric) = :cql_fghi) AND NOT (\"prop2\" = :cql_jklm))"
+	expectedSQLGeoPackage := "((cast (\"prop1\" as numeric) = :cql_bcde OR cast (\"prop1\" as numeric) = :cql_fghi) AND NOT (\"prop2\" = :cql_jklm))"
+	expectedSQLPostgres := "((cast (\"prop1\" as numeric) = @cql_bcde OR cast (\"prop1\" as numeric) = @cql_fghi) AND NOT (\"prop2\" = @cql_jklm))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(20), "cql_jklm": "X"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": int64(20), "cql_jklm": "X"}, actual.Params)
+		})
+	}
 }
 
 func TestBooleanTrueLiteral(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = true AND prop2 = 20)"
-	expectedSQL := "(\"prop1\" = 1 AND cast (\"prop2\" as numeric) = :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop1\" = 1 AND cast (\"prop2\" as numeric) = :cql_bcde)"
+	expectedSQLPostgres := "(\"prop1\" = true AND cast (\"prop2\" as numeric) = @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(20)}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": int64(20)}, actual.Params)
+		})
+	}
 }
 
 func TestBooleanFalseLiteral(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "(prop1 = false AND prop2 = 20)"
-	expectedSQL := "(\"prop1\" = 0 AND cast (\"prop2\" as numeric) = :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop1\" = 0 AND cast (\"prop2\" as numeric) = :cql_bcde)"
+	expectedSQLPostgres := "(\"prop1\" = false AND cast (\"prop2\" as numeric) = @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(20)}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": int64(20)}, actual.Params)
+		})
+	}
 }
 
 func TestMultipleBooleanQueriesWithStrings(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "(prop1 = 'foo' AND prop2 = 'bar') OR prop3 = 'abc'"
-	expectedSQL := "((\"prop1\" = :cql_bcde AND \"prop2\" = :cql_fghi) OR \"prop3\" = :cql_jklm)"
+	expectedSQLGeoPackage := "((\"prop1\" = :cql_bcde AND \"prop2\" = :cql_fghi) OR \"prop3\" = :cql_jklm)"
+	expectedSQLPostgres := "((\"prop1\" = @cql_bcde AND \"prop2\" = @cql_fghi) OR \"prop3\" = @cql_jklm)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "abc"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "abc"}, actual.Params)
+		})
+	}
 }
 
 func TestLikeOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "prop1 LIKE 'foo%' AND prop2 LIKE 'bar_' OR prop3 LIKE '%abc'"
-	expectedSQL := "((\"prop1\" LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
+	expectedSQLGeoPackage := "((\"prop1\" LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
+	expectedSQLPostgres := "((\"prop1\" LIKE @cql_bcde AND \"prop2\" LIKE @cql_fghi) OR \"prop3\" LIKE @cql_jklm)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
+		})
+	}
 }
 
 func TestNotLikeOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "prop1 NOT LIKE 'foo%' AND prop2 LIKE 'bar_' OR prop3 LIKE '%abc'"
-	expectedSQL := "((\"prop1\" NOT LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
+	expectedSQLGeoPackage := "((\"prop1\" NOT LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
+	expectedSQLPostgres := "((\"prop1\" NOT LIKE @cql_bcde AND \"prop2\" LIKE @cql_fghi) OR \"prop3\" LIKE @cql_jklm)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
+		})
+	}
 }
 
 func TestOperatorShouldWorkRegardlessOfCasing(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "prop1 lIkE 'foo%' AND prop2 LiKE 'bar_' OR prop3 like '%abc'"
-	expectedSQL := "((\"prop1\" LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
+	expectedSQLGeoPackage := "((\"prop1\" LIKE :cql_bcde AND \"prop2\" LIKE :cql_fghi) OR \"prop3\" LIKE :cql_jklm)"
+	expectedSQLPostgres := "((\"prop1\" LIKE @cql_bcde AND \"prop2\" LIKE @cql_fghi) OR \"prop3\" LIKE @cql_jklm)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "foo%", "cql_fghi": "bar_", "cql_jklm": "%abc"}, actual.Params)
+		})
+	}
 }
 
 func TestLikeOperatorNotEnabled(t *testing.T) {
@@ -245,27 +402,45 @@ func TestLikeOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "prop1 LIKE 'foo%' AND prop2 LIKE 'bar_' OR prop3 LIKE '%abc'"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+		})
+	}
 }
 
 func TestCaseInsensitiveOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "CASEI(prop1) = CASEI('Foo')"
-	expectedSQL := "\"prop1\" COLLATE NOCASE = :cql_bcde COLLATE NOCASE"
+	expectedSQLGeoPackage := "\"prop1\" COLLATE NOCASE = :cql_bcde COLLATE NOCASE"
+	expectedSQLPostgres := "\"prop1\" COLLATE NOCASE = @cql_bcde COLLATE NOCASE"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "Foo"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "Foo"}, actual.Params)
+		})
+	}
 }
 
 func TestCaseInsensitiveOperatorNotEnabled(t *testing.T) {
@@ -276,27 +451,45 @@ func TestCaseInsensitiveOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "CASEI(prop1) = CASEI('Foo')"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "case-insensitive comparison (CASEI) is not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "case-insensitive comparison (CASEI) is not enabled for this collection")
+		})
+	}
 }
 
 func TestAccentInsensitiveOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "ACCENTI(prop1) = ACCENTI('fóo') OR ACCENTI(prop1) = ACCENTI('débárquér')"
-	expectedSQL := "(\"prop1\" COLLATE NOACCENT = :cql_bcde COLLATE NOACCENT OR \"prop1\" COLLATE NOACCENT = :cql_fghi COLLATE NOACCENT)"
+	expectedSQLGeoPackage := "(\"prop1\" COLLATE NOACCENT = :cql_bcde COLLATE NOACCENT OR \"prop1\" COLLATE NOACCENT = :cql_fghi COLLATE NOACCENT)"
+	expectedSQLPostgres := "(\"prop1\" COLLATE NOACCENT = @cql_bcde COLLATE NOACCENT OR \"prop1\" COLLATE NOACCENT = @cql_fghi COLLATE NOACCENT)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "fóo", "cql_fghi": "débárquér"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "fóo", "cql_fghi": "débárquér"}, actual.Params)
+		})
+	}
 }
 
 func TestAccentInsensitiveOperatorNotEnabled(t *testing.T) {
@@ -307,11 +500,18 @@ func TestAccentInsensitiveOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "ACCENTI(prop1) = ACCENTI('fóo') OR ACCENTI(prop1) = ACCENTI('débárquér')"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "accent-insensitive comparison (ACCENTI) is not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "accent-insensitive comparison (ACCENTI) is not enabled for this collection")
+		})
+	}
 }
 
 func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
@@ -342,14 +542,25 @@ func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
 			// given
 			queryables := []domain.Field{{Name: "prop1"}}
 
-			// when
-			actual, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-			// then
-			require.NoError(t, err)
-			assertValidSQLiteQuery(t, actual)
-			assert.Equal(t, map[string]any{"cql_bcde": "Fóo"}, actual.Params)
-			assert.Equal(t, tt.expectedSQL, actual.SQL)
+			for _, datasource := range datasources {
+				t.Run(datasource, func(t *testing.T) {
+					var actual *SQLResult
+					var err error
+					switch datasource {
+					case gpkg:
+						actual, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assertValidSQLiteQuery(t, actual)
+						assert.Equal(t, tt.expectedSQL, actual.SQL)
+					case postgresql:
+						expectedSQLPostgres := strings.ReplaceAll(tt.expectedSQL, ":", "@")
+						actual, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assert.Equal(t, expectedSQLPostgres, actual.SQL)
+					}
+					assert.Equal(t, map[string]any{"cql_bcde": "Fóo"}, actual.Params)
+				})
+			}
 		})
 	}
 }
@@ -358,16 +569,27 @@ func TestCaseAndAccentInsensitiveOperatorWithLike(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "CASEI(prop1) LIKE CASEI('Foo%') AND ACCENTI(CASEI(prop1)) LIKE ACCENTI(CASEI('Fóo%'))"
-	expectedSQL := "(\"prop1\" COLLATE NOCASE LIKE :cql_bcde COLLATE NOCASE AND \"prop1\" COLLATE NOACCENT_NOCASE LIKE :cql_fghi COLLATE NOACCENT_NOCASE)"
+	expectedSQLGeoPackage := "(\"prop1\" COLLATE NOCASE LIKE :cql_bcde COLLATE NOCASE AND \"prop1\" COLLATE NOACCENT_NOCASE LIKE :cql_fghi COLLATE NOACCENT_NOCASE)"
+	expectedSQLPostgres := "(\"prop1\" ILIKE @cql_bcde AND unaccent(\"prop1\") ILIKE unaccent(@cql_fghi))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "Foo%", "cql_fghi": "Fóo%"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "Foo%", "cql_fghi": "Fóo%"}, actual.Params)
+		})
+	}
 }
 
 func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
@@ -375,45 +597,74 @@ func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 LIKE 'foo'"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "LIKE pattern is missing wildcard symbol. "+
-		"Either percentage '%' to match multiple characters or underscore '_' to match a "+
-		"single character can be used as a wildcard symbol. For example: LIKE 'foo%'.")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "LIKE pattern is missing wildcard symbol. "+
+				"Either percentage '%' to match multiple characters or underscore '_' to match a "+
+				"single character can be used as a wildcard symbol. For example: LIKE 'foo%'.")
+		})
+	}
 }
 
 func TestBetweenOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 BETWEEN 4 AND 6 AND prop2 = 'bar'"
-	expectedSQL := "(\"prop1\" BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
+	expectedSQLGeoPackage := "(\"prop1\" BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
+	expectedSQLPostgres := "(\"prop1\" BETWEEN @cql_bcde AND @cql_fghi AND \"prop2\" = @cql_jklm)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "bar"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "bar"}, actual.Params)
+		})
+	}
 }
 
 func TestNotBetweenOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 NOT BETWEEN 4 AND 6 AND prop2 = 'bar'"
-	expectedSQL := "(\"prop1\" NOT BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
+	expectedSQLGeoPackage := "(\"prop1\" NOT BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
+	expectedSQLPostgres := "(\"prop1\" NOT BETWEEN @cql_bcde AND @cql_fghi AND \"prop2\" = @cql_jklm)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "bar"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": int64(4), "cql_fghi": int64(6), "cql_jklm": "bar"}, actual.Params)
+		})
+	}
 }
 
 func TestBetweenOperatorNotEnabled(t *testing.T) {
@@ -424,43 +675,72 @@ func TestBetweenOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 NOT BETWEEN 4 AND 6 AND prop2 = 'bar'"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+		})
+	}
 }
 
 func TestInListOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IN ('foo', 'bar', 'baz') AND prop2 = 'baz'"
-	expectedSQL := "(\"prop1\" IN (:cql_bcde, :cql_fghi, :cql_jklm) AND \"prop2\" = :cql_nopq)"
+	expectedSQLGeoPackage := "(\"prop1\" IN (:cql_bcde, :cql_fghi, :cql_jklm) AND \"prop2\" = :cql_nopq)"
+	expectedSQLPostgres := "(\"prop1\" IN (@cql_bcde, @cql_fghi, @cql_jklm) AND \"prop2\" = @cql_nopq)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "baz", "cql_nopq": "baz"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "baz", "cql_nopq": "baz"}, actual.Params)
+		})
+	}
 }
 
 func TestNotInListOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 NOT IN ('foo', 'bar', 'baz') AND prop2 = 'baz'"
-	expectedSQL := "(\"prop1\" NOT IN (:cql_bcde, :cql_fghi, :cql_jklm) AND \"prop2\" = :cql_nopq)"
+	expectedSQLGeoPackage := "(\"prop1\" NOT IN (:cql_bcde, :cql_fghi, :cql_jklm) AND \"prop2\" = :cql_nopq)"
+	expectedSQLPostgres := "(\"prop1\" NOT IN (@cql_bcde, @cql_fghi, @cql_jklm) AND \"prop2\" = @cql_nopq)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "baz", "cql_nopq": "baz"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "bar", "cql_jklm": "baz", "cql_nopq": "baz"}, actual.Params)
+		})
+	}
 }
 
 func TestInOperatorNotEnabled(t *testing.T) {
@@ -471,43 +751,72 @@ func TestInOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IN ('foo', 'bar', 'baz') AND prop2 = 'baz'"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+		})
+	}
 }
 
 func TestIsNullOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IS NULL AND prop2 = 'baz'"
-	expectedSQL := "(\"prop1\" IS NULL AND \"prop2\" = :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop1\" IS NULL AND \"prop2\" = :cql_bcde)"
+	expectedSQLPostgres := "(\"prop1\" IS NULL AND \"prop2\" = @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "baz"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "baz"}, actual.Params)
+		})
+	}
 }
 
 func TestIsNotNullOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IS NOT NULL AND prop2 = 'baz'"
-	expectedSQL := "(\"prop1\" IS NOT NULL AND \"prop2\" = :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop1\" IS NOT NULL AND \"prop2\" = :cql_bcde)"
+	expectedSQLPostgres := "(\"prop1\" IS NOT NULL AND \"prop2\" = @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assertValidSQLiteQuery(t, actual)
-	assert.Equal(t, map[string]any{"cql_bcde": "baz"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "baz"}, actual.Params)
+		})
+	}
 }
 
 func TestIsNullOperatorNotEnabled(t *testing.T) {
@@ -518,11 +827,18 @@ func TestIsNullOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IS NULL AND prop2 = 'baz'"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection")
+		})
+	}
 }
 
 func TestFailOnInvalidInListQuery(t *testing.T) {
@@ -530,131 +846,226 @@ func TestFailOnInvalidInListQuery(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IN ('foo', 'bar' 'baz')"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "syntax error at column 23: extraneous input ''baz'' expecting {')', ','}")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "syntax error at column 23: extraneous input ''baz'' expecting {')', ','}")
+		})
+	}
 }
 
 func TestSpatialQueryWithPoint(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, POINT(4.897 52.377))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "POINT(4.897 52.377)"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "POINT(4.897 52.377)"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithPoint3D(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, POINTZ(4.897 52.377 10.0))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "POINTZ(4.897 52.377 10.0)"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "POINTZ(4.897 52.377 10.0)"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithLinestring(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, LINESTRING(0.0 0.0, 1.0 1.0, 2.0 0.0))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "LINESTRING(0.0 0.0, 1.0 1.0, 2.0 0.0)"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "LINESTRING(0.0 0.0, 1.0 1.0, 2.0 0.0)"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithPolygon(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, POLYGON((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 28992))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 28992))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 28992), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 28992, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "POLYGON((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0))"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 28992, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 28992, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "POLYGON((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0))"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithPolygonWithHole(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, POLYGON((0.0 0.0, 10.0 0.0, 10.0 10.0, 0.0 10.0, 0.0 0.0),(2.0 2.0, 8.0 2.0, 8.0 8.0, 2.0 8.0, 2.0 2.0)))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "POLYGON((0.0 0.0, 10.0 0.0, 10.0 10.0, 0.0 10.0, 0.0 0.0), (2.0 2.0, 8.0 2.0, 8.0 8.0, 2.0 8.0, 2.0 2.0))"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "POLYGON((0.0 0.0, 10.0 0.0, 10.0 10.0, 0.0 10.0, 0.0 0.0), (2.0 2.0, 8.0 2.0, 8.0 8.0, 2.0 8.0, 2.0 2.0))"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithMultiPoint(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTIPOINT(0.0 0.0, 1.0 1.0))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "MULTIPOINT(0.0 0.0, 1.0 1.0)"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "MULTIPOINT(0.0 0.0, 1.0 1.0)"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithMultiLinestring(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTILINESTRING((0.0 0.0, 1.0 1.0),(2.0 2.0, 3.0 3.0)))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "MULTILINESTRING((0.0 0.0, 1.0 1.0), (2.0 2.0, 3.0 3.0))"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "MULTILINESTRING((0.0 0.0, 1.0 1.0), (2.0 2.0, 3.0 3.0))"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithMultiPolygon(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)),((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)), ((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0)))"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)), ((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0)))"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithMultiPolygonFailsWithOnlyBasicSpatialFilteringEnabled(t *testing.T) {
@@ -666,41 +1077,70 @@ func TestSpatialQueryWithMultiPolygonFailsWithOnlyBasicSpatialFilteringEnabled(t
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)),((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "geometry type 'MULTIPOLYGON' is not allowed, only POINT and BBOX are allowed with basic spatial filtering")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "geometry type 'MULTIPOLYGON' is not allowed, only POINT and BBOX are allowed with basic spatial filtering")
+		})
+	}
 }
 
 func TestSpatialQueryWithGeometryCollection(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "GEOMETRYCOLLECTION(POINT(0.0 0.0), LINESTRING(0.0 0.0, 1.0 1.0))"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "GEOMETRYCOLLECTION(POINT(0.0 0.0), LINESTRING(0.0 0.0, 1.0 1.0))"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithBbox(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 20.1, 30.0, 40.0))"
-	expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_MakeEnvelope(@cql_bcde, @cql_fghi, @cql_jklm, @cql_nopq, 4326), ST_SRID(\"geom\")))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": 10.0, "cql_fghi": 20.1, "cql_jklm": 30.0, "cql_nopq": 40.0}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": 10.0, "cql_fghi": 20.1, "cql_jklm": 30.0, "cql_nopq": 40.0}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryFailsOnInvalidBbox(t *testing.T) {
@@ -708,11 +1148,18 @@ func TestSpatialQueryFailsOnInvalidBbox(t *testing.T) {
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0 20.1 30.0 40.0))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "missing east bound coordinate (maxx) in bounding box")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "missing east bound coordinate (maxx) in bounding box")
+		})
+	}
 }
 
 func TestSpatialQueryWithBboxWithOnlyBasicSpatialFunctionsEnabled(t *testing.T) {
@@ -724,11 +1171,18 @@ func TestSpatialQueryWithBboxWithOnlyBasicSpatialFunctionsEnabled(t *testing.T) 
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 20.1, 30.0, 40.0))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
-
-	// then
-	require.NoError(t, err)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+			}
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestSpatialQueryFailsOnInvalidBboxWithText(t *testing.T) {
@@ -736,11 +1190,18 @@ func TestSpatialQueryFailsOnInvalidBboxWithText(t *testing.T) {
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 'bla'))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "'bla' is not a valid numeric type")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "'bla' is not a valid numeric type")
+		})
+	}
 }
 
 func TestSpatialQueryFailsOnNonGeometryProperty(t *testing.T) {
@@ -748,11 +1209,18 @@ func TestSpatialQueryFailsOnNonGeometryProperty(t *testing.T) {
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geom, BBOX(10.0, 20.1, 30.0, 40.0))" // should be geometry instead of geom
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "spatial filtering is only supported on property 'geometry'")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "spatial filtering is only supported on property 'geometry'")
+		})
+	}
 }
 
 func TestSpatialQueryFailsOnUndefinedGeometry(t *testing.T) {
@@ -760,11 +1228,18 @@ func TestSpatialQueryFailsOnUndefinedGeometry(t *testing.T) {
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: false}} // not marked as primary geometry
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 20.1, 30.0, 40.0))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "spatial filtering is not supported for this collection since there is no geometry field defined")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "spatial filtering is not supported for this collection since there is no geometry field defined")
+		})
+	}
 }
 
 func TestSpatialQueryUsesRtree(t *testing.T) {
@@ -785,15 +1260,26 @@ func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "prop1 = 'foo' AND S_INTERSECTS(geometry, POINT(4.897 52.377))"
-	expectedSQL := "(\"prop1\" = :cql_bcde AND ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_fghi, 4326)))"
+	expectedSQLGeoPackage := "(\"prop1\" = :cql_bcde AND ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_fghi, 4326)))"
+	expectedSQLPostgres := "(\"prop1\" = @cql_bcde AND ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_fghi, 4326), ST_SRID(\"geom\"))))"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "POINT(4.897 52.377)"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "foo", "cql_fghi": "POINT(4.897 52.377)"}, actual.Params)
+		})
+	}
 }
 
 func TestSpatialQueryWithAllSpatialFunctions(t *testing.T) {
@@ -801,14 +1287,26 @@ func TestSpatialQueryWithAllSpatialFunctions(t *testing.T) {
 
 	for cqlFunc, sqlFunc := range spatialFunctions {
 		t.Run(cqlFunc, func(t *testing.T) {
-			inputCQL := cqlFunc + "(geometry, POINT(4.897 52.377))"
-			expectedSQL := sqlFunc + "(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-
-			actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-			require.NoError(t, err)
-			assert.Equal(t, map[string]any{"cql_bcde": "POINT(4.897 52.377)"}, actual.Params)
-			assert.Equal(t, expectedSQL, actual.SQL)
+			for _, datasource := range datasources {
+				t.Run(datasource, func(t *testing.T) {
+					inputCQL := cqlFunc + "(geometry, POINT(4.897 52.377))"
+					var actual *SQLResult
+					var err error
+					switch datasource {
+					case gpkg:
+						expectedSQL := sqlFunc + "(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+						actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assert.Equal(t, expectedSQL, actual.SQL)
+					case postgresql:
+						expectedSQL := sqlFunc + "(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+						actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assert.Equal(t, expectedSQL, actual.SQL)
+					}
+					assert.Equal(t, map[string]any{"cql_bcde": "POINT(4.897 52.377)"}, actual.Params)
+				})
+			}
 		})
 	}
 }
@@ -856,14 +1354,26 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 
 	for _, wkt := range wkts {
 		t.Run(wkt, func(t *testing.T) {
-			inputCQL := "S_INTERSECTS(geometry, " + wkt + ")"
-			expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-
-			actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
-
-			require.NoError(t, err)
-			assert.Equal(t, map[string]any{"cql_bcde": wkt}, actual.Params)
-			assert.Equal(t, expectedSQL, actual.SQL)
+			for _, datasource := range datasources {
+				t.Run(datasource, func(t *testing.T) {
+					inputCQL := "S_INTERSECTS(geometry, " + wkt + ")"
+					var actual *SQLResult
+					var err error
+					switch datasource {
+					case gpkg:
+						expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+						actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assert.Equal(t, expectedSQL, actual.SQL)
+					case postgresql:
+						expectedSQL := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+						actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assert.Equal(t, expectedSQL, actual.SQL)
+					}
+					assert.Equal(t, map[string]any{"cql_bcde": wkt}, actual.Params)
+				})
+			}
 		})
 	}
 }
@@ -878,11 +1388,18 @@ func TestBasicSpatialOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "spatial operators are not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "spatial operators are not enabled for this collection")
+		})
+	}
 }
 
 func TestBasicSpatialPlusOperatorNotEnabled(t *testing.T) {
@@ -895,11 +1412,18 @@ func TestBasicSpatialPlusOperatorNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "geometry type 'GEOMETRYCOLLECTION' is not allowed, only POINT and BBOX are allowed with basic spatial filtering")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "geometry type 'GEOMETRYCOLLECTION' is not allowed, only POINT and BBOX are allowed with basic spatial filtering")
+		})
+	}
 }
 
 func TestAllSpatialFunctionsNotEnabled(t *testing.T) {
@@ -912,315 +1436,531 @@ func TestAllSpatialFunctionsNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_OVERLAPS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "spatial operator 'S_OVERLAPS' is not enabled for this collection, only S_INTERSECTS is allowed")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "spatial operator 'S_OVERLAPS' is not enabled for this collection, only S_INTERSECTS is allowed")
+		})
+	}
 }
 
 func TestTemporalAfterWithDate(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_AFTER(prop5, DATE('2015-01-01'))"
-	expectedSQL := "\"prop5\" > :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" > :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" > @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2015-01-01"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2015-01-01"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalAfterWithTimestamp(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop6"}}
 	inputCQL := "T_AFTER(prop6, TIMESTAMP('2020-01-01T00:00:00Z'))"
-	expectedSQL := "\"prop6\" > :cql_bcde"
+	expectedSQLGeoPackage := "\"prop6\" > :cql_bcde"
+	expectedSQLPostgres := "\"prop6\" > @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalAfterWithInterval(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop6"}}
 	inputCQL := "T_AFTER(prop6, INTERVAL('..', '2020-01-01T00:00:00Z'))"
-	expectedSQL := "\"prop6\" > :cql_bcde"
+	expectedSQLGeoPackage := "\"prop6\" > :cql_bcde"
+	expectedSQLPostgres := "\"prop6\" > @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalAfterIntervalToInterval(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
 	inputCQL := "T_AFTER(INTERVAL(prop9, prop10), INTERVAL('2020-01-01', '2025-12-31'))"
-	expectedSQL := "\"prop9\" > :cql_fghi"
+	expectedSQLGeoPackage := "\"prop9\" > :cql_fghi"
+	expectedSQLPostgres := "\"prop9\" > @cql_fghi"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2025-12-31"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2025-12-31"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalBeforeWithDate(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_BEFORE(prop5, DATE('2027-01-01'))"
-	expectedSQL := "\"prop5\" < :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" < :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" < @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2027-01-01"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2027-01-01"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalBeforeWithTimestamp(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_BEFORE(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
-	expectedSQL := "\"prop5\" < :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" < :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" < @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalBeforeWithInterval(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_BEFORE(prop5, INTERVAL('2020-01-01T00:00:00Z', '..'))"
-	expectedSQL := "\"prop5\" < :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" < :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" < @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalEqualsWithDate(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_EQUALS(prop5, DATE('2026-02-12'))"
-	expectedSQL := "\"prop5\" = :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" = :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" = @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalEqualsWithTimestamp(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_EQUALS(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
-	expectedSQL := "\"prop5\" = :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" = :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" = @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalEqualsWithInterval(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_EQUALS(prop5, INTERVAL('2020-01-01T00:00:00Z', '2030-01-01T00:00:00Z'))"
-	expectedSQL := "(\"prop5\" = :cql_bcde AND \"prop5\" = :cql_fghi)"
+	expectedSQLGeoPackage := "(\"prop5\" = :cql_bcde AND \"prop5\" = :cql_fghi)"
+	expectedSQLPostgres := "(\"prop5\" = @cql_bcde AND \"prop5\" = @cql_fghi)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z", "cql_fghi": "2030-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z", "cql_fghi": "2030-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalEqualsIntervalToInterval(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
 	inputCQL := "T_EQUALS(INTERVAL(prop9, prop10), INTERVAL('2026-02-13', '2026-02-28'))"
-	expectedSQL := "(\"prop9\" = :cql_bcde AND \"prop10\" = :cql_fghi)"
+	expectedSQLGeoPackage := "(\"prop9\" = :cql_bcde AND \"prop10\" = :cql_fghi)"
+	expectedSQLPostgres := "(\"prop9\" = @cql_bcde AND \"prop10\" = @cql_fghi)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-13", "cql_fghi": "2026-02-28"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2026-02-13", "cql_fghi": "2026-02-28"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalIntersectsWithDate(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_INTERSECTS(prop5, DATE('2026-02-12'))"
-	expectedSQL := "(\"prop5\" <= :cql_bcde AND \"prop5\" >= :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop5\" <= :cql_bcde AND \"prop5\" >= :cql_bcde)"
+	expectedSQLPostgres := "(\"prop5\" <= @cql_bcde AND \"prop5\" >= @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalIntersectsWithTimestamp(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_INTERSECTS(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
-	expectedSQL := "(\"prop5\" <= :cql_bcde AND \"prop5\" >= :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop5\" <= :cql_bcde AND \"prop5\" >= :cql_bcde)"
+	expectedSQLPostgres := "(\"prop5\" <= @cql_bcde AND \"prop5\" >= @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalIntersectsWithIntervalDate(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_INTERSECTS(prop5, INTERVAL('2020-01-01', '2030-01-01'))"
-	expectedSQL := "(\"prop5\" <= :cql_fghi AND \"prop5\" >= :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop5\" <= :cql_fghi AND \"prop5\" >= :cql_bcde)"
+	expectedSQLPostgres := "(\"prop5\" <= @cql_fghi AND \"prop5\" >= @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2030-01-01"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2030-01-01"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalIntersectsWithIntervalTimestamp(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop6"}}
 	inputCQL := "T_INTERSECTS(prop6, INTERVAL('2017-06-10T07:30:00Z', '2017-06-11T10:30:00Z'))"
-	expectedSQL := "(\"prop6\" <= :cql_fghi AND \"prop6\" >= :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop6\" <= :cql_fghi AND \"prop6\" >= :cql_bcde)"
+	expectedSQLPostgres := "(\"prop6\" <= @cql_fghi AND \"prop6\" >= @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2017-06-10T07:30:00Z", "cql_fghi": "2017-06-11T10:30:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2017-06-10T07:30:00Z", "cql_fghi": "2017-06-11T10:30:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalDisjointWithDate(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_DISJOINT(prop5, DATE('2026-02-12'))"
-	expectedSQL := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_bcde)"
+	expectedSQLPostgres := "(\"prop5\" < @cql_bcde OR \"prop5\" > @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2026-02-12"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalDisjointWithTimestamp(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_DISJOINT(prop5, TIMESTAMP('2020-01-01T00:00:00Z'))"
-	expectedSQL := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_bcde)"
+	expectedSQLPostgres := "(\"prop5\" < @cql_bcde OR \"prop5\" > @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01T00:00:00Z"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalDisjointWithIntervalDate(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_DISJOINT(prop5, INTERVAL('2020-01-01', '2030-01-01'))"
-	expectedSQL := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_fghi)"
+	expectedSQLGeoPackage := "(\"prop5\" < :cql_bcde OR \"prop5\" > :cql_fghi)"
+	expectedSQLPostgres := "(\"prop5\" < @cql_bcde OR \"prop5\" > @cql_fghi)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2030-01-01"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01", "cql_fghi": "2030-01-01"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalIntersectsIntervalToInterval(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
 	inputCQL := "T_INTERSECTS(INTERVAL(prop9, prop10), INTERVAL('2026-01-01', '2026-12-31'))"
-	expectedSQL := "(\"prop9\" <= :cql_fghi AND \"prop10\" >= :cql_bcde)"
+	expectedSQLGeoPackage := "(\"prop9\" <= :cql_fghi AND \"prop10\" >= :cql_bcde)"
+	expectedSQLPostgres := "(\"prop9\" <= @cql_fghi AND \"prop10\" >= @cql_bcde)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2026-01-01", "cql_fghi": "2026-12-31"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2026-01-01", "cql_fghi": "2026-12-31"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalIntervalOperators(t *testing.T) {
@@ -1296,14 +2036,25 @@ func TestTemporalIntervalOperators(t *testing.T) {
 			// given
 			queryables := []domain.Field{{Name: "prop5"}, {Name: "prop9"}, {Name: "prop10"}}
 
-			// when
-			actual, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-			// then
-			require.NoError(t, err)
-			assert.Equal(t, tt.params, actual.Params)
-			assert.Equal(t, tt.expectedSQL, actual.SQL)
-			assertValidSQLiteQuery(t, actual)
+			for _, datasource := range datasources {
+				t.Run(datasource, func(t *testing.T) {
+					var actual *SQLResult
+					var err error
+					switch datasource {
+					case gpkg:
+						actual, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assertValidSQLiteQuery(t, actual)
+						assert.Equal(t, tt.expectedSQL, actual.SQL)
+					case postgresql:
+						expectedSQLPostgres := strings.ReplaceAll(tt.expectedSQL, ":", "@")
+						actual, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						require.NoError(t, err)
+						assert.Equal(t, expectedSQLPostgres, actual.SQL)
+					}
+					assert.Equal(t, tt.params, actual.Params)
+				})
+			}
 		})
 	}
 }
@@ -1361,11 +2112,18 @@ func TestTemporalIntervalOperatorsFailOnInstants(t *testing.T) {
 			// given
 			queryables := []domain.Field{{Name: "prop5"}, {Name: "prop9"}, {Name: "prop10"}}
 
-			// when
-			_, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-			// then
-			assert.ErrorContains(t, err, "only allows intervals, not instants (timestamp/date)")
+			for _, datasource := range datasources {
+				t.Run(datasource, func(t *testing.T) {
+					var err error
+					switch datasource {
+					case gpkg:
+						_, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+					case postgresql:
+						_, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+					}
+					assert.ErrorContains(t, err, "only allows intervals, not instants (timestamp/date)")
+				})
+			}
 		})
 	}
 }
@@ -1445,11 +2203,18 @@ func TestTemporalOperatorsFailOnInvalidUnboundedIntervals(t *testing.T) {
 			// given
 			queryables := []domain.Field{{Name: "prop1"}}
 
-			// when
-			_, err := ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-			// then
-			assert.ErrorContains(t, err, "requires a second parameter, can't be unbounded")
+			for _, datasource := range datasources {
+				t.Run(datasource, func(t *testing.T) {
+					var err error
+					switch datasource {
+					case gpkg:
+						_, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+					case postgresql:
+						_, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+					}
+					assert.ErrorContains(t, err, "requires a second parameter, can't be unbounded")
+				})
+			}
 		})
 	}
 }
@@ -1458,32 +2223,54 @@ func TestTemporalUnboundedIntervalAtBegin(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_INTERSECTS(prop5, INTERVAL('..', '2020-01-01'))"
-	expectedSQL := "\"prop5\" <= :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" <= :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" <= @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalUnboundedIntervalAtEnd(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop5"}}
 	inputCQL := "T_INTERSECTS(prop5, INTERVAL('2020-01-01', '..'))"
-	expectedSQL := "\"prop5\" >= :cql_bcde"
+	expectedSQLGeoPackage := "\"prop5\" >= :cql_bcde"
+	expectedSQLPostgres := "\"prop5\" >= @cql_bcde"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": "2020-01-01"}, actual.Params)
+		})
+	}
 }
 
 func TestFailOnTemporalLiteralAsFirstArgument(t *testing.T) {
@@ -1491,27 +2278,45 @@ func TestFailOnTemporalLiteralAsFirstArgument(t *testing.T) {
 	queryables := []domain.Field{{Name: "starts_at"}, {Name: "ends_at"}}
 	inputCQL := "T_DISJOINT(INTERVAL('..', '2005-01-10T01:01:01.393216Z'), INTERVAL(starts_at, ends_at))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "the first interval should reference a property, not be an unbounded interval")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "the first interval should reference a property, not be an unbounded interval")
+		})
+	}
 }
 
 func TestTemporalAndBooleanQuery(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
 	inputCQL := "prop1 = 10 AND T_AFTER(prop5, DATE('2015-01-01'))"
-	expectedSQL := "(cast (\"prop1\" as numeric) = :cql_bcde AND \"prop5\" > :cql_fghi)"
+	expectedSQLGeoPackage := "(cast (\"prop1\" as numeric) = :cql_bcde AND \"prop5\" > :cql_fghi)"
+	expectedSQLPostgres := "(cast (\"prop1\" as numeric) = @cql_bcde AND \"prop5\" > @cql_fghi)"
 
-	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	require.NoError(t, err)
-	assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": "2015-01-01"}, actual.Params)
-	assert.Equal(t, expectedSQL, actual.SQL)
-	assertValidSQLiteQuery(t, actual)
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
+			assert.Equal(t, map[string]any{"cql_bcde": int64(10), "cql_fghi": "2015-01-01"}, actual.Params)
+		})
+	}
 }
 
 func TestTemporalOperatorsNotEnabled(t *testing.T) {
@@ -1522,11 +2327,18 @@ func TestTemporalOperatorsNotEnabled(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
 	inputCQL := "prop1 = 10 AND T_AFTER(prop5, DATE('2015-01-01'))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
-
-	// then
-	assert.ErrorContains(t, err, "temporal operators are not enabled for this collection")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+			}
+			assert.ErrorContains(t, err, "temporal operators are not enabled for this collection")
+		})
+	}
 }
 
 func TestFailOnSpatialFilteringONonGeoCollection(t *testing.T) {
@@ -1534,12 +2346,19 @@ func TestFailOnSpatialFilteringONonGeoCollection(t *testing.T) {
 	queryables := []domain.Field{{Name: "geometry"}, {Name: "prop10"}}
 	inputCQL := "S_OVERLAPS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Attributes, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "spatial filtering using 'S_OVERLAPS' is not allowed for this collection since "+
-		"it does not contain geospatial items (features), only non-geospatial items (attributes)")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Attributes, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Attributes, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "spatial filtering using 'S_OVERLAPS' is not allowed for this collection since "+
+				"it does not contain geospatial items (features), only non-geospatial items (attributes)")
+		})
+	}
 }
 
 func TestFailOnNonSupportedCustomFunctions(t *testing.T) {
@@ -1547,11 +2366,18 @@ func TestFailOnNonSupportedCustomFunctions(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
 	inputCQL := "COOL_FUNCTION(prop9)"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "function COOL_FUNCTION is unsupported")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "function COOL_FUNCTION is unsupported")
+		})
+	}
 }
 
 func TestFailOnNonSupportedArrayOperators(t *testing.T) {
@@ -1559,11 +2385,18 @@ func TestFailOnNonSupportedArrayOperators(t *testing.T) {
 	queryables := []domain.Field{{Name: "prop9"}, {Name: "prop10"}}
 	inputCQL := "A_CONTAINS(prop9, ('foo', 'bar')"
 
-	// when
-	_, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
-
-	// then
-	assert.ErrorContains(t, err, "array operators are not supported")
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+			assert.ErrorContains(t, err, "array operators are not supported")
+		})
+	}
 }
 
 // Test CQL examples provided by OGC.
