@@ -11,6 +11,8 @@ import (
 	pgxuuid "github.com/vgarvardt/pgx-google-uuid/v5"
 )
 
+var postgresExtensions = []string{"postgis", "unaccent"}
+
 // InitConnectionPool initializes a connection pool for the given connection string and runs setup queries.
 func InitConnectionPool(ctx context.Context, connectionString string) (*pgxpool.Pool, error) {
 	pool, err := newReadOnlyConnectionPool(ctx, connectionString)
@@ -25,6 +27,14 @@ func InitConnectionPool(ctx context.Context, connectionString string) (*pgxpool.
 	}
 	defer conn.Close(ctx)
 
+	// create extensions if they don't exist
+	for _, ext := range postgresExtensions {
+		_, err = conn.Exec(ctx, `create extension if not exists `+ext+`;`)
+		if err != nil {
+			return nil, fmt.Errorf("error creating %s extension: %w", ext, err)
+		}
+	}
+
 	// create collations (to support ACCENTI/CASEI cql operators) if they don't exist
 	collations := map[string]string{
 		common.IgnoreCaseCollation:          "und-u-ks-level2",
@@ -33,7 +43,7 @@ func InitConnectionPool(ctx context.Context, connectionString string) (*pgxpool.
 	}
 	for collation, locale := range collations {
 		_, err = conn.Exec(ctx, fmt.Sprintf(
-			`CREATE COLLATION IF NOT EXISTS %s (provider = icu, locale = '%s', deterministic = false);`,
+			`create collation if not exists %s (provider = icu, locale = '%s', deterministic = false);`,
 			collation, locale))
 		if err != nil {
 			return nil, err
