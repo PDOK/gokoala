@@ -11,7 +11,7 @@ import (
 	pgxuuid "github.com/vgarvardt/pgx-google-uuid/v5"
 )
 
-var postgresExtensions = []string{"postgis", "unaccent"}
+var postgresExtensions = []string{"unaccent"}
 
 // InitConnectionPool initializes a connection pool for the given connection string and runs setup queries.
 func InitConnectionPool(ctx context.Context, connectionString string) (*pgxpool.Pool, error) {
