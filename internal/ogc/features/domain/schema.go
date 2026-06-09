@@ -177,11 +177,7 @@ type TypeFormat struct {
 // ToTypeFormat converts the Field's data type (from SQLite or Postgres) to a valid JSON data type
 // and optional format as specified in OAF Part 5.
 func (f Field) ToTypeFormat() TypeFormat {
-	// lowercase, no spaces
-	normalizedType := strings.ReplaceAll(strings.ToLower(f.Type), " ", "")
-	// sometimes data sources mention the length of fields within parenthesis, this is irrelevant.
-	// also, SQLite accepts for example TEXT(5) but ignores the length: https://sqlite.org/datatype3.html#affinity_name_examples
-	normalizedType = prefixBeforeParenthesis(normalizedType)
+	normalizedType := f.normalizeType()
 
 	switch normalizedType {
 	case "boolean", "bool":
@@ -230,12 +226,21 @@ func (f Field) ToTypeFormat() TypeFormat {
 	}
 }
 
-// IsNumeric returns true when field is numeric (integer, double, etc), false otherwise.
+// IsNumeric returns true when the field is numeric (integer, double, etc), false otherwise.
 func (f Field) IsNumeric() bool {
-	t := f.Type
+	t := f.normalizeType()
 	return t == "int" || t == "integer" || t == "tinyint" || t == "smallint" || t == "mediumint" ||
 		t == "bigint" || t == "int2" || t == "int4" || t == "int8" || t == "real" ||
 		t == "float" || t == "double" || t == "doubleprecision" || t == "numeric" || t == "decimal"
+}
+
+func (f Field) normalizeType() string {
+	// lowercase, no spaces
+	normalizedType := strings.ReplaceAll(strings.ToLower(f.Type), " ", "")
+
+	// sometimes data sources mention the length of fields within parenthesis, this is irrelevant.
+	// also, SQLite accepts for example TEXT(5) but ignores the length: https://sqlite.org/datatype3.html#affinity_name_examples
+	return prefixBeforeParenthesis(normalizedType)
 }
 
 func prefixBeforeParenthesis(s string) string {
