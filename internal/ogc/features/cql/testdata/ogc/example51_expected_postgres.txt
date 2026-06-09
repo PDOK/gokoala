@@ -1,1 +1,1 @@
-ST_Crosses(CastAutomagic("geometry"), ST_GeomFromText(:cql_bcde, 100000))
+ST_Crosses("geometry", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID("geometry")))

@@ -1,1 +1,1 @@
-("event_time" <= :cql_fghi AND "event_time" >= :cql_bcde)
+("event_time" <= @cql_fghi AND "event_time" >= @cql_bcde)

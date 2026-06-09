@@ -1,1 +1,1 @@
-:cql_bcde = "ends_at"
+@cql_bcde = "ends_at"

@@ -1,1 +1,1 @@
-"owner" COLLATE NOCASE = :cql_bcde COLLATE NOCASE
+"owner" COLLATE NOCASE = @cql_bcde COLLATE NOCASE

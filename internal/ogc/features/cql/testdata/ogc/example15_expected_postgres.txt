@@ -1,1 +1,1 @@
-("floors" > :cql_bcde AND "swimming_pool" = 1)
+(cast ("floors" as numeric) > @cql_bcde AND "swimming_pool" = true)

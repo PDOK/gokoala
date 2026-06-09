@@ -1,1 +1,1 @@
-"eo::cloud_cover" IN (:cql_bcde, :cql_fghi)
+cast("eo:cloud_cover" as text) IN (@cql_bcde, @cql_fghi)

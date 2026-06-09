@@ -11,10 +11,13 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+const collateKeyword = " COLLATE "
 
 const (
 	errAdvancedComparisonNotEnabled        = "advanced comparison operators (LIKE, BETWEEN, IN, IS NULL) are not enabled for this collection"
@@ -89,8 +92,8 @@ func (cl *CommonListener) allowAllQueryables() bool {
 }
 
 // isQueryable checks if a column name is allowed in the query.
-func (l *GeoPackageListener) isQueryable(name string) bool {
-	for _, q := range l.queryables {
+func (cl *CommonListener) isQueryable(name string) bool {
+	for _, q := range cl.queryables {
 		if q.Name == name || q.IsPrimaryGeometry {
 			return true
 		}
@@ -169,4 +172,40 @@ func stripSingleQuotes(s string) string {
 		return strings.ReplaceAll(s[1:len(s)-1], "''", "'")
 	}
 	return s
+}
+
+// addCollation adds a COLLATE to the SQL expression to make case and/or accent insensitive comparison possible.
+func addCollation(expr, collation string) string {
+	suffixCase := collateKeyword + common.IgnoreCaseCollation
+	suffixAccent := collateKeyword + common.IgnoreAccentCollation
+	suffixAccentCase := collateKeyword + common.IgnoreAccentAndCaseCollation
+
+	switch {
+	case hasCollation(expr, common.IgnoreAccentAndCaseCollation):
+		return expr
+	case hasCollation(expr, common.IgnoreCaseCollation) && collation == common.IgnoreAccentCollation:
+		// replace existing case with case + accent
+		return strings.Replace(expr, suffixCase, suffixAccentCase, 1)
+	case hasCollation(expr, common.IgnoreAccentCollation) && collation == common.IgnoreCaseCollation:
+		// replace existing accent with case + accent
+		return strings.Replace(expr, suffixAccent, suffixAccentCase, 1)
+	default:
+		return expr + collateKeyword + collation
+	}
+}
+
+// removeCollation removes COLLATE from the SQL expression.
+func removeCollation(expr string) string {
+	collations := []string{common.IgnoreCaseCollation, common.IgnoreAccentCollation, common.IgnoreAccentAndCaseCollation}
+	for _, collation := range collations {
+		if hasCollation(expr, collation) {
+			return strings.TrimSuffix(expr, collateKeyword+collation)
+		}
+	}
+	return expr
+}
+
+// hasCollation checks if the SQL expression has a specific COLLATE suffix.
+func hasCollation(expr, collation string) bool {
+	return strings.HasSuffix(expr, collateKeyword+collation)
 }

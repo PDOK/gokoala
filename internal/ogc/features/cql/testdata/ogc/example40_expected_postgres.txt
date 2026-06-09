@@ -1,1 +1,1 @@
-NOT ("value" IN (:cql_bcde, :cql_fghi, :cql_jklm))
+NOT ("value" IN (@cql_bcde, @cql_fghi, @cql_jklm))

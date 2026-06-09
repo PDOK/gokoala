@@ -22,6 +22,12 @@ const (
 	selectAll = "*"
 )
 
+const (
+	IgnoreCaseCollation          = "NOCASE"                                          // custom collation in Postgres, default available in SQLite
+	IgnoreAccentCollation        = "NOACCENT"                                        // custom collation
+	IgnoreAccentAndCaseCollation = IgnoreAccentCollation + "_" + IgnoreCaseCollation // custom collation
+)
+
 // DatasourceCommon shared data and logic between data sources.
 type DatasourceCommon struct {
 	TransformOnTheFly bool

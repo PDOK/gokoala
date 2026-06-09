@@ -1,1 +1,1 @@
-"landsat::scene_id" = :cql_bcde
+"landsat:scene_id" = @cql_bcde

@@ -1,1 +1,1 @@
-"built" < :cql_bcde
+"built" < @cql_bcde

@@ -1,1 +1,1 @@
-("floors" > :cql_bcde AND ST_Within(CastAutomagic("geometry"), BuildMbr(:cql_fghi, :cql_jklm, :cql_nopq, :cql_rstu, 100000)))
+(cast ("floors" as numeric) > @cql_bcde AND ST_Within("geometry", ST_Transform(ST_MakeEnvelope(@cql_fghi, @cql_jklm, @cql_nopq, @cql_rstu, 4326), ST_SRID("geometry"))))

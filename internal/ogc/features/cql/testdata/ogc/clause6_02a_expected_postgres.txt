@@ -1,1 +1,1 @@
-"city" = :cql_bcde
+"city" = @cql_bcde
