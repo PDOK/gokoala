@@ -34,7 +34,7 @@ import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { NGXLogger } from 'ngx-logger'
-import { from, Subject, takeUntil } from 'rxjs'
+import { from, Subject, switchMap, takeUntil } from 'rxjs'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,7 +135,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     const featuresUrls: DataUrl[] = this.itemUrls.map(itemUrl => ({ url: itemUrl, dataMapping }))
     from(featuresUrls)
       .pipe(
-        mergeMap(dataUrl => this.featureService.getFeatures(dataUrl)),
+        switchMap(dataUrl => this.featureService.getFeatures(dataUrl)),
         takeUntil(this._destroy$)
       )
       .subscribe(data => {
@@ -144,6 +144,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
         this._featureProjection = getProjection(dataMapping.visualProjection as string) ?? undefined
         this.changeView()
         this.loadFeatures(this.features)
+        this.addFeatureEmit()
         this.loadBackground()
         this.logger.log(this.map.getView().getProjection())
         this.logger.log('resolution' + this.map.getView().getResolution())
@@ -160,7 +161,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   changeMode() {
     this.features = []
     this.showButtons()
-    this.addFeatureEmit()
   }
 
   viewToCenter() {
@@ -205,10 +205,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
       }
     }
 
-    if (changes.mode?.previousValue && changes.mode?.previousValue != changes.mode?.currentValue) {
-      if (changes.mode?.currentValue) {
-        this.changeMode()
-      }
+    if (changes.mode?.previousValue !== changes.mode?.currentValue) {
+      this.changeMode()
     }
   }
 
@@ -271,7 +269,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
       width: 1.25,
     })
 
-    let text = undefined
+    let text: Text | undefined
     if (this.labelField) {
       if (this.labelOptions != undefined) {
         const opt = JSON.parse(this.labelOptions) as TextOptions
@@ -299,12 +297,12 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   changeView() {
     const currentProjection = this._view.getProjection()
     const newProjection = getProjection(this._projection.visualProjection)
-    if (this._featureProjection && this._featureProjection.getCode() !== newProjection?.getCode()) {
-      this.features.forEach(f => (f as Feature<Geometry>).getGeometry()?.transform(this._featureProjection!, newProjection!))
-      this._featureProjection = newProjection ?? undefined
-    }
-    if (!newProjection) {
+    if (!currentProjection || !newProjection) {
       throw new Error('New projection is not defined')
+    }
+    if (this._featureProjection && this._featureProjection.getCode() !== newProjection?.getCode()) {
+      this.features.forEach(f => (f as Feature<Geometry>).getGeometry()?.transform(this._featureProjection, newProjection))
+      this._featureProjection = newProjection ?? undefined
     }
     const throwUndefinedError = (msg: string) => {
       throw new Error(msg)
@@ -387,11 +385,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
           if (feature) {
             const featureId = feature.getId()
             if (featureId) {
-              const items = 'items'
               tooltipContent.innerHTML = this.itemUrls
                 .map((itemsUrl, i) => {
-                  const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
-                  const link = currentUrl.protocol + '//' + currentUrl.host + currentUrl.pathname + '/' + featureId
+                  const baseUrl = new URL(itemsUrl)
+                  const link = new URL(`items/${featureId}`, baseUrl).href
                   const hasMany = this.itemUrls.length > 1
                   return `<a href="${link}">${featureId}  ${hasMany ? `[${i + 1}]` : ''}</a>${hasMany ? '<br />' : ''}`
                 })
