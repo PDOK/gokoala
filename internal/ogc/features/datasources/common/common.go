@@ -184,16 +184,38 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 	return sqlBuilder.String(), namedParams
 }
 
-func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (sql string, namedParams map[string]any) {
-	namedParams = make(map[string]any)
-	if !temporalCriteria.ReferenceDate.IsZero() {
-		namedParams["referenceDate"] = temporalCriteria.ReferenceDate
-		startDate := temporalCriteria.StartDateProperty
-		endDate := temporalCriteria.EndDateProperty
-		sql = fmt.Sprintf(" and \"%[1]s\" <= %[3]sreferenceDate and (\"%[2]s\" >= %[3]sreferenceDate or \"%[2]s\" is null)",
-			startDate, endDate, symbol)
+func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (string, map[string]any) {
+	var sql string
+	namedParams := make(map[string]any)
+
+	start := temporalCriteria.StartDateProperty
+	end := temporalCriteria.EndDateProperty
+
+	if temporalCriteria.Instant != nil {
+		namedParams["instant"] = temporalCriteria.Instant
+		sql = fmt.Sprintf(` and "%[1]s" <= %[3]sinstant and ("%[2]s" >= %[3]sinstant or "%[2]s" is null)`,
+			start, end, symbol)
+		return sql, namedParams
 	}
 
+	if temporalCriteria.IntervalStart != nil || temporalCriteria.IntervalEnd != nil {
+		switch {
+		case temporalCriteria.IntervalStart != nil && temporalCriteria.IntervalEnd != nil:
+			// closed interval
+			namedParams["intervalStart"] = temporalCriteria.IntervalStart
+			namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
+			sql = fmt.Sprintf(` and "%[1]s" <= %[3]sintervalEnd and "%[2]s" >= %[3]sintervalStart`,
+				start, end, symbol)
+		case temporalCriteria.IntervalStart == nil:
+			// open-start interval [.., end]
+			namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
+			sql = fmt.Sprintf(` and "%[1]s" <= %[2]sintervalEnd`, start, symbol)
+		default:
+			// open-end interval [start, ..]
+			namedParams["intervalStart"] = temporalCriteria.IntervalStart
+			sql = fmt.Sprintf(` and "%[1]s" >= %[2]sintervalStart`, end, symbol)
+		}
+	}
 	return sql, namedParams
 }
 

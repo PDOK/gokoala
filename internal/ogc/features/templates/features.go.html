@@ -111,7 +111,7 @@
                 <label for="referencedate-input" class="col-sm-4 col-form-label">{{ i18n "ReferenceDate" }}</label>
                 <div class="col-sm-8">
                     <input id="referencedate-input" name="datetime" type="date" class="form-control"
-                           value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}">
+                           value="{{ if and .Params.DateTime .Params.DateTime.Instant }}{{ .Params.DateTime.Instant | date "2006-01-02" }}{{ end }}">
                 </div>
             </div>
             {{ end }}

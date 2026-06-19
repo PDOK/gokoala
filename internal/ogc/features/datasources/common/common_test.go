@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -47,6 +48,8 @@ func TestPropertyFiltersToSQL(t *testing.T) {
 
 func TestTemporalCriteriaToSQL(t *testing.T) {
 	now := time.Now()
+	start, _ := time.Parse(time.RFC3339, "2023-11-10T23:00:00Z")
+	end, _ := time.Parse(time.RFC3339, "2023-11-15T23:00:00Z")
 
 	testCases := []struct {
 		name         string
@@ -56,16 +59,56 @@ func TestTemporalCriteriaToSQL(t *testing.T) {
 		expectedArgs map[string]any
 	}{
 		{
-			name: "Valid temporal criteria",
+			name: "Instant",
 			criteria: datasources.TemporalCriteria{
-				ReferenceDate:     now,
+				DateTime:          domain.DateTime{Instant: &now},
 				StartDateProperty: "start_date",
 				EndDateProperty:   "end_date",
 			},
 			symbol:      ":",
-			expectedSQL: ` and "start_date" <= :referenceDate and ("end_date" >= :referenceDate or "end_date" is null)`,
+			expectedSQL: ` and "start_date" <= :instant and ("end_date" >= :instant or "end_date" is null)`,
 			expectedArgs: map[string]any{
-				"referenceDate": now,
+				"instant": &now,
+			},
+		},
+		{
+			name: "Closed interval",
+			criteria: datasources.TemporalCriteria{
+				DateTime:          domain.DateTime{IntervalStart: &start, IntervalEnd: &end},
+				StartDateProperty: "start_date",
+				EndDateProperty:   "end_date",
+			},
+			symbol:      ":",
+			expectedSQL: ` and "start_date" <= :intervalEnd and "end_date" >= :intervalStart`,
+			expectedArgs: map[string]any{
+				"intervalStart": &start,
+				"intervalEnd":   &end,
+			},
+		},
+		{
+			name: "Open-start interval",
+			criteria: datasources.TemporalCriteria{
+				DateTime:          domain.DateTime{IntervalStart: nil, IntervalEnd: &end},
+				StartDateProperty: "start_date",
+				EndDateProperty:   "end_date",
+			},
+			symbol:      ":",
+			expectedSQL: ` and "start_date" <= :intervalEnd`,
+			expectedArgs: map[string]any{
+				"intervalEnd": &end,
+			},
+		},
+		{
+			name: "Open-end interval",
+			criteria: datasources.TemporalCriteria{
+				DateTime:          domain.DateTime{IntervalStart: &start, IntervalEnd: nil},
+				StartDateProperty: "start_date",
+				EndDateProperty:   "end_date",
+			},
+			symbol:      ":",
+			expectedSQL: ` and "end_date" >= :intervalStart`,
+			expectedArgs: map[string]any{
+				"intervalStart": &start,
 			},
 		},
 		{

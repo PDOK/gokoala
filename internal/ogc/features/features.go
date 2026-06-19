@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -56,7 +55,7 @@ func (f *Features) Features() http.HandlerFunc {
 			collection.Filters.CQL,
 		}
 		encodedCursor, limit, inputSRID, outputSRID, contentCrs, bbox,
-			referenceDate, propertyFilters, profile, cqlFilter, err := url.parse()
+			dateTime, propertyFilters, profile, cqlFilter, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -80,7 +79,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 		// validation completed, now get the features
 		newCursor, fc, err := f.queryFeatures(r.Context(), datasource, inputSRID, outputSRID, bbox,
-			encodedCursor.Decode(url.checksum()), limit, collection, referenceDate, propertyFilters, filter, profile)
+			encodedCursor.Decode(url.checksum()), limit, collection, dateTime, propertyFilters, filter, profile)
 		if err != nil {
 			handleFeaturesQueryError(w, collection.GetID(), err)
 			return
@@ -92,7 +91,7 @@ func (f *Features) Features() http.HandlerFunc {
 		if geometryType == geometryTypeNone {
 			switch format {
 			case engine.FormatHTML:
-				f.html.attributes(w, r, collection, newCursor, url, limit, &referenceDate,
+				f.html.attributes(w, r, collection, newCursor, url, limit, dateTime,
 					propertyFilters, f.queryables[collection.ID],
 					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
@@ -103,7 +102,7 @@ func (f *Features) Features() http.HandlerFunc {
 		} else {
 			switch format {
 			case engine.FormatHTML:
-				f.html.features(w, r, collection, newCursor, url, limit, &referenceDate,
+				f.html.features(w, r, collection, newCursor, url, limit, dateTime,
 					propertyFilters, f.queryables[collection.ID],
 					fc, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
@@ -119,7 +118,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 	inputSRID, outputSRID domain.SRID, bbox *geom.Bounds, currentCursor domain.DecodedCursor,
-	limit int, collection config.FeaturesCollection, referenceDate time.Time, propertyFilters map[string]string,
+	limit int, collection config.FeaturesCollection, dateTime domain.DateTime, propertyFilters map[string]string,
 	filter ds.Part3Filter, profile domain.Profile) (domain.Cursors, *domain.FeatureCollection, error) {
 
 	var newCursor domain.Cursors
@@ -133,7 +132,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			InputSRID:        inputSRID,
 			OutputSRID:       outputSRID,
 			Bbox:             bbox,
-			TemporalCriteria: createTemporalCriteria(collection, referenceDate),
+			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,
 			Filter:           filter,
 		}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
@@ -147,7 +146,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			InputSRID:        inputSRID,
 			OutputSRID:       outputSRID,
 			Bbox:             bbox,
-			TemporalCriteria: createTemporalCriteria(collection, referenceDate),
+			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,
 			Filter:           filter,
 		})
@@ -176,16 +175,15 @@ func shouldQuerySingleDatasource(datasource ds.Datasource, input domain.SRID, ou
 		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
 }
 
-func createTemporalCriteria(collection config.GeoSpatialCollection, referenceDate time.Time) ds.TemporalCriteria {
-	var temporalCriteria ds.TemporalCriteria
+func createTemporalCriteria(collection config.GeoSpatialCollection, dateTime domain.DateTime) ds.TemporalCriteria {
 	if collection.GetMetadata() != nil && collection.GetMetadata().TemporalProperties != nil {
-		temporalCriteria = ds.TemporalCriteria{
-			ReferenceDate:     referenceDate,
+		return ds.TemporalCriteria{
+			DateTime:          dateTime,
 			StartDateProperty: collection.GetMetadata().TemporalProperties.StartDate,
-			EndDateProperty:   collection.GetMetadata().TemporalProperties.EndDate}
+			EndDateProperty:   collection.GetMetadata().TemporalProperties.EndDate,
+		}
 	}
-
-	return temporalCriteria
+	return ds.TemporalCriteria{}
 }
 
 // log the error but send a generic message to the client to prevent possible information leakage from datasource.

@@ -2,7 +2,6 @@ package datasources
 
 import (
 	"context"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -73,8 +72,7 @@ type FeaturesCriteria struct {
 
 // TemporalCriteria criteria to filter based on date/time.
 type TemporalCriteria struct {
-	// reference date
-	ReferenceDate time.Time
+	domain.DateTime
 
 	// startDate and endDate properties
 	StartDateProperty string
