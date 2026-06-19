@@ -352,6 +352,11 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Query
 				return nil, fmt.Errorf("property filter %s is too large, "+
 					"value is limited to %d characters", name, propertyFilterMaxLength)
 			}
+			if strings.Contains(pf, datasources.Wildcard) {
+				return nil, fmt.Errorf("property filter %s contains a '%s' symbol, which suggest "+
+					"you want to apply a wildcard filter. The correct wildcard symbol in OGC APIs is '%s'",
+					name, datasources.Wildcard, propertyFilterWildcard)
+			}
 			if strings.Contains(pf, propertyFilterWildcard) {
 				// In case CQL advanced comparison operators (LIKE operator) are enabled, wildcard filtering is allowed.
 				// Otherwise, it's not.
@@ -360,7 +365,7 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Query
 						"wildcard filtering is not allowed", name, propertyFilterWildcard)
 				}
 				// replace wildcard with %, as this is the wildcard used in SQL.
-				pf = strings.ReplaceAll(pf, propertyFilterWildcard, "%")
+				pf = strings.ReplaceAll(pf, propertyFilterWildcard, datasources.Wildcard)
 			}
 			propertyFilters[name] = pf
 		}
