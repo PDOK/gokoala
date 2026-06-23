@@ -345,6 +345,25 @@ func TestParseFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Fail on incorrect wildcard property filter",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"foo": []string{"baz%"},
+				},
+				limit: config.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
+				assert.EqualError(t, err, "property filter foo contains a '%' symbol, which suggest you want "+
+					"to apply a wildcard filter. The correct wildcard symbol in OGC APIs is '*'", "parse()")
+
+				return false
+			},
+		},
+		{
 			name: "Fail on too large property filter",
 			fields: fields{
 				baseURL: *host,
