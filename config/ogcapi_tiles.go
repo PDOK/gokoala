@@ -35,6 +35,7 @@ func (cst TilesCollections) ContainsID(id string) bool {
 	return false
 }
 
+// Keep in sync with OgcAPITiles
 type OgcAPITilesJSON struct {
 	*Tiles      `json:",inline"`
 	Collections []TilesCollection `json:"collections,omitempty"`
@@ -75,7 +76,7 @@ func (o *OgcAPITiles) Defaults() {
 type TilesCollection struct {
 	// Unique ID of the collection
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
-	ID string `yaml:"id" validate:"required,lowercase_id" json:"id"`
+	ID string `yaml:"id" json:"id" validate:"required,lowercase_id"`
 
 	// Metadata describing the collection contents
 	// +optional
@@ -89,15 +90,22 @@ type TilesCollection struct {
 	GeoDataTiles Tiles `yaml:",inline" json:",inline" validate:"required"`
 }
 
-type CollectionEntryTilesJSON struct {
-	Tiles `json:",inline"`
+// Keep in sync with TilesCollection
+type TilesCollectionJSON struct {
+	ID       string                        `json:"id"`
+	Metadata *GeoSpatialCollectionMetadata `json:"metadata,omitempty"`
+	Links    *CollectionLinks              `json:"links,omitempty"`
+	Tiles    `json:",inline"`
 }
 
 // MarshalJSON custom because inlining only works on embedded structs.
 // Value instead of pointer receiver because only that way it can be used for both.
 func (ct TilesCollection) MarshalJSON() ([]byte, error) {
-	return json.Marshal(CollectionEntryTilesJSON{
-		Tiles: ct.GeoDataTiles,
+	return json.Marshal(TilesCollectionJSON{
+		ID:       ct.ID,
+		Metadata: ct.Metadata,
+		Links:    ct.Links,
+		Tiles:    ct.GeoDataTiles,
 	})
 }
 
