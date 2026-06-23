@@ -1,12 +1,14 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{ define "head"}}
-    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+    {{/* Set VIEWER_URL (e.g. http://localhost:4200) to load the viewer from a local `ng serve` instead of the built assets */}}
+    <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
 {{ end }}
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
 {{ $mapSheetProperties := .Params.MapSheetProperties }}
 {{ $webConfig := .Params.WebConfig }}
+{{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
 
 <script>
     function crsChange(value) {
@@ -19,7 +21,7 @@
 <hgroup>
     <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{.Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
 </hgroup>
-
+{{ $viewerUrl }}
 <section class="row py-3">
     <div class="col-md-8 col-sm-12">
         <div class="row mb-2">
@@ -96,8 +98,8 @@
 
     {{ if .Params.ShowViewer }}
     <div class="col-md-4 col-sm-12">
-        <script type="module" src="view-component/main.js"></script>
-        <script src="view-component/polyfills.js"></script>
+        <script type="module" src="{{ $viewerUrl }}/main.js"></script>
+        <script src="{{ $viewerUrl }}/polyfills.js"></script>
 
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
