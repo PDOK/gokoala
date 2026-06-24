@@ -1,13 +1,13 @@
 package features
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
-
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
@@ -27,16 +27,33 @@ var (
 )
 
 type htmlFeatures struct {
-	engine *engine.Engine
+	engine         *engine.Engine
+	projJsonBySRID string
 }
 
-func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
+func newHTMLFeatures(e *engine.Engine, projJsonBySRID map[int]string) *htmlFeatures {
 	e.ParseTemplate(featuresKey)
 	e.ParseTemplate(featureKey)
 
 	return &htmlFeatures{
-		engine: e,
+		engine:         e,
+		projJsonBySRID: convertProjJsonBySRIDtoString(projJsonBySRID),
 	}
+}
+
+func convertProjJsonBySRIDtoString(projJsonBySRID map[int]string) string {
+	projJsonRaw := make(map[int]json.RawMessage)
+	for key, projJson := range projJsonBySRID {
+		projJsonRaw[key] = json.RawMessage(projJson)
+	}
+
+	projJson, err := json.Marshal(projJsonRaw)
+	if err != nil {
+		return ""
+	}
+
+	return string(projJson)
+
 }
 
 // featureCollectionPage enriched FeatureCollection for HTML representation.
@@ -58,6 +75,9 @@ type featureCollectionPage struct {
 	PropertyFilters map[string]string
 	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
 	ConfiguredPropertyFilters map[string]datasources.QueryableWithAllowedValues
+
+	// ProjJson is used by the viewer to have dynamic CRS options
+	ProjJson string
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -134,7 +154,6 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 		}
 		configuredPropertyFilters[name] = queryable
 	}
-
 	pageContent := &featureCollectionPage{
 		*fc,
 		collection.GetID(),
@@ -149,6 +168,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 		true,
 		propertyFilters,
 		configuredPropertyFilters,
+		hf.projJsonBySRID,
 	}
 
 	return breadcrumbs, pageContent

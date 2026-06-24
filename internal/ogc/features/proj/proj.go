@@ -29,40 +29,36 @@ type Info struct {
 }
 
 // GetAxisOrder return XY or YX axis order for the given SRID.
-func GetAxisOrder(srid domain.SRID) (domain.AxisOrder, error) {
-	epsgCode := fmt.Sprintf("%s%d", domain.EPSGPrefix, srid)
-	info, err := execProjInfo(epsgCode)
-	if err != nil {
-		return -1, err
+func GetAxisOrder(projJson string) (domain.AxisOrder, error) {
+	var projInfo Info
+	if err := json.Unmarshal([]byte(projJson), &projInfo); err != nil {
+		return -1, fmt.Errorf("failed to parse %s output: %w", projInfoTool, err)
 	}
+	if len(projInfo.CoordinateSystem.Axis) < 1 {
+		return -1, fmt.Errorf("invalid %s output: axis not found", projInfoTool)
+	}
+
 	// east/north == XY, north/east == YX.
-	if info.CoordinateSystem.Axis[0].Direction == "north" {
+	if projInfo.CoordinateSystem.Axis[0].Direction == "north" {
 		return domain.AxisOrderYX, nil
 	}
 
 	return domain.AxisOrderXY, nil
 }
 
-func execProjInfo(epsgCode string) (*Info, error) {
+func ExecProjInfo(epsgCode string) (string, error) {
 	_, err := execLookPath(projInfoTool)
 	if err != nil {
-		return nil, fmt.Errorf("%s command not found in PATH: %w", projInfoTool, err)
+		return "", fmt.Errorf("%s command not found in PATH: %w", projInfoTool, err)
 	}
 
 	// Run 'projinfo' and return output in PROJJSON format (https://proj.org/en/stable/specifications/projjson.html)
 	cmd := execCommand(projInfoTool, epsgCode, "-o", "projjson", "--single-line", "-q")
 	output, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute %s command: %w", projInfoTool, err)
+		return "", fmt.Errorf("failed to execute %s command: %w", projInfoTool, err)
 	}
+	outputJSON := strings.TrimSpace(string(output))
 
-	var projInfo Info
-	if err := json.Unmarshal([]byte(strings.TrimSpace(string(output))), &projInfo); err != nil {
-		return nil, fmt.Errorf("failed to parse %s output: %w", projInfoTool, err)
-	}
-	if len(projInfo.CoordinateSystem.Axis) < 1 {
-		return nil, fmt.Errorf("invalid %s output: axis not found", projInfoTool)
-	}
-
-	return &projInfo, nil
+	return outputJSON, nil
 }
