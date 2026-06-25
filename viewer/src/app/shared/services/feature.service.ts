@@ -63,7 +63,6 @@ export type FeatureCollectionGeoJSON = {
 export type ProjectionMapping = {
   dataProjection: ProjectionLike //Projection of the data we are reading
   visualProjection: ProjectionLike //Projection of the feature geometries created by this function
-  swapAllowed: boolean
 }
 
 export type DataUrl = {
@@ -71,7 +70,7 @@ export type DataUrl = {
   dataMapping: ProjectionMapping
 }
 
-export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857', swapAllowed: false }
+export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857' }
 
 @Injectable({
   providedIn: 'root',
@@ -99,20 +98,57 @@ export class FeatureService {
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.debug(JSON.stringify(url))
-    const dataproj = getProj(url.dataMapping.dataProjection)
-    if (!dataproj) {
-      this.logger.error(`Projection ${url.dataMapping.visualProjection} not registered`)
-      return of([])
-    }
+    const dataproj = getProj(url.dataMapping.dataProjection)!
     this.logger.debug(dataproj.getAxisOrientation()) // Ensure the projection is initialized
 
     const visualproj = getProj(url.dataMapping.visualProjection)!
     this.logger.debug(visualproj.getAxisOrientation()) // Ensure the visual projection is initialized
 
+    // Helper to swap x/y in coordinates recursively
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function swapXYCoords(geom: any): any {
+      if (Array.isArray(geom)) {
+        if (typeof geom[0] === 'number' && typeof geom[1] === 'number') {
+          // Swap [x, y] => [y, x]
+          return [geom[1], geom[0], ...geom.slice(2)]
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (geom as any[]).map(swapXYCoords)
+      } else if (geom && typeof geom === 'object') {
+        if ('coordinates' in geom) {
+          return { ...geom, coordinates: swapXYCoords(geom.coordinates) }
+        }
+        if ('geometries' in geom) {
+          return { ...geom, geometries: swapXYCoords(geom.geometries) }
+        }
+      }
+      return geom
+    }
     if (url.url == '') return of([])
     return this.http.get<FeatureCollectionGeoJSON | FeatureGeoJSON>(url.url).pipe(
       map(data => {
-        const features = new GeoJSON().readFeatures(data, {
+        let processedData = data
+        // make sure swapping works for ANY CRS
+        if (dataproj.getAxisOrientation().startsWith('n') || dataproj.getAxisOrientation().startsWith('s')) {
+          if (data.type === 'FeatureCollection') {
+            // Swap x/y in all features only if axis orientation differs
+            const collection = data as FeatureCollectionGeoJSON
+            processedData = {
+              ...collection,
+              features: collection.features?.map(f => ({
+                ...f,
+                geometry: swapXYCoords(f.geometry),
+              })),
+            } as FeatureCollectionGeoJSON
+          } else {
+            const feature = data as FeatureGeoJSON
+            processedData = {
+              ...feature,
+              geometry: swapXYCoords(feature.geometry),
+            } as FeatureGeoJSON
+          }
+        }
+        const features = new GeoJSON().readFeatures(processedData, {
           dataProjection: dataproj,
           featureProjection: visualproj,
         })
@@ -131,11 +167,11 @@ export class FeatureService {
       if (value.toLowerCase().startsWith('http://www.opengis.net/def/crs/epsg/')) {
         const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
         if (projection === 'EPSG:3035' || projection === 'EPSG:4258') {
-          return { dataProjection: projection, visualProjection: 'EPSG:3857', swapAllowed: false }
-        } else return { dataProjection: projection, visualProjection: projection, swapAllowed: false }
+          return { dataProjection: projection, visualProjection: 'EPSG:3857' }
+        } else return { dataProjection: projection, visualProjection: projection }
       }
-      return { dataProjection: value, visualProjection: value, swapAllowed: false }
+      return { dataProjection: value, visualProjection: value }
     }
-    return { dataProjection: value, visualProjection: value, swapAllowed: false }
+    return { dataProjection: value, visualProjection: value }
   }
 }
