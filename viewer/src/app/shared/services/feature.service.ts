@@ -70,7 +70,7 @@ export type DataUrl = {
   dataMapping: ProjectionMapping
 }
 
-export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857' }
+export const defaultMapping: ProjectionMapping = { dataProjection: 'CRS:84', visualProjection: 'EPSG:3857' }
 
 @Injectable({
   providedIn: 'root',
