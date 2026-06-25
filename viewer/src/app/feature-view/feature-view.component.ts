@@ -24,10 +24,9 @@ import { get as getProjection, getPointResolution, Projection, transform } from 
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
-import { mergeMap } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { DataUrl, defaultMapping, FeatureService, ProjectionMapping } from '../shared/services/feature.service'
-import { getRijksdriehoek } from '../shared/model/map-projection'
+import { getRijksdriehoek, initProj4WithDynamicCrs } from '../shared/model/map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { BoxControl, emitBox } from './boxcontrol'
 import { FullBoxControl } from './fullboxcontrol'
@@ -35,6 +34,7 @@ import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { NGXLogger } from 'ngx-logger'
 import { from, Subject, switchMap, takeUntil } from 'rxjs'
+import { CrsMap } from '../shared/model/crs-map'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,8 +88,15 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   @Input() strokeColor: string = '#3399CC'
   @Input() mode: 'default' | 'auto' = 'default'
   @Input() initialView: InitialView = InitialView.HIDDEN
-
-  @Input() labelField = undefined
+  private _crsMap: CrsMap = {}
+  @Input() set crsMap(value: CrsMap | string) {
+    this._crsMap = typeof value === 'string' ? JSON.parse(value) : value
+  }
+  get crsMap(): CrsMap {
+    return this._crsMap
+  }
+  @Input()
+  labelField = undefined
   @Input() labelOptions: string | undefined = undefined
 
   @Input() set projection(value: string) {
@@ -152,6 +159,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   }
 
   ngAfterViewInit() {
+    initProj4WithDynamicCrs(this.crsMap)
     if (this.initialView === InitialView.VISIBLE) {
       this.viewToCenter()
     }
