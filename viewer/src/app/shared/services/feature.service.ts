@@ -6,6 +6,7 @@ import { get as getProj, ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
 import { FeatureLike } from 'ol/Feature'
 import { Link } from '../model/link'
+import { environment } from '../../../environments/environment'
 
 export type PointGeoJSON = {
   coordinates: Array<number>
@@ -157,21 +158,23 @@ export class FeatureService {
       })
     )
   }
+  getProjectionMapping(value: string): ProjectionMapping {
+    // If no value is passed to the component use CRS84 for data and EPSG:3857 (wgs 84) for rendering
+    if (!value) return defaultMapping
+    const projection = this.getProjectionCodeFromUrl(value)
+    // if bgt background supports the projection, return it. Else default to wgs 84
+    if (environment.bgt.projections.includes(projection)) return { dataProjection: projection, visualProjection: projection }
+    else return { dataProjection: projection, visualProjection: 'EPSG:3857' }
+  }
 
-  getProjectionMapping(value: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
-    if (value) {
-      if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
-        //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
-        return defaultMapping
-      }
-      if (value.toLowerCase().startsWith('http://www.opengis.net/def/crs/epsg/')) {
-        const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
-        if (projection === 'EPSG:3035' || projection === 'EPSG:4258') {
-          return { dataProjection: projection, visualProjection: 'EPSG:3857' }
-        } else return { dataProjection: projection, visualProjection: projection }
-      }
-      return { dataProjection: value, visualProjection: value }
-    }
-    return { dataProjection: value, visualProjection: value }
+  private getProjectionCodeFromUrl(value: string): string {
+    const EPSG_PREFIX = 'EPSG'
+    // get the code from the url
+    const code = value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase()
+    // check if the url contains epsg. If so, prefix, otherwise it's CRS or some other XXX00 code. Split letters from numbers and insert ":".
+    const captureAlphaNumericGroups = /^([A-Z]+)(\d+)$/
+    return value.toLowerCase().includes(EPSG_PREFIX.toLowerCase())
+      ? `${EPSG_PREFIX}:${code}`
+      : code.replace(captureAlphaNumericGroups, '$1:$2')
   }
 }
