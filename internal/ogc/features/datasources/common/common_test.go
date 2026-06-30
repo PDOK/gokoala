@@ -79,7 +79,7 @@ func TestTemporalCriteriaToSQL(t *testing.T) {
 				EndDateProperty:   "end_date",
 			},
 			symbol:      ":",
-			expectedSQL: ` and "start_date" <= :intervalEnd and "end_date" >= :intervalStart`,
+			expectedSQL: ` and ("start_date" <= :intervalEnd or "start_date" is null) and ("end_date" >= :intervalStart or "end_date" is null)`,
 			expectedArgs: map[string]any{
 				"intervalStart": &start,
 				"intervalEnd":   &end,
@@ -93,7 +93,7 @@ func TestTemporalCriteriaToSQL(t *testing.T) {
 				EndDateProperty:   "end_date",
 			},
 			symbol:      ":",
-			expectedSQL: ` and "start_date" <= :intervalEnd`,
+			expectedSQL: ` and "start_date" <= :intervalEnd or "start_date" is null`,
 			expectedArgs: map[string]any{
 				"intervalEnd": &end,
 			},
@@ -106,7 +106,7 @@ func TestTemporalCriteriaToSQL(t *testing.T) {
 				EndDateProperty:   "end_date",
 			},
 			symbol:      ":",
-			expectedSQL: ` and "end_date" >= :intervalStart`,
+			expectedSQL: ` and "end_date" >= :intervalStart or "end_date" is null`,
 			expectedArgs: map[string]any{
 				"intervalStart": &start,
 			},

@@ -139,8 +139,8 @@ Prev: Vorige
 Next: Volgende
 Items: items
 Instant: Peildatum
-Interval: Periode
-DateTimeMode: Wissel tussen datum en periode
+Interval: Peilperiode
+DateTimeMode: Wissel tussen peildatum en peilperiode
 IntervalStart: Start periode, laat leeg voor open begin
 IntervalEnd: Einde periode, laat leeg voor open eind
 Size: omvang

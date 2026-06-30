@@ -140,10 +140,10 @@ Prev: Previous
 Next: Next
 Items: items
 Instant: Date
-Interval: Period
-DateTimeMode: Switch between date and period
-IntervalStart: Start of period, leave empty for open start
-IntervalEnd: End of period, leave empty for open end
+Interval: Interval
+DateTimeMode: Switch between date and interval
+IntervalStart: Start of interval, leave empty for open start
+IntervalEnd: End of interval, leave empty for open end
 Size: size
 ApplyFilters: Apply filters
 ResetFilter: Reset filter

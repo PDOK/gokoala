@@ -191,30 +191,26 @@ func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol
 	start := temporalCriteria.StartDateProperty
 	end := temporalCriteria.EndDateProperty
 
-	if temporalCriteria.Instant != nil {
+	switch {
+	case temporalCriteria.Instant != nil:
+		// instant
 		namedParams["instant"] = temporalCriteria.Instant
 		sql = fmt.Sprintf(` and "%[1]s" <= %[3]sinstant and ("%[2]s" >= %[3]sinstant or "%[2]s" is null)`,
 			start, end, symbol)
-		return sql, namedParams
-	}
-
-	if temporalCriteria.IntervalStart != nil || temporalCriteria.IntervalEnd != nil {
-		switch {
-		case temporalCriteria.IntervalStart != nil && temporalCriteria.IntervalEnd != nil:
-			// closed interval
-			namedParams["intervalStart"] = temporalCriteria.IntervalStart
-			namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
-			sql = fmt.Sprintf(` and "%[1]s" <= %[3]sintervalEnd and "%[2]s" >= %[3]sintervalStart`,
-				start, end, symbol)
-		case temporalCriteria.IntervalStart == nil:
-			// open-start interval [.., end]
-			namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
-			sql = fmt.Sprintf(` and "%[1]s" <= %[2]sintervalEnd`, start, symbol)
-		default:
-			// open-end interval [start, ..]
-			namedParams["intervalStart"] = temporalCriteria.IntervalStart
-			sql = fmt.Sprintf(` and "%[1]s" >= %[2]sintervalStart`, end, symbol)
-		}
+	case temporalCriteria.IntervalStart != nil && temporalCriteria.IntervalEnd != nil:
+		// closed interval
+		namedParams["intervalStart"] = temporalCriteria.IntervalStart
+		namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
+		sql = fmt.Sprintf(` and ("%[1]s" <= %[3]sintervalEnd or "%[1]s" is null) and ("%[2]s" >= %[3]sintervalStart or "%[2]s" is null)`,
+			start, end, symbol)
+	case temporalCriteria.IntervalStart == nil && temporalCriteria.IntervalEnd != nil:
+		// open-start interval [.., end]
+		namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
+		sql = fmt.Sprintf(` and "%[1]s" <= %[2]sintervalEnd or "%[1]s" is null`, start, symbol)
+	case temporalCriteria.IntervalStart != nil && temporalCriteria.IntervalEnd == nil:
+		// open-end interval [start, ..]
+		namedParams["intervalStart"] = temporalCriteria.IntervalStart
+		sql = fmt.Sprintf(` and "%[1]s" >= %[2]sintervalStart or "%[1]s" is null`, end, symbol)
 	}
 	return sql, namedParams
 }
