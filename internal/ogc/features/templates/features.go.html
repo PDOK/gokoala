@@ -174,24 +174,24 @@
             {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
             <!-- datetime -->
             <div class="row mb-2">
-                <div class="col-sm-4 position-relative">
+                <div class="col-sm-4">
                     <!-- switch between instant and interval mode -->
-                    <button type="button" id="datetime-mode-btn"
-                            class="btn btn-link p-0 col-form-label text-body text-decoration-none"
-                            aria-haspopup="listbox"
-                            aria-expanded="{{ if and .Params.DateTime .Params.DateTime.IsInterval }}true{{ else }}false{{ end }}"
-                            aria-controls="datetime-mode-menu"
-                            onmouseover="this.querySelector('.icon').style.display='none'; this.querySelector('.hover-icon').style.display='inline';"
-                            onmouseout="this.querySelector('.icon').style.display='inline'; this.querySelector('.hover-icon').style.display='none';">
+                    <label id="datetime-mode-btn"
+                           class="col-form-label"
+                           style="cursor: pointer;"
+                           aria-haspopup="listbox"
+                           aria-controls="datetime-mode-menu"
+                           onmouseover="this.querySelector('.icon').style.display='none'; this.querySelector('.hover-icon').style.display='inline';"
+                           onmouseout="this.querySelector('.icon').style.display='inline'; this.querySelector('.hover-icon').style.display='none';">
                         <span id="datetime-mode-label">{{ if and .Params.DateTime .Params.DateTime.IsInterval }}{{ i18n "Interval" }}{{ else }}{{ i18n "Instant" }}{{ end }}</span>
                         <i class="bi bi-caret-down-square icon" style="display:inline;" aria-hidden="true"></i>
                         <i class="bi bi-caret-down-square-fill hover-icon" style="display:none;" aria-hidden="true"></i>
-                    </button>
-                    <ul id="datetime-mode-menu" role="listbox" aria-label="{{ i18n "DateTimeMode" }}"
-                        class="dropdown-menu" style="display:none; position:absolute; z-index:1000;" aria-hidden="true">
-                        <li><button type="button" class="dropdown-item" role="option" onclick="setDatetimeMode('instant')">{{ i18n "Instant" }}</button></li>
-                        <li><button type="button" class="dropdown-item" role="option" onclick="setDatetimeMode('interval')">{{ i18n "Interval" }}</button></li>
-                    </ul>
+                    </label>
+                    <div id="datetime-mode-menu" role="listbox" aria-label="{{ i18n "DateTimeMode" }}"
+                             class="dropdown-menu" style="display:none; position:absolute; z-index:1000;" aria-hidden="true">
+                        <button type="button" class="dropdown-item" role="option" onclick="setDatetimeMode('instant')">{{ i18n "Instant" }}</button>
+                        <button type="button" class="dropdown-item" role="option" onclick="setDatetimeMode('interval')">{{ i18n "Interval" }}</button>
+                    </div>
                 </div>
                 <div class="col-sm-8">
                     <!-- instant panel -->
