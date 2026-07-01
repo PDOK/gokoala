@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http'
-import { createOutputSpy } from 'cypress/angular'
+import { createOutputSpy, MountResponse } from 'cypress/angular'
 import { Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
 import 'cypress-network-idle'
@@ -55,6 +55,7 @@ export function mountFeatureComponent(
   const allprop = { ...prop, ...aprop }
   cy.log(JSON.stringify(allprop))
 
+  let mountResponse: MountResponse<FeatureViewComponent>
   cy.mount(FeatureViewComponent, {
     providers: [provideHttpClient(), FeatureService],
     imports: [
@@ -64,6 +65,7 @@ export function mountFeatureComponent(
     ],
     componentProperties: allprop,
   }).then(comp1 => {
+    mountResponse = comp1
     const map = comp1.component.map as unknown as OLMap
     map.addEventListener('loadend', cy.stub().as('MapLoaded'))
 
@@ -75,6 +77,8 @@ export function mountFeatureComponent(
 
   cy.wait('@geo')
   cy.get('@MapLoaded').should('have.been.calledOnce')
+  // MountResponse needed for swapping crs's
+  return cy.then(() => mountResponse)
 }
 
 export function idle() {
