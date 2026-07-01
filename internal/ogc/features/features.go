@@ -201,7 +201,7 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 	return collection.Metadata != nil && collection.Metadata.TemporalProperties != nil
 }
 
-func parseCQL(cqlFilter string, cqlConfig config.CQL, datasource ds.Datasource, queryables ds.Queryables,
+func parseCQL(cqlFilter string, cqlConfig config.CQL, datasource ds.Datasource, queryables domain.Queryables,
 	srid domain.SRID, collectionType geospatial.CollectionType) (ds.Part3Filter, error) {
 
 	if cqlFilter == "" {

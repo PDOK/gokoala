@@ -9,7 +9,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
-	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/common"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,7 +20,7 @@ var newlineRegex = regexp.MustCompile(`[\r\n]+`)
 // available filters, etc. from the Postgres database. Terminates on failure.
 func readMetadata(db *pgxpool.Pool, collections config.FeaturesCollections, fidColumn, externalFidColumn, schemaName string) (
 	tableByCollectionID map[string]*common.Table,
-	queryablesByCollectionID map[string]ds.Queryables) {
+	queryablesByCollectionID map[string]d.Queryables) {
 
 	metadata, err := readDriverMetadata(db)
 	if err != nil {
@@ -121,11 +120,11 @@ where
 }
 
 func readQueryables(featTableByCollection map[string]*common.Table,
-	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]ds.Queryables, error) {
+	collections config.FeaturesCollections, db *pgxpool.Pool) (map[string]d.Queryables, error) {
 
-	result := make(map[string]ds.Queryables)
+	result := make(map[string]d.Queryables)
 	for _, collection := range collections {
-		result[collection.GetID()] = make(map[string]ds.QueryableWithAllowedValues)
+		result[collection.GetID()] = make(map[string]d.QueryableWithAllowedValues)
 		featTable, ok := featTableByCollection[collection.GetID()]
 		if !ok {
 			continue
@@ -139,9 +138,9 @@ func readQueryables(featTableByCollection map[string]*common.Table,
 
 			// the result should contain ALL configured queryables, with or without allowed values.
 			// when available, allowed values can be either static (from YAML config) or derived from postgres
-			result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field}
+			result[collection.GetID()][queryable.Name] = d.QueryableWithAllowedValues{Field: field}
 			if queryable.AllowedValues != nil {
-				result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: queryable.AllowedValues}
+				result[collection.GetID()][queryable.Name] = d.QueryableWithAllowedValues{Field: field, AllowedValues: queryable.AllowedValues}
 				continue
 			}
 			if *queryable.DeriveAllowedValuesFromDatasource {
@@ -172,7 +171,7 @@ func readQueryables(featTableByCollection map[string]*common.Table,
 							"newline which isn't a valid enum value. The value is: %s", v)
 					}
 				}
-				result[collection.GetID()][queryable.Name] = ds.QueryableWithAllowedValues{Field: field, AllowedValues: values}
+				result[collection.GetID()][queryable.Name] = d.QueryableWithAllowedValues{Field: field, AllowedValues: values}
 				continue
 			}
 		}

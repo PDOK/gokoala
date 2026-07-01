@@ -79,7 +79,7 @@ type featureCollectionURL struct {
 	baseURL                   url.URL
 	params                    url.Values
 	limit                     config.Limit
-	configuredPropertyFilters map[string]datasources.QueryableWithAllowedValues
+	configuredPropertyFilters map[string]d.QueryableWithAllowedValues
 	schema                    d.Schema
 	supportsDatetime          bool
 	cqlConfig                 config.CQL
@@ -344,7 +344,7 @@ func ParseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 }
 
 // Support simple filtering on properties: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
-func parsePropertyFilters(configuredPropertyFilters map[string]datasources.QueryableWithAllowedValues,
+func parsePropertyFilters(configuredPropertyFilters map[string]d.QueryableWithAllowedValues,
 	params url.Values, cqlConfig config.CQL) (map[string]string, error) {
 
 	propertyFilters := make(map[string]string)

@@ -38,7 +38,7 @@ type DatasourceCommon struct {
 	ForceUTC          bool
 
 	TableByCollectionID      map[string]*Table
-	QueryablesByCollectionID map[string]datasources.Queryables
+	QueryablesByCollectionID map[string]domain.Queryables
 	PropertiesByCollectionID map[string]*config.FeatureProperties
 	RelationsByCollectionID  map[string][]config.Relation
 }
@@ -69,7 +69,7 @@ func (t *Table) Field(queryable config.Queryable) (domain.Field, error) {
 	return domain.Field{}, fmt.Errorf("queryable field '%s' not found in datastore schema", queryable.Name)
 }
 
-func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, datasources.Queryables, error) {
+func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, domain.Queryables, error) {
 	table, err := dc.CollectionToTable(collection)
 	if err != nil {
 		return nil, nil, err
