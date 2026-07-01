@@ -4,6 +4,7 @@ import { Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
 import 'cypress-network-idle'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
+import { FeatureService } from 'src/app/shared/services/feature.service'
 
 export type ProjectionTest = { code: string; projection: string; geofix: string }
 
@@ -40,6 +41,7 @@ export function mountFeatureComponent(
   aprojection: string,
   abackground: 'OSM' | 'BRT' | undefined = 'OSM',
   amode: 'auto' | 'default' | undefined = 'default',
+  acrsMap: string = '{}',
   aprop: Prop = { itemUrls: ['https://test/items'] }
 ) {
   const prop: Prop = {
@@ -47,13 +49,14 @@ export function mountFeatureComponent(
     backgroundMap: abackground,
     projection: aprojection,
     mode: amode,
+    crsMap: acrsMap,
   }
 
   const allprop = { ...prop, ...aprop }
   cy.log(JSON.stringify(allprop))
 
   cy.mount(FeatureViewComponent, {
-    providers: [provideHttpClient()],
+    providers: [provideHttpClient(), FeatureService],
     imports: [
       LoggerModule.forRoot({
         level: NgxLoggerLevel.DEBUG,

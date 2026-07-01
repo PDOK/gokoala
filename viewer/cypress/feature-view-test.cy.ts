@@ -1,4 +1,5 @@
 import { idle, injectAxe, intercept, logAccessibility, mountFeatureComponent, screenshot } from './shared'
+import { CRS_TEST_DEFINITIONS } from './fixtures/crs-definitions'
 
 type ProjectionTest = { code: string; testName: string; projection: string; geofix: string }
 
@@ -34,14 +35,14 @@ tests.forEach(i => {
     it('It shows Point from url on OSM ', () => {
       injectAxe()
       intercept(i.geofix, false)
-      mountFeatureComponent(i.projection, 'OSM')
+      mountFeatureComponent(i.projection, 'OSM', 'default', JSON.stringify(CRS_TEST_DEFINITIONS))
       idle()
       screenshot('OSM-' + i.code)
       logAccessibility('body')
     })
     it('It can draw and emit boundingbox in ' + i.geofix + 'on BRT', () => {
       intercept(i.geofix, false)
-      mountFeatureComponent(i.projection, 'BRT')
+      mountFeatureComponent(i.projection, 'BRT', 'default', JSON.stringify(CRS_TEST_DEFINITIONS))
       cy.get('.innersvg').click()
       cy.get('.ol-viewport').click(100, 100)
       cy.get('.ol-viewport').click(200, 200)

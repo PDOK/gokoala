@@ -99,10 +99,11 @@ export class FeatureService {
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.debug(JSON.stringify(url))
-    const dataproj = getProj(url.dataMapping.dataProjection)!
+    const dataproj = getProj(url.dataMapping.dataProjection)
+    if (!dataproj) throw new Error("Invalid data projection; Either it's not defined or not valid")
     this.logger.debug(dataproj.getAxisOrientation()) // Ensure the projection is initialized
-
     const visualproj = getProj(url.dataMapping.visualProjection)!
+    if (!visualproj) throw new Error("Invalid data projection; Either it's not defined or not valid")
     this.logger.debug(visualproj.getAxisOrientation()) // Ensure the visual projection is initialized
 
     // Helper to swap x/y in coordinates recursively
@@ -158,6 +159,7 @@ export class FeatureService {
       })
     )
   }
+
   getProjectionMapping(value: string): ProjectionMapping {
     // If no value is passed to the component use CRS84 for data and EPSG:3857 (wgs 84) for rendering
     if (!value) return defaultMapping

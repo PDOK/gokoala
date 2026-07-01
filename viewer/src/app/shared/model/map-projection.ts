@@ -50,7 +50,6 @@ function initProj4WithTilesDefaults() {
 }
 
 export function initProj4WithDynamicCrs(crsMap: CrsMap) {
-  console.log(crsMap)
   try {
     Object.keys(crsMap).forEach(key => {
       if (key === CRS_84_SRID) return // skip CRS84 as it ships with proj4js
