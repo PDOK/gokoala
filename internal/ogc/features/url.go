@@ -37,6 +37,9 @@ const (
 
 	propertyFilterMaxLength = 512
 	propertyFilterWildcard  = "*"
+
+	intervalSeparator   = "/"
+	intervalHalfBounded = ".."
 )
 
 var (
@@ -84,7 +87,7 @@ type featureCollectionURL struct {
 
 // parse the given URL to values required to delivery a set of Features.
 func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int, inputSRID d.SRID, outputSRID d.SRID,
-	contentCrs d.ContentCrs, bbox *geom.Bounds, referenceDate time.Time, propertyFilters map[string]string,
+	contentCrs d.ContentCrs, bbox *geom.Bounds, dateTime d.DateTime, propertyFilters map[string]string,
 	profile d.Profile, cqlFilter string, err error) {
 
 	err = fc.validateNoUnknownParams()
@@ -98,11 +101,11 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params, fc.cqlConfig)
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
-	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
+	dateTime, dateTimeErr := parseDateTime(fc.params, fc.cqlConfig, fc.supportsDatetime)
 	cqlFilter, filterSRID, filterErr := parseFilter(fc.params, fc.cqlConfig)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
-	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, referenceDateErr, filterErr, inputSRIDErr)
+	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, dateTimeErr, filterErr, inputSRIDErr)
 
 	return
 }
@@ -375,20 +378,57 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Query
 }
 
 // Support filtering on datetime: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime
-func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error) {
+func parseDateTime(params url.Values, cqlConfig config.CQL, datetimeSupported bool) (d.DateTime, error) {
 	datetime := params.Get(dateTimeParam)
-	if datetime != "" {
-		if !datetimeSupported {
-			return time.Time{}, errors.New("datetime param is currently not supported for this collection")
-		}
-		if strings.Contains(datetime, "/") {
-			return time.Time{}, fmt.Errorf("datetime param '%s' represents an interval, intervals are currently not supported", datetime)
-		}
-
-		return time.Parse(time.RFC3339, datetime)
+	if datetime == "" {
+		return d.DateTime{}, nil
+	}
+	if !datetimeSupported {
+		return d.DateTime{}, errors.New("datetime param is currently not supported for this collection")
 	}
 
-	return time.Time{}, nil
+	// parse interval
+	if strings.Contains(datetime, intervalSeparator) {
+		if !cqlConfig.IsEnabled() || !cqlConfig.EnableAdvancedComparisonOperators {
+			return d.DateTime{}, fmt.Errorf("datetime param '%s' represents an interval,"+
+				" interval filtering is not enabled for this collection", datetime)
+		}
+
+		parts := strings.SplitN(datetime, intervalSeparator, 2)
+		start, err := parseIntervalPart(parts[0])
+		if err != nil {
+			return d.DateTime{}, err
+		}
+		end, err := parseIntervalPart(parts[1])
+		if err != nil {
+			return d.DateTime{}, err
+		}
+		return d.DateTime{IsInterval: true, IntervalStart: start, IntervalEnd: end}, nil
+	}
+
+	// parse instant
+	instant, err := time.Parse(time.RFC3339, datetime)
+	if err != nil {
+		return d.DateTime{}, err
+	}
+	if instant.IsZero() {
+		return d.DateTime{}, nil
+	}
+	return d.DateTime{Instant: &instant}, nil
+}
+
+func parseIntervalPart(part string) (*time.Time, error) {
+	if part != "" && part != intervalHalfBounded {
+		t, err := time.Parse(time.RFC3339, part)
+		if err != nil {
+			return nil, fmt.Errorf("invalid datetime interval %q: %w", part, err)
+		}
+		if t.IsZero() {
+			return nil, nil
+		}
+		return &t, nil
+	}
+	return nil, nil
 }
 
 func parseFilter(params url.Values, cqlConfig config.CQL) (filter string, filterSRID d.SRID, err error) {

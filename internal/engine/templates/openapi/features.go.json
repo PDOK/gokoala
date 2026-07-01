@@ -1063,7 +1063,7 @@
       "datetime": {
         "name": "datetime",
         "in": "query",
-        "description": "A date-time (intervals are currently not supported). Date and time expressions adhere to RFC 3339.\n\nExamples:\n\n* A date-time: \"2018-02-12T23:20:50Z\"\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
+        "description": "A date/time which can be either an instant like `2025-01-01T10:20:30Z` or an interval `2025-01-01T10:20:30Z/2025-01-20T10:20:30Z`. Half-bounded intervals are also possible, for example `../2025-01-01T10:20:30Z` or `2025-01-01T10:20:30Z/..`.\n\nDate and time expressions adhere to RFC 3339.\n\nOnly features that have a temporal property that intersects the value of\n`datetime` are selected.\n\nIf a feature has multiple temporal properties, it is the decision of the\nserver whether only a single temporal property is used to determine\nthe extent or all relevant temporal properties.",
         "required": false,
         "style": "form",
         "explode": false,

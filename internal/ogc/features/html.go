@@ -2,7 +2,6 @@ package features
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
@@ -49,7 +48,7 @@ type featureCollectionPage struct {
 	PrevLink           string
 	NextLink           string
 	Limit              int
-	ReferenceDate      *time.Time
+	DateTime           domain.DateTime
 	MapSheetProperties *config.MapSheetDownloadProperties
 	WebConfig          *config.WebConfig
 	ShowViewer         bool
@@ -74,11 +73,11 @@ type featurePage struct {
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 	collection config.FeaturesCollection, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
 	propertyFilters map[string]string, queryables datasources.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
-	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
+	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
 		featuresURL, limit, propertyFilters, queryables)
 
 	hf.engine.RenderAndServe(w, r,
@@ -87,11 +86,11 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 }
 
 func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
-	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
+	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
 	propertyFilters map[string]string, queryables datasources.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
-	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
+	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
 		featuresURL, limit, propertyFilters, queryables)
 	pageContent.ShowViewer = false // since items have no geometry
 
@@ -100,7 +99,7 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, colle
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, referenceDate *time.Time,
+func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTime domain.DateTime,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
 	propertyFilters map[string]string, queryables datasources.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
 
@@ -116,9 +115,6 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 		},
 	}...)
 
-	if referenceDate.IsZero() {
-		referenceDate = nil
-	}
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
 	if collection.MapSheetDownloads != nil {
@@ -136,19 +132,19 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 	}
 
 	pageContent := &featureCollectionPage{
-		*fc,
-		collection.GetID(),
-		collection.GetMetadata(),
-		cursor,
-		featuresURL.toPrevNextURL(collection.GetID(), cursor.Prev, engine.FormatHTML),
-		featuresURL.toPrevNextURL(collection.GetID(), cursor.Next, engine.FormatHTML),
-		limit,
-		referenceDate,
-		mapSheetProps,
-		wc,
-		true,
-		propertyFilters,
-		configuredPropertyFilters,
+		FeatureCollection:         *fc,
+		CollectionID:              collection.GetID(),
+		Metadata:                  collection.GetMetadata(),
+		Cursor:                    cursor,
+		PrevLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Prev, engine.FormatHTML),
+		NextLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Next, engine.FormatHTML),
+		Limit:                     limit,
+		DateTime:                  dateTime,
+		MapSheetProperties:        mapSheetProps,
+		WebConfig:                 wc,
+		ShowViewer:                true,
+		PropertyFilters:           propertyFilters,
+		ConfiguredPropertyFilters: configuredPropertyFilters,
 	}
 
 	return breadcrumbs, pageContent

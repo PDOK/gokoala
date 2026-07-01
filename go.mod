@@ -25,9 +25,9 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/iancoleman/strcase v0.3.0
-	github.com/jackc/pgx/v5 v5.9.1
+	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/mattn/go-sqlite3 v1.14.42
+	github.com/mattn/go-sqlite3 v1.14.47
 	github.com/moby/moby/api v1.54.1
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/qustavo/sqlhooks/v2 v2.1.0

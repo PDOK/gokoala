@@ -8,7 +8,13 @@ export default defineConfig({
       htmlvalidate.install(on, {
         rules: {
           "require-sri": "off",
-          "element-permitted-content": "off" // only because we use RDFa breadcrumbs
+          'element-permitted-content': 'off', // only because we use RDFa breadcrumbs
+          'prefer-native-element': [
+            'error',
+            {
+              exclude: ['listbox'], // allow div to be used as listbox instead of only <select>
+            },
+          ],
         },
       });
     },

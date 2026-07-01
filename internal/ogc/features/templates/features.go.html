@@ -13,11 +13,16 @@
     function updateQueryString(name, value, existingUrl) {
       const url = existingUrl ? new URL(existingUrl) : new URL(window.location.href)
       url.searchParams.delete('cursor') // when filters change, we can't continue pagination.
+
       if (value) {
         if (name === 'datetime') {
-          url.searchParams.set(name, new Date(value).toISOString()) // input is %Y-%m-%d, but parameter value should be RFC3339
+          if (value.includes('/')) {
+            url.searchParams.set(name, value) // interval datetime
+          } else {
+            url.searchParams.set(name, new Date(value).toISOString()) // instant datetime
+          }
         } else {
-          url.searchParams.set(name, value)
+          url.searchParams.set(name, value) // all other params
         }
       } else {
         url.searchParams.delete(name)
@@ -39,12 +44,28 @@
       // Gather form values
       const fd = new FormData(event.target)
       const srsValue = fd.get('srs')
-      const datetimeValue = fd.get('datetime')
       const limitValue = fd.get('limit')
       const propertyFilters = {}
-      {{ range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
+        {{ range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
       propertyFilters["{{ $pfName }}"] = fd.get("{{ $pfName }}")
-      {{ end }}
+        {{ end }}
+
+      let datetimeValue = ''
+      const instantPanel = document.getElementById('datetime-instant-panel')
+      if (instantPanel && instantPanel.hidden) {
+        // interval datetime
+        const startVal = fd.get('datetime-start-input')
+        const endVal = fd.get('datetime-end-input')
+        if (startVal || endVal) {
+          const start = startVal ? new Date(startVal).toISOString() : '..'
+          const end = endVal ? new Date(endVal).toISOString() : '..'
+          datetimeValue = start + '/' + end
+        }
+      } else {
+        // instant datetime
+        const instantVal = fd.get('datetime')
+        datetimeValue = instantVal ? instantVal : ''
+      }
 
       // Build url with form values
       let url = updateQueryString('crs', srsValue)
@@ -61,9 +82,53 @@
       callUrl("{{ $baseUrl }}/collections/{{ .Params.CollectionID }}/items")
     }
 
+    function toggleDatetimeMenu() {
+      const menu = document.getElementById('datetime-mode-menu')
+      const btn  = document.getElementById('datetime-mode-btn')
+      if (menu.style.display === 'block') {
+        closeDatetimeMenu(menu, btn)
+      } else {
+        openDatetimeMenu(menu, btn)
+      }
+    }
+
+    function openDatetimeMenu(menu, btn) {
+      menu.style.display = 'block'
+      btn.setAttribute('aria-expanded', 'true')
+      menu.querySelector('[role="option"]').focus()
+    }
+
+    function closeDatetimeMenu(menu, btn) {
+      menu.style.display = 'none'
+      btn.setAttribute('aria-expanded', 'false')
+    }
+
+    function setDatetimeMode(mode) {
+      const instantPanel = document.getElementById('datetime-instant-panel')
+      const intervalPanel = document.getElementById('datetime-interval-panel')
+
+      const isInterval = mode === 'interval'
+      instantPanel.hidden = isInterval
+      instantPanel.setAttribute('aria-hidden', String(isInterval))
+      intervalPanel.hidden = !isInterval
+      intervalPanel.setAttribute('aria-hidden', String(!isInterval))
+
+      const modeLabel = document.getElementById('datetime-mode-label')
+      modeLabel.textContent = isInterval ? '{{ i18n "Interval" }}' : '{{ i18n "Instant" }}'
+
+      const menu = document.getElementById('datetime-mode-menu')
+      const btn = document.getElementById('datetime-mode-btn')
+      closeDatetimeMenu(menu, btn)
+    }
+
     window.addEventListener("load", function() {
       document.getElementById('form').addEventListener('submit', submitForm)
       document.getElementById('form').addEventListener('reset', resetForm)
+
+      const dateTimeMenuBtn = document.getElementById('datetime-mode-btn')
+      if (dateTimeMenuBtn) {
+        dateTimeMenuBtn.addEventListener('click', toggleDatetimeMenu)
+      }
     });
 </script>
 
@@ -108,10 +173,42 @@
             {{ if and .Params.Metadata .Params.Metadata.TemporalProperties }}
             <!-- datetime -->
             <div class="row mb-2">
-                <label for="referencedate-input" class="col-sm-4 col-form-label">{{ i18n "ReferenceDate" }}</label>
+                <div class="col-sm-4">
+                    <!-- switch between instant and interval mode -->
+                    <button type="button" id="datetime-mode-btn"
+                            class="col-form-label btn px-0 border-0"
+                            style="color: var(--bs-body-color);"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                            aria-controls="datetime-mode-menu"
+                            onmouseover="this.querySelector('.icon').style.display='none'; this.querySelector('.hover-icon').style.display='inline';"
+                            onmouseout="this.querySelector('.icon').style.display='inline'; this.querySelector('.hover-icon').style.display='none';">
+                        <span id="datetime-mode-label">{{ if and .Params.DateTime .Params.DateTime.IsInterval }}{{ i18n "Interval" }}{{ else }}{{ i18n "Instant" }}{{ end }}</span>
+                        <i class="bi bi-caret-down-square icon" style="display:inline;" aria-hidden="true"></i>
+                        <i class="bi bi-caret-down-square-fill hover-icon" style="display:none;" aria-hidden="true"></i>
+                    </button>
+                    <div id="datetime-mode-menu" role="listbox" aria-label="{{ i18n "DateTimeMode" }}"
+                             class="dropdown-menu" style="display:none; position:absolute; z-index:1000;">
+                        <button type="button" class="dropdown-item" role="option" onclick="setDatetimeMode('instant')">{{ i18n "Instant" }}</button>
+                        <button type="button" class="dropdown-item" role="option" onclick="setDatetimeMode('interval')">{{ i18n "Interval" }}</button>
+                    </div>
+                </div>
                 <div class="col-sm-8">
-                    <input id="referencedate-input" name="datetime" type="date" class="form-control"
-                           value="{{ if .Params.ReferenceDate }}{{ .Params.ReferenceDate | date "2006-01-02" }}{{ end }}">
+                    <!-- instant panel -->
+                    <div id="datetime-instant-panel"{{ if and .Params.DateTime .Params.DateTime.IsInterval }} hidden aria-hidden="true"{{ end }}>
+                        <input id="datetime-input" name="datetime" type="date" class="form-control"
+                               aria-label="{{ i18n "Instant" }}"
+                               value="{{ if and .Params.DateTime .Params.DateTime.Instant }}{{ .Params.DateTime.Instant | date "2006-01-02" }}{{ end }}">
+                    </div>
+                    <!-- interval panel -->
+                    <div id="datetime-interval-panel"{{ if and .Params.DateTime (not .Params.DateTime.IsInterval) }} hidden aria-hidden="true"{{ end }}>
+                        <input id="datetime-start-input" name="datetime-start-input" type="date" class="form-control mb-1"
+                               aria-label="{{ i18n "IntervalStart" }}"
+                               value="{{ if and .Params.DateTime .Params.DateTime.IntervalStart }}{{ .Params.DateTime.IntervalStart | date "2006-01-02" }}{{ end }}">
+                        <input id="datetime-end-input" name="datetime-end-input" type="date" class="form-control"
+                               aria-label="{{ i18n "IntervalEnd" }}"
+                               value="{{ if and .Params.DateTime .Params.DateTime.IntervalEnd }}{{ .Params.DateTime.IntervalEnd | date "2006-01-02" }}{{ end }}">
+                    </div>
                 </div>
             </div>
             {{ end }}
@@ -218,7 +315,7 @@
             callUrl(newUrl.toString(), true)
 
             // when moving the map to load additional sheets we don't want to do a full page reload (like we
-            // do when one draws a bbox). Therefor we update the browser URL + link references (like GeoJSON/JSON-FG)
+            // do when one draws a bbox). Therefore, we update the browser URL + link references (like GeoJSON/JSON-FG)
             // on the page manually.
             newUrl.searchParams.set('f', 'json')
             viewer.itemUrls = [newUrl.toString()]

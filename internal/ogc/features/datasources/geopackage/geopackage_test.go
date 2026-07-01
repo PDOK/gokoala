@@ -209,7 +209,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 					Cursor: domain.DecodedCursor{FID: 0, FiltersChecksum: []byte{}},
 					Limit:  2,
 					TemporalCriteria: datasources.TemporalCriteria{
-						ReferenceDate:     refDate,
+						DateTime:          domain.DateTime{Instant: &refDate},
 						StartDateProperty: "datum_strt",
 						EndDateProperty:   "datum_eind",
 					},

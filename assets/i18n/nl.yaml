@@ -138,7 +138,11 @@ Geometry: geometrie
 Prev: Vorige
 Next: Volgende
 Items: items
-ReferenceDate: Peildatum
+Instant: Peildatum
+Interval: Peilperiode
+DateTimeMode: Wissel tussen peildatum en peilperiode
+IntervalStart: Start periode, laat leeg voor open begin
+IntervalEnd: Einde periode, laat leeg voor open eind
 Size: omvang
 ApplyFilters: Filters toepassen
 ResetFilter: Filters wissen
