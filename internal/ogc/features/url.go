@@ -101,7 +101,7 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params, fc.cqlConfig)
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
-	dateTime, dateTimeErr := parseDateTime(fc.params, fc.cqlConfig, fc.supportsDatetime)
+	dateTime, dateTimeErr := parseDateTime(fc.params, fc.supportsDatetime)
 	cqlFilter, filterSRID, filterErr := parseFilter(fc.params, fc.cqlConfig)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
@@ -378,7 +378,7 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Query
 }
 
 // Support filtering on datetime: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime
-func parseDateTime(params url.Values, cqlConfig config.CQL, datetimeSupported bool) (d.DateTime, error) {
+func parseDateTime(params url.Values, datetimeSupported bool) (d.DateTime, error) {
 	datetime := params.Get(dateTimeParam)
 	if datetime == "" {
 		return d.DateTime{}, nil
@@ -389,11 +389,6 @@ func parseDateTime(params url.Values, cqlConfig config.CQL, datetimeSupported bo
 
 	// parse interval
 	if strings.Contains(datetime, intervalSeparator) {
-		if !cqlConfig.IsEnabled() || !cqlConfig.EnableAdvancedComparisonOperators {
-			return d.DateTime{}, fmt.Errorf("datetime param '%s' represents an interval,"+
-				" interval filtering is not enabled for this collection", datetime)
-		}
-
 		parts := strings.SplitN(datetime, intervalSeparator, 2)
 		start, err := parseIntervalPart(parts[0])
 		if err != nil {

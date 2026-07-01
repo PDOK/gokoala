@@ -611,26 +611,6 @@ func TestParseFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on disabled datetime interval",
-			fields: fields{
-				baseURL: *host,
-				params: url.Values{
-					"datetime": []string{"2023-11-10T23:00:00Z/2023-11-15T23:00:00Z"},
-				},
-				limit: config.Limit{
-					Default: 1,
-					Max:     2,
-				},
-				dtSupport: true,
-			},
-			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.EqualError(t, err, "datetime param '2023-11-10T23:00:00Z/2023-11-15T23:00:00Z' represents "+
-					"an interval, interval filtering is not enabled for this collection", "parse()")
-
-				return false
-			},
-		},
-		{
 			name: "Fail on invalid datetime",
 			fields: fields{
 				baseURL: *host,
