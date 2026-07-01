@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
-
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
@@ -56,7 +54,7 @@ type featureCollectionPage struct {
 	// Property filters as supplied by the user in the URL: filter name + value(s)
 	PropertyFilters map[string]string
 	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
-	ConfiguredPropertyFilters map[string]datasources.QueryableWithAllowedValues
+	ConfiguredPropertyFilters map[string]domain.QueryableWithAllowedValues
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -74,7 +72,7 @@ type featurePage struct {
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 	collection config.FeaturesCollection, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
-	propertyFilters map[string]string, queryables datasources.Queryables,
+	propertyFilters map[string]string, queryables domain.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
@@ -87,7 +85,7 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 
 func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
-	propertyFilters map[string]string, queryables datasources.Queryables,
+	propertyFilters map[string]string, queryables domain.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
@@ -101,7 +99,7 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, colle
 
 func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTime domain.DateTime,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
-	propertyFilters map[string]string, queryables datasources.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
+	propertyFilters map[string]string, queryables domain.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
@@ -122,7 +120,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTi
 	}
 	wc = collection.Web
 
-	configuredPropertyFilters := make(map[string]datasources.QueryableWithAllowedValues, len(queryables))
+	configuredPropertyFilters := make(map[string]domain.QueryableWithAllowedValues, len(queryables))
 	for name, queryable := range queryables {
 		if queryable.IsPrimaryGeometry {
 			// no need to expose geometry as a property filter (but can be used in CQL)

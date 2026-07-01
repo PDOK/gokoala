@@ -8,7 +8,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/stretchr/testify/require"
 	"github.com/twpayne/go-geom"
 
@@ -712,7 +711,7 @@ func TestParseFeatures(t *testing.T) {
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
-				configuredPropertyFilters: map[string]datasources.QueryableWithAllowedValues{
+				configuredPropertyFilters: map[string]domain.QueryableWithAllowedValues{
 					"foo": {
 						Field:         domain.Field{Name: "foo", Description: "awesome foo property to filter on"},
 						AllowedValues: nil,

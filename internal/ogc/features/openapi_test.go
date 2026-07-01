@@ -5,25 +5,24 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
 func TestCreatePropertyFiltersByCollection(t *testing.T) {
 	tests := []struct {
 		name                   string
-		queryablesByCollection map[string]ds.Queryables
+		queryablesByCollection map[string]domain.Queryables
 		wantResult             map[string][]OpenAPIPropertyFilter
 	}{
 		{
 			name:                   "Empty input",
-			queryablesByCollection: map[string]ds.Queryables{"boo": map[string]ds.QueryableWithAllowedValues{}},
+			queryablesByCollection: map[string]domain.Queryables{"boo": map[string]domain.QueryableWithAllowedValues{}},
 			wantResult:             map[string][]OpenAPIPropertyFilter{},
 		},
 		{
 			name: "Valid property filters",
-			queryablesByCollection: map[string]ds.Queryables{
-				"foo": map[string]ds.QueryableWithAllowedValues{
+			queryablesByCollection: map[string]domain.Queryables{
+				"foo": map[string]domain.QueryableWithAllowedValues{
 					"straatnaam": {
 						Field:         domain.Field{Name: "straatnaam", Type: "text", Description: "Filter features by this property"},
 						AllowedValues: nil,

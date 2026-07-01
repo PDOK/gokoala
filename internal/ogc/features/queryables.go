@@ -8,7 +8,6 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	g "github.com/PDOK/gokoala/internal/ogc/common/geospatial"
-	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
@@ -72,7 +71,7 @@ type queryablesTemplateData struct {
 }
 
 // renderQueryables pre-renders HTML and JSON queryables describing each feature collection.
-func renderQueryables(e *engine.Engine, queryablesByCollection map[string]ds.Queryables) {
+func renderQueryables(e *engine.Engine, queryablesByCollection map[string]domain.Queryables) {
 	for _, collection := range e.Config.OgcAPI.Features.Collections {
 
 		if !collection.Filters.CQL.IsEnabled() {
