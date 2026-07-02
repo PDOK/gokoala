@@ -8,7 +8,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/types"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/stretchr/testify/require"
 	"github.com/twpayne/go-geom"
 
@@ -36,7 +35,7 @@ func TestParseFeatures(t *testing.T) {
 		wantOutputCrs     int
 		wantBbox          *geom.Bounds
 		wantInputCrs      int
-		wantRefDate       *time.Time
+		wantDateTime      *domain.DateTime
 		wantPropFilters   map[string]string
 		wantProfile       domain.Profile
 		wantCQL           string
@@ -56,7 +55,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:         10,
 			wantOutputCrs:     100000,
 			wantBbox:          nil,
-			wantRefDate:       nil,
+			wantDateTime:      nil,
 			wantInputCrs:      100000,
 			wantProfile:       defaultProfile,
 			wantErr:           success(),
@@ -87,7 +86,7 @@ func TestParseFeatures(t *testing.T) {
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
 			wantBbox:      geom.NewBounds(geom.XY).Set(177, 65, -177, 70),
-			wantRefDate:   nil,
+			wantDateTime:  nil,
 			wantProfile:   defaultProfile,
 			wantErr:       success(),
 		},
@@ -111,7 +110,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
-			wantRefDate:       nil,
+			wantDateTime:      nil,
 			wantInputCrs:      28992,
 			wantProfile:       defaultProfile,
 			wantErr:           success(),
@@ -135,7 +134,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
-			wantRefDate:       nil,
+			wantDateTime:      nil,
 			wantInputCrs:      28992,
 			wantProfile:       defaultProfile,
 			wantErr:           success(),
@@ -159,7 +158,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     28992,
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
-			wantRefDate:       nil,
+			wantDateTime:      nil,
 			wantInputCrs:      100000,
 			wantProfile:       defaultProfile,
 			wantErr:           success(),
@@ -184,7 +183,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
-			wantRefDate:       nil,
+			wantDateTime:      nil,
 			wantInputCrs:      28992,
 			wantProfile:       defaultProfile,
 			wantErr:           success(),
@@ -194,7 +193,7 @@ func TestParseFeatures(t *testing.T) {
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"datetime": []string{time.Time{}.Format(time.RFC3339)},
+					"datetime": []string{"2023-11-10T23:00:00Z"},
 				},
 				limit: config.Limit{
 					Default: 1,
@@ -205,9 +204,105 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:     1,
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
-			wantRefDate:   &time.Time{},
-			wantProfile:   defaultProfile,
-			wantErr:       success(),
+			wantDateTime: func() *domain.DateTime {
+				dt, _ := time.Parse(time.RFC3339, "2023-11-10T23:00:00Z")
+				return &domain.DateTime{Instant: &dt}
+			}(),
+			wantProfile: defaultProfile,
+			wantErr:     success(),
+		},
+		{
+			name: "Parse datetime closed interval",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"datetime": []string{"2023-11-10T23:00:00Z/2023-11-15T23:00:00Z"},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				dtSupport: true,
+				cqlConfig: config.CQL{Enable: types.PtrTo(true), EnableAdvancedComparisonOperators: true},
+			},
+			wantLimit:     1,
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantDateTime: func() *domain.DateTime {
+				start, _ := time.Parse(time.RFC3339, "2023-11-10T23:00:00Z")
+				end, _ := time.Parse(time.RFC3339, "2023-11-15T23:00:00Z")
+				return &domain.DateTime{IsInterval: true, IntervalStart: &start, IntervalEnd: &end}
+			}(),
+			wantProfile: defaultProfile,
+			wantErr:     success(),
+		},
+		{
+			name: "Parse datetime open-start interval",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"datetime": []string{"../2023-11-15T23:00:00Z"},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				dtSupport: true,
+				cqlConfig: config.CQL{Enable: types.PtrTo(true), EnableAdvancedComparisonOperators: true},
+			},
+			wantLimit:     1,
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantDateTime: func() *domain.DateTime {
+				end, _ := time.Parse(time.RFC3339, "2023-11-15T23:00:00Z")
+				return &domain.DateTime{IsInterval: true, IntervalStart: nil, IntervalEnd: &end}
+			}(),
+			wantProfile: defaultProfile,
+			wantErr:     success(),
+		},
+		{
+			name: "Parse datetime open-end interval",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"datetime": []string{"2023-11-10T23:00:00Z/.."},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				dtSupport: true,
+				cqlConfig: config.CQL{Enable: types.PtrTo(true), EnableAdvancedComparisonOperators: true},
+			},
+			wantLimit:     1,
+			wantOutputCrs: 100000,
+			wantInputCrs:  100000,
+			wantDateTime: func() *domain.DateTime {
+				start, _ := time.Parse(time.RFC3339, "2023-11-10T23:00:00Z")
+				return &domain.DateTime{IsInterval: true, IntervalStart: &start, IntervalEnd: nil}
+			}(),
+			wantProfile: defaultProfile,
+			wantErr:     success(),
+		},
+		{
+			name: "Parse invalid interval",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"datetime": []string{".../...."},
+				},
+				limit: config.Limit{
+					Default: 1,
+					Max:     2,
+				},
+				dtSupport: true,
+				cqlConfig: config.CQL{Enable: types.PtrTo(true), EnableAdvancedComparisonOperators: true},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
+				assert.ErrorContains(t, err, "invalid datetime interval", "parse()")
+
+				return false
+			},
 		},
 		{
 			name: "Parse profile - rel-as-key",
@@ -225,7 +320,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:     1,
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
-			wantRefDate:   &time.Time{},
+			wantDateTime:  nil,
 			wantProfile:   domain.NewProfile(domain.RelAsKey, *host, *s),
 			wantErr:       success(),
 		},
@@ -245,7 +340,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:     1,
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
-			wantRefDate:   &time.Time{},
+			wantDateTime:  nil,
 			wantProfile:   domain.NewProfile(domain.RelAsURI, *host, *s),
 			wantErr:       success(),
 		},
@@ -264,7 +359,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:       10,
 			wantOutputCrs:   100000,
 			wantInputCrs:    100000,
-			wantRefDate:     nil,
+			wantDateTime:    nil,
 			wantPropFilters: map[string]string{"foo": "baz"},
 			wantProfile:     defaultProfile,
 			wantErr:         success(),
@@ -285,7 +380,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:       10,
 			wantOutputCrs:   100000,
 			wantInputCrs:    100000,
-			wantRefDate:     nil,
+			wantDateTime:    nil,
 			wantPropFilters: map[string]string{"foo": "baz", "bar": "bazz"},
 			wantProfile:     defaultProfile,
 			wantErr:         success(),
@@ -340,6 +435,25 @@ func TestParseFeatures(t *testing.T) {
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
 				assert.EqualError(t, err, "property filter foo contains a wildcard (*), wildcard filtering is not allowed", "parse()")
+
+				return false
+			},
+		},
+		{
+			name: "Fail on incorrect wildcard property filter",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"foo": []string{"baz%"},
+				},
+				limit: config.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
+				assert.EqualError(t, err, "property filter foo contains a '%' symbol, which suggest you want "+
+					"to apply a wildcard filter. The correct wildcard symbol in OGC APIs is '*'", "parse()")
 
 				return false
 			},
@@ -496,11 +610,11 @@ func TestParseFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Fail on unimplemented datetime interval",
+			name: "Fail on invalid datetime",
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
-					"datetime": []string{"2023-11-10T23:00:00Z/2023-11-15T23:00:00Z"},
+					"datetime": []string{"not-a-date"},
 				},
 				limit: config.Limit{
 					Default: 1,
@@ -509,7 +623,7 @@ func TestParseFeatures(t *testing.T) {
 				dtSupport: true,
 			},
 			wantErr: func(t assert.TestingT, err error, _ ...any) bool {
-				assert.EqualError(t, err, "datetime param '2023-11-10T23:00:00Z/2023-11-15T23:00:00Z' represents an interval, intervals are currently not supported", "parse()")
+				assert.ErrorContains(t, err, "cannot parse", "parse()")
 
 				return false
 			},
@@ -585,7 +699,7 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:     1,
 			wantOutputCrs: 100000,
 			wantInputCrs:  100000,
-			wantRefDate:   nil,
+			wantDateTime:  nil,
 			wantProfile:   defaultProfile,
 			wantCQL:       "some CQL expression",
 			wantErr:       success(),
@@ -597,7 +711,7 @@ func TestParseFeatures(t *testing.T) {
 				baseURL: tt.fields.baseURL,
 				params:  tt.fields.params,
 				limit:   tt.fields.limit,
-				configuredPropertyFilters: map[string]datasources.QueryableWithAllowedValues{
+				configuredPropertyFilters: map[string]domain.QueryableWithAllowedValues{
 					"foo": {
 						Field:         domain.Field{Name: "foo", Description: "awesome foo property to filter on"},
 						AllowedValues: nil,
@@ -609,8 +723,9 @@ func TestParseFeatures(t *testing.T) {
 				},
 				schema:           *s,
 				supportsDatetime: tt.fields.dtSupport,
+				cqlConfig:        tt.fields.cqlConfig,
 			}
-			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, _, gotPF, gotProfile, gotCQL, err := fc.parse()
+			gotEncodedCursor, gotLimit, gotInputCrs, gotOutputCrs, _, gotBbox, gotDateTime, gotPF, gotProfile, gotCQL, err := fc.parse()
 			if !tt.wantErr(t, err, "parse()") {
 				return
 			}
@@ -621,6 +736,9 @@ func TestParseFeatures(t *testing.T) {
 			assert.Equalf(t, tt.wantInputCrs, gotInputCrs.GetOrDefault(), "parse()")
 			assert.Equalf(t, tt.wantProfile, gotProfile, "parse()")
 			assert.Equalf(t, tt.wantCQL, gotCQL, "parse()")
+			if tt.wantDateTime != nil {
+				assert.Equalf(t, *tt.wantDateTime, gotDateTime, "parse()")
+			}
 			if tt.wantPropFilters != nil {
 				assert.Equalf(t, tt.wantPropFilters, gotPF, "parse()")
 			}

@@ -21,7 +21,6 @@
 <hgroup>
     <h1 class="title h2" id="title">{{ .Config.Title }} - {{ if and .Params.Metadata .Params.Metadata.Title }}{{.Params.Metadata.Title }}{{ else }}{{ .Params.CollectionID }}{{ end }}</h1>
 </hgroup>
-{{ $viewerUrl }}
 <section class="row py-3">
     <div class="col-md-8 col-sm-12">
         <div class="row mb-2">
@@ -108,6 +107,7 @@
                 background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
                 mode="auto"
                 fill-color="rgba(0,0,255,0)"
+                crs-map="{{.Params.ProjJson}}"
                 {{ if and $webConfig $webConfig.FeatureViewer }}
                     min-fit-scale="{{ $webConfig.FeatureViewer.MinScale }}"
                     {{ if $webConfig.FeatureViewer.MaxScale }}
@@ -122,6 +122,7 @@
                 background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
                 mode="default"
                 show-bounding-box-button="false"
+                crs-map="{{.Params.ProjJson}}"
                 {{ if and $webConfig $webConfig.FeatureViewer }}
                     min-fit-scale="{{ $webConfig.FeatureViewer.MinScale }}"
                     {{ if $webConfig.FeatureViewer.MaxScale }}

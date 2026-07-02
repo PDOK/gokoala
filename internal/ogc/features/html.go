@@ -3,11 +3,9 @@ package features
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
@@ -66,7 +64,7 @@ type featureCollectionPage struct {
 	PrevLink           string
 	NextLink           string
 	Limit              int
-	ReferenceDate      *time.Time
+	DateTime           domain.DateTime
 	MapSheetProperties *config.MapSheetDownloadProperties
 	WebConfig          *config.WebConfig
 	ShowViewer         bool
@@ -74,7 +72,7 @@ type featureCollectionPage struct {
 	// Property filters as supplied by the user in the URL: filter name + value(s)
 	PropertyFilters map[string]string
 	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
-	ConfiguredPropertyFilters map[string]datasources.QueryableWithAllowedValues
+	ConfiguredPropertyFilters map[string]domain.QueryableWithAllowedValues
 
 	// ProjJson is used by the viewer to have dynamic CRS options
 	ProjJson string
@@ -90,15 +88,18 @@ type featurePage struct {
 	MapSheetProperties *config.MapSheetDownloadProperties
 	WebConfig          *config.WebConfig
 	ShowViewer         bool
+
+	// ProjJson is used by the viewer to have dynamic CRS options
+	ProjJson string
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 	collection config.FeaturesCollection, cursor domain.Cursors,
-	featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, queryables datasources.Queryables,
+	featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
+	propertyFilters map[string]string, queryables domain.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
-	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
+	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
 		featuresURL, limit, propertyFilters, queryables)
 
 	hf.engine.RenderAndServe(w, r,
@@ -107,11 +108,11 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 }
 
 func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
-	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, referenceDate *time.Time,
-	propertyFilters map[string]string, queryables datasources.Queryables,
+	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
+	propertyFilters map[string]string, queryables domain.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
 
-	breadcrumbs, pageContent := hf.toItemsPage(collection, referenceDate, fc, cursor,
+	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
 		featuresURL, limit, propertyFilters, queryables)
 	pageContent.ShowViewer = false // since items have no geometry
 
@@ -120,9 +121,9 @@ func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, colle
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, referenceDate *time.Time,
+func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTime domain.DateTime,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
-	propertyFilters map[string]string, queryables datasources.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
+	propertyFilters map[string]string, queryables domain.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
@@ -136,9 +137,6 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 		},
 	}...)
 
-	if referenceDate.IsZero() {
-		referenceDate = nil
-	}
 	var mapSheetProps *config.MapSheetDownloadProperties
 	var wc *config.WebConfig
 	if collection.MapSheetDownloads != nil {
@@ -146,7 +144,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 	}
 	wc = collection.Web
 
-	configuredPropertyFilters := make(map[string]datasources.QueryableWithAllowedValues, len(queryables))
+	configuredPropertyFilters := make(map[string]domain.QueryableWithAllowedValues, len(queryables))
 	for name, queryable := range queryables {
 		if queryable.IsPrimaryGeometry {
 			// no need to expose geometry as a property filter (but can be used in CQL)
@@ -155,20 +153,20 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, refere
 		configuredPropertyFilters[name] = queryable
 	}
 	pageContent := &featureCollectionPage{
-		*fc,
-		collection.GetID(),
-		collection.GetMetadata(),
-		cursor,
-		featuresURL.toPrevNextURL(collection.GetID(), cursor.Prev, engine.FormatHTML),
-		featuresURL.toPrevNextURL(collection.GetID(), cursor.Next, engine.FormatHTML),
-		limit,
-		referenceDate,
-		mapSheetProps,
-		wc,
-		true,
-		propertyFilters,
-		configuredPropertyFilters,
-		hf.projJsonBySRID,
+		FeatureCollection:         *fc,
+		CollectionID:              collection.GetID(),
+		Metadata:                  collection.GetMetadata(),
+		Cursor:                    cursor,
+		PrevLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Prev, engine.FormatHTML),
+		NextLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Next, engine.FormatHTML),
+		Limit:                     limit,
+		DateTime:                  dateTime,
+		MapSheetProperties:        mapSheetProps,
+		WebConfig:                 wc,
+		ShowViewer:                true,
+		PropertyFilters:           propertyFilters,
+		ConfiguredPropertyFilters: configuredPropertyFilters,
+		ProjJson: hf.projJsonBySRID,
 	}
 
 	return breadcrumbs, pageContent
@@ -221,13 +219,14 @@ func (hf *htmlFeatures) toItemPage(collection config.FeaturesCollection, feat *d
 	wc = collection.Web
 
 	pageContent := &featurePage{
-		*feat,
-		collection.GetID(),
-		feat.ID,
-		collection.GetMetadata(),
-		mapSheetProps,
-		wc,
-		true,
+		Feature:            *feat,
+		CollectionID:       collection.GetID(),
+		FeatureID:          feat.ID,
+		Metadata:           collection.GetMetadata(),
+		MapSheetProperties: mapSheetProps,
+		WebConfig:          wc,
+		ShowViewer:         true,
+		ProjJson:           hf.projJsonBySRID,
 	}
 
 	return breadcrumbs, pageContent

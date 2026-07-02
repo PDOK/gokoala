@@ -139,7 +139,11 @@ Geometry: geometry
 Prev: Previous
 Next: Next
 Items: items
-ReferenceDate: Date
+Instant: Date
+Interval: Interval
+DateTimeMode: Switch between date and interval
+IntervalStart: Start of interval, leave empty for open start
+IntervalEnd: End of interval, leave empty for open end
 Size: size
 ApplyFilters: Apply filters
 ResetFilter: Reset filter

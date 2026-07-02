@@ -29,7 +29,7 @@ type Features struct {
 	axisOrderBySRID       map[int]domain.AxisOrder
 	configuredCollections map[string]config.FeaturesCollection
 	collectionTypes       geospatial.CollectionTypes
-	queryables            map[string]ds.Queryables
+	queryables            map[string]domain.Queryables
 	schemas               map[string]domain.Schema
 
 	html *htmlFeatures
@@ -213,10 +213,10 @@ func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.Featu
 func schemasAndQueryablesByCollection(
 	datasources map[DatasourceKey]ds.Datasource,
 	collections map[string]config.FeaturesCollection,
-	collectionTypes geospatial.CollectionTypes) (map[string]domain.Schema, map[string]ds.Queryables) {
+	collectionTypes geospatial.CollectionTypes) (map[string]domain.Schema, map[string]domain.Queryables) {
 
 	schemaByCollection := make(map[string]domain.Schema)
-	queryablesByCollection := make(map[string]ds.Queryables)
+	queryablesByCollection := make(map[string]domain.Queryables)
 
 	for _, collection := range collections {
 		// the schema should be the same regardless of CRS, so we use WGS84 as it's the default and always present
@@ -249,7 +249,7 @@ func schemasAndQueryablesByCollection(
 					log.Printf("no geometry field found in schema for feature collection %s", collection.ID)
 					continue
 				}
-				queryables[domain.GeomPropertyName] = ds.QueryableWithAllowedValues{
+				queryables[domain.GeomPropertyName] = domain.QueryableWithAllowedValues{
 					Field: *geometryField,
 				}
 			}

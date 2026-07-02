@@ -2,7 +2,6 @@ package datasources
 
 import (
 	"context"
-	"time"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
@@ -10,6 +9,8 @@ import (
 	searchdomain "github.com/PDOK/gokoala/internal/ogc/features_search/domain"
 	"github.com/twpayne/go-geom"
 )
+
+const Wildcard = "%"
 
 // Datasource holds all Features for a single object type in a specific projection/CRS.
 // This abstraction allows the rest of the system to stay datastore agnostic <== IMPORTANT.
@@ -34,7 +35,7 @@ type Datasource interface {
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection.
 	// Along with configured queryables (= fields that can be used in filters), optionally enriched with allowed values.
-	GetSchema(collection string) (*domain.Schema, Queryables, error)
+	GetSchema(collection string) (*domain.Schema, domain.Queryables, error)
 
 	// GetCollectionType returns the type of data in the given collection, e.g. 'features' or 'attributes'.
 	GetCollectionType(collection string) (geospatial.CollectionType, string, error)
@@ -71,33 +72,11 @@ type FeaturesCriteria struct {
 
 // TemporalCriteria criteria to filter based on date/time.
 type TemporalCriteria struct {
-	// reference date
-	ReferenceDate time.Time
+	domain.DateTime
 
 	// startDate and endDate properties
 	StartDateProperty string
 	EndDateProperty   string
-}
-
-// QueryableWithAllowedValues a field from the datasource that can be used as a "queryable", optionally enriched
-// with allowed values. A "queryable" is a field that can be used in a filter (part 1 filter or part 3 CQL filter).
-type QueryableWithAllowedValues struct {
-	domain.Field
-
-	// static or dynamic values that are allowed to be used in this queryable
-	AllowedValues []string
-}
-
-// Queryables one or more QueryableWithAllowedValues indexed by queryable name.
-type Queryables map[string]QueryableWithAllowedValues
-
-// Fields flatten queryables to a slice of fields.
-func (q Queryables) Fields() []domain.Field {
-	result := make([]domain.Field, 0, len(q))
-	for _, v := range q {
-		result = append(result, v.Field)
-	}
-	return result
 }
 
 // FeaturesSearchCriteria to search features (geocoding).

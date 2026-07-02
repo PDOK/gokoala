@@ -37,6 +37,9 @@ const (
 
 	propertyFilterMaxLength = 512
 	propertyFilterWildcard  = "*"
+
+	intervalSeparator   = "/"
+	intervalHalfBounded = ".."
 )
 
 var (
@@ -76,7 +79,7 @@ type featureCollectionURL struct {
 	baseURL                   url.URL
 	params                    url.Values
 	limit                     config.Limit
-	configuredPropertyFilters map[string]datasources.QueryableWithAllowedValues
+	configuredPropertyFilters map[string]d.QueryableWithAllowedValues
 	schema                    d.Schema
 	supportsDatetime          bool
 	cqlConfig                 config.CQL
@@ -84,7 +87,7 @@ type featureCollectionURL struct {
 
 // parse the given URL to values required to delivery a set of Features.
 func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int, inputSRID d.SRID, outputSRID d.SRID,
-	contentCrs d.ContentCrs, bbox *geom.Bounds, referenceDate time.Time, propertyFilters map[string]string,
+	contentCrs d.ContentCrs, bbox *geom.Bounds, dateTime d.DateTime, propertyFilters map[string]string,
 	profile d.Profile, cqlFilter string, err error) {
 
 	err = fc.validateNoUnknownParams()
@@ -98,11 +101,11 @@ func (fc featureCollectionURL) parse() (encodedCursor d.EncodedCursor, limit int
 	propertyFilters, pfErr := parsePropertyFilters(fc.configuredPropertyFilters, fc.params, fc.cqlConfig)
 	bbox, bboxSRID, bboxErr := ParseBbox(fc.params)
 	profile, profileErr := parseProfile(fc.params, fc.baseURL, fc.schema)
-	referenceDate, referenceDateErr := parseDateTime(fc.params, fc.supportsDatetime)
+	dateTime, dateTimeErr := parseDateTime(fc.params, fc.supportsDatetime)
 	cqlFilter, filterSRID, filterErr := parseFilter(fc.params, fc.cqlConfig)
 	inputSRID, inputSRIDErr := consolidateSRIDs(bboxSRID, filterSRID)
 
-	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, referenceDateErr, filterErr, inputSRIDErr)
+	err = errors.Join(limitErr, outputSRIDErr, bboxErr, pfErr, profileErr, dateTimeErr, filterErr, inputSRIDErr)
 
 	return
 }
@@ -341,7 +344,7 @@ func ParseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 }
 
 // Support simple filtering on properties: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties
-func parsePropertyFilters(configuredPropertyFilters map[string]datasources.QueryableWithAllowedValues,
+func parsePropertyFilters(configuredPropertyFilters map[string]d.QueryableWithAllowedValues,
 	params url.Values, cqlConfig config.CQL) (map[string]string, error) {
 
 	propertyFilters := make(map[string]string)
@@ -352,6 +355,11 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Query
 				return nil, fmt.Errorf("property filter %s is too large, "+
 					"value is limited to %d characters", name, propertyFilterMaxLength)
 			}
+			if strings.Contains(pf, datasources.Wildcard) {
+				return nil, fmt.Errorf("property filter %s contains a '%s' symbol, which suggest "+
+					"you want to apply a wildcard filter. The correct wildcard symbol in OGC APIs is '%s'",
+					name, datasources.Wildcard, propertyFilterWildcard)
+			}
 			if strings.Contains(pf, propertyFilterWildcard) {
 				// In case CQL advanced comparison operators (LIKE operator) are enabled, wildcard filtering is allowed.
 				// Otherwise, it's not.
@@ -360,7 +368,7 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Query
 						"wildcard filtering is not allowed", name, propertyFilterWildcard)
 				}
 				// replace wildcard with %, as this is the wildcard used in SQL.
-				pf = strings.ReplaceAll(pf, propertyFilterWildcard, "%")
+				pf = strings.ReplaceAll(pf, propertyFilterWildcard, datasources.Wildcard)
 			}
 			propertyFilters[name] = pf
 		}
@@ -370,20 +378,52 @@ func parsePropertyFilters(configuredPropertyFilters map[string]datasources.Query
 }
 
 // Support filtering on datetime: https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime
-func parseDateTime(params url.Values, datetimeSupported bool) (time.Time, error) {
+func parseDateTime(params url.Values, datetimeSupported bool) (d.DateTime, error) {
 	datetime := params.Get(dateTimeParam)
-	if datetime != "" {
-		if !datetimeSupported {
-			return time.Time{}, errors.New("datetime param is currently not supported for this collection")
-		}
-		if strings.Contains(datetime, "/") {
-			return time.Time{}, fmt.Errorf("datetime param '%s' represents an interval, intervals are currently not supported", datetime)
-		}
-
-		return time.Parse(time.RFC3339, datetime)
+	if datetime == "" {
+		return d.DateTime{}, nil
+	}
+	if !datetimeSupported {
+		return d.DateTime{}, errors.New("datetime param is currently not supported for this collection")
 	}
 
-	return time.Time{}, nil
+	// parse interval
+	if strings.Contains(datetime, intervalSeparator) {
+		parts := strings.SplitN(datetime, intervalSeparator, 2)
+		start, err := parseIntervalPart(parts[0])
+		if err != nil {
+			return d.DateTime{}, err
+		}
+		end, err := parseIntervalPart(parts[1])
+		if err != nil {
+			return d.DateTime{}, err
+		}
+		return d.DateTime{IsInterval: true, IntervalStart: start, IntervalEnd: end}, nil
+	}
+
+	// parse instant
+	instant, err := time.Parse(time.RFC3339, datetime)
+	if err != nil {
+		return d.DateTime{}, err
+	}
+	if instant.IsZero() {
+		return d.DateTime{}, nil
+	}
+	return d.DateTime{Instant: &instant}, nil
+}
+
+func parseIntervalPart(part string) (*time.Time, error) {
+	if part != "" && part != intervalHalfBounded {
+		t, err := time.Parse(time.RFC3339, part)
+		if err != nil {
+			return nil, fmt.Errorf("invalid datetime interval %q: %w", part, err)
+		}
+		if t.IsZero() {
+			return nil, nil
+		}
+		return &t, nil
+	}
+	return nil, nil
 }
 
 func parseFilter(params url.Values, cqlConfig config.CQL) (filter string, filterSRID d.SRID, err error) {

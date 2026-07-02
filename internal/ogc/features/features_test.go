@@ -1103,6 +1103,23 @@ func TestFeatures(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request features with wildcard in Part 1 property filter",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?prop3=Socc*",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_part1_wildcard_filter.json",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

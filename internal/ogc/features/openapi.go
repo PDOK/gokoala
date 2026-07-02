@@ -6,7 +6,6 @@ import (
 
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
-	ds "github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 )
 
@@ -24,7 +23,7 @@ type OpenAPIPropertyFilter struct {
 }
 
 // rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
-func rebuildOpenAPI(e *engine.Engine, queryablesByCollection map[string]ds.Queryables, schemas map[string]domain.Schema, collectionTypes geospatial.CollectionTypes) {
+func rebuildOpenAPI(e *engine.Engine, queryablesByCollection map[string]domain.Queryables, schemas map[string]domain.Schema, collectionTypes geospatial.CollectionTypes) {
 
 	propertyFiltersByCollection := toOpenAPIFilters(queryablesByCollection)
 	e.RebuildOpenAPI(openAPIParams{
@@ -34,7 +33,7 @@ func rebuildOpenAPI(e *engine.Engine, queryablesByCollection map[string]ds.Query
 	})
 }
 
-func toOpenAPIFilters(queryablesByCollection map[string]ds.Queryables) map[string][]OpenAPIPropertyFilter {
+func toOpenAPIFilters(queryablesByCollection map[string]domain.Queryables) map[string][]OpenAPIPropertyFilter {
 	result := make(map[string][]OpenAPIPropertyFilter)
 	for collectionID, queryables := range queryablesByCollection {
 		if len(queryables) == 0 {

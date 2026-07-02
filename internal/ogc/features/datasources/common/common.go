@@ -38,7 +38,7 @@ type DatasourceCommon struct {
 	ForceUTC          bool
 
 	TableByCollectionID      map[string]*Table
-	QueryablesByCollectionID map[string]datasources.Queryables
+	QueryablesByCollectionID map[string]domain.Queryables
 	PropertiesByCollectionID map[string]*config.FeatureProperties
 	RelationsByCollectionID  map[string][]config.Relation
 }
@@ -69,7 +69,7 @@ func (t *Table) Field(queryable config.Queryable) (domain.Field, error) {
 	return domain.Field{}, fmt.Errorf("queryable field '%s' not found in datastore schema", queryable.Name)
 }
 
-func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, datasources.Queryables, error) {
+func (dc *DatasourceCommon) GetSchema(collection string) (*domain.Schema, domain.Queryables, error) {
 	table, err := dc.CollectionToTable(collection)
 	if err != nil {
 		return nil, nil, err
@@ -172,9 +172,11 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 		for k, v := range pf {
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
-			// column name in double quotes in case it is a reserved keyword
-			// also: we don't currently support LIKE since wildcard searches don't use the index
-			sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam))
+			if strings.Contains(v, datasources.Wildcard) {
+				sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" like %s%s", k, symbol, namedParam))
+			} else {
+				sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam))
+			}
 			namedParams[namedParam] = v
 		}
 	}
@@ -182,16 +184,34 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 	return sqlBuilder.String(), namedParams
 }
 
-func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (sql string, namedParams map[string]any) {
-	namedParams = make(map[string]any)
-	if !temporalCriteria.ReferenceDate.IsZero() {
-		namedParams["referenceDate"] = temporalCriteria.ReferenceDate
-		startDate := temporalCriteria.StartDateProperty
-		endDate := temporalCriteria.EndDateProperty
-		sql = fmt.Sprintf(" and \"%[1]s\" <= %[3]sreferenceDate and (\"%[2]s\" >= %[3]sreferenceDate or \"%[2]s\" is null)",
-			startDate, endDate, symbol)
-	}
+func TemporalCriteriaToSQL(temporalCriteria datasources.TemporalCriteria, symbol string) (string, map[string]any) {
+	var sql string
+	namedParams := make(map[string]any)
 
+	start := temporalCriteria.StartDateProperty
+	end := temporalCriteria.EndDateProperty
+
+	switch {
+	case temporalCriteria.Instant != nil:
+		// instant
+		namedParams["instant"] = temporalCriteria.Instant
+		sql = fmt.Sprintf(` and "%[1]s" <= %[3]sinstant and ("%[2]s" >= %[3]sinstant or "%[2]s" is null)`,
+			start, end, symbol)
+	case temporalCriteria.IntervalStart != nil && temporalCriteria.IntervalEnd != nil:
+		// closed interval
+		namedParams["intervalStart"] = temporalCriteria.IntervalStart
+		namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
+		sql = fmt.Sprintf(` and ("%[1]s" <= %[3]sintervalEnd or "%[1]s" is null) and ("%[2]s" >= %[3]sintervalStart or "%[2]s" is null)`,
+			start, end, symbol)
+	case temporalCriteria.IntervalStart == nil && temporalCriteria.IntervalEnd != nil:
+		// open-start interval [.., end]
+		namedParams["intervalEnd"] = temporalCriteria.IntervalEnd
+		sql = fmt.Sprintf(` and "%[1]s" <= %[2]sintervalEnd or "%[1]s" is null`, start, symbol)
+	case temporalCriteria.IntervalStart != nil && temporalCriteria.IntervalEnd == nil:
+		// open-end interval [start, ..]
+		namedParams["intervalStart"] = temporalCriteria.IntervalStart
+		sql = fmt.Sprintf(` and "%[1]s" >= %[2]sintervalStart or "%[1]s" is null`, end, symbol)
+	}
 	return sql, namedParams
 }
 
