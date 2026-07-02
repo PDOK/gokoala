@@ -29,9 +29,9 @@ type Info struct {
 }
 
 // GetAxisOrder return XY or YX axis order for the given SRID.
-func GetAxisOrder(projJson string) (domain.AxisOrder, error) {
+func GetAxisOrder(projJSON string) (domain.AxisOrder, error) {
 	var projInfo Info
-	if err := json.Unmarshal([]byte(projJson), &projInfo); err != nil {
+	if err := json.Unmarshal([]byte(projJSON), &projInfo); err != nil {
 		return -1, fmt.Errorf("failed to parse %s output: %w", projInfoTool, err)
 	}
 	if len(projInfo.CoordinateSystem.Axis) < 1 {

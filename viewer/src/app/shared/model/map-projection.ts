@@ -2,6 +2,7 @@ import { Projection } from 'ol/proj'
 import proj4 from 'proj4'
 import { CrsMap } from './crs-map'
 import { register } from 'ol/proj/proj4'
+import { NGXLogger } from 'ngx-logger'
 
 export const NetherlandsRDNewQuadDefault = 'NetherlandsRDNewQuad'
 export const EuropeanETRS89_LAEAQuad = 'EuropeanETRS89_LAEAQuad'
@@ -9,7 +10,7 @@ export const EuropeanETRS89_LAEAQuad = 'EuropeanETRS89_LAEAQuad'
 const CRS_84_SRID = '100000'
 const EPSG_PREFIX = 'EPSG:'
 
-function initProj4WithTilesDefaults() {
+function initProj4WithTilesDefaults(logger: NGXLogger) {
   const crsMap: CrsMap = {
     '28992':
       '+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs',
@@ -46,10 +47,10 @@ function initProj4WithTilesDefaults() {
         BBOX[33.26,-16.1,84.73,38.01]],
     ID["EPSG",4258]]`,
   }
-  initProj4WithDynamicCrs(crsMap)
+  initProj4WithDynamicCrs(crsMap, logger)
 }
 
-export function initProj4WithDynamicCrs(crsMap: CrsMap) {
+export function initProj4WithDynamicCrs(crsMap: CrsMap, logger: NGXLogger) {
   try {
     Object.keys(crsMap).forEach(key => {
       if (key === CRS_84_SRID) return // skip CRS84 as it ships with proj4js
@@ -57,7 +58,7 @@ export function initProj4WithDynamicCrs(crsMap: CrsMap) {
       proj4.defs(EPSG_PREFIX + key, proj4def)
     })
   } catch (error) {
-    console.error(`Error registering projections: ${error}`)
+    logger.error(`Error registering projections: ${error}`)
   }
   register(proj4)
 }
@@ -81,8 +82,8 @@ export function getRijksdriehoek() {
 export class MapProjection {
   private _tileUrl: string
 
-  constructor(tileUrl: string) {
-    initProj4WithTilesDefaults()
+  constructor(tileUrl: string, logger: NGXLogger) {
+    initProj4WithTilesDefaults(logger)
     this._tileUrl = tileUrl
   }
 

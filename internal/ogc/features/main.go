@@ -39,8 +39,8 @@ type Features struct {
 // NewFeatures Bootstraps OGC API Features logic.
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := CreateDatasources(config.NewFeaturesConfig(e.Config.OgcAPI.Features), e.RegisterShutdownHook)
-	projJsonBySRID := GetProjJsonBySRID(datasources)
-	axisOrderBySRID := GetAxisOrderBySRID(projJsonBySRID)
+	projJSONBySRID := GetProjJSONBySRID(datasources)
+	axisOrderBySRID := GetAxisOrderBySRID(projJSONBySRID)
 	configuredCollections := cacheConfiguredFeatureCollections(e)
 	collectionTypes := determineCollectionTypes(datasources)
 	schemas, queryables := schemasAndQueryablesByCollection(datasources, configuredCollections, collectionTypes)
@@ -57,7 +57,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		collectionTypes:       collectionTypes,
 		queryables:            queryables,
 		schemas:               schemas,
-		html:                  newHTMLFeatures(e, projJsonBySRID),
+		html:                  newHTMLFeatures(e, projJSONBySRID),
 		json:                  newJSONFeatures(e),
 	}
 
@@ -123,7 +123,7 @@ func CreateDatasources(cfg config.FeaturesAndSearchConfig, shutdownHook func(fn 
 	return result
 }
 
-func GetProjJsonBySRID(datasources map[DatasourceKey]ds.Datasource) map[int]string {
+func GetProjJSONBySRID(datasources map[DatasourceKey]ds.Datasource) map[int]string {
 	log.Println("start determining axis order for all configured CRSs")
 	infoMap := make(map[int]string)
 
@@ -147,13 +147,13 @@ func GetProjJsonBySRID(datasources map[DatasourceKey]ds.Datasource) map[int]stri
 				} else {
 					epsg = fmt.Sprintf("%s%d", domain.EPSGPrefix, domain.SRID(key.srid))
 				}
-				projJson, err := proj.ExecProjInfo(epsg)
+				projJSON, err := proj.ExecProjInfo(epsg)
 				if err != nil {
 					log.Printf("Warning: failed to get proj info for EPSG:%d: %v", key.srid, err)
 					return
 				}
 				mu.Lock()
-				infoMap[key.srid] = projJson
+				infoMap[key.srid] = projJSON
 				mu.Unlock()
 			}()
 		}

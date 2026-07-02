@@ -26,31 +26,31 @@ var (
 
 type htmlFeatures struct {
 	engine         *engine.Engine
-	projJsonBySRID string
+	projJSONBySRID string
 }
 
-func newHTMLFeatures(e *engine.Engine, projJsonBySRID map[int]string) *htmlFeatures {
+func newHTMLFeatures(e *engine.Engine, projJSONBySRID map[int]string) *htmlFeatures {
 	e.ParseTemplate(featuresKey)
 	e.ParseTemplate(featureKey)
 
 	return &htmlFeatures{
 		engine:         e,
-		projJsonBySRID: convertProjJsonBySRIDtoString(projJsonBySRID),
+		projJSONBySRID: convertProjJSONBySRIDtoString(projJSONBySRID),
 	}
 }
 
-func convertProjJsonBySRIDtoString(projJsonBySRID map[int]string) string {
-	projJsonRaw := make(map[int]json.RawMessage)
-	for key, projJson := range projJsonBySRID {
-		projJsonRaw[key] = json.RawMessage(projJson)
+func convertProjJSONBySRIDtoString(projJSONBySRID map[int]string) string {
+	projJSONRaw := make(map[int]json.RawMessage)
+	for key, projJSON := range projJSONBySRID {
+		projJSONRaw[key] = json.RawMessage(projJSON)
 	}
 
-	projJson, err := json.Marshal(projJsonRaw)
+	projJSON, err := json.Marshal(projJSONRaw)
 	if err != nil {
 		return ""
 	}
 
-	return string(projJson)
+	return string(projJSON)
 
 }
 
@@ -74,8 +74,8 @@ type featureCollectionPage struct {
 	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
 	ConfiguredPropertyFilters map[string]domain.QueryableWithAllowedValues
 
-	// ProjJson is used by the viewer to have dynamic CRS options
-	ProjJson string
+	// ProjJSON is used by the viewer to have dynamic CRS options
+	ProjJSON string
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -89,8 +89,8 @@ type featurePage struct {
 	WebConfig          *config.WebConfig
 	ShowViewer         bool
 
-	// ProjJson is used by the viewer to have dynamic CRS options
-	ProjJson string
+	// ProjJSON is used by the viewer to have dynamic CRS options
+	ProjJSON string
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
@@ -166,7 +166,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTi
 		ShowViewer:                true,
 		PropertyFilters:           propertyFilters,
 		ConfiguredPropertyFilters: configuredPropertyFilters,
-		ProjJson: hf.projJsonBySRID,
+		ProjJSON:                  hf.projJSONBySRID,
 	}
 
 	return breadcrumbs, pageContent
@@ -226,7 +226,7 @@ func (hf *htmlFeatures) toItemPage(collection config.FeaturesCollection, feat *d
 		MapSheetProperties: mapSheetProps,
 		WebConfig:          wc,
 		ShowViewer:         true,
-		ProjJson:           hf.projJsonBySRID,
+		ProjJSON:           hf.projJSONBySRID,
 	}
 
 	return breadcrumbs, pageContent

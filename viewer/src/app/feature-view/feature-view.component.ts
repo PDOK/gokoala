@@ -132,7 +132,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   }
 
   private init() {
-    initProj4WithDynamicCrs(this._crsMap)
+    initProj4WithDynamicCrs(this._crsMap, this.logger)
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapElm: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
