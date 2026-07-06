@@ -23,13 +23,14 @@ type GeoPackageListener struct {
 }
 
 func NewGeoPackageListener(randomizer util.Randomizer, queryables []d.Field,
-	srid d.SRID, collectionType geospatial.CollectionType, cqlConfig config.CQL) *GeoPackageListener {
+	srid d.SRID, axisOrder d.AxisOrder, collectionType geospatial.CollectionType, cqlConfig config.CQL) *GeoPackageListener {
 	return &GeoPackageListener{
 		CommonListener: &CommonListener{
 			stack:          types.NewStack(),
 			namedParams:    make(map[string]any),
 			cqlConfig:      cqlConfig,
 			srid:           srid,
+			axisOrder:      axisOrder,
 			collectionType: collectionType,
 			randomizer:     randomizer,
 			queryables:     queryables,
@@ -157,7 +158,14 @@ func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceCont
 		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
 
 		l.namedParams[withoutSymbol] = wkt
-		l.stack.Push(fmt.Sprintf("ST_GeomFromText(%s, %d)", withSymbol, l.srid.GetOrDefault()))
+
+		geomExpr := fmt.Sprintf("ST_GeomFromText(%s, %d)", withSymbol, l.srid.GetOrDefault())
+
+		if l.axisOrder == d.AxisOrderYX {
+			geomExpr = fmt.Sprintf("SwapCoords(%s)", geomExpr)
+		}
+
+		l.stack.Push(geomExpr)
 	}
 }
 
@@ -199,7 +207,14 @@ func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
 	north := toNamedParam(ctx.NorthBoundLat().GetText())
 
 	l.currentWktType = bboxKeyword
-	l.stack.Push(fmt.Sprintf("BuildMbr(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault()))
+
+	geomExpr := fmt.Sprintf("BuildMbr(%s, %s, %s, %s, %d)", west, south, east, north, l.srid.GetOrDefault())
+
+	if l.axisOrder == d.AxisOrderYX {
+		geomExpr = fmt.Sprintf("SwapCoords(%s)", geomExpr)
+	}
+
+	l.stack.Push(geomExpr)
 }
 
 // ExitInstantInstance handles DATE() and TIMESTAMP().

@@ -58,7 +58,15 @@ func TestAxisOrder(t *testing.T) {
 			expectedError:     false,
 		},
 		{
-			name:              "should swap - first axis direction is north",
+			name:              "should swap - first axis direction is north (for EPSG:4326)",
+			srid:              domain.SRID(4326),
+			mockCmdOutput:     `{"coordinate_system":{"axis":[{"direction":"north"}, {"direction":"east"}]}}`,
+			mockCmdExitCode:   0,
+			expectedAxisOrder: domain.AxisOrderYX,
+			expectedError:     false,
+		},
+		{
+			name:              "should swap - first axis direction is north (for EPSG:4258)",
 			srid:              domain.SRID(4258),
 			mockCmdOutput:     `{"coordinate_system":{"axis":[{"direction":"north"}, {"direction":"east"}]}}`,
 			mockCmdExitCode:   0,

@@ -20,13 +20,14 @@ type PostgresListener struct {
 }
 
 func NewPostgresListener(randomizer util.Randomizer, queryables []d.Field,
-	srid d.SRID, collectionType geospatial.CollectionType, cqlConfig config.CQL) *PostgresListener {
+	srid d.SRID, axisOrder d.AxisOrder, collectionType geospatial.CollectionType, cqlConfig config.CQL) *PostgresListener {
 	return &PostgresListener{
 		CommonListener: &CommonListener{
 			stack:          types.NewStack(),
 			namedParams:    make(map[string]any),
 			cqlConfig:      cqlConfig,
 			srid:           srid,
+			axisOrder:      axisOrder,
 			collectionType: collectionType,
 			randomizer:     randomizer,
 			queryables:     queryables,
@@ -171,7 +172,13 @@ func (l *PostgresListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCont
 	}
 
 	// Transform input geometry to match the column's SRID
-	l.stack.Push(fmt.Sprintf("%s(\"%s\", ST_Transform(%s, ST_SRID(\"%s\")))", sqlFunction, geomColumn, geomLiteral, geomColumn))
+	geomExpr := fmt.Sprintf("ST_Transform(%s, ST_SRID(\"%s\")))", geomLiteral, geomColumn)
+
+	if l.axisOrder == d.AxisOrderYX {
+		geomExpr = fmt.Sprintf("ST_FlipCoordinates(%s)", geomExpr)
+	}
+
+	l.stack.Push(fmt.Sprintf("%s(\"%s\", %s", sqlFunction, geomColumn, geomExpr))
 }
 
 // ExitSpatialInstance Spatial instances other than bounding boxes

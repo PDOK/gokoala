@@ -299,7 +299,7 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 
 	// make query
 	if criteria.Bbox != nil {
-		query, queryArgs, err = g.makeBboxQuery(table, selectClause, criteria)
+		query, queryArgs, err = g.makeBboxQuery(table, selectClause, criteria, axisOrder)
 		if err != nil {
 			return
 		}
@@ -342,7 +342,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s %[8]s %[9]s lim
 	return defaultQuery, namedParams
 }
 
-func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
+func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria, axisOrder d.AxisOrder) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.Name)
 
 	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx)
@@ -355,7 +355,14 @@ func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, cri
 
 	bboxQuery := fmt.Sprintf(`
 with
-     given_bbox as (select st_geomfromtext(:bboxWkt, :bboxSrid)),
+     given_bbox as (
+	     select
+             iif(
+                 :swapCoords = 1,
+                 swapcoords(st_geomfromtext(:bboxWkt, :bboxSrid)),
+                 st_geomfromtext(:bboxWkt, :bboxSrid)
+			 )
+	 ),
      bbox_size as (select iif(count(id) < %[3]d, 'small', 'big') as bbox_size
                      from (select id from rtree_%[1]s_%[4]s
                            where minx <= :maxx and maxx >= :minx and miny <= :maxy and maxy >= :miny
@@ -403,14 +410,15 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s %[11]s limit :l
 	}
 
 	namedParams := map[string]any{
-		"fid":       criteria.Cursor.FID,
-		"limit":     criteria.Limit,
-		"bboxWkt":   bboxAsWKT,
-		d.MaxxField: criteria.Bbox.Max(0),
-		d.MinxField: criteria.Bbox.Min(0),
-		d.MaxyField: criteria.Bbox.Max(1),
-		d.MinyField: criteria.Bbox.Min(1),
-		"bboxSrid":  criteria.InputSRID.GetOrDefault()}
+		"fid":        criteria.Cursor.FID,
+		"limit":      criteria.Limit,
+		"bboxWkt":    bboxAsWKT,
+		"swapCoords": axisOrder == d.AxisOrderYX,
+		d.MaxxField:  criteria.Bbox.Max(0),
+		d.MinxField:  criteria.Bbox.Min(0),
+		d.MaxyField:  criteria.Bbox.Max(1),
+		d.MinyField:  criteria.Bbox.Min(1),
+		"bboxSrid":   criteria.InputSRID.GetOrDefault()}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
 	maps.Copy(namedParams, criteria.Filter.Params)

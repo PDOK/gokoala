@@ -55,9 +55,9 @@ func TestInvalidBooleanQuery(t *testing.T) {
 			// when
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []domain.Field{}, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, []domain.Field{}, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -79,9 +79,9 @@ func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
 			// when
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -105,7 +105,7 @@ func TestPreventSQLInjectionAttack(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -113,7 +113,7 @@ func TestPreventSQLInjectionAttack(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -137,9 +137,9 @@ func TestPreventSQLInjectionAttackAdvanced(t *testing.T) {
 			// when
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 			// then
 			assert.ErrorContains(t, err, "syntax error at column 16")
@@ -161,7 +161,7 @@ func TestBooleanQueryWithNumbers(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -169,7 +169,7 @@ func TestBooleanQueryWithNumbers(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -196,7 +196,7 @@ func TestAllSimpleComparisionOperators(t *testing.T) {
 						expectedSQL := "cast (\"prop1\" as numeric) " + operator + " :cql_bcde"
 
 						// when
-						actual, err = ParseToSQL("prop1 "+operator+" 10", NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL("prop1 "+operator+" 10", NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -206,7 +206,7 @@ func TestAllSimpleComparisionOperators(t *testing.T) {
 						expectedSQL := "cast (\"prop1\" as numeric) " + operator + " @cql_bcde"
 
 						// when
-						actual, err = ParseToSQL("prop1 "+operator+" 10", NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL("prop1 "+operator+" 10", NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -233,7 +233,7 @@ func TestMultipleBooleanQueries(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -241,7 +241,7 @@ func TestMultipleBooleanQueries(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -266,7 +266,7 @@ func TestBooleanTrueLiteral(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -274,7 +274,7 @@ func TestBooleanTrueLiteral(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -299,7 +299,7 @@ func TestBooleanFalseLiteral(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -307,7 +307,7 @@ func TestBooleanFalseLiteral(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -332,7 +332,7 @@ func TestMultipleBooleanQueriesWithStrings(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -340,7 +340,7 @@ func TestMultipleBooleanQueriesWithStrings(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -365,7 +365,7 @@ func TestLikeOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -373,7 +373,7 @@ func TestLikeOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -398,7 +398,7 @@ func TestNotLikeOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -406,7 +406,7 @@ func TestNotLikeOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -431,7 +431,7 @@ func TestOperatorShouldWorkRegardlessOfCasing(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -439,7 +439,7 @@ func TestOperatorShouldWorkRegardlessOfCasing(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -464,9 +464,9 @@ func TestLikeOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -489,7 +489,7 @@ func TestCaseInsensitiveOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -497,7 +497,7 @@ func TestCaseInsensitiveOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -524,9 +524,9 @@ func TestCaseInsensitiveOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -549,7 +549,7 @@ func TestAccentInsensitiveOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -557,7 +557,7 @@ func TestAccentInsensitiveOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -582,9 +582,9 @@ func TestAccentInsensitiveOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -628,7 +628,7 @@ func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
 					switch datasource {
 					case gpkg:
 						// when
-						actual, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -638,7 +638,7 @@ func TestNestedCaseAndAccentInsensitiveOperators(t *testing.T) {
 						expectedSQLPostgres := strings.ReplaceAll(tt.expectedSQL, ":", "@")
 
 						// when
-						actual, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -665,7 +665,7 @@ func TestCaseAndAccentInsensitiveOperatorWithLike(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -673,7 +673,7 @@ func TestCaseAndAccentInsensitiveOperatorWithLike(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -695,9 +695,9 @@ func TestLikeOperatorFailOnMissingWildcard(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -722,7 +722,7 @@ func TestBetweenOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -730,7 +730,7 @@ func TestBetweenOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -755,7 +755,7 @@ func TestNotBetweenOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -763,7 +763,7 @@ func TestNotBetweenOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -788,9 +788,9 @@ func TestBetweenOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -813,7 +813,7 @@ func TestInListOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -821,7 +821,7 @@ func TestInListOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -846,7 +846,7 @@ func TestNotInListOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -854,7 +854,7 @@ func TestNotInListOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -879,9 +879,9 @@ func TestInOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -904,7 +904,7 @@ func TestIsNullOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -912,7 +912,7 @@ func TestIsNullOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -937,7 +937,7 @@ func TestIsNotNullOperator(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -945,7 +945,7 @@ func TestIsNotNullOperator(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -970,9 +970,9 @@ func TestIsNullOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -992,9 +992,9 @@ func TestFailOnInvalidInListQuery(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -1007,8 +1007,8 @@ func TestSpatialQueryWithPoint(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, POINT(4.897 52.377))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1017,14 +1017,14 @@ func TestSpatialQueryWithPoint(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1039,8 +1039,8 @@ func TestSpatialQueryWithPoint3D(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, POINTZ(4.897 52.377 10.0))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1049,14 +1049,14 @@ func TestSpatialQueryWithPoint3D(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1071,8 +1071,8 @@ func TestSpatialQueryWithLinestring(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, LINESTRING(0.0 0.0, 1.0 1.0, 2.0 0.0))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1081,14 +1081,14 @@ func TestSpatialQueryWithLinestring(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1113,14 +1113,14 @@ func TestSpatialQueryWithPolygon(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 28992, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 28992, domain.AxisOrderXY, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 28992, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 28992, domain.AxisOrderXY, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1135,8 +1135,8 @@ func TestSpatialQueryWithPolygonWithHole(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, POLYGON((0.0 0.0, 10.0 0.0, 10.0 10.0, 0.0 10.0, 0.0 0.0),(2.0 2.0, 8.0 2.0, 8.0 8.0, 2.0 8.0, 2.0 2.0)))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1145,14 +1145,14 @@ func TestSpatialQueryWithPolygonWithHole(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1167,8 +1167,8 @@ func TestSpatialQueryWithMultiPoint(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTIPOINT(0.0 0.0, 1.0 1.0))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1177,14 +1177,14 @@ func TestSpatialQueryWithMultiPoint(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1199,8 +1199,8 @@ func TestSpatialQueryWithMultiLinestring(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTILINESTRING((0.0 0.0, 1.0 1.0),(2.0 2.0, 3.0 3.0)))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1209,14 +1209,14 @@ func TestSpatialQueryWithMultiLinestring(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1231,8 +1231,8 @@ func TestSpatialQueryWithMultiPolygon(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)),((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1241,14 +1241,14 @@ func TestSpatialQueryWithMultiPolygon(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1274,9 +1274,9 @@ func TestSpatialQueryWithMultiPolygonFailsWithOnlyBasicSpatialFilteringEnabled(t
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -1289,8 +1289,8 @@ func TestSpatialQueryWithGeometryCollection(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1299,14 +1299,14 @@ func TestSpatialQueryWithGeometryCollection(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1321,8 +1321,8 @@ func TestSpatialQueryWithBbox(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 20.1, 30.0, 40.0))"
-	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))"
-	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_Transform(ST_MakeEnvelope(@cql_bcde, @cql_fghi, @cql_jklm, @cql_nopq, 4326), ST_SRID(\"geom\")))"
+	expectedSQLGeoPackage := "ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)))"
+	expectedSQLPostgres := "ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_MakeEnvelope(@cql_bcde, @cql_fghi, @cql_jklm, @cql_nopq, 4326), ST_SRID(\"geom\"))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1331,14 +1331,14 @@ func TestSpatialQueryWithBbox(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1360,9 +1360,9 @@ func TestSpatialQueryFailsOnInvalidBbox(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -1386,9 +1386,9 @@ func TestSpatialQueryWithBboxWithOnlyBasicSpatialFunctionsEnabled(t *testing.T) 
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -1408,9 +1408,9 @@ func TestSpatialQueryFailsOnInvalidBboxWithText(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -1430,9 +1430,9 @@ func TestSpatialQueryFailsOnNonGeometryProperty(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -1452,9 +1452,9 @@ func TestSpatialQueryFailsOnUndefinedGeometry(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -1469,20 +1469,20 @@ func TestSpatialQueryUsesRtree(t *testing.T) {
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 20.1, 30.0, 40.0))"
 
 	// when
-	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+	actual, err := ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 	// then
 	require.NoError(t, err)
 	normalizedRtreeClause := strings.Join(strings.Fields(strings.Map(removeNewlinesAndTabs, actual.RtreeSQL)), " ")
-	assert.Equal(t, "AND EXISTS (SELECT 1 FROM rtree_%[1]s_%[2]s r WHERE r.minx <= ST_MaxX(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.maxx >= ST_MinX(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.miny <= ST_MaxY(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)) AND r.maxy >= ST_MinY(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326)))", normalizedRtreeClause)
+	assert.Equal(t, "AND EXISTS (SELECT 1 FROM rtree_%[1]s_%[2]s r WHERE r.minx <= ST_MaxX(SwapCoords(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))) AND r.maxx >= ST_MinX(SwapCoords(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))) AND r.miny <= ST_MaxY(SwapCoords(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))) AND r.maxy >= ST_MinY(SwapCoords(BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 4326))))", normalizedRtreeClause)
 }
 
 func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "prop1 = 'foo' AND S_INTERSECTS(geometry, POINT(4.897 52.377))"
-	expectedSQLGeoPackage := "(\"prop1\" = :cql_bcde AND ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_fghi, 4326)))"
-	expectedSQLPostgres := "(\"prop1\" = @cql_bcde AND ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_fghi, 4326), ST_SRID(\"geom\"))))"
+	expectedSQLGeoPackage := "(\"prop1\" = :cql_bcde AND ST_Intersects(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_fghi, 4326))))"
+	expectedSQLPostgres := "(\"prop1\" = @cql_bcde AND ST_Intersects(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_fghi, 4326), ST_SRID(\"geom\")))))"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -1491,14 +1491,14 @@ func TestSpatialQueryWithGeometryAndBooleanFilter(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1524,20 +1524,20 @@ func TestSpatialQueryWithAllSpatialFunctions(t *testing.T) {
 					switch datasource {
 					case gpkg:
 						// given
-						expectedSQL := sqlFunc + "(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
+						expectedSQL := sqlFunc + "(CastAutomagic(\"geom\"), SwapCoords(ST_GeomFromText(:cql_bcde, 4326)))"
 
 						// when
-						actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
 						assert.Equal(t, expectedSQL, actual.SQL)
 					case postgresql:
 						// given
-						expectedSQL := sqlFunc + "(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
+						expectedSQL := sqlFunc + "(\"geom\", ST_FlipCoordinates(ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\"))))"
 
 						// when
-						actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, domain.AxisOrderYX, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -1604,7 +1604,7 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 						expectedSQL := "ST_Intersects(CastAutomagic(\"geom\"), ST_GeomFromText(:cql_bcde, 4326))"
 
 						// when
-						actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 4326, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -1614,7 +1614,7 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 						expectedSQL := "ST_Intersects(\"geom\", ST_Transform(ST_GeomFromText(@cql_bcde, 4326), ST_SRID(\"geom\")))"
 
 						// when
-						actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 4326, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -1643,9 +1643,9 @@ func TestBasicSpatialOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -1670,9 +1670,9 @@ func TestBasicSpatialPlusOperatorNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -1697,9 +1697,9 @@ func TestAllSpatialFunctionsNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -1722,7 +1722,7 @@ func TestTemporalAfterWithDate(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1730,7 +1730,7 @@ func TestTemporalAfterWithDate(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1755,7 +1755,7 @@ func TestTemporalAfterWithTimestamp(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1763,7 +1763,7 @@ func TestTemporalAfterWithTimestamp(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1788,7 +1788,7 @@ func TestTemporalAfterWithInterval(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1796,7 +1796,7 @@ func TestTemporalAfterWithInterval(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1821,7 +1821,7 @@ func TestTemporalAfterIntervalToInterval(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1829,7 +1829,7 @@ func TestTemporalAfterIntervalToInterval(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1854,7 +1854,7 @@ func TestTemporalBeforeWithDate(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1862,7 +1862,7 @@ func TestTemporalBeforeWithDate(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1887,7 +1887,7 @@ func TestTemporalBeforeWithTimestamp(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1895,7 +1895,7 @@ func TestTemporalBeforeWithTimestamp(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1920,7 +1920,7 @@ func TestTemporalBeforeWithInterval(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1928,7 +1928,7 @@ func TestTemporalBeforeWithInterval(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1953,7 +1953,7 @@ func TestTemporalEqualsWithDate(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1961,7 +1961,7 @@ func TestTemporalEqualsWithDate(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1986,7 +1986,7 @@ func TestTemporalEqualsWithTimestamp(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -1994,7 +1994,7 @@ func TestTemporalEqualsWithTimestamp(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2019,7 +2019,7 @@ func TestTemporalEqualsWithInterval(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2027,7 +2027,7 @@ func TestTemporalEqualsWithInterval(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2052,7 +2052,7 @@ func TestTemporalEqualsIntervalToInterval(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2060,7 +2060,7 @@ func TestTemporalEqualsIntervalToInterval(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2085,7 +2085,7 @@ func TestTemporalIntersectsWithDate(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2093,7 +2093,7 @@ func TestTemporalIntersectsWithDate(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2118,7 +2118,7 @@ func TestTemporalIntersectsWithTimestamp(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2126,7 +2126,7 @@ func TestTemporalIntersectsWithTimestamp(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2151,7 +2151,7 @@ func TestTemporalIntersectsWithIntervalDate(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2159,7 +2159,7 @@ func TestTemporalIntersectsWithIntervalDate(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2184,7 +2184,7 @@ func TestTemporalIntersectsWithIntervalTimestamp(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2192,7 +2192,7 @@ func TestTemporalIntersectsWithIntervalTimestamp(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2217,7 +2217,7 @@ func TestTemporalDisjointWithDate(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2225,7 +2225,7 @@ func TestTemporalDisjointWithDate(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2250,7 +2250,7 @@ func TestTemporalDisjointWithTimestamp(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2258,7 +2258,7 @@ func TestTemporalDisjointWithTimestamp(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2283,7 +2283,7 @@ func TestTemporalDisjointWithIntervalDate(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2291,7 +2291,7 @@ func TestTemporalDisjointWithIntervalDate(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2316,7 +2316,7 @@ func TestTemporalIntersectsIntervalToInterval(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2324,7 +2324,7 @@ func TestTemporalIntersectsIntervalToInterval(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2415,7 +2415,7 @@ func TestTemporalIntervalOperators(t *testing.T) {
 					switch datasource {
 					case gpkg:
 						// when
-						actual, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -2425,7 +2425,7 @@ func TestTemporalIntervalOperators(t *testing.T) {
 						expectedSQLPostgres := strings.ReplaceAll(tt.expectedSQL, ":", "@")
 
 						// when
-						actual, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						actual, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 						// then
 						require.NoError(t, err)
@@ -2497,9 +2497,9 @@ func TestTemporalIntervalOperatorsFailOnInstants(t *testing.T) {
 					var err error
 					switch datasource {
 					case gpkg:
-						_, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						_, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 					case postgresql:
-						_, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						_, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 					}
 
 					// then
@@ -2591,9 +2591,9 @@ func TestTemporalOperatorsFailOnInvalidUnboundedIntervals(t *testing.T) {
 					var err error
 					switch datasource {
 					case gpkg:
-						_, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						_, err = ParseToSQL(tt.inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 					case postgresql:
-						_, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+						_, err = ParseToSQL(tt.inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 					}
 
 					// then
@@ -2618,7 +2618,7 @@ func TestTemporalUnboundedIntervalAtBegin(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2626,7 +2626,7 @@ func TestTemporalUnboundedIntervalAtBegin(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2651,7 +2651,7 @@ func TestTemporalUnboundedIntervalAtEnd(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2659,7 +2659,7 @@ func TestTemporalUnboundedIntervalAtEnd(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2681,9 +2681,9 @@ func TestFailOnTemporalLiteralAsFirstArgument(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -2706,7 +2706,7 @@ func TestTemporalAndBooleanQuery(t *testing.T) {
 			switch datasource {
 			case gpkg:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2714,7 +2714,7 @@ func TestTemporalAndBooleanQuery(t *testing.T) {
 				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
 			case postgresql:
 				// when
-				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 
 				// then
 				require.NoError(t, err)
@@ -2739,9 +2739,9 @@ func TestTemporalOperatorsNotEnabled(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfig))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfig))
 			}
 
 			// then
@@ -2761,9 +2761,9 @@ func TestFailOnSpatialFilteringONonGeoCollection(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Attributes, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Attributes, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Attributes, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Attributes, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -2784,9 +2784,9 @@ func TestFailOnNonSupportedCustomFunctions(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -2806,9 +2806,9 @@ func TestFailOnNonSupportedArrayOperators(t *testing.T) {
 			var err error
 			switch datasource {
 			case gpkg:
-				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			case postgresql:
-				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 			}
 
 			// then
@@ -2877,9 +2877,9 @@ func TestCQLExamplesProvidedByOGC(t *testing.T) {
 				var actual *SQLResult
 				switch datasource {
 				case gpkg:
-					actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+					actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 				case postgresql:
-					actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+					actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled))
 				}
 
 				// then

@@ -220,7 +220,7 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r."+searchGeomColumn)
+	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r."+searchGeomColumn, axisOrder)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +300,7 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 	var bboxNamedParams map[string]any
 	if criteria.Bbox != nil {
 		var err error
-		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName)
+		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, axisOrder)
 		if err != nil {
 			return "", nil, err
 		}
@@ -475,7 +475,7 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use named params for user input!
 }
 
-func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, map[string]any, error) {
+func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string, axisOrder d.AxisOrder) (string, map[string]any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxNamedParams map[string]any
 	var err error
@@ -483,6 +483,13 @@ func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string) (string, m
 		bboxFilter = fmt.Sprintf(`and
 				st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int))
 			`, geomColumn)
+
+		if axisOrder == d.AxisOrderYX {
+			bboxFilter = fmt.Sprintf(`and
+				st_intersects(st_transform(%[1]s, @bboxSrid::int), st_flipcoordinates(st_geomfromtext(@bboxWkt::text, @bboxSrid::int)))
+			`, geomColumn)
+		}
+
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
 			return "", nil, err
