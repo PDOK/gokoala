@@ -44,6 +44,30 @@ func init() {
 	pwd = path.Dir(filename)
 }
 
+func TestEmptyInput(t *testing.T) {
+	// given
+	inputCQL := ""
+
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+
+			// when
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, []domain.Field{}, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+
+			// then
+			require.Nil(t, actual)
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestInvalidBooleanQuery(t *testing.T) {
 	// given
 	inputCQL := "prop1 ==== 1 AND prop2 !!= 5"
