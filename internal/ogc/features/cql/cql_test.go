@@ -67,7 +67,7 @@ func TestInvalidBooleanQuery(t *testing.T) {
 	}
 }
 
-func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
+func TestFailOnNonQueryableProperty(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "prop1 = 30 AND prop2 > 77"
@@ -90,7 +90,7 @@ func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
 	}
 }
 
-func TestFailOnNonQueryablePropertyWithGeomSpecifiedQuery(t *testing.T) {
+func TestFailOnNonQueryablePropertyWithGeomSpecified(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "S_WITHIN(geometry, BBOX(4.993,51.889,5.552,52.137)) AND prop1 = 30 AND prop2 > 77"
@@ -109,6 +109,29 @@ func TestFailOnNonQueryablePropertyWithGeomSpecifiedQuery(t *testing.T) {
 
 			// then
 			assert.ErrorContains(t, err, "property 'prop2' cannot be used in CQL filter, is not a queryable property")
+		})
+	}
+}
+
+func TestFailOnWronglyNamedGeometryProperty(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "location", IsPrimaryGeometry: true}}
+	inputCQL := "S_WITHIN(location, BBOX(4.993,51.889,5.552,52.137)) AND prop1 = 30"
+
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+
+			// when
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+
+			// then
+			assert.ErrorContains(t, err, "spatial filtering is only supported on property 'geometry'")
 		})
 	}
 }
@@ -1727,6 +1750,38 @@ func TestAllSpatialFunctionsNotEnabled(t *testing.T) {
 
 			// then
 			assert.ErrorContains(t, err, "spatial operator 'S_OVERLAPS' is not enabled for this collection, only S_INTERSECTS is allowed")
+		})
+	}
+}
+
+func TestUseGeometryInCQLAndAnotherNameForGeometryColumnInSQL(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}, {Name: "location", IsPrimaryGeometry: true}}
+	inputCQL := "S_WITHIN(geometry, BBOX(4.993,51.889,5.552,52.137)) AND prop1 = 30"
+	expectedSQLGeoPackage := "(ST_Within(CastAutomagic(\"location\"), BuildMbr(:cql_bcde, :cql_fghi, :cql_jklm, :cql_nopq, 100000)) AND cast (\"prop1\" as numeric) = :cql_rstu)"
+	expectedSQLPostgres := "(ST_Within(\"location\", ST_Transform(ST_MakeEnvelope(@cql_bcde, @cql_fghi, @cql_jklm, @cql_nopq, 4326), ST_SRID(\"location\"))) AND cast (\"prop1\" as numeric) = @cql_rstu)"
+
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var actual *SQLResult
+			var err error
+			switch datasource {
+			case gpkg:
+				// when
+				actual, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+
+				// then
+				require.NoError(t, err)
+				assertValidSQLiteQuery(t, actual)
+				assert.Equal(t, expectedSQLGeoPackage, actual.SQL)
+			case postgresql:
+				// when
+				actual, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+
+				// then
+				require.NoError(t, err)
+				assert.Equal(t, expectedSQLPostgres, actual.SQL)
+			}
 		})
 	}
 }
