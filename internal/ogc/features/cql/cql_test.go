@@ -90,6 +90,29 @@ func TestFailOnNonQueryablePropertyQuery(t *testing.T) {
 	}
 }
 
+func TestFailOnNonQueryablePropertyWithGeomSpecifiedQuery(t *testing.T) {
+	// given
+	queryables := []domain.Field{{Name: "prop1"}}
+	inputCQL := "S_WITHIN(geometry, BBOX(4.993,51.889,5.552,52.137)) AND prop1 = 30 AND prop2 > 77"
+
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var err error
+
+			// when
+			switch datasource {
+			case gpkg:
+				_, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				_, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, geospatial.Features, cqlConfigAllEnabled))
+			}
+
+			// then
+			assert.ErrorContains(t, err, "property 'prop2' cannot be used in CQL filter, is not a queryable property")
+		})
+	}
+}
+
 func TestPreventSQLInjectionAttack(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}
