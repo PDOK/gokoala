@@ -173,9 +173,9 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
 			if strings.Contains(v, datasources.Wildcard) {
-				sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" like %s%s", k, symbol, namedParam))
+				fmt.Fprintf(&sqlBuilder, " and \"%s\" like %s%s", k, symbol, namedParam)
 			} else {
-				sqlBuilder.WriteString(fmt.Sprintf(" and \"%s\" = %s%s", k, symbol, namedParam))
+				fmt.Fprintf(&sqlBuilder, " and \"%s\" = %s%s", k, symbol, namedParam)
 			}
 			namedParams[namedParam] = v
 		}

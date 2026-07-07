@@ -1,9 +1,10 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{ define "head" }}
-    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+    <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
 {{ end }}
 {{ define "content" }}
 {{ if .Config.OgcAPI.Styles }}
+  {{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
   <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
   </hgroup>
@@ -81,8 +82,8 @@
       </table>
     </div>
     <div class="col-md-6">
-      <script type="module" src="view-component/main.js"></script>
-      <script src="view-component/polyfills.js"></script>
+      <script type="module" src="{{ $viewerUrl }}/main.js"></script>
+      <script src="{{ $viewerUrl }}/polyfills.js"></script>
        <p>{{ i18n "StylingExample" }}:</p>
       <app-vectortile-view id="styles-vectortile-view" class="card vectortile-view"
         tile-url="{{ $baseUrl }}/tiles/{{ get $projections $defaultSrs.Srs }}"

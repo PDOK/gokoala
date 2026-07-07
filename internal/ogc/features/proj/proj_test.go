@@ -138,7 +138,11 @@ func TestAxisOrder(t *testing.T) {
 				return originalCmdFunc(name, arg...)
 			}
 
-			axisOrder, err := GetAxisOrder(tt.srid)
+			var axisOrder domain.AxisOrder
+			projJSON, err := ExecProjInfo(strconv.Itoa(int(tt.srid)))
+			if err == nil {
+				axisOrder, err = GetAxisOrder(projJSON)
+			}
 			if tt.expectedError {
 				assert.Contains(t, err.Error(), tt.expectedErrMsg)
 			} else {

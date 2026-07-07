@@ -1,10 +1,11 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
-{{define "head"}}<link rel="stylesheet" type="text/css" href="view-component/styles.css">{{end}}
+{{define "head"}}<link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">{{end}}
 {{define "content"}}
-{{ $cfg := .Config }}
-{{ $baseUrl := $cfg.BaseURL }}
-{{ $collTypes := .Params }}
-<hgroup>
+    {{ $cfg := .Config }}
+    {{ $baseUrl := $cfg.BaseURL }}
+    {{ $collTypes := .Params }}
+    {{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
+    <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Collections" }}</h1>
 </hgroup>
 

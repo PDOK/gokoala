@@ -1,10 +1,11 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{ define "head" }}
-    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+    <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
 {{ end }}
 {{ define "content" }}
 {{ if .Params }}
 {{ $baseUrl := .Config.BaseURL }}
+{{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
 <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ .Params.Title }}</h1>
 </hgroup>
@@ -16,8 +17,8 @@
         </p>
     </div>
     <div class="col-md-6">
-        <script type="module" src="view-component/main.js"></script>
-        <script src="view-component/polyfills.js"></script>
+        <script type="module" src="{{ $viewerUrl }}/main.js"></script>
+        <script src="{{ $viewerUrl }}/polyfills.js"></script>
         <app-legend-view id="style-legend-view" class="card"
                          style-url="{{ $baseUrl }}/styles/{{ .Params.ID }}?f=mapbox">
         </app-legend-view>

@@ -39,7 +39,8 @@ type Features struct {
 // NewFeatures Bootstraps OGC API Features logic.
 func NewFeatures(e *engine.Engine) *Features {
 	datasources := CreateDatasources(config.NewFeaturesConfig(e.Config.OgcAPI.Features), e.RegisterShutdownHook)
-	axisOrderBySRID := DetermineAxisOrder(datasources)
+	projJSONBySRID := GetProjJSONBySRID(datasources)
+	axisOrderBySRID := GetAxisOrderBySRID(projJSONBySRID)
 	configuredCollections := cacheConfiguredFeatureCollections(e)
 	collectionTypes := determineCollectionTypes(datasources)
 	schemas, queryables := schemasAndQueryablesByCollection(datasources, configuredCollections, collectionTypes)
@@ -56,7 +57,7 @@ func NewFeatures(e *engine.Engine) *Features {
 		collectionTypes:       collectionTypes,
 		queryables:            queryables,
 		schemas:               schemas,
-		html:                  newHTMLFeatures(e),
+		html:                  newHTMLFeatures(e, projJSONBySRID),
 		json:                  newJSONFeatures(e),
 	}
 
@@ -122,17 +123,15 @@ func CreateDatasources(cfg config.FeaturesAndSearchConfig, shutdownHook func(fn 
 	return result
 }
 
-func DetermineAxisOrder(datasources map[DatasourceKey]ds.Datasource) map[int]domain.AxisOrder {
+func GetProjJSONBySRID(datasources map[DatasourceKey]ds.Datasource) map[int]string {
 	log.Println("start determining axis order for all configured CRSs")
-	order := map[int]domain.AxisOrder{
-		domain.WGS84SRID: domain.AxisOrderXY, // We know CRS84 is XY, see https://spatialreference.org/ref/ogc/CRS84/
-	}
+	infoMap := make(map[int]string)
 
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	for key := range datasources {
 		mu.Lock()
-		_, exists := order[key.srid]
+		_, exists := infoMap[key.srid]
 		mu.Unlock()
 
 		if !exists {
@@ -142,16 +141,19 @@ func DetermineAxisOrder(datasources map[DatasourceKey]ds.Datasource) map[int]dom
 			// to avoid race conditions on the map.
 			go func() {
 				defer wg.Done()
-
-				axisOrder, err := proj.GetAxisOrder(domain.SRID(key.srid))
-				if err != nil {
-					log.Printf("Warning: failed to determine whether EPSG:%d needs "+
-						"swap of X/Y axis: %v. Defaulting to XY order.", key.srid, err)
-					axisOrder = domain.AxisOrderXY
+				var epsg string
+				if key.srid == domain.WGS84SRID {
+					epsg = fmt.Sprintf("%s%s", domain.OGCPrefix, domain.WGS84CodeOGC)
+				} else {
+					epsg = fmt.Sprintf("%s%d", domain.EPSGPrefix, domain.SRID(key.srid))
 				}
-
+				projJSON, err := proj.ExecProjInfo(epsg)
+				if err != nil {
+					log.Printf("Warning: failed to get proj info for EPSG:%d: %v", key.srid, err)
+					return
+				}
 				mu.Lock()
-				order[key.srid] = axisOrder
+				infoMap[key.srid] = projJSON
 				mu.Unlock()
 			}()
 		}
@@ -160,7 +162,24 @@ func DetermineAxisOrder(datasources map[DatasourceKey]ds.Datasource) map[int]dom
 
 	log.Println("done determining axis order for all configured CRSs")
 
-	return order
+	return infoMap
+}
+
+func GetAxisOrderBySRID(projInfoMap map[int]string) map[int]domain.AxisOrder {
+	axisOrderBySRID := make(map[int]domain.AxisOrder)
+
+	for key, projInfo := range projInfoMap {
+		axisOrder, err := proj.GetAxisOrder(projInfo)
+		if err != nil {
+			log.Printf("Warning: failed to determine whether EPSG:%d needs "+
+				"swap of X/Y axis: %v. Defaulting to XY order.", key, err)
+			axisOrder = domain.AxisOrderXY
+		}
+
+		axisOrderBySRID[key] = axisOrder
+	}
+
+	return axisOrderBySRID
 }
 
 func determineCollectionTypes(datasources map[DatasourceKey]ds.Datasource) geospatial.CollectionTypes {

@@ -1,4 +1,5 @@
 import { idle, injectAxe, intercept, logAccessibility, mountFeatureComponent, screenshot } from './shared'
+import { CRS_TEST_DEFINITIONS } from './fixtures/crs-definitions'
 
 type ProjectionTest = { code: string; testName: string; projection: string; geofix: string }
 
@@ -34,14 +35,14 @@ tests.forEach(i => {
     it('It shows Point from url on OSM ', () => {
       injectAxe()
       intercept(i.geofix, false)
-      mountFeatureComponent(i.projection, 'OSM')
+      mountFeatureComponent(i.projection, 'OSM', 'default', JSON.stringify(CRS_TEST_DEFINITIONS))
       idle()
       screenshot('OSM-' + i.code)
       logAccessibility('body')
     })
-    it('It can draw and emit boundingbox in ' + i.geofix + 'on BRT', () => {
+    it('It can draw and emit boundingbox in ' + i.geofix + ' on BRT', () => {
       intercept(i.geofix, false)
-      mountFeatureComponent(i.projection, 'BRT')
+      mountFeatureComponent(i.projection, 'BRT', 'default', JSON.stringify(CRS_TEST_DEFINITIONS))
       cy.get('.innersvg').click()
       cy.get('.ol-viewport').click(100, 100)
       cy.get('.ol-viewport').click(200, 200)
@@ -53,6 +54,26 @@ tests.forEach(i => {
           const firstCallArgs = spy.getCall(0).args[0].split(',')
           expect(firstCallArgs[0]).to.match(/^4.8/)
           expect(firstCallArgs[1]).to.match(/^52.37/)
+        })
+    })
+
+    it('It keeps the features at Amsterdam after swapping CRS for ' + i.testName, () => {
+      const targetCrs = i.code === 'EPSG:28992' ? tests[0] : tests[2]
+      intercept(i.geofix, false)
+      mountFeatureComponent(i.projection, 'BRT', 'default', JSON.stringify(CRS_TEST_DEFINITIONS)).then(({ fixture }) => {
+        fixture.componentRef.setInput('projection', targetCrs.projection)
+        fixture.detectChanges()
+      })
+      cy.get('.innersvg').click()
+      cy.get('.ol-viewport').click(100, 100)
+      cy.get('.ol-viewport').click(200, 200)
+      cy.get('@boxSpy')
+        .should('have.been.calledOnce')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .should((spy: any) => {
+          const [minLon, minLat] = spy.getCall(0).args[0].split(',')
+          expect(minLon, 'longitude').to.match(/^4.8/)
+          expect(minLat, 'latitude').to.match(/^52.37/)
         })
     })
   })

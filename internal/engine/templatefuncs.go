@@ -178,7 +178,7 @@ func hasField(structRef any, fieldName string) bool {
 	v := reflect.ValueOf(structRef)
 
 	// If it's a pointer, get the element it points to
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
 	if v.Kind() != reflect.Struct {

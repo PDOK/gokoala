@@ -1,4 +1,5 @@
 import { intercept, mountFeatureComponent, screenshot, tests as projectenTests } from './shared'
+import { CRS_TEST_DEFINITIONS } from './fixtures/crs-definitions'
 
 function moveMap(x: number, y: number) {
   // Trigger a pointerdown event to start the panning action
@@ -47,7 +48,7 @@ projectenTests
           fillColor: 'rgba(0,0,255,0)',
           itemUrls: ['https://test/items'],
         }
-        mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
+        mountFeatureComponent(i.projection, 'BRT', 'auto', JSON.stringify(CRS_TEST_DEFINITIONS), prop)
         cy.get('.innersvg').should('not.exist')
         screenshot(i.code + '-1-auto-before-move')
         moveMap(-100, -100)
@@ -75,7 +76,7 @@ projectenTests
             fillColor: 'rgba(0,0,255,0)',
             itemUrls: ['https://test/items'],
           }
-          mountFeatureComponent(i.projection, 'OSM', 'auto', prop)
+          mountFeatureComponent(i.projection, 'OSM', 'auto', JSON.stringify(CRS_TEST_DEFINITIONS), prop)
           cy.get('.innersvg').should('not.exist')
           screenshot(i.code + '-1-auto-before-move-OSM')
           moveMap(-100, -100)
@@ -105,7 +106,7 @@ projectenTests
           itemUrls: ['https://test/items'],
           maxFitScale: 3000,
         }
-        mountFeatureComponent(i.projection, 'BRT', 'auto', prop)
+        mountFeatureComponent(i.projection, 'BRT', 'auto', JSON.stringify(CRS_TEST_DEFINITIONS), prop)
         cy.get('.innersvg').should('not.exist')
         screenshot(i.code + '-3-BRT-bbox-auto-before-zoom')
         cy.get('.ol-zoom-out').click()

@@ -24,17 +24,17 @@ import { get as getProjection, getPointResolution, Projection, transform } from 
 import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
-import { mergeMap } from 'rxjs/operators'
 import { environment } from 'src/environments/environment'
 import { DataUrl, defaultMapping, FeatureService, ProjectionMapping } from '../shared/services/feature.service'
-import { getRijksdriehoek } from '../shared/model/map-projection'
+import { getRijksdriehoek, initProj4WithDynamicCrs } from '../shared/model/map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { BoxControl, emitBox } from './boxcontrol'
 import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { NGXLogger } from 'ngx-logger'
-import { from, Subject, takeUntil } from 'rxjs'
+import { from, Subject, switchMap, takeUntil } from 'rxjs'
+import { CrsMap } from '../shared/model/crs-map'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,8 +88,15 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   @Input() strokeColor: string = '#3399CC'
   @Input() mode: 'default' | 'auto' = 'default'
   @Input() initialView: InitialView = InitialView.HIDDEN
-
-  @Input() labelField = undefined
+  private _crsMap: CrsMap = {}
+  @Input() set crsMap(value: CrsMap | string) {
+    this._crsMap = typeof value === 'string' ? JSON.parse(value) : value
+  }
+  get crsMap(): CrsMap {
+    return this._crsMap
+  }
+  @Input()
+  labelField = undefined
   @Input() labelOptions: string | undefined = undefined
 
   @Input() set projection(value: string) {
@@ -125,6 +132,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   }
 
   private init() {
+    initProj4WithDynamicCrs(this._crsMap, this.logger)
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
     const mapElm: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
@@ -135,7 +143,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     const featuresUrls: DataUrl[] = this.itemUrls.map(itemUrl => ({ url: itemUrl, dataMapping }))
     from(featuresUrls)
       .pipe(
-        mergeMap(dataUrl => this.featureService.getFeatures(dataUrl)),
+        switchMap(dataUrl => this.featureService.getFeatures(dataUrl)),
         takeUntil(this._destroy$)
       )
       .subscribe(data => {
@@ -144,6 +152,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
         this._featureProjection = getProjection(dataMapping.visualProjection as string) ?? undefined
         this.changeView()
         this.loadFeatures(this.features)
+        this.addFeatureEmit()
         this.loadBackground()
         this.logger.log(this.map.getView().getProjection())
         this.logger.log('resolution' + this.map.getView().getResolution())
@@ -160,7 +169,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   changeMode() {
     this.features = []
     this.showButtons()
-    this.addFeatureEmit()
   }
 
   viewToCenter() {
@@ -205,10 +213,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
       }
     }
 
-    if (changes.mode?.previousValue && changes.mode?.previousValue != changes.mode?.currentValue) {
-      if (changes.mode?.currentValue) {
-        this.changeMode()
-      }
+    if (changes.mode?.previousValue !== changes.mode?.currentValue) {
+      this.changeMode()
     }
   }
 
@@ -271,7 +277,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
       width: 1.25,
     })
 
-    let text = undefined
+    let text: Text | undefined
     if (this.labelField) {
       if (this.labelOptions != undefined) {
         const opt = JSON.parse(this.labelOptions) as TextOptions
@@ -299,12 +305,12 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   changeView() {
     const currentProjection = this._view.getProjection()
     const newProjection = getProjection(this._projection.visualProjection)
-    if (this._featureProjection && this._featureProjection.getCode() !== newProjection?.getCode()) {
-      this.features.forEach(f => (f as Feature<Geometry>).getGeometry()?.transform(this._featureProjection!, newProjection!))
-      this._featureProjection = newProjection ?? undefined
-    }
-    if (!newProjection) {
+    if (!currentProjection || !newProjection) {
       throw new Error('New projection is not defined')
+    }
+    if (this._featureProjection && this._featureProjection.getCode() !== newProjection?.getCode()) {
+      this.features.forEach(f => (f as Feature<Geometry>).getGeometry()?.transform(this._featureProjection, newProjection))
+      this._featureProjection = newProjection ?? undefined
     }
     const throwUndefinedError = (msg: string) => {
       throw new Error(msg)
@@ -348,7 +354,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     return new Tile({
       source: new WMTSSource({
         attributions: 'Kaartgegevens: &copy; <a href="https://www.kadaster.nl">Kadaster</a>',
-        url: environment.bgtBackgroundUrl,
+        url: environment.bgt.backgroundUrl,
         layer: 'grijs',
         matrixSet: p.projection.getCode(),
         format: 'image/png',
@@ -387,11 +393,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
           if (feature) {
             const featureId = feature.getId()
             if (featureId) {
-              const items = 'items'
               tooltipContent.innerHTML = this.itemUrls
                 .map((itemsUrl, i) => {
-                  const currentUrl = new URL(itemsUrl.substring(0, itemsUrl.indexOf(items) + items.length))
-                  const link = currentUrl.protocol + '//' + currentUrl.host + currentUrl.pathname + '/' + featureId
+                  const baseUrl = new URL(itemsUrl)
+                  const link = new URL(`items/${featureId}`, baseUrl).href
                   const hasMany = this.itemUrls.length > 1
                   return `<a href="${link}">${featureId}  ${hasMany ? `[${i + 1}]` : ''}</a>${hasMany ? '<br />' : ''}`
                 })

@@ -480,7 +480,8 @@ func newEngine(t *testing.T) (*engine.Engine, map[features.DatasourceKey]ds.Data
 
 	datasources := features.CreateDatasources(
 		config.NewSearchConfig(theEngine.Config.OgcAPI.FeaturesSearch), theEngine.RegisterShutdownHook)
-	axisOrderBySRID := features.DetermineAxisOrder(datasources)
+	projInfoMap := features.GetProjJSONBySRID(datasources)
+	axisOrderBySRID := features.GetAxisOrderBySRID(projInfoMap)
 
 	return theEngine, datasources, axisOrderBySRID
 }
