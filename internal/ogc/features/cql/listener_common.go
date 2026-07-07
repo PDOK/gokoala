@@ -83,18 +83,26 @@ RETRY:
 	return
 }
 
-func (cl *CommonListener) allowAllQueryables() bool {
-	allowAll := len(cl.queryables) == 1 && cl.queryables[0].Name == "*"
-	if allowAll {
-		log.Println("WARNING: using '*' as queryable, this is not recommended")
+func (cl *CommonListener) isAllQueryablesAllowed() bool {
+	for _, q := range cl.queryables {
+		if q.Name == "*" {
+			log.Println("WARNING: using '*' as queryable, this is not recommended")
+			return true
+		}
 	}
-	return allowAll
+	return false
 }
 
 // isQueryable checks if a column name is allowed in the query.
 func (cl *CommonListener) isQueryable(name string) bool {
+	if cl.isAllQueryablesAllowed() {
+		return true
+	}
 	for _, q := range cl.queryables {
-		if q.Name == name || q.IsPrimaryGeometry {
+		if name == q.Name {
+			return true
+		}
+		if name == domain.GeomPropertyName && q.IsPrimaryGeometry {
 			return true
 		}
 	}
