@@ -107,13 +107,13 @@
                 background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
                 mode="auto"
                 fill-color="rgba(0,0,255,0)"
-                crs-map="{{.Params.ProjJSON}}"
                 {{ if and $webConfig $webConfig.FeatureViewer }}
                     min-fit-scale="{{ $webConfig.FeatureViewer.MinScale }}"
                     {{ if $webConfig.FeatureViewer.MaxScale }}
                         max-fit-scale="{{ $webConfig.FeatureViewer.MaxScale }}"
                     {{ end }}
                 {{ end }}
+                crs-map="{{.Params.ProjJSON}}"
                 >
         </app-feature-view>
         {{ else }}
@@ -122,13 +122,13 @@
                 background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
                 mode="default"
                 show-bounding-box-button="false"
-                crs-map="{{.Params.ProjJSON}}"
                 {{ if and $webConfig $webConfig.FeatureViewer }}
                     min-fit-scale="{{ $webConfig.FeatureViewer.MinScale }}"
                     {{ if $webConfig.FeatureViewer.MaxScale }}
                         max-fit-scale="{{ $webConfig.FeatureViewer.MaxScale }}"
                     {{ end }}
                 {{ end }}
+                crs-map="{{.Params.ProjJSON}}"
                 >
         </app-feature-view>
         {{ end }}

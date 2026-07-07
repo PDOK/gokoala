@@ -268,7 +268,6 @@
                 mode="auto"
                 fill-color="rgba(0,0,255,0)"
                 label-field="{{ $mapSheetProperties.MapSheetID }}"
-                crs-map="{{.Params.ProjJSON }}"
                 class="card"
                 {{ if and $webConfig $webConfig.FeaturesViewer }}
                     min-fit-scale="{{ $webConfig.FeaturesViewer.MinScale }}"
@@ -278,6 +277,7 @@
                 {{ else }}
                     max-fit-scale="500000"
                 {{ end }}
+                crs-map="{{.Params.ProjJSON }}"
                 >
         </app-feature-view>
         {{ else }}
@@ -286,13 +286,13 @@
                 background-map="{{ $cfg.OgcAPI.Features.Basemap }}"
                 mode="default"
                 class="card"
-                crs-map="{{.Params.ProjJSON}}"
                 {{ if and $webConfig $webConfig.FeaturesViewer }}
                     min-fit-scale="{{ $webConfig.FeaturesViewer.MinScale }}"
                     {{ if $webConfig.FeaturesViewer.MaxScale }}
                     max-fit-scale="{{ $webConfig.FeaturesViewer.MaxScale }}"
                     {{ end }}
                 {{ end }}
+                crs-map="{{.Params.ProjJSON}}"
                 >
         </app-feature-view>
         {{ end }}
