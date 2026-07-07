@@ -164,8 +164,8 @@ export class FeatureService {
     // If no value is passed to the component use CRS84 for data and EPSG:3857 (wgs 84) for rendering
     if (!value) return defaultMapping
     const projection = this.getProjectionCodeFromUrl(value)
-    // if bgt background supports the projection, return it. Else default to wgs 84
-    if (environment.bgt.projections.includes(projection)) return { dataProjection: projection, visualProjection: projection }
+    // if brt background supports the projection, return it. Else default to wgs 84
+    if (environment.brt.projections.includes(projection)) return { dataProjection: projection, visualProjection: projection }
     else return { dataProjection: projection, visualProjection: 'EPSG:3857' }
   }
 
