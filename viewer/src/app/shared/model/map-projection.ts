@@ -3,6 +3,7 @@ import proj4 from 'proj4'
 import { CrsMap } from './crs-map'
 import { register } from 'ol/proj/proj4'
 import { NGXLogger } from 'ngx-logger'
+import { get as getProj } from 'ol/proj'
 
 export const NetherlandsRDNewQuadDefault = 'NetherlandsRDNewQuad'
 export const EuropeanETRS89_LAEAQuad = 'EuropeanETRS89_LAEAQuad'
@@ -55,7 +56,8 @@ export function initProj4WithDynamicCrs(crsMap: CrsMap, logger: NGXLogger) {
     Object.keys(crsMap).forEach(key => {
       if (key === CRS_84_SRID) return // skip CRS84 as it ships with proj4js
       const proj4def = crsMap[key]
-      proj4.defs(EPSG_PREFIX + key, proj4def)
+      const code = EPSG_PREFIX + key
+      if (!getProj(code)) proj4.defs(code, proj4def)
     })
   } catch (error) {
     logger.error(`Error registering projections: ${error}`)

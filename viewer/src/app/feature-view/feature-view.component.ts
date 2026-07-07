@@ -354,7 +354,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     return new Tile({
       source: new WMTSSource({
         attributions: 'Kaartgegevens: &copy; <a href="https://www.kadaster.nl">Kadaster</a>',
-        url: environment.bgt.backgroundUrl,
+        url: environment.brt.backgroundUrl,
         layer: 'grijs',
         matrixSet: p.projection.getCode(),
         format: 'image/png',
