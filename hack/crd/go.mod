@@ -1,6 +1,6 @@
 module crd
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/PDOK/gokoala v0.0.0
