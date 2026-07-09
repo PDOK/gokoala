@@ -105,6 +105,8 @@ func (dc *DatasourceCommon) CollectionToTable(collection string) (*Table, error)
 type SelectGeom func(order domain.AxisOrder, table *Table) string
 
 // SelectColumns build select clause.
+//
+//nolint:cyclop
 func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrder,
 	selectGeom SelectGeom, selectRelation SelectRelation,
 	propConfig *config.FeatureProperties, relationsConfig []config.Relation,
@@ -133,7 +135,10 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 	case table.Schema != nil:
 		// select all columns according to the table schema
 		for _, field := range table.Schema.Fields {
-			if field.Name != table.GeometryColumnName && !field.ExcludeRelationFromSelect() {
+			if field.FeatureRelation != nil && field.FeatureRelation.IsDerivedFromConfig {
+				continue
+			}
+			if field.Name != table.GeometryColumnName {
 				columns.Set(field.Name, struct{}{})
 			}
 		}

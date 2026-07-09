@@ -164,10 +164,6 @@ type Field struct {
 	IsExternalFid          bool
 }
 
-func (f Field) ExcludeRelationFromSelect() bool {
-	return f.FeatureRelation != nil && f.FeatureRelation.IsDerivedFromConfig
-}
-
 // TypeFormat type and optional format according to JSON schema (https://json-schema.org/).
 type TypeFormat struct {
 	Type   string
