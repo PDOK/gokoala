@@ -154,6 +154,11 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 		columns.Set(domain.NextFid, struct{}{})
 	}
 
+	// remove columns that clash with relation names, since relations are handled by subqueries
+	for _, relation := range relationsConfig {
+		columns.Delete(relation.Name())
+	}
+
 	// turn columns and subqueries into SQL string
 	result := ColumnsToSQL(slices.Collect(columns.KeysFromOldest()), true)
 	if includePrevNext {
