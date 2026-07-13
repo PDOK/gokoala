@@ -1,7 +1,8 @@
 {{ define "head" }}
-    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+    <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
 {{ end }}
 {{ define "content" }}
+    {{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
     <hgroup>
         <h1 class="title" id="title">{{ .Config.Title }} - Features Search</h1>
     </hgroup>
@@ -141,6 +142,6 @@
             })
         }
     </script>
-    <script src="view-component/polyfills.js"></script>
-    <script type="module" src="view-component/main.js"></script>
+    <script src="{{ $viewerUrl }}/polyfills.js"></script>
+    <script type="module" src="{{ $viewerUrl }}/main.js"></script>
 {{ end }}

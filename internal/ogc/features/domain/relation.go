@@ -23,7 +23,7 @@ type FeatureRelation struct {
 	// The true relation can point to multiple features, false when it points to a single feature.
 	IsArray bool
 
-	// True when the relation is configured in based on this application's config file, false when configured in the datasource.
+	// True when the relation is configured based on this application's config file, false when configured in the datasource.
 	IsDerivedFromConfig bool
 }
 

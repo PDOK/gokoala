@@ -4,9 +4,9 @@ import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { get as getProj, ProjectionLike } from 'ol/proj'
 import { NGXLogger } from 'ngx-logger'
-import { initProj4 } from '../model/map-projection'
 import { FeatureLike } from 'ol/Feature'
 import { Link } from '../model/link'
+import { environment } from '../../../environments/environment'
 
 export type PointGeoJSON = {
   coordinates: Array<number>
@@ -64,7 +64,6 @@ export type FeatureCollectionGeoJSON = {
 export type ProjectionMapping = {
   dataProjection: ProjectionLike //Projection of the data we are reading
   visualProjection: ProjectionLike //Projection of the feature geometries created by this function
-  swapAllowed: boolean
 }
 
 export type DataUrl = {
@@ -72,7 +71,7 @@ export type DataUrl = {
   dataMapping: ProjectionMapping
 }
 
-export const defaultMapping: ProjectionMapping = { dataProjection: 'EPSG:4326', visualProjection: 'EPSG:3857', swapAllowed: false }
+export const defaultMapping: ProjectionMapping = { dataProjection: 'CRS:84', visualProjection: 'EPSG:3857' }
 
 @Injectable({
   providedIn: 'root',
@@ -81,9 +80,7 @@ export class FeatureService {
   constructor(
     private logger: NGXLogger,
     private http: HttpClient
-  ) {
-    initProj4()
-  }
+  ) {}
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string, bbox?: string): Observable<FeatureGeoJSON[]> {
     let params = new HttpParams().set('q', q)
@@ -102,10 +99,11 @@ export class FeatureService {
 
   getFeatures(url: DataUrl): Observable<FeatureLike[]> {
     this.logger.debug(JSON.stringify(url))
-    const dataproj = getProj(url.dataMapping.dataProjection)!
+    const dataproj = getProj(url.dataMapping.dataProjection)
+    if (!dataproj) throw new Error("Invalid data projection; Either it's not defined or not valid")
     this.logger.debug(dataproj.getAxisOrientation()) // Ensure the projection is initialized
-
     const visualproj = getProj(url.dataMapping.visualProjection)!
+    if (!visualproj) throw new Error("Invalid data projection; Either it's not defined or not valid")
     this.logger.debug(visualproj.getAxisOrientation()) // Ensure the visual projection is initialized
 
     // Helper to swap x/y in coordinates recursively
@@ -132,7 +130,8 @@ export class FeatureService {
     return this.http.get<FeatureCollectionGeoJSON | FeatureGeoJSON>(url.url).pipe(
       map(data => {
         let processedData = data
-        if (url.dataMapping.swapAllowed && dataproj.getAxisOrientation() !== visualproj.getAxisOrientation()) {
+        // make sure swapping works for ANY CRS
+        if (dataproj.getAxisOrientation().startsWith('n') || dataproj.getAxisOrientation().startsWith('s')) {
           if (data.type === 'FeatureCollection') {
             // Swap x/y in all features only if axis orientation differs
             const collection = data as FeatureCollectionGeoJSON
@@ -161,20 +160,23 @@ export class FeatureService {
     )
   }
 
-  getProjectionMapping(value: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'): ProjectionMapping {
-    if (value) {
-      if (value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase() === 'CRS84') {
-        //'EPSG:3857' Default the map is in Web Mercator(EPSG: 3857), the actual coordinates used are in lat-long (EPSG: 4326)
-        return defaultMapping
-      }
-      if (value.toLowerCase().startsWith('http://www.opengis.net/def/crs/epsg/')) {
-        const projection = 'EPSG:' + value.substring(value.lastIndexOf('/') + 1)
-        if (projection === 'EPSG:3035' || projection === 'EPSG:4258') {
-          return { dataProjection: projection, visualProjection: 'EPSG:3857', swapAllowed: true }
-        } else return { dataProjection: projection, visualProjection: projection, swapAllowed: true }
-      }
-      return { dataProjection: value, visualProjection: value, swapAllowed: true }
-    }
-    return { dataProjection: value, visualProjection: value, swapAllowed: true }
+  getProjectionMapping(value: string): ProjectionMapping {
+    // If no value is passed to the component use CRS84 for data and EPSG:3857 (wgs 84) for rendering
+    if (!value) return defaultMapping
+    const projection = this.getProjectionCodeFromUrl(value)
+    // if brt background supports the projection, return it. Else default to wgs 84
+    if (environment.brt.projections.includes(projection)) return { dataProjection: projection, visualProjection: projection }
+    else return { dataProjection: projection, visualProjection: 'EPSG:3857' }
+  }
+
+  private getProjectionCodeFromUrl(value: string): string {
+    const EPSG_PREFIX = 'EPSG'
+    // get the code from the url
+    const code = value.substring(value.lastIndexOf('/') + 1).toLocaleUpperCase()
+    // check if the url contains epsg. If so, prefix, otherwise it's CRS or some other XXX00 code. Split letters from numbers and insert ":".
+    const captureAlphaNumericGroups = /^([A-Z]+)(\d+)$/
+    return value.toLowerCase().includes(EPSG_PREFIX.toLowerCase())
+      ? `${EPSG_PREFIX}:${code}`
+      : code.replace(captureAlphaNumericGroups, '$1:$2')
   }
 }

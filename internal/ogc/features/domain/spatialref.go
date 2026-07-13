@@ -15,6 +15,7 @@ const (
 	WGS84CodeOGC = "CRS84"
 	WGS84CrsURI  = CrsURIPrefix + "OGC/1.3/" + WGS84CodeOGC
 	EPSGPrefix   = "EPSG:"
+	OGCPrefix    = "OGC:"
 )
 
 // AxisOrder the order of axis for a certain CRS.

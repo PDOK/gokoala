@@ -231,7 +231,7 @@ export class VectortileViewComponent implements OnChanges {
       },
       error: (error: unknown) => {
         this.logger.log(this.id + 'tilematrixset not found: ' + matrixUrl, error)
-        this.projection = new MapProjection(this.tileUrl).Projection
+        this.projection = new MapProjection(this.tileUrl, this.logger).Projection
         this.tileGrid = new TileGrid({
           extent: this.projection.getExtent(),
           resolutions: this.calcResolutions(this.projection),
@@ -329,7 +329,7 @@ export class VectortileViewComponent implements OnChanges {
   }
 
   private generateLayers() {
-    this.projection = new MapProjection(this.tileUrl).Projection
+    this.projection = new MapProjection(this.tileUrl, this.logger).Projection
     const vectorTileLayer = this.getVectorTileLayer(this.projection)
     this.setStyle(vectorTileLayer)
     let layers = [vectorTileLayer] as BaseLayer[] | Collection<BaseLayer> | LayerGroup | undefined

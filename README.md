@@ -371,7 +371,18 @@ Install [golangci-lint](https://golangci-lint.run/usage/install/) and run `golan
 GoKoala includes a [viewer](viewer) which is available
 as a set of [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) for embedding in HTML pages. 
 To use the viewer locally when running GoKoala outside Docker execute: `hack/build-local-viewer.sh`. This will 
-build the viewer and add it to the GoKoala assets.
+build the viewer and add it to the GoKoala assets. 
+Alternatively, you can pass the `VIEWER_URL`-env to gokoala to use Angular's dev server (or any other). 
+e.g.:
+```bash
+npm run start
+```
+and
+```bash
+go generate ./...
+go build -tags "sqlite_icu sqlite_math_functions" -o gokoala-server cmd/gokoala-server/main.go
+VIEWER_URL=http://localhost:4200 ./gokoala-server
+```
 
 Note this is only required for local development. When running GoKoala in a container this is
 already being taken care of when building the Docker container image.

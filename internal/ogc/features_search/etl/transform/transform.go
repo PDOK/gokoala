@@ -161,7 +161,7 @@ func generateExternalFid(collectionID string, externalFid *config.ExternalFid, e
 		}
 		var stringBuilder strings.Builder
 		for _, value := range externalFidValues {
-			stringBuilder.WriteString(fmt.Sprint(value))
+			fmt.Fprint(&stringBuilder, value)
 		}
 		uuidInput += stringBuilder.String()
 		result := uuid.NewSHA1(externalFid.UUIDNamespace, []byte(uuidInput)).String()

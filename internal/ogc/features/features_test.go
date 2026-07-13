@@ -968,6 +968,23 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request features with CQL filter for non-queryable properties",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_INTERSECTS(geometry, POINT(5.0403692 52.1017868)) AND fid > 2 AND prop2 = 6",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_non_queryable.json",
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
 			name: "Request features with comparison CQL filter",
 			fields: fields{
 				configFiles: []string{

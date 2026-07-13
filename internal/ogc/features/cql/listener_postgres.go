@@ -147,7 +147,7 @@ func (l *PostgresListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCont
 
 	geomLiteral := l.stack.Pop()
 	geomProperty := l.stack.Pop()
-	if geomProperty != fmt.Sprintf("\"%s\"", d.GeomPropertyName) && !l.allowAllQueryables() {
+	if geomProperty != fmt.Sprintf("\"%s\"", d.GeomPropertyName) {
 		l.errorListener.Errorf("spatial filtering is only supported on property '%s'", d.GeomPropertyName)
 		return
 	}
@@ -159,7 +159,7 @@ func (l *PostgresListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateCont
 			break
 		}
 	}
-	if geomColumn == "" && !l.allowAllQueryables() {
+	if geomColumn == "" && !l.isAllQueryablesAllowed() {
 		l.errorListener.Error("spatial filtering is not supported for this " +
 			"collection since there is no geometry field defined")
 		return
@@ -285,7 +285,7 @@ func (l *PostgresListener) ExitInstantInstance(ctx *parser.InstantInstanceContex
 // ExitPropertyName Handle column names
 func (l *PostgresListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	name := ctx.GetText()
-	if !l.allowAllQueryables() && !l.isQueryable(name) {
+	if !l.isQueryable(name) {
 		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
 		l.errorListener.Error(err)
 		return

@@ -1,6 +1,7 @@
 package features
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/PDOK/gokoala/config"
@@ -24,16 +25,33 @@ var (
 )
 
 type htmlFeatures struct {
-	engine *engine.Engine
+	engine         *engine.Engine
+	projJSONBySRID string
 }
 
-func newHTMLFeatures(e *engine.Engine) *htmlFeatures {
+func newHTMLFeatures(e *engine.Engine, projJSONBySRID map[int]string) *htmlFeatures {
 	e.ParseTemplate(featuresKey)
 	e.ParseTemplate(featureKey)
 
 	return &htmlFeatures{
-		engine: e,
+		engine:         e,
+		projJSONBySRID: convertProjJSONBySRIDtoString(projJSONBySRID),
 	}
+}
+
+func convertProjJSONBySRIDtoString(projJSONBySRID map[int]string) string {
+	projJSONRaw := make(map[int]json.RawMessage)
+	for key, projJSON := range projJSONBySRID {
+		projJSONRaw[key] = json.RawMessage(projJSON)
+	}
+
+	projJSON, err := json.Marshal(projJSONRaw)
+	if err != nil {
+		return ""
+	}
+
+	return string(projJSON)
+
 }
 
 // featureCollectionPage enriched FeatureCollection for HTML representation.
@@ -55,6 +73,9 @@ type featureCollectionPage struct {
 	PropertyFilters map[string]string
 	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
 	ConfiguredPropertyFilters map[string]domain.QueryableWithAllowedValues
+
+	// ProjJSON is used by the viewer to have dynamic CRS options
+	ProjJSON string
 }
 
 // featurePage enriched Feature for HTML representation.
@@ -67,6 +88,9 @@ type featurePage struct {
 	MapSheetProperties *config.MapSheetDownloadProperties
 	WebConfig          *config.WebConfig
 	ShowViewer         bool
+
+	// ProjJSON is used by the viewer to have dynamic CRS options
+	ProjJSON string
 }
 
 func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
@@ -128,7 +152,6 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTi
 		}
 		configuredPropertyFilters[name] = queryable
 	}
-
 	pageContent := &featureCollectionPage{
 		FeatureCollection:         *fc,
 		CollectionID:              collection.GetID(),
@@ -143,6 +166,7 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTi
 		ShowViewer:                true,
 		PropertyFilters:           propertyFilters,
 		ConfiguredPropertyFilters: configuredPropertyFilters,
+		ProjJSON:                  hf.projJSONBySRID,
 	}
 
 	return breadcrumbs, pageContent
@@ -195,13 +219,14 @@ func (hf *htmlFeatures) toItemPage(collection config.FeaturesCollection, feat *d
 	wc = collection.Web
 
 	pageContent := &featurePage{
-		*feat,
-		collection.GetID(),
-		feat.ID,
-		collection.GetMetadata(),
-		mapSheetProps,
-		wc,
-		true,
+		Feature:            *feat,
+		CollectionID:       collection.GetID(),
+		FeatureID:          feat.ID,
+		Metadata:           collection.GetMetadata(),
+		MapSheetProperties: mapSheetProps,
+		WebConfig:          wc,
+		ShowViewer:         true,
+		ProjJSON:           hf.projJSONBySRID,
 	}
 
 	return breadcrumbs, pageContent

@@ -1,13 +1,13 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {{ define "head" }}
-    <link rel="stylesheet" type="text/css" href="view-component/styles.css">
+    <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
 {{ end }}
 {{define "content"}}
 {{ $cfg := .Config }}
 {{ $baseUrl := $cfg.BaseURL }}
 {{ $mapSheetProperties := .Params.MapSheetProperties }}
 {{ $webConfig := .Params.WebConfig }}
-
+{{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
 <script>
     {{- /* generic function to update query string parameters */ -}}
     function updateQueryString(name, value, existingUrl) {
@@ -258,8 +258,8 @@
     <!-- map viewer -->
     {{ if .Params.ShowViewer }}
     <div class="col-md-6 col-sm-12">
-        <script type="module" src="view-component/main.js"></script>
-        <script src="view-component/polyfills.js"></script>
+        <script type="module" src="{{ $viewerUrl }}/main.js"></script>
+        <script src="{{ $viewerUrl }}/polyfills.js"></script>
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
         <app-feature-view
@@ -277,6 +277,7 @@
                 {{ else }}
                     max-fit-scale="500000"
                 {{ end }}
+                crs-map="{{.Params.ProjJSON }}"
                 >
         </app-feature-view>
         {{ else }}
@@ -291,6 +292,7 @@
                     max-fit-scale="{{ $webConfig.FeaturesViewer.MaxScale }}"
                     {{ end }}
                 {{ end }}
+                crs-map="{{.Params.ProjJSON}}"
                 >
         </app-feature-view>
         {{ end }}
