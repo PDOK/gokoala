@@ -113,7 +113,7 @@ func (g *GeoPackage) GetFeatureIDs(ctx context.Context, collection string, crite
 
 	propConfig := g.PropertiesByCollectionID[collection]
 	relationsConfig := g.RelationsByCollectionID[collection]
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, relationsConfig, table, true, -1, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, relationsConfig, table, true, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -182,8 +182,7 @@ func (g *GeoPackage) GetFeaturesByID(ctx context.Context, collection string, fea
 }
 
 func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteria ds.FeaturesCriteria,
-	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
-
+	profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
 	table, err := g.CollectionToTable(collection)
 	if err != nil {
 		return nil, d.Cursors{}, err
@@ -194,7 +193,7 @@ func (g *GeoPackage) GetFeatures(ctx context.Context, collection string, criteri
 
 	propConfig := g.PropertiesByCollectionID[collection]
 	relationsConfig := g.RelationsByCollectionID[collection]
-	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, relationsConfig, table, false, axisOrder, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
+	stmt, query, queryArgs, err := g.makeFeaturesQuery(queryCtx, propConfig, relationsConfig, table, false, criteria) //nolint:sqlclosecheck // prepared statement is cached, will be closed when evicted from cache
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -286,14 +285,14 @@ func (g *GeoPackage) SearchFeaturesAcrossCollections(_ context.Context, _ ds.Fea
 // Build specific features queries based on the given options.
 // Make sure to use SQL bind variables and return named params: https://jmoiron.github.io/sqlx/#namedParams
 func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.FeatureProperties,
-	relationsConfig []config.Relation, table *common.Table, onlyFIDs bool, axisOrder d.AxisOrder,
+	relationsConfig []config.Relation, table *common.Table, onlyFIDs bool,
 	criteria ds.FeaturesCriteria) (stmt *sqlx.NamedStmt, query string, queryArgs map[string]any, err error) {
 
 	var selectClause string
 	if onlyFIDs {
 		selectClause = common.ColumnsToSQL([]string{g.FidColumn, d.PrevFid, d.NextFid}, true)
 	} else {
-		selectClause = g.SelectColumns(table, axisOrder, selectGpkgGeometry, selectGpkgRelation,
+		selectClause = g.SelectColumns(table, criteria.OutputAxisOrder, selectGpkgGeometry, selectGpkgRelation,
 			propConfig, relationsConfig, true)
 	}
 
@@ -355,7 +354,14 @@ func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, cri
 
 	bboxQuery := fmt.Sprintf(`
 with
-     given_bbox as (select st_geomfromtext(:bboxWkt, :bboxSrid)),
+     given_bbox as (
+	     select
+             iif(
+                 :swapCoords = 1,
+                 swapcoords(st_geomfromtext(:bboxWkt, :bboxSrid)),
+                 st_geomfromtext(:bboxWkt, :bboxSrid)
+			 )
+	 ),
      bbox_size as (select iif(count(id) < %[3]d, 'small', 'big') as bbox_size
                      from (select id from rtree_%[1]s_%[4]s
                            where minx <= :maxx and maxx >= :minx and miny <= :maxy and maxy >= :miny
@@ -402,15 +408,26 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[6]s %[7]s %[11]s limit :l
 		return "", nil, err
 	}
 
+	xDim := 0
+	yDim := 1
+
+	// Swap coords when input CRS is in YX for correct handling of spatial filter
+	swapCoords := criteria.InputAxisOrder == d.AxisOrderYX
+
+	if swapCoords {
+		xDim, yDim = yDim, xDim
+	}
+
 	namedParams := map[string]any{
-		"fid":       criteria.Cursor.FID,
-		"limit":     criteria.Limit,
-		"bboxWkt":   bboxAsWKT,
-		d.MaxxField: criteria.Bbox.Max(0),
-		d.MinxField: criteria.Bbox.Min(0),
-		d.MaxyField: criteria.Bbox.Max(1),
-		d.MinyField: criteria.Bbox.Min(1),
-		"bboxSrid":  criteria.InputSRID.GetOrDefault()}
+		"fid":        criteria.Cursor.FID,
+		"limit":      criteria.Limit,
+		"bboxWkt":    bboxAsWKT,
+		"swapCoords": swapCoords,
+		d.MaxxField:  criteria.Bbox.Max(xDim),
+		d.MinxField:  criteria.Bbox.Min(xDim),
+		d.MaxyField:  criteria.Bbox.Max(yDim),
+		d.MinyField:  criteria.Bbox.Min(yDim),
+		"bboxSrid":   criteria.InputSRID.GetOrDefault()}
 	maps.Copy(namedParams, pfNamedParams)
 	maps.Copy(namedParams, temporalNamedParams)
 	maps.Copy(namedParams, criteria.Filter.Params)

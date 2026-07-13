@@ -15,7 +15,7 @@ import (
 // Run with: go test -fuzz=Fuzz -fuzztime=10s -run=^$
 func FuzzParseToSQL(f *testing.F) {
 	parseToSQL := func(input string, queryables []domain.Field) (*SQLResult, error) {
-		listener := NewGeoPackageListener(&util.DefaultRandomizer, queryables, 0, geospatial.Features, cqlConfigAllEnabled)
+		listener := NewGeoPackageListener(&util.DefaultRandomizer, queryables, 0, 0, geospatial.Features, cqlConfigAllEnabled)
 		return ParseToSQL(input, listener)
 	}
 

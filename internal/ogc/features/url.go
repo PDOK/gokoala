@@ -244,16 +244,22 @@ func clone(params url.Values) url.Values {
 	return copyParams
 }
 
-func consolidateSRIDs(bboxSRID d.SRID, filterSRID d.SRID) (inputSRID d.SRID, err error) {
+func consolidateSRIDs(bboxSRID d.SRID, filterSRID d.SRID) (d.SRID, error) {
+
 	if bboxSRID != d.UndefinedSRID && filterSRID != d.UndefinedSRID && bboxSRID != filterSRID {
-		return 0, errors.New("bbox-crs and filter-crs need to be equal. " +
+		return d.UndefinedSRID, errors.New("bbox-crs and filter-crs need to be equal. " +
 			"Can't use more than one CRS as input, but input and output CRS may differ")
 	}
-	if bboxSRID != d.UndefinedSRID || filterSRID != d.UndefinedSRID {
-		inputSRID = bboxSRID // or filterCrs, both the same
+
+	if bboxSRID != d.UndefinedSRID {
+		return bboxSRID, nil
 	}
 
-	return inputSRID, err
+	if filterSRID != d.UndefinedSRID {
+		return filterSRID, nil
+	}
+
+	return d.UndefinedSRID, nil
 }
 
 func ParseLimit(params url.Values, limitCfg config.Limit) (int, error) {

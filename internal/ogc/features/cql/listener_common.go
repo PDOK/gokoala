@@ -46,6 +46,9 @@ type CommonListener struct {
 	// srid the filter spatial reference identifier (SRID).
 	srid domain.SRID
 
+	// axisOrder the order of axis of the filter spatial reference identifier
+	axisOrder domain.AxisOrder
+
 	// randomizer is used to generate unique named parameters.
 	randomizer util.Randomizer
 

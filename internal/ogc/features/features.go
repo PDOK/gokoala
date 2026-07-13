@@ -71,7 +71,7 @@ func (f *Features) Features() http.HandlerFunc {
 
 		// parse CQL filter
 		filter, err := parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.queryables[collection.GetID()],
-			inputSRID, collectionType)
+			inputSRID, f.axisOrderBySRID[inputSRID.GetOrDefault()], collectionType)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -130,12 +130,14 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			Cursor:           currentCursor,
 			Limit:            limit,
 			InputSRID:        inputSRID,
+			InputAxisOrder:   f.axisOrderBySRID[inputSRID.GetOrDefault()],
+			OutputAxisOrder:  f.axisOrderBySRID[outputSRID.GetOrDefault()],
 			OutputSRID:       outputSRID,
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,
 			Filter:           filter,
-		}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
+		}, profile)
 	} else {
 		// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
 		var fids []int64
@@ -145,6 +147,8 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			Limit:            limit,
 			InputSRID:        inputSRID,
 			OutputSRID:       outputSRID,
+			InputAxisOrder:   f.axisOrderBySRID[inputSRID.GetOrDefault()],
+			OutputAxisOrder:  f.axisOrderBySRID[outputSRID.GetOrDefault()],
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,
@@ -202,7 +206,7 @@ func hasDateTime(collection config.FeaturesCollection) bool {
 }
 
 func parseCQL(cqlFilter string, cqlConfig config.CQL, datasource ds.Datasource, queryables domain.Queryables,
-	srid domain.SRID, collectionType geospatial.CollectionType) (ds.Part3Filter, error) {
+	srid domain.SRID, axisOrder domain.AxisOrder, collectionType geospatial.CollectionType) (ds.Part3Filter, error) {
 
 	if cqlFilter == "" {
 		return ds.Part3Filter{}, nil
@@ -216,9 +220,9 @@ func parseCQL(cqlFilter string, cqlConfig config.CQL, datasource ds.Datasource, 
 	var listener cql.Listener
 	switch datasource.(type) {
 	case *geopackage.GeoPackage:
-		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryableFields, srid, collectionType, cqlConfig)
+		listener = cql.NewGeoPackageListener(util.DefaultRandomizer, queryableFields, srid, axisOrder, collectionType, cqlConfig)
 	case *postgres.Postgres:
-		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryableFields, srid, collectionType, cqlConfig)
+		listener = cql.NewPostgresListener(util.DefaultRandomizer, queryableFields, srid, axisOrder, collectionType, cqlConfig)
 	default:
 		return ds.Part3Filter{}, errors.New("unsupported datasource for CQL parsing")
 	}

@@ -1,0 +1,57 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Test to verify CQL filters.
+baseUrl: http://localhost:8080
+serviceIdentifier: cql
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./internal/ogc/features/cql/testdata/cql.gpkg
+            queryTimeout: 10m
+      additional:
+        - srs: EPSG:4326
+          geopackage:
+            local:
+              file: ./internal/ogc/features/cql/testdata/cql-epsg4326.gpkg
+              externalFid: fid
+        - srs: EPSG:4258
+          geopackage:
+            local:
+              file: ./internal/ogc/features/cql/testdata/cql-epsg4258.gpkg
+              externalFid: fid
+    collections:
+      - id: cql
+        metadata:
+          title: CQL
+          description: Testdata specifically aimed at testing CQL filters.
+        filters:
+          cql:
+            enable: true
+          properties:
+            - name: prop1
+              indexRequired: false
+            - name: prop2
+              indexRequired: false
+            - name: prop3
+              indexRequired: false
+            - name: prop4
+              indexRequired: false
+            - name: prop5
+              indexRequired: false
+            - name: prop6
+              indexRequired: false
+            - name: prop7
+              indexRequired: false
+            - name: prop8
+              indexRequired: false
+            - name: prop9
+              indexRequired: false
+            - name: prop10
+              indexRequired: false
