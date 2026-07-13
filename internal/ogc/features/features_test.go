@@ -514,6 +514,23 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request output in default (WGS84) and bbox explicitly in EPSG 4258",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_multiple_gpkgs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_multiple_projections.yaml",
+				},
+				url:          "http://localhost:8080/collections/dutch-addresses/items?bbox=53.07%2C4.86%2C53.09%2C4.88&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/4258&f=json&limit=10",
+				collectionID: "dutch-addresses",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_multiple_gpkgs_bbox_explicit_epsg4258.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request temporal collection",
 			fields: fields{
 				configFiles: []string{
@@ -1002,6 +1019,23 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request features with spatial CQL filter: intersects on point with filter crs in EPSG 4258",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql_multiple_srs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_INTERSECTS(geometry, POINT(52.1017868 5.0403692))&filter-crs=http://www.opengis.net/def/crs/EPSG/0/4258",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_spatial_intersects_with_filter_crs.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request features with spatial CQL filter: overlaps with polygon",
 			fields: fields{
 				configFiles: []string{
@@ -1015,6 +1049,23 @@ func TestFeatures(t *testing.T) {
 			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_features_cql_spatial_overlaps.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features with spatial CQL filter: overlaps with polygon with filter crs in EPSG 4258",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql_multiple_srs.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=S_OVERLAPS(geometry, POLYGON ((52.10166749777908279 5.04159320426761948, 52.1017530555056041 5.04167924265552791, 52.10174392293929202 5.04168789456045729, 52.10166749777908279  5.04159320426761948)))&filter-crs=http://www.opengis.net/def/crs/EPSG/0/4258",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_spatial_overlaps_with_filter_crs.json",
 				statusCode: http.StatusOK,
 			},
 		},

@@ -130,12 +130,14 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			Cursor:           currentCursor,
 			Limit:            limit,
 			InputSRID:        inputSRID,
+			InputAxisOrder:   f.axisOrderBySRID[inputSRID.GetOrDefault()],
+			OutputAxisOrder:  f.axisOrderBySRID[outputSRID.GetOrDefault()],
 			OutputSRID:       outputSRID,
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,
 			Filter:           filter,
-		}, f.axisOrderBySRID[outputSRID.GetOrDefault()], profile)
+		}, profile)
 	} else {
 		// slower path: get feature ids by input CRS (step 1), then the actual features in output CRS (step 2)
 		var fids []int64
@@ -145,6 +147,8 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			Limit:            limit,
 			InputSRID:        inputSRID,
 			OutputSRID:       outputSRID,
+			InputAxisOrder:   f.axisOrderBySRID[inputSRID.GetOrDefault()],
+			OutputAxisOrder:  f.axisOrderBySRID[outputSRID.GetOrDefault()],
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,

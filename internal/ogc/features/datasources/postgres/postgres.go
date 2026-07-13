@@ -94,7 +94,7 @@ func (pg *Postgres) GetFeaturesByID(_ context.Context, _ string, _ []int64, _ d.
 }
 
 func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria ds.FeaturesCriteria,
-	axisOrder d.AxisOrder, profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
+	profile d.Profile) (*d.FeatureCollection, d.Cursors, error) {
 
 	table, err := pg.CollectionToTable(collection)
 	if err != nil {
@@ -106,7 +106,7 @@ func (pg *Postgres) GetFeatures(ctx context.Context, collection string, criteria
 
 	propConfig := pg.PropertiesByCollectionID[collection]
 	relationsConfig := pg.RelationsByCollectionID[collection]
-	query, queryArgs, err := pg.makeFeaturesQuery(propConfig, relationsConfig, table, false, axisOrder, criteria)
+	query, queryArgs, err := pg.makeFeaturesQuery(propConfig, relationsConfig, table, false, criteria)
 	if err != nil {
 		return nil, d.Cursors{}, fmt.Errorf("failed to create query '%s' error: %w", query, err)
 	}
@@ -275,13 +275,13 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 
 // Build specific features queries based on the given options.
 func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, relationsConfig []config.Relation, table *common.Table,
-	onlyFIDs bool, axisOrder d.AxisOrder, criteria ds.FeaturesCriteria) (string, pgx.NamedArgs, error) {
+	onlyFIDs bool, criteria ds.FeaturesCriteria) (string, pgx.NamedArgs, error) {
 
 	var selectClause string
 	if onlyFIDs {
 		selectClause = common.ColumnsToSQL([]string{pg.FidColumn, d.PrevFid, d.NextFid}, true)
 	} else {
-		selectClause = pg.SelectColumns(table, axisOrder, selectPostGISGeometry, selectPostgresRelation,
+		selectClause = pg.SelectColumns(table, criteria.OutputAxisOrder, selectPostGISGeometry, selectPostgresRelation,
 			propConfig, relationsConfig, true)
 	}
 
@@ -300,7 +300,7 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 	var bboxNamedParams map[string]any
 	if criteria.Bbox != nil {
 		var err error
-		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, axisOrder)
+		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, criteria.InputAxisOrder)
 		if err != nil {
 			return "", nil, err
 		}

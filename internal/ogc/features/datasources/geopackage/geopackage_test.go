@@ -343,7 +343,7 @@ func TestGeoPackage_GetFeatures(t *testing.T) {
 			s, err := domain.NewSchema([]domain.Field{}, tt.fields.fidColumn, "")
 			require.NoError(t, err)
 			p := domain.NewProfile(domain.RelAsLink, *url, *s)
-			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, domain.AxisOrderXY, p)
+			fc, cursor, err := g.GetFeatures(tt.args.ctx, tt.args.collection, tt.args.queryParams, p)
 			if err != nil {
 				if !tt.wantErr {
 					t.Errorf("GetFeatures, error %v, wantErr %v", err, tt.wantErr)

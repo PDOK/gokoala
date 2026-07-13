@@ -26,6 +26,16 @@ ogcApi:
             local:
               file: ./examples/resources/addresses-etrs89.gpkg
               externalFid: external_fid
+        - srs: EPSG:4326
+          geopackage:
+            local:
+              file: ./examples/resources/addresses-epsg4326.gpkg
+              externalFid: external_fid
+        - srs: EPSG:4258
+          geopackage:
+            local:
+              file: ./examples/resources/addresses-epsg4258.gpkg
+              externalFid: external_fid
     collections:
       - id: dutch-addresses
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.

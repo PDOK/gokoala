@@ -164,7 +164,7 @@ func TestParseFeatures(t *testing.T) {
 			wantErr:           success(),
 		},
 		{
-			name: "Parse multiple input crs specified, output crs specified",
+			name: "Parse multiple input crs specified, no output crs specified",
 			fields: fields{
 				baseURL: *host,
 				params: url.Values{
@@ -183,6 +183,28 @@ func TestParseFeatures(t *testing.T) {
 			wantLimit:         20, // use max instead of supplied limit
 			wantOutputCrs:     100000,
 			wantBbox:          geom.NewBounds(geom.XY).Set(1, 2, 3, 4),
+			wantDateTime:      nil,
+			wantInputCrs:      28992,
+			wantProfile:       defaultProfile,
+			wantErr:           success(),
+		},
+		{
+			name: "Parse filter crs specified, no bbox nor output crs specified",
+			fields: fields{
+				baseURL: *host,
+				params: url.Values{
+					"cursor":     []string{"H3w"},
+					"filter-crs": []string{"http://www.opengis.net/def/crs/EPSG/0/28992"},
+					"limit":      []string{"10000"},
+				},
+				limit: config.Limit{
+					Default: 10,
+					Max:     20,
+				},
+			},
+			wantEncodedCursor: "H3w",
+			wantLimit:         20, // use max instead of supplied limit
+			wantOutputCrs:     100000,
 			wantDateTime:      nil,
 			wantInputCrs:      28992,
 			wantProfile:       defaultProfile,
