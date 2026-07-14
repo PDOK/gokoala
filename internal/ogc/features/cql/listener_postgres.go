@@ -57,7 +57,7 @@ func (l *PostgresListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryCompa
 
 // ExitIsLikePredicate Comparison expressions (LIKE, NOT LIKE)
 func (l *PostgresListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateContext) {
-	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+	if !l.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 		l.errorListener.Error(errAdvancedComparisonNotEnabled)
 		return
 	}
@@ -102,7 +102,7 @@ func (l *PostgresListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateContex
 
 // ExitIsInListPredicate Comparison expressions (IN, NOT IN)
 func (l *PostgresListener) ExitIsInListPredicate(ctx *parser.IsInListPredicateContext) {
-	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+	if !l.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 		l.errorListener.Error(errAdvancedComparisonNotEnabled)
 		return
 	}

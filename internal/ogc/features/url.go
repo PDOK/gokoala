@@ -369,7 +369,7 @@ func parsePropertyFilters(configuredPropertyFilters map[string]d.QueryableWithAl
 			if strings.Contains(pf, propertyFilterWildcard) {
 				// In case CQL advanced comparison operators (LIKE operator) are enabled, wildcard filtering is allowed.
 				// Otherwise, it's not.
-				if !cqlConfig.IsEnabled() || !cqlConfig.EnableAdvancedComparisonOperators {
+				if !cqlConfig.IsEnabled() || !cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 					return nil, fmt.Errorf("property filter %s contains a wildcard (%s), "+
 						"wildcard filtering is not allowed", name, propertyFilterWildcard)
 				}

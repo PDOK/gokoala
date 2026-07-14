@@ -235,9 +235,9 @@ type CQL struct {
 	//
 	// This setting enables conformance class: http://www.opengis.net/spec/cql2/1.0/req/basic-cql2
 	//
-	// +kubebuilder:default=false
+	// +kubebuilder:default=true
 	// +optional
-	Enable *bool `yaml:"enable,omitempty" json:"enable,omitempty" default:"false"` // TODO: make true in future, currently serves as feature flag.
+	Enable *bool `yaml:"enable,omitempty" json:"enable,omitempty" default:"true"`
 
 	// Allow filtering using advanced operators (LIKE, BETWEEN, IN, IS NULL).
 	//
@@ -245,7 +245,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableAdvancedComparisonOperators bool `yaml:"enableAdvancedComparisonOperators,omitempty" json:"enableAdvancedComparisonOperators,omitempty" default:"true"`
+	EnableAdvancedComparisonOperators *bool `yaml:"enableAdvancedComparisonOperators,omitempty" json:"enableAdvancedComparisonOperators,omitempty" default:"true"`
 
 	// Allow upper/lowercase insensitive filtering (CASEI).
 	//
@@ -253,7 +253,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableCaseInsensitiveComparison bool `yaml:"enableCaseInsensitiveComparison,omitempty" json:"enableCaseInsensitiveComparison,omitempty" default:"true"`
+	EnableCaseInsensitiveComparison *bool `yaml:"enableCaseInsensitiveComparison,omitempty" json:"enableCaseInsensitiveComparison,omitempty" default:"true"`
 
 	// Allow accent- / diacritics-insensitive filtering (ACCENTI).
 	//
@@ -261,7 +261,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableAccentInsensitiveComparison bool `yaml:"enableAccentInsensitiveComparison,omitempty" json:"enableAccentInsensitiveComparison,omitempty" default:"true"`
+	EnableAccentInsensitiveComparison *bool `yaml:"enableAccentInsensitiveComparison,omitempty" json:"enableAccentInsensitiveComparison,omitempty" default:"true"`
 
 	// Allow filtering using spatial intersection (S_INTERSECTS) on two types of geometries: POINT and BBOX.
 	//
@@ -269,7 +269,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableBasicSpatialFunctions bool `yaml:"enableBasicSpatialFunctions,omitempty" json:"enableBasicSpatialFunctions,omitempty" default:"true"`
+	EnableBasicSpatialFunctions *bool `yaml:"enableBasicSpatialFunctions,omitempty" json:"enableBasicSpatialFunctions,omitempty" default:"true"`
 
 	// Allow filtering using spatial intersection (S_INTERSECTS) on all types of geometries: POINT, BBOX, POLYGON,
 	// LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
@@ -278,7 +278,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableBasicSpatialFunctionsPlus bool `yaml:"enableBasicSpatialFunctionsPlus,omitempty" json:"enableBasicSpatialFunctionsPlus,omitempty" default:"true"`
+	EnableBasicSpatialFunctionsPlus *bool `yaml:"enableBasicSpatialFunctionsPlus,omitempty" json:"enableBasicSpatialFunctionsPlus,omitempty" default:"true"`
 
 	// Allow filtering using all spatial operators (S_INTERSECTS, S_CONTAINS, S_WITHIN, S_OVERLAPS, S_EQUALS, S_DISJOINT) on all
 	// types of geometries: POINT, BBOX, POLYGON, LINESTRING, MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION.
@@ -287,7 +287,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableSpatialFunctions bool `yaml:"enableSpatialFunctions,omitempty" json:"enableSpatialFunctions,omitempty" default:"true"`
+	EnableSpatialFunctions *bool `yaml:"enableSpatialFunctions,omitempty" json:"enableSpatialFunctions,omitempty" default:"true"`
 
 	// Allow filtering using temporal operators (T_AFTER, T_BEFORE, T_DISJOINT, T_EQUALS, T_INTERSECTS, T_CONTAINS,
 	// T_DURING, T_FINISHEDBY, T_FINISHES, T_MEETS, T_METBY, T_OVERLAPPEDBY, T_OVERLAPS, T_STARTEDBY, T_STARTS) on
@@ -297,7 +297,7 @@ type CQL struct {
 	//
 	// +kubebuilder:default=true
 	// +optional
-	EnableTemporalFunctions bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty" default:"true"`
+	EnableTemporalFunctions *bool `yaml:"enableTemporalFunctions,omitempty" json:"enableTemporalFunctions,omitempty" default:"true"`
 
 	// NOTE: Concerning remaining CQL2 conformance classes:
 	//
@@ -309,6 +309,34 @@ type CQL struct {
 
 func (c *CQL) IsEnabled() bool {
 	return c.Enable != nil && *c.Enable
+}
+
+func (c *CQL) IsAdvancedComparisonOperatorsEnabled() bool {
+	return c.EnableAdvancedComparisonOperators != nil && *c.EnableAdvancedComparisonOperators
+}
+
+func (c *CQL) IsCaseInsensitiveComparisonEnabled() bool {
+	return c.EnableCaseInsensitiveComparison != nil && *c.EnableCaseInsensitiveComparison
+}
+
+func (c *CQL) IsAccentInsensitiveComparisonEnabled() bool {
+	return c.EnableAccentInsensitiveComparison != nil && *c.EnableAccentInsensitiveComparison
+}
+
+func (c *CQL) IsBasicSpatialFunctionsEnabled() bool {
+	return c.EnableBasicSpatialFunctions != nil && *c.EnableBasicSpatialFunctions
+}
+
+func (c *CQL) IsBasicSpatialFunctionsPlusEnabled() bool {
+	return c.EnableBasicSpatialFunctionsPlus != nil && *c.EnableBasicSpatialFunctionsPlus
+}
+
+func (c *CQL) IsSpatialFunctionsEnabled() bool {
+	return c.EnableSpatialFunctions != nil && *c.EnableSpatialFunctions
+}
+
+func (c *CQL) IsTemporalFunctionsEnabled() bool {
+	return c.EnableTemporalFunctions != nil && *c.EnableTemporalFunctions
 }
 
 // +kubebuilder:object:generate=true

@@ -42,7 +42,7 @@ const (
 //
 //nolint:cyclop,funlen
 func (cl *CommonListener) ExitTemporalPredicate(ctx *parser.TemporalPredicateContext) {
-	if !cl.cqlConfig.EnableTemporalFunctions {
+	if !cl.cqlConfig.IsTemporalFunctionsEnabled() {
 		cl.errorListener.Error(errTemporalOperatorsNotEnabled)
 		return
 	}
