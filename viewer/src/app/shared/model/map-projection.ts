@@ -53,6 +53,7 @@ function initProj4WithTilesDefaults(logger: NGXLogger) {
 
 export function initProj4WithDynamicCrs(crsMap: CrsMap, logger: NGXLogger) {
   try {
+    if (Object.keys(crsMap).length === 0) logger.warn('No CRS defined, only the default projection for OL (WGS84) is available')
     Object.keys(crsMap).forEach(key => {
       if (key === CRS_84_SRID) return // skip CRS84 as it ships with proj4js
       const proj4def = crsMap[key]
