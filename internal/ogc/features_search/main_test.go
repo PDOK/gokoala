@@ -72,7 +72,7 @@ func TestSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// given available engine + datasources
-	theEngine, datasources, axisOrderBySRID := newEngine(t)
+	theEngine, datasources, projJSONBySRID := newEngine(t)
 
 	// given imported geopackage
 	err = importGpkg("addresses", dbConn) // in CRS84
@@ -81,7 +81,7 @@ func TestSearch(t *testing.T) {
 	require.NoError(t, err)
 
 	// given search endpoint
-	searchEndpoint, err := NewSearch(theEngine, datasources, axisOrderBySRID,
+	searchEndpoint, err := NewSearch(theEngine, datasources, projJSONBySRID,
 		"internal/ogc/features_search/testdata/rewrites.csv",
 		"internal/ogc/features_search/testdata/synonyms.csv",
 		theEngine.Config.OgcAPI.FeaturesSearch.SearchSettings.MaxSynonyms)
@@ -468,7 +468,7 @@ func TestSearch(t *testing.T) {
 	}
 }
 
-func newEngine(t *testing.T) (*engine.Engine, map[features.DatasourceKey]ds.Datasource, map[int]fd.AxisOrder) {
+func newEngine(t *testing.T) (*engine.Engine, map[features.DatasourceKey]ds.Datasource, map[int]string) {
 	t.Helper()
 	theEngine, err := engine.NewEngine(searchConfigFile, "", "", false, false)
 	require.NoError(t, err)
@@ -481,9 +481,8 @@ func newEngine(t *testing.T) (*engine.Engine, map[features.DatasourceKey]ds.Data
 	datasources := features.CreateDatasources(
 		config.NewSearchConfig(theEngine.Config.OgcAPI.FeaturesSearch), theEngine.RegisterShutdownHook)
 	projInfoMap := features.GetProjJSONBySRID(datasources)
-	axisOrderBySRID := features.GetAxisOrderBySRID(projInfoMap)
 
-	return theEngine, datasources, axisOrderBySRID
+	return theEngine, datasources, projInfoMap
 }
 
 func importGpkg(collectionName string, dbConn string) error {

@@ -37,8 +37,12 @@ type Search struct {
 	json *jsonSearchResults
 }
 
+type searchPage struct {
+	ProjJSON string
+}
+
 func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datasource,
-	axisOrderBySRID map[int]fd.AxisOrder, rewritesFile, synonymsFile string, maxSynonyms int) (*Search, error) {
+	projJSONBySRID map[int]string, rewritesFile, synonymsFile string, maxSynonyms int) (*Search, error) {
 
 	if synonymsFile == "" {
 		return nil, errors.New("synonyms.csv file not configured, this is required for features search")
@@ -59,13 +63,16 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 	s := &Search{
 		engine:          e,
 		datasource:      searchDS,
-		axisOrderBySRID: axisOrderBySRID,
+		axisOrderBySRID: features.GetAxisOrderBySRID(projJSONBySRID),
 		json:            newJSONSearchResults(e),
 		queryExpansion:  queryExpansion,
 	}
 	e.Router.Get(searchPath, s.Search())
 
-	e.RenderTemplates(searchPath,
+	e.RenderTemplatesWithParams(searchPath,
+		searchPage{
+			ProjJSON: features.ConvertProjJSONBySRIDtoString(projJSONBySRID),
+		},
 		[]engine.Breadcrumb{{Name: "Search", Path: "search"}},
 		engine.NewTemplateKey(templatesDir+searchHTML))
 

@@ -37,8 +37,7 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 		fs := engine.Config.OgcAPI.FeaturesSearch
 		ds := features.CreateDatasources(config.NewSearchConfig(fs), engine.RegisterShutdownHook)
 		projInfoMap := features.GetProjJSONBySRID(ds)
-		ao := features.GetAxisOrderBySRID(projInfoMap)
-		_, err := features_search.NewSearch(engine, ds, ao, rewritesFile, synonymsFile, fs.SearchSettings.MaxSynonyms)
+		_, err := features_search.NewSearch(engine, ds, projInfoMap, rewritesFile, synonymsFile, fs.SearchSettings.MaxSynonyms)
 		if err != nil {
 			return err
 		}
