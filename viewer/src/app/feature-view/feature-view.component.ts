@@ -154,8 +154,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
         this.loadFeatures(this.features)
         this.addFeatureEmit()
         this.loadBackground()
-        this.logger.log(this.map.getView().getProjection())
-        this.logger.log('resolution' + this.map.getView().getResolution())
+        this.logger.debug(this.map.getView().getProjection())
+        this.logger.debug('resolution' + this.map.getView().getResolution())
       })
   }
 
