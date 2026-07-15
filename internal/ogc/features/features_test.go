@@ -1046,7 +1046,7 @@ func TestFeatures(t *testing.T) {
 				collectionID: "cql",
 				contentCrs:   "<" + domain.WGS84CrsURI + ">",
 				format:       "json",
-			}, // TODO
+			},
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_features_cql_spatial_intersects_with_filter_crs.json",
 				statusCode: http.StatusOK,
