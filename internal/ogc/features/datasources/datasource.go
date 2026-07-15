@@ -110,4 +110,7 @@ type Part3Filter struct {
 
 	// Optional SQL to include/check the RTree index for optimal performance (only for gpkg).
 	RtreeSQL string
+
+	// Spatial indicates whether the CQL filter contains a spatial predicate.
+	Spatial bool
 }
