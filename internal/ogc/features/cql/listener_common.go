@@ -60,6 +60,9 @@ type CommonListener struct {
 
 	// currentWktType is the current WKT type (POINT, POLYGON, etc.) being parsed.
 	currentWktType string
+
+	// spatial indicates whether the CQL filter contains a spatial predicate.
+	spatial bool
 }
 
 // AddErrorListener adds an ErrorListener to this listener.

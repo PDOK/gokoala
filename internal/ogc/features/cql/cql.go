@@ -99,4 +99,7 @@ type SQLResult struct {
 
 	// RtreeSQL is a SQL string to include the R-Tree index. This only applies to GeoPackage datasources.
 	RtreeSQL string
+
+	// Spatial indicates whether the SQL string contains spatial functions.
+	Spatial bool
 }

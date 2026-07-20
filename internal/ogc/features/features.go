@@ -240,6 +240,6 @@ func parseCQL(cqlFilter string, cqlConfig config.CQL, datasource ds.Datasource, 
 		SQL:      strings.ToLower(result.SQL),
 		Params:   result.Params,
 		RtreeSQL: strings.ToLower(result.RtreeSQL),
-		Spatial:  result.RtreeSQL != "", // Can we make this assumption?
+		Spatial:  result.Spatial,
 	}, err
 }
