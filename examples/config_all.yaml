@@ -117,6 +117,8 @@ ogcApi:
               indexRequired: false
             - name: locator_designator_addressnumberextension
               indexRequired: false
+            - name: component_thoroughfarename
+              indexRequired: false
           cql:
             enable: true
 
