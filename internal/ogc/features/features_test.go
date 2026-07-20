@@ -1087,7 +1087,7 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
-			name: "Request features with in specific crs and spatial CQL filter: intersects with polygon with filter crs in CRS84",
+			name: "Request features in specific crs with spatial CQL filter: intersects with polygon with filter crs in CRS84",
 			fields: fields{
 				configFiles: []string{
 					"internal/ogc/features/testdata/geopackage/config_features_cql_multiple_srs.yaml",
