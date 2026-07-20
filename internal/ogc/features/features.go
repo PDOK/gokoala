@@ -124,7 +124,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 	var newCursor domain.Cursors
 	var fc *domain.FeatureCollection
 	var err error
-	if shouldQuerySingleDatasource(datasource, inputSRID, outputSRID, bbox) {
+	if shouldQuerySingleDatasource(datasource, inputSRID, outputSRID, bbox, filter.Spatial) {
 		// fast path
 		fc, newCursor, err = datasource.GetFeatures(ctx, collection.ID, ds.FeaturesCriteria{
 			Cursor:           currentCursor,
@@ -167,13 +167,14 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 	return newCursor, fc, err
 }
 
-func shouldQuerySingleDatasource(datasource ds.Datasource, input domain.SRID, output domain.SRID, bbox *geom.Bounds) bool {
+func shouldQuerySingleDatasource(datasource ds.Datasource, input domain.SRID, output domain.SRID, bbox *geom.Bounds, spatialCQL bool) bool {
 	if datasource != nil && datasource.SupportsOnTheFlyTransformation() {
 		return true // for on-the-fly we can always use just one datasource
 	}
+	hasSpatialFilter := bbox != nil || spatialCQL
 	// in the case of ahead-of-time transformed data sources, use a
 	// single datasource only when input and output SRID are compatible.
-	return bbox == nil ||
+	return !hasSpatialFilter ||
 		int(input) == int(output) ||
 		(int(input) == domain.UndefinedSRID && int(output) == domain.WGS84SRID) ||
 		(int(input) == domain.WGS84SRID && int(output) == domain.UndefinedSRID)
@@ -239,5 +240,6 @@ func parseCQL(cqlFilter string, cqlConfig config.CQL, datasource ds.Datasource, 
 		SQL:      strings.ToLower(result.SQL),
 		Params:   result.Params,
 		RtreeSQL: strings.ToLower(result.RtreeSQL),
+		Spatial:  result.Spatial,
 	}, err
 }

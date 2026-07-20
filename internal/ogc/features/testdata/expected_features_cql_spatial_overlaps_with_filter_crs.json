@@ -6,19 +6,19 @@
       "rel": "self",
       "title": "This document as GeoJSON",
       "type": "application/geo+json",
-      "href": "http://localhost:8080/collections/cql/items?f=json&filter=S_OVERLAPS%28geometry%2C+POLYGON+%28%2852.10166749777908279+5.04159320426761948%2C+52.1017530555056041+5.04167924265552791%2C+52.10174392293929202+5.04168789456045729%2C+52.10166749777908279++5.04159320426761948%29%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4258"
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=S_OVERLAPS%28geometry%2C+POLYGON+%28%2852.10166749777908279+5.04159320426761948%2C+52.1017530555056041+5.04167924265552791%2C+52.10174392293929202+5.04168789456045729%2C+52.10166749777908279+5.04159320426761948%29%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4258"
     },
     {
       "rel": "alternate",
       "title": "This document as JSON-FG",
       "type": "application/vnd.ogc.fg+json",
-      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=S_OVERLAPS%28geometry%2C+POLYGON+%28%2852.10166749777908279+5.04159320426761948%2C+52.1017530555056041+5.04167924265552791%2C+52.10174392293929202+5.04168789456045729%2C+52.10166749777908279++5.04159320426761948%29%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4258"
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=S_OVERLAPS%28geometry%2C+POLYGON+%28%2852.10166749777908279+5.04159320426761948%2C+52.1017530555056041+5.04167924265552791%2C+52.10174392293929202+5.04168789456045729%2C+52.10166749777908279+5.04159320426761948%29%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4258"
     },
     {
       "rel": "alternate",
       "title": "This document as HTML",
       "type": "text/html",
-      "href": "http://localhost:8080/collections/cql/items?f=html&filter=S_OVERLAPS%28geometry%2C+POLYGON+%28%2852.10166749777908279+5.04159320426761948%2C+52.1017530555056041+5.04167924265552791%2C+52.10174392293929202+5.04168789456045729%2C+52.10166749777908279++5.04159320426761948%29%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4258"
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=S_OVERLAPS%28geometry%2C+POLYGON+%28%2852.10166749777908279+5.04159320426761948%2C+52.1017530555056041+5.04167924265552791%2C+52.10174392293929202+5.04168789456045729%2C+52.10166749777908279+5.04159320426761948%29%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F4258"
     }
   ],
   "features": [
