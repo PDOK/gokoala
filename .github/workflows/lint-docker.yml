@@ -15,7 +15,8 @@ jobs:
           sparse-checkout: |
             Dockerfile
           sparse-checkout-cone-mode: false
-
-      - uses: hadolint/hadolint-action@v3.1.0
+      # Pin 3rd party action to a specific version as security best-practice.
+      # Version used: https://github.com/hadolint/hadolint-action/releases/tag/v3.3.0
+      - uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
         with:
           dockerfile: Dockerfile
