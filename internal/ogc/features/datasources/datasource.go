@@ -10,8 +10,6 @@ import (
 	"github.com/twpayne/go-geom"
 )
 
-const Wildcard = "%"
-
 // Datasource holds all Features for a single object type in a specific projection/CRS.
 // This abstraction allows the rest of the system to stay datastore agnostic <== IMPORTANT.
 type Datasource interface {
@@ -110,4 +108,7 @@ type Part3Filter struct {
 
 	// Optional SQL to include/check the RTree index for optimal performance (only for gpkg).
 	RtreeSQL string
+
+	// Spatial indicates whether the CQL filter contains a spatial predicate.
+	Spatial bool
 }

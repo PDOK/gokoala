@@ -182,7 +182,9 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 		for k, v := range pf {
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
-			if strings.Contains(v, datasources.Wildcard) {
+			if strings.Contains(v, domain.PropertyFilterWildcard) {
+				// replace wildcard with %, as this is the wildcard used in SQL.
+				v = strings.ReplaceAll(v, domain.PropertyFilterWildcard, domain.Wildcard)
 				fmt.Fprintf(&sqlBuilder, " and \"%s\" like %s%s", k, symbol, namedParam)
 			} else {
 				fmt.Fprintf(&sqlBuilder, " and \"%s\" = %s%s", k, symbol, namedParam)

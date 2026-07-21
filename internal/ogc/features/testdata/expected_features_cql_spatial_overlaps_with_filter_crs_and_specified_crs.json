@@ -1,0 +1,70 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=json&filter=S_INTERSECTS%28geometry%2C+BBOX%285.041%2C52.102%2C5.042%2C52.11%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FOGC%2F1.3%2FCRS84"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=jsonfg&filter=S_INTERSECTS%28geometry%2C+BBOX%285.041%2C52.102%2C5.042%2C52.11%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FOGC%2F1.3%2FCRS84"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FEPSG%2F0%2F28992&f=html&filter=S_INTERSECTS%28geometry%2C+BBOX%285.041%2C52.102%2C5.042%2C52.11%29%29&filter-crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FOGC%2F1.3%2FCRS84"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 1,
+        "prop10": "2026-02-14T23:00:00Z",
+        "prop2": 2,
+        "prop3": "Park",
+        "prop4": "Waterwin",
+        "prop5": "2026-02-12",
+        "prop6": "2026-02-13T23:00:00Z",
+        "prop7": true,
+        "prop8": false,
+        "prop9": "2026-02-13"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              131310.35436,
+              457335.73928
+            ],
+            [
+              131329.57669,
+              457215.84666
+            ],
+            [
+              131398.03491,
+              457233.05329
+            ],
+            [
+              131391.36446,
+              457344.12013
+            ],
+            [
+              131310.35436,
+              457335.73928
+            ]
+          ]
+        ]
+      },
+      "id": "1"
+    }
+  ],
+  "numberReturned": 1
+}

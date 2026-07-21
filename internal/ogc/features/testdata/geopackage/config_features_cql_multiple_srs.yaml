@@ -26,6 +26,11 @@ ogcApi:
             local:
               file: ./internal/ogc/features/cql/testdata/cql-epsg4258.gpkg
               externalFid: fid
+        - srs: EPSG:28992
+          geopackage:
+            local:
+              file: ./internal/ogc/features/cql/testdata/cql-epsg28992.gpkg
+              externalFid: fid
     collections:
       - id: cql
         metadata:

@@ -15,7 +15,6 @@ import (
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
 )
@@ -36,7 +35,6 @@ const (
 	cqlJSON = "cql2-json"
 
 	propertyFilterMaxLength = 512
-	propertyFilterWildcard  = "*"
 
 	intervalSeparator   = "/"
 	intervalHalfBounded = ".."
@@ -361,20 +359,18 @@ func parsePropertyFilters(configuredPropertyFilters map[string]d.QueryableWithAl
 				return nil, fmt.Errorf("property filter %s is too large, "+
 					"value is limited to %d characters", name, propertyFilterMaxLength)
 			}
-			if strings.Contains(pf, datasources.Wildcard) {
+			if strings.Contains(pf, d.Wildcard) {
 				return nil, fmt.Errorf("property filter %s contains a '%s' symbol, which suggest "+
 					"you want to apply a wildcard filter. The correct wildcard symbol in OGC APIs is '%s'",
-					name, datasources.Wildcard, propertyFilterWildcard)
+					name, d.Wildcard, d.PropertyFilterWildcard)
 			}
-			if strings.Contains(pf, propertyFilterWildcard) {
+			if strings.Contains(pf, d.PropertyFilterWildcard) {
 				// In case CQL advanced comparison operators (LIKE operator) are enabled, wildcard filtering is allowed.
 				// Otherwise, it's not.
 				if !cqlConfig.IsEnabled() || !cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 					return nil, fmt.Errorf("property filter %s contains a wildcard (%s), "+
-						"wildcard filtering is not allowed", name, propertyFilterWildcard)
+						"wildcard filtering is not allowed", name, d.PropertyFilterWildcard)
 				}
-				// replace wildcard with %, as this is the wildcard used in SQL.
-				pf = strings.ReplaceAll(pf, propertyFilterWildcard, datasources.Wildcard)
 			}
 			propertyFilters[name] = pf
 		}

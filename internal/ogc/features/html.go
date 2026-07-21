@@ -35,11 +35,11 @@ func newHTMLFeatures(e *engine.Engine, projJSONBySRID map[int]string) *htmlFeatu
 
 	return &htmlFeatures{
 		engine:         e,
-		projJSONBySRID: convertProjJSONBySRIDtoString(projJSONBySRID),
+		projJSONBySRID: ConvertProjJSONBySRIDtoString(projJSONBySRID),
 	}
 }
 
-func convertProjJSONBySRIDtoString(projJSONBySRID map[int]string) string {
+func ConvertProjJSONBySRIDtoString(projJSONBySRID map[int]string) string {
 	projJSONRaw := make(map[int]json.RawMessage)
 	for key, projJSON := range projJSONBySRID {
 		projJSONRaw[key] = json.RawMessage(projJSON)
@@ -51,7 +51,6 @@ func convertProjJSONBySRIDtoString(projJSONBySRID map[int]string) string {
 	}
 
 	return string(projJSON)
-
 }
 
 // featureCollectionPage enriched FeatureCollection for HTML representation.
