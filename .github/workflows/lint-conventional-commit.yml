@@ -1,0 +1,18 @@
+---
+# Validates that the title of your PR in GitHub follows https://www.conventionalcommits.org/
+name: validate conventional commit
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: validate conventional commit
+        # Pin 3rd party action to a specific version as security best-practice.
+        # Version used: https://github.com/ytanikin/pr-conventional-commits/releases/tag/1.5.2
+        uses: ytanikin/pr-conventional-commits@639145d78959c53c43112365837e3abd21ed67c1
+        with:
+          task_types: '["feat","fix","docs","test","ci","refactor","perf","chore","revert"]'
+          add_label: 'true'
