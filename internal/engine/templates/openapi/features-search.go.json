@@ -12,7 +12,7 @@
       "get": {
         "tags" : [ "Features Search" ],
         "summary": "search features in one or more collections across datasets.",
-        "description": "This endpoint allows one to implement autocomplete functionality for location search. The `q` parameter accepts a partial location name and will return all matching locations up to the specified `limit`. The list of search results are offered as features (in GeoJSON, JSON-FG) but contain only minimal information; like a feature ID, highlighted text and a bounding box. When you want to get the full feature you must follow the included link (`href`) in the search result. This allows one to retrieve all properties of the feature and the full geometry from the corresponding OGC API.",
+        "description": "This endpoint allows one to implement autocomplete functionality for location search. The `q` parameter accepts a partial location name and will return all matching locations up to the specified `limit`. It is required to specify _at least one_ collection to include in the search. The list of search results are offered as features (in GeoJSON, JSON-FG) but contain only minimal information; like a feature ID, highlighted text and a bounding box. When you want to get the full feature you must follow the included link (`href`) in the search result. This allows one to retrieve all properties of the feature and the full geometry from the corresponding OGC API.",
         "operationId": "search",
         "parameters": [
           {
@@ -561,7 +561,7 @@
       "q": {
         "name": "q",
         "in": "query",
-        "description": "The search term(s)",
+        "description": "The search term(s).\n\nIt is required to combine this parameter with specifying _at least one_ of the available collections to include in the search.",
         "required": true,
         "style": "form",
         "explode": false,
