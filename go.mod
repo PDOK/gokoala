@@ -40,8 +40,8 @@ require (
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.6.0
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
-	golang.org/x/sync v0.20.0
-	golang.org/x/text v0.36.0
+	golang.org/x/sync v0.21.0
+	golang.org/x/text v0.39.0
 	gopkg.in/yaml.v3 v3.0.1
 	schneider.vip/problem v1.9.1
 )
