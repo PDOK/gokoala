@@ -10,11 +10,10 @@ interface CollectionSetting {
 }
 
 @Component({
-  selector: 'app-collection-settings',
-  standalone: true,
-  imports: [NgClass, AsyncPipe, ReactiveFormsModule],
-  templateUrl: './collection-settings.component.html',
-  styleUrl: './collection-settings.component.css',
+    selector: 'app-collection-settings',
+    imports: [NgClass, AsyncPipe, ReactiveFormsModule],
+    templateUrl: './collection-settings.component.html',
+    styleUrl: './collection-settings.component.css'
 })
 export class CollectionSettingsComponent implements OnInit, OnDestroy {
   @Input() open: boolean = false

@@ -8,13 +8,12 @@ type propRow = {
 }
 
 @Component({
-  selector: 'app-object-info',
-  standalone: true,
-  encapsulation: ViewEncapsulation.ShadowDom,
-  imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './object-info.component.html',
-  styleUrls: ['./object-info.component.css'],
+    selector: 'app-object-info',
+    encapsulation: ViewEncapsulation.ShadowDom,
+    imports: [CommonModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './object-info.component.html',
+    styleUrls: ['./object-info.component.css']
 })
 export class ObjectInfoComponent {
   @Input() feature!: RenderFeature

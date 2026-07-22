@@ -42,22 +42,21 @@ interface LocationForm {
 }
 
 @Component({
-  selector: 'app-location-search-view',
-  standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    AsyncPipe,
-    PropertyValuePipe,
-    NgClass,
-    CollectionSettingsComponent,
-    NgIf,
-    HighlightPipe,
-    UpperCasePipe,
-    ReplacePipe,
-  ],
-  templateUrl: './location-search-view.component.html',
-  styleUrl: './location-search-view.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-location-search-view',
+    imports: [
+        ReactiveFormsModule,
+        AsyncPipe,
+        PropertyValuePipe,
+        NgClass,
+        CollectionSettingsComponent,
+        NgIf,
+        HighlightPipe,
+        UpperCasePipe,
+        ReplacePipe,
+    ],
+    templateUrl: './location-search-view.component.html',
+    styleUrl: './location-search-view.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
   @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
