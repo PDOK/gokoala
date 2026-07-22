@@ -34,7 +34,7 @@ jobs:
         # Version used: https://github.com/katexochen/go-tidy-check/releases/tag/v2.0.1
         uses: katexochen/go-tidy-check@427c8c07d3d83ab8d7290cad04ce71c12eab3674
 
-      - name: Run govulncheck (when this fails => upgrade go version)
+      - name: Run govulncheck (when this fails => upgrade go version or affected library)
         run: |
           GOPATH_BIN=$(go env GOPATH)/bin
           export PATH="${GOPATH_BIN}:${PATH}"
