@@ -29,7 +29,7 @@ import {
   tap,
 } from 'rxjs'
 import { CollectionsService } from '../shared/services/collections.service'
-import { AsyncPipe, NgClass, NgIf, UpperCasePipe } from '@angular/common'
+import { AsyncPipe, NgClass, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
@@ -42,21 +42,20 @@ interface LocationForm {
 }
 
 @Component({
-    selector: 'app-location-search-view',
-    imports: [
-        ReactiveFormsModule,
-        AsyncPipe,
-        PropertyValuePipe,
-        NgClass,
-        CollectionSettingsComponent,
-        NgIf,
-        HighlightPipe,
-        UpperCasePipe,
-        ReplacePipe,
-    ],
-    templateUrl: './location-search-view.component.html',
-    styleUrl: './location-search-view.component.css',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-location-search-view',
+  imports: [
+    ReactiveFormsModule,
+    AsyncPipe,
+    PropertyValuePipe,
+    NgClass,
+    CollectionSettingsComponent,
+    HighlightPipe,
+    UpperCasePipe,
+    ReplacePipe,
+  ],
+  templateUrl: './location-search-view.component.html',
+  styleUrl: './location-search-view.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
   @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'

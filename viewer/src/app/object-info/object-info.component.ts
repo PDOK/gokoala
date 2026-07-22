@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core'
-import { CommonModule } from '@angular/common'
+
 import RenderFeature from 'ol/render/Feature'
 
 type propRow = {
@@ -8,12 +8,12 @@ type propRow = {
 }
 
 @Component({
-    selector: 'app-object-info',
-    encapsulation: ViewEncapsulation.ShadowDom,
-    imports: [CommonModule],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    templateUrl: './object-info.component.html',
-    styleUrls: ['./object-info.component.css']
+  selector: 'app-object-info',
+  encapsulation: ViewEncapsulation.ShadowDom,
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './object-info.component.html',
+  styleUrls: ['./object-info.component.css'],
 })
 export class ObjectInfoComponent {
   @Input() feature!: RenderFeature

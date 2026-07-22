@@ -1,6 +1,10 @@
-<div class="legendContainer" *ngIf="LegendItems.length > 0">
-  <div class="legendItem" *ngFor="let i of LegendItems">
-    <app-legend-item [item]="i" [mapboxStyle]="mapboxStyle"></app-legend-item>
-    <div class="legendText">{{ i.title }}</div>
+@if (LegendItems.length > 0) {
+  <div class="legendContainer">
+    @for (i of LegendItems; track i) {
+      <div class="legendItem">
+        <app-legend-item [item]="i" [mapboxStyle]="mapboxStyle"></app-legend-item>
+        <div class="legendText">{{ i.title }}</div>
+      </div>
+    }
   </div>
-</div>
+}

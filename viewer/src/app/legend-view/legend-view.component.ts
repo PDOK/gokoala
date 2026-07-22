@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common'
 import { Component, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
@@ -7,11 +6,11 @@ import { LegendItem, MapboxStyle, MapboxStyleService } from '../shared/services/
 import { NGXLogger } from 'ngx-logger'
 
 @Component({
-    selector: 'app-legend-view',
-    templateUrl: './legend-view.component.html',
-    styleUrls: ['./legend-view.component.css'],
-    imports: [CommonModule, LegendItemComponent],
-    encapsulation: ViewEncapsulation.Emulated
+  selector: 'app-legend-view',
+  templateUrl: './legend-view.component.html',
+  styleUrls: ['./legend-view.component.css'],
+  imports: [LegendItemComponent],
+  encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {
   mapboxStyle!: MapboxStyle
