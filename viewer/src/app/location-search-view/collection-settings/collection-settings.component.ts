@@ -27,7 +27,7 @@ export class CollectionSettingsComponent implements OnInit, OnDestroy {
 
   private _destroy$ = new Subject<void>()
 
-  private _collectionsService = inject(CollectionsService)
+  private readonly _collectionsService = inject(CollectionsService)
 
   ngOnInit() {
     this.form = new FormArray<FormGroup<CollectionSetting>>([])

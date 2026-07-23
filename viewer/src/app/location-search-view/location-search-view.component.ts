@@ -48,7 +48,7 @@ interface LocationForm {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
-  private host = inject<ElementRef<HTMLElement>>(ElementRef)
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef)
 
   @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
 
@@ -90,8 +90,8 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   hasSearched$!: Observable<boolean>
   collectionTitles$!: Observable<Map<string, string>>
 
-  private _featureService = inject(FeatureService)
-  private _collectionsService = inject(CollectionsService)
+  private readonly _featureService = inject(FeatureService)
+  private readonly _collectionsService = inject(CollectionsService)
   private _bbox?: string = undefined
   private _destroy$ = new Subject<void>()
   private _confirmedHrefs: string[] = []

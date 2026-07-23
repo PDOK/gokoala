@@ -71,10 +71,10 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   ],
 })
 export class VectortileViewComponent implements OnChanges {
-  private logger = inject(NGXLogger)
-  private elementRef = inject(ElementRef)
-  private matrixsetService = inject(MatrixSetService)
-  private cdf = inject(ChangeDetectorRef)
+  private readonly logger = inject(NGXLogger)
+  private readonly elementRef = inject(ElementRef)
+  private readonly matrixsetService = inject(MatrixSetService)
+  private readonly cdf = inject(ChangeDetectorRef)
 
   title = 'view-component'
   map = new Map({})

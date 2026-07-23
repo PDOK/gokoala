@@ -24,7 +24,7 @@ import { LocationSearchViewComponent } from './location-search-view/location-sea
   providers: [provideHttpClient(withInterceptorsFromDi())],
 })
 export class AppModule {
-  private injector = inject(Injector)
+  private readonly injector = inject(Injector)
 
   constructor() {
     const vectorTileView = createCustomElement(VectortileViewComponent, { injector: this.injector })

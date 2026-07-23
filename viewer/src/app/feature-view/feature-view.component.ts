@@ -61,9 +61,9 @@ export enum InitialView {
   standalone: true,
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy {
-  private el = inject(ElementRef)
-  private featureService = inject(FeatureService)
-  private logger = inject(NGXLogger)
+  private readonly el = inject(ElementRef)
+  private readonly featureService = inject(FeatureService)
+  private readonly logger = inject(NGXLogger)
 
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true

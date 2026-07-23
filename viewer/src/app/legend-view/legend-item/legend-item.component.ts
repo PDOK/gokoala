@@ -19,9 +19,9 @@ import { exhaustiveGuard, LayerType, LegendItem, MapboxStyle, MapboxStyleService
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LegendItemComponent implements OnInit {
-  private logger = inject(NGXLogger)
-  private mapboxStyleService = inject(MapboxStyleService)
-  private elementRef = inject(ElementRef)
+  private readonly logger = inject(NGXLogger)
+  private readonly mapboxStyleService = inject(MapboxStyleService)
+  private readonly elementRef = inject(ElementRef)
 
   @Input() item!: LegendItem
   @Input() mapboxStyle!: MapboxStyle

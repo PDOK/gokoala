@@ -70,7 +70,9 @@ export function initProj4WithDynamicCrs(crsMap: CrsMap, logger: NGXLogger) {
 
 export function getRijksdriehoek() {
   const code = 'EPSG:28992'
-  if (!getProj(code)) proj4.defs(code, RD_NEW_PROJ4_DEF)
+  if (!getProj(code)) {
+    proj4.defs(code, RD_NEW_PROJ4_DEF)
+  }
   register(proj4)
 
   const projectionExtent = [-285401.92, 22598.08, 595401.9199999999, 903401.9199999999]

@@ -19,7 +19,7 @@ export interface CollectionResponse {
   providedIn: 'root',
 })
 export class CollectionsService {
-  private _http = inject(HttpClient)
+  private readonly _http = inject(HttpClient)
 
   getCollections(): Observable<Collection[]> {
     const params = new HttpParams().set('f', 'json')

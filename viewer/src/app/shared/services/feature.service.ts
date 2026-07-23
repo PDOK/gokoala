@@ -77,8 +77,8 @@ export const defaultMapping: ProjectionMapping = { dataProjection: 'CRS:84', vis
   providedIn: 'root',
 })
 export class FeatureService {
-  private logger = inject(NGXLogger)
-  private http = inject(HttpClient)
+  private readonly logger = inject(NGXLogger)
+  private readonly http = inject(HttpClient)
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string, bbox?: string): Observable<FeatureGeoJSON[]> {
     let params = new HttpParams().set('q', q)

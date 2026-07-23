@@ -45,7 +45,7 @@ export interface TileMatrixSetLimit {
   providedIn: 'root',
 })
 export class MatrixSetService {
-  private http = inject(HttpClient)
+  private readonly http = inject(HttpClient)
 
   getMatrixSet(url: string): Observable<MatrixSet> {
     return this.http.get<MatrixSet>(url)

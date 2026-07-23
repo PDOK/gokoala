@@ -14,10 +14,10 @@ import { NGXLogger } from 'ngx-logger'
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {
-  private logger = inject(NGXLogger)
-  private mapboxStyleService = inject(MapboxStyleService)
-  private cdr = inject(ChangeDetectorRef)
-  private destroyRef = inject(DestroyRef)
+  private readonly logger = inject(NGXLogger)
+  private readonly mapboxStyleService = inject(MapboxStyleService)
+  private readonly cdr = inject(ChangeDetectorRef)
+  private readonly destroyRef = inject(DestroyRef)
 
   mapboxStyle!: MapboxStyle
   // URL to a Mapbox style JSON endpoint

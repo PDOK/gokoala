@@ -103,8 +103,8 @@ export function exhaustiveGuard(_value: never): never {
   providedIn: 'root',
 })
 export class MapboxStyleService {
-  private http = inject(HttpClient)
-  private logger = inject(NGXLogger)
+  private readonly http = inject(HttpClient)
+  private readonly logger = inject(NGXLogger)
 
   getMapboxStyle(url: string): Observable<MapboxStyle> {
     return this.http.get<MapboxStyle>(url)
