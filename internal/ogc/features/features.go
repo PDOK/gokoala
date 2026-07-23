@@ -93,7 +93,7 @@ func (f *Features) Features() http.HandlerFunc {
 			case engine.FormatHTML:
 				f.html.attributes(w, r, collection, newCursor, url, limit, dateTime,
 					propertyFilters, f.queryables[collection.ID],
-					fc, collectionType.AvailableFormats())
+					fc, collectionType.AvailableFormats(), nil)
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsNonGeoJSON(w, r, collection.ID, newCursor, url, fc)
 			default:

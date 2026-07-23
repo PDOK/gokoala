@@ -116,10 +116,11 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
 	propertyFilters map[string]string, queryables domain.Queryables,
-	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
+	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat, err error) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
 		featuresURL, limit, propertyFilters, queryables)
+	pageContent.FilterError = err
 	pageContent.ShowViewer = false // since items have no geometry
 
 	hf.engine.RenderAndServe(w, r,

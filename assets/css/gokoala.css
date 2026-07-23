@@ -36,7 +36,8 @@
 .collapse-chevron {
     transition: transform 0.2s ease-in-out;
 }
-a[data-bs-toggle="collapse"]:not([aria-expanded="false"]) .collapse-chevron {
+
+[data-bs-toggle="collapse"]:not([aria-expanded="false"]) .collapse-chevron {
     transform: rotate(-180deg);
 }
 
