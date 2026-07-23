@@ -36,7 +36,8 @@
 .collapse-chevron {
     transition: transform 0.2s ease-in-out;
 }
-a[data-bs-toggle="collapse"]:not([aria-expanded="false"]) .collapse-chevron {
+
+[data-bs-toggle="collapse"]:not([aria-expanded="false"]) .collapse-chevron {
     transform: rotate(-180deg);
 }
 
@@ -82,4 +83,42 @@ td {
 
 .vectortile-view {
     flex-grow: 1;
+}
+
+/* cql field expansion */
+.cql-filter-input {
+    height: calc(1.5em + 0.75rem + 2px);
+    min-height: calc(1.5em + 0.75rem + 2px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    transition: 0.2s ease-out;
+}
+.cql-filter-input.expanded {
+    height: auto;
+    min-height: 6rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: normal;
+    resize: vertical;
+}
+
+.hover-question-swap {
+    cursor: pointer
+}
+
+.hover-question-swap .bi-question-circle-fill {
+    display: none;
+}
+
+.hover-question-swap .bi-question-circle,
+.hover-question-swap .bi-question-circle-fill {
+    transition: .2s ease-out;
+}
+
+.hover-question-swap:hover .bi-question-circle-fill {
+    display: inline-block;
+}
+
+.hover-question-swap:hover .bi-question-circle {
+    display: none;
 }

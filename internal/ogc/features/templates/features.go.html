@@ -45,6 +45,7 @@
       const fd = new FormData(event.target)
       const srsValue = fd.get('srs')
       const limitValue = fd.get('limit')
+      const filterValue = fd.get('filter')
       const propertyFilters = {}
         {{ range $pfName, $pf := .Params.ConfiguredPropertyFilters }}
       propertyFilters["{{ $pfName }}"] = fd.get("{{ $pfName }}")
@@ -71,6 +72,7 @@
       let url = updateQueryString('crs', srsValue)
       url = updateQueryString('datetime', datetimeValue, url)
       url = updateQueryString('limit', limitValue, url)
+      url = updateQueryString('filter', filterValue, url)
       for (const [key, value] of Object.entries(propertyFilters)) {
         url = updateQueryString(key, value, url)
       }
@@ -129,6 +131,30 @@
       if (dateTimeMenuBtn) {
         dateTimeMenuBtn.addEventListener('click', toggleDatetimeMenu)
       }
+
+      const filterInput = document.getElementById('cql-filter-input')
+      if (filterInput) {
+        if (filterInput.value.trim() !== '') {
+          filterInput.classList.add('expanded')
+        }
+        filterInput.addEventListener('focus', function() {
+          filterInput.classList.add('expanded')
+        })
+        filterInput.addEventListener('blur', function() {
+          if (filterInput.value.trim() === '') {
+            filterInput.classList.remove('expanded')
+          }
+        })
+      }
+
+      const togglePropertyFeatures = document.getElementById("toggle-property-filters")
+      togglePropertyFeatures?.addEventListener('click', function() {
+          const isCollapsed = togglePropertyFeatures.classList.contains("collapsed")
+          const moreFiltersText = "{{ i18n "MorePropertyFilters" }}"
+          const lessFiltersText = "{{ i18n "LessPropertyFilters" }}"
+          const propertyFilterTextEl = document.getElementById("property-filter-text")
+          propertyFilterTextEl.textContent = isCollapsed ? moreFiltersText : lessFiltersText
+      })
     });
 </script>
 
@@ -181,8 +207,7 @@
                             aria-haspopup="listbox"
                             aria-expanded="false"
                             aria-controls="datetime-mode-menu"
-                            onmouseover="this.querySelector('.icon').style.display='none'; this.querySelector('.hover-icon').style.display='inline';"
-                            onmouseout="this.querySelector('.icon').style.display='inline'; this.querySelector('.hover-icon').style.display='none';">
+                            >
                         <span id="datetime-mode-label">{{ if and .Params.DateTime .Params.DateTime.IsInterval }}{{ i18n "Interval" }}{{ else }}{{ i18n "Instant" }}{{ end }}</span>
                         <i class="bi bi-caret-down-square icon" style="display:inline;" aria-hidden="true"></i>
                         <i class="bi bi-caret-down-square-fill hover-icon" style="display:none;" aria-hidden="true"></i>
@@ -227,26 +252,101 @@
                     </select>
                 </div>
             </div>
-            <!-- property filters -->
-            {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
+            {{ if .Params.CQLEnabled }}
             <div class="row mb-2">
-                <label for="{{ $pfName }}-input" class="col-sm-4 col-form-label text-truncate"
-                       title="{{ $pfName | title }}">{{ $pfName | title }}</label>
+                <div class="col-sm-4 col-form-label">
+                    <label for="cql-filter-input" class="mb-0">
+                        <abbr title="Common Query Language filter">
+                            CQL filter
+                        </abbr>
+                    </label>
+                    <button type="button"
+                            id="cql-example-button"
+                            class="btn p-0 border-0 align-baseline hover-question-swap"
+                            style="color: var(--bs-body-color);"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#cql-example"
+                            aria-expanded="false"
+                            aria-controls="cql-example"
+                            aria-label="{{ i18n "ShowExample" }}">
+                        <i class="bi bi-question-circle" aria-hidden="true"></i>
+                        <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <div class="col-sm-8">
-                    {{ if and $pf $pf.AllowedValues }}
-                    <select id="{{ $pfName }}-input" name="{{ $pfName }}" class="form-select">
-                        <!-- default to empty value -->
-                        <option></option>
-                        {{ range $value := $pf.AllowedValues }}
-                            <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $pfName) $value }}selected{{end}}>{{ $value }}</option>
+                    <textarea id="cql-filter-input"
+                              name="filter"
+                              class="form-control cql-filter-input"
+                              placeholder="{{ i18n "CQLFilterPlaceholder" }}"
+                    >{{ .Params.Filter }}</textarea>
+                </div>
+            </div>
+            {{ if .Params.FilterError }}
+            <div class="row mb-2">
+                <div class="col-sm-8 offset-sm-4">
+                    <div class="alert alert-danger" role="alert">
+                        {{ .Params.FilterError }}
+                    </div>
+                </div>
+            </div>
+            {{ end }}
+            <div class="row mb-2">
+                <div class="col">
+                    <div class="collapse" id="cql-example">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-title">
+                                    <small>Example</small>
+                                </div>
+                                <code>
+                                    name = 'FooBar'<br/>
+                                    name = 'FooBar' AND (width > 5 OR height <= 30)<br/>
+                                    city NOT IN ('Foo', 'Bar')
+                                </code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{ end }}
+            {{ if .Params.ConfiguredPropertyFilters }}
+            <div class="row mb-2">
+                <div class="col-12">
+                    <button type="button"
+                            id="toggle-property-filters"
+                            class="btn p-0 border-0 d-flex align-items-center"
+                            style="color: var(--bs-body-color);"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#advanced-filters"
+                            aria-expanded="false"
+                            aria-controls="advanced-filters">
+                        <span id="property-filter-text">{{ i18n "MorePropertyFilters" }}</span>
+                        <i class="bi bi-chevron-down ms-1 flex-shrink-0 collapse-chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="collapse mt-2" id="advanced-filters">
+                        {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
+                        <div class="row mb-2">
+                            <label for="{{ $pfName }}-input" class="col-sm-4 col-form-label text-truncate"
+                                   title="{{ $pfName | title }}">{{ $pfName | title }}</label>
+                            <div class="col-sm-8">
+                                {{ if and $pf $pf.AllowedValues }}
+                                <select id="{{ $pfName }}-input" name="{{ $pfName }}" class="form-select">
+                                    <!-- default to empty value -->
+                                    <option></option>
+                                    {{ range $value := $pf.AllowedValues }}
+                                        <option value="{{ $value }}" {{if eq (index $.Params.PropertyFilters $pfName) $value }}selected{{end}}>{{ $value }}</option>
+                                    {{ end }}
+                                </select>
+                                {{ else }}
+                                <input id="{{ $pfName }}-input" name="{{ $pfName }}" type="text" class="form-control"
+                                      {{/* get the actual value as supplied by the user from the PropertyFilters,
+                                        not the ConfiguredPropertyFilters (which doesn't have this info) */}}
+                                       value="{{ index $.Params.PropertyFilters $pfName }}">
+                                {{ end }}
+                            </div>
+                        </div>
                         {{ end }}
-                    </select>
-                    {{ else }}
-                    <input id="{{ $pfName }}-input" name="{{ $pfName }}" type="text" class="form-control"
-                          {{/* get the actual value as supplied by the user from the PropertyFilters,
-                            not the ConfiguredPropertyFilters (which doesn't have this info) */}}
-                           value="{{ index $.Params.PropertyFilters $pfName }}">
-                    {{ end }}
+                    </div>
                 </div>
             </div>
             {{ end }}

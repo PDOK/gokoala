@@ -147,6 +147,10 @@ IntervalEnd: End of interval, leave empty for open end
 Size: size
 ApplyFilters: Apply filters
 ResetFilter: Reset filter
+MorePropertyFilters: Show more filters
+LessPropertyFilters: Show fewer filters
+CQLFilterPlaceholder: Enter a CQL filter expression, e.g. name = 'foo'
+ShowExample: Show example
 
 # Schema page
 Required: Required
