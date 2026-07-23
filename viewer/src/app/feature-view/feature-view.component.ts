@@ -33,7 +33,7 @@ import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { NGXLogger } from 'ngx-logger'
-import { from, Subject, switchMap, takeUntil } from 'rxjs'
+import { catchError, from, of, Subject, switchMap, takeUntil } from 'rxjs'
 import { CrsMap } from '../shared/model/crs-map'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
@@ -144,6 +144,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     from(featuresUrls)
       .pipe(
         switchMap(dataUrl => this.featureService.getFeatures(dataUrl)),
+        catchError(() => {
+          this.logger.error('Error loading features')
+          return of([])
+        }),
         takeUntil(this._destroy$)
       )
       .subscribe(data => {
@@ -316,7 +320,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
       throw new Error(msg)
     }
     const currentResolution = this._view.getResolution() ?? throwUndefinedError('Current resolution is not defined')
-    const currentCenter = this._view.getCenter() ?? [0, 0]
+    const currentCenter = this._view.getCenter() ?? [155000, 463000] // use amersfoort center
     const newCenter = transform(currentCenter, currentProjection, newProjection) ?? [0, 0]
     const currentRotation = this._view.getRotation() ?? 0
     const currentMPU = currentProjection?.getMetersPerUnit() ?? throwUndefinedError('Current meters-per-unit is not defined')

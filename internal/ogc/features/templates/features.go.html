@@ -132,20 +132,6 @@
         dateTimeMenuBtn.addEventListener('click', toggleDatetimeMenu)
       }
 
-      // since the icon isn't a button, use bootstrap semantics to focus and "force" a click instead of default label behaviour
-      const cqlExampleToggle = document.getElementById('cql-example-button')
-      if (cqlExampleToggle) {
-        cqlExampleToggle.addEventListener('click', function(event) {
-          event.preventDefault()
-        })
-        cqlExampleToggle.addEventListener('keydown', function(event) {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            cqlExampleToggle.click()
-          }
-        })
-      }
-
       const filterInput = document.getElementById('cql-filter-input')
       if (filterInput) {
         if (filterInput.value.trim() !== '') {
@@ -272,18 +258,18 @@
                     <abbr title="Common Query Language filter">
                         CQL filter
                     </abbr>
-                    <span id="cql-example-button"
-                          class="hover-question-swap"
-                          role="button"
-                          tabindex="0"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#cql-example"
-                          aria-expanded="false"
-                          aria-controls="cql-example"
-                          aria-label="{{ i18n "ShowExample" }}">
+                    <button type="button"
+                            id="cql-example-button"
+                            class="btn p-0 border-0 align-baseline hover-question-swap"
+                            style="color: var(--bs-body-color);"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#cql-example"
+                            aria-expanded="false"
+                            aria-controls="cql-example"
+                            aria-label="{{ i18n "ShowExample" }}">
                         <i class="bi bi-question-circle" aria-hidden="true"></i>
                         <i class="bi bi-question-circle-fill" aria-hidden="true"></i>
-                    </span>
+                    </button>
                 </label>
                 <div class="col-sm-8">
                     <textarea id="cql-filter-input"
@@ -324,16 +310,17 @@
             {{ if .Params.ConfiguredPropertyFilters }}
             <div class="row mb-2">
                 <div class="col-12">
-                    <a  id="toggle-property-filters"
-                        class="d-flex align-items-center"
-                        data-bs-toggle="collapse"
-                        href="#advanced-filters"
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls="advanced-filters">
+                    <button type="button"
+                            id="toggle-property-filters"
+                            class="btn p-0 border-0 d-flex align-items-center"
+                            style="color: var(--bs-body-color);"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#advanced-filters"
+                            aria-expanded="false"
+                            aria-controls="advanced-filters">
                         <span id="property-filter-text">{{ i18n "MorePropertyFilters" }}</span>
                         <i class="bi bi-chevron-down ms-1 flex-shrink-0 collapse-chevron" aria-hidden="true"></i>
-                    </a>
+                    </button>
                     <div class="collapse mt-2" id="advanced-filters">
                         {{- range $pfName, $pf := .Params.ConfiguredPropertyFilters -}}
                         <div class="row mb-2">
