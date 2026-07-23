@@ -255,9 +255,9 @@
             "format": "uri"
           },
           "storageCrsCoordinateEpoch": {
-            "description": "point in time at which coordinates in the spatial feature collection are referenced to the dynamic coordinate reference system in `storageCrs`, that may be used to retrieve features from a collection without the need to apply a change of coordinate epoch. It is expressed as a decimal year in the Gregorian calendar",
+            "description": "point in time at which coordinates in the spatial feature collection are referenced to the dynamic coordinate reference system in `storageCrs`, that may be used to retrieve features from a collection without the need to apply a change of coordinate epoch. It is expressed as a decimal year in the Gregorian calendar, for example 2017-03-25 in the Gregorian calendar is epoch 2017.23",
             "type": "number",
-            "example": "2017-03-25 in the Gregorian calendar is epoch 2017.23"
+            "example": 2017.23
           }
           {{- end -}}
         }
@@ -350,13 +350,7 @@
           "items": {
             "type": "number"
           }
-        },
-        "example": [
-            7.01,
-            50.63,
-            7.22,
-            50.78
-        ]
+        }
       },
       "crs": {
         "description": "Coordinate reference system of the coordinates in the spatial extent\n(property `bbox`). The default reference system is WGS 84 longitude/latitude.",
@@ -412,12 +406,10 @@
         ],
         "properties": {
           "title": {
-            "type": "string",
-            "example": "Buildings in Bonn"
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "example": "Access to data about buildings in the city of Bonn via a Web API that conforms to the OGC API Features specification."
+            "type": "string"
           },
           "links": {
             "type": "array",
@@ -425,51 +417,7 @@
               "$ref": "#/components/schemas/link"
             }
           }
-        },
-        "example": [
-          {
-            "href": "http://data.example.org/?f=json",
-            "rel": "self",
-            "type": "application/json",
-            "title": "this document"
-          },
-          {
-            "href": "http://data.example.org/?f=html",
-            "rel": "alternate",
-            "type": "text/html",
-            "title": "this document in HTML"
-          },
-          {
-            "href": "http://data.example.org/api?f=json",
-            "rel": "service",
-            "type": "application/vnd.oai.openapi+json;version=3.0",
-            "title": "the API definition in OpenAPI 3.0 JSON"
-          },
-          {
-            "href": "http://data.example.org/api?f=html",
-            "rel": "service",
-            "type": "text/html",
-            "title": "the API definition in HTML"
-          },
-          {
-            "href": "http://data.example.org/conformance?f=json",
-            "rel": "conformance",
-            "type": "application/json",
-            "title": "the list of conformance classes implemented by this API"
-          },
-          {
-            "href": "http://data.example.org/collections?f=json",
-            "rel": "data",
-            "type": "application/json",
-            "title": "The collections in the dataset in JSON"
-          },
-          {
-            "href": "http://data.example.org/collections?f=html",
-            "rel": "data",
-            "type": "text/html",
-            "title": "The collections in the dataset in HTML"
-          }
-        ]
+        }
       },
       "id-link": {
         "type": "object",
