@@ -73,6 +73,12 @@ type featureCollectionPage struct {
 	// Property filters as specified in the (YAML) config, enriched with allowed values. Does not contain user supplied values
 	ConfiguredPropertyFilters map[string]domain.QueryableWithAllowedValues
 
+	// CQLEnabled indicates whether advanced (CQL2) filtering is enabled for this collection
+	CQLEnabled bool
+	// Filter holds the raw CQL2 filter expression provided by the user
+	Filter string
+	// FilterError allows for showing the error whenever Filter throws an error
+	FilterError error
 	// ProjJSON is used by the viewer to have dynamic CRS options
 	ProjJSON string
 }
@@ -96,10 +102,11 @@ func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
 	collection config.FeaturesCollection, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
 	propertyFilters map[string]string, queryables domain.Queryables,
-	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat) {
+	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat, err error) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
 		featuresURL, limit, propertyFilters, queryables)
+	pageContent.FilterError = err
 
 	hf.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
@@ -165,6 +172,8 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTi
 		ShowViewer:                true,
 		PropertyFilters:           propertyFilters,
 		ConfiguredPropertyFilters: configuredPropertyFilters,
+		CQLEnabled:                collection.Filters.CQL.IsEnabled(),
+		Filter:                    featuresURL.params.Get(filterParam),
 		ProjJSON:                  hf.projJSONBySRID,
 	}
 

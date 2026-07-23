@@ -73,7 +73,7 @@ func (f *Features) Features() http.HandlerFunc {
 		filter, err := parseCQL(cqlFilter, collection.Filters.CQL, datasource, f.queryables[collection.GetID()],
 			inputSRID, f.axisOrderBySRID[inputSRID.GetOrDefault()], collectionType)
 		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			f.handleCQLFilterError(w, r, collection, url, limit, dateTime, propertyFilters, collectionType, err)
 			return
 		}
 
@@ -104,7 +104,7 @@ func (f *Features) Features() http.HandlerFunc {
 			case engine.FormatHTML:
 				f.html.features(w, r, collection, newCursor, url, limit, dateTime,
 					propertyFilters, f.queryables[collection.ID],
-					fc, collectionType.AvailableFormats())
+					fc, collectionType.AvailableFormats(), nil)
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsGeoJSON(w, r, collection.ID, newCursor, url, &collection, fc)
 			case engine.FormatJSONFG:
@@ -189,6 +189,19 @@ func createTemporalCriteria(collection config.GeoSpatialCollection, dateTime dom
 		}
 	}
 	return ds.TemporalCriteria{}
+}
+
+func (f *Features) handleCQLFilterError(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
+	url featureCollectionURL, limit int, dateTime domain.DateTime, propertyFilters map[string]string,
+	collectionType geospatial.CollectionType, cqlErr error) {
+	format := f.engine.CN.NegotiateFormat(r)
+	if format != engine.FormatHTML {
+		engine.RenderProblem(engine.ProblemBadRequest, w, cqlErr.Error())
+		return
+	}
+
+	f.html.features(w, r, collection, domain.Cursors{}, url, limit, dateTime, propertyFilters,
+		f.queryables[collection.GetID()], &domain.FeatureCollection{}, collectionType.AvailableFormats(), cqlErr)
 }
 
 // log the error but send a generic message to the client to prevent possible information leakage from datasource.

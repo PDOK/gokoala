@@ -146,6 +146,10 @@ IntervalEnd: Einde periode, laat leeg voor open eind
 Size: omvang
 ApplyFilters: Filters toepassen
 ResetFilter: Filters wissen
+MorePropertyFilters: Toon meer filters
+LessPropertyFilters: Toon minder filters
+CQLFilterPlaceholder: Voer een CQL-filterexpressie in, bijvoorbeeld name = 'foo'
+ShowExample: Toon voorbeeld
 
 # Schema page
 Required: Verplicht

@@ -229,6 +229,40 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request HTML output for collection with CQL enabled renders property filters collapsed under 'Advanced filters' by default",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_property_filters_collapsed.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request HTML output for collection without CQL enabled does not render advanced filter section",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "bar",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request empty feature collection (zero results)'",
 			fields: fields{
 				configFiles: []string{
@@ -982,6 +1016,40 @@ func TestFeatures(t *testing.T) {
 			want: want{
 				body:       "internal/ogc/features/testdata/expected_features_cql_non_queryable.json",
 				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Request HTML output with syntactically invalid CQL filter renders a readable in-page error message",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=html&filter=prop1 === 5",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_syntax_error.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request HTML output with CQL filter for non-queryable property renders a readable page error message",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=html&filter=S_INTERSECTS(geometry, POINT(5.0403692 52.1017868)) AND fid > 2 AND prop2 = 6",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_non_queryable_error.html",
+				statusCode: http.StatusOK,
 			},
 		},
 		{

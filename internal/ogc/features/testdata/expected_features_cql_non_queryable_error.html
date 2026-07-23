@@ -1,0 +1,16 @@
+<textarea id="cql-filter-input"
+                              name="filter"
+                              class="form-control cql-filter-input"
+                              placeholder="Voer een CQL-filterexpressie in, bijvoorbeeld name = &#39;foo&#39;"
+                    >S_INTERSECTS(geometry, POINT(5.0403692 52.1017868)) AND fid &gt; 2 AND prop2 = 6</textarea>
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-sm-8 offset-sm-4">
+                    <div class="alert alert-danger" role="alert">
+                        failed to parse CQL filter:
+error: property &#39;fid&#39; cannot be used in CQL filter, is not a queryable property
+                    </div>
+                </div>
+            </div>
