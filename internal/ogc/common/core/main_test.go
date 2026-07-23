@@ -190,7 +190,7 @@ func TestCommonCore_API(t *testing.T) {
 				url:        "http://localhost:8080/api?f=json",
 			},
 			want: want{
-				body:       "OpenAPI",
+				body:       "\"openapi\":",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -222,7 +222,9 @@ func TestCommonCore_API(t *testing.T) {
 			handler.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
-			assert.Contains(t, rr.Body.String(), tt.want.body)
+			actualBody := rr.Body.String()
+			log.Print("ACTUAL:\n" + actualBody)
+			assert.Contains(t, actualBody, tt.want.body)
 		})
 	}
 }
