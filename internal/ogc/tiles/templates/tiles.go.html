@@ -107,8 +107,8 @@
           </tr>
         </tbody>
       </table>
+      <script type="module" src="{{ $viewerUrl }}/polyfills.js"></script>
       <script type="module" src="{{ $viewerUrl }}/main.js"></script>
-      <script src="{{ $viewerUrl }}/polyfills.js"></script>
        <app-vectortile-view id="vectortileviewer" class="card vectortile-view"
         tile-url="{{ $baseUrlTiles }}/tiles/{{ get $projections $defaultSrs.Srs }}"
         {{ if .Config.OgcAPI.Styles }}style-url="{{ $.Config.BaseURL }}/styles/{{ .Config.OgcAPI.Styles.Default }}?f=mapbox"{{ end }}

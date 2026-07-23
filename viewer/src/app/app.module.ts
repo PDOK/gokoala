@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser'
 import { VectortileViewComponent } from './vectortile-view/vectortile-view.component'
 import { createCustomElement } from '@angular/elements'
 import { ObjectInfoComponent } from './object-info/object-info.component'
-import { NgModule, Injector } from '@angular/core'
+import { NgModule, Injector, inject } from '@angular/core'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
@@ -24,20 +24,22 @@ import { LocationSearchViewComponent } from './location-search-view/location-sea
   providers: [provideHttpClient(withInterceptorsFromDi())],
 })
 export class AppModule {
-  constructor(private injector: Injector) {
-    const vectorTileView = createCustomElement(VectortileViewComponent, { injector })
+  private injector = inject(Injector)
+
+  constructor() {
+    const vectorTileView = createCustomElement(VectortileViewComponent, { injector: this.injector })
     customElements.define('app-vectortile-view', vectorTileView)
 
-    const objectInfo = createCustomElement(ObjectInfoComponent, { injector })
+    const objectInfo = createCustomElement(ObjectInfoComponent, { injector: this.injector })
     customElements.define('app-objectinfo-view', objectInfo)
 
-    const legendView = createCustomElement(LegendViewComponent, { injector })
+    const legendView = createCustomElement(LegendViewComponent, { injector: this.injector })
     customElements.define('app-legend-view', legendView)
 
-    const featureView = createCustomElement(FeatureViewComponent, { injector })
+    const featureView = createCustomElement(FeatureViewComponent, { injector: this.injector })
     customElements.define('app-feature-view', featureView)
 
-    const locationSearchView = createCustomElement(LocationSearchViewComponent, { injector })
+    const locationSearchView = createCustomElement(LocationSearchViewComponent, { injector: this.injector })
     customElements.define('app-location-search-view', locationSearchView)
   }
 

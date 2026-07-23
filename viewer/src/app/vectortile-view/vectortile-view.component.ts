@@ -8,6 +8,7 @@ import {
   Input,
   OnChanges,
   Output,
+  inject,
 } from '@angular/core'
 import Map from 'ol/Map'
 import TileDebug from 'ol/source/TileDebug.js'
@@ -70,12 +71,17 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   ],
 })
 export class VectortileViewComponent implements OnChanges {
+  private logger = inject(NGXLogger)
+  private elementRef = inject(ElementRef)
+  private matrixsetService = inject(MatrixSetService)
+  private cdf = inject(ChangeDetectorRef)
+
   title = 'view-component'
   map = new Map({})
   xyzSelector = '/{z}/{y}/{x}?f=mvt'
   private _showGrid = false
   private _showObjectInfo = false
-  vectorTileLayer: VectorTileLayer<FeatureLike> | undefined
+  vectorTileLayer: VectorTileLayer | undefined
   curFeature!: FeatureLike
   tileGrid: TileGrid | undefined
   minZoom?: number
@@ -124,15 +130,6 @@ export class VectortileViewComponent implements OnChanges {
   @Input() centerY!: number
   mapHeight = 600
   mapWidth = 800
-
-  constructor(
-    private logger: NGXLogger,
-    private elementRef: ElementRef,
-    private matrixsetService: MatrixSetService,
-    private cdf: ChangeDetectorRef
-  ) {
-    //empty constructor
-  }
 
   ngOnChanges(changes: NgChanges<VectortileViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
@@ -353,7 +350,7 @@ export class VectortileViewComponent implements OnChanges {
     return { vectorTileLayer: vectorTileLayer, layers: layers }
   }
 
-  private setStyle(vectorTileLayer: VectorTileLayer<FeatureLike>) {
+  private setStyle(vectorTileLayer: VectorTileLayer) {
     if (this.styleUrl) {
       applyStyle(vectorTileLayer, this.styleUrl, undefined, { updateSource: false }, this.calcResolutions(this.projection))
         .then(() => {

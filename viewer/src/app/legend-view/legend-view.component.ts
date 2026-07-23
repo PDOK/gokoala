@@ -1,4 +1,5 @@
-import { Component, Input, OnChanges, OnInit, ViewEncapsulation } from '@angular/core'
+import { ChangeDetectorRef, Component, DestroyRef, Input, OnChanges, OnInit, ViewEncapsulation, inject } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 import { LegendItemComponent } from './legend-item/legend-item.component'
@@ -13,6 +14,11 @@ import { NGXLogger } from 'ngx-logger'
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {
+  private logger = inject(NGXLogger)
+  private mapboxStyleService = inject(MapboxStyleService)
+  private cdr = inject(ChangeDetectorRef)
+  private destroyRef = inject(DestroyRef)
+
   mapboxStyle!: MapboxStyle
   // URL to a Mapbox style JSON endpoint
   @Input() styleUrl!: string
@@ -27,10 +33,7 @@ export class LegendViewComponent implements OnInit, OnChanges {
 
   LegendItems: LegendItem[] = []
 
-  constructor(
-    private logger: NGXLogger,
-    private mapboxStyleService: MapboxStyleService
-  ) {
+  constructor() {
     recordStyleLayer(true)
   }
 
@@ -55,24 +58,28 @@ export class LegendViewComponent implements OnInit, OnChanges {
 
   private generateLegend() {
     if (this.styleUrl) {
-      this.mapboxStyleService.getMapboxStyle(this.styleUrl).subscribe(style => {
-        this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)
-        if (this.mapboxStyle.metadata?.['gokoala:title-items']) {
-          this.titleItems = this.mapboxStyle.metadata?.['gokoala:title-items']
-        }
-        const titlepart = this.titleItems ? this.titleItems.split(',') : []
-        if (this.titleItems) {
-          if (this.titleItems.toLocaleLowerCase() === 'id') {
-            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, titlepart, true)
-          } else if (this.titleItems.toLocaleLowerCase().includes('no-id')) {
-            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, false)
-          } else {
-            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, true)
+      this.mapboxStyleService
+        .getMapboxStyle(this.styleUrl)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(style => {
+          this.mapboxStyle = this.mapboxStyleService.removeRasterLayers(style)
+          if (this.mapboxStyle.metadata?.['gokoala:title-items']) {
+            this.titleItems = this.mapboxStyle.metadata?.['gokoala:title-items']
           }
-        } else {
-          this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [], true)
-        }
-      })
+          const titlepart = this.titleItems ? this.titleItems.split(',') : []
+          if (this.titleItems) {
+            if (this.titleItems.toLocaleLowerCase() === 'id') {
+              this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.idTitle, titlepart, true)
+            } else if (this.titleItems.toLocaleLowerCase().includes('no-id')) {
+              this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, false)
+            } else {
+              this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.customTitle, titlepart, true)
+            }
+          } else {
+            this.LegendItems = this.mapboxStyleService.getItems(this.mapboxStyle, this.mapboxStyleService.capitalizeFirstLetter, [], true)
+          }
+          this.cdr.detectChanges()
+        })
     } else {
       this.logger.error('no style url supplied')
     }
