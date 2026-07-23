@@ -8,6 +8,7 @@ import {
   OnChanges,
   OnDestroy,
   Output,
+  inject,
 } from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
@@ -60,6 +61,10 @@ export enum InitialView {
   standalone: true,
 })
 export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy {
+  private readonly el = inject(ElementRef)
+  private readonly featureService = inject(FeatureService)
+  private readonly logger = inject(NGXLogger)
+
   private _showBoundingBoxButton: boolean = true
   initial: boolean = true
 
@@ -115,14 +120,12 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   })
   features: FeatureLike[] = []
   private _featureProjection: Projection | undefined
+  // Guards against `init()` running twice for the same input value. Some Angular Elements /
+  // component-test harnesses (e.g. @cypress/angular) invoke ngOnChanges with an identical
+  // "first change" more than once, which would otherwise register duplicate map event listeners.
+  private _initializedItemUrls: string[] | undefined
 
   private _destroy$ = new Subject<void>()
-
-  constructor(
-    private el: ElementRef,
-    private featureService: FeatureService,
-    private logger: NGXLogger
-  ) {}
 
   private getMap(): OLMap {
     return new OLMap({
@@ -132,6 +135,10 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   }
 
   private init() {
+    if (this._initializedItemUrls === this.itemUrls) {
+      return
+    }
+    this._initializedItemUrls = this.itemUrls
     initProj4WithDynamicCrs(this._crsMap, this.logger)
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
     this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
@@ -184,9 +191,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   }
 
   showButtons() {
-    this.map.getControls().forEach(x => {
-      this.map.removeControl(x)
-    })
+    this.map.getControls().clear()
     defaultControls({
       attribution: false,
       zoom: true,
@@ -251,7 +256,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
         zIndex: 10,
       })
     )
-    const extent = vsource.getExtent()
+    // features.length is checked above, so the source is non-empty and getExtent() cannot return null here
+    const extent = vsource.getExtent()!
     if (this.mode === 'default') {
       if (features.length > 0) {
         if (features.length < 3) {
@@ -386,7 +392,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     if (this.labelField) {
       eventType = 'click'
     }
-    this.map.on(eventType, (evt: MapBrowserEvent<UIEvent>) => {
+    this.map.on(eventType, (evt: MapBrowserEvent) => {
       this.map.forEachFeatureAtPixel(
         evt.pixel,
         (feature: FeatureLike) => {

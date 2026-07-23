@@ -8,6 +8,7 @@ import {
   Input,
   OnChanges,
   Output,
+  inject,
 } from '@angular/core'
 import Map from 'ol/Map'
 import TileDebug from 'ol/source/TileDebug.js'
@@ -16,7 +17,6 @@ import View from 'ol/View'
 import { Subject } from 'rxjs'
 import { EuropeanETRS89_LAEAQuad, MapProjection, NetherlandsRDNewQuadDefault } from '../shared/model/map-projection'
 
-import { CommonModule } from '@angular/common'
 import { NGXLogger } from 'ngx-logger'
 import { MapBrowserEvent } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
@@ -64,20 +64,24 @@ type ExcludeFunctions<T extends object> = Pick<T, ExcludeFunctionPropertyNames<T
   selector: 'app-vectortile-view',
   templateUrl: './vectortile-view.component.html',
   styleUrls: ['./vectortile-view.component.css'],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA, // Tells Angular we will have custom tags in our templates
   ],
 })
 export class VectortileViewComponent implements OnChanges {
+  private readonly logger = inject(NGXLogger)
+  private readonly elementRef = inject(ElementRef)
+  private readonly matrixsetService = inject(MatrixSetService)
+  private readonly cdf = inject(ChangeDetectorRef)
+
   title = 'view-component'
   map = new Map({})
   xyzSelector = '/{z}/{y}/{x}?f=mvt'
   private _showGrid = false
   private _showObjectInfo = false
-  vectorTileLayer: VectorTileLayer<FeatureLike> | undefined
+  vectorTileLayer: VectorTileLayer | undefined
   curFeature!: FeatureLike
   tileGrid: TileGrid | undefined
   minZoom?: number
@@ -126,15 +130,6 @@ export class VectortileViewComponent implements OnChanges {
   @Input() centerY!: number
   mapHeight = 600
   mapWidth = 800
-
-  constructor(
-    private logger: NGXLogger,
-    private elementRef: ElementRef,
-    private matrixsetService: MatrixSetService,
-    private cdf: ChangeDetectorRef
-  ) {
-    //empty constructor
-  }
 
   ngOnChanges(changes: NgChanges<VectortileViewComponent>) {
     if (changes.styleUrl?.previousValue !== changes.styleUrl?.currentValue) {
@@ -355,7 +350,7 @@ export class VectortileViewComponent implements OnChanges {
     return { vectorTileLayer: vectorTileLayer, layers: layers }
   }
 
-  private setStyle(vectorTileLayer: VectorTileLayer<FeatureLike>) {
+  private setStyle(vectorTileLayer: VectorTileLayer) {
     if (this.styleUrl) {
       applyStyle(vectorTileLayer, this.styleUrl, undefined, { updateSource: false }, this.calcResolutions(this.projection))
         .then(() => {

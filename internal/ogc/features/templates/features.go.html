@@ -258,8 +258,8 @@
     <!-- map viewer -->
     {{ if .Params.ShowViewer }}
     <div class="col-md-6 col-sm-12">
+        <script type="module" src="{{ $viewerUrl }}/polyfills.js"></script>
         <script type="module" src="{{ $viewerUrl }}/main.js"></script>
-        <script src="{{ $viewerUrl }}/polyfills.js"></script>
         {{/* different viewer settings depending on whether features are map sheets or not */}}
         {{ if $mapSheetProperties }}
         <app-feature-view

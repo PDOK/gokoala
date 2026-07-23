@@ -29,12 +29,11 @@ import {
   tap,
 } from 'rxjs'
 import { CollectionsService } from '../shared/services/collections.service'
-import { AsyncPipe, NgClass, NgIf, UpperCasePipe } from '@angular/common'
+import { AsyncPipe, NgClass, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
 import { HighlightPipe } from './highlight.pipe'
-import { ReplacePipe } from './replace.pipe'
 import { HttpErrorResponse } from '@angular/common/http'
 
 interface LocationForm {
@@ -43,23 +42,14 @@ interface LocationForm {
 
 @Component({
   selector: 'app-location-search-view',
-  standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    AsyncPipe,
-    PropertyValuePipe,
-    NgClass,
-    CollectionSettingsComponent,
-    NgIf,
-    HighlightPipe,
-    UpperCasePipe,
-    ReplacePipe,
-  ],
+  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent, HighlightPipe, UpperCasePipe],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef)
+
   @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
 
   @Input() placeholderText = 'Search by location'
@@ -100,14 +90,12 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   hasSearched$!: Observable<boolean>
   collectionTitles$!: Observable<Map<string, string>>
 
-  private _featureService = inject(FeatureService)
-  private _collectionsService = inject(CollectionsService)
+  private readonly _featureService = inject(FeatureService)
+  private readonly _collectionsService = inject(CollectionsService)
   private _bbox?: string = undefined
   private _destroy$ = new Subject<void>()
   private _confirmedHrefs: string[] = []
   private _latestFeatures: FeatureGeoJSON[] = []
-
-  constructor(private host: ElementRef<HTMLElement>) {}
 
   ngOnInit() {
     const url = new URL(window.location.href)

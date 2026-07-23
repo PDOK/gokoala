@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, inject } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
 import { Feature, Map as OLMap, VectorTile, View } from 'ol'
 import { applyStyle } from 'ol-mapbox-style'
@@ -19,11 +19,9 @@ import { exhaustiveGuard, LayerType, LegendItem, MapboxStyle, MapboxStyleService
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LegendItemComponent implements OnInit {
-  constructor(
-    private logger: NGXLogger,
-    private mapboxStyleService: MapboxStyleService,
-    private elementRef: ElementRef
-  ) {}
+  private readonly logger = inject(NGXLogger)
+  private readonly mapboxStyleService = inject(MapboxStyleService)
+  private readonly elementRef = inject(ElementRef)
 
   @Input() item!: LegendItem
   @Input() mapboxStyle!: MapboxStyle
@@ -73,7 +71,7 @@ export class LegendItemComponent implements OnInit {
     })
 
     this.vectorLayer.getSource()?.setTileLoadFunction(tile => {
-      const vectorTile = tile as VectorTile
+      const vectorTile = tile as VectorTile<Feature<Geometry>>
       vectorTile.setLoader(() => {
         const features: Feature<Geometry>[] = []
         features.push(feature)

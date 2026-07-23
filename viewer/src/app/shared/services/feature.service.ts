@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { map, Observable, of } from 'rxjs'
 import GeoJSON from 'ol/format/GeoJSON'
 import { get as getProj, ProjectionLike } from 'ol/proj'
@@ -77,10 +77,8 @@ export const defaultMapping: ProjectionMapping = { dataProjection: 'CRS:84', vis
   providedIn: 'root',
 })
 export class FeatureService {
-  constructor(
-    private logger: NGXLogger,
-    private http: HttpClient
-  ) {}
+  private readonly logger = inject(NGXLogger)
+  private readonly http = inject(HttpClient)
 
   queryFeatures(q: string, searchParams: { [key: string]: number }, crs?: string, bbox?: string): Observable<FeatureGeoJSON[]> {
     let params = new HttpParams().set('q', q)

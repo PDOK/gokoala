@@ -17,8 +17,8 @@
         </p>
     </div>
     <div class="col-md-6">
+        <script type="module" src="{{ $viewerUrl }}/polyfills.js"></script>
         <script type="module" src="{{ $viewerUrl }}/main.js"></script>
-        <script src="{{ $viewerUrl }}/polyfills.js"></script>
         <app-legend-view id="style-legend-view" class="card"
                          style-url="{{ $baseUrl }}/styles/{{ .Params.ID }}?f=mapbox">
         </app-legend-view>

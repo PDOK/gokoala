@@ -6,7 +6,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser'
   standalone: true,
 })
 export class HighlightPipe implements PipeTransform {
-  private sanitizer = inject(DomSanitizer)
+  private readonly sanitizer = inject(DomSanitizer)
 
   transform(properties: unknown): SafeHtml {
     const p = properties as { [key: string]: string }
