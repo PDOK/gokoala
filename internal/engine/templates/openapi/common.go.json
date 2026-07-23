@@ -151,8 +151,7 @@
         ],
         "properties": {
           "title": {
-            "type": "string",
-            "example": "Buildings in Bonn"
+            "type": "string"
           },
           "description": {
             "type": "string"
