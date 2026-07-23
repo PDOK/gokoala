@@ -429,7 +429,7 @@ See our [end-to-end tests](tests/README.md) for details.
 ### How to Contribute
 
 Make a pull request. We use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
-Also see [CONTRIBUTING](CONTRIBUTING.md) for details about contributing to PDOK software.
+Also see [CONTRIBUTING](CONTRIBUTING.md) for instructions about contributing to PDOK software.
 
 ### Contact
 
