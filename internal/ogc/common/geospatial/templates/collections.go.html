@@ -190,9 +190,11 @@
                                         <li class="list-group-item">
                                             <strong>{{ i18n "DisplayNameExample" }}</strong>: {{ $collSearch.DisplayNameExample }}
                                         </li>
+                                        {{ if $collSearch.CollectionFilter }}
                                         <li class="list-group-item">
                                             <strong>{{ i18n "CollectionFilter" }}</strong>: {{ $collSearch.CollectionFilter }}
                                         </li>
+                                        {{ end }}
                                     </ul>
                                 {{ end }}
                             {{ end }}
