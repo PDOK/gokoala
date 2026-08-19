@@ -53,7 +53,7 @@ tests.forEach(i => {
         .should((spy: any) => {
           const firstCallArgs = spy.getCall(0).args[0].split(',')
           expect(firstCallArgs[0]).to.match(/^4.8/)
-          expect(firstCallArgs[1]).to.match(/^52.37/)
+          expect(firstCallArgs[1]).to.match(/^52.38/)
         })
     })
 
@@ -73,7 +73,7 @@ tests.forEach(i => {
         .should((spy: any) => {
           const [minLon, minLat] = spy.getCall(0).args[0].split(',')
           expect(minLon, 'longitude').to.match(/^4.8/)
-          expect(minLat, 'latitude').to.match(/^52.37/)
+          expect(minLat, 'latitude').to.match(/^52.38/)
         })
     })
   })

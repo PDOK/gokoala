@@ -150,6 +150,8 @@ MorePropertyFilters: Toon meer filters
 LessPropertyFilters: Toon minder filters
 CQLFilterPlaceholder: Voer een CQL-filterexpressie in, bijvoorbeeld name = 'foo'
 ShowExample: Toon voorbeeld
+Filters: Filters
+Fields: Velden
 
 # Schema page
 Required: Verplicht

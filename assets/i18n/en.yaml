@@ -151,6 +151,8 @@ MorePropertyFilters: Show more filters
 LessPropertyFilters: Show fewer filters
 CQLFilterPlaceholder: Enter a CQL filter expression, e.g. name = 'foo'
 ShowExample: Show example
+Filters: Filters
+Fields: Fields
 
 # Schema page
 Required: Required

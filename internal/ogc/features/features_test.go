@@ -246,6 +246,40 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request HTML output with active limit and property filter renders filter badge and chips",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=1&straatnaam=Silodam",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_filter_badge_and_chips.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request HTML output for collection with viewer renders filters offcanvas panel",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "html",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_filters_offcanvas.html",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request HTML output for collection without CQL enabled does not render advanced filter section",
 			fields: fields{
 				configFiles: []string{

@@ -120,9 +120,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   })
   features: FeatureLike[] = []
   private _featureProjection: Projection | undefined
-  // Guards against `init()` running twice for the same input value. Some Angular Elements /
-  // component-test harnesses (e.g. @cypress/angular) invoke ngOnChanges with an identical
-  // "first change" more than once, which would otherwise register duplicate map event listeners.
   private _initializedItemUrls: string[] | undefined
 
   private _destroy$ = new Subject<void>()
@@ -141,7 +138,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     this._initializedItemUrls = this.itemUrls
     initProj4WithDynamicCrs(this._crsMap, this.logger)
     this.mapWidth = this.el.nativeElement.offsetWidth * 0.99
-    this.mapHeight = this.mapWidth * 0.75 // height = 0.75 * width creates 4:3 aspect ratio
+    const maxViewportHeight = window.innerHeight * 0.7
+    this.mapHeight = Math.max(maxViewportHeight, 300)
     const mapElm: HTMLElement = this.el.nativeElement.querySelector('#featuremap')
     this.map.setTarget(mapElm)
     this.features = []
