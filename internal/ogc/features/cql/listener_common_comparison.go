@@ -36,7 +36,7 @@ func (cl *CommonListener) ExitBooleanFactor(ctx *parser.BooleanFactorContext) {
 
 // ExitIsNullPredicate Comparison expressions (IS NULL, IS NOT NULL)
 func (cl *CommonListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateContext) {
-	if !cl.cqlConfig.EnableAdvancedComparisonOperators {
+	if !cl.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 		cl.errorListener.Error(errAdvancedComparisonNotEnabled)
 		return
 	}
@@ -52,13 +52,13 @@ func (cl *CommonListener) ExitIsNullPredicate(ctx *parser.IsNullPredicateContext
 // ExitPatternExpression handles CASEI and ACCENTI.
 func (cl *CommonListener) ExitPatternExpression(ctx *parser.PatternExpressionContext) {
 	if ctx.CASEI() != nil {
-		if !cl.cqlConfig.EnableCaseInsensitiveComparison {
+		if !cl.cqlConfig.IsCaseInsensitiveComparisonEnabled() {
 			cl.errorListener.Error(errCaseInsensitiveOperatorNotEnabled)
 			return
 		}
 		cl.stack.Push(addCollation(cl.stack.Pop(), common.IgnoreCaseCollation))
 	} else if ctx.ACCENTI() != nil {
-		if !cl.cqlConfig.EnableAccentInsensitiveComparison {
+		if !cl.cqlConfig.IsAccentInsensitiveComparisonEnabled() {
 			cl.errorListener.Error(errAccentInsensitiveOperatorNotEnabled)
 			return
 		}
@@ -69,13 +69,13 @@ func (cl *CommonListener) ExitPatternExpression(ctx *parser.PatternExpressionCon
 // ExitCharacterClause handles CASEI and ACCENTI.
 func (cl *CommonListener) ExitCharacterClause(ctx *parser.CharacterClauseContext) {
 	if ctx.CASEI() != nil {
-		if !cl.cqlConfig.EnableCaseInsensitiveComparison {
+		if !cl.cqlConfig.IsCaseInsensitiveComparisonEnabled() {
 			cl.errorListener.Error(errCaseInsensitiveOperatorNotEnabled)
 			return
 		}
 		cl.stack.Push(addCollation(cl.stack.Pop(), common.IgnoreCaseCollation))
 	} else if ctx.ACCENTI() != nil {
-		if !cl.cqlConfig.EnableAccentInsensitiveComparison {
+		if !cl.cqlConfig.IsAccentInsensitiveComparisonEnabled() {
 			cl.errorListener.Error(errAccentInsensitiveOperatorNotEnabled)
 			return
 		}
@@ -85,7 +85,7 @@ func (cl *CommonListener) ExitCharacterClause(ctx *parser.CharacterClauseContext
 
 // ExitIsBetweenPredicate Comparison expressions (BETWEEN, NOT BETWEEN)
 func (cl *CommonListener) ExitIsBetweenPredicate(ctx *parser.IsBetweenPredicateContext) {
-	if !cl.cqlConfig.EnableAdvancedComparisonOperators {
+	if !cl.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 		cl.errorListener.Error(errAdvancedComparisonNotEnabled)
 		return
 	}

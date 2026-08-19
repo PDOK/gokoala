@@ -65,7 +65,7 @@ func (l *GeoPackageListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryCom
 
 // ExitIsLikePredicate Comparison expressions (LIKE, NOT LIKE)
 func (l *GeoPackageListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateContext) {
-	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+	if !l.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 		l.errorListener.Error(errAdvancedComparisonNotEnabled)
 		return
 	}
@@ -88,7 +88,7 @@ func (l *GeoPackageListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateCont
 
 // ExitIsInListPredicate Comparison expressions (IN, NOT IN)
 func (l *GeoPackageListener) ExitIsInListPredicate(ctx *parser.IsInListPredicateContext) {
-	if !l.cqlConfig.EnableAdvancedComparisonOperators {
+	if !l.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
 		l.errorListener.Error(errAdvancedComparisonNotEnabled)
 		return
 	}

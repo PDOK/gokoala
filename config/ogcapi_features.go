@@ -105,7 +105,7 @@ func (oaf *OgcAPIFeatures) SupportsPart3() bool {
 // SupportsAdvancedComparisonOperators true when advanced comparison operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsAdvancedComparisonOperators() bool {
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.EnableAdvancedComparisonOperators {
+		if coll.Filters.CQL.IsAdvancedComparisonOperatorsEnabled() {
 			return true
 		}
 	}
@@ -115,7 +115,7 @@ func (oaf *OgcAPIFeatures) SupportsAdvancedComparisonOperators() bool {
 // SupportsCaseInsensitiveComparison true when case-insensitive comparison is enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsCaseInsensitiveComparison() bool {
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.EnableCaseInsensitiveComparison {
+		if coll.Filters.CQL.IsCaseInsensitiveComparisonEnabled() {
 			return true
 		}
 	}
@@ -125,7 +125,7 @@ func (oaf *OgcAPIFeatures) SupportsCaseInsensitiveComparison() bool {
 // SupportsAccentInsensitiveComparison true when accent/diacritics-insensitive comparison is enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsAccentInsensitiveComparison() bool {
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.EnableAccentInsensitiveComparison {
+		if coll.Filters.CQL.IsAccentInsensitiveComparisonEnabled() {
 			return true
 		}
 	}
@@ -138,7 +138,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctions() bool {
 		return true
 	}
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.EnableBasicSpatialFunctions {
+		if coll.Filters.CQL.IsBasicSpatialFunctionsEnabled() {
 			return true
 		}
 	}
@@ -151,7 +151,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctionsPlus() bool {
 		return true
 	}
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.EnableBasicSpatialFunctionsPlus {
+		if coll.Filters.CQL.IsBasicSpatialFunctionsPlusEnabled() {
 			return true
 		}
 	}
@@ -161,7 +161,7 @@ func (oaf *OgcAPIFeatures) SupportsBasicSpatialFunctionsPlus() bool {
 // SupportsSpatialFunctions true when ALL spatial operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsSpatialFunctions() bool {
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.EnableSpatialFunctions {
+		if coll.Filters.CQL.IsSpatialFunctionsEnabled() {
 			return true
 		}
 	}
@@ -171,7 +171,7 @@ func (oaf *OgcAPIFeatures) SupportsSpatialFunctions() bool {
 // SupportsTemporalFunctions true when temporal operators are enabled for at least one collection.
 func (oaf *OgcAPIFeatures) SupportsTemporalFunctions() bool {
 	for _, coll := range oaf.Collections {
-		if coll.Filters.CQL.EnableTemporalFunctions {
+		if coll.Filters.CQL.IsTemporalFunctionsEnabled() {
 			return true
 		}
 	}

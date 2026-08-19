@@ -55,5 +55,8 @@ ogcApi:
     collections:
       - id: newyork
         tableName: addresses
+        filters:
+          cql:
+            enable: false
         # reference to common metadata
         metadata: *collectionMetadata
