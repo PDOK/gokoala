@@ -12,10 +12,10 @@ import (
 
 func newRouter(version string, enableTrailingSlash bool, enableCORS bool) *chi.Mux {
 	router := chi.NewRouter()
-	router.Use(middleware.RealIP)  // should be first middleware
-	router.Use(middleware.Logger)  // log to console
-	router.Use(problemRecoverer)   // catch panics and turn into 500s
-	router.Use(middleware.GetHead) // support HEAD requests https://docs.ogc.org/is/17-069r4/17-069r4.html#_http_1_1
+	router.Use(middleware.ClientIPFromXFF()) // should be first middleware
+	router.Use(middleware.Logger)            // log to console
+	router.Use(problemRecoverer)             // catch panics and turn into 500s
+	router.Use(middleware.GetHead)           // support HEAD requests https://docs.ogc.org/is/17-069r4/17-069r4.html#_http_1_1
 	if enableTrailingSlash {
 		router.Use(middleware.StripSlashes)
 	}
