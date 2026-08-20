@@ -1,0 +1,23 @@
+<div class="d-flex align-items-center gap-2 flex-wrap">
+    <button type="button" class="btn btn-primary d-flex align-items-center gap-2"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#filters-offcanvas"
+            aria-controls="filters-offcanvas">
+        Filters
+        <span class="badge rounded-pill text-bg-light">2</span>
+    </button>
+
+    <span class="filter-chip">
+    Limiet: 1
+    <button type="button" class="filter-chip-remove" aria-label="Limiet"
+            onclick="callUrl(updateQueryString('limit', ''))">x</button>
+</span>
+
+    <span class="filter-chip">
+    Straatnaam: Silodam
+    <button type="button" class="filter-chip-remove" aria-label="Straatnaam"
+            onclick="callUrl(updateQueryString('straatnaam', ''))">x</button>
+</span>
+
+    <button type="button" class="btn btn-link btn-sm p-0" onclick="resetForm()">Filters wissen</button>
+</div>

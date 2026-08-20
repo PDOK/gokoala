@@ -79,8 +79,9 @@ func TestNewCollections_Collections(t *testing.T) {
 		containerID string
 	}
 	type want struct {
-		bodyContains string
-		statusCode   int
+		bodyContains    string
+		bodyNotContains string
+		statusCode      int
 	}
 	tests := []struct {
 		name   string
@@ -144,6 +145,28 @@ func TestNewCollections_Collections(t *testing.T) {
 				statusCode:   http.StatusOK,
 			},
 		},
+		{
+			name: "search config, collection filter renders list item",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search_collection_filter.yaml",
+				url:        "http://localhost:8080/collections?f=html",
+			},
+			want: want{
+				bodyContains: "<strong>Collectiefilter</strong>: Alleen adressen binnen Amsterdam",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "search config, no collection filter configured hides list item",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=html",
+			},
+			want: want{
+				bodyNotContains: "Collectiefilter",
+				statusCode:      http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -162,6 +185,9 @@ func TestNewCollections_Collections(t *testing.T) {
 
 			assert.Equal(t, tt.want.statusCode, rr.Code)
 			assert.Contains(t, rr.Body.String(), tt.want.bodyContains)
+			if tt.want.bodyNotContains != "" {
+				assert.NotContains(t, rr.Body.String(), tt.want.bodyNotContains)
+			}
 		})
 	}
 }

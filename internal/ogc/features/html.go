@@ -20,8 +20,11 @@ var (
 			Path: "collections",
 		},
 	}
-	featuresKey = engine.NewTemplateKey(templatesDir + "features.go.html")
-	featureKey  = engine.NewTemplateKey(templatesDir + "feature.go.html")
+	featureFiltersInclude = templatesDir + "partials/feature_filters.go.html"
+
+	featuresKey = engine.NewTemplateKey(templatesDir+"features.go.html",
+		engine.WithInclude(featureFiltersInclude))
+	featureKey = engine.NewTemplateKey(templatesDir + "feature.go.html")
 )
 
 type htmlFeatures struct {

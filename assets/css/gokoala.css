@@ -33,6 +33,9 @@
 .card-header a:hover {
     color: var(--secondary-color);
 }
+.card-body > :last-child {
+    margin-bottom: 0;
+}
 .collapse-chevron {
     transition: transform 0.2s ease-in-out;
 }
@@ -121,4 +124,28 @@ td {
 
 .hover-question-swap:hover .bi-question-circle {
     display: none;
+}
+
+/* filter chips - closable */
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background-color: var(--primary-color-30);
+    color: var(--primary-color);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 1rem;
+}
+.filter-chip-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    color: inherit;
+    opacity: .6;
+    cursor: pointer;
+}
+.filter-chip-remove:hover {
+    opacity: 1;
 }
