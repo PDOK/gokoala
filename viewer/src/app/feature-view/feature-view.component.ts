@@ -121,6 +121,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   features: FeatureLike[] = []
   private _featureProjection: Projection | undefined
   private _initializedItemUrls: string[] | undefined
+  private _initializationQueued = false
 
   private _destroy$ = new Subject<void>()
 
@@ -132,6 +133,17 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   }
 
   private init() {
+    if (this._initializationQueued) {
+      return
+    }
+    this._initializationQueued = true
+    queueMicrotask(() => {
+      this._initializationQueued = false
+      this.initialize()
+    })
+  }
+
+  private initialize() {
     if (this._initializedItemUrls === this.itemUrls) {
       return
     }
@@ -149,8 +161,8 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     from(featuresUrls)
       .pipe(
         switchMap(dataUrl => this.featureService.getFeatures(dataUrl)),
-        catchError(() => {
-          this.logger.error('Error loading features')
+        catchError((e: unknown) => {
+          this.logger.error('Error loading features', e)
           return of([])
         }),
         takeUntil(this._destroy$)
