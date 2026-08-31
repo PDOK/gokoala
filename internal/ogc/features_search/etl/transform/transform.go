@@ -129,7 +129,7 @@ func (r RawRecord) transformBbox() (*geom.Polygon, error) {
 	if strings.EqualFold(r.GeometryType, "POINT") {
 		return nil, nil // No bbox for point geometries
 	}
-	if strings.EqualFold(r.GeometryType, "LINESTRING") {
+	if strings.EqualFold(r.GeometryType, "LINESTRING") || strings.EqualFold(r.GeometryType, "MULTILINESTRING") {
 		r.Bbox = util.PadBbox(r.Bbox) // Slightly pad bbox for exact north-south or east-west linestrings to avoid 0 area
 	}
 	if util.SurfaceArea(r.Bbox) <= 0 {
