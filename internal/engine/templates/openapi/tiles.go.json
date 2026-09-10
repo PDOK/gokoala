@@ -243,7 +243,7 @@
           }
         }
       },
-      "crs": {
+      "tileMatrixSetCrs": {
         "oneOf": [
           {
             "description": "Simplification of the object into a url if the other properties are not present",
@@ -475,7 +475,7 @@
                 "description": "Coordinate Reference System (CRS)"
               },
               {
-                "$ref": "#/components/schemas/crs"
+                "$ref": "#/components/schemas/tileMatrixSetCrs"
               }
             ]
           },
@@ -574,7 +574,7 @@
                       "description": "Coordinate Reference System (CRS)"
                     },
                     {
-                      "$ref": "#/components/schemas/crs"
+                      "$ref": "#/components/schemas/tileMatrixSetCrs"
                     }
                   ]
                 },
@@ -819,7 +819,7 @@
                         "description": "Coordinate Reference System (CRS) of the coordinates"
                       },
                       {
-                        "$ref": "#/components/schemas/crs"
+                        "$ref": "#/components/schemas/tileMatrixSetCrs"
                       }
                     ]
                   },
@@ -974,7 +974,7 @@
                 "description": "Coordinate Reference System (CRS)"
               },
               {
-                "$ref": "#/components/schemas/crs"
+                "$ref": "#/components/schemas/tileMatrixSetCrs"
               }
             ]
           },
@@ -1037,7 +1037,7 @@
                 "description": "Coordinate Reference System (CRS)"
               },
               {
-                "$ref": "#/components/schemas/crs"
+                "$ref": "#/components/schemas/tileMatrixSetCrs"
               }
             ]
           },
@@ -1214,7 +1214,7 @@
                 "description": "Coordinate Reference System (CRS)"
               },
               {
-                "$ref": "#/components/schemas/crs"
+                "$ref": "#/components/schemas/tileMatrixSetCrs"
               }
             ]
           },
@@ -1283,7 +1283,7 @@
             "$ref": "#/components/schemas/2DPoint"
           },
           "crs": {
-            "$ref": "#/components/schemas/crs"
+            "$ref": "#/components/schemas/tileMatrixSetCrs"
           },
           "orderedAxes": {
             "type": "array",
