@@ -123,15 +123,15 @@ func (cl *CommonListener) isSpatialFilterAllowed(cqlFunction string) bool {
 			"contain geospatial items (features), only non-geospatial items (attributes)", cqlFunction)
 		return false
 	}
-	if !cl.cqlConfig.EnableBasicSpatialFunctions {
+	if !cl.cqlConfig.IsBasicSpatialFunctionsEnabled() {
 		cl.errorListener.Error(errSpatialOperatorsNotEnabled)
 		return false
 	}
-	if !cl.cqlConfig.EnableSpatialFunctions && strings.ToUpper(cqlFunction) != "S_INTERSECTS" {
+	if !cl.cqlConfig.IsSpatialFunctionsEnabled() && strings.ToUpper(cqlFunction) != "S_INTERSECTS" {
 		cl.errorListener.Errorf("spatial operator '%s' is not enabled for this collection, only S_INTERSECTS is allowed", cqlFunction)
 		return false
 	}
-	if !cl.cqlConfig.EnableBasicSpatialFunctionsPlus && !cl.cqlConfig.EnableSpatialFunctions && !isBboxOrPoint() {
+	if !cl.cqlConfig.IsBasicSpatialFunctionsPlusEnabled() && !cl.cqlConfig.IsSpatialFunctionsEnabled() && !isBboxOrPoint() {
 		cl.errorListener.Errorf("geometry type '%s' is not allowed, only %s and %s are "+
 			"allowed with basic spatial filtering", cl.currentWktType, pointKeyword, bboxKeyword)
 		return false

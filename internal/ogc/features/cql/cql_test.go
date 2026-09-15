@@ -28,13 +28,13 @@ var datasources = []string{gpkg, postgresql}
 
 var cqlConfigAllEnabled = config.CQL{
 	Enable:                            types.PtrTo(true),
-	EnableAdvancedComparisonOperators: true,
-	EnableCaseInsensitiveComparison:   true,
-	EnableAccentInsensitiveComparison: true,
-	EnableBasicSpatialFunctions:       true,
-	EnableBasicSpatialFunctionsPlus:   true,
-	EnableSpatialFunctions:            true,
-	EnableTemporalFunctions:           true,
+	EnableAdvancedComparisonOperators: types.PtrTo(true),
+	EnableCaseInsensitiveComparison:   types.PtrTo(true),
+	EnableAccentInsensitiveComparison: types.PtrTo(true),
+	EnableBasicSpatialFunctions:       types.PtrTo(true),
+	EnableBasicSpatialFunctionsPlus:   types.PtrTo(true),
+	EnableSpatialFunctions:            types.PtrTo(true),
+	EnableTemporalFunctions:           types.PtrTo(true),
 }
 
 var pwd string
@@ -523,7 +523,7 @@ func TestOperatorShouldWorkRegardlessOfCasing(t *testing.T) {
 func TestLikeOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableAdvancedComparisonOperators = false
+	cqlConfig.EnableAdvancedComparisonOperators = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}, {Name: "prop3"}}
 	inputCQL := "prop1 LIKE 'foo%' AND prop2 LIKE 'bar_' OR prop3 LIKE '%abc'"
@@ -583,7 +583,7 @@ func TestCaseInsensitiveOperator(t *testing.T) {
 func TestCaseInsensitiveOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableCaseInsensitiveComparison = false
+	cqlConfig.EnableCaseInsensitiveComparison = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "CASEI(prop1) = CASEI('Foo')"
@@ -641,7 +641,7 @@ func TestAccentInsensitiveOperator(t *testing.T) {
 func TestAccentInsensitiveOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableAccentInsensitiveComparison = false
+	cqlConfig.EnableAccentInsensitiveComparison = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "prop1"}}
 	inputCQL := "ACCENTI(prop1) = ACCENTI('fóo') OR ACCENTI(prop1) = ACCENTI('débárquér')"
@@ -847,7 +847,7 @@ func TestNotBetweenOperator(t *testing.T) {
 func TestBetweenOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableAdvancedComparisonOperators = false
+	cqlConfig.EnableAdvancedComparisonOperators = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 NOT BETWEEN 4 AND 6 AND prop2 = 'bar'"
@@ -938,7 +938,7 @@ func TestNotInListOperator(t *testing.T) {
 func TestInOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableAdvancedComparisonOperators = false
+	cqlConfig.EnableAdvancedComparisonOperators = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IN ('foo', 'bar', 'baz') AND prop2 = 'baz'"
@@ -1029,7 +1029,7 @@ func TestIsNotNullOperator(t *testing.T) {
 func TestIsNullOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableAdvancedComparisonOperators = false
+	cqlConfig.EnableAdvancedComparisonOperators = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 IS NULL AND prop2 = 'baz'"
@@ -1332,8 +1332,8 @@ func TestSpatialQueryWithMultiPolygon(t *testing.T) {
 func TestSpatialQueryWithMultiPolygonFailsWithOnlyBasicSpatialFilteringEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableBasicSpatialFunctionsPlus = false
-	cqlConfig.EnableSpatialFunctions = false
+	cqlConfig.EnableBasicSpatialFunctionsPlus = types.PtrTo(false)
+	cqlConfig.EnableSpatialFunctions = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "geom", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, MULTIPOLYGON(((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)),((2.0 2.0, 3.0 2.0, 3.0 3.0, 2.0 3.0, 2.0 2.0))))"
@@ -1444,8 +1444,8 @@ func TestSpatialQueryFailsOnInvalidBbox(t *testing.T) {
 func TestSpatialQueryWithBboxWithOnlyBasicSpatialFunctionsEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableBasicSpatialFunctionsPlus = false
-	cqlConfig.EnableSpatialFunctions = false
+	cqlConfig.EnableBasicSpatialFunctionsPlus = types.PtrTo(false)
+	cqlConfig.EnableSpatialFunctions = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, BBOX(10.0, 20.1, 30.0, 40.0))"
@@ -1700,9 +1700,9 @@ func TestSpatialQueryForAllWellKnownTexts(t *testing.T) {
 func TestBasicSpatialOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableBasicSpatialFunctions = false
-	cqlConfig.EnableBasicSpatialFunctionsPlus = false
-	cqlConfig.EnableSpatialFunctions = false
+	cqlConfig.EnableBasicSpatialFunctions = types.PtrTo(false)
+	cqlConfig.EnableBasicSpatialFunctionsPlus = types.PtrTo(false)
+	cqlConfig.EnableSpatialFunctions = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
@@ -1727,9 +1727,9 @@ func TestBasicSpatialOperatorNotEnabled(t *testing.T) {
 func TestBasicSpatialPlusOperatorNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableBasicSpatialFunctions = true
-	cqlConfig.EnableBasicSpatialFunctionsPlus = false
-	cqlConfig.EnableSpatialFunctions = false
+	cqlConfig.EnableBasicSpatialFunctions = types.PtrTo(true)
+	cqlConfig.EnableBasicSpatialFunctionsPlus = types.PtrTo(false)
+	cqlConfig.EnableSpatialFunctions = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_INTERSECTS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
@@ -1754,9 +1754,9 @@ func TestBasicSpatialPlusOperatorNotEnabled(t *testing.T) {
 func TestAllSpatialFunctionsNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableBasicSpatialFunctions = true
-	cqlConfig.EnableBasicSpatialFunctionsPlus = true
-	cqlConfig.EnableSpatialFunctions = false
+	cqlConfig.EnableBasicSpatialFunctions = types.PtrTo(true)
+	cqlConfig.EnableBasicSpatialFunctionsPlus = types.PtrTo(true)
+	cqlConfig.EnableSpatialFunctions = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "geometry", IsPrimaryGeometry: true}}
 	inputCQL := "S_OVERLAPS(geometry, GEOMETRYCOLLECTION(POINT(0.0 0.0),LINESTRING(0.0 0.0, 1.0 1.0)))"
@@ -2830,7 +2830,7 @@ func TestTemporalAndBooleanQuery(t *testing.T) {
 func TestTemporalOperatorsNotEnabled(t *testing.T) {
 	// given
 	cqlConfig := cqlConfigAllEnabled
-	cqlConfig.EnableTemporalFunctions = false
+	cqlConfig.EnableTemporalFunctions = types.PtrTo(false)
 
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop5"}}
 	inputCQL := "prop1 = 10 AND T_AFTER(prop5, DATE('2015-01-01'))"

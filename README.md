@@ -230,9 +230,20 @@ enabled:
 - Property filtering: simple equality filtering e.g., `?name=Foo` or `?name=Foo&size=400`. You'll need to configure
   these properties per collection in the config file.
 - CQL: advanced filtering using `cql2-text`. This uses the same properties (queryables) configured in the config file
-  for _property filtering_. In addition, you need to
-  explicitly [enable CQL](https://github.com/PDOK/gokoala/blob/master/examples/config_all.yaml#L117) in the config file.
-  You can control which CQL conformance classes are enabled, such as basic spatial, advanced spatial, temporal, etc.
+  for _property filtering_. By default, CQL is fully enabled. You can optionally limit which CQL conformance classes
+  are enabled, such as basic spatial, advanced spatial, temporal, etc. For example:
+
+```yaml
+  filters:
+    properties:
+      - name: street
+      - name: housenumber
+        indexRequired: false
+      - name: city
+    cql:
+      enable: true
+      enableCaseInsensitiveComparison: false # disable a specific class of CQL operations
+```
 
 ### OpenAPI spec
 
