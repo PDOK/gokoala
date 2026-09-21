@@ -40,8 +40,8 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 
 	sb := &strings.Builder{}
 	for _, word := range q.words {
-		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS);
-		// keep the original word for synonym lookup.
+		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS)
+		// keep the original word for synonym lookup
 		renderedWord := strings.ReplaceAll(word, "&", "")
 		if renderedWord == "" {
 			continue
@@ -55,7 +55,7 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 		if strings.Contains(renderedWord, "'") {
 			renderedWord = "'" + strings.ReplaceAll(renderedWord, "'", "''") + "'"
 		}
-		// add AND operator only between terms that were actually rendered.
+		// add AND operator only between terms that were actually rendered
 		if sb.Len() > 0 {
 			sb.WriteString(" & ")
 		}
