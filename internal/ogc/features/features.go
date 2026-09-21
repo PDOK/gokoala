@@ -90,8 +90,8 @@ func (f *Features) Features() http.HandlerFunc {
 		format := f.engine.CN.NegotiateFormat(r)
 		if geometryType == geometryTypeNone {
 			switch format {
-			case engine.FormatHTML:
-				f.html.attributes(w, r, collection, newCursor, url, limit, dateTime,
+			case engine.FormatHTML, engine.FormatMarkdown:
+				f.html.attributes(w, r, format, collection, newCursor, url, limit, dateTime,
 					propertyFilters, f.queryables[collection.ID],
 					fc, collectionType.AvailableFormats(), nil)
 			case engine.FormatGeoJSON, engine.FormatJSON:
@@ -101,8 +101,8 @@ func (f *Features) Features() http.HandlerFunc {
 			}
 		} else {
 			switch format {
-			case engine.FormatHTML:
-				f.html.features(w, r, collection, newCursor, url, limit, dateTime,
+			case engine.FormatHTML, engine.FormatMarkdown:
+				f.html.features(w, r, format, collection, newCursor, url, limit, dateTime,
 					propertyFilters, f.queryables[collection.ID],
 					fc, collectionType.AvailableFormats(), nil)
 			case engine.FormatGeoJSON, engine.FormatJSON:
@@ -195,13 +195,13 @@ func (f *Features) handleCQLFilterError(w http.ResponseWriter, r *http.Request, 
 	url featureCollectionURL, limit int, dateTime domain.DateTime, propertyFilters map[string]string,
 	collectionType geospatial.CollectionType, cqlErr error) {
 	format := f.engine.CN.NegotiateFormat(r)
-	if format != engine.FormatHTML {
+	switch format {
+	case engine.FormatHTML, engine.FormatMarkdown:
+		f.html.features(w, r, format, collection, domain.Cursors{}, url, limit, dateTime, propertyFilters,
+			f.queryables[collection.GetID()], &domain.FeatureCollection{}, collectionType.AvailableFormats(), cqlErr)
+	default:
 		engine.RenderProblem(engine.ProblemBadRequest, w, cqlErr.Error())
-		return
 	}
-
-	f.html.features(w, r, collection, domain.Cursors{}, url, limit, dateTime, propertyFilters,
-		f.queryables[collection.GetID()], &domain.FeatureCollection{}, collectionType.AvailableFormats(), cqlErr)
 }
 
 // log the error but send a generic message to the client to prevent possible information leakage from datasource.

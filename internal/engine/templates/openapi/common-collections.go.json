@@ -31,7 +31,8 @@
               "type": "string",
               "enum": [
                 "json",
-                "html"
+                "html",
+                "md"
               ]
             },
             "example": "json"
@@ -47,6 +48,11 @@
                 }
               },
               "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/markdown": {
                 "schema": {
                   "type": "string"
                 }
@@ -82,7 +88,8 @@
               "type": "string",
               "enum": [
                 "json",
-                "html"
+                "html",
+                "md"
               ]
             },
             "example": "json"
@@ -98,6 +105,11 @@
                 }
               },
               "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/markdown": {
                 "schema": {
                   "type": "string"
                 }
@@ -152,7 +164,8 @@
           "type": "string",
           "enum": [
             "json",
-            "html"
+            "html",
+            "md"
           ]
         },
         "example": "json"

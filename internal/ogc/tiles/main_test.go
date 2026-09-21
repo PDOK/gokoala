@@ -520,6 +520,17 @@ func TestTile_TilesetsList(t *testing.T) {
 				statusCode:   http.StatusOK,
 			},
 		},
+		{
+			name: "test Tile Sets heading present as Markdown",
+			fields: fields{
+				configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:        "http://localhost:8080/tiles?f=md",
+			},
+			want: want{
+				bodyContains: "## Tile Sets",
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -566,6 +577,18 @@ func TestTile_TilesetsListForCollection(t *testing.T) {
 			},
 			want: want{
 				bodyContains: "NetherlandsRDNewQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "test Tile Sets heading present as Markdown",
+			fields: fields{
+				configFile: "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:        "http://localhost:8080/collections/:collection/tiles?f=md",
+				collection: "example",
+			},
+			want: want{
+				bodyContains: "## Tile Sets",
 				statusCode:   http.StatusOK,
 			},
 		},
@@ -652,6 +675,18 @@ func TestTile_Tileset(t *testing.T) {
 			want: want{
 				bodyContains: "request doesn't conform to OpenAPI spec: parameter \\\"tileMatrixSetId\\\" in path has an error: value is not one of the allowed values",
 				statusCode:   http.StatusBadRequest,
+			},
+		},
+		{
+			name: "NetherlandsRDNewQuad as Markdown",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:             "http://localhost:8080/tiles/NetherlandsRDNewQuad?f=md",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+			},
+			want: want{
+				bodyContains: "# NetherlandsRDNewQuad",
+				statusCode:   http.StatusOK,
 			},
 		},
 	}
@@ -744,6 +779,19 @@ func TestTile_TilesetForCollection(t *testing.T) {
 				statusCode:   http.StatusBadRequest,
 			},
 		},
+		{
+			name: "NetherlandsRDNewQuad as Markdown",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
+				url:             "http://localhost:8080/collections/example/tiles/NetherlandsRDNewQuad?f=md",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+				collection:      "example",
+			},
+			want: want{
+				bodyContains: "NetherlandsRDNewQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -829,6 +877,18 @@ func TestTile_TilematrixSet(t *testing.T) {
 				statusCode:   http.StatusBadRequest,
 			},
 		},
+		{
+			name: "NetherlandsRDNewQuad as Markdown",
+			fields: fields{
+				configFile:      "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:             "http://localhost:8080/tileMatrixSets/NetherlandsRDNewQuad?f=md",
+				tileMatrixSetID: "NetherlandsRDNewQuad",
+			},
+			want: want{
+				bodyContains: "NetherlandsRDNewQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -895,6 +955,17 @@ func TestTile_TilematrixSets(t *testing.T) {
 			},
 			want: want{
 				bodyContains: "WebMercatorQuad",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "NetherlandsRDNewQuad as Markdown",
+			fields: fields{
+				configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel.yaml",
+				url:        "http://localhost:8080/tileMatrixSets?f=md",
+			},
+			want: want{
+				bodyContains: "| [NetherlandsRDNewQuad](tileMatrixSets/NetherlandsRDNewQuad)",
 				statusCode:   http.StatusOK,
 			},
 		},

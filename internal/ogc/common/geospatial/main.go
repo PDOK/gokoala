@@ -40,7 +40,8 @@ func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 			types,
 			collectionsBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+"collections.go.json"),
-			engine.NewTemplateKey(templatesDir+"collections.go.html"))
+			engine.NewTemplateKey(templatesDir+"collections.go.html"),
+			engine.NewTemplateKey(templatesDir+"collections.go.md"))
 
 		for _, coll := range e.Config.AllCollections().Unique() {
 			title := coll.GetID()
@@ -67,7 +68,8 @@ func NewCollections(e *engine.Engine, types CollectionTypes) *Collections {
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, nil,
 				engine.NewTemplateKey(templatesDir+"collection.go.json", engine.WithInstanceName(coll.GetID())))
 			e.RenderTemplatesWithParams(CollectionsPath+"/"+coll.GetID(), collWithType, collectionBreadcrumbs,
-				engine.NewTemplateKey(templatesDir+"collection.go.html", engine.WithInstanceName(coll.GetID())))
+				engine.NewTemplateKey(templatesDir+"collection.go.html", engine.WithInstanceName(coll.GetID())),
+				engine.NewTemplateKey(templatesDir+"collection.go.md", engine.WithInstanceName(coll.GetID())))
 		}
 	}
 

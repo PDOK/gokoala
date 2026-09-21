@@ -309,7 +309,8 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 	e.RenderTemplates(tileMatrixSetsPath,
 		tileMatrixSetsBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.json"),
-		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"))
+		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.html"),
+		engine.NewTemplateKey(templatesDir+"tileMatrixSets.go.md"))
 
 	for _, projection := range config.AllTileProjections {
 		breadcrumbs := tileMatrixSetsBreadcrumbs
@@ -323,7 +324,8 @@ func renderTileMatrixTemplates(e *engine.Engine) {
 		e.RenderTemplates(tileMatrixSetsPath+"/"+projection,
 			breadcrumbs,
 			engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+projection+".go.json"),
-			engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+projection+".go.html"))
+			engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+projection+".go.html"),
+			engine.NewTemplateKey(templatesDir+tileMatrixSetsLocalPath+projection+".go.md"))
 	}
 }
 
@@ -354,7 +356,8 @@ func renderTilesTemplates(e *engine.Engine, collection *config.TilesCollection, 
 		data,
 		breadcrumbs,
 		engine.NewTemplateKey(templatesDir+"tiles.go.json", engine.WithInstanceName(collectionID)),
-		engine.NewTemplateKey(templatesDir+"tiles.go.html", engine.WithInstanceName(collectionID)))
+		engine.NewTemplateKey(templatesDir+"tiles.go.html", engine.WithInstanceName(collectionID)),
+		engine.NewTemplateKey(templatesDir+"tiles.go.md", engine.WithInstanceName(collectionID)))
 
 	// Now render metadata about tiles per projection/SRS.
 	for _, projection := range config.AllTileProjections {
@@ -381,7 +384,8 @@ func renderTilesTemplates(e *engine.Engine, collection *config.TilesCollection, 
 			data,
 			projectionBreadcrumbs,
 			engine.NewTemplateKey(templatesDir+tilesLocalPath+projection+".go.json", engine.WithInstanceName(collectionID)),
-			engine.NewTemplateKey(templatesDir+tilesLocalPath+projection+".go.html", engine.WithInstanceName(collectionID)))
+			engine.NewTemplateKey(templatesDir+tilesLocalPath+projection+".go.html", engine.WithInstanceName(collectionID)),
+			engine.NewTemplateKey(templatesDir+tilesLocalPath+projection+".go.md", engine.WithInstanceName(collectionID)))
 		e.RenderTemplatesWithParams(path,
 			data,
 			projectionBreadcrumbs,

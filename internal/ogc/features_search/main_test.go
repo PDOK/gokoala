@@ -431,6 +431,17 @@ func TestSearch(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Search and get output in Markdown (snippet)",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=md",
+				format: "md",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-snippet.md",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -461,6 +472,8 @@ func TestSearch(t *testing.T) {
 				assert.JSONEq(t, string(expectedBody), rr.Body.String())
 			case engine.FormatHTML:
 				assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
+			case engine.FormatMarkdown:
+				assert.Equal(t, string(expectedBody), rr.Body.String())
 			default:
 				assert.Fail(t, "implement support to test format: "+tt.fields.format)
 			}

@@ -167,6 +167,17 @@ func TestNewCollections_Collections(t *testing.T) {
 				statusCode:      http.StatusOK,
 			},
 		},
+		{
+			name: "search config, check collection title as Markdown",
+			fields: fields{
+				configFile: "internal/ogc/features_search/testdata/config_search.yaml",
+				url:        "http://localhost:8080/collections?f=md",
+			},
+			want: want{
+				bodyContains: "## Dutch Addresses",
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -241,6 +252,18 @@ func TestNewCollections_Collection(t *testing.T) {
 			want: want{
 				bodyContains: "Not Found",
 				statusCode:   http.StatusNotFound,
+			},
+		},
+		{
+			name: "container_1 as Markdown",
+			fields: fields{
+				configFile:  "internal/ogc/geovolumes/testdata/config_minimal_3d.yaml",
+				url:         "http://localhost:8080/collections/:collectionId?f=md",
+				containerID: "container_1",
+			},
+			want: want{
+				bodyContains: "# Minimal OGC API container_1",
+				statusCode:   http.StatusOK,
 			},
 		},
 	}

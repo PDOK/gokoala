@@ -33,7 +33,7 @@ from memory when an API request is received. Benefits of this approach are:
 
 #### Duplication
 
-We will have duplication between JSON and HTML templates: that's ok. They're
+We will have duplication between JSON, HTML and Markdown templates: **that's ok.** They're
 different representations of the same data. Don't try to be clever and
 "optimize" it. The duplication is pretty obvious/visible since the files only
 differ by extension, so it's clear any changes need to be done in both

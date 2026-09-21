@@ -36,8 +36,10 @@ See OGC APIs listed on https://api.pdok.nl. These are powered by GoKoala.
 
 GoKoala supports:
 
-- [OGC API Common](https://ogcapi.ogc.org/common/) serves landing page and conformance declaration. Also serves
-  OpenAPI specification and interactive Swagger UI. Multilingual support is available.
+- [OGC API Common](https://ogcapi.ogc.org/common/) landing page and conformance declaration. Also serves
+  OpenAPI specification and interactive Swagger UI.
+  - Multilingual support is available.
+  - API responses are available in JSON (primary), HTML (for humans) and Markdown (for agents).
 - [OGC API Features](https://ogcapi.ogc.org/features/) supports Part 1 (core), Part 2 (crs), Part 3 (cql) and Part 5 (
   schema) of the spec.
   - Serves features as HTML, GeoJSON and JSON-FG.
@@ -407,6 +409,7 @@ already being taken care of when building the Docker container image.
   - `"*.go.json"`
   - `"*.go.tilejson"`
   - `"*.go.xml"`
+  - `"*.go.md"`
 - Now add template language support by running the
   [setup-jetbrains-gotemplates.sh](hack/setup-jetbrains-gotemplates.sh) script.
 - Reopen the project (or restart IDE). Now you'll have full IDE support in the GoKoala templates.
@@ -428,7 +431,8 @@ Also:
   - `"*.go.json"`
   - `"*.go.tilejson"`
   - `"*.go.xml"`
-- Also add `html`, `json` and `xml` to the list of Go template languages.
+  - `"*.go.md"`
+- Also add `html`, `md`, `json` and `xml` to the list of Go template languages.
 - Now you'll have IDE support in the GoKoala templates.
 
 ### OGC compliance validation

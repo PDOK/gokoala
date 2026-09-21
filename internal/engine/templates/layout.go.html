@@ -24,11 +24,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ .Config.BaseURL }}/theme/{{ base .Theme.Logo.Favicon16 }}">
     <link rel="icon" href="{{ .Config.BaseURL }}/theme/{{ base .Theme.Logo.Favicon }}">
 
-    <!-- canonical -->
+    <!-- link relations -->
     <link rel="canonical" href="{{ .Config.BaseURL }}">
-    {{ range $lang := .Config.AvailableLanguages }}
-        <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?f=html&lang={{ $lang }}">
-    {{ end }}
+    {{ range $lang := .Config.AvailableLanguages -}}
+    <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?f=html&lang={{ $lang }}">
+    {{ end -}}
+    <link rel="alternate" type="text/markdown" href="{{ $.Config.BaseURL }}?f=md">
+    <link rel="alternate" type="application/json" href="{{ $.Config.BaseURL }}?f=json">
 
     <!-- css -->
     <link href="css/bootstrap.min.css" rel="stylesheet">

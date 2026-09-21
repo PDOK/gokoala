@@ -20,11 +20,23 @@ var (
 			Path: "collections",
 		},
 	}
-	featureFiltersInclude = templatesDir + "partials/feature_filters.go.html"
 
-	featuresKey = engine.NewTemplateKey(templatesDir+"features.go.html",
-		engine.WithInclude(featureFiltersInclude))
-	featureKey = engine.NewTemplateKey(templatesDir + "feature.go.html")
+	featuresHTMLKey = engine.NewTemplateKey(templatesDir+"features.go.html",
+		engine.WithInclude(templatesDir+"partials/feature_filters.go.html"))
+	featuresMDKey = engine.NewTemplateKey(templatesDir+"features.go.md",
+		engine.WithInclude(templatesDir+"partials/feature_filters.go.md"))
+
+	featureHTMLKey = engine.NewTemplateKey(templatesDir + "feature.go.html")
+	featureMDKey   = engine.NewTemplateKey(templatesDir + "feature.go.md")
+
+	featuresByFormat = map[string]engine.TemplateKey{
+		engine.FormatHTML:     featuresHTMLKey,
+		engine.FormatMarkdown: featuresMDKey,
+	}
+	featureByFormat = map[string]engine.TemplateKey{
+		engine.FormatHTML:     featureHTMLKey,
+		engine.FormatMarkdown: featureMDKey,
+	}
 )
 
 type htmlFeatures struct {
@@ -33,8 +45,10 @@ type htmlFeatures struct {
 }
 
 func newHTMLFeatures(e *engine.Engine, projJSONBySRID map[int]string) *htmlFeatures {
-	e.ParseTemplate(featuresKey)
-	e.ParseTemplate(featureKey)
+	e.ParseTemplate(featuresHTMLKey)
+	e.ParseTemplate(featureHTMLKey)
+	e.ParseTemplate(featuresMDKey)
+	e.ParseTemplate(featureMDKey)
 
 	return &htmlFeatures{
 		engine:         e,
@@ -101,39 +115,39 @@ type featurePage struct {
 	ProjJSON string
 }
 
-func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request,
+func (hf *htmlFeatures) features(w http.ResponseWriter, r *http.Request, format string,
 	collection config.FeaturesCollection, cursor domain.Cursors,
 	featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
 	propertyFilters map[string]string, queryables domain.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat, err error) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
-		featuresURL, limit, propertyFilters, queryables)
+		featuresURL, limit, propertyFilters, queryables, format)
 	pageContent.FilterError = err
 
 	hf.engine.RenderAndServe(w, r,
-		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		engine.ExpandTemplateKey(featuresByFormat[format], hf.engine.CN.NegotiateLanguage(w, r)),
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, collection config.FeaturesCollection,
+func (hf *htmlFeatures) attributes(w http.ResponseWriter, r *http.Request, format string, collection config.FeaturesCollection,
 	cursor domain.Cursors, featuresURL featureCollectionURL, limit int, dateTime domain.DateTime,
 	propertyFilters map[string]string, queryables domain.Queryables,
 	fc *domain.FeatureCollection, outputFormats []engine.OutputFormat, err error) {
 
 	breadcrumbs, pageContent := hf.toItemsPage(collection, dateTime, fc, cursor,
-		featuresURL, limit, propertyFilters, queryables)
+		featuresURL, limit, propertyFilters, queryables, format)
 	pageContent.FilterError = err
 	pageContent.ShowViewer = false // since items have no geometry
 
 	hf.engine.RenderAndServe(w, r,
-		engine.ExpandTemplateKey(featuresKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		engine.ExpandTemplateKey(featuresByFormat[format], hf.engine.CN.NegotiateLanguage(w, r)),
 		pageContent, breadcrumbs, outputFormats)
 }
 
 func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTime domain.DateTime,
 	fc *domain.FeatureCollection, cursor domain.Cursors, featuresURL featureCollectionURL, limit int,
-	propertyFilters map[string]string, queryables domain.Queryables) ([]engine.Breadcrumb, *featureCollectionPage) {
+	propertyFilters map[string]string, queryables domain.Queryables, format string) ([]engine.Breadcrumb, *featureCollectionPage) {
 
 	breadcrumbs := collectionsBreadcrumb
 	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
@@ -167,8 +181,8 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTi
 		CollectionID:              collection.GetID(),
 		Metadata:                  collection.GetMetadata(),
 		Cursor:                    cursor,
-		PrevLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Prev, engine.FormatHTML),
-		NextLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Next, engine.FormatHTML),
+		PrevLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Prev, format),
+		NextLink:                  featuresURL.toPrevNextURL(collection.GetID(), cursor.Next, format),
 		Limit:                     limit,
 		DateTime:                  dateTime,
 		MapSheetProperties:        mapSheetProps,
@@ -184,24 +198,24 @@ func (hf *htmlFeatures) toItemsPage(collection config.FeaturesCollection, dateTi
 	return breadcrumbs, pageContent
 }
 
-func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request,
+func (hf *htmlFeatures) feature(w http.ResponseWriter, r *http.Request, format string,
 	collection config.FeaturesCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 
 	hf.engine.RenderAndServe(w, r,
-		engine.ExpandTemplateKey(featureKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		engine.ExpandTemplateKey(featureByFormat[format], hf.engine.CN.NegotiateLanguage(w, r)),
 		pageContent, breadcrumbs, outputFormats)
 }
 
-func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request,
+func (hf *htmlFeatures) attribute(w http.ResponseWriter, r *http.Request, format string,
 	collection config.FeaturesCollection, feat *domain.Feature, outputFormats []engine.OutputFormat) {
 
 	breadcrumbs, pageContent := hf.toItemPage(collection, feat)
 	pageContent.ShowViewer = false // since items have no geometry
 
 	hf.engine.RenderAndServe(w, r,
-		engine.ExpandTemplateKey(featureKey, hf.engine.CN.NegotiateLanguage(w, r)),
+		engine.ExpandTemplateKey(featureByFormat[format], hf.engine.CN.NegotiateLanguage(w, r)),
 		pageContent, breadcrumbs, outputFormats)
 }
 

@@ -73,7 +73,8 @@ func NewStyles(e *engine.Engine) *Styles {
 		&stylesTemplateData{defaultProjection, supportedProjections, allProjections},
 		stylesBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"styles.go.json"),
-		engine.NewTemplateKey(templatesDir+"styles.go.html"))
+		engine.NewTemplateKey(templatesDir+"styles.go.html"),
+		engine.NewTemplateKey(templatesDir+"styles.go.md"))
 
 	renderStylesPerProjection(e, supportedProjections)
 
@@ -108,10 +109,14 @@ func (s *Styles) Style() http.HandlerFunc {
 		style, styleID := parseStyleParam(r)
 		styleFormat := s.engine.CN.NegotiateFormat(r)
 		var key engine.TemplateKey
-		if styleFormat == engine.FormatHTML {
+		switch styleFormat {
+		case engine.FormatHTML:
 			key = engine.NewTemplateKey(
 				templatesDir+"style.go.html", engine.WithInstanceName(style), s.engine.WithNegotiatedLanguage(w, r))
-		} else {
+		case engine.FormatMarkdown:
+			key = engine.NewTemplateKey(
+				templatesDir+"style.go.md", engine.WithInstanceName(style), s.engine.WithNegotiatedLanguage(w, r))
+		default:
 			var instanceName string
 			if slices.Contains(s.engine.CN.GetSupportedStyleFormats(), styleFormat) {
 				instanceName = style + "." + styleFormat
@@ -151,18 +156,15 @@ func (s *Styles) Legend() http.HandlerFunc {
 		for _, supportedStyle := range s.engine.Config.OgcAPI.Styles.SupportedStyles {
 			if supportedStyle.ID == styleID && supportedStyle.Legend != nil {
 				legend = *supportedStyle.Legend
-
 				break
 			}
 		}
 		if s.engine.Config.Resources == nil {
 			engine.RenderProblem(engine.ProblemNotFound, w, "no legends configured")
-
 			return
 		}
 		if legend == "" {
 			engine.RenderProblem(engine.ProblemNotFound, w, "no legend configured for style "+styleID)
-
 			return
 		}
 
@@ -223,7 +225,8 @@ func renderStylesPerProjection(e *engine.Engine, supportedProjections []config.S
 				},
 			}...)
 			e.RenderTemplatesWithParams(path, data, styleMetadataBreadcrumbs,
-				engine.NewTemplateKey(templatesDir+"styleMetadata.go.html", engine.WithInstanceName(styleInstanceID)))
+				engine.NewTemplateKey(templatesDir+"styleMetadata.go.html", engine.WithInstanceName(styleInstanceID)),
+				engine.NewTemplateKey(templatesDir+"styleMetadata.go.md", engine.WithInstanceName(styleInstanceID)))
 
 			// Add existing style definitions to rendered templates
 			renderStylePerFormat(e, style, styleInstanceID, projection, zoomLevelRange, styleProjectionBreadcrumb)
@@ -250,10 +253,11 @@ func renderStylePerFormat(e *engine.Engine, style config.Style, styleInstanceID 
 			ZoomLevelRange config.ZoomLevelRange
 		}{Projection: projection, ZoomLevelRange: zoomLevelRange}, nil, styleKey)
 
-		// Render template (HTML)
+		// Render template (HTML/Markdown)
 		styleBreadCrumbs := stylesBreadcrumbs
 		styleBreadCrumbs = append(styleBreadCrumbs, styleProjectionBreadcrumb)
 		e.RenderTemplatesWithParams(path, style, styleBreadCrumbs,
-			engine.NewTemplateKey(templatesDir+"style.go.html", engine.WithInstanceName(styleInstanceID)))
+			engine.NewTemplateKey(templatesDir+"style.go.html", engine.WithInstanceName(styleInstanceID)),
+			engine.NewTemplateKey(templatesDir+"style.go.md", engine.WithInstanceName(styleInstanceID)))
 	}
 }

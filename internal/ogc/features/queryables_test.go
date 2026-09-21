@@ -62,6 +62,22 @@ func TestQueryables(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "Request queryables in Markdown format",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/queryables",
+				collectionID: "foo",
+				format:       "md",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_queryables.md",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -100,6 +116,8 @@ func TestQueryables(t *testing.T) {
 							assert.JSONEq(t, string(expectedBody), rr.Body.String())
 						case engine.FormatHTML:
 							assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
+						case engine.FormatMarkdown:
+							assert.Equal(t, string(expectedBody), rr.Body.String())
 						default:
 							log.Fatalf("implement support to test format: %s", tt.fields.format)
 						}
