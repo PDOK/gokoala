@@ -43,11 +43,18 @@ func TestToWildcardQuery(t *testing.T) {
 			expectedWildcard: "foo:*",
 		},
 		{
-			name:             "filter apostrophe after synonym lookup",
+			name:             "handle leading apostrophe after synonym lookup",
 			words:            []string{"'t", "harde"},
 			withoutSynonyms:  map[string]struct{}{"harde": {}},
 			withSynonyms:     map[string][]string{"'t": {"het"}},
-			expectedWildcard: "(t:* | het:*) & harde:*",
+			expectedWildcard: "('''t':* | het:*) & harde:*",
+		},
+		{
+			name:             "handle embedded apostrophe",
+			words:            []string{"otto'slaan", "15", "hilversum"},
+			withoutSynonyms:  map[string]struct{}{"otto'slaan": {}, "15": {}, "hilversum": {}},
+			withSynonyms:     map[string][]string{},
+			expectedWildcard: "'otto''slaan':* & 15:* & hilversum:*",
 		},
 		{
 			name:             "single word without synonym",
@@ -109,6 +116,14 @@ func TestToExactMatchQuery(t *testing.T) {
 			withoutSynonyms:    map[string]struct{}{"foo": {}},
 			withSynonyms:       map[string][]string{},
 			expectedExactMatch: "foo",
+		},
+		{
+			name:               "handle embedded apostrophe",
+			words:              []string{"otto'slaan", "15", "hilversum"},
+			useSynonyms:        false,
+			withoutSynonyms:    map[string]struct{}{"otto'slaan": {}, "15": {}, "hilversum": {}},
+			withSynonyms:       map[string][]string{},
+			expectedExactMatch: "'otto''slaan' & 15 & hilversum",
 		},
 		{
 			name:               "single word with synonyms and useSynonyms = false",

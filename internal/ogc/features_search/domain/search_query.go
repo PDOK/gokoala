@@ -38,15 +38,22 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 		wildcard = ":*"
 	}
 
-	replacer := strings.NewReplacer("&", "", "'", "")
 	sb := &strings.Builder{}
 	for _, word := range q.words {
 		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS);
-		// remove ' from search input since it can break Postgres to_tsquery;
 		// keep the original word for synonym lookup.
-		renderedWord := replacer.Replace(word)
+		renderedWord := strings.ReplaceAll(word, "&", "")
 		if renderedWord == "" {
 			continue
+		}
+		// handle ' in search input since it can break Postgres to_tsquery
+		// ignore standalone apostrophes
+		if strings.Trim(renderedWord, "'") == "" {
+			continue
+		}
+		// quote words with embedded apostrophes; escape the apostrophes for to_tsquery
+		if strings.Contains(renderedWord, "'") {
+			renderedWord = "'" + strings.ReplaceAll(renderedWord, "'", "''") + "'"
 		}
 		// add AND operator only between terms that were actually rendered.
 		if sb.Len() > 0 {
