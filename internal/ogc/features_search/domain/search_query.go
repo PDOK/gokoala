@@ -38,20 +38,27 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 		wildcard = ":*"
 	}
 
+	replacer := strings.NewReplacer("&", "", "'", "")
 	sb := &strings.Builder{}
-	for i, word := range q.words {
-		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS).
-		word = strings.ReplaceAll(word, "&", "")
-		if len(word) > 0 && i > 0 {
+	for _, word := range q.words {
+		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS);
+		// remove ' from search input since it can break Postgres to_tsquery;
+		// keep the original word for synonym lookup.
+		renderedWord := replacer.Replace(word)
+		if renderedWord == "" {
+			continue
+		}
+		// add AND operator only between terms that were actually rendered.
+		if sb.Len() > 0 {
 			sb.WriteString(" & ")
 		}
 		if _, ok := q.withoutSynonyms[word]; ok {
-			sb.WriteString(word)
+			sb.WriteString(renderedWord)
 			sb.WriteString(wildcard)
 		} else if synonyms, ok := q.withSynonyms[word]; ok {
 			slices.Sort(synonyms)
 			sb.WriteByte('(')
-			sb.WriteString(word)
+			sb.WriteString(renderedWord)
 			sb.WriteString(wildcard)
 			if useSynonyms {
 				for _, synonym := range synonyms {
@@ -63,7 +70,5 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 			sb.WriteByte(')')
 		}
 	}
-	// remove ' from search input since it causes issues in Postgres to_tsquery.
-	// remove at the end because otherwise the word no longer matches one contained in q.
-	return strings.ReplaceAll(sb.String(), "'", "")
+	return sb.String()
 }

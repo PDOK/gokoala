@@ -29,6 +29,27 @@ func TestToWildcardQuery(t *testing.T) {
 			expectedWildcard: "ampersand:* & input:*",
 		},
 		{
+			name:             "filter leading ampersand",
+			words:            []string{"&", "foo"},
+			withoutSynonyms:  map[string]struct{}{"&": {}, "foo": {}},
+			withSynonyms:     map[string][]string{},
+			expectedWildcard: "foo:*",
+		},
+		{
+			name:             "filter standalone apostrophe",
+			words:            []string{"'", "foo"},
+			withoutSynonyms:  map[string]struct{}{"'": {}, "foo": {}},
+			withSynonyms:     map[string][]string{},
+			expectedWildcard: "foo:*",
+		},
+		{
+			name:             "filter apostrophe after synonym lookup",
+			words:            []string{"'t", "harde"},
+			withoutSynonyms:  map[string]struct{}{"harde": {}},
+			withSynonyms:     map[string][]string{"'t": {"het"}},
+			expectedWildcard: "(t:* | het:*) & harde:*",
+		},
+		{
 			name:             "single word without synonym",
 			words:            []string{"foo"},
 			withoutSynonyms:  map[string]struct{}{"foo": {}},
