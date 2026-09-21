@@ -28,21 +28,24 @@ func TestParseSearchTermsRejectsOperators(t *testing.T) {
 }
 
 func TestParseSearchTermsRejectsInvalidCharacters(t *testing.T) {
-	tests := []string{
-		"foo:bar",
-		"foo*bar",
-		"foo<bar",
-		"foo>bar",
-		`foo\bar`,
-		"foo\x00bar",
+	tests := []struct {
+		searchTerms   string
+		expectedError string
+	}{
+		{"foo:bar", "provided search terms contain invalid character ':'"},
+		{"foo*bar", "provided search terms contain invalid character '*'"},
+		{"foo<bar", "provided search terms contain invalid character '<'"},
+		{"foo>bar", "provided search terms contain invalid character '>'"},
+		{`foo\bar`, `provided search terms contain invalid character '\\'`},
+		{"foo\x00bar", `provided search terms contain invalid character '\x00'`},
 	}
 
-	for _, searchTerms := range tests {
-		t.Run(searchTerms, func(t *testing.T) {
-			actual, err := parseSearchTerms(url.Values{queryParam: {searchTerms}})
+	for _, tt := range tests {
+		t.Run(tt.searchTerms, func(t *testing.T) {
+			actual, err := parseSearchTerms(url.Values{queryParam: {tt.searchTerms}})
 
 			assert.Empty(t, actual)
-			require.EqualError(t, err, "provided search terms contain one or more invalid characters")
+			require.EqualError(t, err, tt.expectedError)
 		})
 	}
 }

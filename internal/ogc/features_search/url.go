@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -102,7 +103,8 @@ func parseSearchTerms(query url.Values) (string, error) {
 	}
 	// find other invalid characters, report first character found
 	if invalidCharacter := searchInvalidCharactersRegex.FindString(searchTerms); invalidCharacter != "" {
-		return "", fmt.Errorf("provided search terms contain invalid character '%q'", invalidCharacter)
+		invalidRune, _ := utf8.DecodeRuneInString(invalidCharacter)
+		return "", fmt.Errorf("provided search terms contain invalid character %q", invalidRune)
 	}
 	return searchTerms, nil
 }
