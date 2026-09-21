@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -25,9 +26,11 @@ const (
 var (
 	deepObjectParamRegex = regexp.MustCompile(`\w+\[\w+\]`)
 
-	// matches `|` (OR), `!` (NOT), and `<->` (FOLLOWED BY).
+	// matches `|` (OR), `!` (NOT), `<->` (FOLLOWED BY) and `<N>` (FOLLOWED BY N).
 	// Note: we do allow `&` (AND) since it can actually be part of a streetname, but ignore it later on.
-	searchOperatorsRegex = regexp.MustCompile(`\||!|<->`)
+	searchOperatorsRegex = regexp.MustCompile(`\||!|<->|<[0-9]+>`)
+	// matches characters with special meaning in Postgres FTS, plus NUL which Postgres text values don't support.
+	searchInvalidCharactersRegex = regexp.MustCompile(`[:*<>\\\x00]`)
 	// matches `(` (left parenthesis), and `)` (right parenthesis).
 	searchDiscardCharactersRegex = regexp.MustCompile(`\(|\)`)
 
@@ -97,6 +100,11 @@ func parseSearchTerms(query url.Values) (string, error) {
 	}
 	if searchOperatorsRegex.MatchString(searchTerms) {
 		return "", errors.New("provided search terms contain one ore more boolean operators which aren't allowed")
+	}
+	// find other invalid characters, report first character found
+	if invalidCharacter := searchInvalidCharactersRegex.FindString(searchTerms); invalidCharacter != "" {
+		invalidRune, _ := utf8.DecodeRuneInString(invalidCharacter)
+		return "", fmt.Errorf("provided search terms contain invalid character %q", invalidRune)
 	}
 	return searchTerms, nil
 }
