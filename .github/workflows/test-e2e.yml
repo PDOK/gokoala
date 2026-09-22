@@ -77,6 +77,29 @@ jobs:
             --exitOnFail \
             --prettyPrint
 
+      - name: E2E Test => ogc-checker (OGC API Features)
+        run: |
+          docker run --rm --net=host node:22-slim sh -c \
+            "npm install -g npm@12.0.2 && \
+             npx --yes @geonovum/ogc-checker@1.3.1 validate \
+             --standard ogc-api-features --input http://localhost:8080/api"
+
+      - name: E2E Test => ogc-checker (JSON-FG)
+        # Non-blocking: the "addresses" collection legitimately includes optional
+        # JSON-FG members (e.g. "place", "time") as explicit null when absent, which
+        # is spec-compliant. ogc-checker's underlying JSONPath engine (Nimma) has a
+        # known bug where it crashes ("Error running Nimma") instead of gracefully
+        # skipping such null values, see https://github.com/stoplightio/spectral/issues/2964
+        # (open/unresolved upstream). This is not a GoKoala bug. Keep this step so it
+        # still reports results, but don't let the known upstream limitation fail CI.
+        continue-on-error: true
+        run: |
+          docker run --rm --net=host node:22 sh -c \
+            "npm install -g npm@12.0.2 && \
+             apt-get update -qq && apt-get install -y -qq curl >/dev/null && \
+             curl -s 'http://localhost:8080/collections/addresses/items?f=jsonfg' -o /tmp/jsonfg-output.json && \
+             npx --yes @geonovum/ogc-checker@1.3.1 validate --standard json-fg --input /tmp/jsonfg-output.json"
+
       # Stop test instance, the tests below don't need it since they use Docker Compose
       - name: Stop GoKoala test instance
         run: |
