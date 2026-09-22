@@ -40,20 +40,10 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 
 	sb := &strings.Builder{}
 	for _, word := range q.words {
-		// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS)
-		// keep the original word for synonym lookup
-		renderedWord := strings.ReplaceAll(word, "&", "")
+		// renderWord formats the word for FTS query; the original word is used for synonym lookup
+		renderedWord := renderWord(word)
 		if renderedWord == "" {
 			continue
-		}
-		// handle ' in search input since it can break Postgres to_tsquery
-		// ignore standalone apostrophes
-		if strings.Trim(renderedWord, "'") == "" {
-			continue
-		}
-		// quote words with embedded apostrophes; escape the apostrophes for to_tsquery
-		if strings.Contains(renderedWord, "'") {
-			renderedWord = "'" + strings.ReplaceAll(renderedWord, "'", "''") + "'"
 		}
 		// add AND operator only between terms that were actually rendered
 		if sb.Len() > 0 {
@@ -69,8 +59,10 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 			sb.WriteString(wildcard)
 			if useSynonyms {
 				for _, synonym := range synonyms {
+					// expanded synonyms can retain punctuation from the original word
+					renderedSynonym := renderWord(synonym)
 					sb.WriteString(" | ")
-					sb.WriteString(synonym)
+					sb.WriteString(renderedSynonym)
 					sb.WriteString(wildcard)
 				}
 			}
@@ -78,4 +70,19 @@ func (q *SearchQuery) toString(useWildcard bool, useSynonyms bool) string {
 		}
 	}
 	return sb.String()
+}
+
+func renderWord(word string) string {
+	// remove & from search input since it's an AND operator (in some datastores, like Postgres FTS)
+	renderedWord := strings.ReplaceAll(word, "&", "")
+	// handle ' in search input since it can break Postgres to_tsquery
+	// ignore standalone apostrophes
+	if strings.Trim(renderedWord, "'") == "" {
+		return ""
+	}
+	// quote words with embedded apostrophes; escape the apostrophes for to_tsquery
+	if strings.Contains(renderedWord, "'") {
+		return "'" + strings.ReplaceAll(renderedWord, "'", "''") + "'"
+	}
+	return renderedWord
 }

@@ -71,6 +71,20 @@ func TestToWildcardQuery(t *testing.T) {
 			expectedWildcard: "(bar:* | baz:* | qux:*)",
 		},
 		{
+			name:             "filter ampersand preserved during synonym expansion",
+			words:            []string{"janssen", "&fr"},
+			withoutSynonyms:  map[string]struct{}{"janssen": {}},
+			withSynonyms:     map[string][]string{"&fr": {"&frater", "&fraters"}},
+			expectedWildcard: "janssen:* & (fr:* | frater:* | fraters:*)",
+		},
+		{
+			name:             "handle apostrophe preserved during synonym expansion",
+			words:            []string{"otto'sln"},
+			withoutSynonyms:  map[string]struct{}{},
+			withSynonyms:     map[string][]string{"otto'sln": {"otto'slaan", "otto'slaantje"}},
+			expectedWildcard: "('otto''sln':* | 'otto''slaan':* | 'otto''slaantje':*)",
+		},
+		{
 			name:  "multiple words with mixed settings",
 			words: []string{"foo", "bar", "baz"},
 			withoutSynonyms: map[string]struct{}{
@@ -140,6 +154,22 @@ func TestToExactMatchQuery(t *testing.T) {
 			withoutSynonyms:    map[string]struct{}{},
 			withSynonyms:       map[string][]string{"bar": {"baz", "qux"}},
 			expectedExactMatch: "(bar | baz | qux)",
+		},
+		{
+			name:               "filter ampersand preserved during synonym expansion",
+			words:              []string{"janssen", "&fr"},
+			useSynonyms:        true,
+			withoutSynonyms:    map[string]struct{}{"janssen": {}},
+			withSynonyms:       map[string][]string{"&fr": {"&frater", "&fraters"}},
+			expectedExactMatch: "janssen & (fr | frater | fraters)",
+		},
+		{
+			name:               "handle apostrophe preserved during synonym expansion",
+			words:              []string{"otto'sln"},
+			useSynonyms:        true,
+			withoutSynonyms:    map[string]struct{}{},
+			withSynonyms:       map[string][]string{"otto'sln": {"otto'slaan", "otto'slaantje"}},
+			expectedExactMatch: "('otto''sln' | 'otto''slaan' | 'otto''slaantje')",
 		},
 		{
 			name:        "multiple words with mixed settings and useSynonyms = true",
