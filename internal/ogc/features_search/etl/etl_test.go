@@ -294,7 +294,7 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	db, err := pgx.Connect(ctx, dbConn)
 	require.NoError(t, err)
 	defer db.Close(ctx)
-	var tableCount, indexCountFirst, indexCountSecond int
+	var tableCount, indexCountFirst, indexCountSecond, maxIDFirst, maxIDThird int
 
 	// then: check table is filled
 	err = db.QueryRow(ctx, "select count(*) from search_index_addresses_alpha").Scan(&tableCount)
@@ -305,6 +305,10 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	err = db.QueryRow(ctx, "select count(*) from search_index").Scan(&indexCountFirst)
 	require.NoError(t, err)
 	assert.NotZero(t, indexCountFirst)
+
+	err = db.QueryRow(ctx, "select max(id) from search_index_addresses_alpha").Scan(&maxIDFirst)
+	require.NoError(t, err)
+	assert.NotZero(t, maxIDFirst)
 
 	// then: check metadata table is updated
 	version, err := GetRevision(dbConn, "addresses", "search_index")
@@ -351,6 +355,11 @@ func TestImportGeoPackageMultipleTimes(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, version)
 	assert.Equal(t, collectionVersion, version)
+
+	// then: identity of the reused alpha partition was reset, not accumulated across imports
+	err = db.QueryRow(ctx, "select max(id) from search_index_addresses_alpha").Scan(&maxIDThird)
+	require.NoError(t, err)
+	assert.Equal(t, maxIDFirst, maxIDThird)
 }
 
 func TestImportGeoPackageNoDuplicates(t *testing.T) {

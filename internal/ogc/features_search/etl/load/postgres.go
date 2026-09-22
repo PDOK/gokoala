@@ -73,7 +73,7 @@ func (p *Postgres) PreLoad(collectionID string, index string) error {
 		if err != nil {
 			return fmt.Errorf("error creating table (which will later be attached as a partition): %w", err)
 		}
-		_, err = p.db.Exec(context.Background(), fmt.Sprintf(`truncate table %[1]s;`, p.partitionToLoad))
+		_, err = p.db.Exec(context.Background(), fmt.Sprintf(`truncate table %[1]s restart identity;`, p.partitionToLoad))
 		if err != nil {
 			return fmt.Errorf("error truncating table: %w", err)
 		}
