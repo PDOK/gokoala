@@ -19,9 +19,9 @@ const (
 	schemaJSON = templatesDir + "schema.go.json"
 	schemaMD   = templatesDir + "schema.go.md"
 
-	fieldsIncludeHTML = templatesDir + "includes/fields.go.html"
-	fieldsIncludeJSON = templatesDir + "includes/fields.go.json"
-	fieldsIncludeMD   = templatesDir + "includes/fields.go.md"
+	fieldsIncludeHTML = templatesDir + "partials/fields.go.html"
+	fieldsIncludeJSON = templatesDir + "partials/fields.go.json"
+	fieldsIncludeMD   = templatesDir + "partials/fields.go.md"
 )
 
 // Schema endpoint serves a schema that describes the features in the collection, either as HTML
