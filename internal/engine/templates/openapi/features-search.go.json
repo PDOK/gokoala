@@ -69,6 +69,11 @@
                 "schema": {
                   "type": "string"
                 }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -700,7 +705,8 @@
           "enum": [
             "json",
             "jsonfg",
-            "html"
+            "html",
+            "md"
           ],
           "type": "string"
         },

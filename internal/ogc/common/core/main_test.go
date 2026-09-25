@@ -76,6 +76,17 @@ func TestCommonCore_LandingPage(t *testing.T) {
 			},
 		},
 		{
+			name: "landing page as Markdown",
+			fields: fields{
+				configFile: "internal/engine/testdata/config_minimal.yaml",
+				url:        "http://localhost:8080/?f=md",
+			},
+			want: want{
+				body:       "# Minimal OGC API (OGC API)",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "landing page as HTML with Thumbnail",
 			fields: fields{
 				configFile: "internal/engine/testdata/config_resources_dir.yaml",
@@ -147,6 +158,18 @@ func TestCommonCore_Conformance(t *testing.T) {
 				statusCode: http.StatusOK,
 			},
 		},
+		{
+			name: "conformance as Markdown",
+			fields: fields{
+				configFile:         "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:                "http://localhost:8080/conformance?f=md",
+				supportsAttributes: false,
+			},
+			want: want{
+				body:       "| http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
+				statusCode: http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -202,6 +225,17 @@ func TestCommonCore_API(t *testing.T) {
 			},
 			want: want{
 				body:       "GoKoalaLayoutPlugin", // exists on swagger page, this to make sure we get HTML
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "OpenAPI as Markdown",
+			fields: fields{
+				configFile: "internal/engine/testdata/config_multiple_ogc_apis_single_collection.yaml",
+				url:        "http://localhost:8080/api?f=md",
+			},
+			want: want{
+				body:       "[JSON](http://localhost:8180/api?f=json)", // link to the full OpenAPI spec in JSON
 				statusCode: http.StatusOK,
 			},
 		},

@@ -17,6 +17,7 @@ const queryablesPath = "/queryables"
 const (
 	queryablesHTML = templatesDir + "queryables.go.html"
 	queryablesJSON = templatesDir + "queryables.go.json"
+	queryablesMD   = templatesDir + "queryables.go.md"
 )
 
 // Queryables endpoint describes the properties of each feature that can be used for filtering, either as HTML
@@ -53,6 +54,11 @@ func (f *Features) Queryables() http.HandlerFunc {
 				engine.WithInclude(fieldsIncludeJSON),
 				f.engine.WithNegotiatedLanguage(w, r),
 				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema)) // JSON format, but specific mediatype.
+		case engine.FormatMarkdown:
+			key = engine.NewTemplateKey(queryablesMD,
+				engine.WithInstanceName(collection.GetID()),
+				engine.WithInclude(fieldsIncludeMD),
+				f.engine.WithNegotiatedLanguage(w, r))
 		default:
 			handleFormatNotSupported(w, format)
 
@@ -123,6 +129,10 @@ func renderQueryables(e *engine.Engine, queryablesByCollection map[string]domain
 			engine.NewTemplateKey(queryablesHTML,
 				engine.WithInstanceName(collection.ID),
 				engine.WithInclude(fieldsIncludeHTML),
+			),
+			engine.NewTemplateKey(queryablesMD,
+				engine.WithInstanceName(collection.ID),
+				engine.WithInclude(fieldsIncludeMD),
 			),
 		)
 	}

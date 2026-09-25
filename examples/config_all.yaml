@@ -21,7 +21,7 @@ title: Demo of all OGC specs in one API
 # shortened title, used in breadcrumb path
 serviceIdentifier: DEMO
 abstract: >-
-  This is example combines features, 3D and vector tiles in one API. Usually
+  This example combines features, 3D and vector tiles in one API. Usually
   this would encompass one dataset but this demo uses data from various sources.
   So don't pay too much attention to the actual data. It's just an example/demo
   of GoKoala's capabilities.

@@ -68,8 +68,8 @@ func (f *Features) Feature() http.HandlerFunc {
 		geometryType := f.collectionTypes.GetGeometryType(collection.GetID())
 		if geometryType == geometryTypeNone {
 			switch format {
-			case engine.FormatHTML:
-				f.html.attribute(w, r, collection, feat, collectionType.AvailableFormats())
+			case engine.FormatHTML, engine.FormatMarkdown:
+				f.html.attribute(w, r, format, collection, feat, collectionType.AvailableFormats())
 			case engine.FormatJSON:
 				f.json.featureAsNonGeoJSON(w, r, collectionID, feat, url)
 			default:
@@ -77,8 +77,8 @@ func (f *Features) Feature() http.HandlerFunc {
 			}
 		} else {
 			switch format {
-			case engine.FormatHTML:
-				f.html.feature(w, r, collection, feat, collectionType.AvailableFormats())
+			case engine.FormatHTML, engine.FormatMarkdown:
+				f.html.feature(w, r, format, collection, feat, collectionType.AvailableFormats())
 			case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featureAsGeoJSON(w, r, collectionID, &collection, feat, url)
 			case engine.FormatJSONFG:

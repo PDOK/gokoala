@@ -17,9 +17,11 @@ const schemasPath = "/schema"
 const (
 	schemaHTML = templatesDir + "schema.go.html"
 	schemaJSON = templatesDir + "schema.go.json"
+	schemaMD   = templatesDir + "schema.go.md"
 
-	fieldsIncludeHTML = templatesDir + "includes/fields.go.html"
-	fieldsIncludeJSON = templatesDir + "includes/fields.go.json"
+	fieldsIncludeHTML = templatesDir + "partials/fields.go.html"
+	fieldsIncludeJSON = templatesDir + "partials/fields.go.json"
+	fieldsIncludeMD   = templatesDir + "partials/fields.go.md"
 )
 
 // Schema endpoint serves a schema that describes the features in the collection, either as HTML
@@ -56,6 +58,11 @@ func (f *Features) Schema() http.HandlerFunc {
 				engine.WithInclude(fieldsIncludeJSON),
 				f.engine.WithNegotiatedLanguage(w, r),
 				engine.WithMediaTypeOverwrite(engine.MediaTypeJSONSchema)) // JSON format, but specific mediatype.
+		case engine.FormatMarkdown:
+			key = engine.NewTemplateKey(schemaMD,
+				engine.WithInstanceName(collection.GetID()),
+				engine.WithInclude(fieldsIncludeMD),
+				f.engine.WithNegotiatedLanguage(w, r))
 		default:
 			handleFormatNotSupported(w, format)
 
@@ -123,6 +130,10 @@ func renderSchemas(e *engine.Engine, schemas map[string]domain.Schema) {
 			engine.NewTemplateKey(schemaHTML,
 				engine.WithInstanceName(collection.ID),
 				engine.WithInclude(fieldsIncludeHTML),
+			),
+			engine.NewTemplateKey(schemaMD,
+				engine.WithInstanceName(collection.ID),
+				engine.WithInclude(fieldsIncludeMD),
 			),
 		)
 	}

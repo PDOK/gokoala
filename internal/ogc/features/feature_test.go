@@ -167,6 +167,23 @@ func TestFeature(t *testing.T) {
 			},
 		},
 		{
+			name: "Request Markdown for feature 4030",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items/:featureId",
+				collectionID: "foo",
+				featureID:    "4030",
+				format:       "md",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_feature_4030.md",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request HTML for address feature 25",
 			fields: fields{
 				configFiles: []string{
@@ -433,6 +450,8 @@ func TestFeature(t *testing.T) {
 							assert.JSONEq(t, string(expectedBody), rr.Body.String())
 						case engine.FormatHTML:
 							assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
+						case engine.FormatMarkdown:
+							assert.Equal(t, string(expectedBody), rr.Body.String())
 						default:
 							assert.Fail(t, "implement support to test format: "+tt.fields.format)
 						}

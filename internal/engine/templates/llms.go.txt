@@ -1,0 +1,53 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{/* @formatter:off */}}
+# "{{ .Config.Title }}" OGC API
+
+> Documentation and API endpoints for the [OGC API](https://ogcapi.ogc.org/) involving the "{{ .Config.Title }}" dataset hosted at {{ .Config.BaseURL }}.
+
+## Core API Documentation
+- [Landing page]({{ .Config.BaseURL }}/?f=md).
+- [OpenAPI spec]({{ .Config.BaseURL }}/api?f=md), also available in [JSON]({{ .Config.BaseURL }}/api?f=json).
+- [OGC Conformance declaration]({{ .Config.BaseURL }}/conformance?f=md).
+
+{{ if .Config.HasCollections -}}
+## Collections
+- [List of all collections available in this API]({{ .Config.BaseURL }}/collections?f=md).
+{{ end -}}
+
+{{ range $index, $coll := .Config.AllCollections.Unique }}
+### Collection: {{ $coll.ID }}
+- [View Collection Details]({{ $.Config.BaseURL }}/collections/{{- $coll.ID -}}?f=md)
+{{ if and $.Config.OgcAPI.Tiles $.Config.OgcAPI.Tiles.Collections ($.Config.OgcAPI.Tiles.Collections.ContainsID $coll.ID) -}}
+- [View Tiles]({{ $.Config.BaseURL }}/collections/{{- $coll.ID -}}/tiles?f=md). OGC API Tiles.
+{{ end -}}
+{{ if and $.Config.OgcAPI.Features $.Config.OgcAPI.Features.Collections ($.Config.OgcAPI.Features.Collections.ContainsID $coll.ID) -}}
+- [View Features/Items]({{ $.Config.BaseURL }}/collections/{{- $coll.ID -}}/items?f=md). OGC API Features. Use "next" link to paginate through the features.
+- [View Schema]({{ $.Config.BaseURL }}/collections/{{- $coll.ID -}}/schema?f=md). OGC API Features part 5 "schema".
+{{ end -}}
+{{ end -}}
+
+{{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles }}
+## Vector Tiles (OGC API Tiles)
+- [View Tiles]({{ .Config.BaseURL }}/tiles?f=md)
+{{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:28992" -}}
+- [View which zoom levels are available for the NetherlandsRDNewQuad projection]({{ .Config.BaseURL }}/tiles/NetherlandsRDNewQuad?f=md)
+{{ end -}}
+{{ if .Config.OgcAPI.Tiles.HasProjection "EPSG:3035" -}}
+- [View which zoom levels are available for the EuropeanETRS89LAEAQuad projection]({{ .Config.BaseURL }}/tiles/EuropeanETRS89_LAEAQuad?f=md)
+{{ end -}}
+{{- if .Config.OgcAPI.Tiles.HasProjection "EPSG:3857" -}}
+- [View which zoom levels are available for the WebMercatorQuad projection]({{ .Config.BaseURL }}/tiles/WebMercatorQuad?f=md)
+{{ end -}}
+{{ end -}}
+
+{{ if and .Config.OgcAPI.Styles .Config.OgcAPI.Tiles }}
+## Styles (OGC API Styles)
+- [Available Styles]({{ .Config.BaseURL }}/styles?f=md) in Mapbox format.
+{{- end -}}
+
+{{ if .Config.OgcAPI.FeaturesSearch }}
+## Search
+- [Features search / Geocoding endpoint]({{ .Config.BaseURL }}/search?f=md)
+{{- end -}}
+
+{{/* @formatter:on */}}

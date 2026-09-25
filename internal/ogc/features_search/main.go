@@ -24,6 +24,7 @@ const (
 
 	templatesDir = "internal/ogc/features_search/templates/"
 	searchHTML   = "search.go.html"
+	searchMD     = "search.go.md"
 	searchPath   = "/search"
 )
 
@@ -74,7 +75,8 @@ func NewSearch(e *engine.Engine, datasources map[features.DatasourceKey]ds.Datas
 			ProjJSON: features.ConvertProjJSONBySRIDtoString(projJSONBySRID),
 		},
 		[]engine.Breadcrumb{{Name: "Search", Path: "search"}},
-		engine.NewTemplateKey(templatesDir+searchHTML))
+		engine.NewTemplateKey(templatesDir+searchHTML),
+		engine.NewTemplateKey(templatesDir+searchMD))
 
 	return s, nil
 }
@@ -87,6 +89,9 @@ func (s *Search) Search() http.HandlerFunc {
 		case engine.FormatHTML:
 			s.searchAsHTML(w, r)
 			return
+		case engine.FormatMarkdown:
+			s.searchAsMarkdown(w, r)
+			return
 		case engine.FormatJSON, engine.FormatGeoJSON, engine.FormatJSONFG:
 			s.searchAsJSON(w, r, format)
 			return
@@ -98,6 +103,16 @@ func (s *Search) Search() http.HandlerFunc {
 func (s *Search) searchAsHTML(w http.ResponseWriter, r *http.Request) {
 	key := engine.NewTemplateKey(
 		templatesDir+searchHTML,
+		s.engine.WithNegotiatedLanguage(w, r))
+
+	s.engine.Serve(w, r,
+		engine.ServeTemplate(key),
+		engine.ServeValidation(false, true))
+}
+
+func (s *Search) searchAsMarkdown(w http.ResponseWriter, r *http.Request) {
+	key := engine.NewTemplateKey(
+		templatesDir+searchMD,
 		s.engine.WithNegotiatedLanguage(w, r))
 
 	s.engine.Serve(w, r,

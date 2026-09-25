@@ -16,6 +16,7 @@ import (
 	texttemplate "text/template"
 
 	gokoalaconfig "github.com/PDOK/gokoala/config"
+	"github.com/gomarkdown/markdown/parser"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 
 	"github.com/PDOK/gokoala/internal/engine/util"
@@ -53,6 +54,7 @@ type OpenAPI struct {
 func init() {
 	htmlRegex := regexp.MustCompile(HTMLRegex)
 
+	// HTML
 	openapi3filter.RegisterBodyDecoder(MediaTypeHTML,
 		func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
 			_ openapi3filter.EncodingFn) (any, error) {
@@ -68,6 +70,25 @@ func init() {
 			return string(data), nil
 		})
 
+	// Markdown
+	openapi3filter.RegisterBodyDecoder(MediaTypeMarkdown,
+		func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+			_ openapi3filter.EncodingFn) (any, error) {
+
+			data, err := io.ReadAll(body)
+			if err != nil {
+				return nil, errors.New("failed to read response body")
+			}
+			p := parser.NewWithExtensions(parser.CommonExtensions)
+			doc := p.Parse(data)
+			if doc == nil {
+				return false, errors.New("response doesn't contain Markdown")
+			}
+
+			return string(data), nil
+		})
+
+	// JSON, JSON-FG, JSON Schema, etc.
 	for _, mediaType := range MediaTypeJSONFamily {
 		openapi3filter.RegisterBodyDecoder(mediaType,
 			func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,

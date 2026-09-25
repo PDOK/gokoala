@@ -118,6 +118,12 @@ func TestBuildingBlocks(t *testing.T) {
 			wantBody:   "internal/engine/testdata/expected_sitemap.xml",
 		},
 		{
+			name:       "Should have valid llms.txt for agentic browsers/agents",
+			configFile: "examples/config_all.yaml",
+			apiCall:    "http://localhost:8181/llms.txt",
+			wantBody:   "internal/engine/testdata/expected_llms.txt",
+		},
+		{
 			name:       "Should have valid structured data of type 'Dataset' on landing page",
 			configFile: "examples/config_all.yaml",
 			apiCall:    "http://localhost:8181?f=html",
@@ -157,10 +163,12 @@ func TestBuildingBlocks(t *testing.T) {
 			switch {
 			case strings.HasSuffix(tt.apiCall, "json"):
 				assert.JSONEq(t, string(expectedBody), recorder.Body.String())
-			case strings.HasSuffix(tt.apiCall, "html") || strings.HasSuffix(tt.apiCall, "xml"):
+			case strings.HasSuffix(tt.apiCall, "html") ||
+				strings.HasSuffix(tt.apiCall, "xml") ||
+				strings.HasSuffix(tt.apiCall, "txt"):
 				assert.Contains(t, normalize(recorder.Body.String()), normalize(string(expectedBody)))
 			default:
-				log.Fatalf("implement support to test format: %s", tt.apiCall)
+				assert.Failf(t, "implement support to test format: %s", tt.apiCall)
 			}
 		})
 	}

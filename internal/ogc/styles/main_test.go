@@ -149,6 +149,18 @@ func TestStyles_Style(t *testing.T) {
 				statusCode:   http.StatusOK,
 			},
 		},
+		{
+			name: "styles/default__netherlandsrdnewquad as Markdown",
+			fields: fields{
+				configFile: "internal/ogc/styles/testdata/config_minimal_styles.yaml",
+				url:        "http://localhost:8080/styles/:style?f=md",
+				style:      "default__netherlandsrdnewquad",
+			},
+			want: want{
+				bodyContains: []string{"**Style URL:** [http://localhost:8080/styles/default?f=mapbox]"},
+				statusCode:   http.StatusOK,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -221,6 +233,18 @@ func TestStyles_Metadata(t *testing.T) {
 			},
 			want: want{
 				bodyContains: []string{"\"id\": \"default\"", "\"title\": \"Mapbox Style\"", "default__netherlandsrdnewquad"},
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "styles/default__netherlandsrdnewquad/metadata as Markdown",
+			fields: fields{
+				configFile: "internal/ogc/styles/testdata/config_minimal_styles.yaml",
+				url:        "http://localhost:8080/styles/:style/metadata?f=md",
+				style:      "default__netherlandsrdnewquad",
+			},
+			want: want{
+				bodyContains: []string{"Test style Metadata"},
 				statusCode:   http.StatusOK,
 			},
 		},
@@ -343,6 +367,17 @@ func TestTile_Styles(t *testing.T) {
 			},
 			want: want{
 				bodyContains: "Test style (WebMercatorQuad)",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
+			name: "test Available Styles heading present as Markdown",
+			fields: fields{
+				configFile: "internal/ogc/styles/testdata/config_minimal_styles.yaml",
+				url:        "http://localhost:8080/styles?f=md",
+			},
+			want: want{
+				bodyContains: "Available Styles",
 				statusCode:   http.StatusOK,
 			},
 		},

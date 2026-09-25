@@ -178,6 +178,23 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request Markdown for 'foo' collection using limit of 1",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?limit=1",
+				collectionID: "foo",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "md",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_foo_collection_snippet.md",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request output with property filter 'straatnaam' set to 'Silodam'",
 			fields: fields{
 				configFiles: []string{
@@ -1347,6 +1364,8 @@ func TestFeatures(t *testing.T) {
 							assert.JSONEq(t, string(expectedBody), rr.Body.String())
 						case engine.FormatHTML:
 							assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
+						case engine.FormatMarkdown:
+							assert.Contains(t, rr.Body.String(), string(expectedBody))
 						default:
 							assert.Fail(t, "implement support to test format: "+tt.fields.format)
 						}

@@ -1,0 +1,32 @@
+
+# "Demo of all OGC specs in one API" OGC API
+
+> Documentation and API endpoints for the [OGC API](https://ogcapi.ogc.org/) involving the "Demo of all OGC specs in one API" dataset hosted at http://localhost:8080.
+
+## Core API Documentation
+- [Landing page](http://localhost:8080/?f=md).
+- [OpenAPI spec](http://localhost:8080/api?f=md), also available in [JSON](http://localhost:8080/api?f=json).
+- [OGC Conformance declaration](http://localhost:8080/conformance?f=md).
+
+## Collections
+- [List of all collections available in this API](http://localhost:8080/collections?f=md).
+
+### Collection: addresses
+- [View Collection Details](http://localhost:8080/collections/addresses?f=md)
+- [View Tiles](http://localhost:8080/collections/addresses/tiles?f=md). OGC API Tiles.
+- [View Features/Items](http://localhost:8080/collections/addresses/items?f=md). OGC API Features. Use "next" link to paginate through the features.
+- [View Schema](http://localhost:8080/collections/addresses/schema?f=md). OGC API Features part 5 "schema".
+
+### Collection: addresses2
+- [View Collection Details](http://localhost:8080/collections/addresses2?f=md)
+- [View Features/Items](http://localhost:8080/collections/addresses2/items?f=md). OGC API Features. Use "next" link to paginate through the features.
+- [View Schema](http://localhost:8080/collections/addresses2/schema?f=md). OGC API Features part 5 "schema".
+
+## Vector Tiles (OGC API Tiles)
+- [View Tiles](http://localhost:8080/tiles?f=md)
+- [View which zoom levels are available for the NetherlandsRDNewQuad projection](http://localhost:8080/tiles/NetherlandsRDNewQuad?f=md)
+- [View which zoom levels are available for the EuropeanETRS89LAEAQuad projection](http://localhost:8080/tiles/EuropeanETRS89_LAEAQuad?f=md)
+- [View which zoom levels are available for the WebMercatorQuad projection](http://localhost:8080/tiles/WebMercatorQuad?f=md)
+
+## Styles (OGC API Styles)
+- [Available Styles](http://localhost:8080/styles?f=md) in Mapbox format.

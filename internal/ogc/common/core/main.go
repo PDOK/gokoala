@@ -39,15 +39,18 @@ func NewCommonCore(e *engine.Engine, extraConformanceClasses ExtraConformanceCla
 	e.RenderTemplates(rootPath,
 		nil,
 		engine.NewTemplateKey(templatesDir+"landing-page.go.json"),
-		engine.NewTemplateKey(templatesDir+"landing-page.go.html"))
+		engine.NewTemplateKey(templatesDir+"landing-page.go.html"),
+		engine.NewTemplateKey(templatesDir+"landing-page.go.md"))
 	e.RenderTemplates(rootPath,
 		apiBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+"api.go.html"))
+		engine.NewTemplateKey(templatesDir+"api.go.html"),
+		engine.NewTemplateKey(templatesDir+"api.go.md"))
 	e.RenderTemplatesWithParams(conformancePath,
 		extraConformanceClasses,
 		conformanceBreadcrumbs,
 		engine.NewTemplateKey(templatesDir+"conformance.go.json"),
-		engine.NewTemplateKey(templatesDir+"conformance.go.html"))
+		engine.NewTemplateKey(templatesDir+"conformance.go.html"),
+		engine.NewTemplateKey(templatesDir+"conformance.go.md"))
 
 	core := &CommonCore{
 		engine: e,
@@ -85,6 +88,9 @@ func (c *CommonCore) API() http.HandlerFunc {
 		case engine.FormatHTML:
 			c.apiAsHTML(w, r)
 			return
+		case engine.FormatMarkdown:
+			c.apiAsMarkdown(w, r)
+			return
 		case engine.FormatJSON:
 			c.apiAsJSON(w, r)
 			return
@@ -95,6 +101,11 @@ func (c *CommonCore) API() http.HandlerFunc {
 
 func (c *CommonCore) apiAsHTML(w http.ResponseWriter, r *http.Request) {
 	key := engine.NewTemplateKey(templatesDir+"api.go.html", c.engine.WithNegotiatedLanguage(w, r))
+	c.engine.Serve(w, r, engine.ServeTemplate(key))
+}
+
+func (c *CommonCore) apiAsMarkdown(w http.ResponseWriter, r *http.Request) {
+	key := engine.NewTemplateKey(templatesDir+"api.go.md", c.engine.WithNegotiatedLanguage(w, r))
 	c.engine.Serve(w, r, engine.ServeTemplate(key))
 }
 

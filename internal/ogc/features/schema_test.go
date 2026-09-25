@@ -63,6 +63,22 @@ func TestSchema(t *testing.T) {
 			},
 		},
 		{
+			name: "Request schema in Markdown format",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_bag.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_bag.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/schema",
+				collectionID: "foo",
+				format:       "md",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_schema.md",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request schema in HTML format with temporal fields for GeoPackage",
 			fields: fields{
 				configFiles: []string{
@@ -256,6 +272,8 @@ func TestSchema(t *testing.T) {
 							assert.JSONEq(t, string(expectedBody), rr.Body.String())
 						case engine.FormatHTML:
 							assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
+						case engine.FormatMarkdown:
+							assert.Equal(t, string(expectedBody), rr.Body.String())
 						default:
 							log.Fatalf("implement support to test format: %s", tt.fields.format)
 						}

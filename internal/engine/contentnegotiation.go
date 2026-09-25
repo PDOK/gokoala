@@ -17,6 +17,7 @@ const (
 	MediaTypeJSON          = "application/json"
 	MediaTypeXML           = "application/xml"
 	MediaTypeHTML          = "text/html"
+	MediaTypeMarkdown      = "text/markdown"
 	MediaTypeTileJSON      = "application/vnd.mapbox.tile+json"
 	MediaTypeMVT           = "application/vnd.mapbox-vector-tile"
 	MediaTypeMapboxStyle   = "application/vnd.mapbox.style+json"
@@ -30,6 +31,7 @@ const (
 	FormatHTML           = "html"
 	FormatXML            = "xml"
 	FormatJSON           = "json"
+	FormatMarkdown       = "md"
 	FormatTileJSON       = "tilejson"
 	FormatMVT            = "mvt"
 	FormatMVTAlternative = "pbf"
@@ -57,6 +59,7 @@ var (
 		MediaTypeMapboxStyle,
 		MediaTypeOpenAPI,
 		MediaTypeHTML,
+		FormatMarkdown,
 		// common web media types
 		"text/css",
 		"text/plain",
@@ -97,6 +100,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeJSON),
 		contenttype.NewMediaType(MediaTypeXML),
 		contenttype.NewMediaType(MediaTypeHTML),
+		contenttype.NewMediaType(MediaTypeMarkdown),
 		contenttype.NewMediaType(MediaTypeTileJSON),
 		contenttype.NewMediaType(MediaTypeGeoJSON),
 		contenttype.NewMediaType(MediaTypeJSONFG),
@@ -110,6 +114,7 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		MediaTypeJSON:        FormatJSON,
 		MediaTypeXML:         FormatXML,
 		MediaTypeHTML:        FormatHTML,
+		MediaTypeMarkdown:    FormatMarkdown,
 		MediaTypeTileJSON:    FormatTileJSON,
 		MediaTypeGeoJSON:     FormatGeoJSON,
 		MediaTypeJSONFG:      FormatJSONFG,

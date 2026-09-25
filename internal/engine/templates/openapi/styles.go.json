@@ -37,6 +37,11 @@
                 "schema": {
                   "type": "string"
                 }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
               }
             },
             "headers" : {
@@ -103,6 +108,11 @@
                 "schema": {
                   "type": "string"
                 }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
               }
             },
             "headers" : {
@@ -159,7 +169,8 @@
           "type": "string",
           "enum": [
             "json",
-            "html"
+            "html",
+            "md"
           ]
         },
         "example": "json"
