@@ -25,12 +25,17 @@
     <link rel="icon" href="{{ .Config.BaseURL }}/theme/{{ base .Theme.Logo.Favicon }}">
 
     <!-- link relations -->
-    <link rel="canonical" href="{{ .Config.BaseURL }}">
-    {{ range $lang := .Config.AvailableLanguages -}}
-    <link rel="alternate" hreflang="{{ $lang }}" href="{{ $.Config.BaseURL }}?f=html&lang={{ $lang }}">
+    {{ $fullURL := .Config.BaseURL -}}
+    {{ if .Breadcrumbs -}}
+        {{ $lastcrumb := last .Breadcrumbs -}}
+        {{ $fullURL = printf "%s/%s" .Config.BaseURL $lastcrumb.Path -}}
     {{ end -}}
-    <link rel="alternate" type="text/markdown" href="{{ $.Config.BaseURL }}?f=md">
-    <link rel="alternate" type="application/json" href="{{ $.Config.BaseURL }}?f=json">
+    <link rel="canonical" href="{{ $fullURL }}">
+    {{ range $lang := .Config.AvailableLanguages -}}
+    <link rel="alternate" hreflang="{{ $lang }}" href="{{ $fullURL }}?f=html&lang={{ $lang }}">
+    {{ end -}}
+    <link rel="alternate" type="text/markdown" href="{{ $fullURL }}?f=md">
+    <link rel="alternate" type="application/json" href="{{ $fullURL }}?f=json">
 
     <!-- css -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
