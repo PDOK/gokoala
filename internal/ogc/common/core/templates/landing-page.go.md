@@ -23,22 +23,22 @@
   {{ end -}}
 {{- end }}
 
-- [OpenAPI {{ i18n "Specification" }}](api)
-- [{{ i18n "Conformance" }}](conformance) indicates which [OGC APIs](https://ogcapi.ogc.org/) and building blocks are implemented by this API.
+- [OpenAPI {{ i18n "Specification" }}]({{ .Config.BaseURL }}/api)
+- [{{ i18n "Conformance" }}]({{ .Config.BaseURL }}/conformance) indicates which [OGC APIs](https://ogcapi.ogc.org/) and building blocks are implemented by this API.
 {{- if .Config.OgcAPI.FeaturesSearch -}}
-- [{{ i18n "Search" }}](search): {{ i18n "SearchText" }}
+- [{{ i18n "Search" }}]({{ .Config.BaseURL }}/search): {{ i18n "SearchText" }}
 {{- end }}
 {{ if .Config.HasCollections -}}
-- [{{ i18n "Collections" }}](collections): features/tiles/etc available in this API.
+- [{{ i18n "Collections" }}]({{ .Config.BaseURL }}/collections): features/tiles/etc available in this API.
 {{- end }}
 {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles -}}
-- [{{ i18n "Tiles" }}](tiles): OGC API Tiles supported by this API.
+- [{{ i18n "Tiles" }}]({{ .Config.BaseURL }}/tiles): OGC API Tiles supported by this API.
 {{- end }}
 {{ if .Config.OgcAPI.Styles -}}
-- [{{ i18n "Styles" }}](styles): OGC API Styles supported by this API.
+- [{{ i18n "Styles" }}]({{ .Config.BaseURL }}/styles): OGC API Styles supported by this API.
 {{- end }}
 {{ if .Config.OgcAPI.Tiles -}}
-- [{{ i18n "TileMatrixSets" }}](tileMatrixSets): OGC Two Dimensional Tile Matrix Sets supported by this APi.
+- [{{ i18n "TileMatrixSets" }}]({{ .Config.BaseURL }}/tileMatrixSets): OGC Two Dimensional Tile Matrix Sets supported by this APi.
 {{- end }}
 
 {{/* @formatter:on */}}

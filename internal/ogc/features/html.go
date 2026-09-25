@@ -44,6 +44,7 @@ type htmlFeatures struct {
 	projJSONBySRID string
 }
 
+// newHTMLFeatures renders features as HTML or Markdown
 func newHTMLFeatures(e *engine.Engine, projJSONBySRID map[int]string) *htmlFeatures {
 	e.ParseTemplate(featuresHTMLKey)
 	e.ParseTemplate(featureHTMLKey)

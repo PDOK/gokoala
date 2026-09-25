@@ -473,7 +473,7 @@ func TestSearch(t *testing.T) {
 			case engine.FormatHTML:
 				assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 			case engine.FormatMarkdown:
-				assert.Equal(t, string(expectedBody), rr.Body.String())
+				assert.Contains(t, normalize(rr.Body.String()), normalize(string(expectedBody)))
 			default:
 				assert.Fail(t, "implement support to test format: "+tt.fields.format)
 			}

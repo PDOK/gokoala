@@ -166,7 +166,7 @@ func TestCommonCore_Conformance(t *testing.T) {
 				supportsAttributes: false,
 			},
 			want: want{
-				body:       "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
+				body:       "| http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core",
 				statusCode: http.StatusOK,
 			},
 		},
@@ -235,7 +235,7 @@ func TestCommonCore_API(t *testing.T) {
 				url:        "http://localhost:8080/api?f=md",
 			},
 			want: want{
-				body:       "api?f=json", // link to the full OpenAPI spec in JSON, present in api.go.md
+				body:       "[JSON](http://localhost:8180/api?f=json)", // link to the full OpenAPI spec in JSON
 				statusCode: http.StatusOK,
 			},
 		},

@@ -7,8 +7,6 @@
 
 {{ .Params.Description }}
 
-{{ i18n "MapboxStyleText" }}
-
 **Style URL:** [{{ $baseUrl }}/styles/{{ .Params.ID }}?f=mapbox]({{ $baseUrl }}/styles/{{ .Params.ID }}?f=mapbox)
 {{- end }}
 

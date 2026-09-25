@@ -9,6 +9,6 @@
 **{{ i18n "Support" }}:** [{{ .Config.Support.Name }}]({{ .Config.Support.URL }})
 {{- end }}
 
-The full OpenAPI specification is available as [JSON](api?f=json).
+The full OpenAPI specification is available as [JSON]({{ .Config.BaseURL }}/api?f=json).
 
 {{/* @formatter:on */}}

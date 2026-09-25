@@ -788,7 +788,7 @@ func TestTile_TilesetForCollection(t *testing.T) {
 				collection:      "example",
 			},
 			want: want{
-				bodyContains: "NetherlandsRDNewQuad",
+				bodyContains: "# NetherlandsRDNewQuad",
 				statusCode:   http.StatusOK,
 			},
 		},
@@ -885,7 +885,7 @@ func TestTile_TilematrixSet(t *testing.T) {
 				tileMatrixSetID: "NetherlandsRDNewQuad",
 			},
 			want: want{
-				bodyContains: "NetherlandsRDNewQuad",
+				bodyContains: "# NetherlandsRDNewQuad",
 				statusCode:   http.StatusOK,
 			},
 		},
