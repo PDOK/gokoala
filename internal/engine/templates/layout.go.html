@@ -34,8 +34,9 @@
     {{ range $lang := .Config.AvailableLanguages -}}
     <link rel="alternate" hreflang="{{ $lang }}" href="{{ $fullURL }}?f=html&lang={{ $lang }}">
     {{ end -}}
-    <link rel="alternate" type="text/markdown" href="{{ $fullURL }}?f=md">
     <link rel="alternate" type="application/json" href="{{ $fullURL }}?f=json">
+    <link rel="alternate" type="text/markdown" href="{{ $fullURL }}?f=md">
+    <link rel="describedby" type="text/markdown" href="{{ .Config.BaseURL }}/llms.txt">
 
     <!-- css -->
     <link href="css/bootstrap.min.css" rel="stylesheet">

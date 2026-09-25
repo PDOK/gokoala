@@ -1,5 +1,5 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
-
+{{/* @formatter:off */}}
 # {{ .Config.Title }} OpenAPI {{ i18n "Specification" }}
 
 {{ .Config.Abstract }}
