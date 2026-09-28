@@ -1,0 +1,28 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Test to verify CQL filters where a TEXT column contains NUMERIC values.
+baseUrl: http://localhost:8080
+serviceIdentifier: cql
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./internal/ogc/features/cql/testdata/cql-with-wrong-datatype.gpkg
+            queryTimeout: 10m
+    collections:
+      - id: cql
+        metadata:
+          title: CQL
+          description: Testdata specifically aimed at testing CQL filters.
+        filters:
+          cql:
+            enable: true
+          properties:
+            - name: prop_text_with_numeric_val
+              indexRequired: false

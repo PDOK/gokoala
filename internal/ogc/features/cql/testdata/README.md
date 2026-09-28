@@ -1,5 +1,8 @@
 # Testdata
 
+The `cql.gpkg` geopackage (and the similarly named geopackages in different CRSs) holds the primary testdata for CQL2.
+This data is also used to test CQL2 against Postgres. See `internal/ogc/features/datasources/postgres/testdata`.
+
 ## OGC examples as testdata
 
 The [ogc](./ogc) directory contains CQL2 Text examples from OGC.

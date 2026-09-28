@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=prop_text_with_numeric_val+BETWEEN+2+AND+4"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=prop_text_with_numeric_val+BETWEEN+2+AND+4"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=prop_text_with_numeric_val+BETWEEN+2+AND+4"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop_text_with_numeric_val": "3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0413,
+              52.10192
+            ],
+            [
+              5.04164,
+              52.10197
+            ],
+            [
+              5.04167,
+              52.10168
+            ],
+            [
+              5.0413,
+              52.10168
+            ],
+            [
+              5.0413,
+              52.10192
+            ]
+          ]
+        ]
+      },
+      "id": "4"
+    }
+  ],
+  "numberReturned": 1
+}

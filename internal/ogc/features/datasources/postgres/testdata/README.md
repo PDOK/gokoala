@@ -12,3 +12,8 @@ See [setup_test.go](../../../setup_test.go).
 - Add a GeoPackage to this codebase. Make sure it contains only testdata, no sensitive information.
 - Create new schema in `create-schemas.sql`. Choose a valid name (e.g., no '-' chars)
 - Add `ogr2ogr` import command to `docker-compose.yaml` and reference the newly added GeoPackage.
+
+## Got issues?
+
+- Remove all your containers and volumes: `docker compose down -v` and `docker compose up --build`.
+- Also, manually remove all `postgres` containers created by Testcontainers from your system.

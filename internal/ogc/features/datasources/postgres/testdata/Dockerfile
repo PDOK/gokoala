@@ -1,5 +1,5 @@
 # GDAL with Postgres client
-FROM ghcr.io/osgeo/gdal:ubuntu-small-3.11.3
+FROM ghcr.io/osgeo/gdal:ubuntu-small-3.11.5
 
 RUN apt-get update && \
     apt-get install -y postgresql-client && \

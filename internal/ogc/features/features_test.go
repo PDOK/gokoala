@@ -1138,6 +1138,23 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request features with advanced comparison CQL filter on wrongly typed column (TEXT column with NUMERIC data)",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql_wrong_datatype.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql_wrong_datatype.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop_text_with_numeric_val BETWEEN 2 AND 4",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_comparison_advanced_with_wrong_datatype.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request features with spatial CQL filter: intersects on point",
 			fields: fields{
 				configFiles: []string{

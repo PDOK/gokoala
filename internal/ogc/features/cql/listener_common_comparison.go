@@ -97,5 +97,6 @@ func (cl *CommonListener) ExitIsBetweenPredicate(ctx *parser.IsBetweenPredicateC
 	if ctx.NOT() != nil {
 		operator = "NOT " + operator
 	}
-	cl.stack.Push(fmt.Sprintf("%s %s %s AND %s", expr, operator, low, high))
+
+	cl.stack.Push(fmt.Sprintf("cast(%s as numeric) %s %s AND %s", expr, operator, low, high))
 }
