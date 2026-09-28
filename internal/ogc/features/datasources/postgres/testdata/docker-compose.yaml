@@ -105,6 +105,12 @@ services:
           -lco FID=fid \
           /cql/cql.gpkg
 
+        ogr2ogr -f PostgreSQL "PG:host=postgres user=postgres password=postgres dbname=postgres" \
+          -preserve_fid \
+          -lco SCHEMA=cql_with_wrong_datatype \
+          -lco FID=fid \
+          /cql/cql-with-wrong-datatype.gpkg
+
         echo "DONE import GeoPackages in Postgres"
         echo "START creating indexes"
 

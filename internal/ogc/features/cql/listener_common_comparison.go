@@ -82,3 +82,21 @@ func (cl *CommonListener) ExitCharacterClause(ctx *parser.CharacterClauseContext
 		cl.stack.Push(addCollation(cl.stack.Pop(), common.IgnoreAccentCollation))
 	}
 }
+
+// ExitIsBetweenPredicate Comparison expressions (BETWEEN, NOT BETWEEN)
+func (cl *CommonListener) ExitIsBetweenPredicate(ctx *parser.IsBetweenPredicateContext) {
+	if !cl.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
+		cl.errorListener.Error(errAdvancedComparisonNotEnabled)
+		return
+	}
+	high := cl.stack.Pop()
+	low := cl.stack.Pop()
+	expr := cl.stack.Pop()
+
+	operator := "BETWEEN"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+
+	cl.stack.Push(fmt.Sprintf("cast(%s as numeric) %s %s AND %s", expr, operator, low, high))
+}

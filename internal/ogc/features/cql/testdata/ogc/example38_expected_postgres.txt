@@ -1,1 +1,1 @@
-NOT ("value" BETWEEN cast (@cql_bcde as numeric) AND cast (@cql_fghi as numeric))
+NOT (cast("value" as numeric) BETWEEN @cql_bcde AND @cql_fghi)

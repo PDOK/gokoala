@@ -8,3 +8,4 @@ create schema external_fid;
 create schema nullemptygeoms;
 create schema roads;
 create schema cql;
+create schema cql_with_wrong_datatype;
