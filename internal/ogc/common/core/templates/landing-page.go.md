@@ -5,16 +5,16 @@
 {{ .Config.Abstract }}
 
 {{ if .Config.Keywords -}}
-**{{ i18n "Keywords" }}:** {{ .Config.Keywords | join ", " }}
+**{{ i18n "Keywords" }}:** {{ .Config.Keywords | join ", " }}.
 {{- end }}
-**{{ i18n "License" }}:** [{{ .Config.License.Name }}]({{ .Config.License.URL }})
+**{{ i18n "License" }}:** [{{ .Config.License.Name }}]({{ .Config.License.URL }}).
 {{ if .Config.Support -}}
-**{{ i18n "Support" }}:** [{{ .Config.Support.Name }}]({{ .Config.Support.URL }})
+**{{ i18n "Support" }}:** [{{ .Config.Support.Name }}]({{ .Config.Support.URL }}).
 {{- end }}
 {{ if .Config.MetadataLinks -}}
-  {{ range $metadataLink := .Config.MetadataLinks -}}
-**{{ i18n "MetadataFor" }} {{ $metadataLink.Category }}:** [{{ i18n "ViewAt" }} {{ $metadataLink.Name }}]({{ $metadataLink.URL }})
-  {{ end -}}
+{{ range $metadataLink := .Config.MetadataLinks -}}
+**{{ i18n "MetadataFor" }} {{ $metadataLink.Category }}:** [{{ i18n "ViewAt" }} {{ $metadataLink.Name }}]({{ $metadataLink.URL }}).
+{{ end -}}
 {{- end }}
 
 {{- if .Config.DatasetDetails -}}

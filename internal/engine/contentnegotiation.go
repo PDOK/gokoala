@@ -59,7 +59,7 @@ var (
 		MediaTypeMapboxStyle,
 		MediaTypeOpenAPI,
 		MediaTypeHTML,
-		FormatMarkdown,
+		MediaTypeMarkdown,
 		// common web media types
 		"text/css",
 		"text/plain",
