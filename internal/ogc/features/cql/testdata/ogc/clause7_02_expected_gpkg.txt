@@ -1,1 +1,1 @@
-"depth" BETWEEN :cql_bcde AND :cql_fghi
+"depth" BETWEEN cast (:cql_bcde as numeric) AND cast (:cql_fghi as numeric)

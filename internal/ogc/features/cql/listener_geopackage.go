@@ -105,6 +105,33 @@ func (l *GeoPackageListener) ExitIsInListPredicate(ctx *parser.IsInListPredicate
 	}
 }
 
+// ExitIsBetweenPredicate Comparison expressions (BETWEEN, NOT BETWEEN)
+func (l *GeoPackageListener) ExitIsBetweenPredicate(ctx *parser.IsBetweenPredicateContext) {
+	if !l.cqlConfig.IsAdvancedComparisonOperatorsEnabled() {
+		l.errorListener.Error(errAdvancedComparisonNotEnabled)
+		return
+	}
+	high := l.stack.Pop()
+	low := l.stack.Pop()
+	expr := l.stack.Pop()
+
+	operator := "BETWEEN"
+	if ctx.NOT() != nil {
+		operator = "NOT " + operator
+	}
+
+	// when comparing numbers, cast the column to numeric to avoid getting incorrect results.
+	// This can occur when a column with numeric values is incorrectly defined as a TEXT column.
+	if l.isNumericParam(high, geopackage.NamedParamSymbolSqlx) {
+		high = "cast (" + high + " as numeric)"
+	}
+	if l.isNumericParam(low, geopackage.NamedParamSymbolSqlx) {
+		low = "cast (" + low + " as numeric)"
+	}
+
+	l.stack.Push(fmt.Sprintf("%s %s %s AND %s", expr, operator, low, high))
+}
+
 // ExitSpatialPredicate Spatial expression (S_INTERSECTS, S_CONTAINS, etc.)
 func (l *GeoPackageListener) ExitSpatialPredicate(ctx *parser.SpatialPredicateContext) {
 	cqlFunction := strings.ToUpper(ctx.SpatialFunction().GetText())

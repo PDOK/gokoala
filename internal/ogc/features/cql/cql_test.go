@@ -782,8 +782,8 @@ func TestBetweenOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 BETWEEN 4 AND 6 AND prop2 = 'bar'"
-	expectedSQLGeoPackage := "(\"prop1\" BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
-	expectedSQLPostgres := "(\"prop1\" BETWEEN @cql_bcde AND @cql_fghi AND \"prop2\" = @cql_jklm)"
+	expectedSQLGeoPackage := "(\"prop1\" BETWEEN cast (:cql_bcde as numeric) AND cast (:cql_fghi as numeric) AND \"prop2\" = :cql_jklm)"
+	expectedSQLPostgres := "(\"prop1\" BETWEEN cast (@cql_bcde as numeric) AND cast (@cql_fghi as numeric) AND \"prop2\" = @cql_jklm)"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {
@@ -815,8 +815,8 @@ func TestNotBetweenOperator(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}, {Name: "prop2"}}
 	inputCQL := "prop1 NOT BETWEEN 4 AND 6 AND prop2 = 'bar'"
-	expectedSQLGeoPackage := "(\"prop1\" NOT BETWEEN :cql_bcde AND :cql_fghi AND \"prop2\" = :cql_jklm)"
-	expectedSQLPostgres := "(\"prop1\" NOT BETWEEN @cql_bcde AND @cql_fghi AND \"prop2\" = @cql_jklm)"
+	expectedSQLGeoPackage := "(\"prop1\" NOT BETWEEN cast (:cql_bcde as numeric) AND cast (:cql_fghi as numeric) AND \"prop2\" = :cql_jklm)"
+	expectedSQLPostgres := "(\"prop1\" NOT BETWEEN cast (@cql_bcde as numeric) AND cast (@cql_fghi as numeric) AND \"prop2\" = @cql_jklm)"
 
 	for _, datasource := range datasources {
 		t.Run(datasource, func(t *testing.T) {

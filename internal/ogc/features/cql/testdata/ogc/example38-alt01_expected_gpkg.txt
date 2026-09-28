@@ -1,1 +1,1 @@
-"value" NOT BETWEEN :cql_bcde AND :cql_fghi
+"value" NOT BETWEEN cast (:cql_bcde as numeric) AND cast (:cql_fghi as numeric)
