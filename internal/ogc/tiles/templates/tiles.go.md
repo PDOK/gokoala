@@ -21,10 +21,10 @@
 | URL template | `{{ $baseUrlTiles }}/tiles/{{ $projection }}/{z}/{y}/{x}?f=mvt` |
 | Metadata | [{{ i18n "View" }} metadata]({{ $baseUrlTiles }}/tiles/{{ $projection }}) |
 
-{{ if $.Config.LastUpdatedBy -}}
-**{{ i18n "UpdatedBy" }} {{ $.Config.LastUpdatedBy }} {{ i18n "On" }}:** {{ toDate "2006-01-02T15:04:05Z07:00" $.Config.LastUpdated | date "2006-01-02" }}
-{{ else if $.Config.LastUpdated -}}
-**{{ i18n "LastUpdated" }}:** {{ toDate "2006-01-02T15:04:05Z07:00" $.Config.LastUpdated | date "2006-01-02" }}
+{{ if and $.Params.LastUpdated $.Params.LastUpdatedBy -}}
+**{{ i18n "UpdatedBy" }} {{ $.Params.LastUpdatedBy }} {{ i18n "On" }}:** {{ toDate "2006-01-02T15:04:05Z07:00" $.Params.LastUpdated | date "2006-01-02" }}
+{{ else if $.Params.LastUpdated -}}
+**{{ i18n "LastUpdated" }}:** {{ toDate "2006-01-02T15:04:05Z07:00" $.Params.LastUpdated | date "2006-01-02" }}
 {{- end }}
 
 {{ end -}}

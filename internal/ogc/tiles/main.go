@@ -60,6 +60,10 @@ type templateData struct {
 
 	// All supported projections by GoKoala (for tiles)
 	AllProjections map[string]any
+
+	// Update metadata for top-level or collection-level tiles
+	LastUpdated   *string
+	LastUpdatedBy string
 }
 
 type Tiles struct {
@@ -89,9 +93,11 @@ func NewTiles(e *engine.Engine) *Tiles {
 	// Top-level tiles (dataset tiles in OGC spec)
 	if e.Config.OgcAPI.Tiles.DatasetTiles != nil {
 		renderTilesTemplates(e, nil, templateData{
-			*e.Config.OgcAPI.Tiles.DatasetTiles,
-			e.Config.BaseURL.String(),
-			util.Cast(config.AllTileProjections),
+			Tiles:          *e.Config.OgcAPI.Tiles.DatasetTiles,
+			BaseURL:        e.Config.BaseURL.String(),
+			AllProjections: util.Cast(config.AllTileProjections),
+			LastUpdated:    e.Config.LastUpdated,
+			LastUpdatedBy:  e.Config.LastUpdatedBy,
 		})
 		e.Router.Get(tilesPath, tiles.TilesetsList())
 		e.Router.Get(tilesPath+"/{tileMatrixSetId}", tiles.Tileset())
@@ -102,11 +108,16 @@ func NewTiles(e *engine.Engine) *Tiles {
 	// Collection-level tiles (geodata tiles in OGC spec)
 	geoDataTiles := map[string]config.Tiles{}
 	for _, coll := range e.Config.OgcAPI.Tiles.Collections {
-		renderTilesTemplates(e, &coll, templateData{
-			coll.GeoDataTiles,
-			e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
-			util.Cast(config.AllTileProjections),
-		})
+		data := templateData{
+			Tiles:          coll.GeoDataTiles,
+			BaseURL:        e.Config.BaseURL.String() + g.CollectionsPath + "/" + coll.ID,
+			AllProjections: util.Cast(config.AllTileProjections),
+		}
+		if coll.Metadata != nil {
+			data.LastUpdated = coll.Metadata.LastUpdated
+			data.LastUpdatedBy = coll.Metadata.LastUpdatedBy
+		}
+		renderTilesTemplates(e, &coll, data)
 		geoDataTiles[coll.ID] = coll.GeoDataTiles
 	}
 	if len(geoDataTiles) != 0 {
