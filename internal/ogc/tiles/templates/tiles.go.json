@@ -43,6 +43,9 @@
             }
           ],
           "dataType": "vector",
+          {{- if $.Params.LastUpdated }}
+          "updated": "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $.Params.LastUpdated) "UTC" }}",
+          {{- end }}
           "crs": "https://www.opengis.net/def/crs/EPSG/0/28992",
           "tileMatrixSetId": "NetherlandsRDNewQuad",
           "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/NetherlandsRDNewQuad",
@@ -246,6 +249,9 @@
             }
           ],
           "dataType": "vector",
+          {{- if $.Params.LastUpdated }}
+          "updated": "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $.Params.LastUpdated) "UTC" }}",
+          {{- end }}
           "crs": "https://www.opengis.net/def/crs/EPSG/0/3035",
           "tileMatrixSetId": "EuropeanETRS89_LAEAQuad",
           "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/EuropeanETRS89_LAEAQuad",
@@ -439,6 +445,9 @@
             }
           ],
           "dataType": "vector",
+          {{- if $.Params.LastUpdated }}
+          "updated": "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $.Params.LastUpdated) "UTC" }}",
+          {{- end }}
           "crs": "https://www.opengis.net/def/crs/EPSG/0/3857",
           "tileMatrixSetId": "WebMercatorQuad",
           "tileMatrixSetDefinition": "{{ $.Config.BaseURL }}/tileMatrixSets/WebMercatorQuad",
