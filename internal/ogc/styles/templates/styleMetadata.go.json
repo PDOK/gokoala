@@ -9,7 +9,7 @@
             "rel": "self",
             "type" : "application/json",
             "title": "Style Metadata for {{ $style }} ({{ $projection }}) as JSON",
-            "href": "{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}/metadata?=json"
+            "href": "{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}/metadata?f=json"
         },
         {
             "rel": "alternate",
@@ -49,8 +49,7 @@
   "license": "{{ .Config.License.URL }}",
   {{ if .Params.Metadata.LastUpdated }}
   "dates": {
-    "updated": "{{ .Params.Metadata.LastUpdated }}"
-    {{/*  "created": "{{ .Params.Metadata.Created }}",*/}}
+    "revision": "{{ .Params.Metadata.LastUpdated }}"
   },
   {{ end }}
   "scope": "style",
