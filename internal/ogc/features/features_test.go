@@ -1121,6 +1121,57 @@ func TestFeatures(t *testing.T) {
 			},
 		},
 		{
+			name: "Request features with comparison CQL filter and perform pagination to first page",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 > 1&limit=2",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_comparison_page1.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features with comparison CQL filter and perform pagination to second page",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 > 1&limit=2&cursor=BA%7CD4sAcA",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_comparison_page2.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Request features with comparison CQL filter and perform pagination to third page",
+			fields: fields{
+				configFiles: []string{
+					"internal/ogc/features/testdata/geopackage/config_features_cql.yaml",
+					"internal/ogc/features/testdata/postgresql/config_features_cql.yaml",
+				},
+				url:          "http://localhost:8080/collections/:collectionId/items?f=json&filter=prop1 > 1&limit=2&cursor=Bg%7CD4sAcA",
+				collectionID: "cql",
+				contentCrs:   "<" + domain.WGS84CrsURI + ">",
+				format:       "json",
+			},
+			want: want{
+				body:       "internal/ogc/features/testdata/expected_features_cql_comparison_page3.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Request features with advanced comparison CQL filter",
 			fields: fields{
 				configFiles: []string{

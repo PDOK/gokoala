@@ -1,0 +1,123 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?f=json&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?f=jsonfg&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?f=html&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=BA%7CD4sAcA&f=json&filter=prop1+%3E+1&limit=2"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 2,
+        "prop10": "2026-02-12T23:00:00Z",
+        "prop2": 3,
+        "prop3": "Doctor",
+        "prop4": "Foobar",
+        "prop5": "2026-02-13",
+        "prop6": null,
+        "prop7": false,
+        "prop8": true,
+        "prop9": "2026-02-13"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.03983,
+              52.10207
+            ],
+            [
+              5.03986,
+              52.10147
+            ],
+            [
+              5.04072,
+              52.10147
+            ],
+            [
+              5.0407,
+              52.10205
+            ],
+            [
+              5.03983,
+              52.10207
+            ]
+          ]
+        ]
+      },
+      "id": "2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 3,
+        "prop10": "2026-02-09T23:00:00Z",
+        "prop2": 4,
+        "prop3": "Square",
+        "prop4": "FooBarBaz",
+        "prop5": "2026-02-12",
+        "prop6": "2026-02-20T23:00:00Z",
+        "prop7": false,
+        "prop8": true,
+        "prop9": "2026-02-13"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0423,
+              52.1016
+            ],
+            [
+              5.04191,
+              52.10105
+            ],
+            [
+              5.04246,
+              52.10079
+            ],
+            [
+              5.0429,
+              52.10105
+            ],
+            [
+              5.04233,
+              52.10158
+            ],
+            [
+              5.0423,
+              52.1016
+            ]
+          ]
+        ]
+      },
+      "id": "3"
+    }
+  ],
+  "numberReturned": 2
+}

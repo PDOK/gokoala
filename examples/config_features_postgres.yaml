@@ -57,6 +57,16 @@ ogcApi:
     collections:
       - id: dutch-addresses
         tableName: addresses  # name of the feature table (optional), when omitted collection ID is used.
+        filters:
+          properties:
+            - name: locator_designator_addressnumber
+              indexRequired: false
+            - name: locator_designator_addressnumberextension
+              indexRequired: false
+            - name: component_thoroughfarename
+              indexRequired: false
+          cql:
+            enable: true
         metadata:
           title: Dutch Addresses
           description: These are example addresses
