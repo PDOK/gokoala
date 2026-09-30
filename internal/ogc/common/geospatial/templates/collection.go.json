@@ -58,23 +58,20 @@
   "storageCrs" : "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
   {{ end }}
   {{ end }}
+  {{- if and .Params.Collection.Metadata .Params.Collection.Metadata.LastUpdated }}
+  "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" .Params.Collection.Metadata.LastUpdated) "UTC" }}",
+  {{- end }}
   "links" : [
     {
       "rel" : "self",
       "type" : "application/json",
       "title" : "This document as JSON",
-      {{- if and .Params.Collection.Metadata .Params.Collection.Metadata.LastUpdated }}
-      "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" .Params.Collection.Metadata.LastUpdated) "UTC" }}",
-      {{- end }}
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}?f=json"
     },
     {
       "rel" : "alternate",
       "type" : "text/html",
       "title" : "This document as HTML",
-      {{- if and .Params.Collection.Metadata .Params.Collection.Metadata.LastUpdated }}
-      "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" .Params.Collection.Metadata.LastUpdated) "UTC" }}",
-      {{- end }}
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}?f=html"
     }
     {{ if and .Params.Collection.Metadata .Params.Collection.Metadata.Thumbnail }}

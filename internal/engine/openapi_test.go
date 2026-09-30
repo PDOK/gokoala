@@ -199,6 +199,7 @@ func Test_newOpenAPI(t *testing.T) {
 				"/api",
 				"Vector Tiles",
 				"Features",
+				"date and time when the collection was last updated",
 			},
 		},
 	}

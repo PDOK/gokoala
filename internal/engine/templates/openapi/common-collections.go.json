@@ -212,6 +212,11 @@
             "type": "string",
             "example": "This collection contains buildings"
           },
+          "updated": {
+            "description": "date and time when the collection was last updated",
+            "type": "string",
+            "format": "date-time"
+          },
           "keywords": {
             "description": "keywords about the elements in the collection",
             "type": "array",

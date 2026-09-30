@@ -102,23 +102,20 @@
           {{ end }}
         {{ end }}
       {{ end }}
+      {{- if and $coll.Metadata $coll.Metadata.LastUpdated }}
+      ,"updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated) "UTC" }}"
+      {{- end }}
       ,"links" : [
         {
           "rel" : "self",
           "type" : "application/json",
           "title" : "Information about the {{ $coll.ID }} collection as JSON",
-          {{- if and $coll.Metadata $coll.Metadata.LastUpdated }}
-          "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated) "UTC" }}",
-          {{- end }}
           "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=json"
         },
         {
           "rel" : "alternate",
           "type" : "text/html",
           "title" : "Information about the {{ $coll.ID }} collection as HTML",
-          {{- if and $coll.Metadata $coll.Metadata.LastUpdated }}
-          "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" $coll.Metadata.LastUpdated) "UTC" }}",
-          {{- end }}
           "href" : "{{ $baseUrl }}/collections/{{ $coll.ID }}?f=html"
         }
         {{ if and $coll.Metadata $coll.Metadata.Thumbnail }}
