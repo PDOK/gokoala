@@ -106,6 +106,30 @@ func TestBuildingBlocks(t *testing.T) {
 			wantBody:   "internal/ogc/tiles/testdata/expected_collection_level_tiles.json",
 		},
 		{
+			name:       "Serve top-level OGC API Tiles with updated date",
+			configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel_and_collectionlevel_with_last_updated.yaml",
+			apiCall:    "http://localhost:8180/tiles?f=json",
+			wantBody:   "internal/ogc/tiles/testdata/expected_top_level_tiles_with_last_updated.json",
+		},
+		{
+			name:       "Serve collection-level OGC API Tiles with updated date",
+			configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel_and_collectionlevel_with_last_updated.yaml",
+			apiCall:    "http://localhost:8180/collections/example2/tiles?f=json",
+			wantBody:   "internal/ogc/tiles/testdata/expected_collection_level_tiles_with_last_updated.json",
+		},
+		{
+			name:       "Serve top-level OGC API Tiles with updated date in HTML",
+			configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel_and_collectionlevel_with_last_updated.yaml",
+			apiCall:    "http://localhost:8180/tiles?f=html",
+			wantBody:   "internal/ogc/tiles/testdata/expected_top_level_tiles_with_last_updated.html",
+		},
+		{
+			name:       "Serve collection-level OGC API Tiles with updated date in HTML",
+			configFile: "internal/ogc/tiles/testdata/config_tiles_toplevel_and_collectionlevel_with_last_updated.yaml",
+			apiCall:    "http://localhost:8180/collections/example2/tiles?f=html",
+			wantBody:   "internal/ogc/tiles/testdata/expected_collection_level_tiles_with_last_updated.html",
+		},
+		{
 			name:       "Check conformance of OGC API Processes",
 			configFile: "internal/engine/testdata/config_processes.yaml",
 			apiCall:    "http://localhost:8181/conformance?f=html",

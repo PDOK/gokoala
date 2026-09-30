@@ -958,6 +958,16 @@
             "description": "A title for this tileset",
             "type": "string"
           },
+          "updated": {
+            "allOf": [
+              {
+                "description": "Last Tile Set change/revision"
+              },
+              {
+                "$ref": "#/components/schemas/timeStamp"
+              }
+            ]
+          },
           "dataType": {
             "allOf": [
               {
