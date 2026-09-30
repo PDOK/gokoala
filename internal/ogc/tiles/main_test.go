@@ -581,6 +581,18 @@ func TestTile_TilesetsListForCollection(t *testing.T) {
 			},
 		},
 		{
+			name: "test last updated date present",
+			fields: fields{
+				configFile: "internal/ogc/tiles/testdata/config_tiles_collectionlevel_with_last_updated.yaml",
+				url:        "http://localhost:8080/collections/:collection/tiles",
+				collection: "example",
+			},
+			want: want{
+				bodyContains: "\"updated\": \"2023-09-08T12:00:00Z\"",
+				statusCode:   http.StatusOK,
+			},
+		},
+		{
 			name: "test Tile Sets heading present as Markdown",
 			fields: fields{
 				configFile: "internal/ogc/tiles/testdata/config_tiles_collectionlevel.yaml",
