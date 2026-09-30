@@ -38,7 +38,7 @@
               "rel": "item",
               "type" : "application/vnd.mapbox-vector-tile",
               "title" : "Mapbox vector tiles; the link is a URI template where {tileMatrix}/{tileRow}/{tileCol} is the tile in the tiling scheme 'NetherlandsRDNewQuad'",
-              "href" : "{{ $.Config.BaseURL }}/tiles/NetherlandsRDNewQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt",
+              "href" : "{{ $baseUrlTiles }}/tiles/NetherlandsRDNewQuad/{tileMatrix}/{tileRow}/{tileCol}?f=mvt",
               "templated" : true
             }
           ],
