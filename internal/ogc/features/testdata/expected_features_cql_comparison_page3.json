@@ -1,0 +1,125 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=Bg%7CD4sAcA&f=json&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=Bg%7CD4sAcA&f=jsonfg&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?cursor=Bg%7CD4sAcA&f=html&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=CA%7CD4sAcA&f=json&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "prev",
+      "title": "Previous page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=BA%7CD4sAcA&f=json&filter=prop1+%3E+1&limit=2"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 6,
+        "prop10": null,
+        "prop2": 7,
+        "prop3": "Park",
+        "prop4": "Within",
+        "prop5": "2026-02-28",
+        "prop6": null,
+        "prop7": true,
+        "prop8": true,
+        "prop9": "2026-02-13"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.04259,
+              52.10289
+            ],
+            [
+              5.04269,
+              52.10239
+            ],
+            [
+              5.04325,
+              52.10247
+            ],
+            [
+              5.04317,
+              52.10289
+            ],
+            [
+              5.04259,
+              52.10289
+            ]
+          ]
+        ]
+      },
+      "id": "6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 10,
+        "prop10": null,
+        "prop2": 11,
+        "prop3": "Square",
+        "prop4": "Touch",
+        "prop5": null,
+        "prop6": null,
+        "prop7": false,
+        "prop8": false,
+        "prop9": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.04286,
+              52.10119
+            ],
+            [
+              5.04288,
+              52.10107
+            ],
+            [
+              5.043,
+              52.10108
+            ],
+            [
+              5.04296,
+              52.10122
+            ],
+            [
+              5.04286,
+              52.10119
+            ]
+          ]
+        ]
+      },
+      "id": "7"
+    }
+  ],
+  "numberReturned": 2
+}

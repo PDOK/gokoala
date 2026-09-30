@@ -1,0 +1,129 @@
+{
+  "type": "FeatureCollection",
+  "timeStamp": "2000-01-01T00:00:00Z",
+  "links": [
+    {
+      "rel": "self",
+      "title": "This document as GeoJSON",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=BA%7CD4sAcA&f=json&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as JSON-FG",
+      "type": "application/vnd.ogc.fg+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=BA%7CD4sAcA&f=jsonfg&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "alternate",
+      "title": "This document as HTML",
+      "type": "text/html",
+      "href": "http://localhost:8080/collections/cql/items?cursor=BA%7CD4sAcA&f=html&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "next",
+      "title": "Next page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=Bg%7CD4sAcA&f=json&filter=prop1+%3E+1&limit=2"
+    },
+    {
+      "rel": "prev",
+      "title": "Previous page",
+      "type": "application/geo+json",
+      "href": "http://localhost:8080/collections/cql/items?cursor=Ag%7CD4sAcA&f=json&filter=prop1+%3E+1&limit=2"
+    }
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 4,
+        "prop10": "2026-02-26T23:00:00Z",
+        "prop2": 5,
+        "prop3": "Soccer",
+        "prop4": "FooBar",
+        "prop5": "2026-02-13",
+        "prop6": "2026-02-12T23:00:00Z",
+        "prop7": false,
+        "prop8": false,
+        "prop9": "2026-02-28"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0413,
+              52.10192
+            ],
+            [
+              5.04164,
+              52.10197
+            ],
+            [
+              5.04167,
+              52.10168
+            ],
+            [
+              5.0413,
+              52.10168
+            ],
+            [
+              5.0413,
+              52.10192
+            ]
+          ]
+        ]
+      },
+      "id": "4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "prop1": 5,
+        "prop10": null,
+        "prop2": 6,
+        "prop3": "Park",
+        "prop4": "Overlaps",
+        "prop5": null,
+        "prop6": null,
+        "prop7": false,
+        "prop8": false,
+        "prop9": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.04214,
+              52.1032
+            ],
+            [
+              5.04246,
+              52.10213
+            ],
+            [
+              5.04353,
+              52.10236
+            ],
+            [
+              5.04338,
+              52.10323
+            ],
+            [
+              5.04227,
+              52.1032
+            ],
+            [
+              5.04214,
+              52.1032
+            ]
+          ]
+        ]
+      },
+      "id": "5"
+    }
+  ],
+  "numberReturned": 2
+}
