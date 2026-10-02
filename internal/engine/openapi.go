@@ -33,6 +33,7 @@ const (
 	headers            = specPath + "headers.go.json"
 	commonCollections  = specPath + "common-collections.go.json"
 	featuresSpec       = specPath + "features.go.json"
+	recordsSpec        = specPath + "records.go.json"
 	featuresSearchSpec = specPath + "features-search.go.json"
 	tilesSpec          = specPath + "tiles.go.json"
 	stylesSpec         = specPath + "styles.go.json"
@@ -118,6 +119,9 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	}
 	if config.OgcAPI.Features != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSpec)
+	}
+	if config.OgcAPI.Records != nil {
+		defaultOpenAPIFiles = append(defaultOpenAPIFiles, recordsSpec)
 	}
 	if config.OgcAPI.FeaturesSearch != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSearchSpec)

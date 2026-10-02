@@ -72,6 +72,57 @@ func TestNewCollections(t *testing.T) {
 	}
 }
 
+func TestRecordsCollectionIsAdvertisedAsRecord(t *testing.T) {
+	theme, err := config.NewTheme("internal/engine/testdata/test_theme.yaml")
+	require.NoError(t, err)
+	enableCQL := true
+	newEngine := engine.NewEngineWithConfig(&config.Config{
+		Version:            "1.0.0",
+		Title:              "Test API",
+		Abstract:           "Test API description",
+		AvailableLanguages: []config.Language{{Tag: language.Dutch}},
+		BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.example.org"}},
+		OgcAPI: config.OgcAPI{
+			Records: &config.OgcAPIRecords{
+				Collections: config.RecordsCollections{{
+					ID: "datasets",
+					DefaultSortOrder: []config.RecordsSortOrder{
+						{Field: "title", Direction: "asc"},
+					},
+					Filters: config.FeatureFilters{
+						Properties: []config.Queryable{{Name: "title"}},
+						CQL:        config.CQL{Enable: &enableCQL},
+					},
+				}},
+			},
+		},
+	}, theme, "", false, true)
+	collections := NewCollections(newEngine, NewCollectionTypes(nil, nil))
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/collections?f=json", nil)
+	collections.Collections().ServeHTTP(recorder, request)
+
+	require.Equal(t, http.StatusOK, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), `"type": "Collection"`)
+	assert.Contains(t, recorder.Body.String(), `"recordsArrayName": "collections"`)
+	assert.Contains(t, recorder.Body.String(), `"itemType": "record"`)
+	assert.Contains(t, recorder.Body.String(), `"defaultSortOrder"`)
+	assert.Contains(t, recorder.Body.String(), "/collections/datasets/items?f=json")
+	assert.Contains(t, recorder.Body.String(), "/collections/datasets/sortables")
+	assert.Contains(t, recorder.Body.String(), "/collections/datasets/queryables")
+
+	router := chi.NewRouter()
+	router.Get("/collections/{collectionId}", collections.Collection())
+	collectionRecorder := httptest.NewRecorder()
+	collectionRequest := httptest.NewRequest(http.MethodGet, "/collections/datasets?f=json", nil)
+	router.ServeHTTP(collectionRecorder, collectionRequest)
+
+	require.Equal(t, http.StatusOK, collectionRecorder.Code)
+	assert.Contains(t, collectionRecorder.Body.String(), "/collections/datasets/items?f=json")
+	assert.Contains(t, collectionRecorder.Body.String(), `"defaultSortOrder"`)
+	assert.Contains(t, collectionRecorder.Body.String(), "/collections/datasets/queryables")
+}
+
 func TestNewCollections_Collections(t *testing.T) {
 	type fields struct {
 		configFile  string
