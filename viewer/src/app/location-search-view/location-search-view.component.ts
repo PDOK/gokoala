@@ -34,6 +34,7 @@ import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
 import { HighlightPipe } from './highlight.pipe'
+import { BootstrapTooltipDirective } from './bootstrap-tooltip.directive'
 import { HttpErrorResponse } from '@angular/common/http'
 
 interface LocationForm {
@@ -42,7 +43,16 @@ interface LocationForm {
 
 @Component({
   selector: 'app-location-search-view',
-  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent, HighlightPipe, UpperCasePipe],
+  imports: [
+    ReactiveFormsModule,
+    AsyncPipe,
+    PropertyValuePipe,
+    NgClass,
+    CollectionSettingsComponent,
+    HighlightPipe,
+    UpperCasePipe,
+    BootstrapTooltipDirective,
+  ],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +69,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   @Input() collectionsText = 'Collections'
   @Input() searchHelpText = 'Search query must be at least three characters long.'
   @Input() noCollectionsSelectedText = 'A minimum of one collection must be selected.'
+  @Input() collectionSettingsTooltipText = 'Choose which collections to search and how relevant each one is.'
   @Input() set bbox(val: string | undefined) {
     this.setBboxUrlParam(val)
     this._bbox = val

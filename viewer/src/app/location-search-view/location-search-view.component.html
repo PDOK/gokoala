@@ -27,6 +27,7 @@
       type="button"
       [attr.aria-label]="collectionsText"
       [attr.aria-expanded]="collectionSettingsOpen()"
+      [appBootstrapTooltip]="collectionSettingsTooltipText"
       (click)="toggleCollectionSettings()">
       <i class="bi bi-sliders" aria-hidden="true"></i>
     </button>
