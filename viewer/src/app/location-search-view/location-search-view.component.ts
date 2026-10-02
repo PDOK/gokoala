@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -12,6 +13,7 @@ import {
   Output,
   signal,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import {
@@ -28,6 +30,7 @@ import {
   takeUntil,
   tap,
 } from 'rxjs'
+import { Tooltip } from 'bootstrap'
 import { CollectionsService } from '../shared/services/collections.service'
 import { AsyncPipe, NgClass, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
@@ -47,8 +50,11 @@ interface LocationForm {
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
+export class LocationSearchViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef)
+
+  @ViewChild('collectionsSettingsButton') private collectionsSettingsButton!: ElementRef<HTMLButtonElement>
+  private collectionSettingsTooltip?: Tooltip
 
   @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
 
@@ -59,6 +65,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   @Input() collectionsText = 'Collections'
   @Input() searchHelpText = 'Search query must be at least three characters long.'
   @Input() noCollectionsSelectedText = 'A minimum of one collection must be selected.'
+  @Input() collectionSettingsTooltipText = 'Choose which collections to search and how relevant each one is.'
   @Input() set bbox(val: string | undefined) {
     this.setBboxUrlParam(val)
     this._bbox = val
@@ -118,10 +125,28 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     this.initLocationListener()
   }
 
+  ngAfterViewInit() {
+    this.initCollectionSettingsTooltip()
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (!changes['projection']?.isFirstChange() && changes['projection']?.currentValue !== changes['projection']?.previousValue) {
       this.form.controls.location.patchValue('', { emitEvent: true })
     }
+    if (changes['collectionSettingsTooltipText'] && !changes['collectionSettingsTooltipText'].isFirstChange()) {
+      this.initCollectionSettingsTooltip()
+    }
+  }
+
+  private initCollectionSettingsTooltip() {
+    this.collectionSettingsTooltip?.dispose()
+    this.collectionSettingsTooltip = new Tooltip(this.collectionsSettingsButton.nativeElement, {
+      title: this.collectionSettingsTooltipText,
+      placement: 'bottom',
+      fallbackPlacements: ['top'],
+      container: 'body',
+      animation: false,
+    })
   }
 
   initLocationListener() {
@@ -211,6 +236,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
 
   toggleCollectionSettings() {
     this.collectionSettingsOpen.update(val => !val)
+    this.collectionSettingsTooltip?.hide()
   }
 
   private storeQuery() {
@@ -240,9 +266,11 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   @HostListener('document:keydown.escape')
   onEscape() {
     this.closeSearch()
+    this.collectionSettingsTooltip?.hide()
   }
 
   ngOnDestroy() {
+    this.collectionSettingsTooltip?.dispose()
     this._destroy$.next()
   }
 

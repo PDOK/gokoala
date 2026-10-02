@@ -75,6 +75,7 @@ RelevanceHeader: Relevance
 CollectionsHeader: Collections
 SearchHelpText: Search query must be at least two characters long.
 NoCollectionSelectedText: A minimum of one collection must be selected.
+CollectionSettingsTooltip: Choose which collections to search and the relevance per collection.
 
 
 # Tile/TileMatrixSet page

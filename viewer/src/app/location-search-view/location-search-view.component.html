@@ -23,10 +23,12 @@
       (keydown.enter)="confirmFirstFeature()"
       (keydown.arrowdown)="focusResult(0, $event)" />
     <button
+      #collectionsSettingsButton
       class="btn btn-secondary"
       type="button"
       [attr.aria-label]="collectionsText"
       [attr.aria-expanded]="collectionSettingsOpen()"
+      [attr.title]="collectionSettingsTooltipText"
       (click)="toggleCollectionSettings()">
       <i class="bi bi-sliders" aria-hidden="true"></i>
     </button>
