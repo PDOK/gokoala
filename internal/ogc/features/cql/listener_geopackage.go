@@ -9,8 +9,12 @@ import (
 	"github.com/PDOK/gokoala/internal/engine/util"
 	"github.com/PDOK/gokoala/internal/ogc/common/geospatial"
 	"github.com/PDOK/gokoala/internal/ogc/features/cql/parser"
-	"github.com/PDOK/gokoala/internal/ogc/features/datasources/geopackage"
 	d "github.com/PDOK/gokoala/internal/ogc/features/domain"
+)
+
+const (
+	sqliteNamedParamSymbol        = ":"
+	sqliteNamedParamSymbolEscaped = "::"
 )
 
 // GeoPackageListener converts OGC CQL2 Text to GeoPackage-compatible SQL (= SQLite/Spatialite compatible).
@@ -56,7 +60,7 @@ func (l *GeoPackageListener) ExitBinaryComparisonPredicate(ctx *parser.BinaryCom
 
 	// when comparing numbers, cast the column to numeric to avoid getting incorrect results.
 	// This can occur when a column with numeric values is incorrectly defined as a TEXT column.
-	if l.isNumericParam(right, geopackage.NamedParamSymbolSqlx) {
+	if l.isNumericParam(right, sqliteNamedParamSymbol) {
 		left = "cast (" + left + " as numeric)"
 	}
 
@@ -72,7 +76,7 @@ func (l *GeoPackageListener) ExitIsLikePredicate(ctx *parser.IsLikePredicateCont
 	pattern := l.stack.Pop()
 	expr := l.stack.Pop()
 
-	if !l.hasWildcard(pattern, geopackage.NamedParamSymbolSqlx) {
+	if !l.hasWildcard(pattern, sqliteNamedParamSymbol) {
 		l.errorListener.Error("LIKE pattern is missing wildcard symbol. " +
 			"Either percentage '%' to match multiple characters or underscore '_' to " +
 			"match a single character can be used as a wildcard symbol. For example: LIKE 'foo%'.")
@@ -162,7 +166,7 @@ func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceCont
 
 	wkt := l.stack.Pop()
 	if wkt != "" {
-		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+		withoutSymbol, withSymbol := l.generateNamedParam(sqliteNamedParamSymbol)
 
 		l.namedParams[withoutSymbol] = wkt
 
@@ -179,7 +183,7 @@ func (l *GeoPackageListener) ExitSpatialInstance(ctx *parser.SpatialInstanceCont
 // ExitBbox Bounding box (BBOX) spatial instance
 func (l *GeoPackageListener) ExitBbox(ctx *parser.BboxContext) {
 	toNamedParam := func(coord string) string {
-		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+		withoutSymbol, withSymbol := l.generateNamedParam(sqliteNamedParamSymbol)
 		parsedCoord, err := parseNumber(coord)
 		if err != nil {
 			l.errorListener.Error(err.Error())
@@ -229,9 +233,9 @@ func (l *GeoPackageListener) ExitInstantInstance(ctx *parser.InstantInstanceCont
 	// handle DATE() and TIMESTAMP(). Note we currently don't perform
 	// any type casts (https://docs.ogc.org/is/21-065r2/21-065r2.html#_type_casts)
 	if ctx.DateString() != nil {
-		l.addTemporalLiteral(ctx.DateString().GetText(), geopackage.NamedParamSymbolSqlx)
+		l.addTemporalLiteral(ctx.DateString().GetText(), sqliteNamedParamSymbol)
 	} else if ctx.TimestampString() != nil {
-		l.addTemporalLiteral(ctx.TimestampString().GetText(), geopackage.NamedParamSymbolSqlx)
+		l.addTemporalLiteral(ctx.TimestampString().GetText(), sqliteNamedParamSymbol)
 	}
 }
 
@@ -251,9 +255,9 @@ func (l *GeoPackageListener) ExitIntervalParameter(ctx *parser.IntervalParameter
 	// handle DATE() and TIMESTAMP(). Note we currently don't perform
 	// any type casts (https://docs.ogc.org/is/21-065r2/21-065r2.html#_type_casts)
 	if ctx.DateString() != nil {
-		l.addTemporalLiteral(ctx.DateString().GetText(), geopackage.NamedParamSymbolSqlx)
+		l.addTemporalLiteral(ctx.DateString().GetText(), sqliteNamedParamSymbol)
 	} else if ctx.TimestampString() != nil {
-		l.addTemporalLiteral(ctx.TimestampString().GetText(), geopackage.NamedParamSymbolSqlx)
+		l.addTemporalLiteral(ctx.TimestampString().GetText(), sqliteNamedParamSymbol)
 	}
 }
 
@@ -267,7 +271,7 @@ func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 	}
 
 	// escape named param symbol, since it can also appear in property names
-	name = strings.ReplaceAll(name, geopackage.NamedParamSymbolSqlx, geopackage.NamedParamSymbolSqlxEscaped)
+	name = strings.ReplaceAll(name, sqliteNamedParamSymbol, sqliteNamedParamSymbolEscaped)
 
 	// add quotes around column names if not already present
 	if !strings.HasPrefix(name, "\"") {
@@ -279,7 +283,7 @@ func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
 // ExitCharacterLiteral Handle literals
 func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralContext) {
 	if ctx.GetText() != "" {
-		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+		withoutSymbol, withSymbol := l.generateNamedParam(sqliteNamedParamSymbol)
 
 		l.stack.Push(withSymbol)
 		l.namedParams[withoutSymbol] = stripSingleQuotes(ctx.GetText())
@@ -289,7 +293,7 @@ func (l *GeoPackageListener) ExitCharacterLiteral(ctx *parser.CharacterLiteralCo
 // ExitNumericLiteral Handle literals
 func (l *GeoPackageListener) ExitNumericLiteral(ctx *parser.NumericLiteralContext) {
 	if ctx.GetText() != "" {
-		withoutSymbol, withSymbol := l.generateNamedParam(geopackage.NamedParamSymbolSqlx)
+		withoutSymbol, withSymbol := l.generateNamedParam(sqliteNamedParamSymbol)
 
 		num, err := parseNumber(ctx.GetText())
 		if err != nil {

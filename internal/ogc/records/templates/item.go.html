@@ -1,0 +1,24 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+{{with .Params}}
+<hgroup>
+  <h1>{{.Title}}</h1>
+  <p>{{.ID}}</p>
+  {{if .Description}}<p>{{.Description}}</p>{{end}}
+</hgroup>
+<h2>Properties</h2>
+<dl>
+  {{range .Properties}}
+  <dt>{{.Name}}</dt><dd>{{.Value}}</dd>
+  {{end}}
+</dl>
+<h2>Assets</h2>
+<ul>
+  {{range .Assets}}
+  <li><a href="{{.Href}}">{{if .Title}}{{.Title}}{{else}}{{.Key}}{{end}}</a> {{.MediaType}}</li>
+  {{else}}
+  <li>No assets listed.</li>
+  {{end}}
+</ul>
+{{end}}
+{{end}}

@@ -55,6 +55,10 @@ func (c *Config) AllCollections() GeoSpatialCollections {
 		features := types.ToInterfaceSlice[FeaturesCollection, GeoSpatialCollection](c.OgcAPI.Features.Collections)
 		result = append(result, features...)
 	}
+	if c.OgcAPI.Records != nil {
+		records := types.ToInterfaceSlice[RecordsCollection, GeoSpatialCollection](c.OgcAPI.Records.Collections)
+		result = append(result, records...)
+	}
 	if c.OgcAPI.FeaturesSearch != nil {
 		featuresSearch := types.ToInterfaceSlice[FeaturesSearchCollection, GeoSpatialCollection](c.OgcAPI.FeaturesSearch.Collections)
 		result = append(result, featuresSearch...)

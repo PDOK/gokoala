@@ -15,6 +15,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources/postgres"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/PDOK/gokoala/internal/ogc/features/proj"
+	"github.com/PDOK/gokoala/internal/ogc/records"
 )
 
 const (
@@ -34,6 +35,10 @@ type Features struct {
 
 	html *htmlFeatures
 	json *jsonFeatures
+
+	recordsAPI          *records.Records
+	recordsItemsHandler http.HandlerFunc
+	recordsItemHandler  http.HandlerFunc
 }
 
 // NewFeatures Bootstraps OGC API Features logic.
@@ -71,6 +76,14 @@ func NewFeatures(e *engine.Engine) *Features {
 
 func (f *Features) GetCollectionTypes() geospatial.CollectionTypes {
 	return f.collectionTypes
+}
+
+func (f *Features) SetRecords(recordsAPI *records.Records) {
+	f.recordsAPI = recordsAPI
+	if recordsAPI != nil {
+		f.recordsItemsHandler = recordsAPI.Items()
+		f.recordsItemHandler = recordsAPI.Item()
+	}
 }
 
 type DatasourceKey struct {

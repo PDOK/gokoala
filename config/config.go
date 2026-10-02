@@ -158,6 +158,10 @@ type OgcAPI struct {
 	// +optional
 	Features *OgcAPIFeatures `yaml:"features,omitempty" json:"features,omitempty"`
 
+	// Enable when this API should offer OGC API Records.
+	// +optional
+	Records *OgcAPIRecords `yaml:"records,omitempty" json:"records,omitempty"`
+
 	// Enable when this API should offer search/geocoding capabilities based on OGC API Features.
 	// +optional
 	FeaturesSearch *OgcAPIFeaturesSearch `yaml:"featuresSearch,omitempty" json:"featuresSearch,omitempty"`
@@ -260,6 +264,9 @@ func validate(config *Config) error {
 	}
 	if config.OgcAPI.Tiles != nil {
 		errs = append(errs, validateTileProjections(config.OgcAPI.Tiles))
+	}
+	if config.OgcAPI.Records != nil {
+		errs = append(errs, validateRecords(config.OgcAPI.Records))
 	}
 	err = errors.Join(errs...)
 	if err != nil {
