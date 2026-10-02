@@ -53,7 +53,7 @@ interface LocationForm {
 export class LocationSearchViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef)
 
-  @ViewChild('collectionSettingsButton') private collectionSettingsButton!: ElementRef<HTMLButtonElement>
+  @ViewChild('collectionsSettingsButton') private collectionsSettingsButton!: ElementRef<HTMLButtonElement>
   private collectionSettingsTooltip?: Tooltip
 
   @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
@@ -140,7 +140,7 @@ export class LocationSearchViewComponent implements OnInit, AfterViewInit, OnDes
 
   private initCollectionSettingsTooltip() {
     this.collectionSettingsTooltip?.dispose()
-    this.collectionSettingsTooltip = new Tooltip(this.collectionSettingsButton.nativeElement, {
+    this.collectionSettingsTooltip = new Tooltip(this.collectionsSettingsButton.nativeElement, {
       title: this.collectionSettingsTooltipText,
       placement: 'bottom',
       fallbackPlacements: ['top'],
