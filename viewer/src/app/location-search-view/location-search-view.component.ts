@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -12,6 +13,7 @@ import {
   Output,
   signal,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms'
 import {
@@ -28,13 +30,13 @@ import {
   takeUntil,
   tap,
 } from 'rxjs'
+import { Tooltip } from 'bootstrap'
 import { CollectionsService } from '../shared/services/collections.service'
 import { AsyncPipe, NgClass, UpperCasePipe } from '@angular/common'
 import { PropertyValuePipe } from './property-value.pipe'
 import { CollectionSettingsComponent } from './collection-settings/collection-settings.component'
 import { FeatureGeoJSON, FeatureService } from '../shared/services/feature.service'
 import { HighlightPipe } from './highlight.pipe'
-import { BootstrapTooltipDirective } from './bootstrap-tooltip.directive'
 import { HttpErrorResponse } from '@angular/common/http'
 
 interface LocationForm {
@@ -43,22 +45,16 @@ interface LocationForm {
 
 @Component({
   selector: 'app-location-search-view',
-  imports: [
-    ReactiveFormsModule,
-    AsyncPipe,
-    PropertyValuePipe,
-    NgClass,
-    CollectionSettingsComponent,
-    HighlightPipe,
-    UpperCasePipe,
-    BootstrapTooltipDirective,
-  ],
+  imports: [ReactiveFormsModule, AsyncPipe, PropertyValuePipe, NgClass, CollectionSettingsComponent, HighlightPipe, UpperCasePipe],
   templateUrl: './location-search-view.component.html',
   styleUrl: './location-search-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges {
+export class LocationSearchViewComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef)
+
+  @ViewChild('collectionSettingsButton') private collectionSettingsButton!: ElementRef<HTMLButtonElement>
+  private collectionSettingsTooltip?: Tooltip
 
   @Input() projection: string = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
 
@@ -129,10 +125,28 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
     this.initLocationListener()
   }
 
+  ngAfterViewInit() {
+    this.initCollectionSettingsTooltip()
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (!changes['projection']?.isFirstChange() && changes['projection']?.currentValue !== changes['projection']?.previousValue) {
       this.form.controls.location.patchValue('', { emitEvent: true })
     }
+    if (changes['collectionSettingsTooltipText'] && !changes['collectionSettingsTooltipText'].isFirstChange()) {
+      this.initCollectionSettingsTooltip()
+    }
+  }
+
+  private initCollectionSettingsTooltip() {
+    this.collectionSettingsTooltip?.dispose()
+    this.collectionSettingsTooltip = new Tooltip(this.collectionSettingsButton.nativeElement, {
+      title: this.collectionSettingsTooltipText,
+      placement: 'bottom',
+      fallbackPlacements: ['top'],
+      container: 'body',
+      animation: false,
+    })
   }
 
   initLocationListener() {
@@ -222,6 +236,7 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
 
   toggleCollectionSettings() {
     this.collectionSettingsOpen.update(val => !val)
+    this.collectionSettingsTooltip?.hide()
   }
 
   private storeQuery() {
@@ -251,9 +266,11 @@ export class LocationSearchViewComponent implements OnInit, OnDestroy, OnChanges
   @HostListener('document:keydown.escape')
   onEscape() {
     this.closeSearch()
+    this.collectionSettingsTooltip?.hide()
   }
 
   ngOnDestroy() {
+    this.collectionSettingsTooltip?.dispose()
     this._destroy$.next()
   }
 
