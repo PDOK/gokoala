@@ -18,6 +18,25 @@
                 </tr>
             </thead>
             <tbody>
+            {{ $idIsIncluded := false }}
+            {{ range $feat := .Params.Fields }}
+                {{ if or $feat.IsExternalFid $feat.IsFid }}
+                    {{ if not $idIsIncluded }}
+                        <tr>
+                            <td class="text-nowrap">id</td>
+                            {{ if $feat.IsExternalFid }}
+                                <td class="text-nowrap">uuid</td>
+                            {{ else }}
+                                <td class="text-nowrap">integer</td>
+                            {{ end }}
+                            <td class="text-nowrap">{{ i18n "RequiredYes"}}</td>
+                            <td class="text-wrap">{{ i18n "FeatureIdDescription"}}</td>
+                        </tr>
+                        {{ $idIsIncluded = true }}
+                    {{ end }}
+                {{ end }}
+            {{ end }}
+
             {{/* includes fields.go.html */}}
             {{block "fields" .}}{{end}}
             </tbody>

@@ -8,6 +8,29 @@
   {{ end }}
   "type": "object",
   "properties": {
+    {{ $idIsIncluded := false }}
+    {{ range $feat := .Params.Fields }}
+      {{ if or $feat.IsExternalFid $feat.IsFid }}
+        {{ if not $idIsIncluded }}
+        "id": {
+          "readOnly": true,
+          {{/* OAF part 5: A property with "x-ogc-role" set to "id" SHALL be the identifier of the item in the collection that contains the item.*/}}
+          {{/* Only one property in a schema SHALL have "x-ogc-role" with a value "id".*/}}
+          "x-ogc-role": "id",
+          "description": "{{ i18n "FeatureIdDescription"}}",
+          {{ if $feat.IsExternalFid }}
+          "type": "string", {{/* OAF part 5: A property with role "id" SHALL either be a string or integer.*/}}
+          "format": "uuid"
+          {{ else }}
+          "type": "integer", {{/* OAF part 5: A property with role "id" SHALL either be a string or integer.*/}}
+          "minimum": 0
+          {{ end }}
+        },
+        {{ $idIsIncluded = true }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+
     {{/* includes fields.go.json */}}
     {{block "fields" .}}{{end}}
   },
