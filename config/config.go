@@ -158,6 +158,10 @@ type OgcAPI struct {
 	// +optional
 	Features *OgcAPIFeatures `yaml:"features,omitempty" json:"features,omitempty"`
 
+	// Enable when this API should offer OGC API Maps.
+	// +optional
+	Maps *OgcAPIMaps `yaml:"maps,omitempty" json:"maps,omitempty"`
+
 	// Enable when this API should offer search/geocoding capabilities based on OGC API Features.
 	// +optional
 	FeaturesSearch *OgcAPIFeaturesSearch `yaml:"featuresSearch,omitempty" json:"featuresSearch,omitempty"`
