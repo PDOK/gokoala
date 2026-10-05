@@ -35,7 +35,7 @@ import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { NGXLogger } from 'ngx-logger'
-import { catchError, finalize, from, mergeMap, of, startWith, Subject, Subscription, takeUntil } from 'rxjs'
+import { catchError, finalize, from, mergeMap, of, Subject, Subscription, takeUntil } from 'rxjs'
 import { CrsMap } from '../shared/model/crs-map'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
