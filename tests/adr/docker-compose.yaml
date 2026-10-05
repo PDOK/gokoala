@@ -58,7 +58,7 @@ services:
   adr-linter:
     networks:
       - proxy
-    image: stoplight/spectral:5.9.1
+    image: stoplight/spectral:6.17.0
     volumes:
       - ./ruleset:/ruleset
     environment:
@@ -72,7 +72,7 @@ services:
         sleep 3
         spectral lint \
           https://gokoala.docker.localhost/v1/openapi.json \
-          --ruleset /ruleset/ruleset-adr21.yaml \
+          --ruleset /ruleset/ruleset-adr22.yaml \
           --fail-severity "error" \
           --display-only-failures "error"
 
