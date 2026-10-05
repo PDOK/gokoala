@@ -9,6 +9,7 @@ import {
   OnDestroy,
   Output,
   inject,
+  signal,
 } from '@angular/core'
 import { Feature, MapBrowserEvent, Map as OLMap, Overlay, View } from 'ol'
 import { FeatureLike } from 'ol/Feature'
@@ -34,7 +35,7 @@ import { FullBoxControl } from './fullboxcontrol'
 import { Types as BrowserEventType } from 'ol/MapBrowserEventType'
 import { Options as TextOptions } from 'ol/style/Text'
 import { NGXLogger } from 'ngx-logger'
-import { catchError, from, of, Subject, switchMap, takeUntil } from 'rxjs'
+import { catchError, finalize, from, mergeMap, of, startWith, Subject, Subscription, takeUntil } from 'rxjs'
 import { CrsMap } from '../shared/model/crs-map'
 
 /** Coerces a data-bound value (typically a string) to a boolean. */
@@ -119,9 +120,13 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     zoom: 4,
   })
   features: FeatureLike[] = []
+  loading = signal(false)
+
   private _featureProjection: Projection | undefined
   private _initializedItemUrls: string[] | undefined
   private _initializationQueued = false
+  private _loadSub?: Subscription
+  private _listenersAdded = false
 
   private _destroy$ = new Subject<void>()
 
@@ -158,14 +163,25 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
     // Capture projection at call-time to avoid race conditions with CRS switches
     const dataMapping = this._projection
     const featuresUrls: DataUrl[] = this.itemUrls.map(itemUrl => ({ url: itemUrl, dataMapping }))
-    from(featuresUrls)
+
+    this._loadSub?.unsubscribe()
+    if (!this._listenersAdded) {
+      this._listenersAdded = true
+      this.addFeatureEmit()
+    }
+    this.loading.set(true)
+    this._loadSub = from(featuresUrls)
       .pipe(
-        switchMap(dataUrl => this.featureService.getFeatures(dataUrl)),
-        catchError((e: unknown) => {
-          this.logger.error('Error loading features', e)
-          return of([])
-        }),
-        takeUntil(this._destroy$)
+        mergeMap(dataUrl =>
+          this.featureService.getFeatures(dataUrl).pipe(
+            catchError((e: unknown) => {
+              this.logger.error('Error loading features', e)
+              return of([])
+            })
+          )
+        ),
+        takeUntil(this._destroy$),
+        finalize(() => this.loading.set(false))
       )
       .subscribe(data => {
         this.features = [...this.features, ...data]
@@ -173,10 +189,7 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
         this._featureProjection = getProjection(dataMapping.visualProjection as string) ?? undefined
         this.changeView()
         this.loadFeatures(this.features)
-        this.addFeatureEmit()
         this.loadBackground()
-        this.logger.debug(this.map.getView().getProjection())
-        this.logger.debug('resolution' + this.map.getView().getResolution())
       })
   }
 
