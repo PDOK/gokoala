@@ -53,6 +53,36 @@
 
 {{- end }}
 
+{{ if .Config.OgcAPI.Records -}}
+## Records
+
+| Conformance | Status |
+|---|---|
+| http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-core | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-collection | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-core-query-parameters | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-api | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/sorting | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/json | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/html | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/oas30 | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/autodiscovery | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/crawlable-catalog | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog-sorting | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/local-resources-catalog | {{ i18n "Standard" }} |
+| https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-extensions | {{ i18n "Draft" }} |
+| https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-items | {{ i18n "Draft" }} |
+{{- if .Config.OgcAPI.Records.Collections.SupportsCQL }}
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/filtering | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog-filtering | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/cql2/1.0/conf/cql2-text | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2 | {{ i18n "Standard" }} |
+{{- end }}
+
+{{- end }}
+
 {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.SupportsPart3 -}}
 
 ## CQL (Common Query Language)
