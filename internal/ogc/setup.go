@@ -8,6 +8,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	"github.com/PDOK/gokoala/internal/ogc/features_search"
 	"github.com/PDOK/gokoala/internal/ogc/geovolumes"
+	"github.com/PDOK/gokoala/internal/ogc/maps"
 	"github.com/PDOK/gokoala/internal/ogc/processes"
 	"github.com/PDOK/gokoala/internal/ogc/styles"
 	"github.com/PDOK/gokoala/internal/ogc/tiles"
@@ -32,6 +33,12 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 		f := features.NewFeatures(engine)
 		collectionTypes = f.GetCollectionTypes()
 	}
+
+	// OGC Maps API
+	if engine.Config.OgcAPI.Maps != nil {
+		maps.NewMaps(engine)
+	}
+
 	// Features Search API, build on top of the OGC Features API
 	if engine.Config.OgcAPI.FeaturesSearch != nil {
 		fs := engine.Config.OgcAPI.FeaturesSearch

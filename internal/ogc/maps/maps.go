@@ -6,27 +6,34 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/go-chi/chi/v5"
 )
 
 func (m *Maps) Maps() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		collectionID := chi.URLParam(r, "collectionId")
-		collection, ok := m.configuredCollections[collectionID]
-		if !ok {
-			handleCollectionNotFound(w, collectionID)
+		url := mapsURL{
+			baseURL: *m.engine.Config.BaseURL.URL,
+			params:  r.URL.Query(),
+		}
+
+		crs, bboxSRID, bbox, width, height, err := url.parse()
+		if err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
-		// TODO: Find out how to construct the URL for the maps collection
-		// What params? How do we go about type-safing them? Validation?
-		url := mapsCollectionURL{}
+		w.Header().Add(engine.HeaderContentCrs, crs.ToLink())
 
-		// TODO: Get properties from URL and validate them
-		// TODO: Prepare/Send WMS request (mock for now)
-		// TODO: Get format (JSON/HTML/IMG)
-
-		// TODO: Finish handling the request and set the proper headers
+		format := m.engine.CN.NegotiateFormat(r)
+		switch format {
+		case engine.FormatHTML:
+			// TODO: Handle maps page here
+			break
+		case engine.FormatJPG, engine.FormatPNG:
+			// TODO: Handle wms request here
+			break
+		default:
+			handleFormatNotSupported(w, format)
+		}
 	}
 }
 
@@ -34,4 +41,10 @@ func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
 	log.Println(msg)
 	engine.RenderProblem(engine.ProblemNotFound, w, msg)
+}
+
+func handleFormatNotSupported(w http.ResponseWriter, format string) {
+	msg := fmt.Sprintf("format %s is not supported", format)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotAcceptable, w, msg)
 }

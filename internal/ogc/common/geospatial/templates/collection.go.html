@@ -252,6 +252,21 @@
         </div>
     {{ end }}
 
+    {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections}}
+        {{ if .Config.OgcAPI.Maps.Collections.ContainsID .Params.Collection.ID }}
+            <div class="col-md-4 col-sm-12">
+                <div class="card h-100">
+                    <h2 class="card-header h5">
+                        Maps
+                    </h2>
+                    <div class="card-body">
+                        A new implementation of the WMS
+                    </div>
+                </div>
+            </div>
+        {{ end }}
+    {{ end }}
+
 </div>
 <!-- end specific part per OGC spec -->
 {{end}}
