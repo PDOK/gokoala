@@ -78,6 +78,19 @@
             {{- range $pfColl, $propFilters := $.Params.PropertyFiltersByCollection -}}
               {{ if eq $coll.ID $pfColl }}
                 {{- range $propFilter := $propFilters -}}
+                {{- if $propFilter.IsFidOrExternalFid }}
+                ,{
+                    "name": "id",
+                    "in": "query",
+                    "description": "{{ $propFilter.Description }}",
+                    "required": false,
+                    "style": "form",
+                    "explode": false,
+                    "schema": {
+                      "type": "{{ $propFilter.DataType }}"
+                    }
+                  }
+                {{- else }}
                 ,{
                   "name": "{{ $propFilter.Name }}",
                   "in": "query",
@@ -98,6 +111,7 @@
                     {{ end }}
                   }
                 }
+                {{- end }}
                 {{ end }}
               {{ end }}
             {{ end }}

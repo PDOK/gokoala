@@ -16,10 +16,11 @@ type openAPIParams struct {
 }
 
 type OpenAPIPropertyFilter struct {
-	Name          string
-	Description   string
-	DataType      string
-	AllowedValues []string
+	Name               string
+	Description        string
+	DataType           string
+	AllowedValues      []string
+	IsFidOrExternalFid bool
 }
 
 // rebuildOpenAPI Rebuild OpenAPI spec for features with additional info from given parameters.
@@ -46,10 +47,11 @@ func toOpenAPIFilters(queryablesByCollection map[string]domain.Queryables) map[s
 				continue
 			}
 			filters = append(filters, OpenAPIPropertyFilter{
-				Name:          queryable.Name,
-				Description:   queryable.Description,
-				DataType:      queryable.ToTypeFormat().Type,
-				AllowedValues: queryable.AllowedValues,
+				Name:               queryable.Name,
+				Description:        queryable.Description,
+				DataType:           queryable.ToTypeFormat().Type,
+				AllowedValues:      queryable.AllowedValues,
+				IsFidOrExternalFid: queryable.IsFid || queryable.IsExternalFid,
 			})
 		}
 		slices.SortFunc(filters, func(a, b OpenAPIPropertyFilter) int {
