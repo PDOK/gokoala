@@ -10,7 +10,19 @@ type OgcAPIMaps struct {
 
 	// Collections to be served as maps through this API.
 	// +kubebuilder:validation:MinItems=1
-	Collections []MapsCollection `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
+	Collections MapsCollections `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
+}
+
+type MapsCollections []MapsCollection
+
+// ContainsID check if a given collection - by ID - exists.
+func (mc MapsCollections) ContainsID(id string) bool {
+	for _, coll := range mc {
+		if coll.ID == id {
+			return true
+		}
+	}
+	return false
 }
 
 // +kubebuilder:object:generate=true
