@@ -141,7 +141,7 @@ func TestCoreMapResponse(t *testing.T) {
 		rr := doGet(router, mapPath, "image/png")
 		require.Equal(t, http.StatusOK, rr.Code)
 
-		bbox := parseBbox(t, rr.Header().Get("Content-Bbox"))
+		bbox := parseContentBbox(t, rr.Header().Get("Content-Bbox"))
 
 		// Storage CRS is EPSG:28992 (x/y order): lower-left must be smaller than upper-right
 		assert.Less(t, bbox[0], bbox[2], "minx must be smaller than maxx")
@@ -157,7 +157,7 @@ func TestCoreMapResponse(t *testing.T) {
 		rr := doGet(router, mapPath+"?crs="+url.QueryEscape(crs84URI), "image/png")
 		require.Equal(t, http.StatusOK, rr.Code)
 
-		bbox := parseBbox(t, rr.Header().Get("Content-Bbox"))
+		bbox := parseContentBbox(t, rr.Header().Get("Content-Bbox"))
 
 		assert.Less(t, bbox[0], bbox[2])
 		assert.Less(t, bbox[1], bbox[3])
@@ -326,8 +326,8 @@ func doGet(h http.Handler, target string, accept string) *httptest.ResponseRecor
 	return rr
 }
 
-// parseBbox parses a Content-Bbox header: four comma-separated numbers (minx,miny,maxx,maxy).
-func parseBbox(t *testing.T, header string) [4]float64 {
+// parseContentBbox parses a Content-Bbox header: four comma-separated numbers (minx,miny,maxx,maxy).
+func parseContentBbox(t *testing.T, header string) [4]float64 {
 	t.Helper()
 	require.NotEmpty(t, header, "Content-Bbox header must be present")
 

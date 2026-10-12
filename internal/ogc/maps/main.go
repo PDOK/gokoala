@@ -30,8 +30,10 @@ func NewMaps(e *engine.Engine) *Maps {
 	}
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/map", m.Maps())
-	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/styles", m.Maps())
+	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/styles", m.Styles())
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/styles/{styleId}/map", m.Maps())
+
+	renderStyles(e, m.configuredCollections)
 
 	return m
 }

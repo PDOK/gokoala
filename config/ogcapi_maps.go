@@ -93,6 +93,18 @@ func (mf MapsCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection 
 	return mf
 }
 
+func (mf MapsCollection) GetStyle(styleID string) *MapStyle {
+	for _, layer := range mf.Layers {
+		for _, style := range layer.Styles {
+			if style.ID == styleID {
+				return &style
+			}
+		}
+	}
+
+	return nil
+}
+
 // +kubebuilder:object:generate=true
 type MapLayer struct {
 	// Unique ID of the layer within this collection.
