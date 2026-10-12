@@ -26,10 +26,10 @@ func (m *Maps) Maps() http.HandlerFunc {
 		format := m.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			// TODO: Handle maps page here
+			m.html.maps(w, r, format, crs, bboxSRID, bbox, width, height, err)
 			break
 		case engine.FormatJPG, engine.FormatPNG:
-			// TODO: Handle wms request here
+			m.image.renderMapsImage(w, r, format, crs, bboxSRID, bbox, width, height, err)
 			break
 		default:
 			handleFormatNotSupported(w, format)

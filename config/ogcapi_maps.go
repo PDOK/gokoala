@@ -55,6 +55,10 @@ type MapsCollection struct {
 	// +optional
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
+	// Links from/to this collection
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
 	// WMS layers included in this collection.
 	// +kubebuilder:validation:MinItems=1
 	Layers []MapLayer `yaml:"layers" json:"layers" validate:"required,min=1,dive"`
@@ -69,6 +73,24 @@ type MapsCollection struct {
 	// +kubebuilder:validation:MinItems=4
 	// +kubebuilder:validation:MaxItems=4
 	Bbox []string `yaml:"bbox,omitempty" json:"bbox,omitempty" validate:"omitempty,len=4,dive,numeric"`
+}
+
+func (mf MapsCollection) GetID() string {
+	return mf.ID
+}
+
+func (mf MapsCollection) GetMetadata() *GeoSpatialCollectionMetadata {
+	return mf.Metadata
+}
+
+func (mf MapsCollection) GetLinks() *CollectionLinks {
+	return mf.Links
+}
+
+func (mf MapsCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	mf.Metadata = mergeMetadata(mf, other)
+	mf.Links = mergeLinks(mf, other)
+	return mf
 }
 
 // +kubebuilder:object:generate=true

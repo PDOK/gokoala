@@ -17,7 +17,8 @@ type Maps struct {
 
 	configuredCollections map[string]config.MapsCollection
 
-	html *htmlMaps
+	html  *htmlMaps
+	image *imageMaps
 }
 
 func NewMaps(e *engine.Engine) *Maps {
@@ -26,7 +27,6 @@ func NewMaps(e *engine.Engine) *Maps {
 		configuredCollections: cacheConfiguredMapsCollections(e),
 		html:                  newHTMLMaps(e),
 		image:                 newImageMaps(e),
-		//json:                  newJSONMaps(e),
 	}
 
 	e.Router.Get(geospatial.CollectionsPath+"/{collectionId}/map", m.Maps())
