@@ -2,6 +2,7 @@ package maps
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strconv"
 
@@ -16,6 +17,8 @@ const (
 	BboxCrsParam = "bbox-crs"
 	Width        = "width"
 	Height       = "height"
+
+	maxAllowed = 5000
 )
 
 var mapsKnownParams = map[string]struct{}{
@@ -32,7 +35,6 @@ type mapsURL struct {
 }
 
 func (m *mapsURL) parse() (crs domain.ContentCrs, bboxSRID domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
-
 	err = m.validateNoUnknownParams()
 	if err != nil {
 		return
@@ -43,7 +45,19 @@ func (m *mapsURL) parse() (crs domain.ContentCrs, bboxSRID domain.SRID, bbox *ge
 	width, widthErr := parseWidth(m.params)
 	height, heightErr := parseHeight(m.params)
 
-	err = errors.Join(bboxErr, widthErr, heightErr)
+	var maxHeightErr error
+	if height >= maxAllowed {
+		msg := fmt.Sprintf("Height %d exceeds the maximum allowed allowed number (%d)", height, maxAllowed)
+		maxHeightErr = errors.New(msg)
+	}
+
+	var maxWidthError error
+	if width >= maxAllowed {
+		msg := fmt.Sprintf("width %d exceeds the maximum allowed allowed number (%d)", width, maxAllowed)
+		maxWidthError = errors.New(msg)
+	}
+
+	err = errors.Join(bboxErr, widthErr, heightErr, maxWidthError, maxHeightErr)
 
 	return
 }
