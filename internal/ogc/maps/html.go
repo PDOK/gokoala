@@ -3,9 +3,14 @@ package maps
 import (
 	"net/http"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
+)
+
+const (
+	collectionsCrumb = "collections/"
 )
 
 var (
@@ -15,6 +20,13 @@ var (
 	mapsByFormat = map[string]engine.TemplateKey{
 		engine.FormatHTML:     mapsHTMLKey,
 		engine.FormatMarkdown: mapsMDKey,
+	}
+
+	collectionsBreadcrumb = []engine.Breadcrumb{
+		{
+			Name: "Collections",
+			Path: "collections",
+		},
 	}
 )
 
@@ -35,14 +47,35 @@ func newHTMLMaps(e *engine.Engine) *htmlMaps {
 	}
 }
 
-func (hm *htmlMaps) maps(w http.ResponseWriter, r *http.Request, format string,
+func (hm *htmlMaps) maps(w http.ResponseWriter, r *http.Request, format string, collection config.MapsCollection,
 	crs domain.ContentCrs, srid domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
-	pageContent, breadcrumbs := hm.toViewerPage()
+
+	breadcrumbs, pageContent := hm.toViewerPage(collection)
+
 	hm.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(mapsByFormat[format], hm.engine.CN.NegotiateLanguage(w, r)),
 		pageContent, breadcrumbs, nil)
 }
 
-func (hm *htmlMaps) toViewerPage() (*mapsPage, []engine.Breadcrumb) {
-	return &mapsPage{}, nil
+func (hm *htmlMaps) toViewerPage(collection config.MapsCollection) ([]engine.Breadcrumb, *mapsPage) {
+	breadcrumbs := collectionsBreadcrumb
+	breadcrumbs = append(breadcrumbs, []engine.Breadcrumb{
+		{
+			Name: getCollectionTitle(collection.GetID(), collection.GetMetadata()),
+			Path: collectionsCrumb + collection.GetID(),
+		},
+		{
+			Name: "Maps",
+			Path: collectionsCrumb + collection.GetID() + "/maps",
+		},
+	}...)
+	return breadcrumbs, &mapsPage{}
+}
+
+func getCollectionTitle(collectionID string, metadata *config.GeoSpatialCollectionMetadata) string {
+	if metadata != nil && metadata.Title != nil {
+		return *metadata.Title
+	}
+
+	return collectionID
 }
