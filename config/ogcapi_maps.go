@@ -15,7 +15,7 @@ type OgcAPIMaps struct {
 
 // +kubebuilder:object:generate=true
 type DefaultMap struct {
-	// CRS of the default map view, supported by the WMS service.
+	// CRS of the default map view.
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	CRS string `yaml:"crs" json:"crs" validate:"required,startswith=EPSG:"`
 
@@ -43,11 +43,15 @@ type MapsCollection struct {
 	// +optional
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
-	// WMS layers included in this collection.
+	// Layers included in this collection.
 	// +kubebuilder:validation:MinItems=1
 	Layers []MapLayer `yaml:"layers" json:"layers" validate:"required,min=1,dive"`
 
-	// Default CRS for this collection, supported by its WMS layers.
+	// List of supported CRS for this collection.
+	// +kubebuilder:validation:MinItems=1
+	SupportedSrs []MapsSupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,min=1,dive"`
+
+	// Default CRS for this collection.
 	// +optional
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	DefaultCRS string `yaml:"defaultCrs,omitempty" json:"defaultCrs,omitempty" validate:"omitempty,startswith=EPSG:"`
@@ -57,6 +61,13 @@ type MapsCollection struct {
 	// +kubebuilder:validation:MinItems=4
 	// +kubebuilder:validation:MaxItems=4
 	Bbox []string `yaml:"bbox,omitempty" json:"bbox,omitempty" validate:"omitempty,len=4,dive,numeric"`
+}
+
+// +kubebuilder:object:generate=true
+type MapsSupportedSrs struct {
+	// Supported coordinate reference system.
+	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
+	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
 }
 
 // +kubebuilder:object:generate=true
