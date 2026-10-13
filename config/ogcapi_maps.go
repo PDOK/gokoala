@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 // +kubebuilder:object:generate=true
 type OgcAPIMaps struct {
 	// Base URL of the MapServer WMS service.
@@ -13,19 +15,32 @@ type OgcAPIMaps struct {
 	Collections []MapsCollection `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
 }
 
+func (o *OgcAPIMaps) Defaults() {
+	if o.DefaultMap.Width == 0 {
+		o.DefaultMap.Width = 1024
+	}
+	if o.DefaultMap.Height == 0 {
+		o.DefaultMap.Height = 768
+	}
+}
+
 // +kubebuilder:object:generate=true
 type DefaultMap struct {
 	// CRS of the default map view.
 	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
 	CRS string `yaml:"crs" json:"crs" validate:"required,startswith=EPSG:"`
 
-	// Width of the map image in pixels.
+	// Width of the map image in pixels. Defaults to 1024.
+	// +optional
+	// +kubebuilder:default=1024
 	// +kubebuilder:validation:Minimum=1
-	Width int `yaml:"width" json:"width" validate:"gt=0"`
+	Width int `yaml:"width,omitempty" json:"width,omitempty" validate:"gt=0"`
 
-	// Height of the map image in pixels.
+	// Height of the map image in pixels. Defaults to 768.
+	// +optional
+	// +kubebuilder:default=768
 	// +kubebuilder:validation:Minimum=1
-	Height int `yaml:"height" json:"height" validate:"gt=0"`
+	Height int `yaml:"height,omitempty" json:"height,omitempty" validate:"gt=0"`
 
 	// Bounding box of the default map view.
 	// +kubebuilder:validation:MinItems=4
@@ -50,11 +65,6 @@ type MapsCollection struct {
 	// List of supported CRS for this collection.
 	// +kubebuilder:validation:MinItems=1
 	SupportedSrs []MapsSupportedSrs `yaml:"supportedSrs" json:"supportedSrs" validate:"required,min=1,dive"`
-
-	// Default CRS for this collection.
-	// +optional
-	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
-	DefaultCRS string `yaml:"defaultCrs,omitempty" json:"defaultCrs,omitempty" validate:"omitempty,startswith=EPSG:"`
 
 	// Bounding box of this collection.
 	// +optional
@@ -96,4 +106,37 @@ type MapStyle struct {
 
 	// Style name advertised by the WMS service.
 	WMSStyle string `yaml:"wmsStyle" json:"wmsStyle" validate:"required"`
+}
+
+func validateMapCollections(collections []MapsCollection) error {
+	var errMessages []string
+	collectionIDs := make(map[string]struct{})
+	for _, collection := range collections {
+		if _, exists := collectionIDs[collection.ID]; exists {
+			errMessages = append(errMessages, fmt.Sprintf("duplicate maps collection ID '%s'", collection.ID))
+		}
+		collectionIDs[collection.ID] = struct{}{}
+
+		layerIDs := make(map[string]struct{})
+		for _, layer := range collection.Layers {
+			if _, exists := layerIDs[layer.ID]; exists {
+				errMessages = append(errMessages, fmt.Sprintf("duplicate layer ID '%s' in maps collection '%s'", layer.ID, collection.ID))
+			}
+			layerIDs[layer.ID] = struct{}{}
+
+			styleIDs := make(map[string]struct{})
+			for _, style := range layer.Styles {
+				if _, exists := styleIDs[style.ID]; exists {
+					errMessages = append(errMessages, fmt.Sprintf("duplicate style ID '%s' in layer '%s' of maps collection '%s'", style.ID, layer.ID, collection.ID))
+				}
+				styleIDs[style.ID] = struct{}{}
+			}
+		}
+	}
+
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+
+	return nil
 }

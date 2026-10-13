@@ -241,6 +241,9 @@ func setDefaults(config *Config) error {
 	if config.OgcAPI.Tiles != nil {
 		config.OgcAPI.Tiles.Defaults()
 	}
+	if config.OgcAPI.Maps != nil {
+		config.OgcAPI.Maps.Defaults()
+	}
 
 	return nil
 }
@@ -265,6 +268,10 @@ func validate(config *Config) error {
 	if config.OgcAPI.Tiles != nil {
 		errs = append(errs, validateTileProjections(config.OgcAPI.Tiles))
 	}
+	if config.OgcAPI.Maps != nil {
+		errs = append(errs, validateMapCollections(config.OgcAPI.Maps.Collections))
+	}
+
 	err = errors.Join(errs...)
 	if err != nil {
 		return err
