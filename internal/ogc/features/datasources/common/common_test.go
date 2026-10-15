@@ -46,17 +46,43 @@ func TestPropertyFiltersToSQL(t *testing.T) {
 	}
 }
 
-func TestPropertyFiltersToSQLResolvesPublicID(t *testing.T) {
-	filters := map[string]string{"id": "abc"}
-	schema := &domain.Schema{Fields: []domain.Field{
-		{Name: "fid", IsFid: true},
-		{Name: "external_fid", IsExternalFid: true},
-	}}
+func TestPropertyFiltersToSQLResolvesPublicIDFromQueryable(t *testing.T) {
+	testCases := []struct {
+		name       string
+		queryables domain.Queryables
+		wantColumn string
+	}{
+		{
+			name: "only internal FID is queryable",
+			queryables: domain.Queryables{
+				"id": {Field: domain.Field{Name: "fid", Type: "integer", IsFid: true}},
+			},
+			wantColumn: "fid",
+		},
+		{
+			name: "ordinary property named id",
+			queryables: domain.Queryables{
+				"id": {Field: domain.Field{Name: "id", Type: "text"}},
+			},
+			wantColumn: "id",
+		},
+		{
+			name: "external FID column is named id",
+			queryables: domain.Queryables{
+				"id": {Field: domain.Field{Name: "id", Type: "uuid", IsExternalFid: true}},
+			},
+			wantColumn: "id",
+		},
+	}
 
-	sql, args := PropertyFiltersToSQL(filters, ":", schema)
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			sql, args := PropertyFiltersToSQL(map[string]string{"id": "abc"}, ":", tt.queryables)
 
-	assert.Equal(t, ` and "external_fid" = :pf1`, sql)
-	assert.Equal(t, map[string]any{"pf1": "abc"}, args)
+			assert.Equal(t, ` and "`+tt.wantColumn+`" = :pf1`, sql)
+			assert.Equal(t, map[string]any{"pf1": "abc"}, args)
+		})
+	}
 }
 
 func TestTemporalCriteriaToSQL(t *testing.T) {

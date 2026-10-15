@@ -210,6 +210,10 @@ func cacheConfiguredFeatureCollections(e *engine.Engine) map[string]config.Featu
 	return result
 }
 
+// schemasAndQueryablesByCollection retrieves and normalizes the schema and
+// queryable fields for each feature collection.
+//
+//nolint:cyclop
 func schemasAndQueryablesByCollection(
 	datasources map[DatasourceKey]ds.Datasource,
 	collections map[string]config.FeaturesCollection,

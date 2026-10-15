@@ -171,7 +171,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 	return result
 }
 
-func PropertyFiltersToSQL(pf map[string]string, symbol string, schema *domain.Schema) (sql string, namedParams map[string]any) {
+func PropertyFiltersToSQL(pf map[string]string, symbol string, queryables domain.Queryables) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	var sqlBuilder strings.Builder
 	sqlBuilder.WriteString(sql)
@@ -183,20 +183,8 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string, schema *domain.Sc
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
 			columnName := k
-			if k == domain.FeatureIDPropertyName && schema != nil {
-				fidName := ""
-				for _, field := range schema.Fields {
-					if field.IsExternalFid {
-						columnName = field.Name
-						break
-					}
-					if field.IsFid {
-						fidName = field.Name
-					}
-				}
-				if columnName == k && fidName != "" {
-					columnName = fidName
-				}
+			if queryable, ok := queryables[k]; ok {
+				columnName = queryable.Name
 			}
 			if strings.Contains(v, domain.PropertyFilterWildcard) {
 				// replace wildcard with %, as this is the wildcard used in SQL.

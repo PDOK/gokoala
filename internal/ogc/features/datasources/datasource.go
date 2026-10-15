@@ -65,6 +65,8 @@ type FeaturesCriteria struct {
 
 	// filtering by properties (OAF part 1)
 	PropertyFilters map[string]string
+	// Queryables maps public filter names to their datasource fields.
+	Queryables domain.Queryables
 
 	// filtering by CQL (OAF part 3)
 	Filter Part3Filter
