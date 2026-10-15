@@ -4,10 +4,26 @@ import (
 	"testing"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestTableFieldRejectsInternalFIDWhenExternalFIDIsConfigured(t *testing.T) {
+	table := &Table{Schema: &domain.Schema{Fields: []domain.Field{
+		{Name: "feature_id", Type: "integer", IsFid: true},
+		{Name: "external_fid", Type: "uuid", IsExternalFid: true},
+	}}}
+
+	_, err := table.Field(config.Queryable{Name: "feature_id"})
+	require.EqualError(t, err, "internal FID column 'feature_id' cannot be configured as a queryable when external FID column 'external_fid' is configured")
+
+	externalFid, err := table.Field(config.Queryable{Name: "external_fid"})
+	require.NoError(t, err)
+	assert.True(t, externalFid.IsExternalFid)
+}
 
 func TestPropertyFiltersToSQL(t *testing.T) {
 	testCases := []struct {

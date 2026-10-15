@@ -29,8 +29,6 @@ ogcApi:
       - id: standplaatsen
         filters:
           properties:
-            - name: feature_id
-              indexRequired: false
             - name: external_fid
               indexRequired: false
           cql:
@@ -38,3 +36,11 @@ ogcApi:
         metadata:
           title: Standplaatsen
           description: Standplaatsen example data
+      - id: standplaatsen-no-id-queryable
+        tableName: standplaatsen
+        filters:
+          cql:
+            enable: true
+        metadata:
+          title: Standplaatsen without an ID queryable
+          description: External FID is not configured as a filter property
