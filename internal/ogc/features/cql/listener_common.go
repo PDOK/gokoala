@@ -100,19 +100,33 @@ func (cl *CommonListener) isAllQueryablesAllowed() bool {
 }
 
 // isQueryable checks if a column name is allowed in the query.
-func (cl *CommonListener) isQueryable(name string) bool {
-	if cl.isAllQueryablesAllowed() {
-		return true
+// For the feature ID property, it returns the corresponding datasource field name if available.
+func (cl *CommonListener) isQueryable(name string) (string, bool) {
+	if name == domain.FeatureIDPropertyName {
+		for _, q := range cl.queryables {
+			if q.IsExternalFid {
+				return q.Name, true
+			}
+			if q.IsFid {
+				return q.Name, true
+			}
+		}
 	}
 	for _, q := range cl.queryables {
 		if name == q.Name {
-			return true
+			if q.IsFid || q.IsExternalFid {
+				return name, false
+			}
+			return name, true
 		}
 		if name == domain.GeomPropertyName && q.IsPrimaryGeometry {
-			return true
+			return name, true
 		}
 	}
-	return false
+	if cl.isAllQueryablesAllowed() {
+		return name, true
+	}
+	return name, false
 }
 
 // lookupNamedParam looks up a named parameter value

@@ -39,11 +39,24 @@ func TestPropertyFiltersToSQL(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			sql, args := PropertyFiltersToSQL(tt.filters, tt.symbol)
+			sql, args := PropertyFiltersToSQL(tt.filters, tt.symbol, nil)
 			assert.Equal(t, tt.expectedSQL, sql)
 			assert.Equal(t, tt.expectedArgs, args)
 		})
 	}
+}
+
+func TestPropertyFiltersToSQLResolvesPublicID(t *testing.T) {
+	filters := map[string]string{"id": "abc"}
+	schema := &domain.Schema{Fields: []domain.Field{
+		{Name: "fid", IsFid: true},
+		{Name: "external_fid", IsExternalFid: true},
+	}}
+
+	sql, args := PropertyFiltersToSQL(filters, ":", schema)
+
+	assert.Equal(t, ` and "external_fid" = :pf1`, sql)
+	assert.Equal(t, map[string]any{"pf1": "abc"}, args)
 }
 
 func TestTemporalCriteriaToSQL(t *testing.T) {

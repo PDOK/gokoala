@@ -290,9 +290,10 @@ func (l *PostgresListener) ExitInstantInstance(ctx *parser.InstantInstanceContex
 
 // ExitPropertyName Handle column names
 func (l *PostgresListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
-	name := ctx.GetText()
-	if !l.isQueryable(name) {
-		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
+	inputName := ctx.GetText()
+	name, ok := l.isQueryable(inputName)
+	if !ok {
+		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", inputName)
 		l.errorListener.Error(err)
 		return
 	}

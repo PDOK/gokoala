@@ -226,7 +226,6 @@ func schemasAndQueryablesByCollection(
 			log.Printf("failed to get schema for collection %s: %v", collection.ID, err)
 			continue
 		}
-
 		// expand the schema with details about temporal fields
 		if collection.Metadata != nil && collection.Metadata.TemporalProperties != nil {
 			for i := range schema.Fields {
@@ -254,6 +253,26 @@ func schemasAndQueryablesByCollection(
 				}
 			}
 		}
+
+		// if configured to be queryable, the feature ID should be added under the standard property name "id"
+		queryablesWithPublicID := make(domain.Queryables, len(queryables))
+		var idQueryable domain.QueryableWithAllowedValues
+		for name, queryable := range queryables {
+			switch {
+			case queryable.IsExternalFid:
+				idQueryable = queryable
+			case queryable.IsFid:
+				if !idQueryable.IsExternalFid {
+					idQueryable = queryable
+				}
+			default:
+				queryablesWithPublicID[name] = queryable
+			}
+		}
+		if idQueryable.IsFid || idQueryable.IsExternalFid {
+			queryablesWithPublicID[domain.FeatureIDPropertyName] = idQueryable
+		}
+		queryables = queryablesWithPublicID
 
 		schemaByCollection[collection.ID] = *schema
 		queryablesByCollection[collection.ID] = queryables

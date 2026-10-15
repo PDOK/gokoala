@@ -171,7 +171,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 	return result
 }
 
-func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, namedParams map[string]any) {
+func PropertyFiltersToSQL(pf map[string]string, symbol string, schema *domain.Schema) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	var sqlBuilder strings.Builder
 	sqlBuilder.WriteString(sql)
@@ -182,12 +182,28 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 		for k, v := range pf {
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
+			columnName := k
+			if k == domain.FeatureIDPropertyName && schema != nil {
+				fidName := ""
+				for _, field := range schema.Fields {
+					if field.IsExternalFid {
+						columnName = field.Name
+						break
+					}
+					if field.IsFid {
+						fidName = field.Name
+					}
+				}
+				if columnName == k && fidName != "" {
+					columnName = fidName
+				}
+			}
 			if strings.Contains(v, domain.PropertyFilterWildcard) {
 				// replace wildcard with %, as this is the wildcard used in SQL.
 				v = strings.ReplaceAll(v, domain.PropertyFilterWildcard, domain.Wildcard)
-				fmt.Fprintf(&sqlBuilder, " and \"%s\" like %s%s", k, symbol, namedParam)
+				fmt.Fprintf(&sqlBuilder, " and \"%s\" like %s%s", columnName, symbol, namedParam)
 			} else {
-				fmt.Fprintf(&sqlBuilder, " and \"%s\" = %s%s", k, symbol, namedParam)
+				fmt.Fprintf(&sqlBuilder, " and \"%s\" = %s%s", columnName, symbol, namedParam)
 			}
 			namedParams[namedParam] = v
 		}

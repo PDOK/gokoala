@@ -41,13 +41,13 @@ func toOpenAPIFilters(queryablesByCollection map[string]domain.Queryables) map[s
 			continue
 		}
 		filters := make([]OpenAPIPropertyFilter, 0, len(queryables))
-		for _, queryable := range queryables {
+		for name, queryable := range queryables {
 			if queryable.IsPrimaryGeometry {
 				// no need to expose geometry as a property filter (but can be used in CQL)
 				continue
 			}
 			filters = append(filters, OpenAPIPropertyFilter{
-				Name:               queryable.Name,
+				Name:               name,
 				Description:        queryable.Description,
 				DataType:           queryable.ToTypeFormat().Type,
 				AllowedValues:      queryable.AllowedValues,
