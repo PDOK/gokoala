@@ -34,21 +34,36 @@ func (m *Maps) Maps() http.HandlerFunc {
 			params:  r.URL.Query(),
 		}
 
-		crs, bboxSRID, bbox, width, height, err := url.parse()
+		request, err := url.parse()
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
-		w.Header().Add(engine.HeaderContentCrs, crs.ToLink())
+		request.mapType = CollectionMap
+		request.collection = collectionID
+		request.style = styleID
+
+		if err := request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
+			engine.RenderProblem(engine.ProblemServerError, w)
+			return
+		}
+
+		if err := request.validate(); err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			return
+		}
+
+		w.Header().Add(engine.HeaderContentCrs, request.crs.ToLink())
 
 		format := m.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			m.html.maps(w, r, format, collection, style, crs, bboxSRID, bbox, width, height, err)
+			m.html.maps(w, r, format, collection, request)
 			break
 		case engine.FormatJPEG, engine.FormatPNG:
-			m.image.renderMapsImage(w, r, format, style, crs, bboxSRID, bbox, width, height, err)
+			request.format = format
+			m.image.renderMapsImage(w, r, request)
 			break
 		default:
 			handleFormatNotSupported(w, format)

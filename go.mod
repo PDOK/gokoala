@@ -28,6 +28,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.49
 	github.com/moby/moby/api v1.55.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
+	github.com/pdok/ogc-specifications v1.0.7
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.44.0

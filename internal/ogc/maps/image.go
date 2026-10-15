@@ -5,10 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/twpayne/go-geom"
 )
 
 const (
@@ -27,25 +24,51 @@ func newImageMaps(e *engine.Engine) *imageMaps {
 	}
 }
 
-func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, format string, style *config.MapStyle,
-	crs domain.ContentCrs, srid domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
-	var path string
-	if format == engine.FormatJPEG {
-		// temporary placeholder, do the WMS call here
-		path = placeholderImageJPEG
-	} else {
-		// temporary placeholder, do the WMS call here
-		path = placeholderImagePNG
+func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, request MapRequest) {
+	switch request.format {
+	case engine.FormatPNG, engine.FormatJPEG:
+		request.format = "image/" + request.format
 	}
-	img, err := os.ReadFile(path)
+
+	usePlaceholderImage := true
+
+	if usePlaceholderImage {
+		var path string
+		if request.format == "image/jpeg" {
+			// temporary placeholder
+			path = placeholderImageJPEG
+		} else {
+			// temporary placeholder
+			path = placeholderImagePNG
+		}
+		img, err := os.ReadFile(path)
+		if err != nil {
+			log.Printf("error reading file: %v", err)
+			engine.RenderProblem(engine.ProblemServerError, w)
+			return
+		}
+		w.Header().Set("Content-Type", request.format)
+		if _, err = w.Write(img); err != nil {
+			log.Printf("error writing response: %v", err)
+			engine.RenderProblem(engine.ProblemServerError, w)
+			return
+		}
+	}
+
+	mapsConfig := m.engine.Config.OgcAPI.Maps
+	wmsRequest, err := buildGetMapRequest(&request, mapsConfig)
 	if err != nil {
-		log.Printf("error reading file: %v", err)
-		engine.RenderProblem(engine.ProblemServerError, w)
+		log.Printf("failed to build WMS request: %v", err)
+		engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 		return
 	}
-	w.Header().Set("Content-Type", "image/"+format)
-	if _, err = w.Write(img); err != nil {
-		log.Printf("error writing response: %v", err)
-		engine.RenderProblem(engine.ProblemServerError, w)
+
+	target := *mapsConfig.WMSServer.URL
+	params := target.Query()
+	for key, values := range wmsRequest.ToQueryParameters() {
+		params[key] = values
 	}
+	target.RawQuery = params.Encode()
+
+	m.engine.ReverseProxy(w, r, &target, false, "")
 }
