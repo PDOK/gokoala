@@ -1448,13 +1448,15 @@ func TestFeatures(t *testing.T) {
 
 func TestConfiguredFeatureIDFiltering(t *testing.T) {
 	testCases := []struct {
-		name           string
-		configFiles    []string
-		collectionID   string
-		featureID      string
-		featureStreet  string
-		queryableType  string
-		filterRequests []string
+		name             string
+		configFiles      []string
+		collectionID     string
+		featureID        string
+		featureStreet    string
+		queryableType    string
+		queryableFormat  string
+		hiddenQueryables []string
+		filterRequests   []string
 	}{
 		{
 			name:          "numeric configured FID",
@@ -1469,12 +1471,14 @@ func TestConfiguredFeatureIDFiltering(t *testing.T) {
 			},
 		},
 		{
-			name:          "external FID is queryable",
-			configFiles:   []string{"internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml", "internal/ogc/features/testdata/postgresql/config_features_external_fid.yaml"},
-			collectionID:  "standplaatsen",
-			featureID:     "40279463-b028-58da-9341-e0e88797a18c",
-			featureStreet: "Stenen Hoofd",
-			queryableType: "string",
+			name:             "external FID is queryable",
+			configFiles:      []string{"internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml", "internal/ogc/features/testdata/postgresql/config_features_external_fid.yaml"},
+			collectionID:     "standplaatsen",
+			featureID:        "40279463-b028-58da-9341-e0e88797a18c",
+			featureStreet:    "Stenen Hoofd",
+			queryableType:    "string",
+			queryableFormat:  "uuid",
+			hiddenQueryables: []string{"feature_id", "external_fid"},
 			filterRequests: []string{
 				"?id=40279463-b028-58da-9341-e0e88797a18c",
 				"?filter=id%20%3D%20%2740279463-b028-58da-9341-e0e88797a18c%27",
@@ -1505,10 +1509,13 @@ func TestConfiguredFeatureIDFiltering(t *testing.T) {
 					require.True(t, ok, "queryables should advertise the public id")
 					assert.Equal(t, tt.queryableType, idQueryable["type"])
 					assert.Equal(t, "id", idQueryable["x-ogc-role"])
-					if tt.name == "external FID takes precedence when both IDs are queryable" {
-						assert.Equal(t, "uuid", idQueryable["format"])
-						assert.NotContains(t, queryablesResponse.Properties, "feature_id")
-						assert.NotContains(t, queryablesResponse.Properties, "external_fid")
+					if tt.queryableFormat != "" {
+						assert.Equal(t, tt.queryableFormat, idQueryable["format"])
+					} else {
+						assert.NotContains(t, idQueryable, "format")
+					}
+					for _, hiddenQueryable := range tt.hiddenQueryables {
+						assert.NotContains(t, queryablesResponse.Properties, hiddenQueryable)
 					}
 
 					for _, filterRequest := range tt.filterRequests {
