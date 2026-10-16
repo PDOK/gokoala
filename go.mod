@@ -34,6 +34,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.44.0
 	github.com/twpayne/go-geom v1.6.1
+	github.com/twpayne/go-proj/v11 v11.0.0
 	github.com/twpayne/pgx-geom v1.0.0
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.6.0

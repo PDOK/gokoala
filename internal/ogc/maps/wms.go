@@ -7,7 +7,10 @@ import (
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
+	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/pdok/ogc-specifications/pkg/wms130"
+	"github.com/twpayne/go-geom"
 )
 
 // Build a WMS GetMap request from the given MapRequest.
@@ -110,22 +113,43 @@ func getCRS(mapRequest *MapRequest) (*wms130.CRS, error) {
 }
 
 func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
+	if mapRequest.bbox == nil {
+		return nil, errors.New("bbox is required")
+	}
 	crs, err := getCRS(mapRequest)
 	if err != nil {
 		return nil, err
 	}
 
+	bbox := *mapRequest.bbox
+	inputSRID := mapRequest.bboxCRS.GetOrDefault()
 	// In this case we need to transform the incoming bbox into the requested output CRS
-	if crs.Code != mapRequest.bboxCRS.GetOrDefault() {
-
-		// TODO Implement reprojection logic
-		return nil, errors.New(
-			"CRS reprojection is not supported",
+	if crs.Code != inputSRID {
+		// TODO Currently output CRS must use format "EPSG:<code>", CRS normalization is needed.
+		if crs.Namespace != "EPSG" {
+			return nil, errors.New("bbox transformation requires an EPSG output CRS")
+		}
+		inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
+		if inputSRID == domain.WGS84SRID {
+			inputSRS = "OGC:CRS84"
+		}
+		if inputSRID == 4326 {
+			bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
+		}
+		transformed, err := util.TransformBoundingBox(
+			geom.NewBounds(geom.XY).Set(bbox[:]...), inputSRS, fmt.Sprintf("EPSG:%d", crs.Code),
 		)
+		if err != nil {
+			return nil, fmt.Errorf("transform WMS bbox: %w", err)
+		}
+		bbox = [4]float64{transformed.Min(0), transformed.Min(1), transformed.Max(0), transformed.Max(1)}
+		if crs.Code == 4326 {
+			bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
+		}
 	}
 
-	// TODO Handle coordinate order for CRSes in AxisOrder YX
-	minX, minY, maxX, maxY := mapRequest.bbox[0], mapRequest.bbox[1], mapRequest.bbox[2], mapRequest.bbox[3]
+	// TODO Handle coordinate order for other CRSes in AxisOrder YX.
+	minX, minY, maxX, maxY := bbox[0], bbox[1], bbox[2], bbox[3]
 
 	return &wms130.BoundingBox{
 		LowerCorner: wms130.Position{minX, minY},

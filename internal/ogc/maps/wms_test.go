@@ -2,6 +2,8 @@ package maps
 
 import (
 	"net/url"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
@@ -67,10 +69,11 @@ func TestBuildGetMapRequest(t *testing.T) {
 		"&WIDTH=1200"
 
 	tests := []struct {
-		name       string
-		change     func(*MapRequest)
-		wantParams url.Values
-		wantError  string
+		name          string
+		change        func(*MapRequest)
+		wantParams    url.Values
+		wantError     string
+		bboxTolerance float64 // Allow small rounding differences after reprojection 
 	}{
 		{
 			name: "baseline test",
@@ -112,14 +115,43 @@ func TestBuildGetMapRequest(t *testing.T) {
 			change: func(request *MapRequest) {
 				request.mapType = DatasetMap
 			},
-			wantError: "Dataset Maps are not supported",
+			wantError: "dataset maps are not supported",
 		},
 		{
-			name: "different CRS and bbox CRS",
+			name: "Utrecht EPSG4326 bbox transformed to RD",
 			change: func(request *MapRequest) {
 				request.crs = "EPSG:28992"
 			},
-			wantError: "CRS reprojection is not supported",
+			wantParams: url.Values{
+				"CRS": {"EPSG:28992"}, "BBOX": {"131869.474,451352.254,140815.394,461332.147"},
+			},
+			bboxTolerance: 0.01,
+		},
+		{
+			name: "Utrecht RD bbox transformed to EPSG4326",
+			change: func(request *MapRequest) {
+				request.bboxCRS = 28992
+				request.bbox = &[4]float64{131869.474, 451352.254, 140815.394, 461332.147}
+			},
+			wantParams:    url.Values{"BBOX": {"52.05,5.05,52.14,5.18"}},
+			bboxTolerance: 0.000001,
+		},
+		{
+			name: "Utrecht default CRS84 bbox transformed to RD",
+			change: func(request *MapRequest) {
+				request.crs = "EPSG:28992"
+				request.bboxCRS = 0
+				request.bbox = &[4]float64{5.05, 52.05, 5.18, 52.14}
+			},
+			wantParams: url.Values{
+				"CRS": {"EPSG:28992"}, "BBOX": {"131869.474,451352.254,140815.394,461332.147"},
+			},
+			bboxTolerance: 0.01,
+		},
+		{
+			name:      "missing bbox",
+			change:    func(request *MapRequest) { request.bbox = nil },
+			wantError: "bbox is required",
 		},
 	}
 	for _, tt := range tests {
@@ -127,6 +159,10 @@ func TestBuildGetMapRequest(t *testing.T) {
 			request := baselineMapRequest
 			if tt.change != nil {
 				tt.change(&request)
+			}
+			var originalBBox [4]float64
+			if request.bbox != nil {
+				originalBBox = *request.bbox
 			}
 
 			getMapRequest, err := buildGetMapRequest(&request, mapsConfig)
@@ -145,9 +181,30 @@ func TestBuildGetMapRequest(t *testing.T) {
 			}
 
 			actual := getMapRequest.ToQueryParameters()
-			require.Equal(t, expected, actual)
-
 			t.Logf("WMS request: %s", actual.Encode())
+			if tt.bboxTolerance > 0 {
+				require.Len(t, actual["BBOX"], 1)
+				requireBBoxWithinTolerance(t, expected.Get("BBOX"), actual.Get("BBOX"), tt.bboxTolerance)
+				expected.Del("BBOX")
+				actual.Del("BBOX")
+			}
+			require.Equal(t, expected, actual)
+			require.Equal(t, originalBBox, *request.bbox)
 		})
+	}
+}
+
+func requireBBoxWithinTolerance(t *testing.T, expected, actual string, tolerance float64) {
+	t.Helper()
+	expectedValues := strings.Split(expected, ",")
+	actualValues := strings.Split(actual, ",")
+	require.Len(t, expectedValues, 4)
+	require.Len(t, actualValues, 4)
+	for index := range expectedValues {
+		expectedCoordinate, err := strconv.ParseFloat(expectedValues[index], 64)
+		require.NoError(t, err)
+		actualCoordinate, err := strconv.ParseFloat(actualValues[index], 64)
+		require.NoError(t, err)
+		require.InDelta(t, expectedCoordinate, actualCoordinate, tolerance, "BBOX coordinate %d", index)
 	}
 }

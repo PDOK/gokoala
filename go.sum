@@ -670,6 +670,8 @@ github.com/transparency-dev/merkle v0.0.2 h1:Q9nBoQcZcgPamMkGn7ghV8XiTZ/kRxn1yCG
 github.com/transparency-dev/merkle v0.0.2/go.mod h1:pqSy+OXefQ1EDUVmAJ8MUhHB9TXGuzVAT58PqBoHz1A=
 github.com/twpayne/go-geom v1.6.1 h1:iLE+Opv0Ihm/ABIcvQFGIiFBXd76oBIar9drAwHFhR4=
 github.com/twpayne/go-geom v1.6.1/go.mod h1:Kr+Nly6BswFsKM5sd31YaoWS5PeDDH2NftJTK7Gd028=
+github.com/twpayne/go-proj/v11 v11.0.0 h1:jkGRE2DOwxhbn2hPnps1wNepdCgA8JB/K8rJosVR2jM=
+github.com/twpayne/go-proj/v11 v11.0.0/go.mod h1:2qEvCqcSQqaKRxHc8K6F5THAzS/SVknfWVPnTHFqE3M=
 github.com/twpayne/pgx-geom v1.0.0 h1:6G4KAY8eJctjXhvGck73S7HnKayly7ZyQcmG8TC1CDU=
 github.com/twpayne/pgx-geom v1.0.0/go.mod h1:d+aJjVsx0FSBzl9DnFfJyMd0IZs6GzGwpSir5vLtWXU=
 github.com/urfave/cli/v2 v2.27.7 h1:bH59vdhbjLv3LAvIu6gd0usJHgoTTPhCFib8qqOwXYU=
