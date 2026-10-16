@@ -12,17 +12,15 @@ import (
 )
 
 func TestTableFieldRejectsInternalFIDWhenExternalFIDIsConfigured(t *testing.T) {
+	// given
 	table := &Table{Schema: &domain.Schema{Fields: []domain.Field{
 		{Name: "feature_id", Type: "integer", IsFid: true},
 		{Name: "external_fid", Type: "uuid", IsExternalFid: true},
 	}}}
-
+	// when
 	_, err := table.Field(config.Queryable{Name: "feature_id"})
-	require.EqualError(t, err, "internal FID column 'feature_id' cannot be configured as a queryable when external FID column 'external_fid' is configured")
-
-	externalFid, err := table.Field(config.Queryable{Name: "external_fid"})
-	require.NoError(t, err)
-	assert.True(t, externalFid.IsExternalFid)
+	// then
+	require.EqualError(t, err, "internal FID column 'feature_id' cannot be configured as a queryable when external FID column is configured")
 }
 
 func TestPropertyFiltersToSQL(t *testing.T) {

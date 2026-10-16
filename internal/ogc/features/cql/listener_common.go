@@ -104,10 +104,7 @@ func (cl *CommonListener) isAllQueryablesAllowed() bool {
 func (cl *CommonListener) isQueryable(name string) (string, bool) {
 	if name == domain.FeatureIDPropertyName {
 		for _, q := range cl.queryables {
-			if q.IsExternalFid {
-				return q.Name, true
-			}
-			if q.IsFid {
+			if q.IsExternalFid || q.IsFid {
 				return q.Name, true
 			}
 		}

@@ -60,15 +60,11 @@ func (t *Table) Field(queryable config.Queryable) (domain.Field, error) {
 	}
 	for _, field := range t.Schema.Fields {
 		if field.Name == queryable.Name {
-			if field.IsFid {
-				for _, externalFid := range t.Schema.Fields {
-					if externalFid.IsExternalFid {
-						return domain.Field{}, fmt.Errorf(
-							"internal FID column '%s' cannot be configured as a queryable when external FID column '%s' is configured",
-							field.Name, externalFid.Name,
-						)
-					}
-				}
+			if field.IsFid && t.Schema.HasExternalFid() {
+				return domain.Field{}, fmt.Errorf(
+					"internal FID column '%s' cannot be configured as a queryable when external FID column is configured",
+					field.Name,
+				)
 			}
 			if field.Description == "" {
 				field.Description = queryable.Description

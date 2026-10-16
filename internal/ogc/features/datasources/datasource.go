@@ -65,11 +65,12 @@ type FeaturesCriteria struct {
 
 	// filtering by properties (OAF part 1)
 	PropertyFilters map[string]string
-	// Queryables maps public filter names to their datasource fields.
-	Queryables domain.Queryables
 
 	// filtering by CQL (OAF part 3)
 	Filter Part3Filter
+
+	// valid filter fields (OAF part 1 + 3)
+	Queryables domain.Queryables
 }
 
 // TemporalCriteria criteria to filter based on date/time.
