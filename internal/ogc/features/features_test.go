@@ -1491,6 +1491,7 @@ func TestConfiguredFeatureIDFiltering(t *testing.T) {
 			for _, configFile := range tt.configFiles {
 				datasourceName := filepath.Base(filepath.Dir(configFile))
 				t.Run(datasourceName, func(t *testing.T) {
+					// given
 					newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 					require.NoError(t, err)
 					features := NewFeatures(newEngine)
@@ -1498,7 +1499,11 @@ func TestConfiguredFeatureIDFiltering(t *testing.T) {
 					queryablesRequest, err := createRequest("http://localhost:8080/collections/:collectionId/queryables", tt.collectionID, "", "json")
 					require.NoError(t, err)
 					queryablesRecorder := httptest.NewRecorder()
+
+					// when
 					features.Queryables().ServeHTTP(queryablesRecorder, queryablesRequest)
+
+					// then
 					require.Equal(t, http.StatusOK, queryablesRecorder.Code)
 
 					var queryablesResponse struct {
@@ -1519,10 +1524,15 @@ func TestConfiguredFeatureIDFiltering(t *testing.T) {
 					}
 
 					for _, filterRequest := range tt.filterRequests {
+						// given
 						request, err := createRequest("http://localhost:8080/collections/:collectionId/items"+filterRequest, tt.collectionID, "", "json")
 						require.NoError(t, err)
 						recorder := httptest.NewRecorder()
+
+						// when
 						features.Features().ServeHTTP(recorder, request)
+
+						// then
 						require.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
 
 						var response struct {
@@ -1551,6 +1561,7 @@ func TestExternalFIDNotQueryable(t *testing.T) {
 	for _, configFile := range configFiles {
 		datasourceName := filepath.Base(filepath.Dir(configFile))
 		t.Run(datasourceName, func(t *testing.T) {
+			// given
 			newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
 			require.NoError(t, err)
 			features := NewFeatures(newEngine)
@@ -1558,7 +1569,11 @@ func TestExternalFIDNotQueryable(t *testing.T) {
 			queryablesRequest, err := createRequest("http://localhost:8080/collections/:collectionId/queryables", "standplaatsen-no-id-queryable", "", "json")
 			require.NoError(t, err)
 			queryablesRecorder := httptest.NewRecorder()
+
+			// when
 			features.Queryables().ServeHTTP(queryablesRecorder, queryablesRequest)
+
+			// then
 			require.Equal(t, http.StatusOK, queryablesRecorder.Code)
 
 			var queryablesResponse struct {
@@ -1571,10 +1586,15 @@ func TestExternalFIDNotQueryable(t *testing.T) {
 				"?id=40279463-b028-58da-9341-e0e88797a18c",
 				"?filter=id%20%3D%20%2740279463-b028-58da-9341-e0e88797a18c%27",
 			} {
+				// given
 				request, err := createRequest("http://localhost:8080/collections/:collectionId/items"+query, "standplaatsen-no-id-queryable", "", "json")
 				require.NoError(t, err)
 				recorder := httptest.NewRecorder()
+
+				// when
 				features.Features().ServeHTTP(recorder, request)
+
+				// then
 				assert.Equal(t, http.StatusBadRequest, recorder.Code, recorder.Body.String())
 			}
 		})
