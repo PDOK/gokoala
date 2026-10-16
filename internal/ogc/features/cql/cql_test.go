@@ -114,6 +114,37 @@ func TestFailOnNonQueryableProperty(t *testing.T) {
 	}
 }
 
+func TestExternalFidCanBeQueriedAsID(t *testing.T) {
+	queryables := []domain.Field{{Name: "external_fid", Type: "uuid", IsExternalFid: true}}
+	inputCQL := "id = '00000000-0000-0000-0000-000000000001'"
+
+	for _, datasource := range datasources {
+		t.Run(datasource, func(t *testing.T) {
+			var result *SQLResult
+			var err error
+
+			switch datasource {
+			case gpkg:
+				result, err = ParseToSQL(inputCQL, NewGeoPackageListener(&util.MockRandomizer{}, queryables, 0, domain.AxisOrderXY, geospatial.Features, cqlConfigAllEnabled))
+			case postgresql:
+				result, err = ParseToSQL(inputCQL, NewPostgresListener(&util.MockRandomizer{}, queryables, 0, domain.AxisOrderXY, geospatial.Features, cqlConfigAllEnabled))
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, result)
+			assert.Contains(t, result.SQL, `"external_fid" =`)
+		})
+	}
+}
+
+func TestExternalFidColumnNameCannotBeQueriedDirectly(t *testing.T) {
+	queryables := []domain.Field{{Name: "external_fid", Type: "uuid", IsExternalFid: true}}
+	_, err := ParseToSQL("external_fid = '00000000-0000-0000-0000-000000000001'",
+		NewPostgresListener(&util.MockRandomizer{}, queryables, 0, domain.AxisOrderXY, geospatial.Features, cqlConfigAllEnabled))
+
+	assert.ErrorContains(t, err, "property 'external_fid' cannot be used in CQL filter, is not a queryable property")
+}
+
 func TestFailOnNonQueryablePropertyWithGeomSpecified(t *testing.T) {
 	// given
 	queryables := []domain.Field{{Name: "prop1"}}

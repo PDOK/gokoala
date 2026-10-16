@@ -1,7 +1,9 @@
 package features
 
 import (
+	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -1439,6 +1441,161 @@ func TestFeatures(t *testing.T) {
 						}
 					}
 				})
+			}
+		})
+	}
+}
+
+func TestConfiguredFeatureIDFiltering(t *testing.T) {
+	testCases := []struct {
+		name             string
+		configFiles      []string
+		collectionID     string
+		featureID        string
+		featureStreet    string
+		queryableType    string
+		queryableFormat  string
+		hiddenQueryables []string
+		filterRequests   []string
+	}{
+		{
+			name:          "numeric configured FID",
+			configFiles:   []string{"internal/ogc/features/testdata/geopackage/config_features_id_queryable.yaml", "internal/ogc/features/testdata/postgresql/config_features_id_queryable.yaml"},
+			collectionID:  "foo",
+			featureID:     "3542",
+			featureStreet: "Van Diemenkade",
+			queryableType: "integer",
+			filterRequests: []string{
+				"?id=3542",
+				"?filter=id%20%3D%203542",
+			},
+		},
+		{
+			name:             "external FID is queryable",
+			configFiles:      []string{"internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml", "internal/ogc/features/testdata/postgresql/config_features_external_fid.yaml"},
+			collectionID:     "standplaatsen",
+			featureID:        "40279463-b028-58da-9341-e0e88797a18c",
+			featureStreet:    "Stenen Hoofd",
+			queryableType:    "string",
+			queryableFormat:  "uuid",
+			hiddenQueryables: []string{"feature_id", "external_fid"},
+			filterRequests: []string{
+				"?id=40279463-b028-58da-9341-e0e88797a18c",
+				"?filter=id%20%3D%20%2740279463-b028-58da-9341-e0e88797a18c%27",
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, configFile := range tt.configFiles {
+				datasourceName := filepath.Base(filepath.Dir(configFile))
+				t.Run(datasourceName, func(t *testing.T) {
+					// given
+					newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+					require.NoError(t, err)
+					features := NewFeatures(newEngine)
+
+					queryablesRequest, err := createRequest("http://localhost:8080/collections/:collectionId/queryables", tt.collectionID, "", "json")
+					require.NoError(t, err)
+					queryablesRecorder := httptest.NewRecorder()
+
+					// when
+					features.Queryables().ServeHTTP(queryablesRecorder, queryablesRequest)
+
+					// then
+					require.Equal(t, http.StatusOK, queryablesRecorder.Code)
+
+					var queryablesResponse struct {
+						Properties map[string]map[string]any `json:"properties"`
+					}
+					require.NoError(t, json.Unmarshal(queryablesRecorder.Body.Bytes(), &queryablesResponse))
+					idQueryable, ok := queryablesResponse.Properties["id"]
+					require.True(t, ok, "queryables should advertise the public id")
+					assert.Equal(t, tt.queryableType, idQueryable["type"])
+					assert.Equal(t, "id", idQueryable["x-ogc-role"])
+					if tt.queryableFormat != "" {
+						assert.Equal(t, tt.queryableFormat, idQueryable["format"])
+					} else {
+						assert.NotContains(t, idQueryable, "format")
+					}
+					for _, hiddenQueryable := range tt.hiddenQueryables {
+						assert.NotContains(t, queryablesResponse.Properties, hiddenQueryable)
+					}
+
+					for _, filterRequest := range tt.filterRequests {
+						// given
+						request, err := createRequest("http://localhost:8080/collections/:collectionId/items"+filterRequest, tt.collectionID, "", "json")
+						require.NoError(t, err)
+						recorder := httptest.NewRecorder()
+
+						// when
+						features.Features().ServeHTTP(recorder, request)
+
+						// then
+						require.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
+
+						var response struct {
+							Features []struct {
+								ID         string         `json:"id"`
+								Properties map[string]any `json:"properties"`
+							} `json:"features"`
+						}
+						require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
+						require.Len(t, response.Features, 1)
+						assert.Equal(t, tt.featureID, response.Features[0].ID)
+						assert.Equal(t, tt.featureStreet, response.Features[0].Properties["straatnaam"])
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestExternalFIDNotQueryable(t *testing.T) {
+	configFiles := []string{
+		"internal/ogc/features/testdata/geopackage/config_features_external_fid.yaml",
+		"internal/ogc/features/testdata/postgresql/config_features_external_fid.yaml",
+	}
+
+	for _, configFile := range configFiles {
+		datasourceName := filepath.Base(filepath.Dir(configFile))
+		t.Run(datasourceName, func(t *testing.T) {
+			// given
+			newEngine, err := engine.NewEngine(configFile, "internal/engine/testdata/test_theme.yaml", "", false, true)
+			require.NoError(t, err)
+			features := NewFeatures(newEngine)
+
+			queryablesRequest, err := createRequest("http://localhost:8080/collections/:collectionId/queryables", "standplaatsen-no-id-queryable", "", "json")
+			require.NoError(t, err)
+			queryablesRecorder := httptest.NewRecorder()
+
+			// when
+			features.Queryables().ServeHTTP(queryablesRecorder, queryablesRequest)
+
+			// then
+			require.Equal(t, http.StatusOK, queryablesRecorder.Code)
+
+			var queryablesResponse struct {
+				Properties map[string]map[string]any `json:"properties"`
+			}
+			require.NoError(t, json.Unmarshal(queryablesRecorder.Body.Bytes(), &queryablesResponse))
+			assert.NotContains(t, queryablesResponse.Properties, "id")
+
+			for _, query := range []string{
+				"?id=40279463-b028-58da-9341-e0e88797a18c",
+				"?filter=id%20%3D%20%2740279463-b028-58da-9341-e0e88797a18c%27",
+			} {
+				// given
+				request, err := createRequest("http://localhost:8080/collections/:collectionId/items"+query, "standplaatsen-no-id-queryable", "", "json")
+				require.NoError(t, err)
+				recorder := httptest.NewRecorder()
+
+				// when
+				features.Features().ServeHTTP(recorder, request)
+
+				// then
+				assert.Equal(t, http.StatusBadRequest, recorder.Code, recorder.Body.String())
 			}
 		})
 	}

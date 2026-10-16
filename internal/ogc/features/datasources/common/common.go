@@ -60,6 +60,12 @@ func (t *Table) Field(queryable config.Queryable) (domain.Field, error) {
 	}
 	for _, field := range t.Schema.Fields {
 		if field.Name == queryable.Name {
+			if field.IsFid && t.Schema.HasExternalFid() {
+				return domain.Field{}, fmt.Errorf(
+					"internal FID column '%s' cannot be configured as a queryable when external FID column is configured",
+					field.Name,
+				)
+			}
 			if field.Description == "" {
 				field.Description = queryable.Description
 			}
@@ -171,7 +177,7 @@ func (dc *DatasourceCommon) SelectColumns(table *Table, axisOrder domain.AxisOrd
 	return result
 }
 
-func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, namedParams map[string]any) {
+func PropertyFiltersToSQL(pf map[string]string, symbol string, queryables domain.Queryables) (sql string, namedParams map[string]any) {
 	namedParams = make(map[string]any)
 	var sqlBuilder strings.Builder
 	sqlBuilder.WriteString(sql)
@@ -182,12 +188,16 @@ func PropertyFiltersToSQL(pf map[string]string, symbol string) (sql string, name
 		for k, v := range pf {
 			position++
 			namedParam := fmt.Sprintf("pf%d", position)
+			columnName := k
+			if queryable, ok := queryables[k]; ok {
+				columnName = queryable.Name
+			}
 			if strings.Contains(v, domain.PropertyFilterWildcard) {
 				// replace wildcard with %, as this is the wildcard used in SQL.
 				v = strings.ReplaceAll(v, domain.PropertyFilterWildcard, domain.Wildcard)
-				fmt.Fprintf(&sqlBuilder, " and \"%s\" like %s%s", k, symbol, namedParam)
+				fmt.Fprintf(&sqlBuilder, " and \"%s\" like %s%s", columnName, symbol, namedParam)
 			} else {
-				fmt.Fprintf(&sqlBuilder, " and \"%s\" = %s%s", k, symbol, namedParam)
+				fmt.Fprintf(&sqlBuilder, " and \"%s\" = %s%s", columnName, symbol, namedParam)
 			}
 			namedParams[namedParam] = v
 		}

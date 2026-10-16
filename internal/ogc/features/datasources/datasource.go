@@ -68,6 +68,9 @@ type FeaturesCriteria struct {
 
 	// filtering by CQL (OAF part 3)
 	Filter Part3Filter
+
+	// valid filter fields (OAF part 1 + 3)
+	Queryables domain.Queryables
 }
 
 // TemporalCriteria criteria to filter based on date/time.

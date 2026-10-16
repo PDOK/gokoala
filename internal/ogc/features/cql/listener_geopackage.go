@@ -259,9 +259,10 @@ func (l *GeoPackageListener) ExitIntervalParameter(ctx *parser.IntervalParameter
 
 // ExitPropertyName Handle column names
 func (l *GeoPackageListener) ExitPropertyName(ctx *parser.PropertyNameContext) {
-	name := ctx.GetText()
-	if !l.isQueryable(name) {
-		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", name)
+	inputName := ctx.GetText()
+	name, ok := l.isQueryable(inputName)
+	if !ok {
+		err := fmt.Sprintf("property '%s' cannot be used in CQL filter, is not a queryable property", inputName)
 		l.errorListener.Error(err)
 		return
 	}
