@@ -11,7 +11,6 @@ type OgcAPIMaps struct {
 	DefaultMap DefaultMap `yaml:"defaultMap" json:"defaultMap" validate:"required"`
 
 	// Collections to be served as maps through this API.
-	// +kubebuilder:validation:MinItems=1
 	Collections MapsCollections `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
 }
 
