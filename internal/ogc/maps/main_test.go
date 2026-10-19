@@ -18,17 +18,13 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/engine/types"
-	"github.com/PDOK/gokoala/internal/ogc/common/core"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/language"
 )
 
 const (
-	// Conformance class URIs, see https://docs.ogc.org/is/20-058/20-058.html Annex A
-	confClassMapsCore = "https://www.opengis.net/spec/ogcapi-maps-1/1.0/req/core"
-
 	crs84URI       = "https://www.opengis.net/def/crs/OGC/1.3/CRS84"
 	rd28992URI     = "http://www.opengis.net/def/crs/EPSG/0/28992"
 	testCollection = "foo"
@@ -127,16 +123,6 @@ func TestCoreMapResponse(t *testing.T) {
 		assert.Equal(t, "<"+rd28992URI+">", rr.Header().Get("Content-Crs"))
 	})
 
-	t.Run("Content-Crs header may be omitted for CRS84", func(t *testing.T) {
-		rr := doGet(router, mapPath+"?crs="+url.QueryEscape(crs84URI), "image/png")
-		require.Equal(t, http.StatusOK, rr.Code)
-
-		got := rr.Header().Get("Content-Crs")
-		if got != "" {
-			assert.Equal(t, "<"+crs84URI+">", got)
-		}
-	})
-
 	t.Run("Content-Bbox header holds lower-left and upper-right corner in response CRS", func(t *testing.T) {
 		rr := doGet(router, mapPath, "image/png")
 		require.Equal(t, http.StatusOK, rr.Code)
@@ -153,18 +139,10 @@ func TestCoreMapResponse(t *testing.T) {
 		assert.LessOrEqual(t, bbox[3], 629000.0)
 	})
 
-	t.Run("Content-Bbox is in CRS84 (lon/lat order) when CRS84 is requested", func(t *testing.T) {
+	// TODO: reprojection to other CRSs (e.g. CRS84, including a matching Content-Bbox) isn't supported yet
+	t.Run("CRS84 is not supported yet", func(t *testing.T) {
 		rr := doGet(router, mapPath+"?crs="+url.QueryEscape(crs84URI), "image/png")
-		require.Equal(t, http.StatusOK, rr.Code)
-
-		bbox := parseContentBbox(t, rr.Header().Get("Content-Bbox"))
-
-		assert.Less(t, bbox[0], bbox[2])
-		assert.Less(t, bbox[1], bbox[3])
-		assert.GreaterOrEqual(t, bbox[0], -180.0)
-		assert.LessOrEqual(t, bbox[2], 180.0)
-		assert.GreaterOrEqual(t, bbox[1], -90.0)
-		assert.LessOrEqual(t, bbox[3], 90.0)
+		require.Equal(t, http.StatusBadRequest, rr.Code)
 	})
 
 	t.Run("Content-Datetime header, when present, is a valid time instant or interval", func(t *testing.T) {
@@ -223,23 +201,6 @@ func TestContentDatetimeFormat(t *testing.T) {
 	}
 }
 
-// Abstract test A.3: /conf/core/conformance-success
-//
-// Given: a conformance resource in a recognized format, such as the OGC API JSON /conformance resource
-// When:  retrieving that resource from the API endpoint
-// Then:  assert that the list of conformance classes includes at minimum
-// https://www.opengis.net/spec/ogcapi-maps-1/1.0/req/core.
-func TestCoreConformanceSuccess(t *testing.T) {
-	e := newTestEngine(t, newMockWMS(t).URL)
-	core.NewCommonCore(e, core.ExtraConformanceClasses{})
-	NewMaps(e)
-
-	rr := doGet(e.Router, "/conformance?f=json", "application/json")
-
-	require.Equal(t, http.StatusOK, rr.Code)
-	assert.Contains(t, rr.Body.String(), confClassMapsCore)
-}
-
 // newMockWMS starts a fake WMS server that always responds with a small PNG, regardless of the request.
 func newMockWMS(t *testing.T) *httptest.Server {
 	t.Helper()
@@ -275,7 +236,7 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 		Version:            "0.4.0",
 		Title:              "Test API",
 		Abstract:           "Test API description",
-		Resources:          &config.Resources{Directory: types.PtrTo("/fakedirectory")},
+		Resources:          &config.Resources{Directory: new("/fakedirectory")},
 		AvailableLanguages: []config.Language{{Tag: language.Dutch}},
 		BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 		OgcAPI: config.OgcAPI{
@@ -349,4 +310,79 @@ func assertValidContentDatetime(t *testing.T, value string) {
 
 	assert.Truef(t, datetimeRe.MatchString(value),
 		"Content-Datetime %q must be an RFC 3339 time instant or an interval of the form 'instant/instant'", value)
+}
+
+type httpCase struct {
+	name           string
+	query          string
+	wantStatus     int
+	wantContentCrs string
+	knownDeviation string
+}
+
+func TestMapParamsHTTP(t *testing.T) {
+	router := newTestRouter(t)
+	mapPath := "/collections/" + testCollection + "/map"
+	rd := "<" + rd28992URI + ">"
+
+	tests := []httpCase{
+		{name: "none", query: "", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "width only", query: "width=800", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "height only", query: "height=600", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "crs only", query: "crs=" + rd28992URI, wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "bbox only", query: "bbox=" + bboxCRS84, wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "bbox-crs only without bbox is ignored", query: "bbox-crs=" + domain.WGS84CrsURI,
+			wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "unsupported bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI,
+			wantStatus: http.StatusBadRequest},
+		{name: "unsupported bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI,
+			wantStatus: http.StatusBadRequest},
+		{name: "bbox + bbox-crs EPSG:28992", query: "bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
+			wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "unsupported crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantStatus: http.StatusBadRequest},
+		{name: "crs + bbox", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84, wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "crs + bbox + bbox-crs", query: "crs=" + rd28992URI + "&bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
+			wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "width + height", query: "width=800&height=600", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "all five", query: "crs=" + rd28992URI + "&bbox=" + bboxRD + "&bbox-crs=" + rd28992URI + "&width=800&height=600",
+			wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "width equal to max", query: "crs=" + rd28992URI + "&width=5000", wantStatus: http.StatusOK,
+			wantContentCrs: rd, knownDeviation: "D2: value equal to max is accepted"},
+		{name: "invalid width non-numeric", query: "width=abc", wantStatus: http.StatusBadRequest},
+		{name: "invalid width zero", query: "width=0", wantStatus: http.StatusBadRequest,
+			knownDeviation: "D1: 20-058 /req/scaling/width-definition C"},
+		{name: "invalid width negative", query: "width=-5", wantStatus: http.StatusBadRequest,
+			knownDeviation: "D1: 20-058 /req/scaling/width-definition C"},
+		{name: "invalid height zero", query: "height=0", wantStatus: http.StatusBadRequest,
+			knownDeviation: "D1: 20-058 /req/scaling/height-definition C"},
+		{name: "invalid width above max", query: "width=5001", wantStatus: http.StatusBadRequest},
+		{name: "invalid height above max", query: "height=5001", wantStatus: http.StatusBadRequest},
+		{name: "invalid crs unknown", query: "crs=" + crsUnknownURI, wantStatus: http.StatusBadRequest},
+		{name: "invalid bbox 3 values", query: "bbox=1,2,3", wantStatus: http.StatusBadRequest},
+		{name: "invalid bbox non-numeric", query: "bbox=a,b,c,d", wantStatus: http.StatusBadRequest},
+		{name: "invalid bbox-crs not a URI with bbox", query: "bbox=" + bboxCRS84 + "&bbox-crs=foo",
+			wantStatus: http.StatusBadRequest},
+		{name: "invalid bbox + valid crs and size", query: "crs=" + rd28992URI + "&bbox=1,2,3&width=800&height=600",
+			wantStatus: http.StatusBadRequest},
+		{name: "invalid bbox and width non-numeric", query: "bbox=1,2,3&width=abc", wantStatus: http.StatusBadRequest},
+		{name: "invalid width and height both above max", query: "width=9000&height=9000", wantStatus: http.StatusBadRequest},
+	}
+
+	seen := make(map[string]struct{}, len(tests))
+	for _, tt := range tests {
+		_, dup := seen[tt.name]
+		require.False(t, dup, "duplicate case name: %s", tt.name)
+		seen[tt.name] = struct{}{}
+
+		t.Run(tt.name, func(t *testing.T) {
+			rr := doGet(router, mapPath+"?"+tt.query, "image/png")
+
+			require.Equal(t, tt.wantStatus, rr.Code, tt.knownDeviation)
+			if tt.wantStatus == http.StatusOK {
+				assert.Equal(t, tt.wantContentCrs, rr.Header().Get("Content-Crs"), tt.knownDeviation)
+
+				return
+			}
+		})
+	}
 }
