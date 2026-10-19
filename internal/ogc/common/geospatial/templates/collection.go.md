@@ -77,4 +77,13 @@ Available formats:
 {{ end -}}
 {{- end }}
 
+{{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections -}}
+{{ if .Config.OgcAPI.Maps.Collections.ContainsID .Params.Collection.ID -}}
+### Maps
+[View Maps]({{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/map)
+
+A new implementation of the WMS
+{{- end }}
+{{- end }}
+
 {{/* @formatter:on */}}
