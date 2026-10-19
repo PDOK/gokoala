@@ -95,6 +95,26 @@
 
 {{- end }}
 
+{{ if .Config.OgcAPI.Maps -}}
+
+## Maps
+
+| Conformance                                                     | Status                |
+|-----------------------------------------------------------------|-----------------------|
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/core         | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/background   | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/scaling      | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/display-resolution | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/spatial-subsetting | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/crs          | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/collection-map | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/png          | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/jpeg         | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/html         | {{ i18n "Standard" }} |
+| http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/cors         | {{ i18n "Standard" }} |
+
+{{- end }}
+
 {{ if .Config.OgcAPI.Tiles -}}
 
 ## Tiles
