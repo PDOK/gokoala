@@ -39,6 +39,10 @@ func (s SRID) GetOrDefault() int {
 	return val
 }
 
+func (s SRID) ToContentCrs() ContentCrs {
+	return ContentCrs(fmt.Sprintf("%sEPSG/0/%d", CrsURIPrefix, s))
+}
+
 func EpsgToSrid(srs string) (SRID, error) {
 	srsCode, found := strings.CutPrefix(srs, EPSGPrefix)
 	if !found {

@@ -862,6 +862,11 @@ func (in *MapsCollection) DeepCopyInto(out *MapsCollection) {
 		*out = new(GeoSpatialCollectionMetadata)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Links != nil {
+		in, out := &in.Links, &out.Links
+		*out = new(CollectionLinks)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Layers != nil {
 		in, out := &in.Layers, &out.Layers
 		*out = make([]MapLayer, len(*in))
@@ -1076,7 +1081,7 @@ func (in *OgcAPIMaps) DeepCopyInto(out *OgcAPIMaps) {
 	in.DefaultMap.DeepCopyInto(&out.DefaultMap)
 	if in.Collections != nil {
 		in, out := &in.Collections, &out.Collections
-		*out = make([]MapsCollection, len(*in))
+		*out = make(MapsCollections, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
