@@ -43,7 +43,7 @@ var paramCases = []paramCase{
 	{name: "invalid bbox-crs without bbox is ignored", query: "bbox-crs=foo",
 		knownDeviation: "D7: 20-058 /req/spatial-subsetting/bbox-crs F, bbox-crs is ignored when bbox is absent"},
 
-	//combinations
+	// combinations
 	{name: "unsupported bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI, wantErr: true},
 	{name: "unsupported bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI, wantErr: true},
 	{name: "unsupported crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantErr: true},

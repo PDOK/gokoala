@@ -46,7 +46,7 @@ type DefaultMap struct {
 }
 
 // +kubebuilder:object:generate=true
-type MapsCollection struct {
+type MapsCollection struct { //nolint:recvcheck
 	// Unique ID of the collection.
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" json:"id" validate:"required,lowercase_id"`

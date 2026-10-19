@@ -48,7 +48,7 @@ func newHTMLMaps(e *engine.Engine) *htmlMaps {
 }
 
 func (hm *htmlMaps) maps(w http.ResponseWriter, r *http.Request, format string, collection config.MapsCollection,
-	style *config.MapStyle, crs domain.ContentCrs, srid domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
+	_ *config.MapStyle, _ domain.ContentCrs, _ domain.SRID, _ *geom.Bounds, _ int, _ int) {
 
 	breadcrumbs, pageContent := hm.toViewerPage(collection)
 

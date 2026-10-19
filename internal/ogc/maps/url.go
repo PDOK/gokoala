@@ -39,7 +39,7 @@ type mapsURL struct {
 func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.ContentCrs) (crs domain.ContentCrs, bboxSRID domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
 	err = m.validateNoUnknownParams()
 	if err != nil {
-		return
+		return crs, bboxSRID, bbox, width, height, err
 	}
 
 	crs = parseCrsToContentCrs(m.params, defaultCrs)
@@ -66,7 +66,7 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 
 	err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr)
 
-	return
+	return crs, bboxSRID, bbox, width, height, err
 }
 
 func validateSupportedCrs(param string, crs domain.ContentCrs, supportedCrs []domain.ContentCrs) error {
@@ -107,6 +107,7 @@ func parseHeight(params url.Values) (int, error) {
 func (m *mapsURL) validateNoUnknownParams() error {
 	for param := range m.params {
 		if _, ok := mapsKnownParams[param]; !ok {
+			return fmt.Errorf("unknown query parameter(s) found: %s", param)
 		}
 	}
 	return nil

@@ -27,8 +27,8 @@ func newImageMaps(e *engine.Engine) *imageMaps {
 	}
 }
 
-func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, format string, style *config.MapStyle,
-	crs domain.ContentCrs, srid domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
+func (m imageMaps) renderMapsImage(w http.ResponseWriter, _ *http.Request, format string, _ *config.MapStyle,
+	_ domain.ContentCrs, _ domain.SRID, _ *geom.Bounds, _ int, _ int) {
 	var path string
 	if format == engine.FormatJPEG {
 		// temporary placeholder, do the WMS call here
