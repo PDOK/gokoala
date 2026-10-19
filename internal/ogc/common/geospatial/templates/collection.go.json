@@ -184,19 +184,19 @@
     {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
       {{ if .Config.OgcAPI.Maps.Collections.ContainsID .Params.Collection.ID }}
     ,{
-      "rel" : "map",
+      "rel" : "https://www.opengis.net/def/rel/ogc/1.0/map",
       "type" : "image/png",
       "title" : "The PNG representation of the {{ .Params.Collection.ID }} map served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/map?f=png"
     },
     {
-      "rel" : "map",
+      "rel" : "https://www.opengis.net/def/rel/ogc/1.0/map",
       "type" : "image/jpeg",
       "title" : "The JPEG representation of the {{ .Params.Collection.ID }} map served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/map?f=jpeg"
     },
     {
-      "rel" : "map",
+      "rel" : "https://www.opengis.net/def/rel/ogc/1.0/map",
       "type" : "text/html",
       "title" : "The HTML representation of the {{ .Params.Collection.ID }} map served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/map?f=html"
