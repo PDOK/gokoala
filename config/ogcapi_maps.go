@@ -18,8 +18,8 @@ type OgcAPIMaps struct {
 type MapsCollections []MapsCollection
 
 // ContainsID check if a given collection - by ID - exists.
-func (mc MapsCollections) ContainsID(id string) bool {
-	for _, coll := range mc {
+func (cms MapsCollections) ContainsID(id string) bool {
+	for _, coll := range cms {
 		if coll.ID == id {
 			return true
 		}
@@ -89,26 +89,26 @@ type MapsCollection struct { //nolint:recvcheck
 	Bbox []string `yaml:"bbox,omitempty" json:"bbox,omitempty" validate:"omitempty,len=4,dive,numeric"`
 }
 
-func (mf MapsCollection) GetID() string {
-	return mf.ID
+func (cm MapsCollection) GetID() string {
+	return cm.ID
 }
 
-func (mf MapsCollection) GetMetadata() *GeoSpatialCollectionMetadata {
-	return mf.Metadata
+func (cm MapsCollection) GetMetadata() *GeoSpatialCollectionMetadata {
+	return cm.Metadata
 }
 
-func (mf MapsCollection) GetLinks() *CollectionLinks {
-	return mf.Links
+func (cm MapsCollection) GetLinks() *CollectionLinks {
+	return cm.Links
 }
 
-func (mf MapsCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
-	mf.Metadata = mergeMetadata(mf, other)
-	mf.Links = mergeLinks(mf, other)
-	return mf
+func (cm MapsCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	cm.Metadata = mergeMetadata(cm, other)
+	cm.Links = mergeLinks(cm, other)
+	return cm
 }
 
-func (mf MapsCollection) GetStyle(styleID string) *MapStyle {
-	for _, layer := range mf.Layers {
+func (cm MapsCollection) GetStyle(styleID string) *MapStyle {
+	for _, layer := range cm.Layers {
 		for _, style := range layer.Styles {
 			if style.ID == styleID {
 				return &style
