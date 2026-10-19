@@ -11,6 +11,8 @@
 
 ## {{ if and $coll.Metadata $coll.Metadata.Title }}{{ $coll.Metadata.Title }}{{ else }}{{ $coll.ID }}{{ end }}
 
+[Information about the {{ $coll.ID }} collection]({{ $baseUrl }}/collections/{{ $coll.ID }})
+
 {{ if and $coll.Metadata $coll.Metadata.Description -}}
     {{ truncate $coll.Metadata.Description 500 }}
 {{- end }}
