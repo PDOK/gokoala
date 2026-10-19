@@ -17,8 +17,8 @@ type OgcAPIMaps struct {
 type MapsCollections []MapsCollection
 
 // ContainsID check if a given collection - by ID - exists.
-func (cms MapsCollections) ContainsID(id string) bool {
-	for _, coll := range cms {
+func (csm MapsCollections) ContainsID(id string) bool {
+	for _, coll := range csm {
 		if coll.ID == id {
 			return true
 		}
