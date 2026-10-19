@@ -36,7 +36,7 @@ func (m *Maps) Maps() http.HandlerFunc {
 			params:  r.URL.Query(),
 		}
 
-		defaultCrs, err := getDefaultCrs(collection)
+		defaultCrs, err := getDefaultCrs(m.engine.Config.OgcAPI.Maps.DefaultMap)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -84,17 +84,13 @@ func handleFormatNotSupported(w http.ResponseWriter, format string) {
 	engine.RenderProblem(engine.ProblemNotAcceptable, w, msg)
 }
 
-func getDefaultCrs(collection config.MapsCollection) (domain.ContentCrs, error) {
-	if collection.DefaultCRS != "" {
-		srid, err := domain.EpsgToSrid(collection.DefaultCRS)
-		if err != nil {
-			return "", err
-		}
-
-		return srid.ToContentCrs(), nil
+func getDefaultCrs(defaultMap config.DefaultMap) (domain.ContentCrs, error) {
+	srid, err := domain.EpsgToSrid(defaultMap.CRS)
+	if err != nil {
+		return "", err
 	}
 
-	return domain.WGS84CrsURI, nil
+	return srid.ToContentCrs(), nil
 }
 
 func getSupportedCrs(defaultCrs domain.ContentCrs) []domain.ContentCrs {
