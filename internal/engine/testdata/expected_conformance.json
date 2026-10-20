@@ -51,7 +51,6 @@
     "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/core",
     "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/background",
     "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/scaling",
-    "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/display-resolution",
     "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/spatial-subsetting",
     "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/crs",
     "http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/collection-map",
