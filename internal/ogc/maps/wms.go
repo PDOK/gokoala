@@ -121,8 +121,14 @@ func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
 		return nil, err
 	}
 
-	bbox := *mapRequest.bbox
-	inputSRID := mapRequest.bboxCRS.GetOrDefault()
+	bbox := [4]float64{
+		mapRequest.bbox.Min(0),
+		mapRequest.bbox.Min(1),
+		mapRequest.bbox.Max(0),
+		mapRequest.bbox.Max(1),
+	}
+
+	inputSRID := mapRequest.bboxSRID.GetOrDefault()
 	// In this case we need to transform the incoming bbox into the requested output CRS
 	if crs.Code != inputSRID {
 		// TODO Currently output CRS must use format "EPSG:<code>", CRS normalization is needed.

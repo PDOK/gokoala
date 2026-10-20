@@ -8,6 +8,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/stretchr/testify/require"
+	"github.com/twpayne/go-geom"
 )
 
 var mapsConfig = &config.OgcAPIMaps{
@@ -26,9 +27,8 @@ var mapsConfig = &config.OgcAPIMaps{
 	},
 	Collections: []config.MapsCollection{
 		{
-			ID:         "collection1",
-			DefaultCRS: "EPSG:28992",
-			Bbox:       []string{"10000", "300000", "280000", "620000"},
+			ID:   "collection1",
+			Bbox: []string{"10000", "300000", "280000", "620000"},
 			Layers: []config.MapLayer{
 				{
 					ID:   "layer1",
@@ -49,8 +49,8 @@ func TestBuildGetMapRequest(t *testing.T) {
 		collection:  "collection1",
 		style:       "default",
 		crs:         "EPSG:4326",
-		bboxCRS:     4326,
-		bbox:        &[4]float64{52.05, 5.05, 52.14, 5.18},
+		bboxSRID:    4326,
+		bbox:        geom.NewBounds(geom.XY).Set(52.05, 5.05, 52.14, 5.18),
 		width:       1200,
 		height:      900,
 		transparent: true,
@@ -73,7 +73,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 		change        func(*MapRequest)
 		wantParams    url.Values
 		wantError     string
-		bboxTolerance float64 // Allow small rounding differences after reprojection 
+		bboxTolerance float64 // Allow small rounding differences after reprojection
 	}{
 		{
 			name: "baseline test",
@@ -102,8 +102,8 @@ func TestBuildGetMapRequest(t *testing.T) {
 			name: "Utrecht RD bbox with matching CRS",
 			change: func(request *MapRequest) {
 				request.crs = "EPSG:28992"
-				request.bboxCRS = 28992
-				request.bbox = &[4]float64{131869, 451318, 140816, 461366}
+				request.bboxSRID = 28992
+				request.bbox = geom.NewBounds(geom.XY).Set(131869, 451318, 140816, 461366)
 			},
 			wantParams: url.Values{
 				"CRS":  {"EPSG:28992"},
@@ -130,8 +130,8 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht RD bbox transformed to EPSG4326",
 			change: func(request *MapRequest) {
-				request.bboxCRS = 28992
-				request.bbox = &[4]float64{131869.474, 451352.254, 140815.394, 461332.147}
+				request.bboxSRID = 28992
+				request.bbox = geom.NewBounds(geom.XY).Set(131869.474, 451352.254, 140815.394, 461332.147)
 			},
 			wantParams:    url.Values{"BBOX": {"52.05,5.05,52.14,5.18"}},
 			bboxTolerance: 0.000001,
@@ -140,8 +140,8 @@ func TestBuildGetMapRequest(t *testing.T) {
 			name: "Utrecht default CRS84 bbox transformed to RD",
 			change: func(request *MapRequest) {
 				request.crs = "EPSG:28992"
-				request.bboxCRS = 0
-				request.bbox = &[4]float64{5.05, 52.05, 5.18, 52.14}
+				request.bboxSRID = 0
+				request.bbox = geom.NewBounds(geom.XY).Set(5.05, 52.05, 5.18, 52.14)
 			},
 			wantParams: url.Values{
 				"CRS": {"EPSG:28992"}, "BBOX": {"131869.474,451352.254,140815.394,461332.147"},
@@ -160,9 +160,14 @@ func TestBuildGetMapRequest(t *testing.T) {
 			if tt.change != nil {
 				tt.change(&request)
 			}
-			var originalBBox [4]float64
+			var originalBBox *geom.Bounds
 			if request.bbox != nil {
-				originalBBox = *request.bbox
+				originalBBox = geom.NewBounds(geom.XY).Set(
+					request.bbox.Min(0),
+					request.bbox.Min(1),
+					request.bbox.Max(0),
+					request.bbox.Max(1),
+				)
 			}
 
 			getMapRequest, err := buildGetMapRequest(&request, mapsConfig)
@@ -189,7 +194,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 				actual.Del("BBOX")
 			}
 			require.Equal(t, expected, actual)
-			require.Equal(t, originalBBox, *request.bbox)
+			require.Equal(t, originalBBox, request.bbox)
 		})
 	}
 }

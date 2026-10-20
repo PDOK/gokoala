@@ -37,6 +37,7 @@ const (
 	tilesSpec          = specPath + "tiles.go.json"
 	stylesSpec         = specPath + "styles.go.json"
 	geoVolumesSpec     = specPath + "3dgeovolumes.go.json"
+	mapsSpec           = specPath + "maps.go.json"
 	commonSpec         = specPath + "common.go.json"
 	HTMLRegex          = `<[/]?([a-zA-Z]+).*?>`
 )
@@ -127,6 +128,9 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	}
 	if config.OgcAPI.GeoVolumes != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, geoVolumesSpec)
+	}
+	if config.OgcAPI.Maps != nil {
+		defaultOpenAPIFiles = append(defaultOpenAPIFiles, mapsSpec)
 	}
 
 	// add preamble first

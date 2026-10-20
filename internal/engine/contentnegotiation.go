@@ -3,6 +3,7 @@ package engine
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
@@ -27,6 +28,8 @@ const (
 	MediaTypeJSONFG        = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
 	MediaTypeJSONSchema    = "application/schema+json"
 	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
+	MediaTypePNG           = "image/png"
+	MediaTypeJPEG          = "image/jpeg"
 
 	FormatHTML           = "html"
 	FormatXML            = "xml"
@@ -110,6 +113,8 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeMapboxStyle),
 		contenttype.NewMediaType(MediaTypeSLD),
 		contenttype.NewMediaType(MediaTypeOpenAPI),
+		contenttype.NewMediaType(MediaTypePNG),
+		contenttype.NewMediaType(MediaTypeJPEG),
 	}
 
 	formatsByMediaType := map[string]string{
@@ -123,6 +128,8 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		MediaTypeMVT:         FormatMVT,
 		MediaTypeMapboxStyle: FormatMapboxStyle,
 		MediaTypeSLD:         FormatSLD,
+		MediaTypePNG:         FormatPNG,
+		MediaTypeJPEG:        FormatJPEG,
 	}
 
 	mediaTypesByFormat := util.Inverse(formatsByMediaType)
@@ -152,14 +159,32 @@ func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
 	return ""
 }
 
-// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param).
+// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param). Defaults to json
 func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
 	requestedFormat := cn.getFormatFromQueryParam(req)
+
 	if requestedFormat == "" {
 		requestedFormat = cn.getFormatFromAcceptHeader(req)
 	}
+
 	if requestedFormat == "" {
 		requestedFormat = FormatJSON // default
+	}
+
+	return requestedFormat
+}
+
+func (cn *ContentNegotiation) NegotiateFormatWithDefault(req *http.Request, fallbackFormat string) string {
+	requestedFormat := cn.getFormatFromQueryParam(req)
+	mediaTypes, _, _ := strings.Cut(req.Header.Get(HeaderAccept), ";")
+	isWildcardOnly := strings.TrimSpace(mediaTypes) == "*/*"
+
+	if requestedFormat == "" && !isWildcardOnly {
+		requestedFormat = cn.getFormatFromAcceptHeader(req)
+	}
+
+	if requestedFormat == "" {
+		requestedFormat = fallbackFormat
 	}
 
 	return requestedFormat

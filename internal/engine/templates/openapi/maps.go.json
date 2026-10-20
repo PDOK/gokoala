@@ -1,0 +1,194 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{
+	"openapi": "3.0.0",
+	"info": {
+		"version": "1.0",
+		"title": "OGC API - Maps",
+		"description": "Example API Definition for OGC API - Maps - Part 1: Core",
+		"contact": {
+			"name": "Open Geospatial Consortium",
+			"email": "info@ogc.org"
+		},
+		"license": {
+			"name": "OGC License",
+			"url": "http://www.opengeospatial.org/legal/"
+		},
+        "x-ogc-limits": {
+            "maps": {
+                "maxWidth": 5000,
+                "maxHeight": 5000,
+                "maxPixels": 25000000
+            }
+        }
+	},
+	"servers": [
+		{
+			"description": "Example server",
+			"url": "/"
+		}
+	],
+	"paths": {
+		{{- range $index, $coll := .Config.OgcAPI.Maps.Collections -}}
+		{{- if $index }},{{ end }}
+		"/collections/{{ $coll.ID }}/map": {
+			"get": {
+				"tags": [
+					"Maps"
+				],
+				"summary": "Retrieve a map for the specified collection",
+				"operationId": "{{ $coll.ID }}.collection.getMap",
+				"parameters": [
+					{"$ref": "#/components/parameters/bbox"},
+					{"$ref": "#/components/parameters/crs-map"},
+					{"$ref": "#/components/parameters/bbox-crs-map"},
+					{"$ref": "#/components/parameters/width"},
+					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/f-map"}
+				],
+				"responses": {
+					"200": {"$ref": "#/components/responses/Map"},
+					{{block "problems" $ }}{{end}}
+				}
+			}
+		}
+		{{- $hasStyles := false -}}
+		{{- range $layer := $coll.Layers -}}
+			{{- if $layer.Styles -}}{{- $hasStyles = true -}}{{- end -}}
+		{{- end -}}
+		{{- if $hasStyles -}},
+		"/collections/{{ $coll.ID }}/styles/{styleId}/map": {
+			"get": {
+				"tags": [
+					"Maps"
+				],
+				"summary": "Retrieve a map for a specified collection and style",
+				"operationId": "{{ $coll.ID }}.collection.style.getMap",
+				"parameters": [
+					{"$ref": "#/components/parameters/bbox"},
+					{"$ref": "#/components/parameters/crs-map"},
+					{"$ref": "#/components/parameters/bbox-crs-map"},
+					{"$ref": "#/components/parameters/width"},
+					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/styleId-collection"},
+					{"$ref": "#/components/parameters/f-map"}
+				],
+				"responses": {
+					"200": {"$ref": "#/components/responses/Map"},
+					{{block "problems" $ }}{{end}}
+				}
+			}
+		}
+		{{- end }}
+		{{- end }}
+	},
+	"components": {
+		"parameters": {
+			"bbox": {
+				"name": "bbox",
+				"in": "query",
+				"description": "Only resources that have a geometry that intersects the bounding box are selected. The bounding box is provided as four numbers: lower left corner, coordinate axis 1; lower left corner, coordinate axis 2; upper right corner, coordinate axis 1; and upper right corner, coordinate axis 2. The coordinate reference system is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless bbox-crs specifies another CRS. For WGS84 longitude/latitude, values are normally minimum longitude, minimum latitude, maximum longitude and maximum latitude. If the box spans the antimeridian, the west-most edge may be larger than the east-most edge.",
+				"required": false,
+				"style": "form",
+				"explode": false,
+				"schema": {
+					"type": "array",
+					"minItems": 4,
+					"maxItems": 6,
+					"items": {"type": "number"}
+				}
+			},
+			"crs-map": {
+				"name": "crs",
+				"in": "query",
+				"description": "Coordinate reference system of the map response. If omitted, the configured default map CRS is used.",
+				"required": false,
+				"style": "form",
+				"explode": true,
+				"schema": {
+					"type": "string",
+					"format": "uri",
+					"default": "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Config.OgcAPI.Maps.DefaultMap.CRS }}",
+					"enum": ["http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Config.OgcAPI.Maps.DefaultMap.CRS }}"]
+				}
+			},
+			"bbox-crs-map": {
+				"name": "bbox-crs",
+				"in": "query",
+				"description": "Coordinate reference system of the bbox. If omitted, WGS 84 longitude/latitude is assumed. The configured default map CRS is the only explicitly supported value.",
+				"required": false,
+				"style": "form",
+				"explode": true,
+				"schema": {
+					"type": "string",
+					"format": "uri",
+					"enum": ["http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Config.OgcAPI.Maps.DefaultMap.CRS }}"]
+				}
+			},
+			"width": {
+				"name": "width",
+				"in": "query",
+				"description": "Width of the map in pixels. If omitted and `height` is specified, defaults to the width maintaining a 1:1 aspect ratio. If both `width` and `height` are omitted, the server will select default dimensions.",
+				"required": false,
+				"style": "form",
+				"explode": false,
+				"schema": {"type": "integer"}
+			},
+			"height": {
+				"name": "height",
+				"in": "query",
+				"description": "Height of the map in pixels. If omitted and `width` is specified, defaults to the height maintaining a 1:1 aspect ratio. If both `width` and `height` are omitted, the server will select default dimensions.",
+				"required": false,
+				"style": "form",
+				"explode": false,
+				"schema": {"type": "integer"}
+			},
+			"f-map": {
+				"name": "f",
+				"in": "query",
+				"description": "The format of the map response (e.g. png). Accepted values are 'png', 'jpeg' or 'html'.",
+				"required": false,
+				"schema": {
+					"type": "string",
+					"enum": ["png", "jpeg", "html"]
+				},
+				"style": "form",
+				"explode": false
+			},
+			"styleId-collection": {
+				"name": "styleId",
+				"in": "path",
+				"description": "An identifier representing a specific style.",
+				"required": true,
+				"allowEmptyValue": false,
+				"schema": {"type": "string"}
+			}
+		},
+		"responses": {
+			"Map": {
+				"description": "A map image returned as a response.",
+				"headers": {
+					"Content-Crs": {
+						"description": "CRS used to render the map.",
+						"schema": {"type": "string"}
+					},
+					"Content-Bbox": {
+						"description": "Bounding box of the map in the response CRS.",
+						"schema": {"type": "string"}
+					},
+					{{block "headers" . }}{{end}}
+				},
+				"content": {
+					"image/png": {
+						"schema": {"type": "string", "format": "binary"}
+					},
+					"image/jpeg": {
+						"schema": {"type": "string", "format": "binary"}
+					},
+					"text/html": {
+						"schema": {"type": "string"}
+					}
+				}
+			}
+		}
+	}
+}

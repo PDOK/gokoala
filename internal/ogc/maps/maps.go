@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -34,7 +36,13 @@ func (m *Maps) Maps() http.HandlerFunc {
 			params:  r.URL.Query(),
 		}
 
-		request, err := url.parse()
+		defaultCrs, err := getDefaultCrs(m.engine.Config.OgcAPI.Maps.DefaultMap)
+		if err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			return
+		}
+
+		request, err := url.parse(defaultCrs, getSupportedCrs(defaultCrs))
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -56,7 +64,11 @@ func (m *Maps) Maps() http.HandlerFunc {
 
 		w.Header().Add(engine.HeaderContentCrs, request.crs.ToLink())
 
-		format := m.engine.CN.NegotiateFormat(r)
+		if len(collection.Bbox) == 4 {
+			w.Header().Add(engine.HeaderContentBbox, strings.Join(collection.Bbox, ","))
+		}
+
+		format := m.engine.CN.NegotiateFormatWithDefault(r, engine.FormatPNG)
 		switch format {
 		case engine.FormatHTML:
 			m.html.maps(w, r, format, collection, request)
@@ -87,4 +99,17 @@ func handleFormatNotSupported(w http.ResponseWriter, format string) {
 	msg := fmt.Sprintf("format %s is not supported", format)
 	log.Println(msg)
 	engine.RenderProblem(engine.ProblemNotAcceptable, w, msg)
+}
+
+func getDefaultCrs(defaultMap config.DefaultMap) (domain.ContentCrs, error) {
+	srid, err := domain.EpsgToSrid(defaultMap.CRS)
+	if err != nil {
+		return "", err
+	}
+
+	return srid.ToContentCrs(), nil
+}
+
+func getSupportedCrs(defaultCrs domain.ContentCrs) []domain.ContentCrs {
+	return []domain.ContentCrs{defaultCrs}
 }

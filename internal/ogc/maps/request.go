@@ -7,6 +7,7 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/twpayne/go-geom"
 )
 
 type MapType string
@@ -21,8 +22,8 @@ type MapRequest struct {
 	collection  string
 	style       string
 	crs         domain.ContentCrs
-	bboxCRS     domain.SRID
-	bbox        *[4]float64
+	bboxSRID    domain.SRID
+	bbox        *geom.Bounds
 	width       int
 	height      int
 	transparent bool
@@ -50,7 +51,8 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 			}
 			bbox[index] = value
 		}
-		request.bbox = &bbox
+
+		request.bbox = geom.NewBounds(geom.XY).Set(bbox[:]...)
 	}
 	return nil
 }

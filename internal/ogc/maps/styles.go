@@ -17,7 +17,7 @@ const (
 
 type stylesPage struct {
 	Collection config.MapsCollection
-	StyleIDs []string
+	StyleIDs   []string
 }
 
 func renderStyles(e *engine.Engine, collections map[string]config.MapsCollection) {
@@ -25,7 +25,7 @@ func renderStyles(e *engine.Engine, collections map[string]config.MapsCollection
 		path := geospatial.CollectionsPath + "/" + collection.ID + stylesCrumb
 		page := &stylesPage{
 			Collection: collection,
-			StyleIDs: getStyleIDsFromCollection(collection),
+			StyleIDs:   getStyleIDsFromCollection(collection),
 		}
 		instanceName := engine.WithInstanceName(collection.ID)
 
