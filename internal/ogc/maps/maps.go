@@ -54,7 +54,7 @@ func (m *Maps) Maps() http.HandlerFunc {
 			w.Header().Add(engine.HeaderContentBbox, strings.Join(collection.Bbox, ","))
 		}
 
-		format := m.engine.CN.NegotiateFormat(r)
+		format := m.engine.CN.NegotiateFormatWithDefault(r, engine.FormatPNG)
 		switch format {
 		case engine.FormatHTML:
 			m.html.maps(w, r, format, collection, style, crs, bboxSRID, bbox, width, height)

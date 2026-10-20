@@ -66,7 +66,7 @@ func (hm *htmlMaps) toViewerPage(collection config.MapsCollection) ([]engine.Bre
 		},
 		{
 			Name: "Maps",
-			Path: collectionsCrumb + collection.GetID() + "/maps",
+			Path: collectionsCrumb + collection.GetID() + "/map",
 		},
 	}...)
 	return breadcrumbs, &mapsPage{}
