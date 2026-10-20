@@ -52,7 +52,13 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 			bbox[index] = value
 		}
 
+		bboxSRID, err := domain.EpsgToSrid(defaults.CRS)
+		if err != nil {
+			return fmt.Errorf("invalid default bbox CRS %q: %w", defaults.CRS, err)
+		}
+
 		request.bbox = geom.NewBounds(geom.XY).Set(bbox[:]...)
+		request.bboxSRID = bboxSRID
 	}
 	return nil
 }
