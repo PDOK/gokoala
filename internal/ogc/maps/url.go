@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
@@ -24,11 +25,12 @@ const (
 )
 
 var mapsKnownParams = map[string]struct{}{
-	CrsParam:     {},
-	BboxParam:    {},
-	BboxCrsParam: {},
-	Width:        {},
-	Height:       {},
+	engine.FormatParam: {},
+	CrsParam:           {},
+	BboxParam:          {},
+	BboxCrsParam:       {},
+	Width:              {},
+	Height:             {},
 }
 
 type mapsURL struct {
