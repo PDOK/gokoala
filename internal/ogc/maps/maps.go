@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/go-chi/chi/v5"
 )
@@ -16,6 +17,16 @@ func (m *Maps) Maps() http.HandlerFunc {
 		if !ok {
 			handleCollectionNotFound(w, collectionID)
 			return
+		}
+
+		styleID := chi.URLParam(r, "styleId")
+		var style *config.MapStyle
+		if styleID != "" {
+			style = collection.GetStyle(styleID)
+			if style == nil {
+				handleStyleNotFound(w, styleID)
+				return
+			}
 		}
 
 		url := mapsURL{
@@ -34,10 +45,10 @@ func (m *Maps) Maps() http.HandlerFunc {
 		format := m.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			m.html.maps(w, r, format, collection, crs, bboxSRID, bbox, width, height, err)
+			m.html.maps(w, r, format, collection, style, crs, bboxSRID, bbox, width, height, err)
 			break
-		case engine.FormatJPG, engine.FormatPNG:
-			m.image.renderMapsImage(w, r, format, crs, bboxSRID, bbox, width, height, err)
+		case engine.FormatJPEG, engine.FormatPNG:
+			m.image.renderMapsImage(w, r, format, style, crs, bboxSRID, bbox, width, height, err)
 			break
 		default:
 			handleFormatNotSupported(w, format)
@@ -47,6 +58,12 @@ func (m *Maps) Maps() http.HandlerFunc {
 
 func handleCollectionNotFound(w http.ResponseWriter, collectionID string) {
 	msg := fmt.Sprintf("collection %s doesn't exist in this features service", collectionID)
+	log.Println(msg)
+	engine.RenderProblem(engine.ProblemNotFound, w, msg)
+}
+
+func handleStyleNotFound(w http.ResponseWriter, styleID string) {
+	msg := fmt.Sprintf("style %s doesn't exist in this features service", styleID)
 	log.Println(msg)
 	engine.RenderProblem(engine.ProblemNotFound, w, msg)
 }

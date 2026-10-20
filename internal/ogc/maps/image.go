@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/twpayne/go-geom"
@@ -26,14 +27,15 @@ func newImageMaps(e *engine.Engine) *imageMaps {
 	}
 }
 
-func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, format string, crs domain.ContentCrs, srid domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
+func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, format string, style *config.MapStyle,
+	crs domain.ContentCrs, srid domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
 	var path string
-	if format == engine.FormatPNG {
-		// temporary placeholder, do the WMS call here
-		path = placeholderImagePNG
-	} else {
+	if format == engine.FormatJPEG {
 		// temporary placeholder, do the WMS call here
 		path = placeholderImageJPEG
+	} else {
+		// temporary placeholder, do the WMS call here
+		path = placeholderImagePNG
 	}
 	img, err := os.ReadFile(path)
 	if err != nil {

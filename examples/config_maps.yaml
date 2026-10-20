@@ -40,6 +40,8 @@ ogcApi:
             - landgebruik
             - kaart
         defaultCrs: EPSG:28992
+        supportedCrs:
+          - EPSG:28992
         bbox: ["10000", "300000", "280000", "620000"]
         layers:
           - id: landgebruik
