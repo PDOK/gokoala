@@ -91,6 +91,10 @@ func parseBbox(params url.Values) (*geom.Bounds, domain.SRID, error) {
 		return nil, bboxSRID, fmt.Errorf("bbox miny (%v) must not exceed maxy (%v)", bbox.Min(1), bbox.Max(1))
 	}
 
+	if bbox.Min(0) > bbox.Max(0) {
+		return nil, bboxSRID, fmt.Errorf("bbox minx (%v) must not exceed maxx (%v)", bbox.Min(0), bbox.Max(0))
+	}
+
 	return bbox, bboxSRID, nil
 }
 

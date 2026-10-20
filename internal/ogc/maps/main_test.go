@@ -250,9 +250,8 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 				},
 				Collections: []config.MapsCollection{
 					{
-						ID:         testCollection,
-						DefaultCRS: "EPSG:28992",
-						Bbox:       []string{"10000", "300000", "280000", "620000"},
+						ID:   testCollection,
+						Bbox: []string{"10000", "300000", "280000", "620000"},
 						Layers: []config.MapLayer{
 							{
 								ID:     "layer1",

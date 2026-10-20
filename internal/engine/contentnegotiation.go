@@ -158,14 +158,19 @@ func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
 	return ""
 }
 
-// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param).
+// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param). Defaults to json
 func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
+	return cn.NegotiateFormatWithDefault(req, FormatJSON)
+}
+
+func (cn *ContentNegotiation) NegotiateFormatWithDefault(req *http.Request, fallbackFormat string) string {
 	requestedFormat := cn.getFormatFromQueryParam(req)
 	if requestedFormat == "" {
 		requestedFormat = cn.getFormatFromAcceptHeader(req)
 	}
+
 	if requestedFormat == "" {
-		requestedFormat = FormatJSON // default
+		requestedFormat = fallbackFormat
 	}
 
 	return requestedFormat
