@@ -3,14 +3,8 @@ package maps
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/PDOK/gokoala/internal/engine"
-)
-
-const (
-	placeholderImagePNG  = "examples/resources/placeholder.png"
-	placeholderImageJPEG = "examples/resources/placeholder.jpeg"
 )
 
 type imageMaps struct {
@@ -28,31 +22,6 @@ func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, reque
 	switch request.format {
 	case engine.FormatPNG, engine.FormatJPEG:
 		request.format = "image/" + request.format
-	}
-
-	usePlaceholderImage := true
-
-	if usePlaceholderImage {
-		var path string
-		if request.format == "image/jpeg" {
-			// temporary placeholder
-			path = placeholderImageJPEG
-		} else {
-			// temporary placeholder
-			path = placeholderImagePNG
-		}
-		img, err := os.ReadFile(path)
-		if err != nil {
-			log.Printf("error reading file: %v", err)
-			engine.RenderProblem(engine.ProblemServerError, w)
-			return
-		}
-		w.Header().Set("Content-Type", request.format)
-		if _, err = w.Write(img); err != nil {
-			log.Printf("error writing response: %v", err)
-			engine.RenderProblem(engine.ProblemServerError, w)
-			return
-		}
 	}
 
 	mapsConfig := m.engine.Config.OgcAPI.Maps

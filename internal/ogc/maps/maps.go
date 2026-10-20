@@ -52,12 +52,12 @@ func (m *Maps) Maps() http.HandlerFunc {
 		request.collection = collectionID
 		request.style = styleID
 
-		if err := request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
+		if err = request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
 			engine.RenderProblem(engine.ProblemServerError, w)
 			return
 		}
 
-		if err := request.validate(); err != nil {
+		if err = request.validate(); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
