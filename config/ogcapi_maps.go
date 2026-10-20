@@ -35,6 +35,15 @@ func (o *OgcAPIMaps) Defaults() {
 	}
 }
 
+func (o *OgcAPIMaps) Defaults() {
+	if o.DefaultMap.Width == 0 {
+		o.DefaultMap.Width = 1024
+	}
+	if o.DefaultMap.Height == 0 {
+		o.DefaultMap.Height = 768
+	}
+}
+
 // +kubebuilder:object:generate=true
 type DefaultMap struct {
 	// CRS of the default map view.
@@ -116,6 +125,13 @@ func (cm MapsCollection) GetStyle(styleID string) *MapStyle {
 	}
 
 	return nil
+}
+
+// +kubebuilder:object:generate=true
+type MapsSupportedSrs struct {
+	// Supported coordinate reference system.
+	// +kubebuilder:validation:Pattern=`^EPSG:\d+$`
+	Srs string `yaml:"srs" json:"srs" validate:"required,startswith=EPSG:"`
 }
 
 // +kubebuilder:object:generate=true
