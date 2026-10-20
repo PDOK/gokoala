@@ -39,8 +39,8 @@
 				"operationId": "{{ $coll.ID }}.collection.getMap",
 				"parameters": [
 					{"$ref": "#/components/parameters/bbox"},
-					{"$ref": "#/components/parameters/crs"},
-					{"$ref": "#/components/parameters/bbox-crs"},
+					{"$ref": "#/components/parameters/crs-map"},
+					{"$ref": "#/components/parameters/bbox-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
 					{"$ref": "#/components/parameters/f-map"}
@@ -65,8 +65,8 @@
 				"operationId": "{{ $coll.ID }}.collection.style.getMap",
 				"parameters": [
 					{"$ref": "#/components/parameters/bbox"},
-					{"$ref": "#/components/parameters/crs"},
-					{"$ref": "#/components/parameters/bbox-crs"},
+					{"$ref": "#/components/parameters/crs-map"},
+					{"$ref": "#/components/parameters/bbox-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
 					{"$ref": "#/components/parameters/styleId-collection"},
@@ -92,29 +92,37 @@
 				"explode": false,
 				"schema": {
 					"type": "array",
-					"oneOf": [
-						{"minItems": 4, "maxItems": 4}
-					],
+					"minItems": 4,
+					"maxItems": 6,
 					"items": {"type": "number"}
 				}
 			},
-			"crs": {
+			"crs-map": {
 				"name": "crs",
 				"in": "query",
-				"description": "reproject the output to the given crs",
+				"description": "Coordinate reference system of the map response. If omitted, the configured default map CRS is used.",
 				"required": false,
 				"style": "form",
 				"explode": true,
-				"schema": {"type": "string"}
+				"schema": {
+					"type": "string",
+					"format": "uri",
+					"default": "http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Config.OgcAPI.Maps.DefaultMap.CRS }}",
+					"enum": ["http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Config.OgcAPI.Maps.DefaultMap.CRS }}"]
+				}
 			},
-			"bbox-crs": {
+			"bbox-crs-map": {
 				"name": "bbox-crs",
 				"in": "query",
-				"description": "crs for the specified bbox",
+				"description": "Coordinate reference system of the bbox. If omitted, WGS 84 longitude/latitude is assumed. The configured default map CRS is the only explicitly supported value.",
 				"required": false,
 				"style": "form",
 				"explode": true,
-				"schema": {"type": "string"}
+				"schema": {
+					"type": "string",
+					"format": "uri",
+					"enum": ["http://www.opengis.net/def/crs/EPSG/0/{{ trimPrefix "EPSG:" .Config.OgcAPI.Maps.DefaultMap.CRS }}"]
+				}
 			},
 			"width": {
 				"name": "width",
