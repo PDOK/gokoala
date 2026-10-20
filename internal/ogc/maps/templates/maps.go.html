@@ -1,0 +1,11 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{ define "head"}}
+    {{/* Set VIEWER_URL (e.g. http://localhost:4200) to load the viewer from a local `ng serve` instead of the built assets */}}
+    <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
+{{ end }}
+
+{{ define "content" }}
+    <p>
+        To be implemented
+    </p>
+{{ end }}

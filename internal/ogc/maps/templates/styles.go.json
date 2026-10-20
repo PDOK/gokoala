@@ -1,0 +1,51 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{ $baseUrl := .Config.BaseURL }}
+{{ $collectionId := .Params.Collection.ID }}
+{
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/json",
+      "title": "This document",
+      "href": "{{ $baseUrl }}/collections/{{ $collectionId }}/styles?f=json"
+    },
+    {
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "This document as HTML",
+      "href": "{{ $baseUrl }}/collections/{{ $collectionId }}/styles?f=html"
+    }
+  ],
+  {{ if .Params.StyleIDs }}
+  "default": {{ mustToRawJson (index .Params.StyleIDs 0) }},
+  {{ end }}
+  "styles": [
+    {{ range $index, $style := .Params.StyleIDs }}
+    {{ if $index }},{{ end }}
+    {
+      "id": {{ mustToRawJson $style }},
+      "title": {{ mustToRawJson $style }},
+      "links": [
+        {
+          "rel": "https://www.opengis.net/def/rel/ogc/1.0/map",
+          "type": "image/png",
+          "title": "Map of {{ $collectionId }} in style {{ $style }} as PNG",
+          "href": "{{ $baseUrl }}/collections/{{ $collectionId }}/styles/{{ $style }}/map?f=png"
+        },
+        {
+          "rel": "https://www.opengis.net/def/rel/ogc/1.0/map",
+          "type": "image/jpeg",
+          "title": "Map of {{ $collectionId }} in style {{ $style }} as JPEG",
+          "href": "{{ $baseUrl }}/collections/{{ $collectionId }}/styles/{{ $style }}/map?f=jpeg"
+        },
+        {
+          "rel": "https://www.opengis.net/def/rel/ogc/1.0/map",
+          "type": "text/html",
+          "title": "Map of {{ $collectionId }} in style {{ $style }} as HTML",
+          "href": "{{ $baseUrl }}/collections/{{ $collectionId }}/styles/{{ $style }}/map?f=html"
+        }
+      ]
+    }
+    {{ end }}
+  ]
+}

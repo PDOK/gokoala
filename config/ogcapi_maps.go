@@ -11,8 +11,19 @@ type OgcAPIMaps struct {
 	DefaultMap DefaultMap `yaml:"defaultMap" json:"defaultMap" validate:"required"`
 
 	// Collections to be served as maps through this API.
-	// +kubebuilder:validation:MinItems=1
-	Collections []MapsCollection `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
+	Collections MapsCollections `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
+}
+
+type MapsCollections []MapsCollection
+
+// ContainsID check if a given collection - by ID - exists.
+func (csm MapsCollections) ContainsID(id string) bool {
+	for _, coll := range csm {
+		if coll.ID == id {
+			return true
+		}
+	}
+	return false
 }
 
 func (o *OgcAPIMaps) Defaults() {
@@ -49,7 +60,7 @@ type DefaultMap struct {
 }
 
 // +kubebuilder:object:generate=true
-type MapsCollection struct {
+type MapsCollection struct { //nolint:recvcheck
 	// Unique ID of the collection.
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" json:"id" validate:"required,lowercase_id"`
@@ -58,7 +69,11 @@ type MapsCollection struct {
 	// +optional
 	Metadata *GeoSpatialCollectionMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
-	// Layers included in this collection.
+	// Links from/to this collection
+	// +optional
+	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
+
+	// WMS layers included in this collection.
 	// +kubebuilder:validation:MinItems=1
 	Layers []MapLayer `yaml:"layers" json:"layers" validate:"required,min=1,dive"`
 
@@ -71,6 +86,36 @@ type MapsCollection struct {
 	// +kubebuilder:validation:MinItems=4
 	// +kubebuilder:validation:MaxItems=4
 	Bbox []string `yaml:"bbox,omitempty" json:"bbox,omitempty" validate:"omitempty,len=4,dive,numeric"`
+}
+
+func (cm MapsCollection) GetID() string {
+	return cm.ID
+}
+
+func (cm MapsCollection) GetMetadata() *GeoSpatialCollectionMetadata {
+	return cm.Metadata
+}
+
+func (cm MapsCollection) GetLinks() *CollectionLinks {
+	return cm.Links
+}
+
+func (cm MapsCollection) Merge(other GeoSpatialCollection) GeoSpatialCollection {
+	cm.Metadata = mergeMetadata(cm, other)
+	cm.Links = mergeLinks(cm, other)
+	return cm
+}
+
+func (cm MapsCollection) GetStyle(styleID string) *MapStyle {
+	for _, layer := range cm.Layers {
+		for _, style := range layer.Styles {
+			if style.ID == styleID {
+				return &style
+			}
+		}
+	}
+
+	return nil
 }
 
 // +kubebuilder:object:generate=true

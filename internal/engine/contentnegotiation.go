@@ -27,6 +27,8 @@ const (
 	MediaTypeJSONFG        = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
 	MediaTypeJSONSchema    = "application/schema+json"
 	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
+	MediaTypePNG           = "image/png"
+	MediaTypeJPEG          = "image/jpeg"
 
 	FormatHTML           = "html"
 	FormatXML            = "xml"
@@ -40,6 +42,8 @@ const (
 	FormatGeoJSON        = "geojson" // ?=json should also work for geojson
 	FormatJSONFG         = "jsonfg"
 	FormatGzip           = "gzip"
+	FormatJPEG           = "jpeg"
+	FormatPNG            = "png"
 )
 
 var (
@@ -108,6 +112,8 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeMapboxStyle),
 		contenttype.NewMediaType(MediaTypeSLD),
 		contenttype.NewMediaType(MediaTypeOpenAPI),
+		contenttype.NewMediaType(MediaTypePNG),
+		contenttype.NewMediaType(MediaTypeJPEG),
 	}
 
 	formatsByMediaType := map[string]string{
@@ -121,6 +127,8 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		MediaTypeMVT:         FormatMVT,
 		MediaTypeMapboxStyle: FormatMapboxStyle,
 		MediaTypeSLD:         FormatSLD,
+		MediaTypePNG:         FormatPNG,
+		MediaTypeJPEG:        FormatJPEG,
 	}
 
 	mediaTypesByFormat := util.Inverse(formatsByMediaType)
@@ -150,14 +158,19 @@ func (cn *ContentNegotiation) GetStyleFormatExtension(format string) string {
 	return ""
 }
 
-// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param).
+// NegotiateFormat performs content negotiation, not idempotent (since it removes the ?f= param). Defaults to json
 func (cn *ContentNegotiation) NegotiateFormat(req *http.Request) string {
+	return cn.NegotiateFormatWithDefault(req, FormatJSON)
+}
+
+func (cn *ContentNegotiation) NegotiateFormatWithDefault(req *http.Request, fallbackFormat string) string {
 	requestedFormat := cn.getFormatFromQueryParam(req)
 	if requestedFormat == "" {
 		requestedFormat = cn.getFormatFromAcceptHeader(req)
 	}
+
 	if requestedFormat == "" {
-		requestedFormat = FormatJSON // default
+		requestedFormat = fallbackFormat
 	}
 
 	return requestedFormat
