@@ -3,12 +3,14 @@ package maps
 import (
 	"errors"
 	"fmt"
-	"strconv"
+	"net/url"
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
+	"github.com/PDOK/gokoala/internal/ogc/features"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/PDOK/gokoala/internal/ogc/features/proj"
 	"github.com/pdok/ogc-specifications/pkg/wms130"
 	"github.com/twpayne/go-geom"
 )
@@ -93,23 +95,40 @@ func getStyledLayerDescriptor(mapRequest *MapRequest, collection *config.MapsCol
 }
 
 func getCRS(mapRequest *MapRequest) (*wms130.CRS, error) {
-	// TODO CRS handling needs to support URIs.
-	namespace, codeText, ok := strings.Cut(strings.TrimSpace(string(mapRequest.crs)), ":")
-	if !ok || codeText == "" {
-		return nil, fmt.Errorf("invalid CRS %q", mapRequest.crs)
+	crsURI := strings.TrimSpace(string(mapRequest.crs))
+	if !strings.HasPrefix(crsURI, domain.CrsURIPrefix+"EPSG/0/") {
+		return nil, fmt.Errorf("expected an EPSG CRS URI, got %q", mapRequest.crs)
 	}
 
-	code, err := strconv.Atoi(codeText)
+	srid, err := features.ParseCrsToSRID(
+		url.Values{CrsParam: {crsURI}},
+		CrsParam,
+	)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"invalid CRS code in %q: %w", mapRequest.crs, err,
-		)
+		return nil, fmt.Errorf("invalid CRS %q: %w", mapRequest.crs, err)
+	}
+	if srid <= 0 {
+		return nil, fmt.Errorf("CRS code must be positive, got %q", mapRequest.crs)
 	}
 
 	return &wms130.CRS{
-		Namespace: namespace,
-		Code:      code,
+		Namespace: "EPSG",
+		Code:      int(srid),
 	}, nil
+}
+
+func getAxisOrder(srs string) (domain.AxisOrder, error) {
+	projJSON, err := proj.ExecProjInfo(srs)
+	if err != nil {
+		return domain.AxisOrderXY, fmt.Errorf("get CRS information for %q: %w", srs, err)
+	}
+
+	axisOrder, err := proj.GetAxisOrder(projJSON)
+	if err != nil {
+		return domain.AxisOrderXY, fmt.Errorf("get axis order for %q: %w", srs, err)
+	}
+
+	return axisOrder, nil
 }
 
 func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
@@ -131,30 +150,36 @@ func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
 	inputSRID := mapRequest.bboxSRID.GetOrDefault()
 	// In this case we need to transform the incoming bbox into the requested output CRS
 	if crs.Code != inputSRID {
-		// TODO Currently output CRS must use format "EPSG:<code>", CRS normalization is needed.
-		if crs.Namespace != "EPSG" {
-			return nil, errors.New("bbox transformation requires an EPSG output CRS")
-		}
 		inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
 		if inputSRID == domain.WGS84SRID {
 			inputSRS = "OGC:CRS84"
 		}
-		if inputSRID == 4326 {
+		outputSRS := fmt.Sprintf("EPSG:%d", crs.Code)
+
+		inputAxisOrder, err := getAxisOrder(inputSRS)
+		if err != nil {
+			return nil, err
+		}
+		outputAxisOrder, err := getAxisOrder(outputSRS)
+		if err != nil {
+			return nil, err
+		}
+
+		if inputAxisOrder == domain.AxisOrderYX {
 			bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
 		}
 		transformed, err := util.TransformBoundingBox(
-			geom.NewBounds(geom.XY).Set(bbox[:]...), inputSRS, fmt.Sprintf("EPSG:%d", crs.Code),
+			geom.NewBounds(geom.XY).Set(bbox[:]...), inputSRS, outputSRS,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("transform WMS bbox: %w", err)
 		}
 		bbox = [4]float64{transformed.Min(0), transformed.Min(1), transformed.Max(0), transformed.Max(1)}
-		if crs.Code == 4326 {
+		if outputAxisOrder == domain.AxisOrderYX {
 			bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
 		}
 	}
 
-	// TODO Handle coordinate order for other CRSes in AxisOrder YX.
 	minX, minY, maxX, maxY := bbox[0], bbox[1], bbox[2], bbox[3]
 
 	return &wms130.BoundingBox{

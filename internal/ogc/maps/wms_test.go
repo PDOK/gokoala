@@ -48,7 +48,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 		mapType:     CollectionMap,
 		collection:  "collection1",
 		style:       "default",
-		crs:         "EPSG:4326",
+		crs:         "http://www.opengis.net/def/crs/EPSG/0/4326",
 		bboxSRID:    4326,
 		bbox:        geom.NewBounds(geom.XY).Set(52.05, 5.05, 52.14, 5.18),
 		width:       1200,
@@ -101,7 +101,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht RD bbox with matching CRS",
 			change: func(request *MapRequest) {
-				request.crs = "EPSG:28992"
+				request.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
 				request.bboxSRID = 28992
 				request.bbox = geom.NewBounds(geom.XY).Set(131869, 451318, 140816, 461366)
 			},
@@ -120,7 +120,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht EPSG4326 bbox transformed to RD",
 			change: func(request *MapRequest) {
-				request.crs = "EPSG:28992"
+				request.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
 			},
 			wantParams: url.Values{
 				"CRS": {"EPSG:28992"}, "BBOX": {"131869.474,451352.254,140815.394,461332.147"},
@@ -139,7 +139,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht default CRS84 bbox transformed to RD",
 			change: func(request *MapRequest) {
-				request.crs = "EPSG:28992"
+				request.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
 				request.bboxSRID = 0
 				request.bbox = geom.NewBounds(geom.XY).Set(5.05, 52.05, 5.18, 52.14)
 			},
