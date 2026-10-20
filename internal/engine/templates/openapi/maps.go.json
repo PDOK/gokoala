@@ -12,7 +12,14 @@
 		"license": {
 			"name": "OGC License",
 			"url": "http://www.opengeospatial.org/legal/"
-		}
+		},
+        "x-ogc-limits": {
+            "maps": {
+                "maxWidth": 5000,
+                "maxHeight": 5000,
+                "maxPixels": 25000000
+            }
+        }
 	},
 	"servers": [
 		{
