@@ -6,10 +6,18 @@ import (
 	"net/http"
 
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/go-chi/chi/v5"
 )
 
 func (m *Maps) Maps() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		collectionID := chi.URLParam(r, "collectionId")
+		collection, ok := m.configuredCollections[collectionID]
+		if !ok {
+			handleCollectionNotFound(w, collectionID)
+			return
+		}
+
 		url := mapsURL{
 			baseURL: *m.engine.Config.BaseURL.URL,
 			params:  r.URL.Query(),
@@ -26,10 +34,10 @@ func (m *Maps) Maps() http.HandlerFunc {
 		format := m.engine.CN.NegotiateFormat(r)
 		switch format {
 		case engine.FormatHTML:
-			// TODO: Handle maps page here
+			m.html.maps(w, r, format, collection, crs, bboxSRID, bbox, width, height, err)
 			break
 		case engine.FormatJPG, engine.FormatPNG:
-			// TODO: Handle wms request here
+			m.image.renderMapsImage(w, r, format, crs, bboxSRID, bbox, width, height, err)
 			break
 		default:
 			handleFormatNotSupported(w, format)

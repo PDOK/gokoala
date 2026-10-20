@@ -2,7 +2,7 @@
 version: 1.0.0
 title: Example Maps
 # shortened title, used in breadcrumb path
-serviceIdentifier: Maps
+serviceIdentifier: LGB
 abstract: >-
   This is a description about the dataset in Markdown.
 # just a dummy picture, but you can put an actual thumbnail here
