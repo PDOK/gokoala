@@ -94,7 +94,7 @@ func (f *Features) Features() http.HandlerFunc {
 				f.html.attributes(w, r, format, collection, newCursor, url, limit, dateTime,
 					propertyFilters, f.queryables[collection.ID],
 					fc, collectionType.AvailableFormats(), nil)
-			case engine.FormatGeoJSON, engine.FormatJSON:
+		 	case engine.FormatGeoJSON, engine.FormatJSON:
 				f.json.featuresAsNonGeoJSON(w, r, collection.ID, newCursor, url, fc)
 			default:
 				handleFormatNotSupported(w, format)

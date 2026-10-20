@@ -40,6 +40,8 @@ const (
 	FormatGeoJSON        = "geojson" // ?=json should also work for geojson
 	FormatJSONFG         = "jsonfg"
 	FormatGzip           = "gzip"
+	FormatJPG            = "jpeg"
+	FormatPNG            = "png"
 )
 
 var (
