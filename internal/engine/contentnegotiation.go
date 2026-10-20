@@ -27,6 +27,8 @@ const (
 	MediaTypeJSONFG        = "application/vnd.ogc.fg+json" // https://docs.ogc.org/per/21-017r1.html#toc17
 	MediaTypeJSONSchema    = "application/schema+json"
 	MediaTypeQuantizedMesh = "application/vnd.quantized-mesh"
+	MediaTypePNG           = "image/png"
+	MediaTypeJPEG          = "image/jpeg"
 
 	FormatHTML           = "html"
 	FormatXML            = "xml"
@@ -110,6 +112,8 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		contenttype.NewMediaType(MediaTypeMapboxStyle),
 		contenttype.NewMediaType(MediaTypeSLD),
 		contenttype.NewMediaType(MediaTypeOpenAPI),
+		contenttype.NewMediaType(MediaTypePNG),
+		contenttype.NewMediaType(MediaTypeJPEG),
 	}
 
 	formatsByMediaType := map[string]string{
@@ -123,6 +127,8 @@ func newContentNegotiation(availableLanguages []config.Language) *ContentNegotia
 		MediaTypeMVT:         FormatMVT,
 		MediaTypeMapboxStyle: FormatMapboxStyle,
 		MediaTypeSLD:         FormatSLD,
+		MediaTypePNG:         FormatPNG,
+		MediaTypeJPEG:        FormatJPEG,
 	}
 
 	mediaTypesByFormat := util.Inverse(formatsByMediaType)

@@ -26,6 +26,7 @@ formatters:
       - third_party$
       - builtin$
       - examples$
+      - viewer$
   settings:
     golines:
       max-len: 150
@@ -136,6 +137,7 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      - (^|/)node_modules(/|$)
       - internal/ogc/features/cql/parser$
   settings:
     cyclop:
