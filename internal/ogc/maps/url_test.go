@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,9 +17,6 @@ const (
 	bboxRD         = "100000,400000,150000,450000"
 	bboxLatLon     = "52.0,4.0,53.0,5.0"
 )
-
-// For now only the default CRS of the collection is supported, see getSupportedCrs.
-var supportedCrs = []domain.ContentCrs{rd28992URI}
 
 type paramCase struct {
 	name           string
@@ -44,9 +42,11 @@ var paramCases = []paramCase{
 		knownDeviation: "D7: 20-058 /req/spatial-subsetting/bbox-crs F, bbox-crs is ignored when bbox is absent"},
 
 	// combinations
-	{name: "unsupported bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI, wantErr: true},
-	{name: "unsupported bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI, wantErr: true},
-	{name: "unsupported crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantErr: true},
+	{name: "bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI,
+		wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}},
+	{name: "bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI,
+		wantBboxSRID: 4326, wantBbox: []float64{52, 4, 53, 5}},
+	{name: "crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantCRS: domain.ContentCrs(domain.WGS84CrsURI)},
 	{name: "bbox + bbox-crs EPSG:28992", query: "bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
 		wantBboxSRID: 28992, wantBbox: []float64{100000, 400000, 150000, 450000}},
 	{name: "crs + bbox", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84,
@@ -122,6 +122,8 @@ var paramCases = []paramCase{
 }
 
 func TestMapParamsParse(t *testing.T) {
+	supportedCrs, err := getSupportedCrs(config.MapsCollection{SupportedSrs: testSupportedSrs})
+	require.NoError(t, err)
 	seen := make(map[string]struct{}, len(paramCases))
 
 	for _, tc := range paramCases {

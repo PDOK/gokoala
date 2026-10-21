@@ -128,12 +128,13 @@ func TestBuildGetMapRequest(t *testing.T) {
 			bboxTolerance: 0.01,
 		},
 		{
-			name: "Utrecht RD bbox transformed to EPSG4326",
+			name: "Utrecht RD bbox transformed to CRS84",
 			change: func(request *MapRequest) {
+				request.crs = crs84URI
 				request.bboxSRID = 28992
 				request.bbox = geom.NewBounds(geom.XY).Set(131869.474, 451352.254, 140815.394, 461332.147)
 			},
-			wantParams:    url.Values{"BBOX": {"52.05,5.05,52.14,5.18"}},
+			wantParams:    url.Values{"CRS": {"CRS:84"}, "BBOX": {"5.05,52.05,5.18,52.14"}},
 			bboxTolerance: 0.000001,
 		},
 		{

@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	crs84URI       = "https://www.opengis.net/def/crs/OGC/1.3/CRS84"
+	crs84URI       = domain.WGS84CrsURI
 	rd28992URI     = "http://www.opengis.net/def/crs/EPSG/0/28992"
 	testCollection = "foo"
 	testStyle      = "default"
@@ -35,6 +35,16 @@ const (
 // formats allowed by OGC API Maps: yyyy, yyyy-mm, yyyy-mm-dd, yyyy-mm-ddThhZ
 // (or offset) and yyyy-mm-ddThh:mmZ (or offset).
 var (
+	testSupportedSrs = []config.MapsSupportedSrs{
+		{Srs: "EPSG:28992"},
+		{Srs: "EPSG:25831"},
+		{Srs: "EPSG:25832"},
+		{Srs: "EPSG:3034"},
+		{Srs: "EPSG:3035"},
+		{Srs: "EPSG:3857"},
+		{Srs: "EPSG:4258"},
+		{Srs: "EPSG:4326"},
+	}
 	timeInstant = `(\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}(\.\d+)?)?)?(Z|[+-]\d{2}(:\d{2})?))?)?)?)`
 	datetimeRe  = regexp.MustCompile(`^` + timeInstant + `(/` + timeInstant + `)?$`)
 )
@@ -123,10 +133,28 @@ func TestCoreMapResponse(t *testing.T) {
 		assert.Equal(t, "<"+rd28992URI+">", rr.Header().Get("Content-Crs"))
 	})
 
-	// TODO: reprojection to other CRSs (e.g. CRS84, including a matching Content-Bbox) isn't supported yet
-	t.Run("CRS84 is not supported yet", func(t *testing.T) {
+	t.Run("CRS84 is supported", func(t *testing.T) {
+		captured := make(chan url.Values, 1)
+		router := newTestRouterWithWMS(t, func(r *http.Request) {
+			captured <- r.URL.Query()
+		}, nil)
 		rr := doGet(router, mapPath+"?crs="+url.QueryEscape(crs84URI), "image/png")
-		require.Equal(t, http.StatusBadRequest, rr.Code)
+		require.Equal(t, http.StatusOK, rr.Code)
+		require.Equal(t, "<"+crs84URI+">", rr.Header().Get(engine.HeaderContentCrs))
+		select {
+		case params := <-captured:
+			require.Equal(t, "CRS:84", params.Get("CRS"))
+			require.Equal(t, params.Get("BBOX"), rr.Header().Get(engine.HeaderContentBbox))
+		default:
+			t.Fatal("WMS backend was not called")
+		}
+		bbox := parseContentBbox(t, rr.Header().Get(engine.HeaderContentBbox))
+		require.Greater(t, bbox[0], 0.0)
+		require.Less(t, bbox[2], 10.0)
+		require.Greater(t, bbox[1], 50.0)
+		require.Less(t, bbox[3], 60.0)
+		_, err := png.Decode(bytes.NewReader(rr.Body.Bytes()))
+		require.NoError(t, err)
 	})
 
 	t.Run("Content-Datetime header, when present, is a valid time instant or interval", func(t *testing.T) {
@@ -301,8 +329,9 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 				},
 				Collections: []config.MapsCollection{
 					{
-						ID:   testCollection,
-						Bbox: []string{"10000", "300000", "280000", "620000"},
+						ID:           testCollection,
+						SupportedSrs: testSupportedSrs,
+						Bbox:         []string{"10000", "300000", "280000", "620000"},
 						Layers: []config.MapLayer{
 							{
 								ID:     "layer1",
@@ -396,13 +425,14 @@ func TestMapParamsHTTP(t *testing.T) {
 		{name: "bbox only", query: "bbox=" + bboxCRS84, wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "bbox-crs only without bbox is ignored", query: "bbox-crs=" + domain.WGS84CrsURI,
 			wantStatus: http.StatusOK, wantContentCrs: rd},
-		{name: "unsupported bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI,
-			wantStatus: http.StatusBadRequest},
-		{name: "unsupported bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI,
-			wantStatus: http.StatusBadRequest},
+		{name: "bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI,
+			wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI,
+			wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "bbox + bbox-crs EPSG:28992", query: "bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
 			wantStatus: http.StatusOK, wantContentCrs: rd},
-		{name: "unsupported crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantStatus: http.StatusBadRequest},
+		{name: "crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantStatus: http.StatusOK,
+			wantContentCrs: "<" + crs84URI + ">"},
 		{name: "crs + bbox", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84, wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "crs + bbox + bbox-crs", query: "crs=" + rd28992URI + "&bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
 			wantStatus: http.StatusOK, wantContentCrs: rd},

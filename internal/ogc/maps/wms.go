@@ -96,8 +96,11 @@ func getStyledLayerDescriptor(mapRequest *MapRequest, collection *config.MapsCol
 
 func getCRS(mapRequest *MapRequest) (*wms130.CRS, error) {
 	crsURI := strings.TrimSpace(string(mapRequest.crs))
+	if crsURI == domain.WGS84CrsURI {
+		return &wms130.CRS{Namespace: "CRS", Code: 84}, nil
+	}
 	if !strings.HasPrefix(crsURI, domain.CrsURIPrefix+"EPSG/0/") {
-		return nil, fmt.Errorf("expected an EPSG CRS URI, got %q", mapRequest.crs)
+		return nil, fmt.Errorf("expected an EPSG CRS URI or CRS84 URI, got %q", mapRequest.crs)
 	}
 
 	srid, err := features.ParseCrsToSRID(
@@ -148,13 +151,18 @@ func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
 	}
 
 	inputSRID := mapRequest.bboxSRID.GetOrDefault()
+	outputSRID := crs.Code
+	outputSRS := fmt.Sprintf("EPSG:%d", crs.Code)
+	if crs.Namespace == "CRS" && crs.Code == 84 {
+		outputSRID = domain.WGS84SRID
+		outputSRS = "OGC:CRS84"
+	}
 	// In this case we need to transform the incoming bbox into the requested output CRS
-	if crs.Code != inputSRID {
+	if outputSRID != inputSRID {
 		inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
 		if inputSRID == domain.WGS84SRID {
 			inputSRS = "OGC:CRS84"
 		}
-		outputSRS := fmt.Sprintf("EPSG:%d", crs.Code)
 
 		inputAxisOrder, err := getAxisOrder(inputSRS)
 		if err != nil {

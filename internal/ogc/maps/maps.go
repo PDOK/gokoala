@@ -41,7 +41,13 @@ func (m *Maps) Maps() http.HandlerFunc {
 			return
 		}
 
-		request, err := url.parse(defaultCrs, getSupportedCrs(defaultCrs))
+		supportedCrs, err := getSupportedCrs(collection)
+		if err != nil {
+			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
+			return
+		}
+
+		request, err := url.parse(defaultCrs, supportedCrs)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -103,6 +109,15 @@ func getDefaultCrs(defaultMap config.DefaultMap) (domain.ContentCrs, error) {
 	return srid.ToContentCrs(), nil
 }
 
-func getSupportedCrs(defaultCrs domain.ContentCrs) []domain.ContentCrs {
-	return []domain.ContentCrs{defaultCrs}
+func getSupportedCrs(collection config.MapsCollection) ([]domain.ContentCrs, error) {
+	supported := []domain.ContentCrs{domain.ContentCrs(domain.WGS84CrsURI)}
+	for _, configured := range collection.SupportedSrs {
+		srid, err := domain.EpsgToSrid(configured.Srs)
+		if err != nil {
+			return nil, fmt.Errorf("invalid supported CRS %q for collection %q: %w",
+				configured.Srs, collection.ID, err)
+		}
+		supported = append(supported, srid.ToContentCrs())
+	}
+	return supported, nil
 }
