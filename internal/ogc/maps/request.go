@@ -47,7 +47,7 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 		for index, coordinate := range defaults.Bbox {
 			value, err := strconv.ParseFloat(coordinate, 64)
 			if err != nil {
-				return fmt.Errorf("invalid default bbox coordinate %q: %v", coordinate, err)
+				return fmt.Errorf("invalid default bbox coordinate %q: %w", coordinate, err)
 			}
 			bbox[index] = value
 		}

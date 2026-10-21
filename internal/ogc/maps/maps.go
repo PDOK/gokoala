@@ -74,11 +74,9 @@ func (m *Maps) Maps() http.HandlerFunc {
 		switch format {
 		case engine.FormatHTML:
 			m.html.maps(w, r, format, collection, request)
-			break
 		case engine.FormatJPEG, engine.FormatPNG:
 			request.format = format
 			m.image.renderMapsImage(w, r, request)
-			break
 		default:
 			handleFormatNotSupported(w, format)
 		}

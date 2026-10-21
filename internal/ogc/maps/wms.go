@@ -152,39 +152,15 @@ func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
 
 	inputSRID := mapRequest.bboxSRID.GetOrDefault()
 	outputSRID := crs.Code
-	outputSRS := fmt.Sprintf("EPSG:%d", crs.Code)
-	if crs.Namespace == "CRS" && crs.Code == 84 {
+	outputCRS84 := crs.Namespace == "CRS" && crs.Code == 84
+	if outputCRS84 {
 		outputSRID = domain.WGS84SRID
-		outputSRS = "OGC:CRS84"
 	}
 	// In this case we need to transform the incoming bbox into the requested output CRS
 	if outputSRID != inputSRID {
-		inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
-		if inputSRID == domain.WGS84SRID {
-			inputSRS = "OGC:CRS84"
-		}
-
-		inputAxisOrder, err := getAxisOrder(inputSRS)
+		bbox, err = transformBoundingBox(bbox, inputSRID, outputSRID, outputCRS84)
 		if err != nil {
 			return nil, err
-		}
-		outputAxisOrder, err := getAxisOrder(outputSRS)
-		if err != nil {
-			return nil, err
-		}
-
-		if inputAxisOrder == domain.AxisOrderYX {
-			bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
-		}
-		transformed, err := util.TransformBoundingBox(
-			geom.NewBounds(geom.XY).Set(bbox[:]...), inputSRS, outputSRS,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("transform WMS bbox: %w", err)
-		}
-		bbox = [4]float64{transformed.Min(0), transformed.Min(1), transformed.Max(0), transformed.Max(1)}
-		if outputAxisOrder == domain.AxisOrderYX {
-			bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
 		}
 	}
 
@@ -194,6 +170,41 @@ func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
 		LowerCorner: wms130.Position{minX, minY},
 		UpperCorner: wms130.Position{maxX, maxY},
 	}, nil
+}
+
+func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID int, outputCRS84 bool) ([4]float64, error) {
+	inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
+	if inputSRID == domain.WGS84SRID {
+		inputSRS = "OGC:CRS84"
+	}
+	outputSRS := fmt.Sprintf("EPSG:%d", outputSRID)
+	if outputCRS84 {
+		outputSRS = "OGC:CRS84"
+	}
+
+	inputAxisOrder, err := getAxisOrder(inputSRS)
+	if err != nil {
+		return [4]float64{}, err
+	}
+	outputAxisOrder, err := getAxisOrder(outputSRS)
+	if err != nil {
+		return [4]float64{}, err
+	}
+
+	if inputAxisOrder == domain.AxisOrderYX {
+		bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
+	}
+	transformed, err := util.TransformBoundingBox(
+		geom.NewBounds(geom.XY).Set(bbox[:]...), inputSRS, outputSRS,
+	)
+	if err != nil {
+		return [4]float64{}, fmt.Errorf("transform WMS bbox: %w", err)
+	}
+	bbox = [4]float64{transformed.Min(0), transformed.Min(1), transformed.Max(0), transformed.Max(1)}
+	if outputAxisOrder == domain.AxisOrderYX {
+		bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
+	}
+	return bbox, nil
 }
 
 func getOutput(mapRequest *MapRequest) *wms130.Output {
