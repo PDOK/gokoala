@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -60,12 +59,6 @@ func (m *Maps) Maps() http.HandlerFunc {
 		if err = request.validate(); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
-		}
-
-		w.Header().Add(engine.HeaderContentCrs, request.crs.ToLink())
-
-		if len(collection.Bbox) == 4 {
-			w.Header().Add(engine.HeaderContentBbox, strings.Join(collection.Bbox, ","))
 		}
 
 		format := m.engine.CN.NegotiateFormatWithDefault(r, engine.FormatPNG)

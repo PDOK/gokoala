@@ -34,10 +34,14 @@ func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, reque
 
 	target := *mapsConfig.WMSServer.URL
 	params := target.Query()
-	for key, values := range wmsRequest.ToQueryParameters() {
+	wmsParams := wmsRequest.ToQueryParameters()
+	for key, values := range wmsParams {
 		params[key] = values
 	}
 	target.RawQuery = params.Encode()
+
+	w.Header().Set(engine.HeaderContentCrs, request.crs.ToLink())
+	w.Header().Set(engine.HeaderContentBbox, wmsParams.Get("BBOX"))
 
 	m.engine.ReverseProxy(w, r, &target, false, "")
 }

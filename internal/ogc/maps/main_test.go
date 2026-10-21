@@ -123,22 +123,6 @@ func TestCoreMapResponse(t *testing.T) {
 		assert.Equal(t, "<"+rd28992URI+">", rr.Header().Get("Content-Crs"))
 	})
 
-	t.Run("Content-Bbox header holds lower-left and upper-right corner in response CRS", func(t *testing.T) {
-		rr := doGet(router, mapPath, "image/png")
-		require.Equal(t, http.StatusOK, rr.Code)
-
-		bbox := parseContentBbox(t, rr.Header().Get("Content-Bbox"))
-
-		// Storage CRS is EPSG:28992 (x/y order): lower-left must be smaller than upper-right
-		assert.Less(t, bbox[0], bbox[2], "minx must be smaller than maxx")
-		assert.Less(t, bbox[1], bbox[3], "miny must be smaller than maxy")
-		// and has to fall in the valid extent of EPSG:28992
-		assert.GreaterOrEqual(t, bbox[0], -7000.0)
-		assert.LessOrEqual(t, bbox[2], 300000.0)
-		assert.GreaterOrEqual(t, bbox[1], 289000.0)
-		assert.LessOrEqual(t, bbox[3], 629000.0)
-	})
-
 	// TODO: reprojection to other CRSs (e.g. CRS84, including a matching Content-Bbox) isn't supported yet
 	t.Run("CRS84 is not supported yet", func(t *testing.T) {
 		rr := doGet(router, mapPath+"?crs="+url.QueryEscape(crs84URI), "image/png")
@@ -165,6 +149,68 @@ func TestCoreMapResponse(t *testing.T) {
 		require.NoError(t, err, "body must be a decodable PNG")
 		assert.Positive(t, img.Bounds().Dx())
 		assert.Positive(t, img.Bounds().Dy())
+	})
+	t.Run("Content-Bbox matches the WMS rendering extent", func(t *testing.T) {
+		tests := []struct {
+			name               string
+			query              string
+			omitCollectionBbox bool
+			want               [4]float64
+			tolerance          float64
+		}{
+			{
+				name: "default bbox",
+				want: [4]float64{10000, 300000, 280000, 620000},
+			},
+			{
+				name:  "explicit bbox",
+				query: "?bbox=131869,451318,140816,461366&bbox-crs=" + url.QueryEscape(rd28992URI),
+				want:  [4]float64{131869, 451318, 140816, 461366},
+			},
+			{
+				name:      "transformed bbox",
+				query:     "?bbox=5.05,52.05,5.18,52.14",
+				want:      [4]float64{131869.474, 451352.254, 140815.394, 461332.147},
+				tolerance: 0.01,
+			},
+			{
+				name:               "no collection bbox",
+				omitCollectionBbox: true,
+				want:               [4]float64{10000, 300000, 280000, 620000},
+			},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				capturedBbox := make(chan string, 1)
+				router := newTestRouterWithWMS(t,
+					func(r *http.Request) {
+						capturedBbox <- r.URL.Query().Get("BBOX")
+					},
+					func(mapsConfig *config.OgcAPIMaps) {
+						if tt.omitCollectionBbox {
+							mapsConfig.Collections[0].Bbox = nil
+						}
+					},
+				)
+
+				rr := doGet(router, mapPath+tt.query, "image/png")
+				require.Equal(t, http.StatusOK, rr.Code)
+				header := rr.Header().Get(engine.HeaderContentBbox)
+				select {
+				case bbox := <-capturedBbox:
+					require.NotEmpty(t, bbox)
+					require.Equal(t, bbox, header)
+				default:
+					t.Fatal("WMS backend was not called")
+				}
+				got := parseContentBbox(t, header)
+				if tt.tolerance > 0 {
+					require.InDeltaSlice(t, tt.want[:], got[:], tt.tolerance)
+				} else {
+					require.Equal(t, tt.want, got)
+				}
+			})
+		}
 	})
 }
 
@@ -202,7 +248,7 @@ func TestContentDatetimeFormat(t *testing.T) {
 }
 
 // newMockWMS starts a fake WMS server that always responds with a small PNG, regardless of the request.
-func newMockWMS(t *testing.T) *httptest.Server {
+func newMockWMS(t *testing.T, onRequest ...func(*http.Request)) *httptest.Server {
 	t.Helper()
 
 	img := image.NewRGBA(image.Rect(0, 0, 4, 4))
@@ -214,7 +260,12 @@ func newMockWMS(t *testing.T) *httptest.Server {
 	var buf bytes.Buffer
 	require.NoError(t, png.Encode(&buf, img))
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		for _, callback := range onRequest {
+			if callback != nil {
+				callback(r)
+			}
+		}
 		w.Header().Set("Content-Type", "image/png")
 		_, _ = w.Write(buf.Bytes())
 	}))
@@ -269,7 +320,20 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 func newTestRouter(t *testing.T) http.Handler {
 	t.Helper()
 
-	e := newTestEngine(t, newMockWMS(t).URL)
+	return newTestRouterWithWMS(t, nil, nil)
+}
+
+func newTestRouterWithWMS(
+	t *testing.T,
+	onRequest func(*http.Request),
+	configure func(*config.OgcAPIMaps),
+) http.Handler {
+	t.Helper()
+
+	e := newTestEngine(t, newMockWMS(t, onRequest).URL)
+	if configure != nil {
+		configure(e.Config.OgcAPI.Maps)
+	}
 	NewMaps(e)
 
 	return e.Router
