@@ -1,7 +1,9 @@
 package maps
 
 import (
+	"fmt"
 	"log"
+	"mime"
 	"net/http"
 
 	"github.com/PDOK/gokoala/internal/engine"
@@ -25,23 +27,41 @@ func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, reque
 	}
 
 	mapsConfig := m.engine.Config.OgcAPI.Maps
-	wmsRequest, err := buildGetMapRequest(&request, mapsConfig)
+	getMapRequest, err := buildGetMapRequest(&request, mapsConfig)
 	if err != nil {
 		log.Printf("failed to build WMS request: %v", err)
-		engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+		engine.RenderProblem(engine.ProblemServerError, w)
 		return
 	}
 
 	target := *mapsConfig.WMSServer.URL
 	params := target.Query()
-	wmsParams := wmsRequest.ToQueryParameters()
-	for key, values := range wmsParams {
+	getMapParams := getMapRequest.ToQueryParameters()
+	for key, values := range getMapParams {
 		params[key] = values
 	}
 	target.RawQuery = params.Encode()
 
-	w.Header().Set(engine.HeaderContentCrs, request.crs.ToLink())
-	w.Header().Set(engine.HeaderContentBbox, wmsParams.Get("BBOX"))
+	m.engine.ReverseProxyAndValidate(w, r, &target, false, "", false, func(response *http.Response) error {
+		if err := validateGetMapResponse(response, request.format); err != nil {
+			return err
+		}
+		response.Header.Set(engine.HeaderContentCrs, request.crs.ToLink())
+		response.Header.Set(engine.HeaderContentBbox, getMapParams.Get("BBOX"))
+		return nil
+	})
+}
 
-	m.engine.ReverseProxy(w, r, &target, false, "")
+func validateGetMapResponse(response *http.Response, expectedFormat string) error {
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("WMS returned HTTP %d", response.StatusCode)
+	}
+	mediaType, _, err := mime.ParseMediaType(response.Header.Get("Content-Type"))
+	if err != nil {
+		return fmt.Errorf("invalid WMS Content-Type: %w", err)
+	}
+	if mediaType != expectedFormat {
+		return fmt.Errorf("WMS returned media type %q, expected %q", mediaType, expectedFormat)
+	}
+	return nil
 }

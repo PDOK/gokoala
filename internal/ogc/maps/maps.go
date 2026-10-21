@@ -37,13 +37,15 @@ func (m *Maps) Maps() http.HandlerFunc {
 
 		defaultCrs, err := getDefaultCrs(m.engine.Config.OgcAPI.Maps.DefaultMap)
 		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			log.Printf("invalid default map CRS: %v", err)
+			engine.RenderProblem(engine.ProblemServerError, w)
 			return
 		}
 
 		supportedCrs, err := getSupportedCrs(collection)
 		if err != nil {
-			engine.RenderProblem(engine.ProblemServerError, w, err.Error())
+			log.Printf("invalid supported map CRSs: %v", err)
+			engine.RenderProblem(engine.ProblemServerError, w)
 			return
 		}
 
@@ -58,6 +60,7 @@ func (m *Maps) Maps() http.HandlerFunc {
 		request.style = styleID
 
 		if err = request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
+			log.Printf("failed to set map defaults: %v", err)
 			engine.RenderProblem(engine.ProblemServerError, w)
 			return
 		}

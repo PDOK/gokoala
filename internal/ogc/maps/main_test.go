@@ -67,7 +67,7 @@ func init() {
 // When:  performing a GET operation on the /map resource with a supported media type in the Accept header
 // Then:  assert that the implementation supports retrieving map resources at one or more …/map URL.
 func TestCoreMapOperation(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 
 	tests := []struct {
 		name       string
@@ -115,7 +115,7 @@ func TestCoreMapOperation(t *testing.T) {
 // When:  retrieving that resource for the map operation
 // Then:  assert the status code, CRS, Content-Crs, Content-Bbox, Content-Datetime headers and body, see sub-tests.
 func TestCoreMapResponse(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 	mapPath := "/collections/" + testCollection + "/map"
 
 	t.Run("response has HTTP status code 200", func(t *testing.T) {
@@ -135,9 +135,10 @@ func TestCoreMapResponse(t *testing.T) {
 
 	t.Run("CRS84 is supported", func(t *testing.T) {
 		captured := make(chan url.Values, 1)
-		router := newTestRouterWithWMS(t, func(r *http.Request) {
+		wms := newMockWMS(t, func(r *http.Request) {
 			captured <- r.URL.Query()
-		}, nil)
+		})
+		router := newTestRouter(t, wms.URL, nil)
 		rr := doGet(router, mapPath+"?crs="+url.QueryEscape(crs84URI), "image/png")
 		require.Equal(t, http.StatusOK, rr.Code)
 		require.Equal(t, "<"+crs84URI+">", rr.Header().Get(engine.HeaderContentCrs))
@@ -210,10 +211,10 @@ func TestCoreMapResponse(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				capturedBbox := make(chan string, 1)
-				router := newTestRouterWithWMS(t,
-					func(r *http.Request) {
-						capturedBbox <- r.URL.Query().Get("BBOX")
-					},
+				wms := newMockWMS(t, func(r *http.Request) {
+					capturedBbox <- r.URL.Query().Get("BBOX")
+				})
+				router := newTestRouter(t, wms.URL,
 					func(mapsConfig *config.OgcAPIMaps) {
 						if tt.omitCollectionBbox {
 							mapsConfig.Collections[0].Bbox = nil
@@ -346,20 +347,10 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 	}, theme, "", false, true)
 }
 
-func newTestRouter(t *testing.T) http.Handler {
+func newTestRouter(t *testing.T, wmsURL string, configure func(*config.OgcAPIMaps)) http.Handler {
 	t.Helper()
 
-	return newTestRouterWithWMS(t, nil, nil)
-}
-
-func newTestRouterWithWMS(
-	t *testing.T,
-	onRequest func(*http.Request),
-	configure func(*config.OgcAPIMaps),
-) http.Handler {
-	t.Helper()
-
-	e := newTestEngine(t, newMockWMS(t, onRequest).URL)
+	e := newTestEngine(t, wmsURL)
 	if configure != nil {
 		configure(e.Config.OgcAPI.Maps)
 	}
@@ -413,7 +404,7 @@ type httpCase struct {
 }
 
 func TestMapParamsHTTP(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 	mapPath := "/collections/" + testCollection + "/map"
 	rd := "<" + rd28992URI + ">"
 

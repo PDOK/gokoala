@@ -28,7 +28,7 @@ type stylesResponse struct {
 }
 
 func TestStylesDescLinks(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 
 	rr := doGet(router, "/collections/"+testCollection+"/styles", "application/json")
 	require.Equal(t, http.StatusOK, rr.Code)
@@ -53,7 +53,7 @@ func TestStylesDescLinks(t *testing.T) {
 }
 
 func TestStylesFormatsAndErrors(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 
 	tests := []struct {
 		name            string
