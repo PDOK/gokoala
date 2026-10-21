@@ -50,6 +50,8 @@ WithStylesHTML: One or more <a href="styles" aria-label="Go to styles">styles</a
 WithStylesPlain: One or more styles are also available.
 Styles: Styles
 StylesText: One or more official styles as specified by the supplier. Styles are made available in the Mapbox format.
+Maps: Maps
+MapsTextHTML: This collection is available as a map, rendered on the server as an image.
 TileMatrixSets: Tile Matrix Sets
 TileMatrixSetsDatasetText: |-
   Description of the Tile Matrix Sets that are made available via this API. Note that all zoom levels
