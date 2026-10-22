@@ -19,44 +19,53 @@ const (
 )
 
 type paramCase struct {
-	name           string
-	query          string
-	wantCRS        domain.ContentCrs
-	wantBboxSRID   domain.SRID
-	wantBbox       []float64
-	wantWidth      int
-	wantHeight     int
-	wantErr        bool
-	knownDeviation string
+	name            string
+	query           string
+	wantCRS         domain.ContentCrs
+	wantBboxSRID    domain.SRID
+	wantBbox        []float64
+	wantWidth       int
+	wantHeight      int
+	wantTransparent bool
+	wantErr         bool
+	knownDeviation  string
 }
 
 var paramCases = []paramCase{
 	// all single parameters
-	{name: "none", query: "", wantCRS: rd28992URI},
-	{name: "width only", query: "width=800", wantWidth: 800},
-	{name: "height only", query: "height=600", wantHeight: 600},
-	{name: "crs only", query: "crs=" + rd28992URI, wantCRS: rd28992URI},
-	{name: "bbox only", query: "bbox=" + bboxCRS84, wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}},
-	{name: "bbox-crs only without bbox is ignored", query: "bbox-crs=" + domain.WGS84CrsURI},
-	{name: "invalid bbox-crs without bbox is ignored", query: "bbox-crs=foo",
+	{name: "none", query: "", wantCRS: rd28992URI, wantTransparent: true},
+	{name: "transparent true", query: "transparent=true", wantTransparent: true},
+	{name: "transparent false", query: "transparent=false", wantTransparent: false},
+	{name: "transparent invalid", query: "transparent=yes", wantErr: true},
+	{name: "transparent empty", query: "transparent=", wantErr: true},
+	{name: "transparent numeric", query: "transparent=1", wantErr: true},
+	{name: "transparent uppercase true", query: "transparent=TRUE", wantTransparent: true},
+	{name: "transparent uppercase false", query: "transparent=FALSE", wantTransparent: false},
+	{name: "repeated transparent uses first value", query: "transparent=true&transparent=false", wantTransparent: true},
+	{name: "width only", query: "width=800", wantWidth: 800, wantTransparent: true},
+	{name: "height only", query: "height=600", wantHeight: 600, wantTransparent: true},
+	{name: "crs only", query: "crs=" + rd28992URI, wantCRS: rd28992URI, wantTransparent: true},
+	{name: "bbox only", query: "bbox=" + bboxCRS84, wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}, wantTransparent: true},
+	{name: "bbox-crs only without bbox is ignored", query: "bbox-crs=" + domain.WGS84CrsURI, wantTransparent: true},
+	{name: "invalid bbox-crs without bbox is ignored", query: "bbox-crs=foo", wantTransparent: true,
 		knownDeviation: "D7: 20-058 /req/spatial-subsetting/bbox-crs F, bbox-crs is ignored when bbox is absent"},
 
 	// combinations
 	{name: "bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI,
-		wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}},
+		wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}, wantTransparent: true},
 	{name: "bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI,
-		wantBboxSRID: 4326, wantBbox: []float64{52, 4, 53, 5}},
-	{name: "crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantCRS: domain.ContentCrs(domain.WGS84CrsURI)},
+		wantBboxSRID: 4326, wantBbox: []float64{52, 4, 53, 5}, wantTransparent: true},
+	{name: "crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantCRS: domain.ContentCrs(domain.WGS84CrsURI), wantTransparent: true},
 	{name: "bbox + bbox-crs EPSG:28992", query: "bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
-		wantBboxSRID: 28992, wantBbox: []float64{100000, 400000, 150000, 450000}},
+		wantBboxSRID: 28992, wantBbox: []float64{100000, 400000, 150000, 450000}, wantTransparent: true},
 	{name: "crs + bbox", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84,
-		wantCRS: rd28992URI, wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}},
+		wantCRS: rd28992URI, wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}, wantTransparent: true},
 	{name: "crs + bbox + bbox-crs", query: "crs=" + rd28992URI + "&bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
-		wantCRS: rd28992URI, wantBboxSRID: 28992, wantBbox: []float64{100000, 400000, 150000, 450000}},
-	{name: "width + height", query: "width=800&height=600", wantWidth: 800, wantHeight: 600},
+		wantCRS: rd28992URI, wantBboxSRID: 28992, wantBbox: []float64{100000, 400000, 150000, 450000}, wantTransparent: true},
+	{name: "width + height", query: "width=800&height=600", wantWidth: 800, wantHeight: 600, wantTransparent: true},
 	{name: "all five", query: "crs=" + rd28992URI + "&bbox=" + bboxRD + "&bbox-crs=" + rd28992URI + "&width=800&height=600",
 		wantCRS: rd28992URI, wantBboxSRID: 28992, wantBbox: []float64{100000, 400000, 150000, 450000},
-		wantWidth: 800, wantHeight: 600},
+		wantWidth: 800, wantHeight: 600, wantTransparent: true},
 
 	// errors
 	{name: "invalid width non-numeric", query: "width=abc", wantErr: true},
@@ -105,18 +114,18 @@ var paramCases = []paramCase{
 		wantErr: true},
 
 	// edge cases
-	{name: "width equal to max", query: "width=5000", wantWidth: 5000,
+	{name: "width equal to max", query: "width=5000", wantWidth: 5000, wantTransparent: true,
 		knownDeviation: "D2: 20-058 /req/scaling/width-definition D, only values above the maximum are rejected"},
-	{name: "height equal to max", query: "height=5000", wantHeight: 5000,
+	{name: "height equal to max", query: "height=5000", wantHeight: 5000, wantTransparent: true,
 		knownDeviation: "D2: 20-058 /req/scaling/height-definition D, only values above the maximum are rejected"},
-	{name: "width one", query: "width=1", wantWidth: 1},
-	{name: "width max minus one", query: "width=4999", wantWidth: 4999},
-	{name: "empty width", query: "width="},
-	{name: "empty height", query: "height="},
-	{name: "empty bbox", query: "bbox="},
-	{name: "empty crs", query: "crs=", wantCRS: rd28992URI},
-	{name: "empty bbox-crs", query: "bbox-crs="},
-	{name: "repeated width uses first value", query: "width=100&width=200", wantWidth: 100},
+	{name: "width one", query: "width=1", wantWidth: 1, wantTransparent: true},
+	{name: "width max minus one", query: "width=4999", wantWidth: 4999, wantTransparent: true},
+	{name: "empty width", query: "width=", wantTransparent: true},
+	{name: "empty height", query: "height=", wantTransparent: true},
+	{name: "empty bbox", query: "bbox=", wantTransparent: true},
+	{name: "empty crs", query: "crs=", wantCRS: rd28992URI, wantTransparent: true},
+	{name: "empty bbox-crs", query: "bbox-crs=", wantTransparent: true},
+	{name: "repeated width uses first value", query: "width=100&width=200", wantWidth: 100, wantTransparent: true},
 	{name: "valid crs with invalid bbox", query: "crs=" + rd28992URI + "&bbox=1,2", wantErr: true},
 	{name: "valid bbox with invalid width", query: "bbox=" + bboxCRS84 + "&width=x", wantErr: true},
 }
@@ -157,6 +166,7 @@ func TestMapParamsParse(t *testing.T) {
 			}
 			assert.Equal(t, tc.wantWidth, request.width, tc.knownDeviation)
 			assert.Equal(t, tc.wantHeight, request.height, tc.knownDeviation)
+			assert.Equal(t, tc.wantTransparent, request.transparent)
 		})
 	}
 }

@@ -1,4 +1,14 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, OnDestroy, inject } from '@angular/core'
+import {
+  AfterViewInit,
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  inject,
+} from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
 import { Map as OLMap, View } from 'ol'
 import { defaults as defaultControls } from 'ol/control'
@@ -30,6 +40,7 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() crs: string = EPSG_PREFIX + RD_NEW_SRID
   @Input() bbox: string | undefined
   @Input() format: MapFormat = 'png'
+  @Input({ transform: booleanAttribute }) transparent = true
 
   map = new OLMap({
     controls: defaultControls(),
@@ -37,7 +48,7 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
   private _viewInitialized = false
 
   ngOnChanges(changes: NgChanges<MapsViewComponent>) {
-    if (changes.mapUrl || changes.crs || changes.bbox || changes.format) {
+    if (changes.mapUrl || changes.crs || changes.bbox || changes.format || changes.transparent) {
       this.initialize()
     }
   }
@@ -73,7 +84,7 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
         source: new OGCMapSource({
           url: this.mapUrl,
           projection: projection,
-          params: { f: this.format },
+          params: { f: this.format, transparent: this.transparent },
           hidpi: false,
           ratio: 1,
         }),

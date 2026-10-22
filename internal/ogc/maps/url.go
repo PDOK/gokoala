@@ -20,6 +20,7 @@ const (
 	BboxCrsParam = "bbox-crs"
 	Width        = "width"
 	Height       = "height"
+	Transparent  = "transparent"
 
 	maxAllowed = 5000
 )
@@ -31,6 +32,7 @@ var mapsKnownParams = map[string]struct{}{
 	BboxCrsParam:       {},
 	Width:              {},
 	Height:             {},
+	Transparent:        {},
 }
 
 type mapsURL struct {
@@ -53,6 +55,7 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 	}
 	width, widthErr := parseWidth(m.params)
 	height, heightErr := parseHeight(m.params)
+	transparent, transparentErr := parseTransparent(m.params)
 
 	if height > maxAllowed {
 		msg := fmt.Sprintf("height %d exceeds the maximum allowed number (%d)", height, maxAllowed)
@@ -66,11 +69,11 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 		err = errors.Join(err, maxWidthError)
 	}
 
-	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr); err != nil {
+	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr); err != nil {
 		return MapRequest{}, err
 	}
 
-	request := MapRequest{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height}
+	request := MapRequest{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, transparent: transparent}
 
 	return request, nil
 }
@@ -112,6 +115,20 @@ func parseWidth(params url.Values) (int, error) {
 func parseHeight(params url.Values) (int, error) {
 	heightStr := params.Get(Height)
 	return parseAndValidatePositiveInt(heightStr)
+}
+
+func parseTransparent(params url.Values) (bool, error) {
+	if !params.Has(Transparent) {
+		return true, nil
+	}
+	switch strings.ToLower(params.Get(Transparent)) {
+	case "true":
+		return true, nil
+	case "false":
+		return false, nil
+	default:
+		return false, fmt.Errorf("%s must be true or false", Transparent)
+	}
 }
 
 func (m *mapsURL) validateNoUnknownParams() error {

@@ -82,7 +82,7 @@ export function mountFeatureComponent(
   return cy.then(() => mountResponse)
 }
 
-export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string) {
+export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string, transparent = true) {
   cy.viewport(550, 750)
   cy.intercept('GET', `${amapUrl}*`, { fixture: 'backgroundstub.png', headers: { 'cache-control': 'no-store' } }).as('map')
 
@@ -92,7 +92,7 @@ export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string)
         level: NgxLoggerLevel.DEBUG,
       }),
     ],
-    componentProperties: { mapUrl: amapUrl, crs: acrs, bbox: abbox },
+    componentProperties: { mapUrl: amapUrl, crs: acrs, bbox: abbox, transparent },
   })
 }
 

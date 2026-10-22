@@ -7,6 +7,8 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
+	"github.com/PDOK/gokoala/internal/ogc/features/domain"
+	"github.com/twpayne/go-geom"
 )
 
 const (
@@ -39,8 +41,9 @@ type mapsPage struct {
 	StyleID      string
 	Title        string
 
-	CRS  string
-	Bbox string
+	CRS         string
+	Bbox        string
+	Transparent bool
 }
 
 // newHTMLMaps render the requested as HTML or Markdown
@@ -55,9 +58,15 @@ func newHTMLMaps(e *engine.Engine) *htmlMaps {
 }
 
 func (hm *htmlMaps) maps(w http.ResponseWriter, r *http.Request, format string, collection config.MapsCollection,
-	_ MapRequest) {
+	request MapRequest) {
 
-	breadcrumbs, pageContent := hm.toViewerPage(collection, style, crs, bbox)
+	bbox := request.bbox
+	if r.URL.Query().Get(BboxParam) == "" {
+		bbox = nil
+	}
+	style := collection.GetStyle(request.style)
+	breadcrumbs, pageContent := hm.toViewerPage(collection, style, request.crs, bbox)
+	pageContent.Transparent = request.transparent
 
 	hm.engine.RenderAndServe(w, r,
 		engine.ExpandTemplateKey(mapsByFormat[format], hm.engine.CN.NegotiateLanguage(w, r)),
