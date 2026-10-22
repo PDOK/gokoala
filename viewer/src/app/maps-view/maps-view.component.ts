@@ -6,7 +6,7 @@ import { Extent } from 'ol/extent'
 import ImageLayer from 'ol/layer/Image'
 import { addEquivalentProjections, get as getProjection, Projection } from 'ol/proj'
 import OGCMapSource from 'ol/source/OGCMap'
-import { getRijksdriehoek } from '../shared/model/map-projection'
+import { getRijksdriehoek, initProj4WithTilesDefaults } from '../shared/model/map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
 
 export type MapFormat = 'png' | 'jpeg'
@@ -94,6 +94,8 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
   private getMapProjection(crs: string): Projection | undefined {
     const srid = crs.startsWith(EPSG_URI_PREFIX) ? crs.substring(EPSG_URI_PREFIX.length) : crs.replace(EPSG_PREFIX, '')
     const uri = EPSG_URI_PREFIX + srid
+    // register shared projection definitions (RD, ETRS89), normally only done by MapProjection
+    initProj4WithTilesDefaults(this.logger)
     const existing = getProjection(uri)
     if (existing) {
       return existing
@@ -105,7 +107,7 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
     const uriProjection = new Projection({
       code: uri,
-      units: epsgProjection.getUnits(),
+      units: epsgProjection.getUnits() === 'degree' ? 'degrees' : epsgProjection.getUnits(),
       extent: epsgProjection.getExtent(),
       axisOrientation: epsgProjection.getAxisOrientation(),
       global: epsgProjection.isGlobal(),
