@@ -181,6 +181,28 @@
     {{ end }}
     {{ end }}
     {{ end }}
+    {{ if and .Config.OgcAPI.Maps .Config.OgcAPI.Maps.Collections }}
+      {{ if .Config.OgcAPI.Maps.Collections.ContainsID .Params.Collection.ID }}
+    ,{
+      "rel" : "https://www.opengis.net/def/rel/ogc/1.0/map",
+      "type" : "image/png",
+      "title" : "The PNG representation of the {{ .Params.Collection.ID }} map served from this endpoint",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/map?f=png"
+    },
+    {
+      "rel" : "https://www.opengis.net/def/rel/ogc/1.0/map",
+      "type" : "image/jpeg",
+      "title" : "The JPEG representation of the {{ .Params.Collection.ID }} map served from this endpoint",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/map?f=jpeg"
+    },
+    {
+      "rel" : "https://www.opengis.net/def/rel/ogc/1.0/map",
+      "type" : "text/html",
+      "title" : "The HTML representation of the {{ .Params.Collection.ID }} map served from this endpoint",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/map?f=html"
+    }
+      {{ end }}
+    {{ end }}
   ]
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   ,

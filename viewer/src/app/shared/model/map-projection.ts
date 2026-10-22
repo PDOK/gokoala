@@ -14,7 +14,7 @@ const EPSG_PREFIX = 'EPSG:'
 const RD_NEW_PROJ4_DEF =
   '+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs'
 
-function initProj4WithTilesDefaults(logger: NGXLogger) {
+export function initProj4WithTilesDefaults(logger: NGXLogger) {
   const crsMap: CrsMap = {
     '28992': RD_NEW_PROJ4_DEF,
     '3035': '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',

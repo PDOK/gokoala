@@ -9,6 +9,7 @@ import { FeatureViewComponent } from './feature-view/feature-view.component'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { environment } from 'src/environments/environment'
 import { LocationSearchViewComponent } from './location-search-view/location-search-view.component'
+import { MapsViewComponent } from './maps-view/maps-view.component'
 
 @NgModule({
   declarations: [],
@@ -41,6 +42,9 @@ export class AppModule {
 
     const locationSearchView = createCustomElement(LocationSearchViewComponent, { injector: this.injector })
     customElements.define('app-location-search-view', locationSearchView)
+
+    const mapsView = createCustomElement(MapsViewComponent, { injector: this.injector })
+    customElements.define('app-maps-view', mapsView)
   }
 
   // eslint-disable-next-line

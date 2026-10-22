@@ -531,6 +531,8 @@ github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFSt
 github.com/package-url/packageurl-go v0.1.6 h1:YO3p6u1XmCUliivUg/qWphaY8vI6hxSnnPv7Bfg3m5M=
 github.com/package-url/packageurl-go v0.1.6/go.mod h1:nKAWB8E6uk1MHqiS/lQb9pYBGH2+mdJ2PJc2s50dQY0=
 github.com/pborman/getopt v0.0.0-20170112200414-7148bc3a4c30/go.mod h1:85jBQOZwpVEaDAr341tbn15RS4fCAsIst0qp7i8ex1o=
+github.com/pdok/ogc-specifications v1.0.7 h1:ZWmDr7mjfhvCT5okKYNl7MqSm9k2zkJRnPLj/bnbMUY=
+github.com/pdok/ogc-specifications v1.0.7/go.mod h1:GYFKRtWDDKS/elBRXQvGoMLL97yrtdRqyCFmnb4iPTA=
 github.com/pelletier/go-toml/v2 v2.4.3 h1:GTRvJQutkOSftxIFD5xw9aepkYNuPWmVJpffdDPYVpY=
 github.com/pelletier/go-toml/v2 v2.4.3/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
@@ -668,6 +670,8 @@ github.com/transparency-dev/merkle v0.0.2 h1:Q9nBoQcZcgPamMkGn7ghV8XiTZ/kRxn1yCG
 github.com/transparency-dev/merkle v0.0.2/go.mod h1:pqSy+OXefQ1EDUVmAJ8MUhHB9TXGuzVAT58PqBoHz1A=
 github.com/twpayne/go-geom v1.6.1 h1:iLE+Opv0Ihm/ABIcvQFGIiFBXd76oBIar9drAwHFhR4=
 github.com/twpayne/go-geom v1.6.1/go.mod h1:Kr+Nly6BswFsKM5sd31YaoWS5PeDDH2NftJTK7Gd028=
+github.com/twpayne/go-proj/v11 v11.0.0 h1:jkGRE2DOwxhbn2hPnps1wNepdCgA8JB/K8rJosVR2jM=
+github.com/twpayne/go-proj/v11 v11.0.0/go.mod h1:2qEvCqcSQqaKRxHc8K6F5THAzS/SVknfWVPnTHFqE3M=
 github.com/twpayne/pgx-geom v1.0.0 h1:6G4KAY8eJctjXhvGck73S7HnKayly7ZyQcmG8TC1CDU=
 github.com/twpayne/pgx-geom v1.0.0/go.mod h1:d+aJjVsx0FSBzl9DnFfJyMd0IZs6GzGwpSir5vLtWXU=
 github.com/urfave/cli/v2 v2.27.7 h1:bH59vdhbjLv3LAvIu6gd0usJHgoTTPhCFib8qqOwXYU=

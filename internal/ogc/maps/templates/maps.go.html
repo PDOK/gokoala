@@ -1,0 +1,31 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{ define "head"}}
+    {{/* Set VIEWER_URL (e.g. http://localhost:4200) to load the viewer from a local `ng serve` instead of the built assets */}}
+    <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
+{{ end }}
+
+{{ define "content" }}
+  {{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
+  <hgroup>
+    <h1 class="title" id="title">{{ .Params.Title }} - {{ i18n "Maps" }}</h1>
+  </hgroup>
+  <div class="row py-3">
+    <div class="col-md-12">
+      <p>
+        {{ i18n "MapsTextHTML" }}
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <script type="module" src="{{ $viewerUrl }}/polyfills.js"></script>
+      <script type="module" src="{{ $viewerUrl }}/main.js"></script>
+      <app-maps-view id="mapsviewer" class="card"
+        map-url="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}{{ if .Params.StyleID }}/styles/{{ .Params.StyleID }}{{ end }}/map"
+        crs="{{ .Params.CRS }}"
+        bbox="{{ .Params.Bbox }}">
+      </app-maps-view>
+      <noscript>Enable Javascript to display the maps viewer</noscript>
+    </div>
+  </div>
+{{ end }}

@@ -3,7 +3,7 @@ module github.com/PDOK/gokoala
 // Ideally we use the latest version of Go. But since the 'config' package is also used as a library we
 // need to take downstream consumers in mind which may not yet be able to upgrade. In that case the go
 // and toolchain versions in go.mod may differ.
-go 1.26.6
+go 1.26.10
 
 require (
 	dario.cat/mergo v1.0.2
@@ -28,11 +28,13 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.49
 	github.com/moby/moby/api v1.55.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
+	github.com/pdok/ogc-specifications v1.0.7
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.44.0
 	github.com/twpayne/go-geom v1.6.1
+	github.com/twpayne/go-proj/v11 v11.0.0
 	github.com/twpayne/pgx-geom v1.0.0
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/vgarvardt/pgx-google-uuid/v5 v5.6.0

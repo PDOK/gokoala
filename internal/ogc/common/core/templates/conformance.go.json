@@ -82,6 +82,20 @@
     ,"http://www.opengis.net/spec/ogcapi-geovolumes-1/1.0/conf/core"
     {{ end }}
 
+    {{ if .Config.OgcAPI.Maps }}
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/core"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/background"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/scaling"
+    {{/*,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/display-resolution"*/}}
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/spatial-subsetting"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/crs"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/collection-map"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/png"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/jpeg"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/html"
+    ,"http://www.opengis.net/spec/ogcapi-maps-1/1.0/conf/cors"
+    {{ end }}
+
     {{ if .Config.OgcAPI.Tiles }}
       ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core"
       ,"http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset"

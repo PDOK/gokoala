@@ -18,6 +18,7 @@ While the OpenAPI specs/templates are modified to match the capabilities of GoKo
 - OGC Features: `features.go.json` is based on [ogcapi-features-1.0.1](https://app.swaggerhub.com/apis/OGC/ogcapi-features-1-example-1/1.0.1) and [ogcapi-features-2](https://schemas.opengis.net/ogcapi/features/part2/1.0/openapi/ogcapi-features-2.yaml). Part 5 was added manually based on HTML spec.
 - OGC 3D GeoVolumes: `3dgeovolumes.go.json` is based on [ogcapi-3d-geovolumes-draft-0.0.2](https://raw.githubusercontent.com/opengeospatial/ogcapi-3d-geovolumes/main/standard/openapi/ogcapi-3d-geovolumes-draft-0.0.2.yaml) and [cologne_lod2](https://demo.ldproxy.net/cologne_lod2/api/?f=json)
 - OGC Styles: `styles.go.json` is based on [ogcapi-styles-1](https://developer.ogc.org/api/styles/openapi.yaml)
+- OGC Maps: `maps.go.json` is based on [ogcapi-maps-1](https://schemas.opengis.net/ogcapi/maps/part1/1.0/openapi/ogcapi-maps-1.bundled.json)
 
 Note: See the Git history of this file for more details. We stopped documenting every change to the specs 
 since there were just too many and the benefit was lost.

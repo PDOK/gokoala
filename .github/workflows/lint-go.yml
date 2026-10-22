@@ -21,6 +21,9 @@ jobs:
             libssl-dev \
             libicu-dev \
             libsqlite3-mod-spatialite \
+            pkg-config \
+            libproj-dev \
+            proj-data \
             proj-bin
 
       - name: Set up Go

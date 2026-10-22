@@ -289,8 +289,9 @@ func (e *Engine) ReverseProxy(w http.ResponseWriter, r *http.Request, target *ur
 }
 
 // ReverseProxyAndValidate forwards given HTTP request to given target server, and optionally tweaks and validates response.
+// Response modifiers run before forwarding; an error rejects the response with a 502 problem.
 func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request, target *url.URL,
-	prefer204 bool, contentTypeOverwrite string, validateResponse bool) {
+	prefer204 bool, contentTypeOverwrite string, validateResponse bool, responseModifiers ...func(*http.Response) error) {
 
 	rewrite := func(r *httputil.ProxyRequest) {
 		r.Out.URL = target
@@ -305,6 +306,11 @@ func (e *Engine) ReverseProxyAndValidate(w http.ResponseWriter, r *http.Request,
 	}
 
 	modifyResponse := func(proxyRes *http.Response) error {
+		for _, modify := range responseModifiers {
+			if err := modify(proxyRes); err != nil {
+				return err
+			}
+		}
 		if prefer204 {
 			// OGC spec: If the tile has no content due to lack of data in the area, but is within the data
 			// resource its tile matrix sets and tile matrix sets limits, the HTTP response will use the status
