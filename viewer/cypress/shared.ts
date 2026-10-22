@@ -5,6 +5,7 @@ import { FeatureViewComponent } from 'src/app/feature-view/feature-view.componen
 import 'cypress-network-idle'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { FeatureService } from 'src/app/shared/services/feature.service'
+import { MapsViewComponent } from 'src/app/maps-view/maps-view.component'
 
 export type ProjectionTest = { code: string; projection: string; geofix: string }
 
@@ -79,6 +80,20 @@ export function mountFeatureComponent(
   cy.get('@MapLoaded').should('have.been.calledOnce')
   // MountResponse needed for swapping crs's
   return cy.then(() => mountResponse)
+}
+
+export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string) {
+  cy.viewport(550, 750)
+  cy.intercept('GET', `${amapUrl}*`, { fixture: 'backgroundstub.png', headers: { 'cache-control': 'no-store' } }).as('map')
+
+  return cy.mount(MapsViewComponent, {
+    imports: [
+      LoggerModule.forRoot({
+        level: NgxLoggerLevel.DEBUG,
+      }),
+    ],
+    componentProperties: { mapUrl: amapUrl, crs: acrs, bbox: abbox },
+  })
 }
 
 export function idle() {

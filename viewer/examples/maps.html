@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <base href="../dist/view-component/browser/" />
+    <meta charset="utf-8" />
+    <title>Maps Sample</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script type="module" src="main.js"></script>
+    <script type="text/javascript" src="polyfills.js"></script>
+    <h2>maps sample 1</h2>
+    <app-maps-view
+      id="mapsview1"
+      map-url="http://localhost:8080/collections/landgebruik/map"
+      crs="EPSG:28992"
+      bbox="10000,300000,280000,620000">
+    </app-maps-view>
+  </body>
+</html>
