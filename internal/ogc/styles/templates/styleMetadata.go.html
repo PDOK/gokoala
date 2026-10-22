@@ -58,7 +58,7 @@
                     {{ i18n "Support" }}
                 </td>
                 <td>
-                    <a href="{{ .Config.Support.URL }}" target="_blank" aria-label="{{ i18n "To" }} {{ i18n "Support" }}">{{ .Config.Support.Name }}</a>
+                    <a href="{{ .Config.Support.URL }}" target="_blank" aria-label="{{ i18n "To" }} {{ .Config.Support.Name }}">{{ .Config.Support.Name }}</a>
                 </td>
             </tr>
         {{ end }}
@@ -71,7 +71,7 @@
                         Styling
                     </td>
                     <td>
-                        <a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=mapbox" aria-label="{{ i18n "To" }} Mapbox Style">{{ i18n "View" }} Mapbox Style</a>
+                        <a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=mapbox">{{ i18n "View" }} Mapbox Style</a>
                     </td>
                 </tr>
             {{ else if eq $styleFormat.Format "sld10" }}
@@ -80,7 +80,7 @@
                         Styling
                     </td>
                     <td>
-                        <a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" aria-label="OpenGIS Styled Layer Descriptor 1.0 Style">{{ i18n "View" }} SLD 1.0 Style</a>
+                        <a href="{{ $baseUrl }}/styles/{{ $style }}__{{ lower $projection }}?f=sld10" aria-label="{{ i18n "View" }} SLD 1.0 Style (OpenGIS Styled Layer Descriptor)">{{ i18n "View" }} SLD 1.0 Style</a>
                     </td>
                 </tr>
             {{ end }}
