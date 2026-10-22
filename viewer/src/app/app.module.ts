@@ -3,7 +3,7 @@ import { VectortileViewComponent } from './vectortile-view/vectortile-view.compo
 import { createCustomElement } from '@angular/elements'
 import { ObjectInfoComponent } from './object-info/object-info.component'
 import { NgModule, Injector, inject } from '@angular/core'
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http'
 import { LegendViewComponent } from './legend-view/legend-view.component'
 import { FeatureViewComponent } from './feature-view/feature-view.component'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
@@ -21,7 +21,7 @@ import { LocationSearchViewComponent } from './location-search-view/location-sea
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
   ],
-  providers: [provideHttpClient(withInterceptorsFromDi())],
+  providers: [provideHttpClient(withXhr(), withInterceptorsFromDi())],
 })
 export class AppModule {
   private readonly injector = inject(Injector)
