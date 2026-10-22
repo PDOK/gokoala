@@ -6,7 +6,7 @@
       <div class="col-4 col-xxl-2 fw-semibold">{{ relevanceText }}</div>
     </div>
     @for (collectionSetting of form.controls; track $index) {
-      @let collection = collections?.[$index];
+      @let collection = $safeNavigationMigration(collections?.[$index]);
 
       @if (collection) {
         <div class="row mb-2" [formGroup]="collectionSetting">
