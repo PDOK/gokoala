@@ -1,19 +1,12 @@
 package maps
 
 import (
+	"fmt"
 	"log"
+	"mime"
 	"net/http"
-	"os"
 
-	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/twpayne/go-geom"
-)
-
-const (
-	placeholderImagePNG  = "examples/resources/placeholder.png"
-	placeholderImageJPEG = "examples/resources/placeholder.jpeg"
 )
 
 type imageMaps struct {
@@ -27,25 +20,48 @@ func newImageMaps(e *engine.Engine) *imageMaps {
 	}
 }
 
-func (m imageMaps) renderMapsImage(w http.ResponseWriter, _ *http.Request, format string, _ *config.MapStyle,
-	_ domain.ContentCrs, _ domain.SRID, _ *geom.Bounds, _ int, _ int) {
-	var path string
-	if format == engine.FormatJPEG {
-		// temporary placeholder, do the WMS call here
-		path = placeholderImageJPEG
-	} else {
-		// temporary placeholder, do the WMS call here
-		path = placeholderImagePNG
+func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, request MapRequest) {
+	switch request.format {
+	case engine.FormatPNG, engine.FormatJPEG:
+		request.format = "image/" + request.format
 	}
-	img, err := os.ReadFile(path)
+
+	mapsConfig := m.engine.Config.OgcAPI.Maps
+	getMapRequest, err := buildGetMapRequest(&request, mapsConfig)
 	if err != nil {
-		log.Printf("error reading file: %v", err)
+		log.Printf("failed to build WMS request: %v", err)
 		engine.RenderProblem(engine.ProblemServerError, w)
 		return
 	}
-	w.Header().Set("Content-Type", "image/"+format)
-	if _, err = w.Write(img); err != nil {
-		log.Printf("error writing response: %v", err)
-		engine.RenderProblem(engine.ProblemServerError, w)
+
+	target := *mapsConfig.WMSServer.URL
+	params := target.Query()
+	getMapParams := getMapRequest.ToQueryParameters()
+	for key, values := range getMapParams {
+		params[key] = values
 	}
+	target.RawQuery = params.Encode()
+
+	m.engine.ReverseProxyAndValidate(w, r, &target, false, "", false, func(response *http.Response) error {
+		if err := validateGetMapResponse(response, request.format); err != nil {
+			return err
+		}
+		response.Header.Set(engine.HeaderContentCrs, request.crs.ToLink())
+		response.Header.Set(engine.HeaderContentBbox, getMapParams.Get("BBOX"))
+		return nil
+	})
+}
+
+func validateGetMapResponse(response *http.Response, expectedFormat string) error {
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("WMS returned HTTP %d", response.StatusCode)
+	}
+	mediaType, _, err := mime.ParseMediaType(response.Header.Get("Content-Type"))
+	if err != nil {
+		return fmt.Errorf("invalid WMS Content-Type: %w", err)
+	}
+	if mediaType != expectedFormat {
+		return fmt.Errorf("WMS returned media type %q, expected %q", mediaType, expectedFormat)
+	}
+	return nil
 }

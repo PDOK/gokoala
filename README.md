@@ -334,12 +334,24 @@ Design principles:
 Make sure the following native dependencies are installed on your system:
 
 - [SpatiaLite](https://www.gaia-gis.it/fossil/libspatialite/index)
-- [PROJ](https://proj.org/en/stable/install.html)
+- [PROJ](https://proj.org/en/stable/install.html), including development headers
+  (`libproj-dev`) and CRS data (`proj-data`)
+- `pkg-config` (used to locate PROJ during compilation)
 - `openssl` (libssl-dev)
 - `curl` (libcurl-dev)
 - `icu` (libicu-dev)
 
 Also make sure `gcc` or similar is available since the application uses cgo.
+
+PROJ development headers are required for local builds, tests, and linting.
+Docker builds install these dependencies automatically.
+Verify the PROJ development installation with `pkg-config --modversion proj`.
+On Ubuntu/Debian, install the PROJ dependencies with:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y pkg-config libproj-dev proj-data proj-bin
+```
 
 Now, run the following commands from the root of the project:
 

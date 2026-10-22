@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -38,28 +37,46 @@ func (m *Maps) Maps() http.HandlerFunc {
 
 		defaultCrs, err := getDefaultCrs(m.engine.Config.OgcAPI.Maps.DefaultMap)
 		if err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			log.Printf("invalid default map CRS: %v", err)
+			engine.RenderProblem(engine.ProblemServerError, w)
 			return
 		}
 
-		crs, bboxSRID, bbox, width, height, err := url.parse(defaultCrs, getSupportedCrs(defaultCrs))
+		supportedCrs, err := getSupportedCrs(collection)
+		if err != nil {
+			log.Printf("invalid supported map CRSs: %v", err)
+			engine.RenderProblem(engine.ProblemServerError, w)
+			return
+		}
+
+		request, err := url.parse(defaultCrs, supportedCrs)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}
 
-		w.Header().Add(engine.HeaderContentCrs, crs.ToLink())
+		request.mapType = CollectionMap
+		request.collection = collectionID
+		request.style = styleID
 
-		if len(collection.Bbox) == 4 {
-			w.Header().Add(engine.HeaderContentBbox, strings.Join(collection.Bbox, ","))
+		if err = request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
+			log.Printf("failed to set map defaults: %v", err)
+			engine.RenderProblem(engine.ProblemServerError, w)
+			return
+		}
+
+		if err = request.validate(); err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			return
 		}
 
 		format := m.engine.CN.NegotiateFormatWithDefault(r, engine.FormatPNG)
 		switch format {
 		case engine.FormatHTML:
-			m.html.maps(w, r, format, collection, style, crs, bboxSRID, bbox, width, height)
+			m.html.maps(w, r, format, collection, request)
 		case engine.FormatJPEG, engine.FormatPNG:
-			m.image.renderMapsImage(w, r, format, style, crs, bboxSRID, bbox, width, height)
+			request.format = format
+			m.image.renderMapsImage(w, r, request)
 		default:
 			handleFormatNotSupported(w, format)
 		}
@@ -93,6 +110,15 @@ func getDefaultCrs(defaultMap config.DefaultMap) (domain.ContentCrs, error) {
 	return srid.ToContentCrs(), nil
 }
 
-func getSupportedCrs(defaultCrs domain.ContentCrs) []domain.ContentCrs {
-	return []domain.ContentCrs{defaultCrs}
+func getSupportedCrs(collection config.MapsCollection) ([]domain.ContentCrs, error) {
+	supported := []domain.ContentCrs{domain.ContentCrs(domain.WGS84CrsURI)}
+	for _, configured := range collection.SupportedSrs {
+		srid, err := domain.EpsgToSrid(configured.Srs)
+		if err != nil {
+			return nil, fmt.Errorf("invalid supported CRS %q for collection %q: %w",
+				configured.Srs, collection.ID, err)
+		}
+		supported = append(supported, srid.ToContentCrs())
+	}
+	return supported, nil
 }

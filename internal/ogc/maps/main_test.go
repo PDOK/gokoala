@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	crs84URI       = "https://www.opengis.net/def/crs/OGC/1.3/CRS84"
+	crs84URI       = domain.WGS84CrsURI
 	rd28992URI     = "http://www.opengis.net/def/crs/EPSG/0/28992"
 	testCollection = "foo"
 	testStyle      = "default"
@@ -35,6 +35,16 @@ const (
 // formats allowed by OGC API Maps: yyyy, yyyy-mm, yyyy-mm-dd, yyyy-mm-ddThhZ
 // (or offset) and yyyy-mm-ddThh:mmZ (or offset).
 var (
+	testSupportedSrs = []config.MapsSupportedSrs{
+		{Srs: "EPSG:28992"},
+		{Srs: "EPSG:25831"},
+		{Srs: "EPSG:25832"},
+		{Srs: "EPSG:3034"},
+		{Srs: "EPSG:3035"},
+		{Srs: "EPSG:3857"},
+		{Srs: "EPSG:4258"},
+		{Srs: "EPSG:4326"},
+	}
 	timeInstant = `(\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}(\.\d+)?)?)?(Z|[+-]\d{2}(:\d{2})?))?)?)?)`
 	datetimeRe  = regexp.MustCompile(`^` + timeInstant + `(/` + timeInstant + `)?$`)
 )
@@ -57,7 +67,7 @@ func init() {
 // When:  performing a GET operation on the /map resource with a supported media type in the Accept header
 // Then:  assert that the implementation supports retrieving map resources at one or more …/map URL.
 func TestCoreMapOperation(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 
 	tests := []struct {
 		name       string
@@ -105,7 +115,7 @@ func TestCoreMapOperation(t *testing.T) {
 // When:  retrieving that resource for the map operation
 // Then:  assert the status code, CRS, Content-Crs, Content-Bbox, Content-Datetime headers and body, see sub-tests.
 func TestCoreMapResponse(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 	mapPath := "/collections/" + testCollection + "/map"
 
 	t.Run("response has HTTP status code 200", func(t *testing.T) {
@@ -123,26 +133,29 @@ func TestCoreMapResponse(t *testing.T) {
 		assert.Equal(t, "<"+rd28992URI+">", rr.Header().Get("Content-Crs"))
 	})
 
-	t.Run("Content-Bbox header holds lower-left and upper-right corner in response CRS", func(t *testing.T) {
-		rr := doGet(router, mapPath, "image/png")
-		require.Equal(t, http.StatusOK, rr.Code)
-
-		bbox := parseContentBbox(t, rr.Header().Get("Content-Bbox"))
-
-		// Storage CRS is EPSG:28992 (x/y order): lower-left must be smaller than upper-right
-		assert.Less(t, bbox[0], bbox[2], "minx must be smaller than maxx")
-		assert.Less(t, bbox[1], bbox[3], "miny must be smaller than maxy")
-		// and has to fall in the valid extent of EPSG:28992
-		assert.GreaterOrEqual(t, bbox[0], -7000.0)
-		assert.LessOrEqual(t, bbox[2], 300000.0)
-		assert.GreaterOrEqual(t, bbox[1], 289000.0)
-		assert.LessOrEqual(t, bbox[3], 629000.0)
-	})
-
-	// TODO: reprojection to other CRSs (e.g. CRS84, including a matching Content-Bbox) isn't supported yet
-	t.Run("CRS84 is not supported yet", func(t *testing.T) {
+	t.Run("CRS84 is supported", func(t *testing.T) {
+		captured := make(chan url.Values, 1)
+		wms := newMockWMS(t, func(r *http.Request) {
+			captured <- r.URL.Query()
+		})
+		router := newTestRouter(t, wms.URL, nil)
 		rr := doGet(router, mapPath+"?crs="+url.QueryEscape(crs84URI), "image/png")
-		require.Equal(t, http.StatusBadRequest, rr.Code)
+		require.Equal(t, http.StatusOK, rr.Code)
+		require.Equal(t, "<"+crs84URI+">", rr.Header().Get(engine.HeaderContentCrs))
+		select {
+		case params := <-captured:
+			require.Equal(t, "CRS:84", params.Get("CRS"))
+			require.Equal(t, params.Get("BBOX"), rr.Header().Get(engine.HeaderContentBbox))
+		default:
+			t.Fatal("WMS backend was not called")
+		}
+		bbox := parseContentBbox(t, rr.Header().Get(engine.HeaderContentBbox))
+		require.Greater(t, bbox[0], 0.0)
+		require.Less(t, bbox[2], 10.0)
+		require.Greater(t, bbox[1], 50.0)
+		require.Less(t, bbox[3], 60.0)
+		_, err := png.Decode(bytes.NewReader(rr.Body.Bytes()))
+		require.NoError(t, err)
 	})
 
 	t.Run("Content-Datetime header, when present, is a valid time instant or interval", func(t *testing.T) {
@@ -165,6 +178,68 @@ func TestCoreMapResponse(t *testing.T) {
 		require.NoError(t, err, "body must be a decodable PNG")
 		assert.Positive(t, img.Bounds().Dx())
 		assert.Positive(t, img.Bounds().Dy())
+	})
+	t.Run("Content-Bbox matches the WMS rendering extent", func(t *testing.T) {
+		tests := []struct {
+			name               string
+			query              string
+			omitCollectionBbox bool
+			want               [4]float64
+			tolerance          float64
+		}{
+			{
+				name: "default bbox",
+				want: [4]float64{10000, 300000, 280000, 620000},
+			},
+			{
+				name:  "explicit bbox",
+				query: "?bbox=131869,451318,140816,461366&bbox-crs=" + url.QueryEscape(rd28992URI),
+				want:  [4]float64{131869, 451318, 140816, 461366},
+			},
+			{
+				name:      "transformed bbox",
+				query:     "?bbox=5.05,52.05,5.18,52.14",
+				want:      [4]float64{131869.474, 451352.254, 140815.394, 461332.147},
+				tolerance: 0.01,
+			},
+			{
+				name:               "no collection bbox",
+				omitCollectionBbox: true,
+				want:               [4]float64{10000, 300000, 280000, 620000},
+			},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				capturedBbox := make(chan string, 1)
+				wms := newMockWMS(t, func(r *http.Request) {
+					capturedBbox <- r.URL.Query().Get("BBOX")
+				})
+				router := newTestRouter(t, wms.URL,
+					func(mapsConfig *config.OgcAPIMaps) {
+						if tt.omitCollectionBbox {
+							mapsConfig.Collections[0].Bbox = nil
+						}
+					},
+				)
+
+				rr := doGet(router, mapPath+tt.query, "image/png")
+				require.Equal(t, http.StatusOK, rr.Code)
+				header := rr.Header().Get(engine.HeaderContentBbox)
+				select {
+				case bbox := <-capturedBbox:
+					require.NotEmpty(t, bbox)
+					require.Equal(t, bbox, header)
+				default:
+					t.Fatal("WMS backend was not called")
+				}
+				got := parseContentBbox(t, header)
+				if tt.tolerance > 0 {
+					require.InDeltaSlice(t, tt.want[:], got[:], tt.tolerance)
+				} else {
+					require.Equal(t, tt.want, got)
+				}
+			})
+		}
 	})
 }
 
@@ -202,7 +277,7 @@ func TestContentDatetimeFormat(t *testing.T) {
 }
 
 // newMockWMS starts a fake WMS server that always responds with a small PNG, regardless of the request.
-func newMockWMS(t *testing.T) *httptest.Server {
+func newMockWMS(t *testing.T, onRequest ...func(*http.Request)) *httptest.Server {
 	t.Helper()
 
 	img := image.NewRGBA(image.Rect(0, 0, 4, 4))
@@ -214,7 +289,12 @@ func newMockWMS(t *testing.T) *httptest.Server {
 	var buf bytes.Buffer
 	require.NoError(t, png.Encode(&buf, img))
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		for _, callback := range onRequest {
+			if callback != nil {
+				callback(r)
+			}
+		}
 		w.Header().Set("Content-Type", "image/png")
 		_, _ = w.Write(buf.Bytes())
 	}))
@@ -250,8 +330,9 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 				},
 				Collections: []config.MapsCollection{
 					{
-						ID:   testCollection,
-						Bbox: []string{"10000", "300000", "280000", "620000"},
+						ID:           testCollection,
+						SupportedSrs: testSupportedSrs,
+						Bbox:         []string{"10000", "300000", "280000", "620000"},
 						Layers: []config.MapLayer{
 							{
 								ID:     "layer1",
@@ -266,10 +347,13 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 	}, theme, "", false, true)
 }
 
-func newTestRouter(t *testing.T) http.Handler {
+func newTestRouter(t *testing.T, wmsURL string, configure func(*config.OgcAPIMaps)) http.Handler {
 	t.Helper()
 
-	e := newTestEngine(t, newMockWMS(t).URL)
+	e := newTestEngine(t, wmsURL)
+	if configure != nil {
+		configure(e.Config.OgcAPI.Maps)
+	}
 	NewMaps(e)
 
 	return e.Router
@@ -320,7 +404,7 @@ type httpCase struct {
 }
 
 func TestMapParamsHTTP(t *testing.T) {
-	router := newTestRouter(t)
+	router := newTestRouter(t, newMockWMS(t).URL, nil)
 	mapPath := "/collections/" + testCollection + "/map"
 	rd := "<" + rd28992URI + ">"
 
@@ -332,13 +416,14 @@ func TestMapParamsHTTP(t *testing.T) {
 		{name: "bbox only", query: "bbox=" + bboxCRS84, wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "bbox-crs only without bbox is ignored", query: "bbox-crs=" + domain.WGS84CrsURI,
 			wantStatus: http.StatusOK, wantContentCrs: rd},
-		{name: "unsupported bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI,
-			wantStatus: http.StatusBadRequest},
-		{name: "unsupported bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI,
-			wantStatus: http.StatusBadRequest},
+		{name: "bbox + bbox-crs CRS84", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + domain.WGS84CrsURI,
+			wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "bbox + bbox-crs EPSG:4326", query: "bbox=" + bboxLatLon + "&bbox-crs=" + crsEPSG4326URI,
+			wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "bbox + bbox-crs EPSG:28992", query: "bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
 			wantStatus: http.StatusOK, wantContentCrs: rd},
-		{name: "unsupported crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantStatus: http.StatusBadRequest},
+		{name: "crs CRS84", query: "crs=" + domain.WGS84CrsURI, wantStatus: http.StatusOK,
+			wantContentCrs: "<" + crs84URI + ">"},
 		{name: "crs + bbox", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84, wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "crs + bbox + bbox-crs", query: "crs=" + rd28992URI + "&bbox=" + bboxRD + "&bbox-crs=" + rd28992URI,
 			wantStatus: http.StatusOK, wantContentCrs: rd},

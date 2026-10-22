@@ -7,8 +7,6 @@ import (
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
-	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/twpayne/go-geom"
 )
 
 const (
@@ -57,7 +55,7 @@ func newHTMLMaps(e *engine.Engine) *htmlMaps {
 }
 
 func (hm *htmlMaps) maps(w http.ResponseWriter, r *http.Request, format string, collection config.MapsCollection,
-	style *config.MapStyle, crs domain.ContentCrs, _ domain.SRID, bbox *geom.Bounds, _ int, _ int) {
+	_ MapRequest) {
 
 	breadcrumbs, pageContent := hm.toViewerPage(collection, style, crs, bbox)
 

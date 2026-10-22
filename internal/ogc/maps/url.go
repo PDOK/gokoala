@@ -38,13 +38,13 @@ type mapsURL struct {
 	params  url.Values
 }
 
-func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.ContentCrs) (crs domain.ContentCrs, bboxSRID domain.SRID, bbox *geom.Bounds, width int, height int, err error) {
-	err = m.validateNoUnknownParams()
+func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.ContentCrs) (MapRequest, error) {
+	err := m.validateNoUnknownParams()
 	if err != nil {
-		return crs, bboxSRID, bbox, width, height, err
+		return MapRequest{}, err
 	}
 
-	crs = parseCrsToContentCrs(m.params, defaultCrs)
+	crs := parseCrsToContentCrs(m.params, defaultCrs)
 	crsErr := validateSupportedCrs(CrsParam, crs, supportedCrs)
 	bbox, bboxSRID, bboxErr := parseBbox(m.params)
 	if bboxErr == nil && bbox != nil && m.params.Get(BboxCrsParam) != "" {
@@ -66,9 +66,13 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 		err = errors.Join(err, maxWidthError)
 	}
 
-	err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr)
+	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr); err != nil {
+		return MapRequest{}, err
+	}
 
-	return crs, bboxSRID, bbox, width, height, err
+	request := MapRequest{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height}
+
+	return request, nil
 }
 
 func validateSupportedCrs(param string, crs domain.ContentCrs, supportedCrs []domain.ContentCrs) error {
