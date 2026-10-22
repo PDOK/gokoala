@@ -105,9 +105,11 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
     if (!epsgProjection) {
       return undefined
     }
+    // ol needs degrees, proj gives 'degree'
+    const units = (epsgProjection.getUnits() as string) === 'degree' ? 'degrees' : epsgProjection.getUnits()
     const uriProjection = new Projection({
       code: uri,
-      units: epsgProjection.getUnits() === 'degree' ? 'degrees' : epsgProjection.getUnits(),
+      units: units,
       extent: epsgProjection.getExtent(),
       axisOrientation: epsgProjection.getAxisOrientation(),
       global: epsgProjection.isGlobal(),
