@@ -23,6 +23,7 @@
       <app-maps-view id="mapsviewer" class="card"
         map-url="{{ .Config.BaseURL }}/collections/{{ .Params.CollectionID }}{{ if .Params.StyleID }}/styles/{{ .Params.StyleID }}{{ end }}/map"
         crs="{{ .Params.CRS }}"
+        transparent="{{ .Params.Transparent }}"
         bbox="{{ .Params.Bbox }}">
       </app-maps-view>
       <noscript>Enable Javascript to display the maps viewer</noscript>

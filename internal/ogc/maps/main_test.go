@@ -470,3 +470,44 @@ func TestMapParamsHTTP(t *testing.T) {
 		})
 	}
 }
+
+func TestMapTransparencyHTTP(t *testing.T) {
+	for _, mapPath := range []string{
+		"/collections/" + testCollection + "/map",
+		"/collections/" + testCollection + "/styles/" + testStyle + "/map",
+	} {
+		for _, tc := range []struct {
+			query   string
+			want    bool
+			invalid bool
+		}{
+			{query: "", want: true},
+			{query: "transparent=true", want: true},
+			{query: "transparent=false", want: false},
+			{query: "transparent=true&transparent=false", want: true},
+			{query: "transparent=", invalid: true},
+			{query: "transparent=yes", invalid: true},
+			{query: "transparent=1", invalid: true},
+			{query: "transparent=TRUE", want: true},
+			{query: "transparent=FALSE", want: false},
+			{query: "transparent=False", want: false},
+		} {
+			t.Run(mapPath+"?"+tc.query, func(t *testing.T) {
+				var received url.Values
+				wms := newMockWMS(t, func(r *http.Request) {
+					received = r.URL.Query()
+				})
+				router := newTestRouter(t, wms.URL, nil)
+				rr := doGet(router, mapPath+"?"+tc.query, "image/png")
+				if tc.invalid {
+					require.Equal(t, http.StatusBadRequest, rr.Code)
+					assert.Contains(t, rr.Body.String(), "transparent must be true or false")
+					assert.Nil(t, received, "invalid input must not reach WMS")
+					return
+				}
+				require.Equal(t, http.StatusOK, rr.Code)
+				assert.Equal(t, strconv.FormatBool(tc.want), received.Get("TRANSPARENT"))
+			})
+		}
+	}
+}

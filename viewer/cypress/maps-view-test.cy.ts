@@ -29,15 +29,26 @@ tests.forEach(i => {
       cy.wait('@map').then(({ request }) => {
         const params = new URL(request.url).searchParams
         expect(params.get('f')).to.equal('png')
+        expect(params.get('transparent')).to.equal('true')
         expect(params.get('crs')).to.equal(i.uri)
         expect(params.get('bbox-crs')).to.equal(i.uri)
         expect(params.get('bbox')?.split(',')).to.have.length(4)
         expect(Number(params.get('width'))).to.be.within(1, MAX_SIZE)
         expect(Number(params.get('height'))).to.be.within(1, MAX_SIZE)
       })
+
       idle()
       screenshot('maps-' + i.collection)
       logAccessibility('body')
+    })
+  })
+})
+
+describe('map transparency', () => {
+  it('forwards explicit false to map image requests', () => {
+    mountMapsComponent(RD_NEW_URI, 'https://test/collections/foo/map', RD_BBOX, false)
+    cy.wait('@map').then(({ request }) => {
+      expect(new URL(request.url).searchParams.get('transparent')).to.equal('false')
     })
   })
 })

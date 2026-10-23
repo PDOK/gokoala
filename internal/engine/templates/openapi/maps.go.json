@@ -43,6 +43,7 @@
 					{"$ref": "#/components/parameters/bbox-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/transparent-map"},
 					{"$ref": "#/components/parameters/f-map"}
 				],
 				"responses": {
@@ -69,6 +70,7 @@
 					{"$ref": "#/components/parameters/bbox-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/transparent-map"},
 					{"$ref": "#/components/parameters/styleId-collection"},
 					{"$ref": "#/components/parameters/f-map"}
 				],
@@ -83,6 +85,13 @@
 	},
 	"components": {
 		"parameters": {
+			"transparent-map": {
+				"name": "transparent",
+				"in": "query",
+				"description": "Whether the map background is transparent. Values true and false are case-insensitive; repeated parameters use the first value. Defaults to true. PNG supports transparency; JPEG does not.",
+				"required": false,
+				"schema": {"type": "boolean", "default": true}
+			},
 			"bbox": {
 				"name": "bbox",
 				"in": "query",
