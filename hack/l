@@ -1,0 +1,23 @@
+diff --git a/hack/build-controller-gen.sh b/hack/build-controller-gen.sh
+old mode 100755
+new mode 100644
+index 1dd31570..f2d4bfe0
+--- a/hack/build-controller-gen.sh
++++ b/hack/build-controller-gen.sh
+@@ -1,8 +1,8 @@
+-#!/bin/bash
+-
+-set -o errexit
+-set -o nounset
+-set -o pipefail
+-
+-go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0 && \
++#!/bin/bash
++
++set -o errexit
++set -o nounset
++set -o pipefail
++
++go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0 && \
+     controller-gen --help
+\ No newline at end of file

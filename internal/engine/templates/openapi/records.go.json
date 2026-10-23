@@ -1,0 +1,176 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{ $cfg := .Config }}
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "OGC API - Records",
+    "version": "1.0.0"
+  },
+  "paths": {
+    {{- range $collectionIndex, $collection := $cfg.OgcAPI.Records.Collections -}}
+    {{- if $collectionIndex -}},{{- end -}}
+    "/collections/{{ $collection.ID }}/items": {
+      "get": {
+        "tags": ["Records"],
+        "summary": "Fetch records",
+        "operationId": "records.{{ $collection.ID }}.getRecords",
+        "parameters": [
+          {"name": "f", "in": "query", "required": false, "schema": {"type": "string", "enum": ["json", "html", "md"]}},
+          {"name": "bbox", "in": "query", "required": false, "schema": {"type": "array", "oneOf": [{"minItems": 4, "maxItems": 4}, {"minItems": 6, "maxItems": 6}], "items": {"type": "number"}}, "style": "form", "explode": false},
+          {"name": "datetime", "in": "query", "required": false, "schema": {"type": "string"}},
+          {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer", "minimum": 1, "default": 10}},
+          {"name": "offset", "in": "query", "required": false, "schema": {"type": "integer", "minimum": 0, "default": 0}},
+          {"name": "q", "in": "query", "required": false, "schema": {"type": "array", "items": {"type": "string"}}, "style": "form", "explode": false},
+          {"name": "type", "in": "query", "required": false, "schema": {"type": "array", "items": {"type": "string", "maxLength": 64}}, "style": "form", "explode": false},
+          {"name": "externalIds", "in": "query", "required": false, "schema": {"type": "array", "items": {"type": "string"}}, "style": "form", "explode": false},
+          {"name": "ids", "in": "query", "required": false, "schema": {"type": "array", "items": {"type": "string"}}, "style": "form", "explode": false},
+          {"name": "sortby", "in": "query", "required": false, "schema": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "[+\\|-]?[A-Za-z_].*"}}, "style": "form", "explode": false},
+          {"name": "language", "in": "query", "required": false, "schema": {"type": "string"}},
+          {"name": "profile", "in": "query", "required": false, "schema": {"type": "string"}}
+          {{ if $collection.Filters.CQL.IsEnabled }},
+          {"name": "filter", "in": "query", "required": false, "schema": {"type": "string"}},
+          {"name": "filter-lang", "in": "query", "required": false, "schema": {"type": "string", "enum": ["cql2-text"], "default": "cql2-text"}}
+          {{ end }}
+          {{ if and $collection.Filters.CQL.IsEnabled $cfg.OgcAPI.Features }}
+          ,{"name": "filter-crs", "in": "query", "required": false, "schema": {"type": "string", "format": "uri"}}
+          {{ end }}
+          {{ range $queryable := $collection.Filters.Properties }}
+          ,{"name": "{{ $queryable.Name }}", "in": "query", "required": false, "description": "{{ $queryable.Description }}", "schema": {"type": "string"}, "style": "form", "explode": false}
+          {{ end }}
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of records in this catalog.",
+            "content": {
+              "application/geo+json": {"schema": {"$ref": "#/components/schemas/recordCollectionGeoJSON"}},
+              "text/html": {"schema": {"type": "string"}},
+              "text/markdown": {"schema": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "/collections/{{ $collection.ID }}/items/{recordId}": {
+      "get": {
+        "tags": ["Records"],
+        "summary": "Fetch a record",
+        "operationId": "records.{{ $collection.ID }}.getRecord",
+        "parameters": [
+          {"name": "f", "in": "query", "required": false, "schema": {"type": "string", "enum": ["json", "html", "md"]}},
+          {"name": "recordId", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "A record in GeoJSON and STAC Item form.",
+            "content": {
+              "application/geo+json": {"schema": {"$ref": "#/components/schemas/recordGeoJSON"}},
+              "text/html": {"schema": {"type": "string"}},
+              "text/markdown": {"schema": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "/collection/{{ $collection.ID }}/items/{recordId}": {
+      "get": {
+        "tags": ["Records"],
+        "summary": "Fetch a record",
+        "operationId": "records.{{ $collection.ID }}.getRecordSingularAlias",
+        "parameters": [
+          {"name": "f", "in": "query", "required": false, "schema": {"type": "string", "enum": ["json", "html", "md"]}},
+          {"name": "recordId", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "A record in GeoJSON and STAC Item form.",
+            "content": {
+              "application/geo+json": {"schema": {"$ref": "#/components/schemas/recordGeoJSON"}},
+              "text/html": {"schema": {"type": "string"}},
+              "text/markdown": {"schema": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "/collections/{{ $collection.ID }}/sortables": {
+      "get": {
+        "tags": ["Records"],
+        "summary": "Get sortable record properties",
+        "operationId": "records.{{ $collection.ID }}.getSortables",
+        "parameters": [
+          {"name": "f", "in": "query", "required": false, "schema": {"type": "string", "enum": ["json", "html", "md"]}}
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON Schema describing sortable record properties.",
+            "content": {
+              "application/schema+json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["$schema", "$id", "type", "properties"],
+                  "properties": {
+                    "$schema": {"type": "string"},
+                    "$id": {"type": "string", "format": "uri"},
+                    "type": {"type": "string", "enum": ["object"]},
+                    "properties": {"type": "object", "additionalProperties": {"type": "object"}},
+                    "additionalProperties": {"type": "boolean"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    {{ if $collection.Filters.CQL.IsEnabled }}
+    ,"/collections/{{ $collection.ID }}/queryables": {
+      "get": {
+        "tags": ["Records"],
+        "summary": "Get queryable record properties",
+        "operationId": "records.{{ $collection.ID }}.getQueryables",
+        "responses": {
+          "200": {
+            "description": "A JSON Schema describing filterable record properties.",
+            "content": {"application/schema+json": {"schema": {"type": "object"}}}
+          }
+        }
+      }
+    }
+    {{ end }}
+    {{- end -}}
+  },
+  "components": {
+    "schemas": {
+      "recordGeoJSON": {
+        "type": "object",
+        "required": ["id", "type", "geometry", "properties", "stac_version", "links", "assets"],
+        "properties": {
+          "id": {"oneOf": [{"type": "string"}, {"type": "integer"}]},
+          "type": {"type": "string", "enum": ["Feature"]},
+          "geometry": {"type": "object", "nullable": true},
+          "bbox": {"type": "array", "items": {"type": "number"}},
+          "time": {"type": "object", "nullable": true},
+          "conformsTo": {"type": "array", "items": {"type": "string"}},
+          "properties": {"type": "object", "required": ["datetime"], "properties": {"datetime": {"type": "string", "format": "date-time", "nullable": true}}, "additionalProperties": true},
+          "stac_version": {"type": "string"},
+          "stac_extensions": {"type": "array", "items": {"type": "string", "format": "uri"}},
+          "collection": {"type": "string"},
+          "links": {"type": "array", "items": {"type": "object", "required": ["href", "rel"], "properties": {"href": {"type": "string", "format": "uri-reference"}, "rel": {"type": "string"}, "type": {"type": "string"}, "title": {"type": "string"}}, "additionalProperties": true}},
+          "assets": {"type": "object", "additionalProperties": {"type": "object", "required": ["href"], "properties": {"href": {"type": "string", "format": "uri-reference"}, "title": {"type": "string"}, "description": {"type": "string"}, "type": {"type": "string"}, "roles": {"type": "array", "items": {"type": "string"}}, "file:size": {"type": "integer", "minimum": 0}, "file:checksum": {"type": "string"}}, "additionalProperties": true}}
+        },
+        "additionalProperties": true
+      },
+      "recordCollectionGeoJSON": {
+        "type": "object",
+        "required": ["type", "features"],
+        "properties": {
+          "type": {"type": "string", "enum": ["FeatureCollection"]},
+          "features": {"type": "array", "items": {"$ref": "#/components/schemas/recordGeoJSON"}},
+          "links": {"type": "array", "items": {"type": "object", "required": ["href", "rel"], "additionalProperties": true}},
+          "numberReturned": {"type": "integer", "minimum": 0}
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

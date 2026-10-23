@@ -15,7 +15,7 @@ func Test_newOpenAPI(t *testing.T) {
 	if err != nil {
 		t.Fatalf("can't locate testdata %v", err)
 	}
-
+	
 	type args struct {
 		config      *gokoalaconfig.Config
 		openAPIFile string
@@ -69,6 +69,39 @@ func Test_newOpenAPI(t *testing.T) {
 				"/api",
 				"Vector Tiles",
 				"/tiles/{tileMatrixSetId}",
+			},
+		},
+		{
+			name: "Test render OpenAPI spec with OGC Records config",
+			args: args{
+				config: &gokoalaconfig.Config{
+					Version:  "2.3.0",
+					Title:    "Test API",
+					Abstract: "Test API description",
+					BaseURL:  gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
+					OgcAPI: gokoalaconfig.OgcAPI{
+						Records: &gokoalaconfig.OgcAPIRecords{
+							Collections: gokoalaconfig.RecordsCollections{{
+								ID: "datasets",
+								Filters: gokoalaconfig.FeatureFilters{
+									Properties: []gokoalaconfig.Queryable{{Name: "title"}},
+									CQL:        gokoalaconfig.CQL{Enable: true},
+								},
+							}},
+						},
+					},
+				},
+			},
+			expectedStringsInOpenAPISpec: []string{
+				"/collections/datasets/items",
+				"/collections/datasets/items/{recordId}",
+				"/collection/datasets/items/{recordId}",
+				"/collections/datasets/sortables",
+				"/collections/datasets/queryables",
+				"filter-lang",
+				"filter",
+				"title",
+				"recordCollectionGeoJSON",
 			},
 		},
 		{

@@ -31,6 +31,12 @@
 {{ if .Config.HasCollections -}}
 - [{{ i18n "Collections" }}]({{ .Config.BaseURL }}/collections): features/tiles/etc available in this API.
 {{- end }}
+{{ if .Config.OgcAPI.Records -}}
+<a rel="http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog" href="{{ .Config.BaseURL }}/collections">Local resources catalog</a>
+{{ range $collection := .Config.OgcAPI.Records.Collections }}
+<a rel="http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog" href="{{ $.Config.BaseURL }}/collections/{{ $collection.ID }}/items">{{ $collection.ID }} records</a>
+{{ end }}
+{{- end }}
 {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles -}}
 - [{{ i18n "Tiles" }}]({{ .Config.BaseURL }}/tiles): OGC API Tiles supported by this API.
 {{- end }}

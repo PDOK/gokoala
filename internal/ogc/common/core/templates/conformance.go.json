@@ -73,6 +73,31 @@
     ,"http://www.opengis.net/spec/json-fg-1/0.2"
     {{ end }}
 
+    {{ if .Config.OgcAPI.Records }}
+    ,"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-core"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-collection"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-core-query-parameters"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-api"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/sorting"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/json"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/html"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/oas30"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/autodiscovery"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/crawlable-catalog"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog-sorting"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/local-resources-catalog"
+    ,"https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-extensions"
+    ,"https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-items"
+    {{ if .Config.OgcAPI.Records.Collections.SupportsCQL }}
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/filtering"
+    ,"http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog-filtering"
+    ,"http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"
+    ,"http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2"
+    {{ end }}
+    {{ end }}
+
     {{ if .Config.OgcAPI.Styles }}
     ,"http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/core"
     ,"http://www.opengis.net/spec/ogcapi-styles-1/1.0/conf/mapbox-styles"

@@ -161,6 +161,14 @@
                     {{ i18n "AvailableIn" }}
                 </p>
                 <small class="text-body-secondary">{{ i18n "ViewAs" }} <a href="collections?f=json" target="_blank" aria-label="{{ i18n "Collections" }} {{ i18n "As" }} JSON">JSON</a></small>
+                {{ if .Config.OgcAPI.Records }}
+                <ul class="list-unstyled mt-2 mb-0">
+                    <li><a rel="http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog" href="collections">Local resources catalog</a></li>
+                    {{ range $collection := .Config.OgcAPI.Records.Collections }}
+                    <li><a rel="http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog" href="collections/{{ $collection.ID }}/items">{{ $collection.ID }} records</a></li>
+                    {{ end }}
+                </ul>
+                {{ end }}
             </div>
         </div>
     </div>

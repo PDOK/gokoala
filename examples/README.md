@@ -31,6 +31,21 @@ For the Postgres example we use a PostgresSQL server which contains the same dat
 - Open http://localhost:8080 to explore the landing page
 - Call http://localhost:8080/collections/dutch-addresses/items
 
+## OGC API Records example
+
+This example serves a DCAT-AP-NL catalog from a local GeoPackage. Its dataset includes a STAC asset linking to the
+[GeoParquet example file](https://raw.githubusercontent.com/opengeospatial/geoparquet/main/examples/example.parquet).
+GoKoala advertises this remote asset URL; it does not host or proxy the Parquet file.
+
+The GeoPackage fixture is included. From the repository root, start GoKoala:
+
+```bash
+go run ./cmd/gokoala-server --config-file examples/config_records_local.yaml
+```
+
+To regenerate the fixture, run `go run ./hack/records-fixture -force`. See the
+[Records database schema guide](../internal/ogc/records/schema/README.md) for the GeoPackage schema and metadata mapping.
+
 ## OGC API 3D GeoVolumes example
 
 This example uses 3D tiles of New York.
