@@ -1,0 +1,28 @@
+---
+version: 1.0.2
+title: OGC API Features
+abstract: Verify filtering through a configured numeric FID.
+baseUrl: http://localhost:8080
+serviceIdentifier: Feats
+license:
+  name: CC0
+  url: https://www.tldrlegal.com/license/creative-commons-cc0-1-0-universal
+ogcApi:
+  features:
+    datasources:
+      defaultWGS84:
+        geopackage:
+          local:
+            file: ./internal/ogc/features/datasources/geopackage/testdata/bag-wgs84.gpkg
+            fid: feature_id
+    collections:
+      - id: foo
+        tableName: ligplaatsen
+        filters:
+          properties:
+            - name: feature_id
+          cql:
+            enable: true
+        metadata:
+          title: Foooo
+          description: Foooo

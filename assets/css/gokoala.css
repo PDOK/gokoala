@@ -22,6 +22,15 @@
     color: var(--secondary-color);
 }
 
+/* spinner */
+.spinner-border {
+    position: absolute;
+    height: 1.5rem;
+    width: 1.5rem;
+    top: 1rem;
+    right: 1rem;
+}
+
 /* cards */
 .card-header {
     color: var(--bs-white);

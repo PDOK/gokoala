@@ -19,12 +19,11 @@ export class BoxControl extends Control {
    * @param boxEmitter Emitter to subscribe to bbox updates
    * @param {Object} [optionalOptions] Control options.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   constructor(
     public boxEmitter: EventEmitter<string>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     optionalOptions: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) {
     const options = optionalOptions || {}
 

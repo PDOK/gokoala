@@ -136,6 +136,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,
+			Queryables:       f.queryables[collection.ID],
 			Filter:           filter,
 		}, profile)
 	} else {
@@ -152,6 +153,7 @@ func (f *Features) queryFeatures(ctx context.Context, datasource ds.Datasource,
 			Bbox:             bbox,
 			TemporalCriteria: createTemporalCriteria(collection, dateTime),
 			PropertyFilters:  propertyFilters,
+			Queryables:       f.queryables[collection.ID],
 			Filter:           filter,
 		})
 		if err == nil && fids != nil {

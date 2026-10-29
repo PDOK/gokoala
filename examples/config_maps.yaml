@@ -1,10 +1,10 @@
 ---
 version: 1.0.0
-title: Example Maps
+title: Bestuurlijke Gebieden WMS
 # shortened title, used in breadcrumb path
-serviceIdentifier: LGB
+serviceIdentifier: BG
 abstract: >-
-  This is a description about the dataset in Markdown.
+  Overzicht van de bestuurlijke indeling van Nederland in gemeenten en provincies alsmede de rijksgrens. Gegevens zijn afgeleid uit de Basisregistratie Kadaster (BRK).
 # just a dummy picture, but you can put an actual thumbnail here
 thumbnail: maps.png
 resources:
@@ -24,7 +24,7 @@ availableLanguages:
 ogcApi:
   maps:
     # base URL of the MapServer WMS service
-    wmsServer: https://example.com/wms
+    wmsServer: https://service.pdok.nl/kadaster/brk-bestuurlijke-gebieden/wms/v1_0
     # default map view, used when request parameters are omitted
     defaultMap:
       crs: EPSG:28992
@@ -32,22 +32,81 @@ ogcApi:
       height: 600
       bbox: ["10000", "300000", "280000", "620000"]
     collections:
-      - id: landgebruik
+      - id: gemeentegebied
         metadata:
-          title: Landgebruik
-          description: Example map collection showing land use.
+          title: Gemeentegebied
+          description: Bestuurlijke Gebieden bestaan uit de gemeente-, provincie- en landgebieden. Deze worden sinds 2012 vervaardigd op basis van de kadastrale registratie (BRK).
           keywords:
-            - landgebruik
-            - kaart
+            - gemeentegebied
+            - gemeentegrens
         supportedSrs:
           - srs: EPSG:28992
-        bbox: ["10000", "300000", "280000", "620000"]
+          - srs: EPSG:25831
+          - srs: EPSG:25832
+          - srs: EPSG:3034
+          - srs: EPSG:3035
+          - srs: EPSG:3857
+          - srs: EPSG:4258
+          - srs: EPSG:4326
+        bbox: ["-25000", "250000", "280000", "860000"]
         layers:
-          - id: landgebruik
+          - id: gemeentegebied
             # layer name as advertised by the WMS service
-            name: landgebruik
-            title: Landgebruik
+            name: Gemeentegebied
+            title: Gemeentegebied
             styles:
               - id: default
                 # style name as advertised by the WMS service
-                wmsStyle: default
+                wmsStyle: Gemeentegebied
+      - id: provinciegebied
+        metadata:
+          title: Provinciegebied
+          description: Bestuurlijke Gebieden bestaan uit de gemeente-, provincie- en landgebieden. Deze worden sinds 2012 vervaardigd op basis van de kadastrale registratie (BRK).
+          keywords:
+            - provinciegebied
+            - provinciegrens
+        supportedSrs:
+          - srs: EPSG:28992
+          - srs: EPSG:25831
+          - srs: EPSG:25832
+          - srs: EPSG:3034
+          - srs: EPSG:3035
+          - srs: EPSG:3857
+          - srs: EPSG:inspire-validation-service-validation-1792706400-reference-validator-2839244091
+          - srs: EPSG:4326
+        bbox: ["-25000", "250000", "280000", "860000"]
+        layers:
+          - id: provinciegebied
+            # layer name as advertised by the WMS service
+            name: Provinciegebied
+            title: Provinciegebied
+            styles:
+              - id: default
+                # style name as advertised by the WMS service
+                wmsStyle: Provinciegebied
+      - id: landgebied
+        metadata:
+          title: Landgebied
+          description: Bestuurlijke Gebieden bestaan uit de gemeente-, provincie- en landgebieden. Deze worden sinds 2012 vervaardigd op basis van de kadastrale registratie (BRK).
+          keywords:
+            - landgebied
+            - landsgrens
+        supportedSrs:
+          - srs: EPSG:28992
+          - srs: EPSG:25831
+          - srs: EPSG:25832
+          - srs: EPSG:3034
+          - srs: EPSG:3035
+          - srs: EPSG:3857
+          - srs: EPSG:4258
+          - srs: EPSG:4326
+        bbox: ["-25000", "250000", "280000", "860000"]
+        layers:
+          - id: landgebied
+            # layer name as advertised by the WMS service
+            name: Landgebied
+            title: Landgebied
+            styles:
+              - id: default
+                # style name as advertised by the WMS service
+                wmsStyle: Landgebied

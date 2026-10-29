@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core'
+import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ChangeDetectionStrategy } from '@angular/core'
 import { AsyncPipe, NgClass } from '@angular/common'
 import { map, Observable, shareReplay, startWith, Subject, takeUntil, tap, withLatestFrom } from 'rxjs'
 import { Collection, CollectionsService } from '../../shared/services/collections.service'
@@ -13,6 +13,7 @@ interface CollectionSetting {
   selector: 'app-collection-settings',
   imports: [NgClass, AsyncPipe, ReactiveFormsModule],
   templateUrl: './collection-settings.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './collection-settings.component.css',
 })
 export class CollectionSettingsComponent implements OnInit, OnDestroy {

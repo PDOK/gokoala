@@ -113,6 +113,8 @@ ogcApi:
           urlAsHyperlink: true
         filters:
           properties:
+            - name: external_fid
+              indexRequired: false
             - name: locator_designator_addressnumber
               indexRequired: false
             - name: locator_designator_addressnumberextension

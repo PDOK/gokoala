@@ -22,6 +22,20 @@ ogcApi:
           title: Ligplaatsen
           description: Ligplaatsen example data
       - id: standplaatsen
+        filters:
+          properties:
+            - name: external_fid
+              indexRequired: false
+          cql:
+            enable: true
         metadata:
           title: Standplaatsen
           description: Standplaatsen example data
+      - id: standplaatsen-no-id-queryable
+        tableName: standplaatsen
+        filters:
+          cql:
+            enable: true
+        metadata:
+          title: Standplaatsen without an ID queryable
+          description: External FID is not configured as a filter property

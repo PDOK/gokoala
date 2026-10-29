@@ -75,6 +75,7 @@ jobs:
         uses: ncruces/go-coverage-report@aa507d98fb11c2b4dffa1b731e0786f50fd8ec93
         with:
           coverage-file: cover.out
+          module-dir: .
           report: true
           chart: false
           amend: false
