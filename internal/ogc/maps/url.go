@@ -15,13 +15,13 @@ import (
 )
 
 const (
-	CrsParam        = "crs"
-	BboxParam       = "bbox"
-	BboxCrsParam    = "bbox-crs"
-	WidthParam      = "width"
-	HeightParam     = "height"
-	Transparent = "transparent"
-	MMPerPixel  = "mm-per-pixel"
+	CrsParam     = "crs"
+	BboxParam    = "bbox"
+	BboxCrsParam = "bbox-crs"
+	WidthParam   = "width"
+	HeightParam  = "height"
+	Transparent  = "transparent"
+	MMPerPixel   = "mm-per-pixel"
 
 	maxAllowed = 5000
 )

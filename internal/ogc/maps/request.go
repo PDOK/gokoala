@@ -63,7 +63,14 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 	}
 
 	if request.mmPerPixel == 0 {
-		request.mmPerPixel = defaults.MMPerPixel
+		mmPerPixel, err := strconv.ParseFloat(defaults.MMPerPixel, 64)
+		if err != nil {
+			return fmt.Errorf("invalid default mm-per-pixel %q: %w", defaults.MMPerPixel, err)
+		}
+		if mmPerPixel <= 0 {
+			return fmt.Errorf("default mm-per-pixel must be positive, got %q", defaults.MMPerPixel)
+		}
+		request.mmPerPixel = mmPerPixel
 	}
 
 	return nil

@@ -20,10 +20,11 @@ var mapsConfig = &config.OgcAPIMaps{
 		},
 	},
 	DefaultMap: config.DefaultMap{
-		CRS:    "EPSG:28992",
-		Width:  800,
-		Height: 600,
-		Bbox:   []string{"10000", "300000", "280000", "620000"},
+		CRS:        "EPSG:28992",
+		Width:      800,
+		Height:     600,
+		Bbox:       []string{"10000", "300000", "280000", "620000"},
+		MMPerPixel: "0.28",
 	},
 	Collections: []config.MapsCollection{
 		{
@@ -55,6 +56,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 		height:      900,
 		transparent: true,
 		format:      "image/png",
+		mmPerPixel:  0.28,
 	}
 	const baselineWMSRequest = "SERVICE=WMS" +
 		"&VERSION=1.3.0" +
@@ -66,7 +68,8 @@ func TestBuildGetMapRequest(t *testing.T) {
 		"&TRANSPARENT=true" +
 		"&FORMAT=image/png" +
 		"&HEIGHT=900" +
-		"&WIDTH=1200"
+		"&WIDTH=1200" +
+		"&map_resolution=90.714286"
 
 	tests := []struct {
 		name          string
@@ -148,6 +151,11 @@ func TestBuildGetMapRequest(t *testing.T) {
 				"CRS": {"EPSG:28992"}, "BBOX": {"131869.474,451352.254,140815.394,461332.147"},
 			},
 			bboxTolerance: 0.01,
+		},
+		{
+			name:       "custom mm-per-pixel",
+			change:     func(request *MapRequest) { request.mmPerPixel = 0.254 },
+			wantParams: url.Values{"map_resolution": {"100.000000"}},
 		},
 		{
 			name:      "missing bbox",

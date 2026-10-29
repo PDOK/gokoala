@@ -62,7 +62,7 @@ func buildGetMapRequest(mapRequest *MapRequest, mapsConfig *config.OgcAPIMaps) (
 		BoundingBox:           *boundingBox,
 		Output:                *getOutput(mapRequest),
 		VendorSpecificParameters: map[string]string{
-			"mapResolution": fmt.Sprintf("%f", mapResolution),
+			"map_resolution": fmt.Sprintf("%f", mapResolution),
 		},
 	}, nil
 
