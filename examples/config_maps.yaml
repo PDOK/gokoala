@@ -72,7 +72,7 @@ ogcApi:
           - srs: EPSG:3034
           - srs: EPSG:3035
           - srs: EPSG:3857
-          - srs: EPSG:inspire-validation-service-validation-1792706400-reference-validator-2839244091
+          - srs: EPSG:4258
           - srs: EPSG:4326
         bbox: ["-25000", "250000", "280000", "860000"]
         layers:
