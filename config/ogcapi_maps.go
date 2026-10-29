@@ -33,6 +33,9 @@ func (o *OgcAPIMaps) Defaults() {
 	if o.DefaultMap.Height == 0 {
 		o.DefaultMap.Height = 768
 	}
+	if o.DefaultMap.MMPerPixel == 0 {
+		o.DefaultMap.MMPerPixel = 0.28
+	}
 }
 
 // +kubebuilder:object:generate=true
@@ -57,6 +60,13 @@ type DefaultMap struct {
 	// +kubebuilder:validation:MinItems=4
 	// +kubebuilder:validation:MaxItems=4
 	Bbox []string `yaml:"bbox" json:"bbox" validate:"required,len=4,dive,numeric"`
+
+	// Size of a rendering pixel in millimeters. Defaults to 0.28.
+	// +optional
+	// +kubebuilder:default=0.28
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:ExclusiveMinimum=true
+	MMPerPixel float64 `yaml:"mmPerPixel,omitempty" json:"mmPerPixel,omitempty" validate:"gt=0"`
 }
 
 // +kubebuilder:object:generate=true

@@ -52,12 +52,18 @@ func buildGetMapRequest(mapRequest *MapRequest, mapsConfig *config.OgcAPIMaps) (
 		return nil, err
 	}
 
+	// formula: DPI = 25.4 / mm-per-pixel
+	mapResolution := 25.4 / mapRequest.mmPerPixel
+
 	return &wms130.GetMapRequest{
 		BaseRequest:           wms130.BaseRequest{Service: wms130.Service, Version: wms130.Version},
 		StyledLayerDescriptor: *styledLayerDescriptor,
 		CRS:                   *crs,
 		BoundingBox:           *boundingBox,
 		Output:                *getOutput(mapRequest),
+		VendorSpecificParameters: map[string]string{
+			"mapResolution": fmt.Sprintf("%f", mapResolution),
+		},
 	}, nil
 
 }

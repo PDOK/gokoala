@@ -531,8 +531,8 @@ github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFSt
 github.com/package-url/packageurl-go v0.1.6 h1:YO3p6u1XmCUliivUg/qWphaY8vI6hxSnnPv7Bfg3m5M=
 github.com/package-url/packageurl-go v0.1.6/go.mod h1:nKAWB8E6uk1MHqiS/lQb9pYBGH2+mdJ2PJc2s50dQY0=
 github.com/pborman/getopt v0.0.0-20170112200414-7148bc3a4c30/go.mod h1:85jBQOZwpVEaDAr341tbn15RS4fCAsIst0qp7i8ex1o=
-github.com/pdok/ogc-specifications v1.0.7 h1:ZWmDr7mjfhvCT5okKYNl7MqSm9k2zkJRnPLj/bnbMUY=
-github.com/pdok/ogc-specifications v1.0.7/go.mod h1:GYFKRtWDDKS/elBRXQvGoMLL97yrtdRqyCFmnb4iPTA=
+github.com/pdok/ogc-specifications v1.0.8 h1:6vN59gaGU0gvM+zpNQwb9CHi3KtM7X1OdaUKrz0I0lY=
+github.com/pdok/ogc-specifications v1.0.8/go.mod h1:GYFKRtWDDKS/elBRXQvGoMLL97yrtdRqyCFmnb4iPTA=
 github.com/pelletier/go-toml/v2 v2.4.3 h1:GTRvJQutkOSftxIFD5xw9aepkYNuPWmVJpffdDPYVpY=
 github.com/pelletier/go-toml/v2 v2.4.3/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
