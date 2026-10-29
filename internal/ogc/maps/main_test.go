@@ -323,10 +323,11 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 			Maps: &config.OgcAPIMaps{
 				WMSServer: &config.URL{URL: wms},
 				DefaultMap: config.DefaultMap{
-					CRS:    "EPSG:28992",
-					Width:  800,
-					Height: 600,
-					Bbox:   []string{"10000", "300000", "280000", "620000"},
+					CRS:        "EPSG:28992",
+					Width:      800,
+					Height:     600,
+					Bbox:       []string{"10000", "300000", "280000", "620000"},
+					MMPerPixel: "0.28",
 				},
 				Collections: []config.MapsCollection{
 					{

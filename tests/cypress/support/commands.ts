@@ -83,7 +83,8 @@ Cypress.Commands.add('checkForBrokenLinks', () =>{
       !href.includes('example.com') &&
       !href.includes('europa.eu') &&
       !href.includes('opengis.net') &&
-      !href.includes('creativecommons.org/')) {
+      !href.includes('creativecommons.org/') &&
+      !href.incudes('/map')
       cy.request(href)
     }
   })

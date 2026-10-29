@@ -28,6 +28,7 @@ type MapRequest struct {
 	height      int
 	transparent bool
 	format      string
+	mmPerPixel  float64
 }
 
 func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
@@ -60,6 +61,18 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 		request.bbox = geom.NewBounds(geom.XY).Set(bbox[:]...)
 		request.bboxSRID = bboxSRID
 	}
+
+	if request.mmPerPixel == 0 {
+		mmPerPixel, err := strconv.ParseFloat(defaults.MMPerPixel, 64)
+		if err != nil {
+			return fmt.Errorf("invalid default mm-per-pixel %q: %w", defaults.MMPerPixel, err)
+		}
+		if mmPerPixel <= 0 {
+			return fmt.Errorf("default mm-per-pixel must be positive, got %q", defaults.MMPerPixel)
+		}
+		request.mmPerPixel = mmPerPixel
+	}
+
 	return nil
 }
 

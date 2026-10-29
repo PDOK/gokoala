@@ -18,9 +18,10 @@ const (
 	CrsParam     = "crs"
 	BboxParam    = "bbox"
 	BboxCrsParam = "bbox-crs"
-	Width        = "width"
-	Height       = "height"
+	WidthParam   = "width"
+	HeightParam  = "height"
 	Transparent  = "transparent"
+	MMPerPixel   = "mm-per-pixel"
 
 	maxAllowed = 5000
 )
@@ -30,9 +31,10 @@ var mapsKnownParams = map[string]struct{}{
 	CrsParam:           {},
 	BboxParam:          {},
 	BboxCrsParam:       {},
-	Width:              {},
-	Height:             {},
+	WidthParam:         {},
+	HeightParam:        {},
 	Transparent:        {},
+	MMPerPixel:         {},
 }
 
 type mapsURL struct {
@@ -56,6 +58,7 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 	width, widthErr := parseWidth(m.params)
 	height, heightErr := parseHeight(m.params)
 	transparent, transparentErr := parseTransparent(m.params)
+	mmPerPixel, mmPerPixelErr := parseMMPerPixel(m.params)
 
 	if height > maxAllowed {
 		msg := fmt.Sprintf("height %d exceeds the maximum allowed number (%d)", height, maxAllowed)
@@ -69,11 +72,11 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 		err = errors.Join(err, maxWidthError)
 	}
 
-	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr); err != nil {
+	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr, mmPerPixelErr); err != nil {
 		return MapRequest{}, err
 	}
 
-	request := MapRequest{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, transparent: transparent}
+	request := MapRequest{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, transparent: transparent, mmPerPixel: mmPerPixel}
 
 	return request, nil
 }
@@ -108,12 +111,12 @@ func parseBbox(params url.Values) (*geom.Bounds, domain.SRID, error) {
 }
 
 func parseWidth(params url.Values) (int, error) {
-	widthStr := params.Get(Width)
+	widthStr := params.Get(WidthParam)
 	return parseAndValidatePositiveInt(widthStr)
 }
 
 func parseHeight(params url.Values) (int, error) {
-	heightStr := params.Get(Height)
+	heightStr := params.Get(HeightParam)
 	return parseAndValidatePositiveInt(heightStr)
 }
 
@@ -160,4 +163,23 @@ func parseCrsToContentCrs(params url.Values, fallback domain.ContentCrs) domain.
 	}
 
 	return fallback
+}
+
+func parseMMPerPixel(params url.Values) (float64, error) {
+	param := strings.TrimSpace(params.Get(MMPerPixel))
+	if param == "" {
+		return 0, nil
+	}
+
+	mmPerPixelParam, err := strconv.ParseFloat(param, 64)
+	if err != nil {
+		return 0, fmt.Errorf("value is not a valid float: %s", param)
+	}
+
+	// mm-per-pixel cannot be negative or 0
+	if mmPerPixelParam <= 0 {
+		return 0, fmt.Errorf("value is not a positive float: %f", mmPerPixelParam)
+	}
+
+	return mmPerPixelParam, nil
 }
