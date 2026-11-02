@@ -3,6 +3,7 @@ package maps
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"strings"
 
@@ -52,14 +53,32 @@ func buildGetMapRequest(mapRequest *MapRequest, mapsConfig *config.OgcAPIMaps) (
 		return nil, err
 	}
 
+	mapResolution, err := toMapResolution(mapRequest.mmPerPixel)
+	if err != nil {
+		return nil, err
+	}
+
 	return &wms130.GetMapRequest{
 		BaseRequest:           wms130.BaseRequest{Service: wms130.Service, Version: wms130.Version},
 		StyledLayerDescriptor: *styledLayerDescriptor,
 		CRS:                   *crs,
 		BoundingBox:           *boundingBox,
 		Output:                *getOutput(mapRequest),
+		VendorSpecificParameters: map[string]string{
+			"map_resolution": fmt.Sprintf("%f", mapResolution),
+		},
 	}, nil
 
+}
+
+func toMapResolution(mmPerPixel float64) (float64, error) {
+	const minMapResolution = 0.00001
+
+	mapResolution := 25.4 / mmPerPixel
+	if math.IsNaN(mapResolution) || math.IsInf(mapResolution, 0) || mapResolution < minMapResolution {
+		return 0, fmt.Errorf("mm-per-pixel %g results in an invalid map resolution", mmPerPixel)
+	}
+	return mapResolution, nil
 }
 
 func getStyledLayerDescriptor(mapRequest *MapRequest, collection *config.MapsCollection) (*wms130.StyledLayerDescriptor, error) {

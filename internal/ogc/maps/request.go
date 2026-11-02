@@ -28,6 +28,7 @@ type MapRequest struct {
 	height      int
 	transparent bool
 	format      string
+	mmPerPixel  float64
 }
 
 func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
@@ -60,12 +61,25 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 		request.bbox = geom.NewBounds(geom.XY).Set(bbox[:]...)
 		request.bboxSRID = bboxSRID
 	}
+
+	if request.mmPerPixel == 0 {
+		mmPerPixel, err := strconv.ParseFloat(defaults.MMPerPixel, 64)
+		if err != nil {
+			return fmt.Errorf("invalid default mm-per-pixel %q: %w", defaults.MMPerPixel, err)
+		}
+		request.mmPerPixel = mmPerPixel
+	}
+
 	return nil
 }
 
 func (request *MapRequest) validate() error {
 	// Place to do cross-field validation.
 	// I.e., if we want to support Scaling, we cannot have both 'bbox' and 'center' params in a single request
+
+	if _, err := toMapResolution(request.mmPerPixel); err != nil {
+		return err
+	}
 
 	return nil
 }

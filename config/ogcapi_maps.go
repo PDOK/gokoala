@@ -1,6 +1,11 @@
 package config
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"math"
+	"strconv"
+)
 
 // +kubebuilder:object:generate=true
 type OgcAPIMaps struct {
@@ -33,6 +38,9 @@ func (o *OgcAPIMaps) Defaults() {
 	if o.DefaultMap.Height == 0 {
 		o.DefaultMap.Height = 768
 	}
+	if o.DefaultMap.MMPerPixel == "" {
+		o.DefaultMap.MMPerPixel = "0.28"
+	}
 }
 
 // +kubebuilder:object:generate=true
@@ -57,6 +65,12 @@ type DefaultMap struct {
 	// +kubebuilder:validation:MinItems=4
 	// +kubebuilder:validation:MaxItems=4
 	Bbox []string `yaml:"bbox" json:"bbox" validate:"required,len=4,dive,numeric"`
+
+	// Size of a rendering pixel in millimeters. Defaults to 0.28.
+	// +optional
+	// +kubebuilder:default="0.28"
+	// +kubebuilder:validation:Pattern=`^\d*\.?\d+$`
+	MMPerPixel string `yaml:"mmPerPixel,omitempty" json:"mmPerPixel,omitempty" validate:"numeric"`
 }
 
 // +kubebuilder:object:generate=true
@@ -181,6 +195,25 @@ func validateMapCollections(collections []MapsCollection) error {
 
 	if len(errMessages) > 0 {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+
+	return nil
+}
+
+func validateDefaultsForMaps(dm DefaultMap) error {
+	mmPerPixelError := validateMMPerPixel(dm.MMPerPixel)
+
+	return errors.Join(mmPerPixelError)
+}
+
+func validateMMPerPixel(mmPerPixel string) error {
+	value, err := strconv.ParseFloat(mmPerPixel, 64)
+	if err != nil {
+		return fmt.Errorf("invalid mmPerPixel '%s' in default map: %w", mmPerPixel, err)
+	}
+
+	if math.IsNaN(value) || math.IsInf(value, 0) || value <= 0 {
+		return fmt.Errorf("mmPerPixel in default map must be finite and positive, got '%s'", mmPerPixel)
 	}
 
 	return nil

@@ -44,6 +44,7 @@ type mapsPage struct {
 	CRS         string
 	Bbox        string
 	Transparent bool
+	MMPerPixel  float64
 }
 
 // newHTMLMaps render the requested as HTML or Markdown
