@@ -3,6 +3,7 @@ package maps
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"slices"
 	"strconv"
@@ -176,9 +177,12 @@ func parseMMPerPixel(params url.Values) (float64, error) {
 		return 0, fmt.Errorf("value is not a valid float: %s", param)
 	}
 
-	// mm-per-pixel cannot be negative or 0
-	if mmPerPixelParam <= 0 {
-		return 0, fmt.Errorf("value is not a positive float: %f", mmPerPixelParam)
+	if math.IsNaN(mmPerPixelParam) || math.IsInf(mmPerPixelParam, 0) || mmPerPixelParam <= 0 {
+		return 0, fmt.Errorf("value is not a finite positive float: %s", param)
+	}
+
+	if _, err = toMapResolution(mmPerPixelParam); err != nil {
+		return 0, err
 	}
 
 	return mmPerPixelParam, nil

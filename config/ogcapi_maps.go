@@ -1,6 +1,11 @@
 package config
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"math"
+	"strconv"
+)
 
 // +kubebuilder:object:generate=true
 type OgcAPIMaps struct {
@@ -190,6 +195,25 @@ func validateMapCollections(collections []MapsCollection) error {
 
 	if len(errMessages) > 0 {
 		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+
+	return nil
+}
+
+func validateDefaultsForMaps(dm DefaultMap) error {
+	mmPerPixelError := validateMMPerPixel(dm.MMPerPixel)
+
+	return errors.Join(mmPerPixelError)
+}
+
+func validateMMPerPixel(mmPerPixel string) error {
+	value, err := strconv.ParseFloat(mmPerPixel, 64)
+	if err != nil {
+		return fmt.Errorf("invalid mmPerPixel '%s' in default map: %w", mmPerPixel, err)
+	}
+
+	if math.IsNaN(value) || math.IsInf(value, 0) || value <= 0 {
+		return fmt.Errorf("mmPerPixel in default map must be finite and positive, got '%s'", mmPerPixel)
 	}
 
 	return nil

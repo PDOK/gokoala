@@ -67,9 +67,6 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 		if err != nil {
 			return fmt.Errorf("invalid default mm-per-pixel %q: %w", defaults.MMPerPixel, err)
 		}
-		if mmPerPixel <= 0 {
-			return fmt.Errorf("default mm-per-pixel must be positive, got %q", defaults.MMPerPixel)
-		}
 		request.mmPerPixel = mmPerPixel
 	}
 
@@ -79,6 +76,11 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 func (request *MapRequest) validate() error {
 	// Place to do cross-field validation.
 	// I.e., if we want to support Scaling, we cannot have both 'bbox' and 'center' params in a single request
+
+	// reject here (HTTP 400) instead of failing later when building the WMS request
+	if _, err := toMapResolution(request.mmPerPixel); err != nil {
+		return err
+	}
 
 	return nil
 }
