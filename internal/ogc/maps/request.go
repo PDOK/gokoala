@@ -77,7 +77,6 @@ func (request *MapRequest) validate() error {
 	// Place to do cross-field validation.
 	// I.e., if we want to support Scaling, we cannot have both 'bbox' and 'center' params in a single request
 
-	// reject here (HTTP 400) instead of failing later when building the WMS request
 	if _, err := toMapResolution(request.mmPerPixel); err != nil {
 		return err
 	}
