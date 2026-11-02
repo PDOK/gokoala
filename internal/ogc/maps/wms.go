@@ -71,7 +71,6 @@ func buildGetMapRequest(mapRequest *MapRequest, mapsConfig *config.OgcAPIMaps) (
 
 }
 
-
 func toMapResolution(mmPerPixel float64) (float64, error) {
 	const minMapResolution = 0.00001
 
