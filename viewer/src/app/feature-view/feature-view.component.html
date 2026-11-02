@@ -1,4 +1,11 @@
-<div class="featuremaparea" id="featuremap" [style.height.px]="mapHeight"></div>
+<div>
+  @if (loading()) {
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  }
+  <div class="featuremaparea" id="featuremap" [style.height.px]="mapHeight"></div>
+</div>
 <div id="tooltip" class="maptooltip">
   <div id="tooltip-content"></div>
 </div>

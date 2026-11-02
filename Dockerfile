@@ -1,5 +1,5 @@
 ####### Node.js build
-FROM docker.io/node:22-alpine3.21 AS build-component
+FROM docker.io/node:24-alpine AS build-component
 RUN mkdir -p /usr/src/app
 COPY ./viewer /usr/src/app
 WORKDIR /usr/src/app

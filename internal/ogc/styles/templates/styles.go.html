@@ -53,8 +53,7 @@
               URL
             </td>
             <td class="w-auto px-2">
-              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}"
-                 aria-label="{{ i18n "View" }} style">
+              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}">
                  {{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}
               </a>
             </td>
@@ -73,7 +72,7 @@
             </td>
             <td class="w-auto px-2">
               <a id="href-metadata" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}/metadata"
-                 aria-label="{{ i18n "View" }} style metadata">
+                 aria-label="{{ i18n "StyleMetadata" }} (style)">
                 {{ i18n "StyleMetadata" }}
               </a>
             </td>

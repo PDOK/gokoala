@@ -4,10 +4,24 @@ import (
 	"testing"
 	"time"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/ogc/features/datasources"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestTableFieldRejectsInternalFIDWhenExternalFIDIsConfigured(t *testing.T) {
+	// given
+	table := &Table{Schema: &domain.Schema{Fields: []domain.Field{
+		{Name: "feature_id", Type: "integer", IsFid: true},
+		{Name: "external_fid", Type: "uuid", IsExternalFid: true},
+	}}}
+	// when
+	_, err := table.Field(config.Queryable{Name: "feature_id"})
+	// then
+	require.EqualError(t, err, "internal FID column 'feature_id' cannot be configured as a queryable when external FID column is configured")
+}
 
 func TestPropertyFiltersToSQL(t *testing.T) {
 	testCases := []struct {
@@ -39,9 +53,48 @@ func TestPropertyFiltersToSQL(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			sql, args := PropertyFiltersToSQL(tt.filters, tt.symbol)
+			sql, args := PropertyFiltersToSQL(tt.filters, tt.symbol, nil)
 			assert.Equal(t, tt.expectedSQL, sql)
 			assert.Equal(t, tt.expectedArgs, args)
+		})
+	}
+}
+
+func TestPropertyFiltersToSQLResolvesPublicIDFromQueryable(t *testing.T) {
+	testCases := []struct {
+		name       string
+		queryables domain.Queryables
+		wantColumn string
+	}{
+		{
+			name: "only internal FID is queryable",
+			queryables: domain.Queryables{
+				"id": {Field: domain.Field{Name: "fid", Type: "integer", IsFid: true}},
+			},
+			wantColumn: "fid",
+		},
+		{
+			name: "ordinary property named id",
+			queryables: domain.Queryables{
+				"id": {Field: domain.Field{Name: "id", Type: "text"}},
+			},
+			wantColumn: "id",
+		},
+		{
+			name: "external FID column is named id",
+			queryables: domain.Queryables{
+				"id": {Field: domain.Field{Name: "id", Type: "uuid", IsExternalFid: true}},
+			},
+			wantColumn: "id",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			sql, args := PropertyFiltersToSQL(map[string]string{"id": "abc"}, ":", tt.queryables)
+
+			assert.Equal(t, ` and "`+tt.wantColumn+`" = :pf1`, sql)
+			assert.Equal(t, map[string]any{"pf1": "abc"}, args)
 		})
 	}
 }

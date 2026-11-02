@@ -293,7 +293,7 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolPgx)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolPgx, criteria.Queryables)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, NamedParamSymbolPgx)
 
 	var bboxClause string

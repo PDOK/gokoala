@@ -312,7 +312,7 @@ func (g *GeoPackage) makeFeaturesQuery(ctx context.Context, propConfig *config.F
 }
 
 func (g *GeoPackage) makeDefaultQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any) {
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx, criteria.Queryables)
 	temporalClause, temporalNamedParams := common.TemporalCriteriaToSQL(criteria.TemporalCriteria, NamedParamSymbolSqlx)
 
 	if criteria.Filter.RtreeSQL != "" {
@@ -344,7 +344,7 @@ select %[5]s from nextprevfeat where "%[2]s" >= :fid %[3]s %[4]s %[8]s %[9]s lim
 func (g *GeoPackage) makeBboxQuery(table *common.Table, selectClause string, criteria ds.FeaturesCriteria) (string, map[string]any, error) {
 	btreeIndexHint := fmt.Sprintf("indexed by \"%s_spatial_idx\"", table.Name)
 
-	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx)
+	pfClause, pfNamedParams := common.PropertyFiltersToSQL(criteria.PropertyFilters, NamedParamSymbolSqlx, criteria.Queryables)
 	if pfClause != "" {
 		// don't force btree index when using property filter, let SQLite decide
 		// whether to use the BTree index or the property filter index

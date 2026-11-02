@@ -1,4 +1,14 @@
-import { ChangeDetectorRef, Component, DestroyRef, Input, OnChanges, OnInit, ViewEncapsulation, inject } from '@angular/core'
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  Input,
+  OnChanges,
+  OnInit,
+  ViewEncapsulation,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { recordStyleLayer } from 'ol-mapbox-style'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
@@ -11,6 +21,7 @@ import { NGXLogger } from 'ngx-logger'
   templateUrl: './legend-view.component.html',
   styleUrls: ['./legend-view.component.css'],
   imports: [LegendItemComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.Emulated,
 })
 export class LegendViewComponent implements OnInit, OnChanges {

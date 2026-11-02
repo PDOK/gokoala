@@ -36,16 +36,45 @@
 //   }
 // }
 
-import 'cypress-axe'
+import type { AxeResults, Result } from 'axe-core'
 
 declare global {
   namespace Cypress {
     interface Chainable {
       checkForBrokenLinks(): Chainable<void>
       checkForBrokenImages(): Chainable<void>
+      injectAxe(): Chainable<void>
+      checkA11y(): Chainable<void>
     }
   }
 }
+
+// Replaces cypress-axe, which does not support Cypress 16.
+Cypress.Commands.add('injectAxe', () => {
+  cy.readFile('node_modules/axe-core/axe.min.js').then(source => {
+    cy.window({ log: false }).then(win => {
+      win.eval(source)
+    })
+  })
+})
+
+Cypress.Commands.add('checkA11y', () => {
+  cy.window({ log: false })
+    .then(win => (win as unknown as { axe: { run: (context: Document) => Promise<AxeResults> } }).axe.run(win.document))
+    .then(({ violations }: AxeResults) => {
+      violations.forEach((v: Result) => {
+        const targets = v.nodes.flatMap(node => node.target).join(', ')
+        Cypress.log({
+          $el: Cypress.$(targets),
+          name: 'a11y error!',
+          consoleProps: () => v,
+          message: `${v.id} on ${v.nodes.length} Node${v.nodes.length === 1 ? '' : 's'}`,
+        })
+      })
+      const summary = `${violations.length} accessibility violation${violations.length === 1 ? ' was' : 's were'} detected`
+      assert.equal(violations.length, 0, summary)
+    })
+})
 
 Cypress.Commands.add('checkForBrokenLinks', () =>{
   cy.get('a').each(link => {

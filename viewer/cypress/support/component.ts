@@ -25,7 +25,6 @@ import { mount } from 'cypress/angular'
 // your custom command.
 // Alternatively, can be defined in cypress/support/component.d.ts
 // with a <reference path="./component" /> at the top of your spec.
-// cypress-axe provides its own global augmentation for injectAxe/configureAxe/checkA11y.
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

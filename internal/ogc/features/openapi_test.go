@@ -23,6 +23,9 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 			name: "Valid property filters",
 			queryablesByCollection: map[string]domain.Queryables{
 				"foo": map[string]domain.QueryableWithAllowedValues{
+					"id": {
+						Field: domain.Field{Name: "external_fid", Type: "uuid", IsExternalFid: true},
+					},
 					"straatnaam": {
 						Field:         domain.Field{Name: "straatnaam", Type: "text", Description: "Filter features by this property"},
 						AllowedValues: nil,
@@ -34,6 +37,7 @@ func TestCreatePropertyFiltersByCollection(t *testing.T) {
 				},
 			},
 			wantResult: map[string][]OpenAPIPropertyFilter{"foo": {
+				{Name: "id", DataType: "string", IsFidOrExternalFid: true},
 				{Name: "postcode", Description: "Filter features by this property", DataType: "string", AllowedValues: []string{"1234AB", "5678XY"}},
 				{Name: "straatnaam", Description: "Filter features by this property", DataType: "string"},
 			}},

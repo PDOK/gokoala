@@ -1,4 +1,5 @@
 import { provideHttpClient } from '@angular/common/http'
+import type { AxeResults, Result } from 'axe-core'
 import { createOutputSpy, MountResponse } from 'cypress/angular'
 import { Map as OLMap } from 'ol'
 import { FeatureViewComponent } from 'src/app/feature-view/feature-view.component'
@@ -19,7 +20,7 @@ export const tests: ProjectionTest[] = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getTestTitle = (test: Mocha.Suite = (Cypress as any).mocha.getRunner().suite.ctx.test): string =>
   test.parent?.title ? `${getTestTitle(test.parent)} -- ${test.title}` : test.title
-export function intercept(geofix: string, realmaps: boolean = Cypress.env('realmaps'), url: string = 'https://test/items*') {
+export function intercept(geofix: string, realmaps: boolean = Cypress.expose('realmaps'), url: string = 'https://test/items*') {
   cy.viewport(550, 750)
   cy.intercept('GET', url, { fixture: geofix }).as('geo')
 
@@ -97,8 +98,8 @@ export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string,
 }
 
 export function idle() {
-  if (Cypress.env('networkIdle')) {
-    cy.waitForNetworkIdle('*', '*', Cypress.env('networkIdle'))
+  if (Cypress.expose('networkIdle')) {
+    cy.waitForNetworkIdle('*', '*', Cypress.expose('networkIdle'))
   }
 }
 export function screenshot(aname: string = '') {
@@ -131,10 +132,6 @@ export function downloadPng(selector: string, filename: string) {
 }
 
 export function injectAxe() {
-  //cy.injectAxe();
-  // cy.injectAxe is currently broken. https://github.com/component-driven/cypress-axe/issues/82
-
-  // Creating our own injection logic
   cy.readFile('node_modules/axe-core/axe.min.js').then(source => {
     return cy.window({ log: false }).then(window => {
       window.eval(source)
@@ -142,9 +139,31 @@ export function injectAxe() {
   })
 }
 
+function checkA11y(selector: string, skipFailures = false) {
+  cy.window({ log: false })
+    .then(win => (win as unknown as { axe: { run: (context: string) => Promise<AxeResults> } }).axe.run(selector))
+    .then(({ violations }: AxeResults) => {
+      violations.forEach((v: Result) => {
+        const targets = v.nodes.flatMap(node => node.target).join(', ')
+        Cypress.log({
+          $el: Cypress.$(targets),
+          name: 'a11y error',
+          consoleProps: () => v,
+          message: `${v.id} on ${v.nodes.length} Node${v.nodes.length === 1 ? '' : 's'}`,
+        })
+      })
+      const summary = `${violations.length} accessibility violation${violations.length === 1 ? ' was' : 's were'} detected`
+      if (!skipFailures) {
+        assert.equal(violations.length, 0, summary)
+      } else if (violations.length) {
+        Cypress.log({ name: 'a11y violation summary', message: summary })
+      }
+    })
+}
+
 export function checkAccessibility(selector: string) {
   cy.get(selector).should('be.visible')
-  cy.checkA11y(selector)
+  checkA11y(selector)
 }
 
 export function logAccessibility(selector: string) {
@@ -155,5 +174,5 @@ export function logAccessibility(selector: string) {
       const el = $el.get(0) //native DOM element
       cy.log(el.innerHTML)
     })
-  cy.checkA11y(selector, undefined, undefined, true)
+  checkA11y(selector, true)
 }

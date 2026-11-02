@@ -3,7 +3,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "skipLibCheck": true,
-    "baseUrl": "./",
+    "paths": { "src/*": ["./src/*"] },
     "outDir": "./dist/out-tsc",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

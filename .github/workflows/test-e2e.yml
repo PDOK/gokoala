@@ -32,7 +32,7 @@ jobs:
 
       # E2E Test (Cypress)
       - name: E2E Test => Cypress
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: ./tests
           browser: chrome

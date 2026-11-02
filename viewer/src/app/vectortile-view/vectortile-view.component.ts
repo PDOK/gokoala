@@ -301,7 +301,6 @@ export class VectortileViewComponent implements OnChanges {
     this.vectorTileLayer = l.vectorTileLayer
 
     const contr = defaultControls({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       zoom: this.maxZoom! - this.minZoom! > 1,
     }).extend([new FullScreen()])
     this.map = new Map({

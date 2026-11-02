@@ -45,5 +45,3 @@
 //     }
 //   }
 // }
-
-import 'cypress-axe'

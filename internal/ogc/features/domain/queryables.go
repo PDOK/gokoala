@@ -1,8 +1,9 @@
 package domain
 
 const (
-	PropertyFilterWildcard = "*" // used as wildcard in OAF part 1
-	Wildcard               = "%" // used as wildcard in CQL and SQL
+	PropertyFilterWildcard = "*"  // used as wildcard in OAF part 1
+	Wildcard               = "%"  // used as wildcard in CQL and SQL
+	FeatureIDPropertyName  = "id" // standard property name for the feature ID
 )
 
 // Queryables one or more QueryableWithAllowedValues indexed by queryable name.
