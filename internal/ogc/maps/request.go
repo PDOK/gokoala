@@ -17,6 +17,8 @@ const (
 	CollectionMap MapType = "Collection Map"
 )
 
+var ErrMapTooLarge = errors.New("map dimensions exceed configured limits")
+
 type MapRequest struct {
 	mapType     MapType
 	collection  string
@@ -73,7 +75,8 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 	return nil
 }
 
-func (request *MapRequest) validate() error {
+// validate checks the request after defaults have been applied.
+func (request *MapRequest) validate(limits *config.OgcAPIMaps) error {
 	// Place to do cross-field validation.
 	// I.e., if we want to support Scaling, we cannot have both 'bbox' and 'center' params in a single request
 
@@ -81,5 +84,22 @@ func (request *MapRequest) validate() error {
 		return err
 	}
 
+	if request.width <= 0 || request.height <= 0 {
+		return errors.New("map dimensions must be positive")
+	}
+	var errs []error
+	if request.width > limits.MaxWidth {
+		errs = append(errs, fmt.Errorf("width %d exceeds maxWidth (%d)", request.width, limits.MaxWidth))
+	}
+	if request.height > limits.MaxHeight {
+		errs = append(errs, fmt.Errorf("height %d exceeds maxHeight (%d)", request.height, limits.MaxHeight))
+	}
+	// Divide to avoid overflowing when multiplying request dimensions.
+	if int64(request.width) > limits.MaxPixels()/int64(request.height) {
+		errs = append(errs, fmt.Errorf("width times height exceeds maxPixels (%d)", limits.MaxPixels()))
+	}
+	if err := errors.Join(errs...); err != nil {
+		return fmt.Errorf("%w: %w", ErrMapTooLarge, err)
+	}
 	return nil
 }

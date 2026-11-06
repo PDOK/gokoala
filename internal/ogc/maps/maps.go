@@ -1,6 +1,7 @@
 package maps
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -65,8 +66,12 @@ func (m *Maps) Maps() http.HandlerFunc {
 			return
 		}
 
-		if err = request.validate(); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+		if err = request.validate(m.engine.Config.OgcAPI.Maps); err != nil {
+			kind := engine.ProblemBadRequest
+			if errors.Is(err, ErrMapTooLarge) {
+				kind = engine.ProblemRequestEntityTooLarge
+			}
+			engine.RenderProblem(kind, w, err.Error())
 			return
 		}
 

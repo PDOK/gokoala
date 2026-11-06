@@ -23,8 +23,6 @@ const (
 	HeightParam  = "height"
 	Transparent  = "transparent"
 	MMPerPixel   = "mm-per-pixel"
-
-	maxAllowed = 5000
 )
 
 var mapsKnownParams = map[string]struct{}{
@@ -60,18 +58,6 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 	height, heightErr := parseHeight(m.params)
 	transparent, transparentErr := parseTransparent(m.params)
 	mmPerPixel, mmPerPixelErr := parseMMPerPixel(m.params)
-
-	if height > maxAllowed {
-		msg := fmt.Sprintf("height %d exceeds the maximum allowed number (%d)", height, maxAllowed)
-		maxHeightErr := errors.New(msg)
-		err = errors.Join(err, maxHeightErr)
-	}
-
-	if width > maxAllowed {
-		msg := fmt.Sprintf("width %d exceeds the maximum allowed number (%d)", width, maxAllowed)
-		maxWidthError := errors.New(msg)
-		err = errors.Join(err, maxWidthError)
-	}
 
 	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr, mmPerPixelErr); err != nil {
 		return MapRequest{}, err

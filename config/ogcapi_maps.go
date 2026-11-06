@@ -12,6 +12,18 @@ type OgcAPIMaps struct {
 	// Base URL of the MapServer WMS service.
 	WMSServer *URL `yaml:"wmsServer" json:"wmsServer" validate:"required"`
 
+	// Maximum map width in pixels.
+	// +optional
+	// +kubebuilder:default=4000
+	// +kubebuilder:validation:Minimum=1
+	MaxWidth int `yaml:"maxWidth,omitempty" json:"maxWidth,omitempty" default:"4000" validate:"gt=0"`
+
+	// Maximum map height in pixels.
+	// +optional
+	// +kubebuilder:default=4000
+	// +kubebuilder:validation:Minimum=1
+	MaxHeight int `yaml:"maxHeight,omitempty" json:"maxHeight,omitempty" default:"4000" validate:"gt=0"`
+
 	// Default map view used when request parameters are omitted.
 	DefaultMap DefaultMap `yaml:"defaultMap" json:"defaultMap" validate:"required"`
 
@@ -32,15 +44,13 @@ func (csm MapsCollections) ContainsID(id string) bool {
 }
 
 func (o *OgcAPIMaps) Defaults() {
-	if o.DefaultMap.Width == 0 {
-		o.DefaultMap.Width = 1024
-	}
-	if o.DefaultMap.Height == 0 {
-		o.DefaultMap.Height = 768
-	}
 	if o.DefaultMap.MMPerPixel == "" {
 		o.DefaultMap.MMPerPixel = "0.28"
 	}
+}
+
+func (o *OgcAPIMaps) MaxPixels() int64 {
+	return int64(o.MaxWidth) * int64(o.MaxHeight)
 }
 
 // +kubebuilder:object:generate=true
@@ -53,13 +63,13 @@ type DefaultMap struct {
 	// +optional
 	// +kubebuilder:default=1024
 	// +kubebuilder:validation:Minimum=1
-	Width int `yaml:"width,omitempty" json:"width,omitempty" validate:"gt=0"`
+	Width int `yaml:"width,omitempty" json:"width,omitempty" default:"1024" validate:"gt=0"`
 
 	// Height of the map image in pixels. Defaults to 768.
 	// +optional
 	// +kubebuilder:default=768
 	// +kubebuilder:validation:Minimum=1
-	Height int `yaml:"height,omitempty" json:"height,omitempty" validate:"gt=0"`
+	Height int `yaml:"height,omitempty" json:"height,omitempty" default:"768" validate:"gt=0"`
 
 	// Bounding box of the default map view.
 	// +kubebuilder:validation:MinItems=4
@@ -204,6 +214,24 @@ func validateDefaultsForMaps(dm DefaultMap) error {
 	mmPerPixelError := validateMMPerPixel(dm.MMPerPixel)
 
 	return errors.Join(mmPerPixelError)
+}
+
+func validateMapLimits(o *OgcAPIMaps) error {
+	var errMessages []string
+	largestSafeWidth := int64(math.MaxInt64) / int64(o.MaxHeight)
+	if int64(o.MaxWidth) > largestSafeWidth {
+		errMessages = append(errMessages, "maps maxWidth times maxHeight exceeds the maximum supported pixel count")
+	}
+	if o.DefaultMap.Width > o.MaxWidth {
+		errMessages = append(errMessages, fmt.Sprintf("maps defaultMap.width must not exceed maxWidth (%d)", o.MaxWidth))
+	}
+	if o.DefaultMap.Height > o.MaxHeight {
+		errMessages = append(errMessages, fmt.Sprintf("maps defaultMap.height must not exceed maxHeight (%d)", o.MaxHeight))
+	}
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+	return nil
 }
 
 func validateMMPerPixel(mmPerPixel string) error {

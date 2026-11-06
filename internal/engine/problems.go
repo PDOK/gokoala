@@ -20,11 +20,12 @@ var Now = time.Now // allow mocking
 
 // The following problems should be added to openapi/problems.go.json.
 var (
-	ProblemBadRequest    = ProblemKind(http.StatusBadRequest)
-	ProblemNotFound      = ProblemKind(http.StatusNotFound)
-	ProblemNotAcceptable = ProblemKind(http.StatusNotAcceptable)
-	ProblemServerError   = ProblemKind(http.StatusInternalServerError)
-	ProblemBadGateway    = ProblemKind(http.StatusBadGateway)
+	ProblemBadRequest            = ProblemKind(http.StatusBadRequest)
+	ProblemNotFound              = ProblemKind(http.StatusNotFound)
+	ProblemNotAcceptable         = ProblemKind(http.StatusNotAcceptable)
+	ProblemServerError           = ProblemKind(http.StatusInternalServerError)
+	ProblemBadGateway            = ProblemKind(http.StatusBadGateway)
+	ProblemRequestEntityTooLarge = ProblemKind(http.StatusRequestEntityTooLarge)
 )
 
 // RenderProblem writes RFC 7807 (https://tools.ietf.org/html/rfc7807) problem to the client.

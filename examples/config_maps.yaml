@@ -25,6 +25,9 @@ ogcApi:
   maps:
     # base URL of the MapServer WMS service
     wmsServer: https://service.pdok.nl/kadaster/brk-bestuurlijke-gebieden/wms/v1_0
+    # global image limits in pixels (both default to 4000)
+    maxWidth: 4000
+    maxHeight: 4000
     # default map view, used when request parameters are omitted
     defaultMap:
       crs: EPSG:28992
