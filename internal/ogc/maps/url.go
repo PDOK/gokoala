@@ -41,14 +41,17 @@ type mapsURL struct {
 	params  url.Values
 }
 
-func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.ContentCrs) (MapRequest, error) {
+func (m *mapsURL) parse(supportedCrs []domain.ContentCrs) (MapRequest, error) {
 	err := m.validateNoUnknownParams()
 	if err != nil {
 		return MapRequest{}, err
 	}
 
-	crs := parseCrsToContentCrs(m.params, defaultCrs)
-	crsErr := validateSupportedCrs(CrsParam, crs, supportedCrs)
+	crs := parseCrsToContentCrs(m.params)
+	var crsErr error
+	if crs != "" {
+		crsErr = validateSupportedCrs(CrsParam, crs, supportedCrs)
+	}
 	bbox, bboxSRID, bboxErr := parseBbox(m.params)
 	if bboxErr == nil && bbox != nil && m.params.Get(BboxCrsParam) != "" {
 		bboxCrs := domain.ContentCrs(m.params.Get(BboxCrsParam))
@@ -63,7 +66,10 @@ func (m *mapsURL) parse(defaultCrs domain.ContentCrs, supportedCrs []domain.Cont
 		return MapRequest{}, err
 	}
 
-	request := MapRequest{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, transparent: transparent, mmPerPixel: mmPerPixel}
+	request := MapRequest{
+		transparent: transparent,
+		requested:   MapViewParameters{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, mmPerPixel: mmPerPixel},
+	}
 
 	return request, nil
 }
@@ -144,12 +150,8 @@ func parseAndValidatePositiveInt(intStr string) (int, error) {
 	return i, err
 }
 
-func parseCrsToContentCrs(params url.Values, fallback domain.ContentCrs) domain.ContentCrs {
-	if param := strings.TrimSpace(params.Get(CrsParam)); param != "" {
-		return domain.ContentCrs(param)
-	}
-
-	return fallback
+func parseCrsToContentCrs(params url.Values) domain.ContentCrs {
+	return domain.ContentCrs(strings.TrimSpace(params.Get(CrsParam)))
 }
 
 func parseMMPerPixel(params url.Values) (float64, error) {

@@ -36,13 +36,6 @@ func (m *Maps) Maps() http.HandlerFunc {
 			params:  r.URL.Query(),
 		}
 
-		defaultCrs, err := getDefaultCrs(m.engine.Config.OgcAPI.Maps.DefaultMap)
-		if err != nil {
-			log.Printf("invalid default map CRS: %v", err)
-			engine.RenderProblem(engine.ProblemServerError, w)
-			return
-		}
-
 		supportedCrs, err := getSupportedCrs(collection)
 		if err != nil {
 			log.Printf("invalid supported map CRSs: %v", err)
@@ -50,7 +43,7 @@ func (m *Maps) Maps() http.HandlerFunc {
 			return
 		}
 
-		request, err := url.parse(defaultCrs, supportedCrs)
+		request, err := url.parse(supportedCrs)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return

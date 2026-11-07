@@ -4,17 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"net/url"
-	"strings"
 
 	"github.com/PDOK/gokoala/config"
-	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/PDOK/gokoala/internal/ogc/features"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
-	"github.com/PDOK/gokoala/internal/ogc/features/proj"
 	"github.com/pdok/ogc-specifications/pkg/wms130"
-	"github.com/twpayne/go-geom"
 )
+
+const wmsCRSNamespace = "CRS"
 
 // Build a WMS GetMap request from the given MapRequest.
 func buildGetMapRequest(mapRequest *MapRequest, mapsConfig *config.OgcAPIMaps) (*wms130.GetMapRequest, error) {
@@ -53,7 +49,7 @@ func buildGetMapRequest(mapRequest *MapRequest, mapsConfig *config.OgcAPIMaps) (
 		return nil, err
 	}
 
-	mapResolution, err := toMapResolution(mapRequest.mmPerPixel)
+	mapResolution, err := toMapResolution(mapRequest.resolved.mmPerPixel)
 	if err != nil {
 		return nil, err
 	}
@@ -114,23 +110,12 @@ func getStyledLayerDescriptor(mapRequest *MapRequest, collection *config.MapsCol
 }
 
 func getCRS(mapRequest *MapRequest) (*wms130.CRS, error) {
-	crsURI := strings.TrimSpace(string(mapRequest.crs))
-	if crsURI == domain.WGS84CrsURI {
-		return &wms130.CRS{Namespace: "CRS", Code: 84}, nil
-	}
-	if !strings.HasPrefix(crsURI, domain.CrsURIPrefix+"EPSG/0/") {
-		return nil, fmt.Errorf("expected an EPSG CRS URI or CRS84 URI, got %q", mapRequest.crs)
-	}
-
-	srid, err := features.ParseCrsToSRID(
-		url.Values{CrsParam: {crsURI}},
-		CrsParam,
-	)
+	srid, err := mapCRSToSRID(mapRequest.resolved.crs)
 	if err != nil {
-		return nil, fmt.Errorf("invalid CRS %q: %w", mapRequest.crs, err)
+		return nil, err
 	}
-	if srid <= 0 {
-		return nil, fmt.Errorf("CRS code must be positive, got %q", mapRequest.crs)
+	if srid == domain.WGS84SRID {
+		return &wms130.CRS{Namespace: wmsCRSNamespace, Code: 84}, nil
 	}
 
 	return &wms130.CRS{
@@ -139,98 +124,22 @@ func getCRS(mapRequest *MapRequest) (*wms130.CRS, error) {
 	}, nil
 }
 
-func getAxisOrder(srs string) (domain.AxisOrder, error) {
-	projJSON, err := proj.ExecProjInfo(srs)
-	if err != nil {
-		return domain.AxisOrderXY, fmt.Errorf("get CRS information for %q: %w", srs, err)
-	}
-
-	axisOrder, err := proj.GetAxisOrder(projJSON)
-	if err != nil {
-		return domain.AxisOrderXY, fmt.Errorf("get axis order for %q: %w", srs, err)
-	}
-
-	return axisOrder, nil
-}
-
 func getBoundingBox(mapRequest *MapRequest) (*wms130.BoundingBox, error) {
-	if mapRequest.bbox == nil {
+	bbox := mapRequest.resolved.bbox
+	if bbox == nil {
 		return nil, errors.New("bbox is required")
 	}
-	crs, err := getCRS(mapRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	bbox := [4]float64{
-		mapRequest.bbox.Min(0),
-		mapRequest.bbox.Min(1),
-		mapRequest.bbox.Max(0),
-		mapRequest.bbox.Max(1),
-	}
-
-	inputSRID := mapRequest.bboxSRID.GetOrDefault()
-	outputSRID := crs.Code
-	outputCRS84 := crs.Namespace == "CRS" && crs.Code == 84
-	if outputCRS84 {
-		outputSRID = domain.WGS84SRID
-	}
-	// In this case we need to transform the incoming bbox into the requested output CRS
-	if outputSRID != inputSRID {
-		bbox, err = transformBoundingBox(bbox, inputSRID, outputSRID, outputCRS84)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	minX, minY, maxX, maxY := bbox[0], bbox[1], bbox[2], bbox[3]
-
 	return &wms130.BoundingBox{
-		LowerCorner: wms130.Position{minX, minY},
-		UpperCorner: wms130.Position{maxX, maxY},
+		LowerCorner: wms130.Position{bbox.Min(0), bbox.Min(1)},
+		UpperCorner: wms130.Position{bbox.Max(0), bbox.Max(1)},
 	}, nil
-}
-
-func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID int, outputCRS84 bool) ([4]float64, error) {
-	inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
-	if inputSRID == domain.WGS84SRID {
-		inputSRS = "OGC:CRS84"
-	}
-	outputSRS := fmt.Sprintf("EPSG:%d", outputSRID)
-	if outputCRS84 {
-		outputSRS = "OGC:CRS84"
-	}
-
-	inputAxisOrder, err := getAxisOrder(inputSRS)
-	if err != nil {
-		return [4]float64{}, err
-	}
-	outputAxisOrder, err := getAxisOrder(outputSRS)
-	if err != nil {
-		return [4]float64{}, err
-	}
-
-	if inputAxisOrder == domain.AxisOrderYX {
-		bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
-	}
-	transformed, err := util.TransformBoundingBox(
-		geom.NewBounds(geom.XY).Set(bbox[:]...), inputSRS, outputSRS,
-	)
-	if err != nil {
-		return [4]float64{}, fmt.Errorf("transform WMS bbox: %w", err)
-	}
-	bbox = [4]float64{transformed.Min(0), transformed.Min(1), transformed.Max(0), transformed.Max(1)}
-	if outputAxisOrder == domain.AxisOrderYX {
-		bbox = [4]float64{bbox[1], bbox[0], bbox[3], bbox[2]}
-	}
-	return bbox, nil
 }
 
 func getOutput(mapRequest *MapRequest) *wms130.Output {
 	return &wms130.Output{
 		Size: wms130.Size{
-			Width:  mapRequest.width,
-			Height: mapRequest.height,
+			Width:  mapRequest.resolved.width,
+			Height: mapRequest.resolved.height,
 		},
 		Format:      mapRequest.format,
 		Transparent: &mapRequest.transparent,
