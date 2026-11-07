@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 // +kubebuilder:object:generate=true
@@ -177,14 +178,30 @@ type MapStyle struct {
 	WMSStyle string `yaml:"wmsStyle" json:"wmsStyle" validate:"required"`
 }
 
-func validateMapCollections(collections []MapsCollection) error {
+func validateMapCollections(collections []MapsCollection, defaultCRS string) error {
 	var errMessages []string
+	defaultCode, defaultErr := parseMapEPSGCode(defaultCRS)
 	collectionIDs := make(map[string]struct{})
 	for _, collection := range collections {
 		if _, exists := collectionIDs[collection.ID]; exists {
 			errMessages = append(errMessages, fmt.Sprintf("duplicate maps collection ID '%s'", collection.ID))
 		}
 		collectionIDs[collection.ID] = struct{}{}
+
+		supported := false
+		for _, srs := range collection.SupportedSrs {
+			code, err := parseMapEPSGCode(srs.Srs)
+			if err != nil {
+				errMessages = append(errMessages, fmt.Sprintf("invalid supported CRS for maps collection %q: %v", collection.ID, err))
+				continue
+			}
+			if defaultErr == nil && code == defaultCode {
+				supported = true
+			}
+		}
+		if defaultErr == nil && !supported {
+			errMessages = append(errMessages, fmt.Sprintf("default map CRS %q must be supported by maps collection %q", defaultCRS, collection.ID))
+		}
 
 		layerIDs := make(map[string]struct{})
 		for _, layer := range collection.Layers {
@@ -210,10 +227,34 @@ func validateMapCollections(collections []MapsCollection) error {
 	return nil
 }
 
-func validateDefaultsForMaps(dm DefaultMap) error {
-	mmPerPixelError := validateMMPerPixel(dm.MMPerPixel)
+func validateMapDefaults(dm DefaultMap) error {
+	return errors.Join(
+		validateMMPerPixel(dm.MMPerPixel),
+		validateDefaultMapCRS(dm.CRS),
+	)
+}
 
-	return errors.Join(mmPerPixelError)
+func validateDefaultMapCRS(crs string) error {
+	_, err := parseMapEPSGCode(crs)
+	if err != nil {
+		return fmt.Errorf("invalid default map CRS: %w", err)
+	}
+	return nil
+}
+
+func parseMapEPSGCode(crs string) (int, error) {
+	code, found := strings.CutPrefix(crs, "EPSG:")
+	if !found || code == "" || strings.Trim(code, "0123456789") != "" {
+		return 0, fmt.Errorf("expected EPSG CRS with a positive numeric code, got %q", crs)
+	}
+	value, err := strconv.Atoi(code)
+	if err != nil {
+		return 0, fmt.Errorf("invalid EPSG code in %q: %w", crs, err)
+	}
+	if value <= 0 {
+		return 0, fmt.Errorf("EPSG code must be positive, got %q", crs)
+	}
+	return value, nil
 }
 
 func validateMapLimits(o *OgcAPIMaps) error {
