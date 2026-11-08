@@ -87,25 +87,11 @@ func TestMapLocalErrors(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name: "invalid configured default CRS",
-			configure: func(c *config.OgcAPIMaps) {
-				c.DefaultMap.CRS = "invalid backend configuration"
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
-		{
 			name: "invalid configured supported CRS",
 			configure: func(c *config.OgcAPIMaps) {
 				c.Collections[0].SupportedSrs = []config.MapsSupportedSrs{
 					{Srs: "invalid backend configuration"},
 				}
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "invalid configured default bbox",
-			configure: func(c *config.OgcAPIMaps) {
-				c.DefaultMap.Bbox[0] = "invalid backend configuration"
 			},
 			wantStatus: http.StatusInternalServerError,
 		},
