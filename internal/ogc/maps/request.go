@@ -20,6 +20,7 @@ type MapType string
 const (
 	DatasetMap    MapType = "Dataset Map"
 	CollectionMap MapType = "Collection Map"
+	crs84SRS              = "OGC:CRS84"
 )
 
 var ErrMapTooLarge = errors.New("map dimensions exceed configured limits")
@@ -53,36 +54,6 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 		}
 		resolved.crs = crs
 	}
-	if resolved.width == 0 {
-		resolved.width = defaults.Width
-	}
-
-	if resolved.height == 0 {
-		resolved.height = defaults.Height
-	}
-
-	if resolved.bbox == nil {
-		if len(defaults.Bbox) != 4 {
-			return errors.New("default bbox must contain four coordinates")
-		}
-		var bbox [4]float64
-		for index, coordinate := range defaults.Bbox {
-			value, err := strconv.ParseFloat(coordinate, 64)
-			if err != nil {
-				return fmt.Errorf("invalid default bbox coordinate %q: %w", coordinate, err)
-			}
-			bbox[index] = value
-		}
-
-		bboxSRID, err := domain.EpsgToSrid(defaults.CRS)
-		if err != nil {
-			return fmt.Errorf("invalid default bbox CRS %q: %w", defaults.CRS, err)
-		}
-
-		resolved.bbox = geom.NewBounds(geom.XY).Set(bbox[:]...)
-		resolved.bboxSRID = bboxSRID
-	}
-
 	if resolved.mmPerPixel == 0 {
 		mmPerPixel, err := strconv.ParseFloat(defaults.MMPerPixel, 64)
 		if err != nil {
@@ -91,21 +62,125 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 		resolved.mmPerPixel = mmPerPixel
 	}
 
-	bboxSRID, err := mapCRSToSRID(resolved.crs)
-	if err != nil {
-		return err
-	}
-	bbox := [4]float64{resolved.bbox.Min(0), resolved.bbox.Min(1), resolved.bbox.Max(0), resolved.bbox.Max(1)}
-	if inputSRID := resolved.bboxSRID.GetOrDefault(); inputSRID != int(bboxSRID) {
-		bbox, err = transformBoundingBox(bbox, inputSRID, int(bboxSRID), bboxSRID == domain.WGS84SRID)
+	if resolved.bbox == nil {
+		bbox, err := parseDefaultBbox(defaults)
 		if err != nil {
 			return err
 		}
+
+		bboxSRID, err := domain.EpsgToSrid(defaults.CRS)
+		if err != nil {
+			return fmt.Errorf("invalid default bbox CRS %q: %w", defaults.CRS, err)
+		}
+
+		resolved.bbox = bbox
+		resolved.bboxSRID = bboxSRID
 	}
-	resolved.bbox = geom.NewBounds(geom.XY).Set(bbox[:]...)
+
+	bbox, swapped, bboxSRID, err := resolved.resolveNormalizedOutputBbox()
+	if err != nil {
+		return err
+	}
+	bbox, err = resolveMapDimensions(&resolved, request.requested, bbox, defaults)
+	if err != nil {
+		return err
+	}
+	if swapped {
+		bbox = swapBboxAxes(bbox)
+	}
+	resolved.bbox = bbox
 	resolved.bboxSRID = bboxSRID
 	request.resolved = resolved
 	return nil
+}
+
+// resolveMapDimensions completes image dimensions from the normalized output bbox.
+// With both dimensions but no explicit bbox, it resizes the bbox preserving default center and vertical resolution.
+func resolveMapDimensions(resolved *MapViewParameters, requested MapViewParameters,
+	bbox *geom.Bounds, defaults config.DefaultMap) (*geom.Bounds, error) {
+	hasBbox := requested.bbox != nil
+	hasWidth, hasHeight := requested.width != 0, requested.height != 0
+	ratio, err := util.BboxAspectRatio(bbox)
+	if err != nil {
+		return nil, err
+	}
+	switch {
+	case !hasBbox && !hasWidth && !hasHeight:
+		resolved.width, resolved.height = defaults.Width, defaults.Height
+	case !hasBbox && hasWidth && hasHeight:
+		resolutionY := (bbox.Max(1) - bbox.Min(1)) / float64(defaults.Height)
+		bbox, err = util.BboxAtResolution(bbox, resolved.width, resolved.height, resolutionY)
+	case !hasWidth || !hasHeight:
+		if !hasWidth && !hasHeight {
+			resolved.height = defaults.Height
+		}
+		resolved.width, resolved.height, err = util.CompleteDimensions(resolved.width, resolved.height, ratio)
+	}
+	if err != nil {
+		if errors.Is(err, util.ErrDimensionOverflow) {
+			return nil, fmt.Errorf("%w: %w", ErrMapTooLarge, err)
+		}
+		return nil, err
+	}
+	return bbox, nil
+}
+
+func parseDefaultBbox(defaults config.DefaultMap) (*geom.Bounds, error) {
+	if len(defaults.Bbox) != 4 {
+		return nil, errors.New("default bbox must contain four coordinates")
+	}
+	var bbox [4]float64
+	for index, coordinate := range defaults.Bbox {
+		value, err := strconv.ParseFloat(coordinate, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid default bbox coordinate %q: %w", coordinate, err)
+		}
+		bbox[index] = value
+	}
+	bounds := geom.NewBounds(geom.XY).Set(bbox[:]...)
+	if _, err := util.BboxAspectRatio(bounds); err != nil {
+		return nil, fmt.Errorf("invalid default bbox: %w", err)
+	}
+	return bounds, nil
+}
+
+// resolveNormalizedOutputBbox returns a new bbox in the output CRS with horizontal/vertical axes.
+// It also returns whether native output axes must be restored and the output SRID.
+func (resolved MapViewParameters) resolveNormalizedOutputBbox() (*geom.Bounds, bool, domain.SRID, error) {
+	if resolved.bbox == nil {
+		return nil, false, domain.UndefinedSRID, errors.New("bbox is required")
+	}
+	outputSRID, err := mapCRSToSRID(resolved.crs)
+	if err != nil {
+		return nil, false, domain.UndefinedSRID, err
+	}
+	inputSRID := resolved.bboxSRID.GetOrDefault()
+	crs84 := outputSRID == domain.WGS84SRID
+	coordinates := [4]float64{resolved.bbox.Min(0), resolved.bbox.Min(1), resolved.bbox.Max(0), resolved.bbox.Max(1)}
+	if inputSRID != int(outputSRID) {
+		coordinates, err = transformBoundingBox(coordinates, inputSRID, int(outputSRID), crs84)
+		if err != nil {
+			return nil, false, domain.UndefinedSRID, err
+		}
+	}
+	bbox := geom.NewBounds(geom.XY).Set(coordinates[:]...)
+	srs := fmt.Sprintf("EPSG:%d", outputSRID)
+	if crs84 {
+		srs = crs84SRS
+	}
+	order, err := getAxisOrder(srs)
+	if err != nil {
+		return nil, false, domain.UndefinedSRID, err
+	}
+	swapped := order == domain.AxisOrderYX
+	if swapped {
+		bbox = swapBboxAxes(bbox)
+	}
+	return bbox, swapped, outputSRID, nil
+}
+
+func swapBboxAxes(bbox *geom.Bounds) *geom.Bounds {
+	return geom.NewBounds(geom.XY).Set(bbox.Min(1), bbox.Min(0), bbox.Max(1), bbox.Max(0))
 }
 
 func mapCRSToSRID(crs domain.ContentCrs) (domain.SRID, error) {
@@ -141,11 +216,11 @@ func getAxisOrder(srs string) (domain.AxisOrder, error) {
 func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID int, outputCRS84 bool) ([4]float64, error) {
 	inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
 	if inputSRID == domain.WGS84SRID {
-		inputSRS = "OGC:CRS84"
+		inputSRS = crs84SRS
 	}
 	outputSRS := fmt.Sprintf("EPSG:%d", outputSRID)
 	if outputCRS84 {
-		outputSRS = "OGC:CRS84"
+		outputSRS = crs84SRS
 	}
 	inputAxisOrder, err := getAxisOrder(inputSRS)
 	if err != nil {
@@ -184,8 +259,8 @@ func (request *MapRequest) validate(limits *config.OgcAPIMaps) error {
 	if resolved.width <= 0 || resolved.height <= 0 {
 		return errors.New("map dimensions must be positive")
 	}
-	if resolved.bbox == nil {
-		return errors.New("resolved bbox is required")
+	if _, err := util.BboxAspectRatio(resolved.bbox); err != nil {
+		return fmt.Errorf("invalid resolved bbox: %w", err)
 	}
 	bboxSRID, err := mapCRSToSRID(resolved.crs)
 	if err != nil {

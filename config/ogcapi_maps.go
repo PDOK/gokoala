@@ -230,11 +230,39 @@ func validateMapCollections(collections []MapsCollection, defaultCRS string) err
 func validateMapDefaults(dm DefaultMap) error {
 	return errors.Join(
 		validateMMPerPixel(dm.MMPerPixel),
-		validateDefaultMapCRS(dm.CRS),
+		validateMapCRS(dm.CRS),
+		validateMapBbox(dm.Bbox),
 	)
 }
 
-func validateDefaultMapCRS(crs string) error {
+func validateMapBbox(bbox []string) error {
+	if len(bbox) != 4 {
+		return errors.New("default map bbox must contain four coordinates")
+	}
+	var coordinates [4]float64
+	for index, coordinate := range bbox {
+		value, err := strconv.ParseFloat(coordinate, 64)
+		if err != nil {
+			return fmt.Errorf("invalid default map bbox coordinate %q: %w", coordinate, err)
+		}
+		if math.IsNaN(value) || math.IsInf(value, 0) {
+			return fmt.Errorf("default map bbox coordinate %q must be finite", coordinate)
+		}
+		coordinates[index] = value
+	}
+	width := coordinates[2] - coordinates[0]
+	height := coordinates[3] - coordinates[1]
+	if width <= 0 || height <= 0 || math.IsInf(width, 0) || math.IsInf(height, 0) {
+		return errors.New("default map bbox must have finite positive extents")
+	}
+	ratio := width / height
+	if ratio <= 0 || math.IsInf(ratio, 0) {
+		return errors.New("default map bbox must have a finite positive aspect ratio")
+	}
+	return nil
+}
+
+func validateMapCRS(crs string) error {
 	_, err := parseMapEPSGCode(crs)
 	if err != nil {
 		return fmt.Errorf("invalid default map CRS: %w", err)

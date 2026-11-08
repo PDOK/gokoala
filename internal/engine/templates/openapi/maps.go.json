@@ -138,7 +138,7 @@
 			"width": {
 				"name": "width",
 				"in": "query",
-				"description": "Width of the map in pixels. If omitted, the configured default width is used. Values exceeding maxWidth or maxPixels return HTTP 413.",
+				"description": "Width of the map in pixels. Missing dimensions are calculated from the bbox aspect ratio in the output CRS. If a bbox but neither dimension is supplied, the default height anchors the calculated width. If bbox and both dimensions are omitted, the configured default view is used. Values exceeding maxWidth or maxPixels return HTTP 413.",
 				"required": false,
 				"style": "form",
 				"explode": false,
@@ -147,7 +147,7 @@
 			"height": {
 				"name": "height",
 				"in": "query",
-				"description": "Height of the map in pixels. If omitted, the configured default height is used. Values exceeding maxHeight or maxPixels return HTTP 413.",
+				"description": "Height of the map in pixels. If omitted with width supplied, calculated from the bbox aspect ratio in the output CRS. When both dimensions but no bbox are supplied, a bbox is calculated preserving the default center and vertical resolution. Explicit bbox and both dimensions are preserved. Values exceeding maxHeight or maxPixels return HTTP 413.",
 				"required": false,
 				"style": "form",
 				"explode": false,

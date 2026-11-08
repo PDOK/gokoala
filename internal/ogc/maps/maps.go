@@ -54,8 +54,12 @@ func (m *Maps) Maps() http.HandlerFunc {
 		request.style = styleID
 
 		if err = request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
-			log.Printf("failed to set map defaults: %v", err)
-			engine.RenderProblem(engine.ProblemServerError, w)
+			switch {
+			case errors.Is(err, ErrMapTooLarge):
+				engine.RenderProblem(engine.ProblemRequestEntityTooLarge, w, err.Error())
+			default:
+				engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			}
 			return
 		}
 
