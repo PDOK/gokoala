@@ -77,8 +77,7 @@ describe('map backgrounds', () => {
           expect((backgroundLayer.getSource() as WMTS).getMatrixSet()).to.equal('EPSG:28992')
         }
       })
-      cy.wait(`@${background}background`)
-      cy.wait('@map')
+      cy.get('@MapLoaded').should('have.been.called')
       cy.get('[role="status"]').should('not.exist')
     })
   }

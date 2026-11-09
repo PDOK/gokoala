@@ -100,6 +100,9 @@ export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string,
       }),
     ],
     componentProperties: { mapUrl: amapUrl, crs: acrs, bbox: abbox, transparent, backgroundMap },
+  }).then(response => {
+    response.component.map.once('loadend', cy.stub().as('MapLoaded'))
+    return response
   })
 }
 
