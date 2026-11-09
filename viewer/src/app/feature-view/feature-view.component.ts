@@ -17,16 +17,14 @@ import { defaults as defaultControls } from 'ol/control'
 
 import { PanIntoViewOptions } from 'ol/Overlay'
 import { FitOptions } from 'ol/View'
-import { Extent, getCenter, getTopLeft } from 'ol/extent'
+import { Extent, getCenter } from 'ol/extent'
 import { Geometry } from 'ol/geom'
 import { fromExtent } from 'ol/geom/Polygon'
-import { Tile, Vector as VectorLayer } from 'ol/layer'
-import TileLayer from 'ol/layer/Tile'
+import { Vector as VectorLayer } from 'ol/layer'
 import { get as getProjection, getPointResolution, Projection, transform } from 'ol/proj'
-import { OSM, Vector as VectorSource, WMTS as WMTSSource } from 'ol/source'
+import { Vector as VectorSource } from 'ol/source'
 import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
-import WMTSTileGrid from 'ol/tilegrid/WMTS'
-import { environment } from 'src/environments/environment'
+import { BackgroundMap, brtLayer, osmLayer } from '../shared/model/background-map'
 import { DataUrl, defaultMapping, FeatureService, ProjectionMapping } from '../shared/services/feature.service'
 import { getRijksdriehoek, initProj4WithDynamicCrs } from '../shared/model/map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
@@ -48,7 +46,6 @@ export function exhaustiveGuard(_value: never): never {
   throw new Error(`ERROR! Reached forbidden guard function with unexpected value: ${JSON.stringify(_value)}`)
 }
 
-export type BackgroundMap = 'BRT' | 'OSM'
 export enum InitialView {
   HIDDEN = 'HIDDEN',
   VISIBLE = 'VISIBLE',
@@ -253,14 +250,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
   loadBackground() {
     switch (this.backgroundMap) {
       case 'OSM': {
-        const osm = new TileLayer({
-          source: new OSM(),
-        })
-        this.map.addLayer(osm)
+        this.map.addLayer(osmLayer())
         return
       }
       case 'BRT': {
-        this.map.addLayer(this.brtLayer(getRijksdriehoek()))
+        this.map.addLayer(brtLayer(getRijksdriehoek()))
         return
       }
 
@@ -381,26 +375,6 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
       this._view.setResolution(res)
     }
     this.map.setView(this._view)
-  }
-
-  brtLayer(p: { projection: Projection; resolutions: number[]; matrixIds: string[] }) {
-    return new Tile({
-      source: new WMTSSource({
-        attributions: 'Kaartgegevens: &copy; <a href="https://www.kadaster.nl">Kadaster</a>',
-        url: environment.brt.backgroundUrl,
-        layer: 'grijs',
-        matrixSet: p.projection.getCode(),
-        format: 'image/png',
-        projection: p.projection,
-        tileGrid: new WMTSTileGrid({
-          origin: getTopLeft(p.projection.getExtent()),
-          resolutions: p.resolutions,
-          matrixIds: p.matrixIds,
-        }),
-        style: 'default',
-        wrapX: false,
-      }),
-    })
   }
 
   addFeatureEmit() {

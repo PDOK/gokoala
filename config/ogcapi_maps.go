@@ -10,6 +10,12 @@ import (
 
 // +kubebuilder:object:generate=true
 type OgcAPIMaps struct {
+	// Basemap to use in embedded viewer on the HTML pages.
+	// +kubebuilder:default="OSM"
+	// +kubebuilder:validation:Enum=OSM;BRT
+	// +optional
+	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
+
 	// Base URL of the MapServer WMS service.
 	WMSServer *URL `yaml:"wmsServer" json:"wmsServer" validate:"required"`
 

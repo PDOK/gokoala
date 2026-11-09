@@ -7,6 +7,7 @@ import 'cypress-network-idle'
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger'
 import { FeatureService } from 'src/app/shared/services/feature.service'
 import { MapsViewComponent } from 'src/app/maps-view/maps-view.component'
+import { BackgroundMap } from 'src/app/shared/model/background-map'
 
 export type ProjectionTest = { code: string; projection: string; geofix: string }
 
@@ -83,8 +84,13 @@ export function mountFeatureComponent(
   return cy.then(() => mountResponse)
 }
 
-export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string, transparent = true) {
+export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string, transparent = true, backgroundMap: BackgroundMap = 'OSM') {
   cy.viewport(550, 750)
+  cy.intercept('GET', 'https://tile.openstreetmap.org/*/*/*.png', {
+    fixture: '172300.png',
+    headers: { 'cache-control': 'no-store' },
+  }).as('OSMbackground')
+  cy.intercept('GET', '*grijs*', { fixture: 'backgroundstub.png', headers: { 'cache-control': 'no-store' } }).as('BRTbackground')
   cy.intercept('GET', `${amapUrl}*`, { fixture: 'backgroundstub.png', headers: { 'cache-control': 'no-store' } }).as('map')
 
   return cy.mount(MapsViewComponent, {
@@ -93,7 +99,7 @@ export function mountMapsComponent(acrs: string, amapUrl: string, abbox: string,
         level: NgxLoggerLevel.DEBUG,
       }),
     ],
-    componentProperties: { mapUrl: amapUrl, crs: acrs, bbox: abbox, transparent },
+    componentProperties: { mapUrl: amapUrl, crs: acrs, bbox: abbox, transparent, backgroundMap },
   })
 }
 
