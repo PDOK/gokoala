@@ -23,6 +23,7 @@ availableLanguages:
   - en
 ogcApi:
   maps:
+    basemap: BRT
     # base URL of the MapServer WMS service
     wmsServer: https://service.pdok.nl/kadaster/brk-bestuurlijke-gebieden/wms/v1_0
     # global image limits in pixels (both default to 4000)

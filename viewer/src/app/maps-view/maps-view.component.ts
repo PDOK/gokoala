@@ -8,16 +8,18 @@ import {
   OnChanges,
   OnDestroy,
   inject,
+  signal,
 } from '@angular/core'
 import { NGXLogger } from 'ngx-logger'
 import { Map as OLMap, View } from 'ol'
 import { defaults as defaultControls } from 'ol/control'
 import { Extent } from 'ol/extent'
 import ImageLayer from 'ol/layer/Image'
-import { addEquivalentProjections, get as getProjection, Projection } from 'ol/proj'
+import { addCoordinateTransforms, addEquivalentProjections, equivalent, get as getProjection, getTransform, Projection } from 'ol/proj'
 import OGCMapSource from 'ol/source/OGCMap'
 import { getRijksdriehoek, initProj4WithTilesDefaults } from '../shared/model/map-projection'
 import { NgChanges } from '../vectortile-view/vectortile-view.component'
+import { BackgroundMap, brtLayer, osmLayer } from '../shared/model/background-map'
 
 export type MapFormat = 'png' | 'jpeg'
 
@@ -40,7 +42,9 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() crs: string = EPSG_PREFIX + RD_NEW_SRID
   @Input() bbox: string | undefined
   @Input() format: MapFormat = 'png'
+  @Input() backgroundMap: BackgroundMap = 'OSM'
   @Input({ transform: booleanAttribute }) transparent = true
+  backgroundNotice = signal('')
 
   map = new OLMap({
     controls: defaultControls(),
@@ -48,7 +52,7 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
   private _viewInitialized = false
 
   ngOnChanges(changes: NgChanges<MapsViewComponent>) {
-    if (changes.mapUrl || changes.crs || changes.bbox || changes.format || changes.transparent) {
+    if (changes.mapUrl || changes.crs || changes.bbox || changes.format || changes.transparent || changes.backgroundMap) {
       this.initialize()
     }
   }
@@ -79,6 +83,8 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
 
     this.map.getLayers().clear()
+    this.backgroundNotice.set('')
+    this.loadBackground(projection)
     this.map.addLayer(
       new ImageLayer({
         source: new OGCMapSource({
@@ -100,6 +106,25 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
     if (extent) {
       view.fit(extent, { size: this.map.getSize() })
     }
+  }
+
+  private loadBackground(projection: Projection) {
+    if (this.backgroundMap === 'BRT' && !equivalent(projection, getRijksdriehoek().projection)) {
+      const message = `The BRT background map is unavailable in CRS ${this.crs}.`
+      this.logger.warn(message)
+      this.backgroundNotice.set(message)
+      return
+    }
+    const layer = this.backgroundMap === 'BRT' ? brtLayer(getRijksdriehoek()) : osmLayer()
+    layer.getSource()!.on('tileloaderror', () => {
+      if (this.backgroundNotice() || !this.map.getLayers().getArray().includes(layer)) {
+        return
+      }
+      const message = `The ${this.backgroundMap} background map could not be loaded.`
+      this.logger.error(message)
+      this.backgroundNotice.set(message)
+    })
+    this.map.addLayer(layer)
   }
 
   private getMapProjection(crs: string): Projection | undefined {
@@ -124,8 +149,13 @@ export class MapsViewComponent implements OnChanges, AfterViewInit, OnDestroy {
       extent: epsgProjection.getExtent(),
       axisOrientation: epsgProjection.getAxisOrientation(),
       global: epsgProjection.isGlobal(),
+      getPointResolution: epsgProjection.getPointResolutionFunc(),
     })
     addEquivalentProjections([epsgProjection, uriProjection])
+    // Equivalent aliases do not inherit transforms to other projections.
+    for (const code of ['EPSG:4326', 'EPSG:3857']) {
+      addCoordinateTransforms(uriProjection, code, getTransform(epsgProjection, code), getTransform(code, epsgProjection))
+    }
     return uriProjection
   }
 

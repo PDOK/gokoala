@@ -14,6 +14,7 @@ import (
 func TestMapsHTML(t *testing.T) {
 	router := newTestRouter(t, newMockWMS(t).URL, func(c *config.OgcAPIMaps) {
 		c.Collections[0].Bbox = []string{"20000", "310000", "270000", "610000"}
+		c.Basemap = "BRT"
 	})
 
 	tests := []struct {
@@ -80,6 +81,7 @@ func TestMapsHTML(t *testing.T) {
 			require.Equal(t, http.StatusOK, rr.Code)
 			body := rr.Body.String()
 			assert.Contains(t, body, "<app-maps-view")
+			assert.Contains(t, body, `background-map="BRT"`)
 			assert.Regexp(t, tt.wantMapURL, body)
 			assert.Contains(t, body, `crs="`+tt.wantCRS+`"`)
 			match := regexp.MustCompile(`bbox="([^"]+)"`).FindStringSubmatch(body)
